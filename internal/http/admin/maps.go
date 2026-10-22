@@ -76,13 +76,18 @@ func (h *Handlers) GetMap(w http.ResponseWriter, r *http.Request, establishmentI
 // (If-Match required: 428 when missing, 412 when stale).
 func (h *Handlers) SaveMap(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, mapID api.MapID, params api.SaveMapParams) {
 	ifMatch := params.IfMatch
-	expected, err := RequireIfMatch(&ifMatch)
+	m, err := RequireIfMatch(&ifMatch)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
 	}
 	var req api.MapSaveRequest
 	if !decode(w, r, &req) {
+		return
+	}
+	expected, err := h.mapVersionFor(r, establishmentID, mapID, m)
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
 		return
 	}
 	in := mapping.SaveInput{
@@ -104,6 +109,20 @@ func (h *Handlers) SaveMap(w http.ResponseWriter, r *http.Request, establishment
 	writeVersioned(w, http.StatusOK, doc.Map.Version, documentToAPI(doc))
 }
 
+// mapVersionFor resolves the version a mandatory If-Match stands for:
+// the tag's version, or the current one for "*" (any version of an existing
+// map; the versioned save still fails with 412 if it changes meanwhile).
+func (h *Handlers) mapVersionFor(r *http.Request, establishmentID, mapID string, m IfMatch) (int64, error) {
+	if !m.Any {
+		return m.Version, nil
+	}
+	doc, err := h.Mapping.GetMap(r.Context(), principalOf(r), establishmentID, mapID)
+	if err != nil {
+		return 0, err
+	}
+	return doc.Map.Version, nil
+}
+
 // GenerateMapRows implements POST /establishments/{establishmentId}/maps/{mapId}/generate-rows:
 // a preview, or (apply=true, If-Match required) an append to the map.
 func (h *Handlers) GenerateMapRows(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, mapID api.MapID, params api.GenerateMapRowsParams) {
@@ -114,7 +133,12 @@ func (h *Handlers) GenerateMapRows(w http.ResponseWriter, r *http.Request, estab
 	apply := req.Apply != nil && *req.Apply
 	var expected *int64
 	if apply {
-		v, err := RequireIfMatch(params.IfMatch)
+		m, err := RequireIfMatch(params.IfMatch)
+		if err != nil {
+			problem.Error(w, r, h.Log, err)
+			return
+		}
+		v, err := h.mapVersionFor(r, establishmentID, mapID, m)
 		if err != nil {
 			problem.Error(w, r, h.Log, err)
 			return

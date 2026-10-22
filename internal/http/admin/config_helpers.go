@@ -42,16 +42,57 @@ func writeVersioned(w http.ResponseWriter, status int, version int64, v any) {
 	writeJSON(w, status, v)
 }
 
-// ParseIfMatch parses an If-Match header value into a version. It accepts
-// "3", "\"3\"" and the weak form W/"3". A missing/empty header or "*" yields
-// nil (no precondition). Malformed values are a validation error.
+// IfMatch is a parsed If-Match header (RFC 9110 §13.1.1): either a strong
+// entity tag, i.e. one version, or "*", which is satisfied by any current
+// version of an existing resource.
+type IfMatch struct {
+	Version int64
+	Any     bool
+}
+
+// ParseIfMatch parses an If-Match header value into an optional version. It
+// accepts "3", "\"3\"" and the weak form W/"3". A missing or empty header,
+// and "*" (any version), yield nil: no precondition. Malformed values are a
+// validation error.
+//
+// Weak tags are a documented deviation from the strong comparison of RFC
+// 9110 §13.1.1 (ADR 0008): reverse proxies that compress on the fly (nginx
+// gzip, for one) downgrade the strong ETag of the response to W/"3", and the
+// client sends it back as is; the version number is the same, so refusing
+// it would make every save fail behind such a proxy.
 func ParseIfMatch(h *string) (*int64, error) {
+	m, err := parseIfMatch(h)
+	if err != nil || m == nil || m.Any {
+		return nil, err
+	}
+	return &m.Version, nil
+}
+
+// RequireIfMatch is ParseIfMatch for operations where the precondition is
+// mandatory (PUT /maps/{id}): a missing header is configerr.ErrPreconditionRequired,
+// "*" is IfMatch{Any: true} (the handler then saves over the current version).
+func RequireIfMatch(h *string) (IfMatch, error) {
+	m, err := parseIfMatch(h)
+	if err != nil {
+		return IfMatch{}, err
+	}
+	if m == nil {
+		return IfMatch{}, configerr.ErrPreconditionRequired
+	}
+	return *m, nil
+}
+
+// parseIfMatch returns nil for an absent or empty header.
+func parseIfMatch(h *string) (*IfMatch, error) {
 	if h == nil {
 		return nil, nil
 	}
 	s := strings.TrimSpace(*h)
-	if s == "" || s == "*" {
+	if s == "" {
 		return nil, nil
+	}
+	if s == "*" {
+		return &IfMatch{Any: true}, nil
 	}
 	s = strings.TrimPrefix(s, "W/")
 	s = strings.Trim(s, `"`)
@@ -59,20 +100,7 @@ func ParseIfMatch(h *string) (*int64, error) {
 	if err != nil || v < 1 {
 		return nil, configerr.Invalid("If-Match", "Versione non valida: usa il valore dell'header ETag.")
 	}
-	return &v, nil
-}
-
-// RequireIfMatch is ParseIfMatch for operations where the precondition is
-// mandatory (PUT /maps/{id}): a missing header is configerr.ErrPreconditionRequired.
-func RequireIfMatch(h *string) (int64, error) {
-	v, err := ParseIfMatch(h)
-	if err != nil {
-		return 0, err
-	}
-	if v == nil {
-		return 0, configerr.ErrPreconditionRequired
-	}
-	return *v, nil
+	return &IfMatch{Version: v}, nil
 }
 
 // pageParams validates cursor/limit query parameters.

@@ -336,3 +336,47 @@ func TestMapsHTTP_CrossTenantAndPools(t *testing.T) {
 		}
 	})
 }
+
+// TestMapsHTTP_IfMatchWildcard: `If-Match: *` is a precondition satisfied by
+// any current version of an existing map (RFC 9110), not a missing header:
+// the save and the generator apply go through, 404 for an unknown map.
+func TestMapsHTTP_IfMatchWildcard(t *testing.T) {
+	db := storetest.SQLite(t)
+	e := newMapsEnv(t, db)
+	a := e.estA.ID
+	mapIn := api.MapInput{Name: api.I18nText{"it": "Spiaggia"}, Width: 1200, Height: 800, GridSize: 10, SeaSide: "bottom"}
+	status, _, body := mapsCall(t, e.owner, http.MethodPost, mapIn, func(w http.ResponseWriter, r *http.Request) {
+		e.h.CreateMap(w, r, a, api.CreateMapParams{})
+	})
+	if status != 201 {
+		t.Fatalf("create map: %d %s", status, body)
+	}
+	mapID := mapsDecode[api.MapDocument](t, body).Map.Id
+	status, _, body = mapsCall(t, e.owner, http.MethodPost, api.ZoneInput{MapId: mapsPtr(mapID), Code: "row1", Name: api.I18nText{"it": "Fila 1"}, AssignmentMode: "zone", OnlineVisible: mapsPtr(true), PriceCategory: "row1"},
+		func(w http.ResponseWriter, r *http.Request) { e.h.CreateZone(w, r, a, api.CreateZoneParams{}) })
+	if status != 201 {
+		t.Fatalf("create zone: %d %s", status, body)
+	}
+	zone := mapsDecode[api.Zone](t, body)
+
+	save := api.MapSaveRequest{Map: mapIn, Spots: []api.SpotInput{{ZoneId: zone.Id, Label: "Z9", Kind: "umbrella", X: 100, Y: 100, Shape: api.Shape{Type: "circle", W: 8, H: 8}}}}
+	status, hdr, body := mapsCall(t, e.owner, http.MethodPut, save, func(w http.ResponseWriter, r *http.Request) {
+		e.h.SaveMap(w, r, a, mapID, api.SaveMapParams{IfMatch: "*"})
+	})
+	if status != 200 || hdr.Get("ETag") != `"2"` {
+		t.Fatalf("save with If-Match *: %d %s %s", status, hdr.Get("ETag"), body)
+	}
+	gen := api.RowGeneratorRequest{ZoneId: zone.Id, Rows: 1, SpotsPerRow: 3, OriginX: mapsPtr(50.0), OriginY: mapsPtr(500.0), SpacingX: 70, SpacingY: 80, Apply: mapsPtr(true)}
+	status, hdr, body = mapsCall(t, e.owner, http.MethodPost, gen, func(w http.ResponseWriter, r *http.Request) {
+		e.h.GenerateMapRows(w, r, a, mapID, api.GenerateMapRowsParams{IfMatch: mapsPtr("*")})
+	})
+	if res := mapsDecode[api.RowGeneratorResult](t, body); status != 200 || !res.Applied || hdr.Get("ETag") != `"3"` {
+		t.Fatalf("apply with If-Match *: %d %s %s", status, hdr.Get("ETag"), body)
+	}
+	status, _, body = mapsCall(t, e.owner, http.MethodPut, save, func(w http.ResponseWriter, r *http.Request) {
+		e.h.SaveMap(w, r, a, store.NewID(), api.SaveMapParams{IfMatch: "*"})
+	})
+	if p := mapsDecode[api.Problem](t, body); status != 404 || p.Type != "not_found" {
+		t.Fatalf("wildcard on unknown map: %d %s", status, body)
+	}
+}

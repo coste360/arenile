@@ -27,16 +27,33 @@ non sono descritti dalla specifica e richiedevano una scelta esplicita.
 4. **Utenti.** Il titolare crea l'utente con una password iniziale o con una password temporanea
    generata, restituita una sola volta con `Cache-Control: no-store`. Nessuna email di invito finché non
    esistono le notifiche.
-5. **Eventi di configurazione.** La spec 18 non definisce il payload di `config.pricing_changed` e
-   `config.map_changed`: i servizi usano la versione 1 con entità, id e tipo di modifica (più
-   `season_id` per i listini); la configurazione guidata scrive un solo evento per tipo con
-   `reason = "setup_template"` o `"quick_pricelist"` e gli id creati. I consumatori devono trattare
-   questi eventi come "ricarica la configurazione", senza dipendere dai campi.
+5. **Eventi di configurazione.** La spec 18 non definiva il payload di `config.pricing_changed` e
+   `config.map_changed`: tutti i servizi usano un unico struct versione 1 (`event.ConfigChange`,
+   documentato in spec 18.1) con `entity`, `entity_id`, `change` e campi facoltativi (`season_id`,
+   `map_id`, `code`, `version`); la configurazione guidata scrive un solo evento per tipo con
+   `entity = "setup"`, `reason = "setup_template"` o `"quick_pricelist"`, gli id creati e i conteggi.
+   I consumatori devono trattare questi eventi come "ricarica la configurazione", senza dipendere
+   dai campi facoltativi.
 6. **Configurazione guidata.** `force` (riapplicare un modello su uno stabilimento con mappe) e il
    fattore mezza giornata del listino rapido esistono nel servizio ma non nel contratto API: il pannello
    non li usa.
 7. **Codici promozionali.** Il contatore di utilizzi si incrementa con le prenotazioni (M3); il
    simulatore rifiuta solo i codici già esauriti.
+8. **`If-Match` debole.** La RFC 9110 §13.1.1 prescrive il confronto forte per `If-Match`; Arenile
+   accetta anche la forma debole `W/"3"` perché i reverse proxy che comprimono al volo (es. nginx con
+   gzip) degradano l'`ETag` forte della risposta a debole e il browser lo rimanda così com'è: il numero
+   di versione è lo stesso e rifiutarlo renderebbe impossibile ogni salvataggio dietro tali proxy.
+   `*` è una precondizione soddisfatta da qualsiasi versione corrente (mai 428).
+9. **Integrità referenziale delle zone.** Gli id di zona compaiono in documenti JSON (condizioni di
+   regole, promo e convenzioni, `allowed_zone_ids` dei pack, `scope.zones` delle policy) che il database
+   non può vincolare: l'eliminazione di una zona, da sola o con la sua mappa, è rifiutata con 409 finché
+   quei riferimenti esistono (`mapping.ZoneReferencedError` li elenca). Allo stesso modo una mappa con
+   zone a quantità che hanno pool creati a mano non si elimina: niente cancellazioni in cascata silenziose.
+10. **Lock sulle zone.** Salvataggio della mappa, modifica ed eliminazione di zone e mappe prendono un
+   lock sulle righe delle zone coinvolte (UPDATE no-op, come `store.LockSeason`) prima di leggere conteggi
+   e modalità, sempre prima della riga della mappa: su PostgreSQL (READ COMMITTED) è l'unico modo per
+   impedire che un salvataggio che aggiunge postazioni e il passaggio della zona a `quantity` vadano
+   entrambi a buon fine. SQLite serializza già le transazioni in scrittura.
 
 ## Conseguenze
 

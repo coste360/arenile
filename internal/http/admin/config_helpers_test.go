@@ -24,7 +24,7 @@ func TestParseIfMatch_Scenarios(t *testing.T) {
 		{"wildcard", s("*"), 0, false},
 		{"bare", s("3"), 3, false},
 		{"strong", s(`"12"`), 12, false},
-		{"weak", s(`W/"7"`), 7, false},
+		{"weak (downgraded by a compressing proxy, ADR 0008)", s(`W/"7"`), 7, false},
 		{"garbage", s("abc"), 0, true},
 		{"zero", s(`"0"`), 0, true},
 	}
@@ -47,13 +47,27 @@ func TestParseIfMatch_Scenarios(t *testing.T) {
 	}
 }
 
-func TestRequireIfMatch_Missing(t *testing.T) {
+func TestRequireIfMatch_Scenarios(t *testing.T) {
 	if _, err := RequireIfMatch(nil); !errors.Is(err, configerr.ErrPreconditionRequired) {
-		t.Fatalf("err = %v", err)
+		t.Fatalf("missing: err = %v", err)
+	}
+	empty := ""
+	if _, err := RequireIfMatch(&empty); !errors.Is(err, configerr.ErrPreconditionRequired) {
+		t.Fatalf("empty: err = %v", err)
 	}
 	v := `"4"`
-	if got, err := RequireIfMatch(&v); err != nil || got != 4 {
-		t.Fatalf("got %d, %v", got, err)
+	if got, err := RequireIfMatch(&v); err != nil || got.Any || got.Version != 4 {
+		t.Fatalf("got %+v, %v", got, err)
+	}
+	// RFC 9110: "*" is satisfied by any current representation, so it is a
+	// precondition, not a missing header (no 428).
+	wildcard := "*"
+	if got, err := RequireIfMatch(&wildcard); err != nil || !got.Any || got.Version != 0 {
+		t.Fatalf("wildcard: got %+v, %v", got, err)
+	}
+	weak := `W/"4"`
+	if got, err := RequireIfMatch(&weak); err != nil || got.Any || got.Version != 4 {
+		t.Fatalf("weak: got %+v, %v", got, err)
 	}
 }
 
