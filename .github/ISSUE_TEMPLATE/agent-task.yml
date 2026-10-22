@@ -1,0 +1,79 @@
+name: Task per agente
+description: Task piccolo e verificabile, pronto per un agente di coding o per un contributore.
+title: "[Task]: "
+labels: ["agent-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Un task tocca al massimo **un'area di dominio** e il relativo endpoint. Motore prezzi e disponibilità si sviluppano prima come librerie pure con test; l'interfaccia arriva dopo che l'endpoint è su `main`.
+        Ogni criterio di accettazione deve essere traducibile in un test. Vedi `AGENTS.md` e la sezione 27.9 della specifica.
+  - type: textarea
+    id: obiettivo
+    attributes:
+      label: Obiettivo
+      description: Una frase sul risultato atteso.
+      placeholder: "Aggiungere l'endpoint GET /api/admin/v1/establishments che elenca gli stabilimenti dell'utente."
+    validations:
+      required: true
+  - type: textarea
+    id: contesto
+    attributes:
+      label: Contesto
+      description: Sezioni della specifica e ADR da leggere.
+      placeholder: |
+        - docs/spec/17-api.md §17.1, §17.3
+        - docs/adr/0005-openapi-spec-first.md
+    validations:
+      required: true
+  - type: textarea
+    id: perimetro
+    attributes:
+      label: Perimetro
+      description: Package e file che si prevede di toccare.
+      placeholder: |
+        - api/openapi.yaml
+        - internal/http/admin/
+        - internal/domain/establishment/
+    validations:
+      required: true
+  - type: textarea
+    id: fuori-perimetro
+    attributes:
+      label: Fuori perimetro
+      description: Cosa non va modificato.
+      placeholder: |
+        - migrazioni esistenti
+        - pkg/ext
+        - frontend
+    validations:
+      required: true
+  - type: textarea
+    id: criteri
+    attributes:
+      label: Criteri di accettazione
+      description: Elenco verificabile, ognuno traducibile in un test.
+      placeholder: |
+        - [ ] Restituisce solo gli stabilimenti dell'organizzazione dell'utente autenticato
+        - [ ] Risponde 401 senza sessione valida
+        - [ ] La risposta è valida rispetto a openapi.yaml
+    validations:
+      required: true
+  - type: checkboxes
+    id: test
+    attributes:
+      label: Test richiesti
+      options:
+        - label: Unit
+        - label: Integrazione (database, tag integration)
+        - label: Concorrenza (TestConcurrency_*, -race)
+        - label: End-to-end (Playwright)
+  - type: dropdown
+    id: verifica
+    attributes:
+      label: Comando di verifica
+      options:
+        - make check
+        - make check-full
+    validations:
+      required: true

@@ -1,0 +1,115 @@
+name: Segnalazione bug
+description: Qualcosa non funziona come previsto in Arenile.
+title: "[Bug]: "
+labels: ["bug", "da-valutare"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione. Prima di inviarla cerca tra le [issue esistenti](https://github.com/coste360/arenile/issues?q=is%3Aissue).
+        **Vulnerabilità di sicurezza:** non usare questo modulo, segui [SECURITY.md](https://github.com/coste360/arenile/blob/main/SECURITY.md).
+        **Non incollare dati personali reali** (nomi, email, telefoni dei clienti) né chiavi o segreti.
+  - type: textarea
+    id: descrizione
+    attributes:
+      label: Descrizione
+      description: Cosa succede? Descrivi il problema in modo chiaro e conciso.
+    validations:
+      required: true
+  - type: textarea
+    id: passi
+    attributes:
+      label: Passi per riprodurre
+      description: Elenca i passi minimi per riprodurre il problema.
+      placeholder: |
+        1. Apri il pannello su Mappa
+        2. Seleziona il giorno 2027-08-14
+        3. Trascina la prenotazione su A12
+        4. Compare l'errore ...
+    validations:
+      required: true
+  - type: textarea
+    id: atteso
+    attributes:
+      label: Comportamento atteso
+    validations:
+      required: true
+  - type: textarea
+    id: osservato
+    attributes:
+      label: Comportamento osservato
+      description: Includi messaggi di errore, screenshot o il corpo della risposta `problem+json`.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Mappa e inventario
+        - Prenotazioni dal pannello
+        - Pagina pubblica / widget
+        - Prezzi e listini
+        - Policy
+        - Pagamenti
+        - Cassa e modulo fiscale
+        - Abbonamenti stagionali
+        - Clienti e GDPR
+        - Notifiche
+        - API e webhook
+        - Installazione, CLI, aggiornamento
+        - Altro
+    validations:
+      required: true
+  - type: input
+    id: versione
+    attributes:
+      label: Versione
+      description: Output di `arenile version` o commit.
+      placeholder: "v0.1.0 / main@abc1234"
+    validations:
+      required: true
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      options:
+        - SQLite (default)
+        - PostgreSQL
+        - Non so
+    validations:
+      required: true
+  - type: dropdown
+    id: installazione
+    attributes:
+      label: Modalità di installazione
+      options:
+        - Docker / docker compose
+        - Binario
+        - Coolify
+        - CapRover
+        - Sorgenti (make dev)
+        - Altro
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser e dispositivo (se pertinente)
+      placeholder: "Safari 18 su iPhone, Chrome 130 su tablet Android"
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Log rilevanti con `ARENILE_LOG_LEVEL=debug`. Verifica che non contengano dati personali o segreti.
+      render: text
+  - type: checkboxes
+    id: verifiche
+    attributes:
+      label: Verifiche
+      options:
+        - label: Ho cercato tra le issue esistenti e non ho trovato duplicati.
+          required: true
+        - label: La segnalazione non contiene dati personali reali né segreti.
+          required: true

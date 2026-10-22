@@ -1,0 +1,67 @@
+name: Richiesta di funzionalità
+description: Proponi una nuova funzionalità o un miglioramento.
+title: "[Funzionalità]: "
+labels: ["enhancement", "da-valutare"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la proposta. Controlla prima la [roadmap](https://github.com/coste360/arenile#roadmap) e la [specifica](https://github.com/coste360/arenile/blob/main/docs/spec/README.md): la funzionalità potrebbe essere già prevista.
+        Ricorda il principio del progetto: **configurazione come dati**. Le differenze tra lidi si esprimono con risorse, pack, regole di prezzo e policy, non con casi speciali nel codice.
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema
+      description: Quale problema concreto incontri nella gestione dello stabilimento? Descrivi la situazione reale.
+      placeholder: "Ad agosto molti clienti chiedono il cambio di ombrellone a metà settimana e oggi devo..."
+    validations:
+      required: true
+  - type: textarea
+    id: soluzione
+    attributes:
+      label: Soluzione proposta
+      description: Come immagini che funzioni? Chi la usa (titolare, cassiere, personale di spiaggia, cliente online)?
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternative considerate
+      description: Si può già ottenere con regole di prezzo, policy o configurazione? Altri strumenti come lo risolvono?
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Mappa e inventario
+        - Prenotazioni dal pannello
+        - Pagina pubblica / widget
+        - Prezzi e listini
+        - Policy
+        - Pagamenti
+        - Cassa e modulo fiscale
+        - Abbonamenti stagionali
+        - Clienti e GDPR
+        - Report
+        - Notifiche
+        - API e webhook
+        - Installazione e operatività
+        - Altro
+    validations:
+      required: true
+  - type: dropdown
+    id: ruolo
+    attributes:
+      label: Chi sei
+      options:
+        - Gestore o personale di uno stabilimento
+        - Sviluppatore / integratore
+        - Fornitore di hosting o assistenza
+        - Altro
+  - type: checkboxes
+    id: contributo
+    attributes:
+      label: Contributo
+      options:
+        - label: Sono disponibile a contribuire all'implementazione.

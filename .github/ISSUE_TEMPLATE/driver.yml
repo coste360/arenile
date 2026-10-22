@@ -1,0 +1,81 @@
+name: Nuovo driver (pagamento, fiscale, notifiche)
+description: Proponi un nuovo driver tramite i punti di estensione di pkg/ext.
+title: "[Driver]: "
+labels: ["driver", "extension", "da-valutare"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        I driver si aggiungono tramite le interfacce pubbliche in `pkg/ext`, senza modificare il core.
+        Apri questa issue **prima** di iniziare a scrivere codice, per concordare l'interfaccia e capire se il driver va nel core o in un modulo esterno.
+        Non incollare chiavi, credenziali o certificati.
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: Tipo di driver
+      options:
+        - Pagamento (PaymentProvider)
+        - Fiscale / registratore telematico (FiscalDriver)
+        - Notifiche (Notifier)
+        - Autenticazione / SSO (AuthProvider)
+        - Dati della concessione (ConcessionDataProvider)
+        - Protezione anti-bot (BotProtection)
+        - Altro
+    validations:
+      required: true
+  - type: input
+    id: servizio
+    attributes:
+      label: Servizio, dispositivo o protocollo
+      placeholder: "Satispay Business / famiglia di registratori XYZ / WhatsApp Business API"
+    validations:
+      required: true
+  - type: textarea
+    id: motivazione
+    attributes:
+      label: Motivazione
+      description: Quanti stabilimenti lo usano? Perché è utile alla community?
+    validations:
+      required: true
+  - type: textarea
+    id: documentazione
+    attributes:
+      label: Documentazione tecnica
+      description: Link alla documentazione ufficiale dell'API o del protocollo, SDK disponibili, ambiente di test (sandbox).
+    validations:
+      required: true
+  - type: textarea
+    id: capacita
+    attributes:
+      label: Capacità supportate
+      description: |
+        Pagamenti: checkout in redirect o incorporato, webhook firmati, rimborsi totali/parziali, idempotenza, riconciliazione.
+        Fiscale: emissione, annullo, stato del dispositivo, connessione (rete locale, seriale, cloud).
+        Notifiche: modelli, allegati, conferme di consegna.
+    validations:
+      required: true
+  - type: textarea
+    id: test
+    attributes:
+      label: Strategia di test
+      description: Come si testa senza rete e senza credenziali reali (fixture firmate, simulatore, provider finto)? I test unitari non devono richiedere rete.
+    validations:
+      required: true
+  - type: textarea
+    id: dipendenze
+    attributes:
+      label: Nuove dipendenze
+      description: Moduli Go o servizi esterni necessari, con licenza e motivazione.
+  - type: textarea
+    id: normativa
+    attributes:
+      label: Aspetti normativi
+      description: Per driver fiscali e di pagamento indica certificazioni, omologazioni o vincoli normativi noti. La conformità della configurazione resta responsabilità del gestore.
+  - type: checkboxes
+    id: impegni
+    attributes:
+      label: Impegni
+      options:
+        - label: Ho letto CONTRIBUTING.md e la sezione 18 della specifica (punti di estensione).
+          required: true
+        - label: Sono disponibile a implementare e mantenere il driver.
