@@ -67,9 +67,9 @@ RUN mkdir -p /out/data && chown 65532:65532 /out/data && chmod 0750 /out/data
 FROM ${RUNTIME_IMAGE}
 ARG VERSION=dev
 LABEL org.opencontainers.image.title="Arenile" \
-      org.opencontainers.image.description="Gestionale open source per stabilimenti balneari: prenotazioni online senza commissioni, mappa ombrelloni, cassa." \
+      org.opencontainers.image.description="Gestionale gratuito per stabilimenti balneari (codice sorgente disponibile, BSL 1.1): prenotazioni online senza commissioni, mappa ombrelloni, cassa." \
       org.opencontainers.image.vendor="Coste360 SRL" \
-      org.opencontainers.image.licenses="AGPL-3.0-only" \
+      org.opencontainers.image.licenses="BUSL-1.1" \
       org.opencontainers.image.source="https://github.com/coste360/arenile" \
       org.opencontainers.image.version="${VERSION}"
 COPY --from=build /out/arenile /arenile

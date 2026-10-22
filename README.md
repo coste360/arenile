@@ -2,10 +2,10 @@
 
 # Arenile
 
-**Il gestionale balneare open source e gratuito per stabilimenti balneari e lidi.**
+**Il gestionale balneare gratuito per stabilimenti balneari e lidi, con codice sorgente disponibile.**
 Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senza commissioni, listini prezzi, cassa e abbonamenti stagionali: tutto in un unico binario self-hosted.
 
-[![Licenza: AGPL-3.0](https://img.shields.io/badge/licenza-AGPL--3.0-blue.svg)](LICENSE)
+[![Licenza: BSL 1.1](https://img.shields.io/badge/licenza-BSL%201.1-blue.svg)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.27-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![React](https://img.shields.io/badge/React-TypeScript-61DAFB?logo=react&logoColor=black)](https://react.dev)
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fcoste360%2Farenile-2496ED?logo=docker&logoColor=white)](https://github.com/coste360/arenile/pkgs/container/arenile)
@@ -13,7 +13,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
 [![Stato: M0 in sviluppo](https://img.shields.io/badge/stato-M0%20fondamenta-orange.svg)](#roadmap)
 
-[Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-open-source) ·
+[Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-a-codice-sorgente-disponibile) ·
 [Funzionalità](#funzionalità) ·
 [Installazione](#installazione-in-5-minuti) ·
 [Widget](#incorporare-il-widget-nel-tuo-sito) ·
@@ -30,7 +30,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 > **Stato del progetto: milestone M0 (fondamenta), in sviluppo attivo.**
 > Arenile non è ancora pronto per la produzione. Le funzionalità descritte in questa pagina sono la roadmap della [specifica tecnica](docs/spec/README.md): la [tabella di stato](#stato-delle-funzionalità) indica con precisione cosa è disponibile, cosa è in sviluppo e cosa è pianificato. Se gestisci un lido e vuoi provarlo per la stagione, segui il repository (*Watch → Releases*) per essere avvisato al primo rilascio.
 
-**Arenile** è un **software gratuito e open source per la gestione di stabilimenti balneari**, lidi, spiagge attrezzate e piscine. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
+**Arenile** è un **software gratuito per la gestione di stabilimenti balneari, con codice sorgente disponibile**, lidi, spiagge attrezzate e piscine. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
 
 A regime un solo programma comprenderà il **pannello del gestore** (mappa operativa della spiaggia, prenotazioni, cassa, clienti, abbonamenti, report) e la **pagina di prenotazione online di ombrelloni e lettini**, incorporabile in qualsiasi sito web con un `iframe` o con uno script di una riga. Cosa è già disponibile oggi è indicato nella [tabella di stato](#stato-delle-funzionalità).
 
@@ -38,13 +38,13 @@ A regime un solo programma comprenderà il **pannello del gestore** (mappa opera
 
 ---
 
-## Gestionale per stabilimenti balneari gratuito e open source
+## Gestionale per stabilimenti balneari gratuito e a codice sorgente disponibile
 
 Perché scegliere Arenile come software di gestione dello stabilimento balneare, al posto di un gestionale lido a canone o di un portale che trattiene una percentuale su ogni prenotazione:
 
 | | |
 |---|---|
-| **Gratuito, davvero** | Licenza AGPL-3.0: nessun canone, nessuna versione "Pro" a pagamento, nessun limite di postazioni, prenotazioni o utenti. |
+| **Gratuito, davvero** | Gratuito per gli stabilimenti che lo usano per sé: nessun canone, nessuna versione "Pro" a pagamento, nessun limite di postazioni, prenotazioni o utenti. Codice sorgente disponibile con licenza BSL 1.1, che diventa AGPL-3.0 dopo 3 anni. |
 | **Zero commissioni sulle prenotazioni** | A differenza dei portali di prenotazione a commissione, Arenile non trattiene nulla. I pagamenti online passano dal **tuo account Stripe**: paghi solo le commissioni del circuito di pagamento, nessuna percentuale alla piattaforma. |
 | **I dati sono del gestore** | Clienti, prenotazioni e incassi stanno nel tuo database. Esportazione completa sempre disponibile, backup con un comando. |
 | **Installabile in 5 minuti** | Un binario, un'immagine Docker, un volume. Gira su un VPS da pochi euro al mese, su un mini PC o su un Raspberry Pi. |
@@ -482,6 +482,8 @@ I contributi sono benvenuti: codice, traduzioni, driver di pagamento o fiscali, 
 3. Usa Conventional Commits ed esegui `make check` (e `make check-full` per modifiche a disponibilità, prezzi, pagamenti, migrazioni o flusso pubblico).
 4. Alla prima pull request un bot ti chiederà di firmare il [CLA](CLA.md).
 
+I contributi vengono distribuiti con la stessa licenza del progetto (BSL 1.1, poi AGPL-3.0). Contribuire non dà diritto a rivendere Arenile o a offrirlo come servizio a terzi: per questo serve una licenza commerciale di Coste360 SRL.
+
 ---
 
 ## Sicurezza
@@ -500,7 +502,17 @@ La conformità normativa della configurazione (aliquote IVA, emissione dei docum
 
 ## Licenza e marchio
 
-Arenile è software libero distribuito con licenza **[GNU Affero General Public License v3.0](LICENSE)**. Puoi usarlo, studiarlo, modificarlo e ridistribuirlo; se offri una versione modificata come servizio in rete, devi rendere disponibile il relativo codice sorgente agli utenti.
+Arenile è **source available** (codice sorgente disponibile) con licenza **[Business Source License 1.1](LICENSE)** (BSL 1.1, identificativo SPDX `BUSL-1.1`), lo stesso modello adottato da progetti come Sentry, CockroachDB e Terraform. In pratica:
+
+- **Gratuito per gli stabilimenti.** Puoi installare e usare Arenile in produzione, senza pagare nulla, per gestire gli stabilimenti balneari, i lidi, i beach club e le piscine che possiedi o gestisci direttamente, anche pubblicando la pagina di prenotazione e il widget per i tuoi clienti.
+- **Libero per provarlo e migliorarlo.** Puoi leggere il codice, copiarlo, modificarlo, testarlo e contribuire al progetto.
+- **Non rivendibile.** Non puoi usare Arenile, o una sua versione modificata, per offrire servizi a terzi a pagamento o con altro vantaggio commerciale: hosting, servizio gestito o SaaS, installazione, configurazione, personalizzazione, manutenzione, assistenza, rivendita, né includerlo in un prodotto che fa concorrenza a Coste360. Per questi usi serve una **licenza commerciale** di Coste360 SRL: scrivi a **info@coste360.it**.
+- **Diventa AGPL-3.0 dopo 3 anni.** Ogni versione di Arenile passa automaticamente alla licenza open source **[GNU AGPL-3.0 o successiva](https://www.gnu.org/licenses/agpl-3.0.html)** tre anni dopo il suo primo rilascio pubblico (la *Change Date* della BSL).
+
+Il testo vincolante è quello del file [LICENSE](LICENSE); questa sintesi non lo sostituisce. Le scelte e le alternative valutate sono spiegate in [docs/adr/0007-licenza-bsl.md](docs/adr/0007-licenza-bsl.md).
+
+> [!NOTE]
+> Testo della licenza e della clausola d'uso da validare con un legale prima dell'apertura del repository.
 
 Il nome **Arenile** e il relativo logo sono marchi di Coste360 SRL: i fork devono usare un nome e un logo diversi. Vedi [TRADEMARK.md](TRADEMARK.md).
 
@@ -511,13 +523,25 @@ Il nome **Arenile** e il relativo logo sono marchi di Coste360 SRL: i fork devon
 <details>
 <summary><strong>Esiste un gestionale lido gratuito?</strong></summary>
 
-Sì, Arenile è un gestionale lido gratuito e open source: un software per la gestione di stabilimenti balneari che installi sul tuo server senza canoni né licenze a pagamento. Comprende (o comprenderà, secondo la [roadmap](#roadmap)) mappa ombrelloni, prenotazione ombrelloni online, listini, cassa e abbonamenti stagionali.
+Sì, Arenile è un gestionale lido gratuito con codice sorgente disponibile: un software per la gestione di stabilimenti balneari che installi sul tuo server senza canoni né licenze a pagamento. Comprende (o comprenderà, secondo la [roadmap](#roadmap)) mappa ombrelloni, prenotazione ombrelloni online, listini, cassa e abbonamenti stagionali.
 </details>
 
 <details>
 <summary><strong>Arenile è davvero gratuito?</strong></summary>
 
-Sì. Arenile è un gestionale per stabilimenti balneari gratuito e open source, con licenza AGPL-3.0. Non ci sono canoni, versioni a pagamento o limiti sul numero di ombrelloni, prenotazioni o utenti. L'unico costo è l'hosting (un VPS da pochi euro al mese o un computer che hai già).
+Sì, per chi gestisce il proprio stabilimento. Arenile è un gestionale per stabilimenti balneari gratuito, con codice sorgente disponibile e licenza BSL 1.1: se lo usi per i lidi che possiedi o gestisci direttamente non ci sono canoni, versioni a pagamento o limiti sul numero di ombrelloni, prenotazioni o utenti. L'unico costo è l'hosting (un VPS da pochi euro al mese o un computer che hai già). Una licenza commerciale serve solo a chi vuole offrire Arenile come servizio a terzi.
+</details>
+
+<details>
+<summary><strong>Sono un'agenzia o un tecnico: posso installarlo per i miei clienti?</strong></summary>
+
+Non senza una licenza commerciale. La licenza gratuita copre solo gli stabilimenti che possiedi o gestisci direttamente. Installare, configurare, personalizzare, ospitare (hosting o SaaS), mantenere o assistere Arenile per conto di altri stabilimenti a pagamento, o rivenderlo, richiede una licenza commerciale di Coste360 SRL: scrivi a **info@coste360.it**. Se invece sei un gestore, puoi far installare Arenile dai tuoi dipendenti o installarlo tu stesso su un server che hai noleggiato.
+</details>
+
+<details>
+<summary><strong>Perché non è open source in senso stretto?</strong></summary>
+
+Perché vogliamo che Arenile resti gratuito per i gestori e che nessuno possa prenderlo e rivenderlo come servizio a pagamento agli stessi stabilimenti a cui lo diamo gratis. La Business Source License 1.1 protegge questo uso gratuito dai rivenditori, ma lascia il codice leggibile, modificabile e aperto ai contributi. Ogni versione diventa poi open source a tutti gli effetti con licenza **AGPL-3.0** tre anni dopo il suo rilascio.
 </details>
 
 <details>
@@ -580,4 +604,4 @@ Se Arenile ti è utile, lascia una stella al repository e parlane con altri gest
 
 ## In English
 
-**Arenile** is a free, open source (AGPL-3.0), self-hosted management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. The project is currently at milestone M0 (foundations) and under active development by [Coste360 SRL](https://coste360.it); see the [roadmap](#roadmap) for status. Contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+**Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. The project is currently at milestone M0 (foundations) and under active development by [Coste360 SRL](https://coste360.it); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release (the license text and use clause are still pending legal review). Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md).

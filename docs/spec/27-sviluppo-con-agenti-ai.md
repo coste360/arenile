@@ -81,7 +81,7 @@ File condiviso tra tutti gli strumenti, scritto in inglese per la community. Dev
 ```markdown
 # AGENTS.md
 
-Arenile is an open source management system for beach establishments
+Arenile is a source-available (BSL 1.1) management system for beach establishments
 (map of umbrellas, bookings, pricing, payments, cash desk).
 Go backend + two React SPAs, shipped as a single binary.
 

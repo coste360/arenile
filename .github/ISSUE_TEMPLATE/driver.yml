@@ -9,6 +9,7 @@ body:
         I driver si aggiungono tramite le interfacce pubbliche in `pkg/ext`, senza modificare il core.
         Apri questa issue **prima** di iniziare a scrivere codice, per concordare l'interfaccia e capire se il driver va nel core o in un modulo esterno.
         Non incollare chiavi, credenziali o certificati.
+        Arenile è distribuito con la Business Source License 1.1 (SPDX `BUSL-1.1`, diventa AGPL-3.0 tre anni dopo il rilascio di ogni versione): i driver inclusi nel core sono distribuiti con la stessa licenza e richiedono la firma del [CLA](https://github.com/coste360/arenile/blob/main/CLA.md). Offrire il driver o Arenile a terzi come servizio a pagamento richiede una licenza commerciale di Coste360 SRL.
   - type: dropdown
     id: tipo
     attributes:
@@ -65,7 +66,7 @@ body:
     id: dipendenze
     attributes:
       label: Nuove dipendenze
-      description: Moduli Go o servizi esterni necessari, con licenza e motivazione.
+      description: Moduli Go o servizi esterni necessari, con licenza (SPDX) e motivazione. Le dipendenze devono avere una licenza compatibile sia con la BSL 1.1 sia con la AGPL-3.0 (ad esempio MIT, BSD, Apache-2.0).
   - type: textarea
     id: normativa
     attributes:
@@ -77,5 +78,7 @@ body:
       label: Impegni
       options:
         - label: Ho letto CONTRIBUTING.md e la sezione 18 della specifica (punti di estensione).
+          required: true
+        - label: Ho letto il CLA e accetto che il driver, se incluso nel core, sia distribuito con la licenza del progetto (BSL 1.1, poi AGPL-3.0).
           required: true
         - label: Sono disponibile a implementare e mantenere il driver.

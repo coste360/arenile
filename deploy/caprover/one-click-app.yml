@@ -59,7 +59,7 @@ caproverOneClickApp:
       description: Ad esempio "Lido Esempio <prenotazioni@mio-lido.it>".
   instructions:
     start: >-
-      Arenile è il gestionale open source per stabilimenti balneari: mappa di ombrelloni e lettini,
+      Arenile è il gestionale gratuito per stabilimenti balneari, con codice sorgente disponibile (BSL 1.1): mappa di ombrelloni e lettini,
       listini stagionali, prenotazioni online senza commissioni con widget per il sito del lido e cassa.
       Questa installazione usa SQLite in un volume persistente.
     end: >-
@@ -69,5 +69,5 @@ caproverOneClickApp:
       poi la variabile ARENILE_ADMIN_PASSWORD dalla scheda dell'app.
   displayName: Arenile
   isOfficial: false
-  description: Gestionale open source per stabilimenti balneari con prenotazioni online senza commissioni.
+  description: Gestionale gratuito per stabilimenti balneari (BSL 1.1) con prenotazioni online senza commissioni.
   documentation: https://github.com/coste360/arenile

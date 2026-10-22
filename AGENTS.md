@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Arenile is an open source management system for beach establishments
+Arenile is a source-available (BSL 1.1) management system for beach establishments
 (stabilimenti balneari): map of umbrellas, bookings, pricing, payments, cash desk.
 Go backend + two React SPAs, shipped as a single binary. Maintained by Coste360 SRL.
 The specification (Italian) lives in `docs/spec/`, one file per section; it is authoritative.
@@ -56,6 +56,10 @@ The specification (Italian) lives in `docs/spec/`, one file per section; it is a
 - User-facing strings go through i18n keys; Italian is the source language.
 - Never log emails, phone numbers, tokens or secrets in clear.
 - Code comments and identifiers in English.
+- License: the project is BSL 1.1 (SPDX `BUSL-1.1`, converts to AGPL-3.0-or-later three years
+  after each release; see `docs/adr/0007-licenza-bsl.md`). Never call it "open source" in new text
+  (use "source available"); never edit `LICENSE` or `CLA.md`; new dependencies must have a license
+  compatible with both BSL 1.1 and AGPL-3.0 (e.g. MIT, BSD, Apache-2.0).
 
 ## Tests
 - Unit tests: `go test ./...` must not need Docker or network.

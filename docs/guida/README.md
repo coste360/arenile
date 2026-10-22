@@ -1,6 +1,6 @@
 # Guida per gestori di stabilimenti balneari
 
-Questa guida è pensata per chi gestisce un lido, una spiaggia attrezzata o uno stabilimento balneare e vuole installare e usare **Arenile**, il gestionale open source e gratuito per la gestione della spiaggia, delle prenotazioni di ombrelloni e lettini e della cassa.
+Questa guida è pensata per chi gestisce un lido, una spiaggia attrezzata o uno stabilimento balneare e vuole installare e usare **Arenile**, il gestionale gratuito e a codice sorgente disponibile per la gestione della spiaggia, delle prenotazioni di ombrelloni e lettini e della cassa.
 
 > [!IMPORTANT]
 > Arenile è in sviluppo attivo (milestone M0, fondamenta) e non è ancora pronto per la produzione. Queste guide descrivono il funzionamento previsto e verranno aggiornate a ogni rilascio. Lo stato delle funzionalità è nella [tabella del README](../../README.md#stato-delle-funzionalità).

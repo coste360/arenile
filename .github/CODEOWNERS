@@ -1,0 +1,19 @@
+# CODEOWNERS — revisori obbligatori (https://docs.github.com/articles/about-code-owners).
+# L'ultima regola che corrisponde a un file prevale. Tenere le voci esplicite sotto il default.
+
+# Default: tutto il repository.
+*                                   @massimo-me
+
+# Licenza, CLA e governance (ADR 0007).
+/LICENSE                            @massimo-me
+/CLA.md                             @massimo-me
+
+# Aree critiche del dominio (docs/invariants.md).
+/internal/domain/availability/      @massimo-me
+/internal/domain/pricing/           @massimo-me
+/internal/domain/booking/           @massimo-me
+/internal/migrations/               @massimo-me
+
+# Superfici pubbliche: API di estensione e contratto OpenAPI.
+/pkg/ext/                           @massimo-me
+/api/openapi.yaml                   @massimo-me

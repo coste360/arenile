@@ -54,7 +54,7 @@ arenile/
 ├── AGENTS.md                 # istruzioni per gli agenti di coding
 ├── CLAUDE.md                 # importa AGENTS.md
 ├── Makefile                  # unica interfaccia per build, test e verifiche
-├── LICENSE                   # AGPL-3.0
+├── LICENSE                   # BSL 1.1 (BUSL-1.1), diventa AGPL-3.0 dopo 3 anni
 ├── CLA.md
 ├── CHANGELOG.md
 └── CONTRIBUTING.md

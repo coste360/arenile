@@ -1,19 +1,21 @@
 # Contributor License Agreement (CLA) individuale
 
 > [!WARNING]
-> **Testo da far validare a un legale.** Questa è una bozza predisposta dal team di progetto e non è ancora stata revisionata da un avvocato. Fino alla validazione potrebbe essere modificata; i contributori che l'hanno già firmata verranno informati di ogni modifica sostanziale.
+> **Testo della licenza e della clausola d'uso da validare con un legale prima dell'apertura del repository.** Questa è una bozza predisposta dal team di progetto e non è ancora stata revisionata da un avvocato. Fino alla validazione potrebbe essere modificata; i contributori che l'hanno già firmata verranno informati di ogni modifica sostanziale.
 >
-> **Draft — to be reviewed by a lawyer.** This text has not yet been reviewed by legal counsel and may change.
+> **Draft — the license text and the use clause must be reviewed by a lawyer before the repository is made public.** This text has not yet been reviewed by legal counsel and may change.
 
-Versione 1.0 (bozza) · Progetto: **Arenile** (https://github.com/coste360/arenile) · Titolare: **Coste360 SRL** ("Coste360")
+Versione 1.1 (bozza) · Progetto: **Arenile** (https://github.com/coste360/arenile) · Titolare: **Coste360 SRL** ("Coste360")
 
 Il testo italiano e quello inglese hanno lo stesso contenuto. In caso di divergenza prevale il testo italiano.
+
+Il Progetto è distribuito con la [Business Source License 1.1](LICENSE) (BSL 1.1), con licenza di conversione (Change License) GNU AGPL-3.0 o successiva tre anni dopo il rilascio di ciascuna versione. / The Project is distributed under the [Business Source License 1.1](LICENSE) (BSL 1.1), with GNU AGPL-3.0 or later as Change License three years after the release of each version.
 
 ---
 
 ## Italiano
 
-Grazie per il tuo interesse a contribuire ad Arenile. Questo accordo chiarisce i diritti di proprietà intellettuale concessi con i tuoi contributi. Serve a proteggere te, Coste360 e gli utenti del progetto, e consente a Coste360 di gestire la licenza del progetto nel tempo. **Conservi la titolarità dei diritti d'autore sui tuoi contributi**: questo accordo concede una licenza, non trasferisce la proprietà.
+Grazie per il tuo interesse a contribuire ad Arenile. Questo accordo chiarisce i diritti di proprietà intellettuale concessi con i tuoi contributi. Serve a proteggere te, Coste360 e gli utenti del progetto, e consente a Coste360 di distribuire il progetto con la BSL 1.1, con licenze commerciali e, alla Change Date, con la AGPL-3.0, gestendone la licenza nel tempo. **Conservi la titolarità dei diritti d'autore sui tuoi contributi**: questo accordo concede una licenza, non trasferisce la proprietà.
 
 ### 1. Definizioni
 
@@ -25,9 +27,18 @@ Grazie per il tuo interesse a contribuire ad Arenile. Questo accordo chiarisce i
 
 Tu concedi a Coste360 e ai destinatari del software distribuito da Coste360 una licenza perpetua, mondiale, non esclusiva, gratuita, esente da royalty e irrevocabile per riprodurre, preparare opere derivate, mostrare pubblicamente, eseguire pubblicamente, concedere in sublicenza e distribuire i Tuoi Contributi e le opere derivate.
 
-### 3. Diritto di modificare la licenza (relicensing)
+### 3. Licenze con cui Coste360 può distribuire i Contributi (relicensing)
 
-Tu riconosci e accetti espressamente che Coste360 possa distribuire i Tuoi Contributi, da soli o come parte del Progetto, **con licenze diverse da quella in uso al momento del Contributo**, incluse licenze open source differenti e licenze commerciali o proprietarie. Coste360 si impegna, per le versioni del Progetto che pubblica come software libero, a rendere disponibili i Tuoi Contributi anche con una licenza approvata dalla Open Source Initiative.
+Tu riconosci e accetti espressamente che Coste360 possa distribuire, concedere in licenza e in sublicenza i Tuoi Contributi, da soli o come parte del Progetto, a titolo gratuito o oneroso, con una o più delle seguenti licenze:
+
+1. la **Business Source License 1.1**, con i parametri (Additional Use Grant, Change Date, Change License) scelti da Coste360 per ciascuna versione del Progetto;
+2. **licenze commerciali o proprietarie** concesse da Coste360 a terzi, ad esempio ad agenzie, fornitori di servizi o rivenditori;
+3. la **GNU Affero General Public License v3.0 o successiva**, come Change License della BSL 1.1 o in qualsiasi altro momento;
+4. qualsiasi **altra licenza**, anche diversa da quella in uso al momento del Contributo, inclusa una licenza approvata dalla Open Source Initiative.
+
+Coste360 si impegna a rendere disponibile ogni versione del Progetto che include i Tuoi Contributi con licenza AGPL-3.0 o successiva (o con un'altra licenza approvata dalla Open Source Initiative) al più tardi alla Change Date prevista dalla licenza con cui quella versione è stata pubblicata.
+
+Contribuire al Progetto non Ti concede alcun diritto ulteriore rispetto a quelli previsti dalla licenza del Progetto: in particolare non Ti autorizza a offrire il Progetto come servizio a terzi a pagamento né a rivenderlo senza una licenza commerciale di Coste360.
 
 ### 4. Licenza sui brevetti
 
@@ -72,7 +83,7 @@ Per contributi per conto di un'azienda scrivi a **legal@coste360.it** per il CLA
 
 ## English
 
-Thank you for your interest in contributing to Arenile. This agreement clarifies the intellectual property rights granted with your contributions. It protects you, Coste360 and the project's users, and allows Coste360 to manage the project's licensing over time. **You keep the copyright in your contributions**: this agreement grants a license, it does not transfer ownership.
+Thank you for your interest in contributing to Arenile. This agreement clarifies the intellectual property rights granted with your contributions. It protects you, Coste360 and the project's users, and allows Coste360 to distribute the project under BSL 1.1, under commercial licenses and, at the Change Date, under AGPL-3.0, managing its licensing over time. **You keep the copyright in your contributions**: this agreement grants a license, it does not transfer ownership.
 
 ### 1. Definitions
 
@@ -84,9 +95,18 @@ Thank you for your interest in contributing to Arenile. This agreement clarifies
 
 You grant Coste360 and recipients of software distributed by Coste360 a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable license to reproduce, prepare derivative works of, publicly display, publicly perform, sublicense and distribute Your Contributions and such derivative works.
 
-### 3. Right to relicense
+### 3. Licenses under which Coste360 may distribute Contributions (relicensing)
 
-You expressly acknowledge and agree that Coste360 may distribute Your Contributions, alone or as part of the Project, **under licenses other than the one in use at the time of the Contribution**, including different open source licenses and commercial or proprietary licenses. For versions of the Project that it publishes as free software, Coste360 undertakes to also make Your Contributions available under a license approved by the Open Source Initiative.
+You expressly acknowledge and agree that Coste360 may distribute, license and sublicense Your Contributions, alone or as part of the Project, free of charge or for a fee, under one or more of the following licenses:
+
+1. the **Business Source License 1.1**, with the parameters (Additional Use Grant, Change Date, Change License) chosen by Coste360 for each version of the Project;
+2. **commercial or proprietary licenses** granted by Coste360 to third parties, for example agencies, service providers or resellers;
+3. the **GNU Affero General Public License v3.0 or later**, as the BSL 1.1 Change License or at any other time;
+4. any **other license**, including one different from the license in use at the time of the Contribution and including a license approved by the Open Source Initiative.
+
+Coste360 undertakes to make every version of the Project that includes Your Contributions available under AGPL-3.0 or later (or another license approved by the Open Source Initiative) no later than the Change Date set by the license under which that version was published.
+
+Contributing to the Project does not grant You any rights beyond those granted by the Project's license: in particular, it does not authorise You to offer the Project to third parties as a paid service or to resell it without a commercial license from Coste360.
 
 ### 4. Patent license
 

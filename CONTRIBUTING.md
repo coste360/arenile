@@ -1,6 +1,6 @@
 # Contribuire ad Arenile
 
-Grazie per voler contribuire ad Arenile, il gestionale open source per stabilimenti balneari. Sono benvenuti codice, traduzioni, documentazione, driver di pagamento, fiscali e di notifica, e anche semplici segnalazioni dal campo da parte di chi gestisce un lido.
+Grazie per voler contribuire ad Arenile, il gestionale gratuito per stabilimenti balneari con codice sorgente disponibile. Sono benvenuti codice, traduzioni, documentazione, driver di pagamento, fiscali e di notifica, e anche semplici segnalazioni dal campo da parte di chi gestisce un lido.
 
 Prima di iniziare leggi il [Codice di condotta](CODE_OF_CONDUCT.md). Partecipando al progetto accetti di rispettarlo.
 
@@ -12,7 +12,7 @@ Prima di iniziare leggi il [Codice di condotta](CODE_OF_CONDUCT.md). Partecipand
 - [Flusso di lavoro](#flusso-di-lavoro)
 - [Regole tecniche](#regole-tecniche)
 - [Commit e pull request](#commit-e-pull-request)
-- [CLA](#cla)
+- [Licenza e CLA](#licenza-e-cla)
 - [Agenti AI](#agenti-ai)
 
 ## Come posso aiutare
@@ -120,9 +120,15 @@ Pull request:
 - la CI deve essere verde; i maintainer possono chiedere modifiche prima del merge;
 - il merge avviene con squash: il titolo della pull request deve essere un Conventional Commit valido.
 
-## CLA
+## Licenza e CLA
 
-Per accettare i contributi chiediamo la firma del [Contributor License Agreement](CLA.md). **Alla prima pull request un bot pubblica un commento** con le istruzioni: la firma richiede un solo commento e vale per tutti i contributi successivi. Il CLA consente a Coste360 SRL, titolare del progetto, di gestire la licenza nel tempo; tu mantieni la titolarità del diritto d'autore.
+Arenile è distribuito con la [Business Source License 1.1](LICENSE) (BSL 1.1, SPDX `BUSL-1.1`): è gratuito per chi lo usa per gestire i propri stabilimenti balneari, non può essere offerto a terzi come servizio a pagamento (hosting, SaaS, installazione, personalizzazione, assistenza, rivendita) senza una licenza commerciale di Coste360 SRL, e ogni versione diventa AGPL-3.0 tre anni dopo il suo rilascio. I tuoi contributi vengono distribuiti con la stessa licenza. Dettagli nella sezione "Licenza e marchio" del [README](README.md#licenza-e-marchio) e nell'[ADR 0007](docs/adr/0007-licenza-bsl.md).
+
+**Contributi benvenuti**: correzioni di bug, nuove funzionalità concordate in una issue, driver di pagamento, fiscali e di notifica, traduzioni, documentazione, test e segnalazioni dal campo. **Contribuire non concede diritti di rivendita**: avere una pull request accettata non autorizza a offrire Arenile come servizio a terzi né a rivenderlo; per questi usi serve comunque una licenza commerciale (scrivi a **info@coste360.it**).
+
+Per accettare i contributi chiediamo la firma del [Contributor License Agreement](CLA.md). **Alla prima pull request il bot CLA Assistant pubblica un commento** con le istruzioni: la firma richiede un solo commento e vale per tutti i contributi successivi. Il CLA consente a Coste360 SRL, titolare del progetto, di distribuire i contributi con la BSL 1.1, con licenze commerciali e con la AGPL-3.0 alla Change Date, e di modificare la licenza nel tempo; tu mantieni la titolarità del diritto d'autore.
+
+> Testo della licenza e della clausola d'uso da validare con un legale prima dell'apertura del repository.
 
 ## Agenti AI
 

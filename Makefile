@@ -1,4 +1,4 @@
-# Arenile — gestionale open source per stabilimenti balneari (Coste360 SRL).
+# Arenile — gestionale gratuito per stabilimenti balneari, codice sorgente disponibile (BSL 1.1, SPDX BUSL-1.1), Coste360 SRL.
 #
 # This Makefile is the ONLY supported interface for building, testing and
 # checking the project (spec 27.2). Humans, CI and coding agents all use the

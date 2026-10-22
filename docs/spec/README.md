@@ -2,7 +2,7 @@
 
 > Nome provvisorio: **Arenile**. Il nome è usato in tutto il documento (modulo Go, binario, immagine Docker, prefissi). Va sostituito globalmente quando il nome definitivo sarà scelto.
 
-Gestionale open source per stabilimenti balneari, sviluppato da Coste360 SRL. Il progetto è completo e installabile in autonomia da chiunque, senza dipendenze da servizi esterni.
+Gestionale gratuito per stabilimenti balneari, a codice sorgente disponibile (BSL 1.1, diventa AGPL-3.0 dopo 3 anni), sviluppato da Coste360 SRL. Il progetto è completo e installabile in autonomia da chiunque, senza dipendenze da servizi esterni.
 
 ---
 
