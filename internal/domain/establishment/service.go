@@ -144,7 +144,10 @@ func (s *Service) GetPublic(ctx context.Context, slug string) (*Public, error) {
 // (spec 12.2). Unknown slugs yield no origins.
 func (s *Service) EmbedOrigins(ctx context.Context, slug string) ([]string, error) {
 	slug = strings.ToLower(slug)
-	if !slugRe.MatchString(slug) {
+	// Reserved slugs (e.g. "assets" for the bundles under /b/assets/) and
+	// malformed ones can never match an establishment: skip the query, which
+	// otherwise runs for every static file of the public page.
+	if ValidateSlug(slug) != nil {
 		return nil, nil
 	}
 	e, err := store.GetEstablishmentBySlug(ctx, s.db, slug)
