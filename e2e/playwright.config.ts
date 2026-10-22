@@ -3,6 +3,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DEMO_OWNER_PASSWORD } from './tests/helpers';
 
 /**
  * End-to-end tests against a real `arenile` binary.
@@ -59,6 +60,8 @@ export default defineConfig({
           ARENILE_SECRET_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
           ARENILE_LOG_LEVEL: 'warn',
           ARENILE_TELEMETRY: 'false',
+          // Password of the demo owner created by `seed demo` (test-only value).
+          ARENILE_ADMIN_PASSWORD: DEMO_OWNER_PASSWORD,
         },
       },
 });
