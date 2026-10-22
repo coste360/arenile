@@ -1,4 +1,4 @@
-// Command arenile is the single binary of Arenile, the open source
+// Command arenile is the single binary of Arenile, the source-available (BSL 1.1)
 // management system for beach establishments.
 //
 //	arenile serve                 start the server (migrates if ARENILE_AUTO_MIGRATE=true)
@@ -83,7 +83,7 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 }
 
 func (c *cli) usage() {
-	fmt.Fprint(c.stderr, `Arenile — gestionale open source per stabilimenti balneari
+	fmt.Fprint(c.stderr, `Arenile — gestionale gratuito per stabilimenti balneari (BSL 1.1)
 
 Uso:
   arenile serve [--dev]                        avvia il server

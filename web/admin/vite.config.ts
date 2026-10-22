@@ -17,7 +17,7 @@ export default defineConfig({
       manifest: {
         name: 'Arenile – Pannello del gestore',
         short_name: 'Arenile',
-        description: 'Gestionale open source per stabilimenti balneari',
+        description: 'Gestionale gratuito per stabilimenti balneari',
         lang: 'it',
         start_url: '/admin/',
         scope: '/admin/',

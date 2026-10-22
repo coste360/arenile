@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Arenile API
   version: 0.1.0
-  summary: Gestionale open source per stabilimenti balneari.
+  summary: Gestionale gratuito per stabilimenti balneari, codice sorgente disponibile (BSL 1.1).
   description: |
     Contratto unico (spec-first) delle API REST di Arenile.
 
@@ -17,8 +17,8 @@ info:
       devono inviare l'header `X-CSRF-Token` uguale al cookie `arenile_csrf`;
     - date di calendario `YYYY-MM-DD`, istanti RFC 3339 UTC.
   license:
-    name: AGPL-3.0-only
-    identifier: AGPL-3.0-only
+    name: Business Source License 1.1
+    identifier: BUSL-1.1
   contact:
     name: Coste360 SRL
     url: https://github.com/coste360/arenile

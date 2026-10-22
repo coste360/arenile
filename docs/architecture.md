@@ -1,6 +1,6 @@
 # Architettura di Arenile
 
-Questo documento descrive come è organizzato il codice di Arenile, il gestionale open source per
+Questo documento descrive come è organizzato il codice di Arenile, il gestionale gratuito a codice sorgente disponibile (BSL 1.1) per
 stabilimenti balneari, e come scorrono i dati nei flussi principali. È la mappa da leggere prima di
 una modifica che attraversa più package. I dettagli normativi restano nella specifica (`docs/spec/`);
 le decisioni non ovvie sono negli ADR (`docs/adr/`); le regole che non si possono violare sono in

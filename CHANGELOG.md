@@ -39,6 +39,8 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 
 ### Changed
 
+- Licenza cambiata da AGPL-3.0 a Business Source License 1.1 (BUSL-1.1), con conversione in AGPL-3.0-or-later tre anni dopo il rilascio di ogni versione (ADR 0007); aggiunto `.github/CODEOWNERS`.
+- Roadmap estesa con M6 (edizione desktop, locale o client remoto) e M7 (app mobile), sezione 29 della specifica.
 - `pkg/ext`: `PaymentProvider.ParseWebhook` riceve anche le credenziali decifrate dello stabilimento (`ParseWebhook(ctx, r, creds)`), diversamente dalla spec 13.1 ([ADR 0006](docs/adr/0006-deviazioni-m0-dalla-specifica.md)).
 - `make test-race` compila con il tag `integration` e fallisce se non trova test `TestConcurrency_*`.
 - L'editor della mappa usa un *roving tabindex*: la mappa è un solo punto di tabulazione (il primo elemento selezionato, altrimenti la prima postazione); Inizio/Fine e PagSu/PagGiù spostano fuoco e selezione tra gli elementi, le frecce lo fanno in sola lettura.
