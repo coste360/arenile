@@ -4,10 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,6 +25,8 @@ import (
 	"github.com/coste360/arenile/internal/crypto"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -237,7 +242,8 @@ func (c *cli) seed(ctx context.Context, args []string) error {
 		return err
 	}
 	defer db.Close()
-	res, err := app.SeedDemo(ctx, db, clock.System{})
+	clk := clock.System{}
+	res, err := app.SeedDemo(ctx, db, clk)
 	if err != nil {
 		return err
 	}
@@ -246,8 +252,73 @@ func (c *cli) seed(ctx context.Context, args []string) error {
 	} else {
 		fmt.Fprintf(c.stdout, "Stabilimento dimostrativo già presente: %s (%s)\n", app.DemoSlug, res.EstablishmentID)
 	}
-	fmt.Fprintf(c.stdout, "Pagina pubblica: %s/b/%s\nPer accedere al pannello: arenile admin create --org %q ...\n",
-		cfg.EffectiveBaseURL(), app.DemoSlug, app.DemoOrganizationName)
+	log := app.NewLogger(c.stderr, cfg.LogLevel)
+	aw := audit.NewWriter(clk)
+	setupSvc := setup.NewService(setup.Deps{DB: db, Clock: clk, Audit: aw, Outbox: event.NewOutbox(clk), Log: log})
+	demo, err := setupSvc.SeedDemo(ctx, res.EstablishmentID)
+	if err != nil {
+		return err
+	}
+	if demo.Applied {
+		fmt.Fprintf(c.stdout, "Configurazione dimostrativa creata: stagione %d, %d postazioni, %d regole di prezzo\n",
+			demo.SeasonYear, demo.SpotsCreated, demo.RulesCreated)
+	} else {
+		fmt.Fprintln(c.stdout, "Configurazione dimostrativa già presente: nessuna modifica")
+	}
+	if err := c.seedDemoOwner(ctx, cfg, db, clk, aw, log); err != nil {
+		return err
+	}
+	fmt.Fprintf(c.stdout, "Pagina pubblica: %s/b/%s\nPannello: %s/admin/\n", cfg.EffectiveBaseURL(), app.DemoSlug, cfg.EffectiveBaseURL())
+	return nil
+}
+
+// DemoOwnerEmail is the owner account created by `seed demo`.
+const DemoOwnerEmail = "demo@lido-demo.example"
+
+// seedDemoOwner creates the demo owner of the demo organization when missing.
+// The password comes from ARENILE_ADMIN_PASSWORD, otherwise it is random and
+// printed once on stdout.
+func (c *cli) seedDemoOwner(ctx context.Context, cfg config.Config, db *store.DB, clk clock.Clock, aw *audit.Writer, log *slog.Logger) error {
+	if _, err := store.GetUserByEmail(ctx, db, DemoOwnerEmail); err == nil {
+		fmt.Fprintf(c.stdout, "Utente demo già presente: %s\n", DemoOwnerEmail)
+		return nil
+	} else if !errors.Is(err, store.ErrNotFound) {
+		return err
+	}
+	pw, generated := "", false
+	if v, ok := c.lookup(EnvAdminPassword); ok && v != "" {
+		pw = v
+	} else {
+		b := make([]byte, 18)
+		if _, err := rand.Read(b); err != nil {
+			return err
+		}
+		pw, generated = base64.RawURLEncoding.EncodeToString(b), true
+	}
+	var keys *crypto.KeyRing
+	if len(cfg.SecretKeys) > 0 {
+		var err error
+		if keys, err = crypto.NewKeyRing(cfg.SecretKeys...); err != nil {
+			return err
+		}
+	}
+	svc, err := auth.NewService(db, clk, keys, aw, log, auth.Options{})
+	if err != nil {
+		return err
+	}
+	if _, err := svc.CreateOwner(ctx, auth.CreateOwnerInput{
+		Email: DemoOwnerEmail, Name: "Gestore Demo", Password: pw, OrganizationName: app.DemoOrganizationName, Source: "seed",
+	}); err != nil {
+		if errors.Is(err, auth.ErrUserExists) {
+			return nil
+		}
+		return err
+	}
+	if generated {
+		fmt.Fprintf(c.stdout, "Utente demo creato: %s, password: %s (mostrata una sola volta)\n", DemoOwnerEmail, pw)
+	} else {
+		fmt.Fprintf(c.stdout, "Utente demo creato: %s (password da %s)\n", DemoOwnerEmail, EnvAdminPassword)
+	}
 	return nil
 }
 
