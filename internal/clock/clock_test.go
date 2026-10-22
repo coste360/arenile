@@ -53,5 +53,7 @@ func TestConcurrency_FakeClock(t *testing.T) {
 	}
 }
 
-var _ Clock = (*Fake)(nil)
-var _ Clock = System{}
+var (
+	_ Clock = (*Fake)(nil)
+	_ Clock = System{}
+)
