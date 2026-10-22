@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sito del lido (pagina ospite di prova)</title>
+  </head>
+  <body>
+    <h1>Lido di prova</h1>
+    <p>Pagina ospite usata dai test end-to-end del widget incorporabile.</p>
+    <div data-arenile="lido-demo" data-lang="it"></div>
+    <script>
+      window.__resizes = 0;
+      document.addEventListener('arenile:resize', function () {
+        window.__resizes += 1;
+      });
+    </script>
+    <script src="/embed.js" async></script>
+  </body>
+</html>

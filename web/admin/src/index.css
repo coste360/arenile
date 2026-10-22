@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import '../../shared/src/styles/tokens.css';
+
+@source '../../shared/src';

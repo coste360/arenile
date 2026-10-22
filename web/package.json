@@ -1,0 +1,38 @@
+{
+  "name": "arenile-web",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "admin",
+    "booking"
+  ],
+  "scripts": {
+    "gen": "npm run gen -w @arenile/shared",
+    "dev": "concurrently -n admin,booking -c blue,green \"npm run dev -w @arenile/admin\" \"npm run dev -w @arenile/booking\"",
+    "build": "npm run build -w @arenile/admin && npm run build -w @arenile/booking",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "budget": "npm run budget -w @arenile/booking"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^26.6.5",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "jsdom": "^30.1.3",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
+  }
+}

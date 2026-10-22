@@ -1,0 +1,157 @@
+{
+  "common": {
+    "appName": "Arenile",
+    "loading": "Wird geladen…",
+    "retry": "Erneut versuchen",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "language": "Sprache",
+    "online": "Online",
+    "offline": "Offline: Sie sehen gespeicherte Daten",
+    "comingSoon": "Verfügbar ab Meilenstein {{milestone}}",
+    "inArrivo": "Demnächst",
+    "errors": {
+      "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es gleich noch einmal.",
+      "network": "Server nicht erreichbar. Bitte prüfen Sie Ihre Verbindung.",
+      "notFound": "Nicht gefunden.",
+      "forbidden": "Sie haben keine Berechtigung für diese Aktion.",
+      "tooManyRequests": "Zu viele Anfragen. Bitte warten Sie einen Moment.",
+      "title": "Etwas ist schiefgelaufen"
+    },
+    "languages": {
+      "it": "Italiano",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    }
+  },
+  "map": {
+    "title": "Strandplan",
+    "sea": "Meer",
+    "fitView": "An Ansicht anpassen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "legend": "Legende",
+    "spotAria": "Platz {{label}}: {{status}}",
+    "listTitle": "Liste der Plätze",
+    "row": "Reihe {{row}}",
+    "noRow": "Weitere Plätze",
+    "status": {
+      "free": "Frei",
+      "booked_online": "Online gebucht",
+      "booked_desk": "An der Kasse gebucht",
+      "season": "Saisonabo",
+      "season_released": "Saisonabo heute frei",
+      "hold": "Ausstehend",
+      "to_collect": "Offener Betrag",
+      "present": "Anwesend",
+      "blocked": "Gesperrt",
+      "renewal_hold": "Für Verlängerung reserviert",
+      "unavailable": "Nicht verfügbar"
+    },
+    "decoration": {
+      "walkway": "Steg",
+      "shower": "Dusche",
+      "lifeguard": "Rettungsschwimmer",
+      "bar": "Bar",
+      "entrance": "Eingang",
+      "cabin_block": "Kabinen",
+      "text": "Text",
+      "custom": "Element"
+    }
+  },
+  "auth": {
+    "loginTitle": "Im Verwaltungsbereich anmelden",
+    "loginSubtitle": "Verwaltung von Strandbädern",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "submitting": "Anmeldung läuft…",
+    "logout": "Abmelden",
+    "validation": {
+      "emailInvalid": "Geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Geben Sie Ihr Passwort ein",
+      "totpInvalid": "Der Code muss 6 Ziffern haben"
+    },
+    "errors": {
+      "invalidCredentials": "E-Mail oder Passwort falsch.",
+      "tooManyAttempts": "Zu viele Anmeldeversuche. Versuchen Sie es in einigen Minuten erneut.",
+      "totpRequired": "Ein Bestätigungscode ist erforderlich.",
+      "generic": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+      "invalidTotp": "Ungültiger Bestätigungscode."
+    },
+    "totpCode": "Bestätigungscode",
+    "totpHint": "Geben Sie den 6-stelligen Code Ihrer Authenticator-App ein."
+  },
+  "nav": {
+    "main": "Hauptnavigation",
+    "today": "Heute",
+    "map": "Plan",
+    "bookings": "Buchungen",
+    "calendar": "Kalender",
+    "customers": "Kunden",
+    "seasonPasses": "Saisonabos",
+    "cash": "Kasse",
+    "reports": "Berichte",
+    "settings": "Einstellungen",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
+  },
+  "admin": {
+    "placeholder": {
+      "title": "Bereich in Vorbereitung",
+      "today": "Tagesplan, Ankünfte, offene Beträge und zuzuweisende Zeilen.",
+      "map": "Betriebsansicht des Plans für jedes Datum, nach Status eingefärbt.",
+      "bookings": "Filterbare Buchungsliste, Details und Erstellung.",
+      "calendar": "Planungsraster Plätze × Tage für lange Aufenthalte.",
+      "customers": "Kundendaten, Verlauf, Guthaben und Saisonabos.",
+      "seasonPasses": "Saisonabos, tägliche Freigaben und Verlängerungen.",
+      "cash": "Kassensitzung, Zahlungen und Abschlüsse.",
+      "reports": "Auslastung, Umsatz, Kanäle und Exporte.",
+      "settings": "Saisons, Pläne, Zonen, Katalog, Preise, Regeln, öffentliche Seite und Zahlungen."
+    },
+    "establishments": {
+      "title": "Strandbäder",
+      "empty": "Kein Strandbad konfiguriert.",
+      "name": "Name",
+      "slug": "Öffentliche Adresse",
+      "locale": "Standardsprache",
+      "booking": "Online-Buchung",
+      "bookingOn": "Aktiv",
+      "bookingOff": "Inaktiv",
+      "openPublicPage": "Öffentliche Seite von {{name}} öffnen",
+      "loadMore": "Mehr laden"
+    },
+    "demoMap": {
+      "title": "Demo-Plan",
+      "note": "Beispielgeometrie, nur lesend. Der Editor kommt mit Meilenstein M1, die Betriebsansicht mit M3.",
+      "selected": "Sie haben Platz {{label}} ausgewählt."
+    },
+    "user": "Angemeldeter Benutzer",
+    "totpEnrolmentRequired": "Um fortzufahren, aktivieren Sie die Zwei-Faktor-Bestätigung in Ihrem Profil.",
+    "skipToContent": "Zum Inhalt springen"
+  },
+  "booking": {
+    "title": "Buchen Sie Ihren Platz am Strand",
+    "steps": {
+      "label": "Buchungsschritte",
+      "when": "Wann",
+      "where": "Wo",
+      "what": "Was",
+      "who": "Daten und Zahlung"
+    },
+    "stepText": {
+      "when": "Wählen Sie Daten, Tarif und Zeitfenster (ganzer Tag, Vormittag oder Nachmittag).",
+      "where": "Wählen Sie einen Platz auf dem Plan oder Ihre bevorzugte Zone.",
+      "what": "Wählen Sie Paket und Extras; die Preisübersicht wird laufend aktualisiert.",
+      "who": "Geben Sie Ihre Daten ein und bestätigen Sie. Kein Konto, keine Gebühren."
+    },
+    "comingSoonDetail": "Die Online-Buchung ist bald verfügbar. Bitte kontaktieren Sie bis dahin direkt das Strandbad.",
+    "notFound": "Strandbad nicht gefunden.",
+    "disabled": "Die Online-Buchung ist für dieses Strandbad nicht aktiv.",
+    "contact": "Kontakt",
+    "poweredBy": "Provisionsfreie Buchungen mit Arenile",
+    "mapLoading": "Plan wird geladen…"
+  }
+}

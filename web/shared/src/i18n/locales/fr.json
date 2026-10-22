@@ -1,0 +1,157 @@
+{
+  "common": {
+    "appName": "Arenile",
+    "loading": "Chargement…",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "language": "Langue",
+    "online": "En ligne",
+    "offline": "Hors ligne : vous consultez les données enregistrées",
+    "comingSoon": "Disponible à partir du jalon {{milestone}}",
+    "inArrivo": "Bientôt disponible",
+    "errors": {
+      "generic": "Une erreur est survenue. Veuillez réessayer dans un instant.",
+      "network": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+      "notFound": "Introuvable.",
+      "forbidden": "Vous n'êtes pas autorisé à effectuer cette action.",
+      "tooManyRequests": "Trop de requêtes. Patientez un instant puis réessayez.",
+      "title": "Une erreur est survenue"
+    },
+    "languages": {
+      "it": "Italiano",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    }
+  },
+  "map": {
+    "title": "Plan de la plage",
+    "sea": "Mer",
+    "fitView": "Ajuster à la vue",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "legend": "Légende",
+    "spotAria": "Emplacement {{label}} : {{status}}",
+    "listTitle": "Liste des emplacements",
+    "row": "Rangée {{row}}",
+    "noRow": "Autres emplacements",
+    "status": {
+      "free": "Libre",
+      "booked_online": "Réservé en ligne",
+      "booked_desk": "Réservé à la caisse",
+      "season": "Abonné",
+      "season_released": "Abonné absent aujourd'hui",
+      "hold": "En attente",
+      "to_collect": "Solde à encaisser",
+      "present": "Présent",
+      "blocked": "Bloqué",
+      "renewal_hold": "Réservé pour renouvellement",
+      "unavailable": "Indisponible"
+    },
+    "decoration": {
+      "walkway": "Passerelle",
+      "shower": "Douche",
+      "lifeguard": "Poste de secours",
+      "bar": "Bar",
+      "entrance": "Entrée",
+      "cabin_block": "Cabines",
+      "text": "Texte",
+      "custom": "Élément"
+    }
+  },
+  "auth": {
+    "loginTitle": "Connexion au panneau",
+    "loginSubtitle": "Gestion d'établissements balnéaires",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "submitting": "Connexion…",
+    "logout": "Se déconnecter",
+    "validation": {
+      "emailInvalid": "Saisissez une adresse e-mail valide",
+      "passwordRequired": "Saisissez votre mot de passe",
+      "totpInvalid": "Le code doit comporter 6 chiffres"
+    },
+    "errors": {
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "tooManyAttempts": "Trop de tentatives de connexion. Réessayez dans quelques minutes.",
+      "totpRequired": "Un code de vérification en deux étapes est requis.",
+      "generic": "Échec de la connexion. Veuillez réessayer.",
+      "invalidTotp": "Code de vérification invalide."
+    },
+    "totpCode": "Code de vérification",
+    "totpHint": "Saisissez le code à 6 chiffres de votre application d'authentification."
+  },
+  "nav": {
+    "main": "Navigation principale",
+    "today": "Aujourd'hui",
+    "map": "Plan",
+    "bookings": "Réservations",
+    "calendar": "Calendrier",
+    "customers": "Clients",
+    "seasonPasses": "Abonnements",
+    "cash": "Caisse",
+    "reports": "Rapports",
+    "settings": "Configuration",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
+  },
+  "admin": {
+    "placeholder": {
+      "title": "Section en préparation",
+      "today": "Plan opérationnel du jour, arrivées, soldes à encaisser et lignes à attribuer.",
+      "map": "Vue opérationnelle du plan pour n'importe quelle date, colorée par statut.",
+      "bookings": "Liste filtrable des réservations, détail et création.",
+      "calendar": "Grille de planning emplacements × jours pour les longs séjours.",
+      "customers": "Fiches clients, historique, crédits et abonnements.",
+      "seasonPasses": "Abonnements saisonniers, libérations journalières et renouvellements.",
+      "cash": "Session de caisse, encaissements et clôtures.",
+      "reports": "Occupation, revenus, canaux et exports.",
+      "settings": "Saisons, plans, zones, catalogue, prix, règles, page publique et paiements."
+    },
+    "establishments": {
+      "title": "Établissements",
+      "empty": "Aucun établissement configuré.",
+      "name": "Nom",
+      "slug": "Adresse publique",
+      "locale": "Langue par défaut",
+      "booking": "Réservation en ligne",
+      "bookingOn": "Active",
+      "bookingOff": "Inactive",
+      "openPublicPage": "Ouvrir la page publique de {{name}}",
+      "loadMore": "Charger plus"
+    },
+    "demoMap": {
+      "title": "Plan de démonstration",
+      "note": "Géométrie d'exemple en lecture seule. L'éditeur arrive avec le jalon M1, la vue opérationnelle avec M3.",
+      "selected": "Vous avez sélectionné l'emplacement {{label}}."
+    },
+    "user": "Utilisateur connecté",
+    "totpEnrolmentRequired": "Pour continuer, activez la vérification en deux étapes depuis votre profil.",
+    "skipToContent": "Aller au contenu"
+  },
+  "booking": {
+    "title": "Réservez votre place à la plage",
+    "steps": {
+      "label": "Étapes de la réservation",
+      "when": "Quand",
+      "where": "Où",
+      "what": "Quoi",
+      "who": "Coordonnées et paiement"
+    },
+    "stepText": {
+      "when": "Choisissez les dates, la formule et le créneau (journée, matin ou après-midi).",
+      "where": "Choisissez un emplacement sur le plan ou la zone que vous préférez.",
+      "what": "Choisissez la formule et les extras ; le récapitulatif du prix se met à jour.",
+      "who": "Saisissez vos coordonnées et confirmez. Sans compte et sans commission."
+    },
+    "comingSoonDetail": "La réservation en ligne sera bientôt disponible. En attendant, contactez directement l'établissement.",
+    "notFound": "Établissement introuvable.",
+    "disabled": "La réservation en ligne n'est pas active pour cet établissement.",
+    "contact": "Contacts",
+    "poweredBy": "Réservations sans commission avec Arenile",
+    "mapLoading": "Chargement du plan…"
+  }
+}

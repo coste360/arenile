@@ -1,0 +1,157 @@
+{
+  "common": {
+    "appName": "Arenile",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "language": "Language",
+    "online": "Online",
+    "offline": "Offline: you are viewing saved data",
+    "comingSoon": "Available from milestone {{milestone}}",
+    "inArrivo": "Coming soon",
+    "errors": {
+      "generic": "Something went wrong. Please try again shortly.",
+      "network": "Cannot reach the server. Check your connection.",
+      "notFound": "Not found.",
+      "forbidden": "You are not allowed to perform this action.",
+      "tooManyRequests": "Too many requests. Please wait a moment and try again.",
+      "title": "Something went wrong"
+    },
+    "languages": {
+      "it": "Italiano",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français"
+    }
+  },
+  "map": {
+    "title": "Beach map",
+    "sea": "Sea",
+    "fitView": "Fit to view",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "legend": "Legend",
+    "spotAria": "Spot {{label}}: {{status}}",
+    "listTitle": "List of spots",
+    "row": "Row {{row}}",
+    "noRow": "Other spots",
+    "status": {
+      "free": "Free",
+      "booked_online": "Booked online",
+      "booked_desk": "Booked at the desk",
+      "season": "Season pass",
+      "season_released": "Season pass holder away today",
+      "hold": "Pending",
+      "to_collect": "Balance due",
+      "present": "Checked in",
+      "blocked": "Blocked",
+      "renewal_hold": "Renewal reserved",
+      "unavailable": "Unavailable"
+    },
+    "decoration": {
+      "walkway": "Walkway",
+      "shower": "Shower",
+      "lifeguard": "Lifeguard tower",
+      "bar": "Bar",
+      "entrance": "Entrance",
+      "cabin_block": "Cabins",
+      "text": "Text",
+      "custom": "Element"
+    }
+  },
+  "auth": {
+    "loginTitle": "Sign in to the panel",
+    "loginSubtitle": "Beach establishment management",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "logout": "Sign out",
+    "validation": {
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Enter your password",
+      "totpInvalid": "The code must have 6 digits"
+    },
+    "errors": {
+      "invalidCredentials": "Incorrect email or password.",
+      "tooManyAttempts": "Too many sign-in attempts. Try again in a few minutes.",
+      "totpRequired": "A two-step verification code is required.",
+      "generic": "Sign-in failed. Please try again.",
+      "invalidTotp": "Invalid verification code."
+    },
+    "totpCode": "Verification code",
+    "totpHint": "Enter the 6-digit code from your authenticator app."
+  },
+  "nav": {
+    "main": "Main navigation",
+    "today": "Today",
+    "map": "Map",
+    "bookings": "Bookings",
+    "calendar": "Calendar",
+    "customers": "Customers",
+    "seasonPasses": "Season passes",
+    "cash": "Cash desk",
+    "reports": "Reports",
+    "settings": "Settings",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "admin": {
+    "placeholder": {
+      "title": "Section in progress",
+      "today": "Today's operational map, arrivals, balances due and rows to assign.",
+      "map": "Operational map view for any date, coloured by status.",
+      "bookings": "Filterable booking list, details and creation.",
+      "calendar": "Spots × days planning grid for long stays.",
+      "customers": "Customer records, history, credits and season passes.",
+      "seasonPasses": "Season passes, daily releases and renewals.",
+      "cash": "Cash session, payments and closures.",
+      "reports": "Occupancy, revenue, channels and exports.",
+      "settings": "Seasons, maps, zones, catalogue, prices, policies, public page and payments."
+    },
+    "establishments": {
+      "title": "Establishments",
+      "empty": "No establishment configured.",
+      "name": "Name",
+      "slug": "Public address",
+      "locale": "Default language",
+      "booking": "Online booking",
+      "bookingOn": "Enabled",
+      "bookingOff": "Disabled",
+      "openPublicPage": "Open the public page of {{name}}",
+      "loadMore": "Load more"
+    },
+    "demoMap": {
+      "title": "Demo map",
+      "note": "Read-only sample geometry. The map editor arrives in milestone M1, the operational view in M3.",
+      "selected": "You selected spot {{label}}."
+    },
+    "user": "Signed-in user",
+    "totpEnrolmentRequired": "To continue you must enable two-step verification from your profile.",
+    "skipToContent": "Skip to content"
+  },
+  "booking": {
+    "title": "Book your spot on the beach",
+    "steps": {
+      "label": "Booking steps",
+      "when": "When",
+      "where": "Where",
+      "what": "What",
+      "who": "Details and payment"
+    },
+    "stepText": {
+      "when": "Choose your dates, the plan and the time slot (full day, morning or afternoon).",
+      "where": "Pick a spot on the map or your preferred zone.",
+      "what": "Choose the package and extras; the price summary updates as you go.",
+      "who": "Enter your details and confirm. No account needed and no fees."
+    },
+    "comingSoonDetail": "Online booking will be available soon. In the meantime, please contact the establishment directly.",
+    "notFound": "Establishment not found.",
+    "disabled": "Online booking is not enabled for this establishment.",
+    "contact": "Contacts",
+    "poweredBy": "Commission-free bookings with Arenile",
+    "mapLoading": "Loading map…"
+  }
+}
