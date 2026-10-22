@@ -116,7 +116,7 @@ const Spot = memo(function Spot({
       data-spot-id={spot.id}
       data-status={status}
       className={cn(
-        'outline-none focus-visible:[&>:first-child]:stroke-ring focus-visible:[&>:first-child]:[stroke-width:4px]',
+        'outline-none focus-visible:[&>:first-child]:stroke-ring focus-visible:[&>:first-child]:stroke-4',
         disabled ? 'cursor-default' : 'cursor-pointer',
       )}
       transform={spot.rotation ? `rotate(${spot.rotation} ${spot.x} ${spot.y})` : undefined}

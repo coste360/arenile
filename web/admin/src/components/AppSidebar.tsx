@@ -1,4 +1,8 @@
-import { Badge } from '@arenile/shared/ui/badge';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@arenile/shared/ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
@@ -8,19 +12,24 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from '@arenile/shared/ui/sidebar';
 import { Link, useMatchRoute } from '@tanstack/react-router';
+import { ChevronDownIcon } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EstablishmentSwitcher, useCurrentEstablishment, useIsOwner } from '../establishment';
 import { CONFIG_NAV_ITEMS, ESTABLISHMENTS_NAV_ITEM, NAV_ITEMS } from '../nav';
 import { NavUser } from './NavUser';
 
-/** shadcn Sidebar (collapsible to icons) with the panel navigation of spec 15.1. */
+/**
+ * shadcn Sidebar (collapsible to icons) with the panel navigation of spec 15.1.
+ * Sections not delivered yet sit in one closed "In arrivo" group, so the
+ * working configuration items stay above the fold on a tablet.
+ */
 export function AppSidebar() {
   const { t } = useTranslation();
   const matchRoute = useMatchRoute();
@@ -28,6 +37,34 @@ export function AppSidebar() {
   const current = useCurrentEstablishment();
   const isOwner = useIsOwner();
   const close = () => setOpenMobile(false);
+  const available = NAV_ITEMS.filter((item) => item.available);
+  const upcoming = NAV_ITEMS.filter((item) => !item.available);
+
+  const operationLink = (item: (typeof NAV_ITEMS)[number]) => {
+    const label = t(item.labelKey);
+    const active = !!matchRoute({ to: item.to, fuzzy: true });
+    return (
+      <SidebarMenuItem key={item.to}>
+        <SidebarMenuButton
+          asChild
+          isActive={active}
+          tooltip={item.available ? label : `${label} · ${t('common.inArrivo')}`}
+          className="aria-disabled:pointer-events-none aria-disabled:opacity-60"
+        >
+          <Link
+            to={item.to}
+            onClick={close}
+            aria-current={active ? 'page' : undefined}
+            aria-disabled={item.available ? undefined : true}
+            tabIndex={item.available ? undefined : -1}
+          >
+            <item.icon aria-hidden="true" />
+            <span>{label}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -39,45 +76,30 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel>{t('nav.operations')}</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {NAV_ITEMS.map((item) => {
-                  const label = t(item.labelKey);
-                  const active = !!matchRoute({ to: item.to, fuzzy: true });
-                  return (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        tooltip={item.available ? label : `${label} · ${t('nav.soon')}`}
-                        className="aria-disabled:pointer-events-none aria-disabled:opacity-60"
-                      >
-                        <Link
-                          to={item.to}
-                          onClick={close}
-                          aria-current={active ? 'page' : undefined}
-                          aria-disabled={item.available ? undefined : true}
-                          tabIndex={item.available ? undefined : -1}
-                        >
-                          <item.icon aria-hidden="true" />
-                          <span>{label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                      {!item.available && (
-                        <SidebarMenuBadge>
-                          <Badge
-                            variant="outline"
-                            className="border-highlight/60 bg-highlight/15 px-1.5 text-[10px] font-medium text-muted-foreground"
-                          >
-                            {t('nav.soon')}
-                          </Badge>
-                        </SidebarMenuBadge>
-                      )}
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
+              <SidebarMenu>{available.map(operationLink)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          {upcoming.length > 0 && (
+            <Collapsible className="group/upcoming">
+              <SidebarGroup>
+                <SidebarGroupLabel asChild>
+                  <CollapsibleTrigger>
+                    {t('common.inArrivo')}
+                    <span className="ml-1 tabular-nums">({upcoming.length})</span>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="ml-auto transition-transform group-data-[state=open]/upcoming:rotate-180"
+                    />
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>{upcoming.map(operationLink)}</SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          )}
         </nav>
         <nav aria-label={t('nav.configuration')}>
           <SidebarGroup>
@@ -139,8 +161,13 @@ function ConfigLink({
 }) {
   const matchRoute = useMatchRoute();
   const active = !!matchRoute({ to, params, fuzzy: true } as never);
+  const ref = useRef<HTMLLIElement>(null);
+  // Keep the current page's item visible when the list is taller than the viewport.
+  useEffect(() => {
+    if (active) ref.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [active]);
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem ref={ref}>
       <SidebarMenuButton asChild isActive={active} tooltip={label}>
         <Link
           to={to as never}

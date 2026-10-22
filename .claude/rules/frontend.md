@@ -12,7 +12,9 @@ paths:
   geometry in `shared/src/map` and the map editor). Style with component variants and Tailwind
   utilities on theme tokens (`bg-primary`, `text-muted-foreground`), never raw colours or hex.
   The only stylesheet is `web/shared/src/styles/globals.css` (theme variables). The CSS guard in
-  `npm run lint` fails otherwise and has no exception lists.
+  `npm run lint` fails otherwise: it also rejects Tailwind arbitrary colours, sizes (`text-[10px]`)
+  and properties, `<style>` tags and programmatic `element.style`; its only exemptions are listed
+  in `web/scripts/css-guard.mjs` with their reason (map geometry, theme variables, embed iframe).
 - Dates via `DatePicker`/`DateRangePicker` and `formatIsoDate` (dd/MM/yyyy, never
   `<input type="date">`); money via `MoneyInput` and `formatCents` (Intl it-IT).
 - Light and dark mode: check both when changing a screen.

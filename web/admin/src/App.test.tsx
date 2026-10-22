@@ -145,12 +145,17 @@ describe('admin app', () => {
       'GET /api/admin/v1/establishments': () => json(200, { items: [ESTABLISHMENT] }),
     });
     const nav = await screen.findByRole('navigation', { name: 'Navigazione principale' });
-    const labels = within(nav)
-      .getAllByRole('link')
-      .map((a) => a.textContent);
-    expect(labels).toEqual([
-      'Oggi',
+    const labels = () =>
+      within(nav)
+        .getAllByRole('link')
+        .map((a) => a.textContent);
+    // Only delivered sections are listed; the others sit in a closed "In arrivo" group.
+    expect(labels()).toEqual(['Mappa']);
+    expect(within(nav).getByRole('link', { name: 'Mappa' })).not.toHaveAttribute('aria-disabled');
+    await userEvent.click(within(nav).getByRole('button', { name: /In arrivo/ }));
+    expect(labels()).toEqual([
       'Mappa',
+      'Oggi',
       'Prenotazioni',
       'Calendario',
       'Clienti',
@@ -158,18 +163,16 @@ describe('admin app', () => {
       'Cassa',
       'Report',
     ]);
-    // Sections not delivered yet are visible but disabled.
     expect(within(nav).getByRole('link', { name: 'Cassa' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
-    expect(within(nav).getByRole('link', { name: 'Mappa' })).not.toHaveAttribute('aria-disabled');
     expect(await screen.findByRole('rowheader', { name: 'Lido Demo' })).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Apri la pagina pubblica di Lido Demo' }),
     ).toHaveAttribute('href', '/b/lido-demo');
     const config = screen.getByRole('navigation', { name: 'Configurazione dello stabilimento' });
-    expect(within(config).getByRole('link', { name: 'Stabilimenti' })).toHaveAttribute(
+    expect(within(config).getByRole('link', { name: 'Tutti gli stabilimenti' })).toHaveAttribute(
       'aria-current',
       'page',
     );

@@ -101,7 +101,7 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
                         inputMode="numeric"
                         autoComplete="one-time-code"
                         maxLength={6}
-                        className="tracking-[0.3em] tabular-nums"
+                        className="tracking-widest tabular-nums"
                         {...field}
                         value={field.value ?? ''}
                       />

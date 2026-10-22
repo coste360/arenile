@@ -30,8 +30,8 @@ test('Ctrl+K opens the command palette and navigates to a page', async ({ page }
   await expect(palette).toBeVisible();
   await expect(palette.getByRole('combobox')).toBeFocused();
 
-  await page.keyboard.type('Stabilimenti');
-  await palette.getByRole('option', { name: 'Stabilimenti', exact: true }).click();
+  await page.keyboard.type('Tutti gli stabilimenti');
+  await palette.getByRole('option', { name: 'Tutti gli stabilimenti', exact: true }).click();
   await expect(palette).toBeHidden();
   await expect(page).toHaveURL(/\/admin\/configurazione/);
 

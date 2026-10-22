@@ -53,7 +53,7 @@ export function ThemePreview({ theme, name, intro }: ThemePreviewProps) {
                 <span
                   key={i}
                   className={cn(
-                    'flex h-7 items-center justify-center rounded-md text-[10px] font-medium',
+                    'flex h-7 items-center justify-center rounded-md text-xs font-medium',
                     i === 7
                       ? 'bg-highlight text-highlight-foreground ring-2 ring-primary'
                       : i % 5 === 0

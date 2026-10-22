@@ -30,7 +30,9 @@ accessibilità da soli.
    fa con le varianti dei componenti e le utility Tailwind sui token del tema. Unica eccezione per lo
    stile in linea: la geometria dinamica della mappa SVG (`web/shared/src/map`, editor della mappa).
    L'unico foglio di stile è `web/shared/src/styles/globals.css` (variabili shadcn chiaro/scuro e
-   mappatura `@theme`). I vecchi token `--ar-*` sono rimossi.
+   mappatura `@theme`). I vecchi token `--ar-*` sono rimossi. La dipendenza `cn` (il merge di classi
+   pubblicato da shadcn, generato dalla CLI con `import { cn } from "cn"`) è fissata a una versione
+   esatta in `web/shared/package.json` perché è pre-1.0: si aggiorna insieme alla CLI.
 3. **Aspetto:** base neutra, primario blu mare profondo, accento sabbia/ambra (`--highlight`), raggio
    0,75rem, Inter Variable (fontsource), tema chiaro e scuro con selettore (predefinito: sistema).
 4. **Tema dello stabilimento (spec 12.5):** `applyTheme()` sovrascrive le stesse variabili
@@ -50,7 +52,12 @@ accessibilità da soli.
   elencate in `web/shared/src/ui/README.md`); più dipendenze npm (Radix, cmdk, vaul, recharts,
   react-day-picker); la pagina di prenotazione passa da 118 a circa 120 KB gzip di JS iniziale.
 - Verifiche: `web/scripts/css-guard.mjs` (in `npm run lint`, quindi in `make check`) rifiuta fogli di
-  stile, CSS-in-JS, stili in linea fuori dalla mappa e i token `--ar-*`, senza liste di eccezioni;
+  stile (anche in `public/` e nei file `.html`), CSS-in-JS, stili in linea e programmatici
+  (`element.style`, `<style>`), valori arbitrari di Tailwind che aggirano il tema (colori, dimensioni
+  come `text-[10px]`, proprietà) e i token `--ar-*`. Le uniche esenzioni sono elencate nello script
+  con la loro ragione: geometria SVG della mappa (`BeachMap`, `MapLegend`, `MapCanvas`), variabili del
+  tema scritte a runtime (`theme.ts`, `ThemeProvider`), iframe dell'embed sulla pagina ospite, e i
+  componenti shadcn generati dalla CLI;
   `npm run budget` controlla il budget della pagina di prenotazione; regole in
   `.claude/rules/frontend.md` e `AGENTS.md`; test e2e su tema scuro, palette comandi e selettore di
   date.

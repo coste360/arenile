@@ -534,7 +534,7 @@ function PeriodTimeline({ season, periods }: { season: Season; periods: RatePeri
           return (
             <g key={d}>
               <line x1={`${offset}%`} x2={`${offset}%`} y1="0" y2="4" className="stroke-border" />
-              <text x={`${offset}%`} y="14" className="fill-muted-foreground text-[10px]">
+              <text x={`${offset}%`} y="14" className="fill-muted-foreground text-xs">
                 {monthFmt.format(new Date(`${d}T00:00:00Z`))}
               </text>
             </g>
