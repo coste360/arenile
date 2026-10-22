@@ -4,6 +4,7 @@ Elenco numerato delle proprietà che devono valere **sempre**, qualunque sia la 
 Ogni invariante indica il test che la verifica e lo stato:
 
 - `planned`: test previsto, da scrivere insieme al codice che la riguarda;
+- `partial`: una parte è verificata da test esistenti, il resto è indicato tra parentesi;
 - `implemented`: test presente e in verde in CI.
 
 Regole:
@@ -11,6 +12,8 @@ Regole:
   invarianti (subagent `invariants-guardian`).
 - Una nuova invariante si aggiunge in coda con il numero successivo; i numeri non si riusano.
 - Quando il test viene scritto, aggiornare "Verificata da" con il nome esatto e lo stato.
+- Un test citato con stato `implemented` o `partial` deve esistere con quel nome esatto
+  (`grep -rn "func <Nome>" --include='*_test.go' .`); i nomi dei test `planned` sono quelli da usare.
 
 Convenzioni dei test: unit `TestXxx_Scenario`; integrazione con build tag `integration`
 (`go test -tags=integration ./...`, SQLite in memoria sempre, PostgreSQL se `ARENILE_TEST_POSTGRES_URL`);
@@ -74,30 +77,30 @@ Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations`. Stato: planned
 **INV-11 — Il motore prezzi è deterministico e puro.**
 Lo stesso input produce sempre lo stesso `PriceBreakdown`; il package `internal/domain/pricing` non
 importa `store`, `database/sql`, `time.Now` né sorgenti casuali.
-Verificata da: `TestQuote_Deterministic` (property test `rapid`) e controllo degli import `TestPricing_NoForbiddenImports`. Stato: planned.
+Verificata da: `TestQuoteProperty_Deterministic` (property test `rapid`) e `TestPricing_NoForbiddenImports` (import transitivi del modulo limitati a `money` e `calendar`, niente `database/sql`, `net/http`, `os`, `math/rand`, `bun`, né chiamate a `time.Now`/`Since`/`Until`) in `internal/domain/pricing`. Stato: implemented.
 
 **INV-12 — Snapshot riproducibile.**
 Ricalcolando gli input salvati con la stessa `engine_version`, il totale coincide con `price_snapshot.total`
 e con `bookings.total_amount`.
-Verificata da: `TestQuote_SnapshotReproducible` (property test `rapid`). Stato: planned.
+Verificata da: `TestQuoteProperty_SnapshotRoundTrip` (property test `rapid`: lo snapshot serializzato si rilegge identico e rispetta INV-13). Stato: partial (il ricalcolo dagli input salvati e il confronto con `bookings.total_amount` arrivano con le prenotazioni, M2).
 
 **INV-13 — Totale non negativo e coerente.**
 `total >= 0`; il totale è la somma di righe ed extra, più sconti (negativi) e arrotondamento; ogni
 riga è la somma dei giorni. Tutti gli importi sono interi in centesimi.
-Verificata da: `TestQuote_TotalsAddUp`, `TestQuote_TotalNonNegative` (property test `rapid`). Stato: planned.
+Verificata da: `TestQuoteProperty_TotalNonNegativeAndConsistent` (property test `rapid`), `TestAllocateProperty_ExactAndBounded`. Stato: implemented.
 
 **INV-14 — Gli sconti non aumentano mai il prezzo.**
 Aggiungere una regola `discount`, una convenzione o un codice promozionale non aumenta mai il totale.
-Verificata da: `TestQuote_DiscountMonotonic` (property test `rapid`). Stato: planned.
+Verificata da: `TestQuoteProperty_DiscountNeverIncreasesTotal` (property test `rapid`). Stato: implemented.
 
 **INV-15 — Nessun prezzo, nessuna vendita.**
 Se per un giorno non esiste una regola `base` applicabile, la quotazione fallisce con `ErrNoPrice` e non
 si crea alcuna prenotazione.
-Verificata da: `TestQuote_NoBaseRule_ErrNoPrice`. Stato: planned.
+Verificata da: `TestQuote_Errors` (casi `no base rule`, giorno scoperto, extra senza prezzo), `TestQuote_NoPriceErrorDetails`, `TestQuote_HalfDayNoPrice`. Stato: partial (motore implementato; "nessuna prenotazione creata" si verifica con il servizio prenotazioni, M2).
 
 **INV-16 — Scorporo IVA esatto.**
 Per ogni aliquota, `taxable + tax` è uguale all'importo IVA inclusa attribuito a quell'aliquota.
-Verificata da: `TestVATSplit_SumsToGross` (`internal/money`) e `TestQuote_VATBreakdown`. Stato: planned.
+Verificata da: `TestVATSplit_SumsToGross`, `TestVATSplit_Table` (`internal/money`) e `TestQuote_VAT` (`internal/domain/pricing`). Stato: implemented.
 
 ## Prenotazioni (spec 9, 10)
 
@@ -109,7 +112,7 @@ Verificata da: `TestBookingTransitions_OnlyAllowed` (tabella completa stati × a
 **INV-18 — Audit e outbox nella stessa transazione.**
 Ogni transizione di stato scrive una riga in `audit_log` e un evento in `outbox_events` nella stessa
 transazione: se la transazione fallisce non resta nessuna delle tre scritture.
-Verificata da: `TestBookingService_AuditAndOutboxAtomic` (tag `integration`). Stato: planned.
+Verificata da: `TestBookingService_AuditAndOutboxAtomic` (tag `integration`). Stato: planned (la primitiva è già verificata da `TestOutbox_SameTransactionSemantics`; manca il servizio prenotazioni, M2).
 
 **INV-19 — Conferma solo dal pagamento.**
 Una prenotazione online passa a `confirmed` solo da un webhook verificato del provider o dal driver
@@ -153,45 +156,45 @@ Verificata da: `TestCashSession_CloseComputesDifference`. Stato: planned.
 **INV-26 — Isolamento per stabilimento.**
 Nessuna query operativa viene eseguita senza `establishment_id` preso dal contesto autenticato; un
 utente o una chiave API di uno stabilimento non legge né modifica dati di un altro.
-Verificata da: `TestStore_CrossEstablishmentAccessDenied` (tag `integration`), `TestAdminAPI_CrossTenant`. Stato: planned.
+Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`). Stato: partial (implementato per stabilimenti, utenti e chiavi API di M0; ogni nuova tabella operativa aggiunge il proprio caso).
 
 **INV-27 — Permessi verificati nel dominio.**
 Ogni operazione di amministrazione verifica il permesso del ruolo (spec 16.1) nel servizio di dominio,
 indipendentemente dall'handler HTTP.
-Verificata da: `TestPermissions_Matrix` (tabella ruoli × operazioni). Stato: planned.
+Verificata da: `TestCan_Matrix`, `TestPrincipal_CanCombinesGrants` (`internal/domain/auth`, tabella ruoli × permessi). Stato: partial (matrice implementata; il controllo nel servizio di dominio esiste per gli stabilimenti, `establishment.Service`, e va esteso a ogni nuova operazione).
 
 **INV-28 — API pubblica senza dati dei clienti.**
 Le risposte di disponibilità, calendario, mappa e catalogo non contengono dati personali; i dati di una
 prenotazione si leggono solo con il token di sessione o il manage token.
-Verificata da: `TestPublicAPI_NoCustomerData`. Stato: planned.
+Verificata da: `TestPublicAPI_NoCustomerData`. Stato: planned (le API pubbliche di disponibilità e prenotazione arrivano in M2).
 
 **INV-29 — Segreti mai in chiaro.**
 Credenziali dei provider, segreti dei webhook e TOTP sono salvati cifrati (AES-GCM); email, telefoni e
 token non compaiono nei log.
-Verificata da: `TestSecrets_EncryptedAtRest`, `TestLogging_RedactsPersonalData`. Stato: planned.
+Verificata da: `TestKeyRing_TamperAndAAD` (`internal/crypto`), `TestService_TOTPEnrolmentAndLogin` (segreto TOTP cifrato con AAD = id utente), `TestDeliverer_SignedDeliveryRetryAndDisable` e `TestWebhookEndpoint_SecretBoundToRow` (segreto webhook cifrato con AAD = id endpoint). Stato: partial (cifratura implementata; `TestLogging_RedactsPersonalData` planned).
 
 **INV-30 — Audit log solo inserimento.**
 `audit_log` non viene mai aggiornato né cancellato dal codice applicativo (l'anonimizzazione GDPR agisce
 sui dati del cliente, non sulle righe di audit).
-Verificata da: `TestStore_AuditLogAppendOnly`. Stato: planned.
+Verificata da: `TestAuditLog_InsertOnly` (`internal/store`, tag `integration`: UPDATE e DELETE rifiutati dal database su SQLite e PostgreSQL). Stato: implemented.
 
 **INV-31 — Idempotenza delle creazioni.**
 Due `POST` con la stessa `Idempotency-Key` creano una sola risorsa e restituiscono la stessa risposta.
-Verificata da: `TestIdempotencyKey_SingleResource`, `TestConcurrency_IdempotencyKey`. Stato: planned.
+Verificata da: `TestIdempotency_ReplayMismatchAndRetry`, `TestConcurrency_IdempotencyKey`, `TestConcurrency_IdempotencyKey_ExpiredReclaim` (`internal/http/middleware`), `TestIdempotencyKeys_Claim` e `TestConcurrency_IdempotencyKeyClaim` (`internal/store`, tag `integration`). Stato: implemented.
 
 ## Eventi (spec 18)
 
 **INV-32 — Ogni evento dell'outbox viene consegnato almeno una volta.**
 Un evento con `dispatched_at` nullo viene ripreso dal dispatcher dopo un riavvio; i consumatori sono
 idempotenti sull'`id` dell'evento.
-Verificata da: `TestDispatcher_RedeliversAfterRestart`. Stato: planned.
+Verificata da: `TestDispatcher_RedeliversAfterRestart`, `TestOutbox_SameTransactionSemantics`, `TestConcurrency_OutboxDispatch`, `TestConcurrency_WebhookDelivery_ClaimedOnce` (`internal/domain/event`, tag `integration`). Stato: implemented.
 
 ## Primitive condivise
 
 **INV-33 — Aritmetica monetaria intera con arrotondamento half-even.**
 Le operazioni di `internal/money` non usano float e arrotondano al centesimo con half-even.
-Verificata da: `TestDivRoundHalfEven_Table`, `TestMulRat_Table`, `TestVATSplit_SumsToGross` (`internal/money`). Stato: planned.
+Verificata da: `TestDivRoundHalfEven_Table`, `TestMulRat_Table`, `TestMulRat_MatchesBigRatReference`, `TestVATSplit_SumsToGross` (`internal/money`). Stato: implemented.
 
 **INV-34 — Date di calendario canoniche.**
 `calendar.Date` si serializza sempre come `YYYY-MM-DD` (JSON e SQL) e un `Range` è inclusivo agli estremi.
-Verificata da: `TestDate_JSONRoundTrip`, `TestDate_SQLRoundTrip`, `TestRange_Inclusive` (`internal/calendar`). Stato: planned.
+Verificata da: `TestDate_JSONRoundTrip`, `TestDate_SQLRoundTrip`, `TestRange_Inclusive` (`internal/calendar`). Stato: implemented.

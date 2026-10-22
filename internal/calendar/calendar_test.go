@@ -107,7 +107,7 @@ func TestIn_UsesLocation(t *testing.T) {
 	}
 }
 
-func TestRange_AndDaysUntil(t *testing.T) {
+func TestRange_Inclusive(t *testing.T) {
 	from, to := MustParse("2026-03-28"), MustParse("2026-04-02") // spans the DST change
 	r := Range(from, to)
 	if len(r) != 6 || from.DaysUntil(to) != 5 || !r[5].Equal(to) {
