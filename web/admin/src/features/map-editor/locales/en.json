@@ -132,7 +132,7 @@
     "mixed": "— mixed —",
     "noZone": "no zone",
     "deactivateHint": "A spot with future bookings cannot be deleted: deactivate it.",
-    "keyboardHint": "Keyboard: Tab to move around, Enter to select, arrows to move (Shift ×5, Alt by 1), Delete to remove, Ctrl/Cmd+Z undo, Shift+Ctrl/Cmd+Z redo, Ctrl/Cmd+D duplicate, Ctrl/Cmd+A select all, Esc to deselect. Drag on the sand to select an area.",
+    "keyboardHint": "Keyboard: Tab enters and leaves the map, PageUp/PageDown or Home/End move between elements, Enter selects, arrows move (Shift ×5, Alt by 1), Delete removes, Ctrl/Cmd+Z undo, Shift+Ctrl/Cmd+Z redo, Ctrl/Cmd+D duplicate, Ctrl/Cmd+A select all, Esc deselects. Drag on the sand to select an area.",
     "noComponents": "No components in the catalog: add them in Configuration → Catalog to set the capacity.",
     "quantities": "Capacity and maximum extras per component",
     "component": "Component",

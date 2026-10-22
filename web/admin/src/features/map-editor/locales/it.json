@@ -132,7 +132,7 @@
     "mixed": "— diversi —",
     "noZone": "senza zona",
     "deactivateHint": "Una postazione con prenotazioni future non si può eliminare: disattivala.",
-    "keyboardHint": "Tastiera: Tab per spostarti, Invio per selezionare, frecce per muovere (Maiusc ×5, Alt di 1), Canc per eliminare, Ctrl/Cmd+Z annulla, Maiusc+Ctrl/Cmd+Z ripete, Ctrl/Cmd+D duplica, Ctrl/Cmd+A seleziona tutto, Esc deseleziona. Trascina sulla sabbia per selezionare un'area.",
+    "keyboardHint": "Tastiera: Tab per entrare e uscire dalla mappa, PagSu/PagGiù o Home/Fine per passare da un elemento all'altro, Invio per selezionare, frecce per muovere (Maiusc ×5, Alt di 1), Canc per eliminare, Ctrl/Cmd+Z annulla, Maiusc+Ctrl/Cmd+Z ripete, Ctrl/Cmd+D duplica, Ctrl/Cmd+A seleziona tutto, Esc deseleziona. Trascina sulla sabbia per selezionare un'area.",
     "noComponents": "Nessun componente nel catalogo: aggiungili in Configurazione → Catalogo per indicare la capienza.",
     "quantities": "Capienza e massimo di extra per componente",
     "component": "Componente",

@@ -132,7 +132,7 @@
     "mixed": "— gemischt —",
     "noZone": "ohne Zone",
     "deactivateHint": "Ein Platz mit künftigen Buchungen kann nicht gelöscht werden: deaktivieren Sie ihn.",
-    "keyboardHint": "Tastatur: Tab zum Wechseln, Enter zum Auswählen, Pfeile zum Verschieben (Umschalt ×5, Alt um 1), Entf zum Löschen, Strg/Cmd+Z rückgängig, Umschalt+Strg/Cmd+Z wiederholen, Strg/Cmd+D duplizieren, Strg/Cmd+A alles auswählen, Esc hebt die Auswahl auf. Auf dem Sand ziehen, um einen Bereich auszuwählen.",
+    "keyboardHint": "Tastatur: Tab betritt und verlässt den Plan, Bild↑/Bild↓ oder Pos1/Ende wechseln zwischen Elementen, Enter wählt aus, Pfeile verschieben (Umschalt ×5, Alt um 1), Entf löscht, Strg/Cmd+Z rückgängig, Umschalt+Strg/Cmd+Z wiederholen, Strg/Cmd+D duplizieren, Strg/Cmd+A alles auswählen, Esc hebt die Auswahl auf. Auf dem Sand ziehen, um einen Bereich auszuwählen.",
     "noComponents": "Keine Komponenten im Katalog: Füge sie unter Konfiguration → Katalog hinzu, um die Kapazität festzulegen.",
     "quantities": "Kapazität und maximale Extras pro Komponente",
     "component": "Komponente",

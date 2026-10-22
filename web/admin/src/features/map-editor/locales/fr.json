@@ -132,7 +132,7 @@
     "mixed": "— différents —",
     "noZone": "sans zone",
     "deactivateHint": "Un emplacement avec des réservations futures ne peut pas être supprimé : désactivez-le.",
-    "keyboardHint": "Clavier : Tab pour naviguer, Entrée pour sélectionner, flèches pour déplacer (Maj ×5, Alt de 1), Suppr pour supprimer, Ctrl/Cmd+Z annuler, Maj+Ctrl/Cmd+Z rétablir, Ctrl/Cmd+D dupliquer, Ctrl/Cmd+A tout sélectionner, Échap pour désélectionner. Faites glisser sur le sable pour sélectionner une zone.",
+    "keyboardHint": "Clavier : Tab entre et sort du plan, Page↑/Page↓ ou Début/Fin passent d'un élément à l'autre, Entrée sélectionne, flèches pour déplacer (Maj ×5, Alt de 1), Suppr supprime, Ctrl/Cmd+Z annuler, Maj+Ctrl/Cmd+Z rétablir, Ctrl/Cmd+D dupliquer, Ctrl/Cmd+A tout sélectionner, Échap désélectionne. Faites glisser sur le sable pour sélectionner une zone.",
     "noComponents": "Aucun composant dans le catalogue : ajoutez-les dans Configuration → Catalogue pour indiquer la capacité.",
     "quantities": "Capacité et extras maximum par composant",
     "component": "Composant",

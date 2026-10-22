@@ -112,6 +112,33 @@ describe('BeachMap', () => {
     expect(onActivate).toHaveBeenCalledTimes(3);
   });
 
+  it('is one tab stop: a roving tabindex moved with arrows, PageUp/PageDown and Home/End', () => {
+    const { container } = renderWithI18n(<BeachMap geometry={geometry} selectedIds={['s2']} />);
+    const svg = container.querySelector('svg') as SVGSVGElement;
+    const a1 = screen.getByRole('button', { name: 'Postazione A1: Libero' });
+    const a2 = screen.getByRole('button', { name: 'Postazione A2: Libero' });
+    const b1 = screen.getByRole('button', { name: 'Postazione B1: Libero' });
+    const b2 = screen.getByRole('button', { name: 'Postazione B2: Non disponibile' });
+    // Only the first selected spot is reachable with Tab; the others follow with the keys.
+    expect(svg.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+    expect(a2).toHaveAttribute('tabindex', '0');
+    expect(a1).toHaveAttribute('tabindex', '-1');
+
+    a2.focus();
+    fireEvent.keyDown(a2, { key: 'ArrowRight' });
+    expect(b1).toHaveFocus();
+    expect(b1).toHaveAttribute('tabindex', '0');
+    expect(svg.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+    fireEvent.keyDown(b1, { key: 'End' });
+    expect(b2).toHaveFocus();
+    fireEvent.keyDown(b2, { key: 'Home' });
+    expect(a1).toHaveFocus();
+    fireEvent.keyDown(a1, { key: 'PageDown' });
+    expect(a2).toHaveFocus();
+    fireEvent.keyDown(a2, { key: 'PageUp' });
+    expect(a1).toHaveFocus();
+  });
+
   it('reflects selection with aria-pressed and appends descriptions', () => {
     renderWithI18n(
       <BeachMap

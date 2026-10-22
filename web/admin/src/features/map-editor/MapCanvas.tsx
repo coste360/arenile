@@ -4,6 +4,9 @@ import {
   ShapeElement,
   decorationKindIcon,
   computeViewBox,
+  labelFontSize,
+  padViewBox,
+  useUnitsPerPixel,
   rectFromPoints,
   seaRect,
   shapeSize,
@@ -15,6 +18,7 @@ import {
   memo,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
@@ -127,7 +131,9 @@ export function MapCanvas(props: MapCanvasProps) {
   // Roving tabindex: one focusable element in the canvas.
   const order = [...doc.spots.map((s) => s.key), ...doc.decorations.map((d) => d.key)];
   const activeKey = order.find((k) => selection.has(k)) ?? order[0];
-  const vb = computeViewBox(doc.map);
+  // Room around the drawing so the sea band and strokes are never cut at the edge.
+  const vb = useMemo(() => padViewBox(computeViewBox(doc.map), 8), [doc.map]);
+  const unitsPerPixel = useUnitsPerPixel(svgRef, vb);
   const sea = seaRect(doc.map);
   const grid = doc.map.grid_size > 0 ? doc.map.grid_size : 0;
 
@@ -375,6 +381,7 @@ export function MapCanvas(props: MapCanvasProps) {
               focusable={d.key === activeKey}
               selected={selection.has(d.key)}
               label={props.decorationLabel(d)}
+              unitsPerPixel={unitsPerPixel}
             />
           ))}
           {doc.spots.map((s) => (
@@ -385,6 +392,7 @@ export function MapCanvas(props: MapCanvasProps) {
               selected={selection.has(s.key)}
               color={props.zoneColor(s.zone_id)}
               label={props.spotLabel(s)}
+              unitsPerPixel={unitsPerPixel}
             />
           ))}
           <rect
@@ -422,14 +430,18 @@ const SpotEl = memo(function SpotEl({
   selected,
   color,
   label,
+  unitsPerPixel,
 }: {
   spot: DraftSpot;
   focusable: boolean;
   selected: boolean;
   color: string;
   label: string;
+  /** Map units per screen pixel (zoom included): labels never go below 9px. */
+  unitsPerPixel: number;
 }) {
   const size = shapeSize(spot.shape);
+  const fontSize = labelFontSize(size, 0.34, unitsPerPixel);
   return (
     // The outer group carries only the drag translate (set imperatively).
     <g
@@ -456,20 +468,22 @@ const SpotEl = memo(function SpotEl({
           strokeDasharray={spot.active ? undefined : `${size * 0.12} ${size * 0.08}`}
         />
       </g>
-      <text
-        x={spot.x}
-        y={spot.y}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={Math.max(6, size * 0.34)}
-        fontWeight={600}
-        fill={readableTextColor(color)}
-        opacity={spot.active ? 1 : 0.6}
-        pointerEvents="none"
-        aria-hidden="true"
-      >
-        {spot.label}
-      </text>
+      {fontSize > 0 && (
+        <text
+          x={spot.x}
+          y={spot.y}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={fontSize}
+          fontWeight={600}
+          fill={readableTextColor(color)}
+          opacity={spot.active ? 1 : 0.6}
+          pointerEvents="none"
+          aria-hidden="true"
+        >
+          {spot.label}
+        </text>
+      )}
     </g>
   );
 });
@@ -479,16 +493,20 @@ const DecorationEl = memo(function DecorationEl({
   focusable,
   selected,
   label,
+  unitsPerPixel,
 }: {
   d: DraftDecoration;
   focusable: boolean;
   selected: boolean;
   label: string;
+  unitsPerPixel: number;
 }) {
   const { t } = useTranslation('mapEditor');
   const size = shapeSize(d.shape);
   // Room for a glyph above the label on square-ish shapes.
   const glyph = d.kind !== 'text' && size >= 28 ? size * 0.42 : 0;
+  // Readable beats contained: decoration labels may overflow a narrow shape.
+  const fontSize = Math.max(Math.min(size * (glyph > 0 ? 0.18 : 0.3), 14), 9 * unitsPerPixel);
   return (
     <g
       role="button"
@@ -528,7 +546,7 @@ const DecorationEl = memo(function DecorationEl({
         y={glyph > 0 ? d.y + size * 0.26 : d.y}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={Math.max(6, Math.min(size * (glyph > 0 ? 0.18 : 0.3), 14))}
+        fontSize={fontSize}
         className="fill-map-decoration-label"
         pointerEvents="none"
         aria-hidden="true"

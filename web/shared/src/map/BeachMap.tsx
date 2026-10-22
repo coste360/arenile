@@ -16,6 +16,7 @@ import {
   type ViewBox,
 } from './geometry';
 import { decorationKindIcon } from './icons';
+import { labelFontSize, useUnitsPerPixel } from './labels';
 import { MapGlyph } from './MapGlyph';
 import { MapLegend } from './MapLegend';
 import { MapZoomControls } from './MapZoomControls';
@@ -83,6 +84,10 @@ interface SpotProps {
   /** Hex override; undefined = theme token classes. */
   color: string | undefined;
   selected: boolean;
+  /** The one spot reachable with Tab (roving tabindex). */
+  focusable: boolean;
+  /** Map units per screen pixel, zoom included (label legibility). */
+  unitsPerPixel: number;
   ariaLabel: string;
   onActivate?: (spot: MapSpot) => void;
 }
@@ -92,11 +97,14 @@ const Spot = memo(function Spot({
   status,
   color,
   selected,
+  focusable,
+  unitsPerPixel,
   ariaLabel,
   onActivate,
 }: SpotProps) {
   const disabled = spot.active === false || !onActivate;
   const size = spot.shape.type === 'circle' ? spot.shape.w : Math.min(spot.shape.w, spot.shape.h);
+  const fontSize = labelFontSize(size, 0.38, unitsPerPixel);
   const activate = () => {
     if (spot.active !== false) onActivate?.(spot);
   };
@@ -109,7 +117,7 @@ const Spot = memo(function Spot({
   return (
     <g
       role="button"
-      tabIndex={0}
+      tabIndex={focusable ? 0 : -1}
       aria-label={ariaLabel}
       aria-pressed={selected}
       aria-disabled={disabled || undefined}
@@ -134,29 +142,41 @@ const Spot = memo(function Spot({
         )}
         strokeWidth={selected ? size * 0.12 : size * 0.04}
       />
-      <text
-        x={spot.x}
-        y={spot.y}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={size * 0.38}
-        fontWeight={600}
-        fill={color ? readableTextColor(color) : undefined}
-        className={color ? undefined : STATUS_CLASSES[status].labelFill}
-        pointerEvents="none"
-        aria-hidden="true"
-      >
-        {spot.label}
-      </text>
+      {fontSize > 0 && (
+        <text
+          x={spot.x}
+          y={spot.y}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={fontSize}
+          fontWeight={600}
+          fill={color ? readableTextColor(color) : undefined}
+          className={color ? undefined : STATUS_CLASSES[status].labelFill}
+          pointerEvents="none"
+          aria-hidden="true"
+        >
+          {spot.label}
+        </text>
+      )}
     </g>
   );
 });
 
-function Decoration({ decoration, label }: { decoration: MapDecoration; label: string }) {
+function Decoration({
+  decoration,
+  label,
+  unitsPerPixel,
+}: {
+  decoration: MapDecoration;
+  label: string;
+  unitsPerPixel: number;
+}) {
   const { shape, x, y } = decoration;
   const size = shape.type === 'circle' ? shape.w : Math.min(shape.w, shape.h);
   // Room for a glyph above the label on square-ish shapes.
   const glyph = decoration.kind !== 'text' && size >= 28 ? size * 0.42 : 0;
+  // Labels may overflow narrow decorations: readable beats contained here.
+  const fontSize = Math.max(size * (glyph > 0 ? 0.18 : 0.28), 9 * unitsPerPixel);
   return (
     <g
       transform={decoration.rotation ? `rotate(${decoration.rotation} ${x} ${y})` : undefined}
@@ -186,20 +206,36 @@ function Decoration({ decoration, label }: { decoration: MapDecoration; label: s
         y={glyph > 0 ? y + size * 0.26 : y}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={Math.max(6, size * (glyph > 0 ? 0.18 : 0.28))}
+        fontSize={fontSize}
         className="fill-map-decoration-label"
         pointerEvents="none"
       >
+        <title>{label}</title>
         {label}
       </text>
     </g>
   );
 }
 
+const NAV_KEYS: Record<string, 'prev' | 'next' | 'first' | 'last'> = {
+  ArrowLeft: 'prev',
+  ArrowUp: 'prev',
+  PageUp: 'prev',
+  ArrowRight: 'next',
+  ArrowDown: 'next',
+  PageDown: 'next',
+  Home: 'first',
+  End: 'last',
+};
+
 /**
  * Read-only SVG beach map (spec 11.1): logical coordinates in a viewBox,
  * pan and zoom with touch, mouse drag and wheel, accessible spots, sea side,
  * decorations and a status legend that is always visible.
+ *
+ * Keyboard: the map is one tab stop (the first selected spot, else the first
+ * spot); arrows, PageUp/PageDown and Home/End move between spots, Enter or
+ * Space activate one, Tab leaves the map.
  */
 export function BeachMap({
   geometry,
@@ -224,6 +260,37 @@ export function BeachMap({
   const vb = useMemo(() => computeViewBox(geometry), [geometry]);
   const sea = useMemo(() => seaRect(geometry), [geometry]);
   const selected = useMemo(() => new Set(selectedIds ?? []), [selectedIds]);
+  const unitsPerPixel = useUnitsPerPixel(svgRef, vb) / view.scale;
+
+  // Roving tabindex: one focusable spot, moved with the keyboard.
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const spotIds = geometry.spots.map((s) => s.id);
+  const focusableId =
+    (activeId && spotIds.includes(activeId) ? activeId : null) ??
+    spotIds.find((id) => selected.has(id)) ??
+    spotIds[0];
+  const onKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
+    const move = NAV_KEYS[e.key];
+    if (!move) return;
+    const current = (e.target as Element | null)?.closest?.('[data-spot-id]');
+    const id = current?.getAttribute('data-spot-id');
+    if (!id) return;
+    const at = spotIds.indexOf(id);
+    const to =
+      move === 'first'
+        ? 0
+        : move === 'last'
+          ? spotIds.length - 1
+          : Math.min(spotIds.length - 1, Math.max(0, at + (move === 'next' ? 1 : -1)));
+    const next = spotIds[to];
+    if (!next || next === id) {
+      e.preventDefault();
+      return;
+    }
+    e.preventDefault();
+    setActiveId(next);
+    svgRef.current?.querySelector<SVGGElement>(`[data-spot-id="${next}"]`)?.focus();
+  };
 
   const statusOf = useCallback(
     (spot: MapSpot): SpotStatus =>
@@ -284,6 +351,7 @@ export function BeachMap({
         className="block w-full touch-none rounded-lg bg-map-sand select-none"
         // Height is a caller-provided CSS length (dynamic geometry).
         style={{ height }}
+        onKeyDown={onKeyDown}
       >
         <title id={titleId}>{accessibleTitle}</title>
         <g transform={transformAttr(view)} data-testid="beach-map-viewport">
@@ -323,6 +391,7 @@ export function BeachMap({
             <Decoration
               key={d.id}
               decoration={d}
+              unitsPerPixel={unitsPerPixel}
               label={
                 d.label ??
                 (d.kind === 'text' ? '' : t(`map.decoration.${d.kind}`, { defaultValue: '' }))
@@ -343,6 +412,8 @@ export function BeachMap({
                 status={status}
                 color={statusColors?.[status]}
                 selected={selected.has(spot.id)}
+                focusable={spot.id === focusableId}
+                unitsPerPixel={unitsPerPixel}
                 ariaLabel={extra ? `${aria}, ${extra}` : aria}
                 onActivate={onSpotActivate}
               />
