@@ -47,6 +47,7 @@
     "title": "Plan de la plage",
     "sea": "Mer",
     "fitView": "Ajuster à la vue",
+    "zoom": "Niveau de zoom",
     "zoomIn": "Zoom avant",
     "zoomOut": "Zoom arrière",
     "legend": "Légende",
@@ -80,7 +81,7 @@
   },
   "auth": {
     "loginTitle": "Connexion au panneau",
-    "loginSubtitle": "Gestion d'établissements balnéaires",
+    "loginSubtitle": "Saisissez votre e-mail et votre mot de passe pour continuer.",
     "email": "E-mail",
     "password": "Mot de passe",
     "submit": "Se connecter",
@@ -127,7 +128,14 @@
       "policies": "Règles",
       "setup": "Configuration guidée",
       "team": "Utilisateurs"
-    }
+    },
+    "operations": "Exploitation",
+    "configGroup": "Configuration",
+    "soon": "bientôt",
+    "establishments": "Établissements",
+    "goTo": "Aller à…",
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher une page…"
   },
   "admin": {
     "placeholder": {
@@ -167,7 +175,10 @@
       "placeholder": "Choisissez un établissement",
       "new": "+ Nouvel établissement",
       "none": "Aucun établissement"
-    }
+    },
+    "userMenu": "Menu utilisateur",
+    "switcherNew": "Nouvel établissement",
+    "brandTagline": "Gestion des établissements de plage"
   },
   "booking": {
     "title": "Réservez votre place à la plage",
@@ -189,6 +200,66 @@
     "disabled": "La réservation en ligne n'est pas active pour cet établissement.",
     "contact": "Contacts",
     "poweredBy": "Réservations sans commission avec Arenile",
-    "mapLoading": "Chargement du plan…"
+    "mapLoading": "Chargement du plan…",
+    "when": {
+      "dates": "Dates du séjour",
+      "days_one": "{{count}} jour sélectionné",
+      "days_other": "{{count}} jours sélectionnés",
+      "pickHint": "Choisissez le premier et le dernier jour : pour une seule journée, touchez deux fois le même jour."
+    }
+  },
+  "ui": {
+    "close": "Fermer",
+    "toggleSidebar": "Afficher ou masquer la barre latérale",
+    "sidebar": "Barre latérale",
+    "sidebarDescription": "Navigation du panneau",
+    "breadcrumb": "Fil d'Ariane",
+    "more": "Plus",
+    "pagination": "Pagination",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "previousPage": "Aller à la page précédente",
+    "nextPage": "Aller à la page suivante",
+    "firstPage": "Aller à la première page",
+    "lastPage": "Aller à la dernière page",
+    "morePages": "Autres pages",
+    "commandTitle": "Palette de commandes",
+    "commandDescription": "Rechercher une page ou une commande",
+    "noResults": "Aucun résultat.",
+    "optional": "facultatif",
+    "theme": {
+      "label": "Thème",
+      "toggle": "Changer de thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "date": {
+      "placeholder": "Choisir une date",
+      "rangePlaceholder": "Choisir une période",
+      "clear": "Effacer",
+      "open": "Ouvrir le calendrier"
+    },
+    "table": {
+      "filter": "Filtrer…",
+      "columns": "Colonnes",
+      "toggleColumns": "Afficher ou masquer des colonnes",
+      "empty": "Aucun résultat.",
+      "rowsPerPage": "Lignes par page",
+      "pageOf": "Page {{page}} sur {{pages}}",
+      "rowCount": "{{count}} lignes",
+      "sortAsc": "Croissant",
+      "sortDesc": "Décroissant",
+      "sortBy": "Trier par {{column}}",
+      "hideColumn": "Masquer la colonne"
+    },
+    "confirm": {
+      "confirm": "Confirmer",
+      "cancel": "Annuler"
+    },
+    "i18nText": {
+      "languages": "Langues",
+      "missing": "à traduire"
+    }
   }
 }

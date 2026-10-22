@@ -1,11 +1,10 @@
 import { createApiClient } from '@arenile/shared/api';
 import { resolveLocale } from '@arenile/shared/i18n';
-import { applyTheme } from '@arenile/shared/theme';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { createAdminI18n } from './i18n';
-import './index.css';
+import '@arenile/shared/styles/globals.css';
 
 async function bootstrap() {
   const locale = resolveLocale({
@@ -14,7 +13,6 @@ async function bootstrap() {
   });
   const i18n = await createAdminI18n(locale);
   document.documentElement.lang = locale;
-  applyTheme(null);
   const api = createApiClient();
   const root = document.getElementById('root');
   if (!root) throw new Error('missing #root');

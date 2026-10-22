@@ -1,16 +1,52 @@
-export { cn } from './cn';
-export { Button, buttonVariants, type ButtonProps } from './Button';
-export { Input, type InputProps } from './Input';
-export { Label } from './Label';
-export { Card, CardContent, CardDescription, CardHeader, CardTitle } from './Card';
-export {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  DialogTrigger,
-  type DialogContentProps,
-} from './Dialog';
+/**
+ * shadcn/ui components (added with `npx shadcn@latest add <name>`, see README.md).
+ * Prefer per-file imports in web/booking ('@arenile/shared/ui/button') to keep the bundle small.
+ */
+export { cn } from '@arenile/shared/lib/utils';
+export * from './accordion';
+export * from './alert-dialog';
+export * from './alert';
+export * from './avatar';
+export * from './badge';
+export * from './breadcrumb';
+export * from './button-group';
+export * from './button';
+export * from './calendar';
+export * from './card';
+export * from './chart';
+export * from './checkbox';
+export * from './collapsible';
+export * from './command';
+export * from './context-menu';
+export * from './dialog';
+export * from './drawer';
+export * from './dropdown-menu';
+export * from './empty';
+export * from './field';
+export * from './form';
+export * from './hover-card';
+export * from './input-group';
+export * from './input';
+export * from './kbd';
+export * from './label';
+export * from './pagination';
+export * from './popover';
+export * from './progress';
+export * from './radio-group';
+export * from './resizable';
+export * from './scroll-area';
+export * from './select';
+export * from './separator';
+export * from './sheet';
+export * from './sidebar';
+export * from './skeleton';
+export * from './slider';
+export * from './sonner';
+export * from './spinner';
+export * from './switch';
+export * from './table';
+export * from './tabs';
+export * from './textarea';
+export * from './toggle-group';
+export * from './toggle';
+export * from './tooltip';

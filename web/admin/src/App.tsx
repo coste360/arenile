@@ -1,4 +1,7 @@
 import { ApiClientProvider, type ApiClient } from '@arenile/shared/api';
+import { ThemeProvider } from '@arenile/shared/ui/patterns';
+import { Toaster } from '@arenile/shared/ui/sonner';
+import { TooltipProvider } from '@arenile/shared/ui/tooltip';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { RouterProvider, type RouterHistory } from '@tanstack/react-router';
 import type { i18n as I18n } from 'i18next';
@@ -19,11 +22,16 @@ export function App({ api, i18n, queryClient, history }: AppProps) {
   const [router] = useState(() => createAppRouter({ queryClient: qc, api }, history));
   return (
     <I18nextProvider i18n={i18n}>
-      <ApiClientProvider client={api}>
-        <QueryClientProvider client={qc}>
-          <RouterProvider router={router} />
-        </QueryClientProvider>
-      </ApiClientProvider>
+      <ThemeProvider>
+        <TooltipProvider delayDuration={300}>
+          <ApiClientProvider client={api}>
+            <QueryClientProvider client={qc}>
+              <RouterProvider router={router} />
+            </QueryClientProvider>
+          </ApiClientProvider>
+          <Toaster richColors closeButton position="top-right" />
+        </TooltipProvider>
+      </ThemeProvider>
     </I18nextProvider>
   );
 }

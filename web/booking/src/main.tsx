@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { BookingPage } from './BookingPage';
 import { parseBookingLocation } from './location';
-import './index.css';
+import '@arenile/shared/styles/globals.css';
 
 async function bootstrap() {
   const location = parseBookingLocation(window.location.pathname, window.location.search);

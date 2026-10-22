@@ -47,6 +47,7 @@
     "title": "Beach map",
     "sea": "Sea",
     "fitView": "Fit to view",
+    "zoom": "Zoom level",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "legend": "Legend",
@@ -80,7 +81,7 @@
   },
   "auth": {
     "loginTitle": "Sign in to the panel",
-    "loginSubtitle": "Beach establishment management",
+    "loginSubtitle": "Enter your email and password to continue.",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
@@ -127,7 +128,14 @@
       "policies": "Policies",
       "setup": "Guided setup",
       "team": "Users"
-    }
+    },
+    "operations": "Operations",
+    "configGroup": "Configuration",
+    "soon": "soon",
+    "establishments": "Establishments",
+    "goTo": "Go to…",
+    "search": "Search",
+    "searchPlaceholder": "Search a page…"
   },
   "admin": {
     "placeholder": {
@@ -167,7 +175,10 @@
       "placeholder": "Choose an establishment",
       "new": "+ New establishment",
       "none": "No establishments"
-    }
+    },
+    "userMenu": "User menu",
+    "switcherNew": "New establishment",
+    "brandTagline": "Beach establishment management"
   },
   "booking": {
     "title": "Book your spot on the beach",
@@ -189,6 +200,66 @@
     "disabled": "Online booking is not enabled for this establishment.",
     "contact": "Contacts",
     "poweredBy": "Commission-free bookings with Arenile",
-    "mapLoading": "Loading map…"
+    "mapLoading": "Loading map…",
+    "when": {
+      "dates": "Dates of your stay",
+      "days_one": "{{count}} day selected",
+      "days_other": "{{count}} days selected",
+      "pickHint": "Pick the first and last day: for a single day, tap the same day twice."
+    }
+  },
+  "ui": {
+    "close": "Close",
+    "toggleSidebar": "Toggle sidebar",
+    "sidebar": "Sidebar",
+    "sidebarDescription": "Panel navigation",
+    "breadcrumb": "Breadcrumb",
+    "more": "More",
+    "pagination": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "previousPage": "Go to previous page",
+    "nextPage": "Go to next page",
+    "firstPage": "Go to first page",
+    "lastPage": "Go to last page",
+    "morePages": "More pages",
+    "commandTitle": "Command palette",
+    "commandDescription": "Search for a page or a command",
+    "noResults": "No results.",
+    "optional": "optional",
+    "theme": {
+      "label": "Theme",
+      "toggle": "Change theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "date": {
+      "placeholder": "Pick a date",
+      "rangePlaceholder": "Pick a date range",
+      "clear": "Clear",
+      "open": "Open calendar"
+    },
+    "table": {
+      "filter": "Filter…",
+      "columns": "Columns",
+      "toggleColumns": "Show or hide columns",
+      "empty": "No results.",
+      "rowsPerPage": "Rows per page",
+      "pageOf": "Page {{page}} of {{pages}}",
+      "rowCount": "{{count}} rows",
+      "sortAsc": "Ascending",
+      "sortDesc": "Descending",
+      "sortBy": "Sort by {{column}}",
+      "hideColumn": "Hide column"
+    },
+    "confirm": {
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "i18nText": {
+      "languages": "Languages",
+      "missing": "missing"
+    }
   }
 }

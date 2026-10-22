@@ -47,6 +47,7 @@
     "title": "Mappa dello stabilimento",
     "sea": "Mare",
     "fitView": "Adatta alla vista",
+    "zoom": "Livello di zoom",
     "zoomIn": "Ingrandisci",
     "zoomOut": "Riduci",
     "legend": "Legenda",
@@ -80,7 +81,7 @@
   },
   "auth": {
     "loginTitle": "Accedi al pannello",
-    "loginSubtitle": "Gestionale per stabilimenti balneari",
+    "loginSubtitle": "Inserisci email e password per continuare.",
     "email": "Email",
     "password": "Password",
     "submit": "Accedi",
@@ -127,7 +128,14 @@
       "policies": "Policy",
       "setup": "Configurazione guidata",
       "team": "Utenti"
-    }
+    },
+    "operations": "Operatività",
+    "configGroup": "Configurazione",
+    "soon": "presto",
+    "establishments": "Stabilimenti",
+    "goTo": "Vai a…",
+    "search": "Cerca",
+    "searchPlaceholder": "Cerca una pagina…"
   },
   "admin": {
     "placeholder": {
@@ -167,7 +175,10 @@
       "placeholder": "Scegli uno stabilimento",
       "new": "+ Nuovo stabilimento",
       "none": "Nessuno stabilimento"
-    }
+    },
+    "userMenu": "Menu utente",
+    "switcherNew": "Nuovo stabilimento",
+    "brandTagline": "Gestionale per stabilimenti balneari"
   },
   "booking": {
     "title": "Prenota il tuo posto in spiaggia",
@@ -189,6 +200,66 @@
     "disabled": "Le prenotazioni online di questo stabilimento non sono attive.",
     "contact": "Contatti",
     "poweredBy": "Prenotazioni senza commissioni con Arenile",
-    "mapLoading": "Caricamento della mappa…"
+    "mapLoading": "Caricamento della mappa…",
+    "when": {
+      "dates": "Date del soggiorno",
+      "days_one": "{{count}} giorno selezionato",
+      "days_other": "{{count}} giorni selezionati",
+      "pickHint": "Scegli il primo e l’ultimo giorno: per una sola giornata tocca due volte lo stesso giorno."
+    }
+  },
+  "ui": {
+    "close": "Chiudi",
+    "toggleSidebar": "Mostra o nascondi la barra laterale",
+    "sidebar": "Barra laterale",
+    "sidebarDescription": "Navigazione del pannello",
+    "breadcrumb": "Percorso",
+    "more": "Altro",
+    "pagination": "Paginazione",
+    "previous": "Precedente",
+    "next": "Successiva",
+    "previousPage": "Vai alla pagina precedente",
+    "nextPage": "Vai alla pagina successiva",
+    "firstPage": "Vai alla prima pagina",
+    "lastPage": "Vai all’ultima pagina",
+    "morePages": "Altre pagine",
+    "commandTitle": "Comandi rapidi",
+    "commandDescription": "Cerca una pagina o un comando",
+    "noResults": "Nessun risultato.",
+    "optional": "facoltativo",
+    "theme": {
+      "label": "Tema",
+      "toggle": "Cambia tema",
+      "light": "Chiaro",
+      "dark": "Scuro",
+      "system": "Sistema"
+    },
+    "date": {
+      "placeholder": "Seleziona una data",
+      "rangePlaceholder": "Seleziona un periodo",
+      "clear": "Cancella",
+      "open": "Apri il calendario"
+    },
+    "table": {
+      "filter": "Filtra…",
+      "columns": "Colonne",
+      "toggleColumns": "Mostra o nascondi colonne",
+      "empty": "Nessun risultato.",
+      "rowsPerPage": "Righe per pagina",
+      "pageOf": "Pagina {{page}} di {{pages}}",
+      "rowCount": "{{count}} righe",
+      "sortAsc": "Crescente",
+      "sortDesc": "Decrescente",
+      "sortBy": "Ordina per {{column}}",
+      "hideColumn": "Nascondi colonna"
+    },
+    "confirm": {
+      "confirm": "Conferma",
+      "cancel": "Annulla"
+    },
+    "i18nText": {
+      "languages": "Lingue",
+      "missing": "da tradurre"
+    }
   }
 }

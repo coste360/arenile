@@ -157,13 +157,19 @@ describe('admin app', () => {
       'Abbonamenti',
       'Cassa',
       'Report',
-      'Configurazione',
     ]);
+    // Sections not delivered yet are visible but disabled.
+    expect(within(nav).getByRole('link', { name: 'Cassa' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(within(nav).getByRole('link', { name: 'Mappa' })).not.toHaveAttribute('aria-disabled');
     expect(await screen.findByRole('rowheader', { name: 'Lido Demo' })).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Apri la pagina pubblica di Lido Demo' }),
     ).toHaveAttribute('href', '/b/lido-demo');
-    expect(within(nav).getByRole('link', { name: 'Configurazione' })).toHaveAttribute(
+    const config = screen.getByRole('navigation', { name: 'Configurazione dello stabilimento' });
+    expect(within(config).getByRole('link', { name: 'Stabilimenti' })).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -180,7 +186,8 @@ describe('admin app', () => {
         return new Response(null, { status: 204 });
       },
     });
-    await user.click(await screen.findByRole('button', { name: 'Esci' }));
+    await user.click(await screen.findByRole('button', { name: 'Menu utente' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Esci' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/login'));
   });
 
@@ -196,6 +203,12 @@ const OWNER_ME = {
   ...ME,
   memberships: [{ organization_id: 'o1', role: 'owner', permissions: [] }],
 };
+
+/** Opens the establishment switcher once the list is loaded. */
+async function openSwitcher(user: ReturnType<typeof userEvent.setup>) {
+  const trigger = await screen.findByRole('button', { name: /^Stabilimento: Lido/ });
+  await user.click(trigger);
+}
 
 describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
   const routes = {
@@ -257,42 +270,40 @@ describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
       name: 'Configurazione dello stabilimento',
     });
     expect(within(nav).queryByRole('link', { name: 'Utenti' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: '+ Nuovo stabilimento' })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Stabilimento:/ }));
+    await screen.findByRole('menuitemradio', { name: 'Lido Demo' });
+    expect(screen.queryByRole('menuitem', { name: 'Nuovo stabilimento' })).not.toBeInTheDocument();
   });
 
   it('switches establishment keeping the section', async () => {
     const user = userEvent.setup();
     const { history } = setup('/admin/e/e1/pricing', routes);
-    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
-    await screen.findByRole('option', { name: 'Lido Due' });
-    await user.selectOptions(select, 'e2');
+    await openSwitcher(user);
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Lido Due' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/pricing'));
   });
 
   it('switches from a map document to the maps list', async () => {
     const user = userEvent.setup();
     const { history } = setup('/admin/e/e1/maps/m1', routes);
-    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
-    await screen.findByRole('option', { name: 'Lido Due' });
-    await user.selectOptions(select, 'e2');
+    await openSwitcher(user);
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Lido Due' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/maps'));
   });
 
   it('opens the new establishment page from the switcher (owners)', async () => {
     const user = userEvent.setup();
     const { history } = setup('/admin/oggi', routes);
-    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
-    await screen.findByRole('option', { name: 'Lido Demo' });
-    await user.selectOptions(select, '__new__');
+    await openSwitcher(user);
+    await user.click(await screen.findByRole('menuitem', { name: 'Nuovo stabilimento' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/establishments/new'));
   });
 
   it('goes to the establishment settings when switching from a global page', async () => {
     const user = userEvent.setup();
     const { history } = setup('/admin/oggi', routes);
-    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
-    await screen.findByRole('option', { name: 'Lido Due' });
-    await user.selectOptions(select, 'e2');
+    await openSwitcher(user);
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Lido Due' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/config/establishment'));
   });
 });

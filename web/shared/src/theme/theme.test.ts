@@ -36,11 +36,12 @@ describe('resolveTheme', () => {
 describe('themeToCssVars / applyTheme', () => {
   it('exposes css variables and writes them on an element', () => {
     const vars = themeToCssVars({ primary_color: '#000000' });
-    expect(vars['--ar-primary']).toBe('#000000');
-    expect(vars['--ar-primary-foreground']).toBe('#ffffff');
+    expect(vars['--primary']).toBe('#000000');
+    expect(vars['--primary-foreground']).toBe('#ffffff');
     const el = document.createElement('div');
     applyTheme({ primary_color: '#000000' }, el);
-    expect(el.style.getPropertyValue('--ar-primary')).toBe('#000000');
+    expect(el.style.getPropertyValue('--primary')).toBe('#000000');
+    expect(Object.keys(vars).some((k) => k.startsWith('--ar-'))).toBe(false);
   });
 });
 

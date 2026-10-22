@@ -11,12 +11,13 @@
     "gen": "npm run gen -w @arenile/shared",
     "dev": "concurrently -n admin,booking -c blue,green \"npm run dev -w @arenile/admin\" \"npm run dev -w @arenile/booking\"",
     "build": "npm run build -w @arenile/admin && npm run build -w @arenile/booking",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "node scripts/css-guard.mjs && eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",
-    "budget": "npm run budget -w @arenile/booking"
+    "budget": "npm run budget -w @arenile/booking",
+    "lint:css": "node scripts/css-guard.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

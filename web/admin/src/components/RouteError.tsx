@@ -1,14 +1,24 @@
-import { Button } from '@arenile/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
+import { Button } from '@arenile/shared/ui/button';
+import { AlertCircleIcon, RotateCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { problemMessageKey } from '../lib/problem';
 
 export function RouteError({ error, reset }: { error: unknown; reset: () => void }) {
   const { t } = useTranslation();
   return (
-    <div role="alert" className="mx-auto max-w-md space-y-3 p-6">
-      <h1 className="text-xl font-semibold">{t('common.errors.title')}</h1>
-      <p className="text-slate-700">{t(problemMessageKey(error))}</p>
-      <Button onClick={reset}>{t('common.retry')}</Button>
+    <div className="mx-auto max-w-md space-y-4 p-6">
+      <Alert variant="destructive">
+        <AlertCircleIcon aria-hidden="true" />
+        <AlertTitle>
+          <h1>{t('common.errors.title')}</h1>
+        </AlertTitle>
+        <AlertDescription>{t(problemMessageKey(error))}</AlertDescription>
+      </Alert>
+      <Button onClick={reset}>
+        <RotateCwIcon aria-hidden="true" />
+        {t('common.retry')}
+      </Button>
     </div>
   );
 }

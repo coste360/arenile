@@ -47,6 +47,7 @@
     "title": "Strandplan",
     "sea": "Meer",
     "fitView": "An Ansicht anpassen",
+    "zoom": "Zoomstufe",
     "zoomIn": "Vergrößern",
     "zoomOut": "Verkleinern",
     "legend": "Legende",
@@ -80,7 +81,7 @@
   },
   "auth": {
     "loginTitle": "Im Verwaltungsbereich anmelden",
-    "loginSubtitle": "Verwaltung von Strandbädern",
+    "loginSubtitle": "Gib E-Mail und Passwort ein, um fortzufahren.",
     "email": "E-Mail",
     "password": "Passwort",
     "submit": "Anmelden",
@@ -127,7 +128,14 @@
       "policies": "Regeln",
       "setup": "Geführte Einrichtung",
       "team": "Benutzer"
-    }
+    },
+    "operations": "Betrieb",
+    "configGroup": "Konfiguration",
+    "soon": "bald",
+    "establishments": "Betriebe",
+    "goTo": "Gehe zu…",
+    "search": "Suchen",
+    "searchPlaceholder": "Seite suchen…"
   },
   "admin": {
     "placeholder": {
@@ -167,7 +175,10 @@
       "placeholder": "Betrieb auswählen",
       "new": "+ Neuer Betrieb",
       "none": "Keine Betriebe"
-    }
+    },
+    "userMenu": "Benutzermenü",
+    "switcherNew": "Neuer Betrieb",
+    "brandTagline": "Verwaltung für Strandbäder"
   },
   "booking": {
     "title": "Buchen Sie Ihren Platz am Strand",
@@ -189,6 +200,66 @@
     "disabled": "Die Online-Buchung ist für dieses Strandbad nicht aktiv.",
     "contact": "Kontakt",
     "poweredBy": "Provisionsfreie Buchungen mit Arenile",
-    "mapLoading": "Plan wird geladen…"
+    "mapLoading": "Plan wird geladen…",
+    "when": {
+      "dates": "Aufenthaltsdaten",
+      "days_one": "{{count}} Tag ausgewählt",
+      "days_other": "{{count}} Tage ausgewählt",
+      "pickHint": "Wähle den ersten und letzten Tag: Für einen einzelnen Tag tippe zweimal auf denselben Tag."
+    }
+  },
+  "ui": {
+    "close": "Schließen",
+    "toggleSidebar": "Seitenleiste ein-/ausblenden",
+    "sidebar": "Seitenleiste",
+    "sidebarDescription": "Navigation des Verwaltungsbereichs",
+    "breadcrumb": "Brotkrümelnavigation",
+    "more": "Mehr",
+    "pagination": "Seitennavigation",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "previousPage": "Zur vorherigen Seite",
+    "nextPage": "Zur nächsten Seite",
+    "firstPage": "Zur ersten Seite",
+    "lastPage": "Zur letzten Seite",
+    "morePages": "Weitere Seiten",
+    "commandTitle": "Befehlspalette",
+    "commandDescription": "Seite oder Befehl suchen",
+    "noResults": "Keine Ergebnisse.",
+    "optional": "optional",
+    "theme": {
+      "label": "Design",
+      "toggle": "Design wechseln",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    },
+    "date": {
+      "placeholder": "Datum wählen",
+      "rangePlaceholder": "Zeitraum wählen",
+      "clear": "Löschen",
+      "open": "Kalender öffnen"
+    },
+    "table": {
+      "filter": "Filtern…",
+      "columns": "Spalten",
+      "toggleColumns": "Spalten ein-/ausblenden",
+      "empty": "Keine Ergebnisse.",
+      "rowsPerPage": "Zeilen pro Seite",
+      "pageOf": "Seite {{page}} von {{pages}}",
+      "rowCount": "{{count}} Zeilen",
+      "sortAsc": "Aufsteigend",
+      "sortDesc": "Absteigend",
+      "sortBy": "Nach {{column}} sortieren",
+      "hideColumn": "Spalte ausblenden"
+    },
+    "confirm": {
+      "confirm": "Bestätigen",
+      "cancel": "Abbrechen"
+    },
+    "i18nText": {
+      "languages": "Sprachen",
+      "missing": "fehlt"
+    }
   }
 }

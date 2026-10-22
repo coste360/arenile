@@ -32,7 +32,8 @@ export const DEFAULT_ACCENT = '#f2b134';
 const SURFACE = '#ffffff';
 
 const FONT_STACKS: Record<string, string> = {
-  Inter: "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  Inter:
+    "'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
   system: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
   serif: "ui-serif, Georgia, Cambria, 'Times New Roman', serif",
 };
@@ -79,19 +80,24 @@ export function resolveTheme(theme: Theme | null | undefined): ResolvedTheme {
   };
 }
 
-/** CSS custom properties consumed by tokens.css and the Tailwind theme. */
+/**
+ * CSS custom properties of the shadcn theme (styles/globals.css) overridden by
+ * the establishment theme on the public pages: primary, highlight (= theme
+ * accent), radius and font.
+ */
 export function themeToCssVars(
   theme: Theme | ResolvedTheme | null | undefined,
 ): Record<string, string> {
   const r = theme && 'primaryForeground' in theme ? theme : resolveTheme(theme as Theme);
   return {
-    '--ar-primary': r.primary,
-    '--ar-primary-foreground': r.primaryForeground,
-    '--ar-primary-on-surface': r.primaryOnSurface,
-    '--ar-accent': r.accent,
-    '--ar-accent-foreground': r.accentForeground,
-    '--ar-font-family': r.fontFamily,
-    '--ar-radius': r.radius,
+    '--primary': r.primary,
+    '--primary-foreground': r.primaryForeground,
+    '--primary-on-surface': r.primaryOnSurface,
+    '--ring': r.primary,
+    '--highlight': r.accent,
+    '--highlight-foreground': r.accentForeground,
+    '--radius': r.radius,
+    '--app-font': r.fontFamily,
   };
 }
 

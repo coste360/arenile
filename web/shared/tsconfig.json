@@ -1,7 +1,13 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@arenile/shared/ui": ["./src/ui/index.ts"],
+      "@arenile/shared/ui/*": ["./src/ui/*"],
+      "@arenile/shared/lib/*": ["./src/lib/*"],
+      "@arenile/shared/hooks/*": ["./src/hooks/*"]
+    }
   },
   "include": ["src", "api", "test", "vitest.config.ts"]
 }
