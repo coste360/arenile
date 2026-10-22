@@ -4,7 +4,7 @@
 - Repository, struttura, CI, Dockerfile, compose, OpenAPI iniziale.
 - Configurazione, migrazioni su entrambi i dialetti, CLI, autenticazione e ruoli, audit log, outbox, job runner.
 - Supporto agli agenti (sezione 27): `AGENTS.md`, `CLAUDE.md`, `.claude/` con regole, skill, subagent e impostazioni, script degli hook, devcontainer, template dei task, `docs/architecture.md`, `docs/invariants.md`, primi cinque ADR, Makefile completo, `make seed`.
-- **Accettazione:** `docker compose up` avvia un'istanza vuota, `arenile admin create` permette il login, la CI è verde su SQLite e PostgreSQL. Un agente avviato in un devcontainer nuovo, con il solo task "aggiungi l'endpoint `GET /api/admin/v1/establishments`", completa il lavoro usando `/new-endpoint` e supera `make check` senza istruzioni aggiuntive.
+- **Accettazione:** `docker compose up` avvia un'istanza vuota, `arenile admin create` permette il login, la CI è verde su SQLite e PostgreSQL. Un agente avviato in un devcontainer nuovo, con il solo task "aggiungi l'endpoint `GET /api/admin/v1/establishments/{id}/audit`" (registro attività dello stabilimento; l'elenco degli stabilimenti è già parte di M0, vedi ADR 0006), completa il lavoro usando `/new-endpoint` e supera `make check` senza istruzioni aggiuntive.
 
 ### M1 — Inventario e mappa
 - Stabilimento, stagioni, periodi, chiusure.

@@ -88,6 +88,9 @@ Variante `docker-compose.postgres.yml` con servizio PostgreSQL e `DATABASE_URL`.
 | `ARENILE_TRUSTED_PROXIES` | vuoto | CIDR dei proxy per l'IP reale |
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | |
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
+| `ARENILE_DEV` | `false` | Modalità sviluppo (ADR 0006): `ARENILE_BASE_URL` facoltativo, chiave generata in `dev-secret.key`. Mai in produzione |
+| `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `_NAME`, `_ORG` | vuoto | Primo owner creato da `serve` solo se non esistono utenti (ADR 0006); richiedono `ARENILE_ADMIN_PASSWORD` |
+| `ARENILE_ADMIN_PASSWORD` | vuoto | Password per il primo owner o per `admin create` non interattivo |
 
 ### 24.5 Operatività
 

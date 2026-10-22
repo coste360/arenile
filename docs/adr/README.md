@@ -13,6 +13,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0003](0003-allocations-unique-constraint.md) | Disponibilità garantita dal vincolo unique sulle allocazioni | accettato |
 | [0004](0004-pricing-pure-function.md) | Motore prezzi come funzione pura | accettato |
 | [0005](0005-openapi-spec-first.md) | Contratto OpenAPI spec-first con codice generato | accettato |
+| [0006](0006-deviazioni-m0-dalla-specifica.md) | Deviazioni di M0: `ParseWebhook` con credenziali, `ARENILE_DEV`, endpoint TOTP, primo owner da variabili | accettato |
 
 ## Come aggiungere un ADR
 

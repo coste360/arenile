@@ -12,8 +12,9 @@ type PaymentProvider interface {
     // Crea un'intenzione di pagamento e restituisce i dati per il client.
     CreatePayment(ctx context.Context, req CreatePaymentRequest) (*CreatePaymentResult, error)
 
-    // Verifica e interpreta un webhook del provider.
-    ParseWebhook(ctx context.Context, r *http.Request) (*PaymentEvent, error)
+    // Verifica e interpreta un webhook del provider con le credenziali
+    // (decifrate) dello stabilimento destinatario. Vedi ADR 0006.
+    ParseWebhook(ctx context.Context, r *http.Request, creds Credentials) (*PaymentEvent, error)
 
     Refund(ctx context.Context, req RefundRequest) (*RefundResult, error)
 }
