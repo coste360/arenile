@@ -13,4 +13,19 @@
 // transaction (actions "team.member_added", "team.role_changed",
 // "team.member_deactivated", "team.member_removed"). Never log emails or
 // passwords in clear.
+//
+// Decisions (M1):
+//   - New accounts get the password given by the owner or a generated
+//     temporary one returned once (TeamMemberCreated.initial_password, sent
+//     with Cache-Control: no-store). No email is sent: password reset and
+//     invitations by email belong to the notifications module (spec 19).
+//   - After a role/scope change the member has exactly one membership
+//     applying to the establishment; moving to scope "establishment" deletes
+//     the organization-wide membership (and its access to the other
+//     establishments). Organization-wide changes, and deactivating accounts
+//     with access beyond this establishment, need an organization-wide owner.
+//   - Deactivation is account-wide (users.active, sessions deleted) and is
+//     refused for accounts that also belong to other organizations.
+//   - The last-owner rule (CheckLastOwner) runs under a lock on the
+//     organization row.
 package team
