@@ -21,7 +21,8 @@ import {
   type Transform,
   type ViewBox,
 } from './geometry';
-import type { MapDecoration, MapGeometry, MapSpot, Shape, SpotStatus } from './types';
+import { ShapeElement } from './shapes';
+import type { MapDecoration, MapGeometry, MapSpot, SpotStatus } from './types';
 
 export interface BeachMapProps {
   geometry: MapGeometry;
@@ -76,40 +77,6 @@ function pixelRatio(svg: SVGSVGElement | null, vb: ViewBox): number {
   const h = svg.clientHeight;
   if (!w || !h) return 1;
   return Math.max(vb.width / w, vb.height / h);
-}
-
-function ShapeElement({
-  shape,
-  x,
-  y,
-  fill,
-  stroke,
-  strokeWidth,
-}: {
-  shape: Shape;
-  x: number;
-  y: number;
-  fill: string;
-  stroke?: string;
-  strokeWidth?: number;
-}) {
-  if (shape.type === 'circle') {
-    return (
-      <circle cx={x} cy={y} r={shape.w / 2} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />
-    );
-  }
-  return (
-    <rect
-      x={x - shape.w / 2}
-      y={y - shape.h / 2}
-      width={shape.w}
-      height={shape.h}
-      rx={Math.min(shape.w, shape.h) * 0.15}
-      fill={fill}
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-    />
-  );
 }
 
 interface SpotProps {
