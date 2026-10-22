@@ -9,6 +9,7 @@ import (
 
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -111,7 +112,7 @@ func (s *Service) CreateZone(ctx context.Context, p *auth.Principal, establishme
 		if err != nil {
 			return err
 		}
-		data := MapChangedData{MapID: deref(z.MapID), EntityType: "zone", EntityID: z.ID, Action: "created", Version: z.Version}
+		data := event.ConfigChange{Entity: "zone", EntityID: z.ID, Change: event.ChangeCreated, MapID: deref(z.MapID), Version: z.Version}
 		if err := s.record(ctx, tx, p, es, "zone.created", data, map[string]any{"after": z, "pools_synced": pools}); err != nil {
 			return err
 		}
@@ -128,7 +129,8 @@ func (s *Service) CreateZone(ctx context.Context, p *auth.Principal, establishme
 // with spots to another map, or turning it into a `quantity` zone while it
 // has spots, is refused; turning a zone with bound pools into a seat/zone
 // zone is refused. The implicit pool follows the new mode in the same
-// transaction.
+// transaction. The zone row is locked first (store.LockZones), as map saves
+// do, so the spot count is read after any concurrent save committed.
 func (s *Service) UpdateZone(ctx context.Context, p *auth.Principal, establishmentID, zoneID string, expected *int64, in ZoneInput) (*ZoneView, error) {
 	es, err := s.configure(ctx, p, establishmentID)
 	if err != nil {
@@ -139,6 +141,9 @@ func (s *Service) UpdateZone(ctx context.Context, p *auth.Principal, establishme
 	}
 	var view *ZoneView
 	err = s.inTx(ctx, func(ctx context.Context, tx bun.Tx) error {
+		if err := store.LockZones(ctx, tx, es, []string{zoneID}); err != nil {
+			return err
+		}
 		cur, err := store.GetZone(ctx, tx, es, zoneID)
 		if err != nil {
 			return notFound(err, ErrZoneNotFound)
@@ -190,7 +195,7 @@ func (s *Service) UpdateZone(ctx context.Context, p *auth.Principal, establishme
 		if err != nil {
 			return err
 		}
-		data := MapChangedData{MapID: deref(next.MapID), EntityType: "zone", EntityID: zoneID, Action: "updated", Version: next.Version}
+		data := event.ConfigChange{Entity: "zone", EntityID: zoneID, Change: event.ChangeUpdated, MapID: deref(next.MapID), Version: next.Version}
 		if err := s.record(ctx, tx, p, es, "zone.updated", data, map[string]any{"before": before, "after": next, "pools_synced": pools}); err != nil {
 			return err
 		}
@@ -203,14 +208,19 @@ func (s *Service) UpdateZone(ctx context.Context, p *auth.Principal, establishme
 	return view, nil
 }
 
-// DeleteZone deletes a zone without spots and without bound (non system)
-// pools; its implicit pool goes with it.
+// DeleteZone deletes a zone without spots, without bound (non system)
+// pools and not referenced by price rules, promo codes, agreements, packs
+// or booking policies (ZoneReferencedError lists them); its implicit pool
+// goes with it.
 func (s *Service) DeleteZone(ctx context.Context, p *auth.Principal, establishmentID, zoneID string, expected *int64) error {
 	es, err := s.configure(ctx, p, establishmentID)
 	if err != nil {
 		return err
 	}
 	err = s.inTx(ctx, func(ctx context.Context, tx bun.Tx) error {
+		if err := store.LockZones(ctx, tx, es, []string{zoneID}); err != nil {
+			return err
+		}
 		cur, err := store.GetZone(ctx, tx, es, zoneID)
 		if err != nil {
 			return notFound(err, ErrZoneNotFound)
@@ -218,26 +228,57 @@ func (s *Service) DeleteZone(ctx context.Context, p *auth.Principal, establishme
 		if err := configerr.CheckVersion(expected, cur.Version); err != nil {
 			return err
 		}
-		spots, err := store.MappingSpotCountsByZone(ctx, tx, es, []string{zoneID})
-		if err != nil {
+		if err := checkZonesDeletable(ctx, tx, es, []store.Zone{*cur}); err != nil {
 			return err
-		}
-		if spots[zoneID] > 0 {
-			return fmt.Errorf("%w: move or delete its %d spots first", ErrZoneHasSpots, spots[zoneID])
-		}
-		if n, err := boundPools(ctx, tx, es, zoneID); err != nil {
-			return err
-		} else if n > 0 {
-			return fmt.Errorf("%w: delete or unbind its %d pools first", ErrZoneHasPools, n)
 		}
 		if err := store.DeleteZone(ctx, tx, es, zoneID); err != nil {
 			return notFound(err, ErrZoneNotFound)
 		}
-		data := MapChangedData{MapID: deref(cur.MapID), EntityType: "zone", EntityID: zoneID, Action: "deleted", Version: cur.Version}
+		data := event.ConfigChange{Entity: "zone", EntityID: zoneID, Change: event.ChangeDeleted, MapID: deref(cur.MapID), Version: cur.Version}
 		return s.record(ctx, tx, p, es, "zone.deleted", data, map[string]any{"before": cur})
 	})
 	if err != nil {
 		return fmt.Errorf("mapping: delete zone: %w", err)
+	}
+	return nil
+}
+
+// checkZonesDeletable refuses zones that still have spots (ErrZoneHasSpots),
+// bound pools (ErrZoneHasPools) or configuration references
+// (ZoneReferencedError). DeleteZone and DeleteMap share it. Callers hold the
+// zone locks.
+func checkZonesDeletable(ctx context.Context, db bun.IDB, es store.EstablishmentScope, zones []store.Zone) error {
+	if len(zones) == 0 {
+		return nil
+	}
+	ids := make([]string, len(zones))
+	for i, z := range zones {
+		ids[i] = z.ID
+	}
+	spots, err := store.MappingSpotCountsByZone(ctx, db, es, ids)
+	if err != nil {
+		return err
+	}
+	for _, z := range zones {
+		if n := spots[z.ID]; n > 0 {
+			return fmt.Errorf("%w: zone %s: move or delete its %d spots first", ErrZoneHasSpots, z.Code, n)
+		}
+	}
+	for _, z := range zones {
+		if n, err := boundPools(ctx, db, es, z.ID); err != nil {
+			return err
+		} else if n > 0 {
+			return fmt.Errorf("%w: zone %s: delete or unbind its %d pools first", ErrZoneHasPools, z.Code, n)
+		}
+	}
+	refs, err := zoneReferences(ctx, db, es, zones)
+	if err != nil {
+		return err
+	}
+	for _, z := range zones {
+		if r := refs[z.ID]; len(r) > 0 {
+			return &ZoneReferencedError{ZoneID: z.ID, References: r}
+		}
 	}
 	return nil
 }

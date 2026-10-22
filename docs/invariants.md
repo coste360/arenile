@@ -227,3 +227,15 @@ Verificata da: `TestPriceRule_VersionSeqAuditOutbox` (`internal/domain/pricingco
 **INV-40 — Matrice e simulatore coerenti.**
 Ogni cella della matrice di listino ha lo stesso prezzo che il simulatore calcola con gli stessi input.
 Verificata da: `TestScenario_SimulateMatrixConsistency` (`internal/domain/pricingconfig`, tag `integration`). Stato: implemented.
+
+**INV-41 — Una zona a quantità non ha mai postazioni.**
+Il salvataggio della mappa e la modifica di una zona si serializzano sulle righe delle zone coinvolte
+(`store.LockZones`): anche con scritture concorrenti su PostgreSQL, una zona `quantity` non ha postazioni
+e il pool implicito di una zona `zone` conta le sue postazioni attive.
+Verificata da: `TestConcurrency_ZoneUpdateVsSaveMap` (`internal/domain/mapping`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-42 — Nessuna cancellazione silenziosa nella configurazione.**
+Una zona referenziata da regole di prezzo, codici promozionali, convenzioni, pack o policy, o con pool
+creati a mano, non si elimina né da sola né con la sua mappa: la richiesta fallisce con 409 e l'errore
+elenca i riferimenti.
+Verificata da: `TestMappingIntegration_ReferencedZoneCannotBeDeleted`, `TestMappingIntegration_DeleteMapRefusesBoundPools` (`internal/domain/mapping`, tag `integration`). Stato: implemented.

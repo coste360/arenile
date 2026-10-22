@@ -123,3 +123,22 @@ func DeleteZone(ctx context.Context, db bun.IDB, es EstablishmentScope, id strin
 	}
 	return nil
 }
+
+// LockZones takes a write lock on the given zone rows without changing them
+// (PostgreSQL row locks; SQLite write transactions are already serialized),
+// so that map saves and zone changes touching the same zones are
+// serialized: a save that adds spots to a zone and an update that turns the
+// zone into `quantity` can then never both commit. Unknown ids are ignored.
+// Callers lock zones before any other row of the map (spots, the map
+// itself) to keep a stable lock order.
+func LockZones(ctx context.Context, db bun.IDB, es EstablishmentScope, ids []string) error {
+	if err := es.mustBeValid(); err != nil {
+		return err
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	_, err := db.NewUpdate().Model((*Zone)(nil)).Set("version = version").
+		Where("establishment_id = ?", es.ID()).Where("id IN (?)", bun.List(ids)).Exec(ctx)
+	return wrapWrite("lock zones", err)
+}

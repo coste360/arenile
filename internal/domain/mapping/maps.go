@@ -13,6 +13,7 @@ import (
 
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -97,7 +98,7 @@ func (s *Service) CreateMap(ctx context.Context, p *auth.Principal, establishmen
 		if err := store.InsertMap(ctx, tx, es, m); err != nil {
 			return err
 		}
-		data := MapChangedData{MapID: m.ID, EntityType: "map", EntityID: m.ID, Action: "created", Version: m.Version}
+		data := event.ConfigChange{Entity: "map", EntityID: m.ID, Change: event.ChangeCreated, MapID: m.ID, Version: m.Version}
 		if err := s.record(ctx, tx, p, es, "map.created", data, map[string]any{"name": m.Name, "width": m.Width, "height": m.Height}); err != nil {
 			return err
 		}
@@ -111,8 +112,11 @@ func (s *Service) CreateMap(ctx context.Context, p *auth.Principal, establishmen
 }
 
 // DeleteMap deletes a map with its spots, decorations and zones (with their
-// pools). It is refused when a spot has future allocations. expected is the
-// optional If-Match version.
+// implicit pools). It is refused when a spot has future allocations, and,
+// as DeleteZone, when a zone of the map has hand-made pools bound to it
+// (ErrZoneHasPools) or is referenced by price rules, promo codes,
+// agreements, packs or booking policies (ZoneReferencedError): nothing is
+// silently detached. expected is the optional If-Match version.
 func (s *Service) DeleteMap(ctx context.Context, p *auth.Principal, establishmentID, mapID string, expected *int64) error {
 	es, err := s.configure(ctx, p, establishmentID)
 	if err != nil {
@@ -126,26 +130,36 @@ func (s *Service) DeleteMap(ctx context.Context, p *auth.Principal, establishmen
 		if err := configerr.CheckVersion(expected, m.Version); err != nil {
 			return err
 		}
+		zones, err := store.ListMapZones(ctx, tx, es, mapID)
+		if err != nil {
+			return err
+		}
 		spots, err := store.ListMapSpots(ctx, tx, es, mapID)
 		if err != nil {
 			return err
 		}
 		spotIDs := make([]string, len(spots))
-		var zoneIDs []string
+		zoneIDs := make([]string, 0, len(zones)+len(spots))
+		for _, z := range zones {
+			zoneIDs = append(zoneIDs, z.ID)
+		}
 		for i, sp := range spots {
 			spotIDs[i] = sp.ID
 			zoneIDs = append(zoneIDs, sp.ZoneID)
 		}
+		// Zones first, in the lock order of map saves and zone updates.
+		if err := store.LockZones(ctx, tx, es, uniqueSorted(zoneIDs)); err != nil {
+			return err
+		}
 		if err := s.checkAllocations(ctx, tx, es, spotIDs); err != nil {
 			return err
 		}
-		zones, err := store.ListMapZones(ctx, tx, es, mapID)
-		if err != nil {
+		// Spots first (zones are ON DELETE RESTRICT for spots), then the
+		// zones of the map (their implicit pools cascade), then the map.
+		if err := store.DeleteSpots(ctx, tx, es, mapID, spotIDs); err != nil {
 			return err
 		}
-		// Spots first (zones are ON DELETE RESTRICT for spots), then the
-		// zones of the map (their pools cascade), then the map.
-		if err := store.DeleteSpots(ctx, tx, es, mapID, spotIDs); err != nil {
+		if err := checkZonesDeletable(ctx, tx, es, zones); err != nil {
 			return err
 		}
 		deletedZones := make([]string, 0, len(zones))
@@ -163,7 +177,7 @@ func (s *Service) DeleteMap(ctx context.Context, p *auth.Principal, establishmen
 		if err := store.DeleteMap(ctx, tx, es, mapID); err != nil {
 			return notFound(err, ErrMapNotFound)
 		}
-		data := MapChangedData{MapID: mapID, EntityType: "map", EntityID: mapID, Action: "deleted", Version: m.Version}
+		data := event.ConfigChange{Entity: "map", EntityID: mapID, Change: event.ChangeDeleted, MapID: mapID, Version: m.Version}
 		return s.record(ctx, tx, p, es, "map.deleted", data, map[string]any{
 			"name": m.Name, "spots_deleted": len(spotIDs), "zones_deleted": deletedZones,
 		})
@@ -240,13 +254,25 @@ func (s *Service) applyDocument(ctx context.Context, tx bun.Tx, p *auth.Principa
 		oldDecByID[oldDecs[i].ID] = &oldDecs[i]
 	}
 
-	// Checks needing the database: ids belong to this map, zones belong to
-	// the establishment and to this map and have spots (not quantity).
-	ve := &configerr.ValidationError{}
+	// Lock the zones the save touches (new and current spots) before reading
+	// them: a concurrent zone update (e.g. to `quantity`) then either
+	// committed before, and the checks below see it, or waits for this save
+	// and counts its spots. Zones are locked before the map row everywhere.
 	zoneIDs := make([]string, 0, len(in.Spots))
 	for _, sp := range in.Spots {
 		zoneIDs = append(zoneIDs, sp.ZoneID)
 	}
+	lockIDs := slices.Clone(zoneIDs)
+	for _, old := range oldSpots {
+		lockIDs = append(lockIDs, old.ZoneID)
+	}
+	if err := store.LockZones(ctx, tx, es, uniqueSorted(lockIDs)); err != nil {
+		return nil, err
+	}
+
+	// Checks needing the database: ids belong to this map, zones belong to
+	// the establishment and to this map and have spots (not quantity).
+	ve := &configerr.ValidationError{}
 	zones, err := store.ListZonesByIDs(ctx, tx, es, uniqueSorted(zoneIDs))
 	if err != nil {
 		return nil, err
@@ -405,7 +431,7 @@ func (s *Service) applyDocument(ctx context.Context, tx bun.Tx, p *auth.Principa
 		return nil, err
 	}
 
-	data := MapChangedData{MapID: cur.ID, EntityType: "map", EntityID: cur.ID, Action: action, Version: next.Version}
+	data := event.ConfigChange{Entity: "map", EntityID: cur.ID, Change: action, MapID: cur.ID, Version: next.Version}
 	if err := s.record(ctx, tx, p, es, "map."+action, data, sum); err != nil {
 		return nil, err
 	}
