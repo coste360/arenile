@@ -1,0 +1,233 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  GOLANGCI_LINT_VERSION: v2.15.0
+  NODE_VERSION: "22"
+  # Use exactly the toolchain declared in go.mod.
+  GOTOOLCHAIN: local
+
+jobs:
+  go:
+    name: Go (lint, test, integration, race, vulns)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: arenile
+          POSTGRES_PASSWORD: arenile
+          POSTGRES_DB: arenile_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U arenile -d arenile_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download modules
+        run: go mod download
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          # Build from source with the job's Go toolchain so the linter can
+          # analyse a module that declares the latest Go version.
+          install-mode: goinstall
+          args: --timeout=5m
+
+      - name: Unit tests
+        run: go test ./...
+
+      - name: Integration tests (SQLite + PostgreSQL)
+        env:
+          ARENILE_TEST_POSTGRES_URL: postgres://arenile:arenile@localhost:5432/arenile_test?sslmode=disable
+        run: make test-db
+
+      - name: Concurrency tests with the race detector
+        run: make test-race
+
+      - name: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+          go-package: ./...
+          cache: false
+
+  web:
+    name: Web (lint, typecheck, test, build, budget)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm --prefix web ci
+
+      - name: ESLint
+        run: npm --prefix web run lint
+
+      - name: Prettier
+        run: npm --prefix web run format:check
+
+      - name: Typecheck
+        run: npm --prefix web run typecheck
+
+      - name: Vitest
+        run: npm --prefix web run test
+
+      - name: Build
+        run: npm --prefix web run build
+
+      - name: Bundle budget (booking < 150 KB gzip JS)
+        run: npm --prefix web run budget --if-present
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-dist
+          path: |
+            web/admin/dist
+            web/booking/dist
+          retention-days: 3
+          if-no-files-found: error
+
+  gen-check:
+    name: Generated code is up to date
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web dependencies
+        run: npm --prefix web ci
+
+      - name: make gen-check
+        run: make gen-check
+
+  docker:
+    name: Docker image (build + Trivy scan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deploy/Dockerfile
+          load: true
+          push: false
+          tags: arenile:ci
+          build-args: |
+            VERSION=ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: arenile:ci
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect e2e suite
+        id: detect
+        run: |
+          if [ -f e2e/package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/setup-go@v7
+        if: steps.detect.outputs.present == 'true'
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@v7
+        if: steps.detect.outputs.present == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            e2e/package-lock.json
+
+      - name: Install dependencies
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          npm --prefix web ci
+          if [ -f e2e/package-lock.json ]; then npm --prefix e2e ci; else npm --prefix e2e install; fi
+
+      - name: Install Playwright Chromium
+        if: steps.detect.outputs.present == 'true'
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: make e2e
+        if: steps.detect.outputs.present == 'true'
+        run: make e2e
+
+      - name: Upload Playwright report
+        if: failure() && steps.detect.outputs.present == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7
+
+      - name: No e2e suite yet
+        if: steps.detect.outputs.present != 'true'
+        run: echo "e2e/ is not present yet, skipping end-to-end tests"
