@@ -46,6 +46,7 @@
 - Pacchetti firmati per Windows (installer `.exe`), macOS (`.dmg`, notarizzato) e Linux (AppImage), pubblicati con lo stesso tag dell'edizione server.
 - Primo avvio guidato dal browser, chiave segreta nel portachiavi del sistema, backup automatici su cartella a scelta, ripristino dal menu.
 - Modalità desktop rilevata dal pannello: pagina pubblica e pagamenti online disattivati con spiegazione del passaggio a un'istanza online.
+- Modalità remota: l'app si collega a un'istanza online o privata con token per dispositivo (condiviso con M7) e fa da ponte verso stampante e registratore telematico locali.
 - **Accettazione:** su un PC Windows e un Mac senza connessione, un gestore scarica il pacchetto, lo installa e registra la prima prenotazione in cassa in meno di 10 minuti senza usare il terminale; il backup prodotto dal desktop, ripristinato con `arenile restore` su una VPS, porta online tutti i dati senza perdite.
 
 ### M7 — App mobile (sezione 29.2)

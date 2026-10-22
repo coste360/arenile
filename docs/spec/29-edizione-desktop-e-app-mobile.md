@@ -28,6 +28,16 @@ Due modi in più per usare Arenile, pensati per chi lavora soprattutto in cassa 
 
 **Modalità rete locale (opzionale, M7):** il gestore può esporre il server desktop sulla Wi-Fi del lido perché l'app mobile dello staff lo usi senza internet. Si attiva esplicitamente dal menu, usa TLS con certificato autogenerato e abbinamento dei dispositivi tramite QR code che contiene indirizzo, impronta del certificato e codice monouso (sezione 29.2).
 
+**Modalità remota (client di un'istanza online o privata)**
+
+Al primo avvio, e in seguito dalle impostazioni, il gestore sceglie tra **Locale** (quanto descritto sopra) e **Remota**. In modalità remota l'app non avvia il server interno: si collega a un'istanza Arenile esistente (VPS, server privato, anche raggiungibile solo via VPN) e mostra il pannello di quell'istanza.
+
+- Collegamento con lo stesso meccanismo dell'app mobile: QR code o codice di abbinamento dal pannello, **token per dispositivo** revocabile (sezione 29.2). Nessun cookie di terze parti, nessun dato verso Coste360.
+- Finestra dedicata, avvio automatico, modalità *kiosk* per il PC della cassa.
+- **Ponte verso le periferiche locali:** stampante delle ricevute, lettore QR e registratore telematico collegati in USB o in rete locale, che un server remoto non può raggiungere. L'app espone all'istanza un canale autenticato verso il `FiscalDriver` locale (sezione 14.2), così l'emissione dei documenti avviene sul dispositivo della cassa anche quando il server è online.
+- Funzionamento offline con le regole del pannello (sezione 21.2): consultazione in cache, check-in, note e incassi in contanti in coda; creazione e spostamento di prenotazioni solo con la connessione.
+- Le due modalità sono **alternative, non sincronizzate**: il passaggio da Locale a Remota avviene con backup, `arenile restore` sul server e cambio di modalità nell'app.
+
 **Architettura e build**
 - Stesso repository e stesso modulo Go: il launcher è `cmd/arenile-desktop` e importa i package `internal/` del core (che Go non consente di importare da un altro modulo). Il core resta senza CGO; solo il launcher può usare CGO per l'icona nella barra di sistema, ed è compilato sui runner nativi di ciascun sistema operativo.
 - Release con lo stesso tag dell'edizione server: binari firmati (Authenticode su Windows; Developer ID e notarizzazione Apple su macOS).
@@ -58,4 +68,4 @@ Due modi in più per usare Arenile, pensati per chi lavora soprattutto in cassa 
 - Il client API è generato da `api/openapi.yaml`, pubblicato come asset di ogni release del core. L'app non importa codice del pannello.
 - Il server espone versione e capacità (`GET /api/admin/v1/meta`); l'app dichiara la versione minima di Arenile supportata e mostra un messaggio chiaro se l'istanza è troppo vecchia.
 - Per la revisione degli store si usa la demo pubblica azzerata ogni notte (sezione 26).
-- La licenza dell'app (AGPL-3.0 come il core oppure proprietaria Coste360, consentito dal CLA) va decisa prima della pubblicazione.
+- Licenza dell'app: BSL 1.1 come il core (con conversione in AGPL-3.0 dopo 3 anni), salvo diversa decisione di Coste360 prima della pubblicazione (ad esempio proprietaria, consentito dal CLA).
