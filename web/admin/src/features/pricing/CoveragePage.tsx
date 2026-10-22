@@ -1,4 +1,5 @@
-import { dateFnsLocale, dateToIso, formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
+import { dateFnsLocale } from '@arenile/shared/lib/dateLocales';
+import { dateToIso, formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
 import {
   Alert,
   AlertDescription,

@@ -1,4 +1,5 @@
 import { ApiProblem, usePublicEstablishment } from '@arenile/shared/api';
+import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { SUPPORTED_LOCALES, changeLocale, isLocale, resolveLocale } from '@arenile/shared/i18n';
 import { applyTheme, customText, resolveTheme } from '@arenile/shared/theme';
 import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
@@ -7,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/car
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { Separator } from '@arenile/shared/ui/separator';
 import {
-  GlobeIcon,
   InfoIcon,
   MailIcon,
   MapPinIcon,
@@ -15,15 +15,13 @@ import {
   RotateCwIcon,
   UmbrellaIcon,
 } from 'lucide-react';
-import { Suspense, lazy, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { connectParent, observeHeight } from './embed/parent';
 import type { BookingLocation } from './location';
 import { applySeo } from './seo';
-import { languageTriggerClass } from './languageTrigger';
+import { LanguageSelect } from './LanguageSelect';
 import { Stepper } from './steps/Stepper';
-
-const LanguageSelect = lazy(() => import('./LanguageSelect'));
 
 export interface BookingPageProps {
   location: BookingLocation;
@@ -159,19 +157,7 @@ export function BookingPage({ location, win = window }: BookingPageProps) {
                 <p className="truncate text-xs text-primary-foreground">{address.city}</p>
               )}
             </div>
-            {languages.length > 1 && (
-              <Suspense
-                fallback={
-                  <Button variant="outline" size="sm" disabled className={languageTriggerClass}>
-                    <GlobeIcon aria-hidden="true" />
-                    <span className="sr-only">{t('common.language')}</span>
-                    {i18n.language.toUpperCase()}
-                  </Button>
-                }
-              >
-                <LanguageSelect languages={languages} />
-              </Suspense>
-            )}
+            {languages.length > 1 && <LanguageSelect languages={languages} />}
           </div>
         </header>
       )}
@@ -182,10 +168,25 @@ export function BookingPage({ location, win = window }: BookingPageProps) {
               {showHeader ? t('booking.title') : e.name}
             </h1>
             {!showHeader && <p className="text-sm text-muted-foreground">{t('booking.title')}</p>}
+            {(address?.city || e.season) && (
+              <p className="text-sm text-muted-foreground">
+                {[
+                  address?.city,
+                  e.season &&
+                    t('booking.season', {
+                      year: e.season.year,
+                      from: formatIsoDate(e.season.opens_on),
+                      to: formatIsoDate(e.season.closes_on),
+                    }),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+            )}
             {intro && <p className="text-pretty text-muted-foreground">{intro}</p>}
           </div>
           {e.booking_enabled ? (
-            <Stepper />
+            <Stepper season={e.season} />
           ) : (
             <Alert>
               <InfoIcon aria-hidden="true" />

@@ -1,7 +1,7 @@
 import { ApiClientProvider, createApiClient } from '@arenile/shared/api';
 import { createTestI18n } from '@arenile/shared/i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
 import { describe, expect, it } from 'vitest';
@@ -64,22 +64,46 @@ describe('BookingPage', () => {
     );
   });
 
-  it('walks the four steps with honest "in arrivo" content and lazy-loads the map step', async () => {
+  it('keeps the later steps disabled and says the flow continues soon', async () => {
     const user = userEvent.setup();
     renderPage('/b/lido-demo', ok());
     const steps = await screen.findByRole('region', { name: '1. Quando' });
     expect(steps).toHaveTextContent('In arrivo');
-    await user.click(screen.getByRole('button', { name: 'Avanti' }));
-    expect(screen.getByRole('region', { name: '2. Dove' })).toBeInTheDocument();
-    expect(
-      await screen.findAllByText(/La prenotazione online sarà disponibile a breve/),
-    ).not.toHaveLength(0);
-    await user.click(screen.getByRole('button', { name: /Chi e pagamento/ }));
-    expect(screen.getByRole('region', { name: '4. Chi e pagamento' })).toBeInTheDocument();
+    expect(steps).toHaveTextContent(/Postazione, pacchetto e pagamento online arrivano a breve/);
     expect(screen.getByRole('button', { name: 'Avanti' })).toBeDisabled();
+    const where = screen.getByRole('button', { name: /Dove/ });
+    expect(where).toHaveAttribute('aria-disabled', 'true');
+    expect(where).toHaveAccessibleName(/In arrivo/);
+    await user.click(where);
+    expect(screen.getByRole('region', { name: '1. Quando' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '2. Dove' })).not.toBeInTheDocument();
   });
 
-  it('picks the stay dates with the lazy shadcn date range picker (dd/MM/yyyy)', async () => {
+  it('shows the city and the active season under the title and limits the dates to it', async () => {
+    const user = userEvent.setup();
+    renderPage(
+      '/b/lido-demo',
+      ok({
+        ...ESTABLISHMENT,
+        season: { year: 2099, opens_on: '2099-05-01', closes_on: '2099-09-30' },
+      }),
+    );
+    expect(
+      await screen.findByText('Gaeta · Stagione 2099: dal 01/05/2099 al 30/09/2099'),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Date del soggiorno/ }));
+    const grid = await screen.findByRole('grid');
+    // Opens on the first bookable month, days outside the season are disabled.
+    expect(grid).toHaveAccessibleName(/maggio 2099/i);
+    expect(within(grid).getByRole('button', { name: /\b1 maggio 2099/i })).toBeEnabled();
+    // Every day of May is bookable; nothing outside the season is enabled.
+    const enabled = within(grid)
+      .getAllByRole('button')
+      .filter((b) => !b.hasAttribute('disabled') && b.getAttribute('aria-disabled') !== 'true');
+    expect(enabled.map((b) => b.getAttribute('aria-label') ?? b.textContent)).toHaveLength(31);
+  });
+
+  it('picks the stay dates with the shadcn date range picker (dd/MM/yyyy, lazy calendar)', async () => {
     const user = userEvent.setup();
     renderPage('/b/lido-demo', ok());
     const trigger = await screen.findByRole('button', { name: /Date del soggiorno/ });

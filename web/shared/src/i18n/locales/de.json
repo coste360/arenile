@@ -150,7 +150,7 @@
       "settings": "Saisons, Pläne, Zonen, Katalog, Preise, Regeln, öffentliche Seite und Zahlungen."
     },
     "establishments": {
-      "title": "Strandbäder",
+      "title": "Alle Betriebe",
       "empty": "Kein Strandbad konfiguriert.",
       "name": "Name",
       "slug": "Öffentliche Adresse",
@@ -189,7 +189,7 @@
       "who": "Daten und Zahlung"
     },
     "stepText": {
-      "when": "Wählen Sie Daten, Tarif und Zeitfenster (ganzer Tag, Vormittag oder Nachmittag).",
+      "when": "Wähle den ersten und den letzten Tag deines Aufenthalts.",
       "where": "Wählen Sie einen Platz auf dem Plan oder Ihre bevorzugte Zone.",
       "what": "Wählen Sie Paket und Extras; die Preisübersicht wird laufend aktualisiert.",
       "who": "Geben Sie Ihre Daten ein und bestätigen Sie. Kein Konto, keine Gebühren."
@@ -205,7 +205,9 @@
       "days_one": "{{count}} Tag ausgewählt",
       "days_other": "{{count}} Tage ausgewählt",
       "pickHint": "Wähle den ersten und letzten Tag: Für einen einzelnen Tag tippe zweimal auf denselben Tag."
-    }
+    },
+    "season": "Saison {{year}}: vom {{from}} bis {{to}}",
+    "nextStepsSoon": "Platz, Paket und Online-Zahlung folgen in Kürze: bis dahin kontaktiere das Strandbad."
   },
   "ui": {
     "close": "Schließen",

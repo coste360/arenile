@@ -3949,6 +3949,19 @@ components:
           $ref: "#/components/schemas/Address"
         theme:
           $ref: "#/components/schemas/Theme"
+        season:
+          $ref: "#/components/schemas/PublicSeason"
+    PublicSeason:
+      type: object
+      description: Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva.
+      required: [year, opens_on, closes_on]
+      properties:
+        year:
+          type: integer
+        opens_on:
+          $ref: "#/components/schemas/Date"
+        closes_on:
+          $ref: "#/components/schemas/Date"
     StreamMessage:
       type: object
       description: Messaggio leggero inviato sul flusso SSE (specifica 21.1).

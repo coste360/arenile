@@ -28,9 +28,9 @@ this.
 Available components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button,
 button-group, calendar, card, chart (recharts), checkbox, collapsible, command, context-menu,
 dialog, drawer, dropdown-menu, empty, field, form (react-hook-form), hover-card, input,
-input-group, kbd, label, pagination, popover, progress, radio-group, resizable, scroll-area,
-select, separator, sheet, sidebar, skeleton, slider, sonner, spinner, switch, table, tabs,
-textarea, toggle, toggle-group, tooltip.
+input-group, kbd, label, native-select, pagination, popover, progress, radio-group, resizable,
+scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, spinner, switch, table,
+tabs, textarea, toggle, toggle-group, tooltip.
 
 ### Adding a component
 
@@ -77,6 +77,13 @@ Use the semantic Tailwind classes, never raw palette colours (`slate-*`, hex):
 Radius: `--radius: 0.75rem` (`rounded-lg` = radius, `rounded-md`/`rounded-sm` smaller).
 Font: Inter Variable (`@fontsource-variable/inter`, `font-sans`). Dark mode: `.dark` on
 `<html>` via `ThemeProvider` (light/dark/system, stored in `localStorage['arenile-theme']`).
+
+Booking page budget: `web/booking/scripts/budget.mjs` follows the Vite manifest from
+`index.html` (entry + static imports, plus the dynamic imports listed in `STARTUP_DYNAMIC`)
+and caps first-screen JS at 150 KB gzip and render-blocking CSS at 25 KB. The calendar body
+(`patterns/DatePickerCalendar.tsx`: react-day-picker, date-fns locales) loads when a date
+field opens; `lib/dates.ts` is pure string/Date arithmetic for that reason. The booking Vite
+config trims the Tailwind scan (`@source not`) to the components the page uses.
 
 Public booking page: `applyTheme()` (`@arenile/shared/theme`) writes `--primary`,
 `--primary-foreground`, `--primary-on-surface`, `--highlight(-foreground)`, `--radius`,

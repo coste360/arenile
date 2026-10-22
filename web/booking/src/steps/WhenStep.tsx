@@ -1,33 +1,34 @@
-import { isoToDate, dateToIso } from '@arenile/shared/lib/dates';
+import { daysInclusive, dateToIso, maxIso } from '@arenile/shared/lib/dates';
 import { Field, FieldDescription, FieldLabel } from '@arenile/shared/ui/field';
 import { DateRangePicker, type IsoDateRange } from '@arenile/shared/ui/patterns/DatePicker';
-import { differenceInCalendarDays } from 'date-fns';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export interface WhenStepProps {
   value: IsoDateRange | undefined;
   onChange: (value: IsoDateRange | undefined) => void;
+  /** Bookable window of the active season ("YYYY-MM-DD"); without it, today onwards. */
+  season?: { opens_on: string; closes_on: string };
   /** Today, injectable for tests ("YYYY-MM-DD"). */
   today?: string;
 }
 
 /**
  * "Quando" step content: period of the stay with the shared shadcn date range
- * picker (dd/MM/yyyy, week starting on Monday). Loaded lazily so the calendar
- * (react-day-picker, date-fns, Radix Popover) stays out of the initial
- * bundle (spec 12.6, 150 KB budget).
+ * picker (dd/MM/yyyy, week starting on Monday), limited to the active season
+ * and never in the past. The calendar itself loads when the field opens.
  */
-export default function WhenStep({
+export function WhenStep({
   value,
   onChange,
+  season,
   today = dateToIso(new Date()),
 }: WhenStepProps) {
   const { t } = useTranslation();
   const id = useId();
-  const from = isoToDate(value?.from);
-  const to = isoToDate(value?.to ?? value?.from);
-  const days = from && to ? differenceInCalendarDays(to, from) + 1 : 0;
+  const days = value ? daysInclusive(value.from, value.to ?? value.from) : 0;
+  const min = season ? maxIso(today, season.opens_on) : today;
+  const max = season?.closes_on;
 
   return (
     <Field>
@@ -37,7 +38,8 @@ export default function WhenStep({
       <DateRangePicker
         value={value}
         onChange={onChange}
-        min={today}
+        min={min}
+        max={max}
         clearable
         numberOfMonths={1}
         id={`${id}-trigger`}

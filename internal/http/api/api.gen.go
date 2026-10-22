@@ -2170,11 +2170,24 @@ type PublicEstablishment struct {
 	DefaultLocale  string   `json:"default_locale"`
 	EnabledLocales []string `json:"enabled_locales"`
 	Name           string   `json:"name"`
-	Slug           string   `json:"slug"`
+
+	// Season Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva.
+	Season *PublicSeason `json:"season,omitempty"`
+	Slug   string        `json:"slug"`
 
 	// Theme Tema della pagina pubblica (specifica 12.5).
 	Theme    Theme  `json:"theme"`
 	Timezone string `json:"timezone"`
+}
+
+// PublicSeason Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva.
+type PublicSeason struct {
+	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ClosesOn Date `json:"closes_on"`
+
+	// OpensOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	OpensOn Date `json:"opens_on"`
+	Year    int  `json:"year"`
 }
 
 // QuickPrice defines model for QuickPrice.

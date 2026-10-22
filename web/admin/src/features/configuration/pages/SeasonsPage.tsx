@@ -17,7 +17,8 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui
 import { Spinner } from '@arenile/shared/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
 import { cn } from '@arenile/shared/lib/utils';
-import { dateFnsLocale, formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
+import { dateFnsLocale } from '@arenile/shared/lib/dateLocales';
+import { formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
 import {
   type ColumnDef,
   DataTable,

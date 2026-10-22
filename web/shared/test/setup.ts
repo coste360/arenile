@@ -1,6 +1,11 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
+
+// The first render of a lazy admin route imports a whole feature (shadcn
+// components included): with every test file running in parallel that can
+// take longer than the 1 s default of findBy*/waitFor.
+configure({ asyncUtilTimeout: 4000 });
 
 // jsdom does not implement pointer capture, used by @use-gesture during drags.
 if (typeof Element !== 'undefined' && !Element.prototype.setPointerCapture) {

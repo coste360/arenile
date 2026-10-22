@@ -141,6 +141,8 @@ type Public struct {
 	ContactPhone   string
 	Address        store.Address
 	Theme          store.Theme
+	// Season is the active season (bookable dates); nil when none is active.
+	Season *store.Season
 }
 
 // GetPublic returns the public data of a non-archived establishment.
@@ -159,11 +161,34 @@ func (s *Service) GetPublic(ctx context.Context, slug string) (*Public, error) {
 	if e.ArchivedAt != nil {
 		return nil, ErrNotFound
 	}
+	season, err := s.activeSeason(ctx, e.ID)
+	if err != nil {
+		return nil, err
+	}
 	return &Public{
 		Slug: e.Slug, Name: e.Name, Timezone: e.Timezone, Currency: e.Currency, DefaultLocale: e.DefaultLocale,
 		EnabledLocales: e.EnabledLocales, BookingEnabled: e.BookingEnabled, ContactEmail: e.ContactEmail,
-		ContactPhone: e.ContactPhone, Address: e.Address, Theme: e.Theme,
+		ContactPhone: e.ContactPhone, Address: e.Address, Theme: e.Theme, Season: season,
 	}, nil
+}
+
+// activeSeason returns the establishment's active season, nil when none.
+// The establishment was resolved from its public slug, so a system scope is used.
+func (s *Service) activeSeason(ctx context.Context, establishmentID string) (*store.Season, error) {
+	es, err := store.SystemEstablishmentScope(ctx, s.db, establishmentID)
+	if err != nil {
+		return nil, fmt.Errorf("establishment: public season scope: %w", err)
+	}
+	page, err := store.ListSeasons(ctx, s.db, es, "", 50)
+	if err != nil {
+		return nil, fmt.Errorf("establishment: public season: %w", err)
+	}
+	for i := range page.Items {
+		if page.Items[i].Status == "active" {
+			return &page.Items[i], nil
+		}
+	}
+	return nil, nil
 }
 
 // EmbedOrigins returns the origins allowed to frame the public page of slug

@@ -55,6 +55,9 @@ func (h *Handlers) GetPublicEstablishment(w http.ResponseWriter, r *http.Request
 	if addr != (api.Address{}) {
 		out.Address = &addr
 	}
+	if e.Season != nil {
+		out.Season = &api.PublicSeason{Year: e.Season.Year, OpensOn: e.Season.OpensOn, ClosesOn: e.Season.ClosesOn}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "public, max-age=30")
 	w.WriteHeader(http.StatusOK)

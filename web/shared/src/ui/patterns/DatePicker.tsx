@@ -1,18 +1,20 @@
-import { format } from 'date-fns';
 import { CalendarIcon, XIcon } from 'lucide-react';
-import { useState } from 'react';
-import type { DateRange as DayPickerRange, Matcher } from 'react-day-picker';
+import { Suspense, lazy, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@arenile/shared/ui/button';
-import { Calendar } from '@arenile/shared/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@arenile/shared/ui/popover';
+import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { cn } from '@arenile/shared/lib/utils';
-import {
-  DISPLAY_DATE_FORMAT,
-  dateFnsLocale,
-  dateToIso,
-  isoToDate,
-} from '@arenile/shared/lib/dates';
+import { formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
+
+// The calendar body (react-day-picker, date-fns locales) loads on first open:
+// the trigger alone is in the first-paint bundle of the booking page.
+const SingleCalendar = lazy(() =>
+  import('./DatePickerCalendar').then((m) => ({ default: m.SingleCalendar })),
+);
+const RangeCalendar = lazy(() =>
+  import('./DatePickerCalendar').then((m) => ({ default: m.RangeCalendar })),
+);
 
 interface CommonProps {
   id?: string;
@@ -31,24 +33,18 @@ interface CommonProps {
   'aria-labelledby'?: string;
 }
 
-function useCalendarProps(min?: string, max?: string) {
-  const { i18n } = useTranslation();
-  const locale = dateFnsLocale(i18n.language);
-  const disabled: Matcher[] = [];
-  const minDate = isoToDate(min);
-  const maxDate = isoToDate(max);
-  if (minDate) disabled.push({ before: minDate });
-  if (maxDate) disabled.push({ after: maxDate });
-  // The dropdown caption only lists the months between startMonth and endMonth
-  // (react-day-picker defaults to the current year): allow ten years around today.
-  const year = new Date().getFullYear();
-  const startMonth = minDate ?? new Date(year - 10, 0, 1);
-  const endMonth = maxDate ?? new Date(year + 10, 11, 31);
-  return { locale, disabled, weekStartsOn: 1 as const, startMonth, endMonth };
-}
-
 const triggerClass =
-  'w-full min-w-0 justify-start gap-2 overflow-hidden px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-56';
+  'w-full min-w-0 justify-start gap-2 overflow-hidden bg-transparent px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-56 dark:bg-input/30';
+
+function CalendarLoading({ label, wide }: { label: string; wide?: boolean }) {
+  return (
+    <div role="status" className={cn('space-y-2 p-3', wide ? 'w-[36rem] max-w-[90vw]' : 'w-72')}>
+      <span className="sr-only">{label}</span>
+      <Skeleton aria-hidden="true" className="h-8 w-full" />
+      <Skeleton aria-hidden="true" className="h-56 w-full" />
+    </div>
+  );
+}
 
 export interface DatePickerProps extends CommonProps {
   /** Calendar date "YYYY-MM-DD" (API format); undefined/empty when unset. */
@@ -75,7 +71,6 @@ export function DatePicker({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const selected = isoToDate(value);
-  const calendar = useCalendarProps(min, max);
   return (
     <div className={cn('flex min-w-0 items-center gap-1', className)}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -88,27 +83,21 @@ export function DatePicker({
             {...aria}
           >
             <CalendarIcon aria-hidden="true" className="text-muted-foreground" />
-            {selected
-              ? format(selected, DISPLAY_DATE_FORMAT)
-              : (placeholder ?? t('ui.date.placeholder'))}
+            {selected && value ? formatIsoDate(value) : (placeholder ?? t('ui.date.placeholder'))}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={selected}
-            defaultMonth={selected}
-            captionLayout="dropdown"
-            locale={calendar.locale}
-            weekStartsOn={calendar.weekStartsOn}
-            startMonth={calendar.startMonth}
-            endMonth={calendar.endMonth}
-            disabled={calendar.disabled}
-            onSelect={(d) => {
-              onChange(d ? dateToIso(d) : undefined);
-              setOpen(false);
-            }}
-          />
+          <Suspense fallback={<CalendarLoading label={t('common.loading')} />}>
+            <SingleCalendar
+              value={value}
+              min={min}
+              max={max}
+              onSelect={(iso) => {
+                onChange(iso);
+                setOpen(false);
+              }}
+            />
+          </Suspense>
         </PopoverContent>
       </Popover>
       {clearable && selected && !disabled && (
@@ -153,12 +142,10 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   const { t } = useTranslation();
   const from = isoToDate(value?.from);
-  const to = isoToDate(value?.to);
-  const selected: DayPickerRange | undefined = from ? { from, to } : undefined;
-  const calendar = useCalendarProps(min, max);
-  const label = from
-    ? `${format(from, DISPLAY_DATE_FORMAT)} – ${to ? format(to, DISPLAY_DATE_FORMAT) : '…'}`
-    : (placeholder ?? t('ui.date.rangePlaceholder'));
+  const label =
+    from && value
+      ? `${formatIsoDate(value.from)} – ${value.to ? formatIsoDate(value.to) : '…'}`
+      : (placeholder ?? t('ui.date.rangePlaceholder'));
   return (
     <div className={cn('flex min-w-0 items-center gap-1', className)}>
       <Popover>
@@ -175,24 +162,18 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="range"
-            selected={selected}
-            defaultMonth={from}
-            numberOfMonths={numberOfMonths}
-            locale={calendar.locale}
-            weekStartsOn={calendar.weekStartsOn}
-            startMonth={calendar.startMonth}
-            endMonth={calendar.endMonth}
-            disabled={calendar.disabled}
-            onSelect={(r) =>
-              onChange(
-                r?.from
-                  ? { from: dateToIso(r.from), to: r.to ? dateToIso(r.to) : undefined }
-                  : undefined,
-              )
-            }
-          />
+          <Suspense
+            fallback={<CalendarLoading label={t('common.loading')} wide={numberOfMonths > 1} />}
+          >
+            <RangeCalendar
+              from={value?.from}
+              to={value?.to}
+              min={min}
+              max={max}
+              numberOfMonths={numberOfMonths}
+              onSelect={onChange}
+            />
+          </Suspense>
         </PopoverContent>
       </Popover>
       {clearable && from && !disabled && (

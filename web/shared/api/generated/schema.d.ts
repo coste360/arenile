@@ -1140,6 +1140,13 @@ export interface components {
             contact_phone?: string;
             address?: components["schemas"]["Address"];
             theme: components["schemas"]["Theme"];
+            season?: components["schemas"]["PublicSeason"];
+        };
+        /** @description Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva. */
+        PublicSeason: {
+            year: number;
+            opens_on: components["schemas"]["Date"];
+            closes_on: components["schemas"]["Date"];
         };
         /** @description Messaggio leggero inviato sul flusso SSE (specifica 21.1). */
         StreamMessage: {

@@ -150,7 +150,7 @@
       "settings": "Seasons, maps, zones, catalogue, prices, policies, public page and payments."
     },
     "establishments": {
-      "title": "Establishments",
+      "title": "All establishments",
       "empty": "No establishment configured.",
       "name": "Name",
       "slug": "Public address",
@@ -189,7 +189,7 @@
       "who": "Details and payment"
     },
     "stepText": {
-      "when": "Choose your dates, the plan and the time slot (full day, morning or afternoon).",
+      "when": "Pick the first and last day of your stay.",
       "where": "Pick a spot on the map or your preferred zone.",
       "what": "Choose the package and extras; the price summary updates as you go.",
       "who": "Enter your details and confirm. No account needed and no fees."
@@ -205,7 +205,9 @@
       "days_one": "{{count}} day selected",
       "days_other": "{{count}} days selected",
       "pickHint": "Pick the first and last day: for a single day, tap the same day twice."
-    }
+    },
+    "season": "Season {{year}}: from {{from}} to {{to}}",
+    "nextStepsSoon": "Spot, package and online payment are coming soon: for now, contact the establishment."
   },
   "ui": {
     "close": "Close",

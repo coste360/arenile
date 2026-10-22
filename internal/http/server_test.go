@@ -16,6 +16,7 @@ import (
 
 	"github.com/uptrace/bun"
 
+	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
@@ -287,6 +288,30 @@ func TestHTTP_PublicEstablishmentAndHeaders(t *testing.T) {
 		if _, ok := body[forbidden]; ok {
 			t.Fatalf("public endpoint leaks %s", forbidden)
 		}
+	}
+	if _, ok := body["season"]; ok {
+		t.Fatalf("public body has a season without an active one: %v", body)
+	}
+	// The active season (and only that one) is exposed for the booking calendar.
+	ctx := context.Background()
+	es, err := store.SystemEstablishmentScope(ctx, e.db, e.estA.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := e.clock.Now()
+	for _, s := range []*store.Season{
+		{ID: store.NewID(), Year: 2026, OpensOn: calendar.MustParse("2026-05-01"), ClosesOn: calendar.MustParse("2026-09-30"), Status: "closed", CreatedAt: now, UpdatedAt: now},
+		{ID: store.NewID(), Year: 2027, OpensOn: calendar.MustParse("2027-05-15"), ClosesOn: calendar.MustParse("2027-09-20"), Status: "active", CreatedAt: now, UpdatedAt: now},
+		{ID: store.NewID(), Year: 2028, OpensOn: calendar.MustParse("2028-05-01"), ClosesOn: calendar.MustParse("2028-09-30"), Status: "draft", CreatedAt: now, UpdatedAt: now},
+	} {
+		if err := store.InsertSeason(ctx, e.db, es, s); err != nil {
+			t.Fatal(err)
+		}
+	}
+	resp, body = c.do(http.MethodGet, "/api/public/v1/lido-a", nil, nil)
+	season, _ := body["season"].(map[string]any)
+	if resp.StatusCode != 200 || season["year"] != float64(2027) || season["opens_on"] != "2027-05-15" || season["closes_on"] != "2027-09-20" {
+		t.Fatalf("public season: %d %v", resp.StatusCode, body["season"])
 	}
 	resp, body = c.do(http.MethodGet, "/api/public/v1/nope", nil, nil)
 	assertProblem(t, resp, body, 404, "not_found")

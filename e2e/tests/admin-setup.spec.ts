@@ -39,13 +39,12 @@ test('owner configures a new lido from the classic template, edits the map and s
   // Step 1 (details) is optional.
   await page.getByRole('button', { name: 'Salta questo passo' }).click();
 
-  // Step 2: classic template.
+  // Step 2: classic template (one shadcn Field group per template).
   const classic = page
-    .getByRole('listitem')
-    .or(page.locator('[data-slot="card"]'))
+    .getByRole('radiogroup', { name: 'Modelli disponibili' })
+    .getByRole('group')
     .filter({ hasText: 'Lido classico a file' })
-    .filter({ has: page.getByRole('button', { name: 'Usa questo modello' }) })
-    .last();
+    .first();
   await classic.getByRole('button', { name: 'Usa questo modello' }).click();
 
   // Step 3: 8 rows × 15 spots (defaults), season and map are created.
@@ -111,7 +110,11 @@ test('owner configures a new lido from the classic template, edits the map and s
   await page.getByRole('button', { name: 'Calcola' }).click();
   const result = page.getByRole('region', { name: 'Risultato della simulazione' });
   await expect(result).toBeVisible();
-  await expect(result.getByTestId('simulator-total')).toContainText('€');
-  await expect(result.getByRole('list', { name: 'Regole applicate' }).first()).toBeVisible();
-  await expect(result.getByText(/Listino rapido/).first()).toBeVisible();
+  // Defaults: first pack, first zone (row1), one day on the opening date (low period):
+  // the quick price list above gives 30 € for row1 + 0 € for 'low'.
+  await expect(result.getByTestId('simulator-total')).toHaveText(/^30,00\s€$/);
+  const applied = result.getByRole('list', { name: 'Regole applicate' }).first();
+  await expect(applied).toBeVisible();
+  await expect(applied.getByRole('listitem').filter({ hasText: /Listino rapido/ })).toHaveCount(1);
+  await expect(applied.getByRole('listitem').filter({ hasText: /Listino rapido/ })).toContainText(/30,00\s€/);
 });

@@ -1,49 +1,38 @@
 import { changeLocale, isLocale, type Locale } from '@arenile/shared/i18n';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@arenile/shared/ui/select';
+import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
 import { GlobeIcon } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { languageTriggerClass } from './languageTrigger';
 
 /**
- * Language picker of the public header (shadcn Select). Lazy-loaded by
- * BookingPage: Radix Select and its positioning engine stay out of the
- * initial bundle (spec 12.6, 150 KB budget).
+ * Language picker of the public header: the shadcn NativeSelect (a styled
+ * <select>), so no Radix positioning code lands in the first-paint bundle
+ * (spec 12.6, 150 KB budget) and the picker works like the device's own.
  */
-export default function LanguageSelect({ languages }: { languages: readonly Locale[] }) {
+export function LanguageSelect({ languages }: { languages: readonly Locale[] }) {
   const { t, i18n } = useTranslation();
   const id = useId();
   return (
-    <Select
-      value={i18n.language}
-      onValueChange={(v) => {
-        if (isLocale(v)) void changeLocale(i18n, v);
-      }}
-    >
-      <span id={`${id}-label`} className="sr-only">
+    <div className="flex items-center gap-1.5 text-primary-foreground">
+      <GlobeIcon aria-hidden="true" className="size-4 opacity-80" />
+      <label htmlFor={id} className="sr-only">
         {t('common.language')}
-      </span>
-      <SelectTrigger
+      </label>
+      <NativeSelect
+        id={id}
         size="sm"
-        aria-labelledby={`${id}-label ${id}-value`}
-        className={languageTriggerClass}
+        value={i18n.language}
+        onChange={(e) => {
+          if (isLocale(e.target.value)) void changeLocale(i18n, e.target.value);
+        }}
+        className="border-primary-foreground/40 bg-transparent text-primary-foreground dark:bg-transparent [&>option]:text-foreground"
       >
-        <GlobeIcon aria-hidden="true" />
-        <SelectValue id={`${id}-value`} />
-      </SelectTrigger>
-      <SelectContent align="end">
         {languages.map((l) => (
-          <SelectItem key={l} value={l}>
+          <NativeSelectOption key={l} value={l}>
             {t(`common.languages.${l}`)}
-          </SelectItem>
+          </NativeSelectOption>
         ))}
-      </SelectContent>
-    </Select>
+      </NativeSelect>
+    </div>
   );
 }

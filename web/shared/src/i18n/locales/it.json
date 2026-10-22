@@ -150,7 +150,7 @@
       "settings": "Stagioni, mappe, zone, catalogo, prezzi, policy, pagina pubblica e pagamenti."
     },
     "establishments": {
-      "title": "Stabilimenti",
+      "title": "Tutti gli stabilimenti",
       "empty": "Nessuno stabilimento configurato.",
       "name": "Nome",
       "slug": "Indirizzo pubblico",
@@ -189,7 +189,7 @@
       "who": "Chi e pagamento"
     },
     "stepText": {
-      "when": "Scegli le date, la formula e la fascia (giornata intera, mattina o pomeriggio).",
+      "when": "Scegli il primo e l’ultimo giorno del soggiorno.",
       "where": "Scegli la postazione sulla mappa o la zona che preferisci.",
       "what": "Scegli il pacchetto e gli extra; il riepilogo del prezzo si aggiorna a ogni modifica.",
       "who": "Inserisci i tuoi dati e conferma. Nessun account richiesto e nessuna commissione."
@@ -205,7 +205,9 @@
       "days_one": "{{count}} giorno selezionato",
       "days_other": "{{count}} giorni selezionati",
       "pickHint": "Scegli il primo e l’ultimo giorno: per una sola giornata tocca due volte lo stesso giorno."
-    }
+    },
+    "season": "Stagione {{year}}: dal {{from}} al {{to}}",
+    "nextStepsSoon": "Postazione, pacchetto e pagamento online arrivano a breve: per ora contatta lo stabilimento."
   },
   "ui": {
     "close": "Chiudi",

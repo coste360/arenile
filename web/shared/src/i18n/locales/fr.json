@@ -150,7 +150,7 @@
       "settings": "Saisons, plans, zones, catalogue, prix, règles, page publique et paiements."
     },
     "establishments": {
-      "title": "Établissements",
+      "title": "Tous les établissements",
       "empty": "Aucun établissement configuré.",
       "name": "Nom",
       "slug": "Adresse publique",
@@ -189,7 +189,7 @@
       "who": "Coordonnées et paiement"
     },
     "stepText": {
-      "when": "Choisissez les dates, la formule et le créneau (journée, matin ou après-midi).",
+      "when": "Choisissez le premier et le dernier jour de votre séjour.",
       "where": "Choisissez un emplacement sur le plan ou la zone que vous préférez.",
       "what": "Choisissez la formule et les extras ; le récapitulatif du prix se met à jour.",
       "who": "Saisissez vos coordonnées et confirmez. Sans compte et sans commission."
@@ -205,7 +205,9 @@
       "days_one": "{{count}} jour sélectionné",
       "days_other": "{{count}} jours sélectionnés",
       "pickHint": "Choisissez le premier et le dernier jour : pour une seule journée, touchez deux fois le même jour."
-    }
+    },
+    "season": "Saison {{year}} : du {{from}} au {{to}}",
+    "nextStepsSoon": "Emplacement, forfait et paiement en ligne arrivent bientôt : en attendant, contactez l’établissement."
   },
   "ui": {
     "close": "Fermer",
