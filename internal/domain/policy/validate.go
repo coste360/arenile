@@ -39,7 +39,8 @@ func (v Validation) Err() error {
 }
 
 // Validate checks req against the effective rules at instant now. Dates and
-// times of day are evaluated in loc, the establishment timezone (UTC if nil).
+// times of day are evaluated in loc, the establishment timezone; loc must not be
+// nil (see mustLocation).
 // Malformed time strings in the rules (rejected by CheckConfig on save) make the
 // corresponding check a no-op rather than blocking sales.
 //
@@ -50,9 +51,7 @@ func (v Validation) Err() error {
 //     day start - max(days, 1), otherwise cutoff_passed;
 //   - lead > max_lead_time_days: lead_time_too_long.
 func Validate(req Request, r Rules, now time.Time, loc *time.Location) Validation {
-	if loc == nil {
-		loc = time.UTC
-	}
+	mustLocation(loc)
 	local := now.In(loc)
 	today := calendar.In(now, loc)
 	minuteOfDay := local.Hour()*60 + local.Minute()
@@ -149,4 +148,14 @@ func sameDayClosed(s *SameDayBooking, slots calendar.Slots, minuteOfDay int) (re
 		}
 	}
 	return "", false
+}
+
+// mustLocation panics on a nil location. Calendar dates are always in the
+// establishment timezone: silently falling back to UTC would shift lead-time
+// cut-offs and cancellation tiers by one or two hours around midnight
+// (Europe/Rome is UTC+1/+2), so a missing timezone is a programming error.
+func mustLocation(loc *time.Location) {
+	if loc == nil {
+		panic("policy: nil *time.Location: pass the establishment timezone")
+	}
 }

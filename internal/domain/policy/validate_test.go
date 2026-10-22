@@ -160,12 +160,51 @@ func TestValidate_Table(t *testing.T) {
 	}
 }
 
-func TestValidate_NilLocationIsUTC(t *testing.T) {
-	r := Rules{MinLeadTime: &MinLeadTime{Days: Ptr(0), CutoffTime: Ptr("20:00")}}
+func TestPolicy_NilLocationPanics(t *testing.T) {
 	now := time.Date(2027, 7, 10, 20, 30, 0, 0, time.UTC)
-	got := Validate(req("2027-07-11", "2027-07-11", calendar.SlotsFull, FormulaDay, 1), r, now, nil)
+	start := calendar.MustParse("2027-07-11")
+	calls := map[string]func(){
+		"Validate": func() {
+			Validate(req("2027-07-11", "2027-07-11", calendar.SlotsFull, FormulaDay, 1), DefaultRules(), now, nil)
+		},
+		"CancellationOutcome": func() { CancellationOutcome(start, 1000, now, nil, DefaultRules()) },
+		"ModificationAllowed": func() { ModificationAllowed(start, now, nil, DefaultRules()) },
+	}
+	for name, call := range calls {
+		t.Run(name, func(t *testing.T) {
+			defer func() {
+				if recover() == nil {
+					t.Fatal("nil location must panic, not fall back to UTC")
+				}
+			}()
+			call()
+		})
+	}
+}
+
+// TestValidate_CutoffAt2330Rome: at 23:30 in Rome (21:30 UTC) the 23:00
+// cut-off for tomorrow has passed; evaluating in UTC would wrongly accept it.
+func TestValidate_CutoffAt2330Rome(t *testing.T) {
+	loc := rome(t)
+	r := Rules{MinLeadTime: &MinLeadTime{Days: Ptr(1), CutoffTime: Ptr("23:00")}}
+	now := at("2027-07-10", 23, 30, loc)
+	got := Validate(req("2027-07-11", "2027-07-11", calendar.SlotsFull, FormulaDay, 1), r, now, loc)
 	if !sameCodes(codes(got), []Code{CodeCutoffPassed}) {
-		t.Fatalf("codes = %v", codes(got))
+		t.Fatalf("Rome: codes = %v, want cutoff_passed", codes(got))
+	}
+	if utc := Validate(req("2027-07-11", "2027-07-11", calendar.SlotsFull, FormulaDay, 1), r, now, time.UTC); utc.OK() == got.OK() {
+		t.Fatal("test must distinguish the establishment timezone from UTC")
+	}
+}
+
+// TestCancellationOutcome_TierAtMidnightRome: at 00:30 in Rome on the start
+// day (22:30 UTC the day before) the same-day tier applies.
+func TestCancellationOutcome_TierAtMidnightRome(t *testing.T) {
+	loc := rome(t)
+	r := Rules{Cancellation: []CancellationTier{{UntilDaysBefore: 1, RefundPercent: 100}, {UntilDaysBefore: 0, RefundPercent: 0}}}
+	got := CancellationOutcome(calendar.MustParse("2027-07-11"), 10000, at("2027-07-11", 0, 30, loc), loc, r)
+	if got.DaysBefore != 0 || got.RefundAmount != 0 || got.TierApplied != 1 {
+		t.Fatalf("got %+v, want same-day tier with no refund", got)
 	}
 }
 

@@ -79,9 +79,7 @@ type CancellationResult struct {
 // greater than the days left before the start. When no tier applies (or the
 // stay has already started) nothing is returned.
 func CancellationOutcome(start calendar.Date, paid money.Cents, now time.Time, loc *time.Location, r Rules) CancellationResult {
-	if loc == nil {
-		loc = time.UTC
-	}
+	mustLocation(loc)
 	daysBefore := calendar.In(now, loc).DaysUntil(start)
 	res := CancellationResult{TierApplied: -1, DaysBefore: daysBefore}
 	if daysBefore < 0 {
@@ -121,9 +119,7 @@ type ModificationOutcome struct {
 // link, a booking starting on start at instant now. Without a modification
 // rule customers cannot self-modify (the panel can always force a change).
 func ModificationAllowed(start calendar.Date, now time.Time, loc *time.Location, r Rules) ModificationOutcome {
-	if loc == nil {
-		loc = time.UTC
-	}
+	mustLocation(loc)
 	m := r.Modification
 	if m == nil || m.AllowedUntilDaysBefore == nil {
 		return ModificationOutcome{}
