@@ -250,7 +250,13 @@
     "extraLine": "Supplément {{code}} × {{qty}}",
     "lineTotal": "Total de la ligne",
     "discount": "Remise {{source}}",
-    "vat": "TVA {{rate}} % sur {{taxable}}"
+    "vat": "TVA {{rate}} % sur {{taxable}}",
+    "chartTitle": "Total par jour",
+    "vatTitle": "Récapitulatif TVA",
+    "vatRate": "Taux et base imposable",
+    "vatTax": "Taxe",
+    "showAll": "Afficher les {{count}} jours",
+    "showLess": "Afficher moins de jours"
   },
   "matrix": {
     "title": "Matrice tarifaire",
@@ -275,7 +281,9 @@
     "dayGaps_other": "{{date}} : {{count}} combinaisons sans prix",
     "dayOk": "{{date}} : entièrement couvert",
     "legendOk": "couvert",
-    "legendGaps": "jusqu’à {{max}} combinaisons sans prix"
+    "legendGaps": "jusqu’à {{max}} combinaisons sans prix",
+    "filteredDay": "Intervalles incluant le {{date}}",
+    "showAll": "Tout afficher"
   },
   "actionSummary": {
     "set": "{{amount}} par jour",
@@ -353,5 +361,15 @@
     "stackable": "Cumulable.",
     "exclusive": "Non cumulable.",
     "inactive": "(désactivée)"
+  },
+  "sections": {
+    "general": "Général",
+    "options": "Options"
+  },
+  "multi": {
+    "all": "Tous",
+    "more": "+{{count}}",
+    "search": "Rechercher…",
+    "clear": "Effacer la sélection"
   }
 }

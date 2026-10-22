@@ -1,20 +1,29 @@
-import { Button, Card } from '@arenile/shared/ui';
-import { useState } from 'react';
+import { Alert, AlertDescription, Badge, Button, Label } from '@arenile/shared/ui';
+import {
+  DataTable,
+  DataTableColumnHeader,
+  EmptyState,
+  type ColumnDef,
+} from '@arenile/shared/ui/patterns';
+import { CalendarXIcon, DownloadIcon, LockIcon, Table2Icon } from 'lucide-react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConfigContext } from '../configuration/api/useConfigContext';
-import { ConfigPage, EmptyState, QueryState } from '../configuration/components/ConfigPage';
-import { Select } from '../configuration/components/fields';
 import { formatCents } from '../configuration/lib/money';
 import { usePriceMatrix, type Channel, type Formula, type PriceMatrix, type Slots } from './api';
-import { PricingNav, SeasonSelect } from './components';
+import { OptionSelect, PricingLayout, QueryState, SeasonSelect } from './kit';
 import { downloadCsv, matrixToCsv } from './matrixCsv';
 import { CHANNELS } from './rules.schema';
+import { localize } from '../configuration/lib/i18nText';
 import { useSelectedSeason } from './season';
 import { usePricingData } from './usePricingData';
 
+type Cell = PriceMatrix['cells'][number];
+type MatrixRow = { id: string; pack: string; category: string; cells: Record<string, Cell> };
+
 /**
- * Matrice di listino (spec 8.7): one table per pack, price categories ×
- * rate periods, computed by the engine for a representative day.
+ * Matrice di listino (spec 8.7): price categories × rate periods for every
+ * pack, computed by the engine for a representative day.
  */
 export function PriceMatrixPage() {
   const { t } = useTranslation('pricing');
@@ -23,7 +32,7 @@ export function PriceMatrixPage() {
   const data = usePricingData(ctx);
   const [formula, setFormula] = useState<Formula>('day');
   const [channel, setChannel] = useState<Channel>('desk');
-  const [slots, setSlots] = useState<Slots>('FULL');
+  const [slots, setSlots] = useState<Slots>('AM');
   const allowed = ctx.canConfigure;
   const matrix = usePriceMatrix(
     ctx.establishmentId,
@@ -40,152 +49,193 @@ export function PriceMatrixPage() {
     const p = data.packs.find((x) => x.id === id);
     return p ? data.name(p.name) || p.code : id.slice(0, 8);
   };
+  const exportCsv = () => {
+    const m = matrix.data;
+    if (!m || !sel.season) return;
+    downloadCsv(
+      `listino-${sel.season.year}-${m.formula}-${m.channel}${m.slots === 'FULL' ? '' : `-${m.slots}`}.csv`,
+      matrixToCsv(m, {
+        packName,
+        locale: ctx.uiLocale,
+        headers: { pack: t('fields.pack'), category: t('fields.price_category') },
+        noPrice: t('matrix.noPrice'),
+      }),
+    );
+  };
   return (
-    <ConfigPage
+    <PricingLayout
       title={t('matrix.title')}
       description={t('matrix.description')}
+      establishmentId={ctx.establishmentId}
+      seasonId={sel.season?.id}
       actions={<SeasonSelect seasons={sel.seasons} season={sel.season} onSelect={sel.select} />}
     >
-      <PricingNav establishmentId={ctx.establishmentId} seasonId={sel.season?.id} />
-      {!ctx.isLoading && !allowed && <p role="note">{t('configureOnly')}</p>}
-      <div className="flex flex-wrap gap-4">
-        <label className="flex items-center gap-2 text-sm">
-          {t('fields.formula')}
-          <Select
-            className="w-40"
-            value={formula}
-            onChange={(e) => setFormula(e.target.value as Formula)}
-          >
-            <option value="day">{t('formulas.day')}</option>
-            <option value="half_day">{t('formulas.half_day')}</option>
-          </Select>
-        </label>
+      {!ctx.isLoading && !allowed && (
+        <Alert role="note">
+          <LockIcon aria-hidden="true" />
+          <AlertDescription>{t('configureOnly')}</AlertDescription>
+        </Alert>
+      )}
+      <div className="flex flex-wrap items-end gap-4">
+        <LabeledSelect
+          label={t('fields.formula')}
+          value={formula}
+          onChange={(v) => setFormula(v as Formula)}
+          options={(['day', 'half_day'] as const).map((f) => ({
+            value: f,
+            label: t(`formulas.${f}`),
+          }))}
+        />
         {formula === 'half_day' && (
-          <label className="flex items-center gap-2 text-sm">
-            {t('fields.slots')}
-            <Select
-              className="w-36"
-              value={slots}
-              onChange={(e) => setSlots(e.target.value as Slots)}
-            >
-              <option value="AM">{t('slots.AM')}</option>
-              <option value="PM">{t('slots.PM')}</option>
-            </Select>
-          </label>
+          <LabeledSelect
+            label={t('fields.slots')}
+            value={slots}
+            onChange={(v) => setSlots(v as Slots)}
+            options={(['AM', 'PM'] as const).map((s) => ({ value: s, label: t(`slots.${s}`) }))}
+          />
         )}
-        <label className="flex items-center gap-2 text-sm">
-          {t('fields.channel')}
-          <Select
-            className="w-36"
-            value={channel}
-            onChange={(e) => setChannel(e.target.value as Channel)}
-          >
-            {CHANNELS.map((c) => (
-              <option key={c} value={c}>
-                {t(`channels.${c}`)}
-              </option>
-            ))}
-          </Select>
-        </label>
+        <LabeledSelect
+          label={t('fields.channel')}
+          value={channel}
+          onChange={(v) => setChannel(v as Channel)}
+          options={CHANNELS.map((c) => ({ value: c, label: t(`channels.${c}`) }))}
+        />
+        <Button
+          variant="outline"
+          className="ml-auto"
+          disabled={!matrix.data || matrix.data.pack_ids.length === 0}
+          onClick={exportCsv}
+        >
+          <DownloadIcon aria-hidden="true" />
+          {t('matrix.exportCsv')}
+        </Button>
       </div>
       <QueryState
         isLoading={sel.isLoading || (allowed && !!sel.season && matrix.isPending)}
         error={sel.error ?? matrix.error}
         onRetry={() => void matrix.refetch()}
       />
-      {!sel.isLoading && sel.seasons.length === 0 && <EmptyState>{t('noSeason')}</EmptyState>}
-      {matrix.data && (
-        <>
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={matrix.data.pack_ids.length === 0}
-              onClick={() => {
-                const m = matrix.data;
-                if (!m || !sel.season) return;
-                downloadCsv(
-                  `listino-${sel.season.year}-${m.formula}-${m.channel}${m.slots === 'FULL' ? '' : `-${m.slots}`}.csv`,
-                  matrixToCsv(m, {
-                    packName,
-                    locale: ctx.uiLocale,
-                    headers: { pack: t('fields.pack'), category: t('fields.price_category') },
-                    noPrice: t('matrix.noPrice'),
-                  }),
-                );
-              }}
-            >
-              {t('matrix.exportCsv')}
-            </Button>
-          </div>
-          <MatrixTables matrix={matrix.data} packName={packName} locale={ctx.uiLocale} />
-        </>
+      {!sel.isLoading && sel.seasons.length === 0 && (
+        <EmptyState icon={CalendarXIcon} title={t('noSeason')} />
       )}
-    </ConfigPage>
+      {matrix.data && (
+        <MatrixTable
+          matrix={matrix.data}
+          packName={packName}
+          periodName={(code) => {
+            const p = sel.periods.find((x) => x.code === code);
+            return (p && localize(p.name, ctx.uiLocale, 'it')) || code;
+          }}
+          locale={ctx.uiLocale}
+        />
+      )}
+    </PricingLayout>
   );
 }
 
-function MatrixTables({
+function LabeledSelect({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const id = useId();
+  return (
+    <div className="grid gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <OptionSelect id={id} value={value} onChange={onChange} options={options} className="w-40" />
+    </div>
+  );
+}
+
+function MatrixTable({
   matrix,
   packName,
+  periodName,
   locale,
 }: {
   matrix: PriceMatrix;
   packName: (id: string) => string;
+  periodName: (code: string) => string;
   locale: string;
 }) {
   const { t } = useTranslation('pricing');
   if (matrix.pack_ids.length === 0 || matrix.categories.length === 0) {
-    return <EmptyState>{t('matrix.empty')}</EmptyState>;
+    return <EmptyState icon={Table2Icon} title={t('matrix.empty')} />;
   }
-  const index = new Map(
-    matrix.cells.map((c) => [`${c.pack_id}\u0000${c.price_category}\u0000${c.rate_period}`, c]),
+  const rows: MatrixRow[] = matrix.pack_ids.flatMap((pack) =>
+    matrix.categories.map((category) => ({
+      id: `${pack}\u0000${category}`,
+      pack: packName(pack),
+      category,
+      cells: Object.fromEntries(
+        matrix.cells
+          .filter((c) => c.pack_id === pack && c.price_category === category)
+          .map((c) => [c.rate_period, c]),
+      ),
+    })),
   );
-  const cell = (pack: string, cat: string, period: string) =>
-    index.get(`${pack}\u0000${cat}\u0000${period}`);
+  const columns: ColumnDef<MatrixRow>[] = [
+    {
+      accessorKey: 'pack',
+      meta: { label: t('fields.pack') },
+      enableHiding: false,
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.pack')} />,
+      cell: ({ row }) => <span className="font-medium">{row.original.pack}</span>,
+    },
+    {
+      accessorKey: 'category',
+      meta: { label: t('fields.price_category') },
+      enableHiding: false,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('fields.price_category')} />
+      ),
+      cell: ({ row }) => (
+        <Badge variant="secondary" className="font-mono">
+          {row.original.category}
+        </Badge>
+      ),
+    },
+    ...matrix.rate_periods.map((period): ColumnDef<MatrixRow> => ({
+      id: `period:${period}`,
+      meta: { label: periodName(period) },
+      accessorFn: (r) => (r.cells[period]?.priced ? r.cells[period].price : -1),
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={periodName(period)} className="justify-end" />
+      ),
+      cell: ({ row }) => {
+        const c = row.original.cells[period];
+        return (
+          <div className="text-right tabular-nums" title={c?.date}>
+            {!c ? (
+              <span className="text-muted-foreground">—</span>
+            ) : c.priced ? (
+              formatCents(c.price, locale)
+            ) : (
+              <Badge variant="destructive">{t('matrix.noPrice')}</Badge>
+            )}
+          </div>
+        );
+      },
+    })),
+  ];
   return (
-    <div className="space-y-4">
-      {matrix.pack_ids.map((pack) => (
-        <Card key={pack} className="overflow-x-auto">
-          <table className="w-full min-w-[32rem] text-sm">
-            <caption className="px-4 pt-3 text-left font-semibold">{packName(pack)}</caption>
-            <thead className="text-left text-slate-600">
-              <tr>
-                <th scope="col" className="px-4 py-2 font-medium">
-                  {t('fields.price_category')}
-                </th>
-                {matrix.rate_periods.map((p) => (
-                  <th key={p} scope="col" className="px-4 py-2 text-right font-medium">
-                    {p}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {matrix.categories.map((cat) => (
-                <tr key={cat} className="border-t border-slate-100">
-                  <th scope="row" className="px-4 py-2 text-left font-mono text-xs font-medium">
-                    {cat}
-                  </th>
-                  {matrix.rate_periods.map((period) => {
-                    const c = cell(pack, cat, period);
-                    return (
-                      <td
-                        key={period}
-                        className={`px-4 py-2 text-right tabular-nums ${c && !c.priced ? 'bg-red-50 text-red-700' : ''}`}
-                        title={c ? c.date : undefined}
-                      >
-                        {!c ? '—' : c.priced ? formatCents(c.price, locale) : t('matrix.noPrice')}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      ))}
-      <p className="text-xs text-slate-600">{t('matrix.note')}</p>
+    <div className="space-y-2">
+      <DataTable
+        caption={t('matrix.title')}
+        columns={columns}
+        data={rows}
+        getRowId={(r) => r.id}
+        pageSize={0}
+        searchable
+        className="[&_[data-slot=table-container]]:max-h-[70vh] [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-muted"
+      />
+      <p className="text-xs text-muted-foreground">{t('matrix.note')}</p>
     </div>
   );
 }

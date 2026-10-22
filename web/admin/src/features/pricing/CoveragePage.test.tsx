@@ -67,10 +67,15 @@ describe('CoveragePage', () => {
       },
     });
 
-    expect(await screen.findByText('1 intervallo senza prezzo')).toBeInTheDocument();
-    const calendar = screen.getAllByRole('listitem');
-    const gapDays = calendar.filter((d) => Number(d.getAttribute('data-gaps') ?? 0) > 0);
+    expect((await screen.findAllByText('1 intervallo senza prezzo')).length).toBeGreaterThan(0);
+    // Heatmap: shadcn Calendar day buttons named with the number of uncovered combinations.
+    const gapDays = screen.getAllByRole('button', { name: /combinazione senza prezzo/ });
     expect(gapDays.map((d) => d.textContent)).toEqual(['5', '6']);
+    expect(screen.getByRole('button', { name: '04/06/2027: tutto coperto' })).toBeInTheDocument();
+
+    // Clicking a day filters the gap list to that day.
+    await user.click(gapDays[0] as HTMLElement);
+    expect(screen.getByText('Intervalli che comprendono il 05/06/2027')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Crea la regola mancante/ }));
     const dialog = await screen.findByRole('dialog');

@@ -31,7 +31,8 @@
     "duration": "Durée",
     "payment": "Paiement",
     "cancellation": "Annulation et modifications",
-    "other": "Autre"
+    "other": "Autre",
+    "general": "Général"
   },
   "scope": {
     "channels": "Canaux",
@@ -118,5 +119,6 @@
     "desk_free": "Caisse : aucune contrainte",
     "warnNoPeak": "Aucune période d’août trouvée : choisissez les périodes manuellement.",
     "warnNoGazebo": "Aucun pack gazebo trouvé : choisissez les packs manuellement."
-  }
+  },
+  "daysShort": "j"
 }

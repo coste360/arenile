@@ -1,10 +1,12 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui';
+import { EmptyState } from '@arenile/shared/ui/patterns';
+import { CalendarXIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConfigContext } from '../configuration/api/useConfigContext';
-import { ConfigPage, EmptyState, QueryState } from '../configuration/components/ConfigPage';
-import { PricingNav, SeasonSelect } from './components';
 import { DiscountsTab } from './DiscountsTab';
 import { FixedPricesTab } from './FixedPricesTab';
+import { PricingLayout, QueryState, SeasonSelect } from './kit';
 import { RulesTab } from './RulesTab';
 import { useSelectedSeason } from './season';
 import { SeasonCopyDialog } from './SeasonCopyDialog';
@@ -36,12 +38,14 @@ export function PricingPage() {
   };
 
   return (
-    <ConfigPage
+    <PricingLayout
       title={t('rules.title')}
       description={t('rules.pageDescription')}
       readOnly={readOnly}
+      establishmentId={ctx.establishmentId}
+      seasonId={season?.id}
       actions={
-        <div className="flex flex-wrap items-center gap-2">
+        <>
           <SeasonSelect seasons={sel.seasons} season={season} onSelect={sel.select} />
           {season && !readOnly && !ctx.isLoading && (
             <SeasonCopyDialog
@@ -53,49 +57,37 @@ export function PricingPage() {
               }}
             />
           )}
-        </div>
+        </>
       }
     >
-      <PricingNav establishmentId={ctx.establishmentId} seasonId={season?.id} />
       <QueryState
         isLoading={sel.isLoading || data.isLoading}
         error={sel.error ?? data.error}
         onRetry={sel.refetch}
       />
-      {!sel.isLoading && sel.seasons.length === 0 && <EmptyState>{t('noSeason')}</EmptyState>}
-      {common && (
-        <>
-          <div
-            role="tablist"
-            aria-label={t('tabs.label')}
-            className="flex flex-wrap gap-1 border-b border-slate-200"
-          >
-            {TABS.map((id) => (
-              <button
-                key={id}
-                id={`pricing-tab-${id}`}
-                type="button"
-                role="tab"
-                aria-selected={tab === id}
-                aria-controls={`pricing-panel-${id}`}
-                onClick={() => setTab(id)}
-                className={
-                  tab === id
-                    ? '-mb-px border-b-2 border-[var(--ar-primary)] px-3 py-2 text-sm font-semibold'
-                    : 'px-3 py-2 text-sm text-slate-600 hover:text-slate-900'
-                }
-              >
-                {t(`tabs.${id}`)}
-              </button>
-            ))}
-          </div>
-          <div role="tabpanel" id={`pricing-panel-${tab}`} aria-labelledby={`pricing-tab-${tab}`}>
-            {tab === 'rules' && <RulesTab {...common} />}
-            {tab === 'fixed' && <FixedPricesTab {...common} categories={data.categories} />}
-            {tab === 'discounts' && <DiscountsTab {...common} />}
-          </div>
-        </>
+      {!sel.isLoading && sel.seasons.length === 0 && (
+        <EmptyState icon={CalendarXIcon} title={t('noSeason')} />
       )}
-    </ConfigPage>
+      {common && (
+        <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="gap-4">
+          <TabsList aria-label={t('tabs.label')}>
+            {TABS.map((id) => (
+              <TabsTrigger key={id} value={id}>
+                {t(`tabs.${id}`)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value="rules">
+            <RulesTab {...common} />
+          </TabsContent>
+          <TabsContent value="fixed">
+            <FixedPricesTab {...common} categories={data.categories} />
+          </TabsContent>
+          <TabsContent value="discounts">
+            <DiscountsTab {...common} />
+          </TabsContent>
+        </Tabs>
+      )}
+    </PricingLayout>
   );
 }

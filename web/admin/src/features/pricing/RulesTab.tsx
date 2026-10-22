@@ -1,19 +1,47 @@
-import { Button, Card, Input } from '@arenile/shared/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@arenile/shared/ui';
+import {
+  DataTable,
+  DataTableColumnHeader,
+  EmptyState,
+  StatusBadge,
+  type ColumnDef,
+} from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ListOrderedIcon, PlusIcon, SparklesIcon } from 'lucide-react';
 import { useForm, useWatch, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { Extra, Pack, RatePeriod } from '../configuration/api/resources';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
-import { Badge, EmptyState, QueryState } from '../configuration/components/ConfigPage';
-import { ConfirmDelete, FormActions, FormDialog } from '../configuration/components/dialogs';
-import { Checkbox, Field, Select } from '../configuration/components/fields';
-import { FormAlert } from '../configuration/components/FormAlert';
-import { MultiCheck } from '../configuration/components/MultiCheck';
-import { fieldAria } from '../configuration/lib/aria';
 import { priceRules, type PriceRule } from './api';
 import { ActionFields, ConditionFields } from './components';
 import { describeRule, type SummaryNames } from './format';
-import { sortRules, useSummaryNames } from './ruleNames';
+import {
+  DeleteButton,
+  EditButton,
+  EditorSection,
+  EditorSheet,
+  FormErrorAlert,
+  MultiSelect,
+  OptionSelect,
+  QueryState,
+  RowActions,
+  SheetForm,
+  SwitchRow,
+  TextRow,
+} from './kit';
+import { STAGE_TONE, sortRules, useSummaryNames } from './ruleNames';
 import {
   ACTIONS_BY_STAGE,
   FORM_ALIASES,
@@ -22,6 +50,7 @@ import {
   ruleValues,
   toRuleInput,
   type RuleValues,
+  type Stage,
 } from './rules.schema';
 
 export interface PricingTabProps {
@@ -45,124 +74,141 @@ export function RulesTab(p: PricingTabProps) {
   const summary = useSummaryNames(p);
   const items = list.data ?? [];
 
+  const columns: ColumnDef<PriceRule>[] = [
+    {
+      accessorKey: 'priority',
+      meta: { label: t('fields.priority') },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('fields.priority')} />
+      ),
+      cell: ({ row }) => <span className="tabular-nums">{row.original.priority}</span>,
+    },
+    {
+      accessorKey: 'name',
+      meta: { label: t('fields.name') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.name')} />,
+      cell: ({ row }) => {
+        const r = row.original;
+        return (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className={r.active ? 'font-medium' : 'font-medium text-muted-foreground'}>
+              {r.name}
+            </span>
+            {!r.active && <Badge variant="outline">{t('inactive')}</Badge>}
+            {r.stage !== 'base' && r.stackable && (
+              <Badge variant="secondary">{t('fields.stackable')}</Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: 'summary',
+      enableSorting: false,
+      meta: { label: t('rules.summary') },
+      header: t('rules.summary'),
+      cell: ({ row }) => (
+        <p className="max-w-xl text-sm whitespace-normal text-muted-foreground">
+          {describeRule(t, row.original, summary.names(row.original.target_type), p.locale)}
+        </p>
+      ),
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      header: () => <span className="sr-only">{t('actionsColumn')}</span>,
+      cell: ({ row }) =>
+        p.readOnly ? null : (
+          <RowActions>
+            <EditButton
+              label={t('rules.editAria', { name: row.original.name })}
+              onClick={() => editor.edit(row.original)}
+            />
+            <DeleteButton
+              label={t('rules.deleteAria', { name: row.original.name })}
+              message={t('rules.deleteConfirm', { name: row.original.name })}
+              onConfirm={() =>
+                remove.mutateAsync({ id: row.original.id, version: row.original.version })
+              }
+            />
+          </RowActions>
+        ),
+    },
+  ];
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-slate-600">{t('rules.description')}</p>
-        {!p.readOnly && <Button onClick={editor.create}>{t('rules.add')}</Button>}
+        <p className="text-sm text-muted-foreground">{t('rules.description')}</p>
+        {!p.readOnly && (
+          <Button onClick={editor.create}>
+            <PlusIcon aria-hidden="true" />
+            {t('rules.add')}
+          </Button>
+        )}
       </div>
       <QueryState
         isLoading={list.isPending}
         error={list.error}
         onRetry={() => void list.refetch()}
       />
-      {list.data && items.length === 0 && <EmptyState>{t('rules.empty')}</EmptyState>}
+      {list.data && items.length === 0 && (
+        <EmptyState
+          icon={ListOrderedIcon}
+          title={t('rules.empty')}
+          action={
+            !p.readOnly && (
+              <Button onClick={editor.create}>
+                <PlusIcon aria-hidden="true" />
+                {t('rules.add')}
+              </Button>
+            )
+          }
+        />
+      )}
       {items.length > 0 &&
         STAGES.map((stage) => {
           const group = sortRules(items.filter((r) => r.stage === stage));
           return (
-            <section key={stage} aria-labelledby={`rules-stage-${stage}`} className="space-y-2">
-              <h3
-                id={`rules-stage-${stage}`}
-                className="flex items-center gap-2 text-sm font-semibold"
-              >
-                <Badge tone={STAGE_TONE[stage]}>{t(`stages.${stage}`)}</Badge>
-                <span className="font-normal text-slate-600">{t(`stageHints.${stage}`)}</span>
+            <section key={stage} aria-labelledby={`rules-stage-${stage}`} className="space-y-3">
+              <h3 id={`rules-stage-${stage}`} className="flex flex-wrap items-center gap-2">
+                <StatusBadge tone={STAGE_TONE[stage]}>{t(`stages.${stage}`)}</StatusBadge>
+                <span className="text-sm text-muted-foreground">{t(`stageHints.${stage}`)}</span>
+                <Badge variant="outline" className="ml-auto tabular-nums">
+                  {group.length}
+                </Badge>
               </h3>
               {group.length === 0 ? (
-                <p className="text-sm text-slate-500">{t('rules.emptyStage')}</p>
+                <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+                  {t('rules.emptyStage')}
+                </p>
               ) : (
-                <Card className="overflow-x-auto">
-                  <table className="w-full min-w-[44rem] text-sm">
-                    <caption className="sr-only">
-                      {t('rules.stageCaption', { stage: t(`stages.${stage}`) })}
-                    </caption>
-                    <thead className="bg-slate-50 text-left text-slate-600">
-                      <tr>
-                        <th scope="col" className="w-16 px-3 py-2 text-right font-medium">
-                          {t('fields.priority')}
-                        </th>
-                        <th scope="col" className="px-3 py-2 font-medium">
-                          {t('fields.name')}
-                        </th>
-                        <th scope="col" className="px-3 py-2 font-medium">
-                          {t('rules.summary')}
-                        </th>
-                        <th scope="col" className="px-3 py-2">
-                          <span className="sr-only">{t('actionsColumn')}</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.map((r) => (
-                        <tr
-                          key={r.id}
-                          className={`border-t border-slate-100 align-top ${r.active ? '' : 'text-slate-500'}`}
-                        >
-                          <td className="px-3 py-2 text-right tabular-nums">{r.priority}</td>
-                          <th scope="row" className="px-3 py-2 text-left font-medium">
-                            {r.name}
-                            {!r.active && (
-                              <span className="ml-2">
-                                <Badge>{t('inactive')}</Badge>
-                              </span>
-                            )}
-                            {r.stage !== 'base' && r.stackable && (
-                              <span className="ml-2">
-                                <Badge tone="green">{t('fields.stackable')}</Badge>
-                              </span>
-                            )}
-                          </th>
-                          <td className="px-3 py-2 text-slate-700">
-                            {describeRule(t, r, summary.names(r.target_type), p.locale)}
-                          </td>
-                          <td className="px-3 py-2 text-right">
-                            {!p.readOnly && (
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => editor.edit(r)}
-                                  aria-label={t('rules.editAria', { name: r.name })}
-                                >
-                                  {t('common.actions.edit', { ns: 'translation' })}
-                                </Button>
-                                <ConfirmDelete
-                                  label={t('rules.deleteAria', { name: r.name })}
-                                  message={t('rules.deleteConfirm', { name: r.name })}
-                                  onConfirm={() =>
-                                    remove.mutateAsync({ id: r.id, version: r.version })
-                                  }
-                                />
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Card>
+                <DataTable
+                  caption={t('rules.stageCaption', { stage: t(`stages.${stage}`) })}
+                  columns={columns}
+                  data={group}
+                  getRowId={(r) => r.id}
+                  pageSize={0}
+                  columnToggle={false}
+                />
               )}
             </section>
           );
         })}
-      <FormDialog
+      <EditorSheet
         open={editor.open}
         onOpenChange={editor.setOpen}
-        wide
         title={editor.item ? t('rules.editTitle', { name: editor.item.name }) : t('rules.add')}
       >
         <RuleForm key={editor.key} {...p} item={editor.item} onDone={editor.close} />
-      </FormDialog>
+      </EditorSheet>
     </div>
   );
 }
 
-const STAGE_TONE = { base: 'blue', modifier: 'amber', discount: 'green' } as const;
-
 /**
- * Rule editor. `initial` prefills a new rule (e.g. from a coverage gap);
- * it is ignored when editing an existing one.
+ * Rule editor (render inside an EditorSheet). `initial` prefills a new rule
+ * (e.g. from a coverage gap); it is ignored when editing an existing one.
  */
 export function RuleForm(
   p: PricingTabProps & { item?: PriceRule; initial?: Partial<RuleValues>; onDone: () => void },
@@ -184,109 +230,125 @@ export function RuleForm(
     onDone: p.onDone,
     aliases: FORM_ALIASES,
   });
-  const {
-    register,
-    control,
-    setValue,
-    formState: { errors },
-  } = form;
+  const { control, setValue } = form;
   const stage = useWatch({ control, name: 'stage' });
   const targetType = useWatch({ control, name: 'target_type' });
   const targets = targetType === 'pack' ? p.packs : p.extras;
   return (
-    <form noValidate onSubmit={s.submit} className="space-y-4">
-      <FormAlert state={s.alert} onReload={p.onDone} />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field
-          id="rule-name"
-          label={t('fields.name')}
-          error={errors.name}
-          className="sm:col-span-2"
-        >
-          <Input {...fieldAria('rule-name', errors.name)} {...register('name')} />
-        </Field>
-        <Field
-          id="rule-priority"
-          label={t('fields.priority')}
-          error={errors.priority}
-          hint={t('hints.priority')}
-        >
-          <Input
-            {...fieldAria('rule-priority', errors.priority, true)}
-            inputMode="numeric"
-            {...register('priority')}
-          />
-        </Field>
-        <Field id="rule-stage" label={t('fields.stage')} error={errors.stage}>
-          <Select
-            {...fieldAria('rule-stage', errors.stage)}
-            {...register('stage', {
-              onChange: (e: { target: { value: keyof typeof ACTIONS_BY_STAGE } }) =>
-                setValue('action_type', ACTIONS_BY_STAGE[e.target.value][0] ?? 'set'),
-            })}
-          >
-            {STAGES.map((st) => (
-              <option key={st} value={st}>
-                {t(`stages.${st}`)}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field id="rule-target_type" label={t('fields.target_type')} error={errors.target_type}>
-          <Select
-            {...fieldAria('rule-target_type', errors.target_type)}
-            {...register('target_type', { onChange: () => setValue('target_ids', []) })}
-          >
-            <option value="pack">{t('targets.pack')}</option>
-            <option value="extra">{t('targets.extra')}</option>
-          </Select>
-        </Field>
-      </div>
-      {targets.length > 0 && (
-        <MultiCheck
+    <Form {...form}>
+      <SheetForm onSubmit={s.submit} onCancel={p.onDone} pending={s.pending}>
+        <FormErrorAlert state={s.alert} onReload={p.onDone} />
+        <EditorSection title={t('sections.general')}>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextRow
+              control={control}
+              name="name"
+              label={t('fields.name')}
+              className="sm:col-span-2"
+            />
+            <TextRow
+              control={control}
+              name="priority"
+              label={t('fields.priority')}
+              description={t('hints.priority')}
+              inputProps={{ inputMode: 'numeric' }}
+            />
+            <FormField
+              control={control}
+              name="stage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('fields.stage')}</FormLabel>
+                  <FormControl>
+                    <OptionSelect
+                      value={field.value}
+                      onChange={(v) => {
+                        field.onChange(v);
+                        setValue('action_type', ACTIONS_BY_STAGE[v as Stage][0] ?? 'set');
+                      }}
+                      options={STAGES.map((st) => ({ value: st, label: t(`stages.${st}`) }))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="target_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('fields.target_type')}</FormLabel>
+                  <FormControl>
+                    <OptionSelect
+                      value={field.value}
+                      onChange={(v) => {
+                        field.onChange(v);
+                        setValue('target_ids', []);
+                      }}
+                      options={[
+                        { value: 'pack', label: t('targets.pack') },
+                        { value: 'extra', label: t('targets.extra') },
+                      ]}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {targets.length > 0 && (
+              <FormField
+                control={control}
+                name="target_ids"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.targets')}</FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={targets.map((x) => ({
+                          value: x.id,
+                          label: p.name(x.name) || x.code,
+                        }))}
+                      />
+                    </FormControl>
+                    <FormDescription>{t('hints.targets')}</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        </EditorSection>
+        <ActionFields control={control} allowed={ACTIONS_BY_STAGE[stage]} />
+        <ConditionFields
           control={control}
-          name="target_ids"
-          id="rule-target_ids"
-          legend={t('fields.targets')}
-          hint={t('hints.targets')}
-          options={targets.map((x) => ({ value: x.id, label: p.name(x.name) || x.code }))}
+          periods={p.periods}
+          zones={p.zones}
+          agreements={summary.agreements}
         />
-      )}
-      <ActionFields
-        control={control}
-        register={register}
-        errors={errors}
-        allowed={ACTIONS_BY_STAGE[stage]}
-        idPrefix="rule"
-      />
-      <ConditionFields
-        control={control}
-        register={register}
-        errors={errors}
-        periods={p.periods}
-        zones={p.zones}
-        agreements={summary.agreements}
-        idPrefix="rule"
-      />
-      <div className="flex flex-wrap gap-6">
-        {stage !== 'base' && (
-          <Checkbox
-            id="rule-stackable"
-            label={t('fields.stackable')}
-            description={t('hints.stackable')}
-            {...register('stackable')}
-          />
-        )}
-        <Checkbox id="rule-active" label={t('fields.active')} {...register('active')} />
-      </div>
-      <RulePreview
-        control={control}
-        seasonId={p.seasonId}
-        names={summary.names}
-        locale={p.locale}
-      />
-      <FormActions onCancel={p.onDone} pending={s.pending} />
-    </form>
+        <EditorSection title={t('sections.options')}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {stage !== 'base' && (
+              <SwitchRow
+                control={control}
+                name="stackable"
+                label={t('fields.stackable')}
+                description={t('hints.stackable')}
+              />
+            )}
+            <SwitchRow control={control} name="active" label={t('fields.active')} />
+          </div>
+        </EditorSection>
+        <RulePreview
+          control={control}
+          seasonId={p.seasonId}
+          names={summary.names}
+          locale={p.locale}
+        />
+      </SheetForm>
+    </Form>
   );
 }
 
@@ -306,20 +368,24 @@ function RulePreview({
   const values = useWatch({ control }) as RuleValues;
   const parsed = ruleSchema.safeParse(values);
   return (
-    <p
-      aria-live="polite"
-      className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700"
-      data-testid="rule-preview"
-    >
-      <span className="font-medium">{t('rules.summary')}: </span>
-      {parsed.success
-        ? describeRule(
-            t,
-            toRuleInput(seasonId, parsed.data),
-            names(parsed.data.target_type),
-            locale,
-          )
-        : t('rules.previewIncomplete')}
-    </p>
+    <Card className="border-primary/30 bg-primary/5 py-0 shadow-none">
+      <CardContent className="flex gap-3 p-4">
+        <SparklesIcon
+          aria-hidden="true"
+          className="mt-0.5 size-4 shrink-0 text-primary-on-surface"
+        />
+        <p aria-live="polite" className="text-sm" data-testid="rule-preview">
+          <span className="font-medium">{t('rules.summary')}: </span>
+          {parsed.success
+            ? describeRule(
+                t,
+                toRuleInput(seasonId, parsed.data),
+                names(parsed.data.target_type),
+                locale,
+              )
+            : t('rules.previewIncomplete')}
+        </p>
+      </CardContent>
+    </Card>
   );
 }

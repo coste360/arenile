@@ -1,15 +1,31 @@
-import { Button, Input } from '@arenile/shared/ui';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  Spinner,
+} from '@arenile/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CircleCheckIcon, CopyIcon, TriangleAlertIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { Season } from '../configuration/api/resources';
-import { FormActions, FormDialog } from '../configuration/components/dialogs';
-import { Checkbox, Field } from '../configuration/components/fields';
-import { FormAlert } from '../configuration/components/FormAlert';
-import { fieldAria } from '../configuration/lib/aria';
 import { problemToFormState, type FormAlertState } from '../configuration/lib/formErrors';
 import { useCopySeason, type SeasonCopyResult } from './api';
+import { FormErrorAlert, TextRow } from './kit';
 import { copySchema, type CopyValues } from './rules.schema';
 
 /**
@@ -30,7 +46,7 @@ export function SeasonCopyDialog({
   const [open, setOpen] = useState(false);
   const [nonce, setNonce] = useState(0);
   return (
-    <>
+    <Dialog open={open} onOpenChange={setOpen}>
       <Button
         variant="outline"
         onClick={() => {
@@ -38,14 +54,14 @@ export function SeasonCopyDialog({
           setOpen(true);
         }}
       >
+        <CopyIcon aria-hidden="true" />
         {t('copy.action')}
       </Button>
-      <FormDialog
-        open={open}
-        onOpenChange={setOpen}
-        title={t('copy.title', { year: season.year })}
-        description={t('copy.description', { year: season.year })}
-      >
+      <DialogContent closeLabel={t('common.close', { ns: 'translation' })}>
+        <DialogHeader>
+          <DialogTitle>{t('copy.title', { year: season.year })}</DialogTitle>
+          <DialogDescription>{t('copy.description', { year: season.year })}</DialogDescription>
+        </DialogHeader>
         <SeasonCopyForm
           key={nonce}
           establishmentId={establishmentId}
@@ -56,10 +72,17 @@ export function SeasonCopyDialog({
             onOpenSeason(id);
           }}
         />
-      </FormDialog>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }
+
+const INCLUDES = [
+  ['include_rate_periods', 'copy.periods'],
+  ['include_price_rules', 'copy.rules'],
+  ['include_fixed_prices', 'copy.fixed'],
+  ['include_policies', 'copy.policies'],
+] as const;
 
 export function SeasonCopyForm({
   establishmentId,
@@ -86,10 +109,6 @@ export function SeasonCopyForm({
       include_policies: true,
     },
   });
-  const {
-    register,
-    formState: { errors },
-  } = form;
   const submit = form.handleSubmit(async (v) => {
     setAlert(null);
     try {
@@ -112,64 +131,84 @@ export function SeasonCopyForm({
 
   if (result) {
     return (
-      <div role="status" className="space-y-3 text-sm">
-        <p className="font-medium">
-          {t('copy.done', {
-            year: result.season.year,
-            periods: result.rate_periods,
-            rules: result.price_rules,
-            fixed: result.fixed_prices,
-            policies: result.policies,
-          })}
-        </p>
+      <div role="status" className="space-y-4">
+        <Alert>
+          <CircleCheckIcon aria-hidden="true" />
+          <AlertDescription>
+            {t('copy.done', {
+              year: result.season.year,
+              periods: result.rate_periods,
+              rules: result.price_rules,
+              fixed: result.fixed_prices,
+              policies: result.policies,
+            })}
+          </AlertDescription>
+        </Alert>
         {result.warnings.length > 0 && (
-          <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900">
-            <p className="font-medium">{t('copy.warnings')}</p>
-            <ul className="list-inside list-disc">
-              {result.warnings.map((w) => (
-                <li key={w}>{w}</li>
-              ))}
-            </ul>
-          </div>
+          <Alert className="border-warning/50 bg-warning/10">
+            <TriangleAlertIcon aria-hidden="true" />
+            <AlertTitle>{t('copy.warnings')}</AlertTitle>
+            <AlertDescription>
+              <ul className="list-inside list-disc">
+                {result.warnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
         )}
-        <div className="flex justify-end gap-2">
+        <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             {t('common.close', { ns: 'translation' })}
           </Button>
           <Button onClick={() => onOpenSeason(result.season.id)}>
             {t('copy.open', { year: result.season.year })}
           </Button>
-        </div>
+        </DialogFooter>
       </div>
     );
   }
   return (
-    <form noValidate onSubmit={submit} className="space-y-4">
-      <FormAlert state={alert} />
-      <Field
-        id="copy-year"
-        label={t('copy.targetYear')}
-        error={errors.target_year}
-        className="max-w-48"
-      >
-        <Input
-          {...fieldAria('copy-year', errors.target_year)}
-          inputMode="numeric"
-          {...register('target_year')}
+    <Form {...form}>
+      <form noValidate onSubmit={submit} className="space-y-5">
+        <FormErrorAlert state={alert} />
+        <TextRow
+          control={form.control}
+          name="target_year"
+          label={t('copy.targetYear')}
+          inputProps={{ inputMode: 'numeric', className: 'max-w-32' }}
         />
-      </Field>
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-slate-800">{t('copy.include')}</legend>
-        <Checkbox
-          id="copy-periods"
-          label={t('copy.periods')}
-          {...register('include_rate_periods')}
-        />
-        <Checkbox id="copy-rules" label={t('copy.rules')} {...register('include_price_rules')} />
-        <Checkbox id="copy-fixed" label={t('copy.fixed')} {...register('include_fixed_prices')} />
-        <Checkbox id="copy-policies" label={t('copy.policies')} {...register('include_policies')} />
-      </fieldset>
-      <FormActions onCancel={onClose} pending={copy.isPending} submitLabel={t('copy.submit')} />
-    </form>
+        <fieldset className="space-y-3">
+          <legend className="mb-3 text-sm font-medium">{t('copy.include')}</legend>
+          {INCLUDES.map(([name, label]) => (
+            <FormField
+              key={name}
+              control={form.control}
+              name={name}
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center gap-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(v) => field.onChange(v === true)}
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal">{t(label)}</FormLabel>
+                </FormItem>
+              )}
+            />
+          ))}
+        </fieldset>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            {t('common.actions.cancel', { ns: 'translation' })}
+          </Button>
+          <Button type="submit" disabled={copy.isPending}>
+            {copy.isPending && <Spinner />}
+            {t('copy.submit')}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }

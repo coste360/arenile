@@ -250,7 +250,13 @@
     "extraLine": "Extra {{code}} × {{qty}}",
     "lineTotal": "Totale riga",
     "discount": "Sconto {{source}}",
-    "vat": "IVA {{rate}}% su {{taxable}}"
+    "vat": "IVA {{rate}}% su {{taxable}}",
+    "chartTitle": "Totale per giorno",
+    "vatTitle": "Riepilogo IVA",
+    "vatRate": "Aliquota e imponibile",
+    "vatTax": "Imposta",
+    "showAll": "Mostra tutti i {{count}} giorni",
+    "showLess": "Mostra meno giorni"
   },
   "matrix": {
     "title": "Matrice di listino",
@@ -275,7 +281,9 @@
     "dayGaps_other": "{{date}}: {{count}} combinazioni senza prezzo",
     "dayOk": "{{date}}: tutto coperto",
     "legendOk": "coperto",
-    "legendGaps": "fino a {{max}} combinazioni senza prezzo"
+    "legendGaps": "fino a {{max}} combinazioni senza prezzo",
+    "filteredDay": "Intervalli che comprendono il {{date}}",
+    "showAll": "Mostra tutti"
   },
   "actionSummary": {
     "set": "{{amount}} al giorno",
@@ -353,5 +361,15 @@
     "stackable": "Cumulabile.",
     "exclusive": "Non cumulabile.",
     "inactive": "(disattivata)"
+  },
+  "sections": {
+    "general": "Generale",
+    "options": "Opzioni"
+  },
+  "multi": {
+    "all": "Tutti",
+    "more": "+{{count}}",
+    "search": "Cerca…",
+    "clear": "Cancella selezione"
   }
 }

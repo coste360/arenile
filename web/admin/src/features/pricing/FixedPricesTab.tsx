@@ -1,16 +1,48 @@
-import { Button, Card, Input } from '@arenile/shared/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@arenile/shared/ui';
+import { EmptyState } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PackageIcon, PlusIcon, TagsIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
-import { EmptyState, QueryState } from '../configuration/components/ConfigPage';
-import { ConfirmDelete, FormActions, FormDialog } from '../configuration/components/dialogs';
-import { Field, Select } from '../configuration/components/fields';
-import { FormAlert } from '../configuration/components/FormAlert';
-import { fieldAria } from '../configuration/lib/aria';
 import { formatCents } from '../configuration/lib/money';
 import { fixedPrices, type FixedPrice } from './api';
+import {
+  DeleteButton,
+  EuroTextInput,
+  FormErrorAlert,
+  OptionSelect,
+  QueryState,
+  TextRow,
+} from './kit';
 import type { PricingTabProps } from './RulesTab';
 import {
   FIXED_FORMULAS,
@@ -66,7 +98,7 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-slate-600">{t('fixed.description')}</p>
+        <p className="text-sm text-muted-foreground">{t('fixed.description')}</p>
         {!p.readOnly && (
           <Button
             onClick={() => {
@@ -74,110 +106,133 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
               editor.create();
             }}
           >
+            <PlusIcon aria-hidden="true" />
             {t('fixed.add')}
           </Button>
         )}
       </div>
-      <div role="radiogroup" aria-label={t('fields.formula')} className="flex flex-wrap gap-1">
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        aria-label={t('fields.formula')}
+        value={formula}
+        onValueChange={(v) => v && setFormula(v as FixedFormula)}
+        className="flex-wrap"
+      >
         {FIXED_FORMULAS.map((f) => (
-          <button
-            key={f}
-            type="button"
-            role="radio"
-            aria-checked={formula === f}
-            onClick={() => setFormula(f)}
-            className={
-              formula === f
-                ? 'rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white'
-                : 'rounded-md px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100'
-            }
-          >
-            {t(`formulas.${f}`)}{' '}
-            <span className="tabular-nums opacity-70">({countByFormula(f)})</span>
-          </button>
+          <ToggleGroupItem key={f} value={f} className="gap-2">
+            {t(`formulas.${f}`)}
+            <Badge variant="secondary" className="tabular-nums">
+              {countByFormula(f)}
+            </Badge>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
       <QueryState
         isLoading={list.isPending}
         error={list.error}
         onRetry={() => void list.refetch()}
       />
-      {list.data && p.packs.length === 0 && <EmptyState>{t('fixed.noPacks')}</EmptyState>}
+      {list.data && p.packs.length === 0 && (
+        <EmptyState icon={PackageIcon} title={t('fixed.noPacks')} />
+      )}
       {list.data && p.packs.length > 0 && categories.length === 0 && (
-        <EmptyState>{t('fixed.noCategories')}</EmptyState>
+        <EmptyState icon={TagsIcon} title={t('fixed.noCategories')} />
       )}
       {list.data &&
         categories.length > 0 &&
         p.packs.map((pack) => (
-          <Card key={pack.id} className="overflow-x-auto">
-            <table className="w-full min-w-[32rem] text-sm">
-              <caption className="px-3 pt-3 text-left font-semibold">
-                {packName(pack.id)} · {t(`formulas.${formula}`)}
-              </caption>
-              <thead className="text-left text-slate-600">
-                <tr>
-                  <th scope="col" className="px-3 py-2 font-medium">
-                    {t('fields.price_category')}
-                  </th>
-                  {columns.map((c) => (
-                    <th key={c || 'any'} scope="col" className="px-3 py-2 text-right font-medium">
-                      {c || t('fixed.anyPeriod')}
-                    </th>
+          <Card key={pack.id} className="gap-0 py-0">
+            <CardHeader className="border-b py-4">
+              <CardTitle className="text-base">
+                {packName(pack.id)}{' '}
+                <span className="font-normal text-muted-foreground">
+                  · {t(`formulas.${formula}`)}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-0">
+              <Table>
+                <caption className="sr-only">
+                  {packName(pack.id)} · {t(`formulas.${formula}`)}
+                </caption>
+                <TableHeader className="bg-muted/50">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="pl-6">{t('fields.price_category')}</TableHead>
+                    {columns.map((c) => (
+                      <TableHead key={c || 'any'} className="text-right">
+                        {c || t('fixed.anyPeriod')}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categories.map((cat) => (
+                    <TableRow key={cat}>
+                      <TableHead scope="row" className="pl-6 font-mono text-xs">
+                        {cat}
+                      </TableHead>
+                      {columns.map((period) => {
+                        const f = byCell.get(fixedCellKey(pack.id, formula, cat, period));
+                        const where = `${packName(pack.id)} · ${t(`formulas.${formula}`)} · ${cat} · ${period || t('fixed.anyPeriod')}`;
+                        return (
+                          <TableCell key={period || 'any'} className="p-1 text-right">
+                            {p.readOnly ? (
+                              <span className="px-2 tabular-nums">
+                                {f ? formatCents(f.amount, p.locale) : '—'}
+                              </span>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => open(pack.id, cat, period)}
+                                aria-label={
+                                  f
+                                    ? t('fixed.editAria', { name: where })
+                                    : t('fixed.addAria', { name: where })
+                                }
+                                className={
+                                  f
+                                    ? 'w-full justify-end tabular-nums'
+                                    : 'w-full justify-end text-muted-foreground'
+                                }
+                              >
+                                {f ? (
+                                  formatCents(f.amount, p.locale)
+                                ) : (
+                                  <PlusIcon aria-hidden="true" />
+                                )}
+                              </Button>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {categories.map((cat) => (
-                  <tr key={cat} className="border-t border-slate-100">
-                    <th scope="row" className="px-3 py-2 text-left font-mono text-xs font-medium">
-                      {cat}
-                    </th>
-                    {columns.map((period) => {
-                      const f = byCell.get(fixedCellKey(pack.id, formula, cat, period));
-                      const where = `${packName(pack.id)} · ${t(`formulas.${formula}`)} · ${cat} · ${period || t('fixed.anyPeriod')}`;
-                      return (
-                        <td key={period || 'any'} className="px-1 py-1 text-right">
-                          {p.readOnly ? (
-                            <span className="px-2 tabular-nums">
-                              {f ? formatCents(f.amount, p.locale) : '—'}
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => open(pack.id, cat, period)}
-                              aria-label={
-                                f
-                                  ? t('fixed.editAria', { name: where })
-                                  : t('fixed.addAria', { name: where })
-                              }
-                              className={`w-full rounded px-2 py-1 text-right tabular-nums hover:bg-slate-100 ${f ? '' : 'text-slate-400'}`}
-                            >
-                              {f ? formatCents(f.amount, p.locale) : '+'}
-                            </button>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                </TableBody>
+              </Table>
+            </CardContent>
           </Card>
         ))}
-      <FormDialog
-        open={editor.open}
-        onOpenChange={editor.setOpen}
-        title={editor.item ? t('fixed.editTitle') : t('fixed.add')}
-      >
-        <FixedForm
-          key={editor.key}
-          {...p}
-          categories={categories}
-          item={editor.item}
-          initial={prefill}
-          onDone={editor.close}
-        />
-      </FormDialog>
+      <Dialog open={editor.open} onOpenChange={editor.setOpen}>
+        <DialogContent
+          closeLabel={t('common.close', { ns: 'translation' })}
+          className="sm:max-w-lg"
+        >
+          <DialogHeader>
+            <DialogTitle>{editor.item ? t('fixed.editTitle') : t('fixed.add')}</DialogTitle>
+            <DialogDescription>{t('fixed.description')}</DialogDescription>
+          </DialogHeader>
+          <FixedForm
+            key={editor.key}
+            {...p}
+            categories={categories}
+            item={editor.item}
+            initial={prefill}
+            onDone={editor.close}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -206,82 +261,124 @@ function FixedForm(
     toInput: (v: FixedValues) => toFixedInput(p.seasonId, v),
     onDone: p.onDone,
   });
-  const {
-    register,
-    formState: { errors },
-  } = form;
+  const { control } = form;
   return (
-    <form noValidate onSubmit={s.submit} className="space-y-4">
-      <FormAlert state={s.alert} onReload={p.onDone} />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="fixed-pack" label={t('fields.pack')} error={errors.pack_id}>
-          <Select {...fieldAria('fixed-pack', errors.pack_id)} {...register('pack_id')}>
-            <option value="">{t('choose')}</option>
-            {p.packs.map((pk) => (
-              <option key={pk.id} value={pk.id}>
-                {p.name(pk.name) || pk.code}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field id="fixed-formula" label={t('fields.formula')} error={errors.formula}>
-          <Select {...fieldAria('fixed-formula', errors.formula)} {...register('formula')}>
-            {FIXED_FORMULAS.map((f) => (
-              <option key={f} value={f}>
-                {t(`formulas.${f}`)}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field id="fixed-category" label={t('fields.price_category')} error={errors.price_category}>
-          <Input
-            {...fieldAria('fixed-category', errors.price_category)}
-            list="fixed-category-options"
-            {...register('price_category')}
+    <Form {...form}>
+      <form noValidate onSubmit={s.submit} className="space-y-4">
+        <FormErrorAlert state={s.alert} onReload={p.onDone} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            control={control}
+            name="pack_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('fields.pack')}</FormLabel>
+                <FormControl>
+                  <OptionSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={t('choose')}
+                    options={p.packs.map((pk) => ({
+                      value: pk.id,
+                      label: p.name(pk.name) || pk.code,
+                    }))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="formula"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('fields.formula')}</FormLabel>
+                <FormControl>
+                  <OptionSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={FIXED_FORMULAS.map((f) => ({ value: f, label: t(`formulas.${f}`) }))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <TextRow
+            control={control}
+            name="price_category"
+            label={t('fields.price_category')}
+            inputProps={{ list: 'fixed-category-options', autoComplete: 'off' }}
           />
           <datalist id="fixed-category-options">
             {p.categories.map((c) => (
               <option key={c} value={c} />
             ))}
           </datalist>
-        </Field>
-        <Field id="fixed-period" label={t('fields.rate_period')} error={errors.rate_period_code}>
-          <Select
-            {...fieldAria('fixed-period', errors.rate_period_code)}
-            {...register('rate_period_code')}
-          >
-            <option value="">{t('fixed.anyPeriod')}</option>
-            {p.periods.map((rp) => (
-              <option key={rp.id} value={rp.code}>
-                {rp.code}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field id="fixed-amount" label={t('fields.amount')} error={errors.amount}>
-          <Input
-            {...fieldAria('fixed-amount', errors.amount)}
-            inputMode="decimal"
-            {...register('amount')}
+          <FormField
+            control={control}
+            name="rate_period_code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('fields.rate_period')}</FormLabel>
+                <FormControl>
+                  <OptionSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { value: '', label: t('fixed.anyPeriod') },
+                      ...p.periods.map((rp) => ({ value: rp.code, label: rp.code })),
+                    ]}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </Field>
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        {p.item ? (
-          <ConfirmDelete
-            label={t('fixed.deleteAria', { name: p.item.price_category })}
-            message={t('fixed.deleteConfirm', { name: p.item.price_category })}
-            onConfirm={async () => {
-              if (!p.item) return;
-              await remove.mutateAsync({ id: p.item.id, version: p.item.version });
-              p.onDone();
-            }}
+          <FormField
+            control={control}
+            name="amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('fields.amount')}</FormLabel>
+                <FormControl>
+                  <EuroTextInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        ) : (
-          <span />
-        )}
-        <FormActions onCancel={p.onDone} pending={s.pending} />
-      </div>
-    </form>
+        </div>
+        <DialogFooter className="items-center sm:justify-between">
+          {p.item ? (
+            <DeleteButton
+              withText
+              label={t('fixed.deleteAria', { name: p.item.price_category })}
+              message={t('fixed.deleteConfirm', { name: p.item.price_category })}
+              onConfirm={async () => {
+                if (!p.item) return;
+                await remove.mutateAsync({ id: p.item.id, version: p.item.version });
+                p.onDone();
+              }}
+            />
+          ) : (
+            <span />
+          )}
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={p.onDone}>
+              {t('common.actions.cancel', { ns: 'translation' })}
+            </Button>
+            <Button type="submit" disabled={s.pending}>
+              {t('common.actions.save', { ns: 'translation' })}
+            </Button>
+          </div>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }

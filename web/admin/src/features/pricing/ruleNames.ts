@@ -1,6 +1,15 @@
+import type { StatusTone } from '@arenile/shared/ui/patterns';
 import { agreements, type PriceRule } from './api';
 import type { SummaryNames } from './format';
 import type { PricingTabProps } from './RulesTab';
+import type { Stage } from './rules.schema';
+
+/** Badge tone of each pricing stage (lists, simulator timeline). */
+export const STAGE_TONE: Record<Stage, StatusTone> = {
+  base: 'info',
+  modifier: 'highlight',
+  discount: 'success',
+};
 
 /** Rule order inside a stage: what the engine evaluates first (priority, then the latest saved). */
 export function sortRules<T extends Pick<PriceRule, 'priority' | 'seq'>>(rules: T[]): T[] {
@@ -29,4 +38,25 @@ export function useSummaryNames(
       target: catalogName(targetType === 'pack' ? p.packs : p.extras),
     }),
   };
+}
+
+/**
+ * The engine reports each rule's effect in a compact machine form ("set 2500",
+ * "+300", "-500", "x1.2", "-10%", amounts in cents): show it as money/percent.
+ */
+export function formatEffect(
+  effect: string,
+  money: (cents: number) => string,
+  locale: string,
+): string {
+  const num = (v: string) => Number(v).toLocaleString(locale, { maximumFractionDigits: 4 });
+  let m = /^set (-?\d+)$/.exec(effect);
+  if (m) return `= ${money(Number(m[1]))}`;
+  m = /^([+-])(\d+)$/.exec(effect);
+  if (m) return `${m[1] === '-' ? '−' : '+'}${money(Number(m[2]))}`;
+  m = /^x(\d+(?:\.\d+)?)$/.exec(effect);
+  if (m) return `× ${num(m[1] as string)}`;
+  m = /^-(\d+(?:\.\d+)?)%$/.exec(effect);
+  if (m) return `−${num(m[1] as string)}%`;
+  return effect;
 }

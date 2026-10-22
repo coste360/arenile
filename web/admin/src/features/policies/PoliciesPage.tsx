@@ -1,19 +1,68 @@
-import { Button, Card, Input } from '@arenile/shared/ui';
+import {
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Spinner,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@arenile/shared/ui';
+import {
+  DataTable,
+  DataTableColumnHeader,
+  EmptyState,
+  StatusBadge,
+  type ColumnDef,
+} from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  CalendarXIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  TriangleAlertIcon,
+  WandSparklesIcon,
+} from 'lucide-react';
 import { useState } from 'react';
-import { useForm, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
+import { useForm, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { createResource } from '../configuration/api/resource';
 import { useConfigContext } from '../configuration/api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
 import { useEstablishmentSection } from '../configuration/api/useEstablishmentSection';
-import { Badge, ConfigPage, EmptyState, QueryState } from '../configuration/components/ConfigPage';
-import { ConfirmDelete, FormActions, FormDialog } from '../configuration/components/dialogs';
-import { Checkbox, Field } from '../configuration/components/fields';
-import { FormAlert, SavedNotice } from '../configuration/components/FormAlert';
-import { MultiCheck } from '../configuration/components/MultiCheck';
-import { fieldAria } from '../configuration/lib/aria';
-import { PricingNav, SeasonSelect } from '../pricing/components';
+import {
+  DeleteButton,
+  EditButton,
+  EditorSection,
+  EditorSheet,
+  FormErrorAlert,
+  MultiSelect,
+  MultiToggle,
+  PricingLayout,
+  QueryState,
+  RowActions,
+  SeasonSelect,
+  SheetForm,
+  SwitchRow,
+  TextRow,
+  type Option,
+} from '../pricing/kit';
 import { useSelectedSeason } from '../pricing/season';
 import { usePricingData } from '../pricing/usePricingData';
 import {
@@ -61,68 +110,107 @@ export function PoliciesPage() {
   );
   const remove = policies.useRemove(ctx.establishmentId);
   const editor = useEditor<BookingPolicy>();
-  const items = [...(list.data ?? [])].sort((a, b) => b.priority - a.priority);
+  const items = list.data ?? [];
   const [tab, setTab] = useState<'season' | 'default'>('season');
 
-  const scopeText = (p: BookingPolicy) => {
+  const scopeParts = (p: BookingPolicy): string[] => {
     const parts: string[] = [];
-    if (p.scope.channels?.length)
-      parts.push(p.scope.channels.map((c) => t(`pricing:channels.${c}`)).join(', '));
-    if (p.scope.zones?.length) {
-      parts.push(
-        p.scope.zones
-          .map((z) => data.zones.find((x) => x.id === z || x.code === z)?.name ?? z)
-          .join(', '),
-      );
+    for (const c of p.scope.channels ?? []) parts.push(t(`pricing:channels.${c}`));
+    for (const z of p.scope.zones ?? []) {
+      parts.push(data.zones.find((x) => x.id === z || x.code === z)?.name ?? z);
     }
-    if (p.scope.packs?.length) {
-      parts.push(
-        p.scope.packs
-          .map((id) => {
-            const pk = data.packs.find((x) => x.id === id || x.code === id);
-            return pk ? data.name(pk.name) || pk.code : id;
-          })
-          .join(', '),
-      );
+    for (const id of p.scope.packs ?? []) {
+      const pk = data.packs.find((x) => x.id === id || x.code === id);
+      parts.push(pk ? data.name(pk.name) || pk.code : id);
     }
-    if (p.scope.rate_periods?.length) parts.push(p.scope.rate_periods.join(', '));
-    return parts.length ? parts.join(' · ') : t('scopeAll');
+    parts.push(...(p.scope.rate_periods ?? []));
+    return parts;
   };
 
+  const columns: ColumnDef<BookingPolicy>[] = [
+    {
+      accessorKey: 'priority',
+      meta: { label: t('fields.priority') },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('fields.priority')} />
+      ),
+      cell: ({ row }) => <span className="tabular-nums">{row.original.priority}</span>,
+    },
+    {
+      accessorKey: 'name',
+      meta: { label: t('fields.name') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.name')} />,
+      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+    },
+    {
+      id: 'scope',
+      meta: { label: t('fields.scope') },
+      header: t('fields.scope'),
+      accessorFn: (p) => scopeParts(p).join(' '),
+      cell: ({ row }) => {
+        const parts = scopeParts(row.original);
+        return parts.length === 0 ? (
+          <span className="text-muted-foreground">{t('scopeAll')}</span>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {parts.map((s) => (
+              <Badge key={s} variant="secondary">
+                {s}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'active',
+      meta: { label: t('fields.active') },
+      header: t('fields.active'),
+      cell: ({ row }) =>
+        row.original.active ? (
+          <StatusBadge tone="success">{t('fields.active')}</StatusBadge>
+        ) : (
+          <StatusBadge tone="neutral">{t('inactive')}</StatusBadge>
+        ),
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      header: () => <span className="sr-only">{t('actions')}</span>,
+      cell: ({ row }) =>
+        readOnly ? null : (
+          <RowActions>
+            <EditButton
+              label={t('editAria', { name: row.original.name })}
+              onClick={() => editor.edit(row.original)}
+            />
+            <DeleteButton
+              label={t('deleteAria', { name: row.original.name })}
+              message={t('deleteConfirm', { name: row.original.name })}
+              onConfirm={() =>
+                remove.mutateAsync({ id: row.original.id, version: row.original.version })
+              }
+            />
+          </RowActions>
+        ),
+    },
+  ];
+
   return (
-    <ConfigPage
+    <PricingLayout
       title={t('title')}
       description={t('description')}
       readOnly={readOnly}
+      establishmentId={ctx.establishmentId}
+      seasonId={sel.season?.id}
       actions={<SeasonSelect seasons={sel.seasons} season={sel.season} onSelect={sel.select} />}
     >
-      <PricingNav establishmentId={ctx.establishmentId} seasonId={sel.season?.id} />
-      <div
-        role="tablist"
-        aria-label={t('tabs.label')}
-        className="flex gap-1 border-b border-slate-200"
-      >
-        {(['season', 'default'] as const).map((id) => (
-          <button
-            key={id}
-            id={`policy-tab-${id}`}
-            type="button"
-            role="tab"
-            aria-selected={tab === id}
-            aria-controls={`policy-panel-${id}`}
-            onClick={() => setTab(id)}
-            className={
-              tab === id
-                ? '-mb-px border-b-2 border-[var(--ar-primary)] px-3 py-2 text-sm font-semibold'
-                : 'px-3 py-2 text-sm text-slate-600 hover:text-slate-900'
-            }
-          >
-            {t(`tabs.${id}`)}
-          </button>
-        ))}
-      </div>
-      {tab === 'default' && (
-        <div role="tabpanel" id="policy-panel-default" aria-labelledby="policy-tab-default">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as 'season' | 'default')} className="gap-4">
+        <TabsList aria-label={t('tabs.label')}>
+          <TabsTrigger value="season">{t('tabs.season')}</TabsTrigger>
+          <TabsTrigger value="default">{t('tabs.default')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="default">
           {ctx.establishment ? (
             <DefaultPolicyForm
               key={ctx.establishment.id}
@@ -135,18 +223,16 @@ export function PoliciesPage() {
           ) : (
             <QueryState isLoading={ctx.isLoading} error={ctx.error} onRetry={ctx.refetch} />
           )}
-        </div>
-      )}
-      {tab === 'season' && (
-        <div
-          role="tabpanel"
-          id="policy-panel-season"
-          aria-labelledby="policy-tab-season"
-          className="space-y-4"
-        >
+        </TabsContent>
+        <TabsContent value="season" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-slate-600">{t('seasonHint')}</p>
-            {!readOnly && sel.season && <Button onClick={editor.create}>{t('add')}</Button>}
+            <p className="max-w-2xl text-sm text-muted-foreground">{t('seasonHint')}</p>
+            {!readOnly && sel.season && (
+              <Button onClick={editor.create}>
+                <PlusIcon aria-hidden="true" />
+                {t('add')}
+              </Button>
+            )}
           </div>
           <QueryState
             isLoading={sel.isLoading || (!!sel.season && list.isPending)}
@@ -154,74 +240,24 @@ export function PoliciesPage() {
             onRetry={() => void list.refetch()}
           />
           {!sel.isLoading && sel.seasons.length === 0 && (
-            <EmptyState>{t('pricing:noSeason')}</EmptyState>
+            <EmptyState icon={CalendarXIcon} title={t('pricing:noSeason')} />
           )}
-          {list.data && items.length === 0 && <EmptyState>{t('empty')}</EmptyState>}
-          {items.length > 0 && (
-            <Card className="overflow-x-auto">
-              <table className="w-full min-w-[36rem] text-sm">
-                <caption className="sr-only">{t('title')}</caption>
-                <thead className="bg-slate-50 text-left text-slate-600">
-                  <tr>
-                    <th scope="col" className="px-3 py-2 font-medium">
-                      {t('fields.name')}
-                    </th>
-                    <th scope="col" className="px-3 py-2 font-medium">
-                      {t('fields.scope')}
-                    </th>
-                    <th scope="col" className="px-3 py-2 text-right font-medium">
-                      {t('fields.priority')}
-                    </th>
-                    <th scope="col" className="px-3 py-2">
-                      <span className="sr-only">{t('actions')}</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((p) => (
-                    <tr key={p.id} className="border-t border-slate-100">
-                      <th scope="row" className="px-3 py-2 text-left font-medium">
-                        {p.name}
-                        {!p.active && (
-                          <span className="ml-2">
-                            <Badge>{t('inactive')}</Badge>
-                          </span>
-                        )}
-                      </th>
-                      <td className="px-3 py-2">{scopeText(p)}</td>
-                      <td className="px-3 py-2 text-right tabular-nums">{p.priority}</td>
-                      <td className="px-3 py-2 text-right">
-                        {!readOnly && (
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => editor.edit(p)}
-                              aria-label={t('editAria', { name: p.name })}
-                            >
-                              {t('common.actions.edit', { ns: 'translation' })}
-                            </Button>
-                            <ConfirmDelete
-                              label={t('deleteAria', { name: p.name })}
-                              message={t('deleteConfirm', { name: p.name })}
-                              onConfirm={() => remove.mutateAsync({ id: p.id, version: p.version })}
-                            />
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
+          {list.data && (
+            <DataTable
+              caption={t('title')}
+              columns={columns}
+              data={items}
+              getRowId={(p) => p.id}
+              initialSorting={[{ id: 'priority', desc: true }]}
+              empty={<EmptyState icon={ShieldCheckIcon} title={t('empty')} bordered={false} />}
+            />
           )}
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
       {sel.season && (
-        <FormDialog
+        <EditorSheet
           open={editor.open}
           onOpenChange={editor.setOpen}
-          wide
           title={editor.item ? t('editTitle', { name: editor.item.name }) : t('add')}
         >
           <PolicyForm
@@ -243,9 +279,37 @@ export function PoliciesPage() {
             }}
             onDone={editor.close}
           />
-        </FormDialog>
+        </EditorSheet>
       )}
-    </ConfigPage>
+    </PricingLayout>
+  );
+}
+
+function ScopeMulti({
+  control,
+  name,
+  label,
+  options,
+}: {
+  control: Control<PolicyValues>;
+  name: 'scope_zones' | 'scope_packs' | 'scope_periods';
+  label: string;
+  options: Option[];
+}) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{label}</FormLabel>
+          <FormControl>
+            <MultiSelect value={field.value} onChange={field.onChange} options={options} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }
 
@@ -274,11 +338,7 @@ function PolicyForm(p: {
     toInput: (v: PolicyValues) => toPolicyInput(p.seasonId, v),
     onDone: p.onDone,
   });
-  const {
-    register,
-    control,
-    formState: { errors },
-  } = form;
+  const { control } = form;
   const applyExample = (id: PolicyExampleId) => {
     const fill = policyExample(id, p.catalog);
     const values = { name: form.getValues('name') || t(`examples.${id}`), ...fill.values };
@@ -290,86 +350,111 @@ function PolicyForm(p: {
     }
     setExampleWarnings(fill.warnings);
   };
-  return (
-    <form noValidate onSubmit={s.submit} className="space-y-4">
-      <FormAlert state={s.alert} onReload={p.onDone} />
-      <div className="space-y-2 rounded-md bg-slate-50 p-3">
-        <p className="text-sm font-medium text-slate-800">{t('examples.title')}</p>
-        <div className="flex flex-wrap gap-2">
-          {POLICY_EXAMPLES.map((id) => (
-            <Button key={id} variant="outline" size="sm" onClick={() => applyExample(id)}>
-              {t(`examples.${id}`)}
-            </Button>
-          ))}
-        </div>
-        <p className="text-xs text-slate-600">{t('examples.hint')}</p>
-        {exampleWarnings.length > 0 && (
-          <ul role="status" className="list-inside list-disc text-xs text-amber-800">
-            {exampleWarnings.map((w) => (
-              <li key={w}>{t(w)}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field id="pol-name" label={t('fields.name')} error={errors.name} className="sm:col-span-2">
-          <Input {...fieldAria('pol-name', errors.name)} {...register('name')} />
-        </Field>
-        <Field id="pol-priority" label={t('fields.priority')} error={errors.priority}>
-          <Input
-            {...fieldAria('pol-priority', errors.priority)}
-            inputMode="numeric"
-            {...register('priority')}
-          />
-        </Field>
-      </div>
-      <fieldset className="space-y-3 rounded-md border border-slate-200 p-3">
-        <legend className="px-1 text-sm font-medium">{t('fields.scope')}</legend>
-        <p className="text-xs text-slate-600">{t('hints.scope')}</p>
-        <MultiCheck
+  const scope = (
+    <AccordionItem value="scope">
+      <AccordionTrigger className="text-base">{t('fields.scope')}</AccordionTrigger>
+      <AccordionContent className="space-y-4 px-1 pt-1">
+        <p className="text-sm text-muted-foreground">{t('hints.scope')}</p>
+        <FormField
           control={control}
           name="scope_channels"
-          id="pol-scope-channels"
-          legend={t('scope.channels')}
-          options={CHANNELS.map((c) => ({ value: c, label: t(`pricing:channels.${c}`) }))}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('scope.channels')}</FormLabel>
+              <FormControl>
+                <MultiToggle
+                  label={t('scope.channels')}
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={CHANNELS.map((c) => ({ value: c, label: t(`pricing:channels.${c}`) }))}
+                />
+              </FormControl>
+            </FormItem>
+          )}
         />
-        {p.zones.length > 0 && (
-          <MultiCheck
-            control={control}
-            name="scope_zones"
-            id="pol-scope-zones"
-            legend={t('scope.zones')}
-            options={p.zones.map((z) => ({ value: z.id, label: z.name }))}
-          />
-        )}
-        {p.packs.length > 0 && (
-          <MultiCheck
-            control={control}
-            name="scope_packs"
-            id="pol-scope-packs"
-            legend={t('scope.packs')}
-            options={p.packs.map((x) => ({ value: x.id, label: x.name }))}
-          />
-        )}
-        {p.periods.length > 0 && (
-          <MultiCheck
-            control={control}
-            name="scope_periods"
-            id="pol-scope-periods"
-            legend={t('scope.periods')}
-            options={p.periods.map((c) => ({ value: c, label: c }))}
-          />
-        )}
-      </fieldset>
-      <RulesFields
-        control={control as unknown as Control<RulesValues>}
-        register={register as unknown as UseFormRegister<RulesValues>}
-        errors={errors as FieldErrors<RulesValues>}
-        idPrefix="pol"
-      />
-      <Checkbox id="pol-active" label={t('fields.active')} {...register('active')} />
-      <FormActions onCancel={p.onDone} pending={s.pending} />
-    </form>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {p.zones.length > 0 && (
+            <ScopeMulti
+              control={control}
+              name="scope_zones"
+              label={t('scope.zones')}
+              options={p.zones.map((z) => ({ value: z.id, label: z.name }))}
+            />
+          )}
+          {p.packs.length > 0 && (
+            <ScopeMulti
+              control={control}
+              name="scope_packs"
+              label={t('scope.packs')}
+              options={p.packs.map((x) => ({ value: x.id, label: x.name }))}
+            />
+          )}
+          {p.periods.length > 0 && (
+            <ScopeMulti
+              control={control}
+              name="scope_periods"
+              label={t('scope.periods')}
+              options={p.periods.map((c) => ({ value: c, label: c }))}
+            />
+          )}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+  return (
+    <Form {...form}>
+      <SheetForm onSubmit={s.submit} onCancel={p.onDone} pending={s.pending}>
+        <FormErrorAlert state={s.alert} onReload={p.onDone} />
+        <Card className="gap-3 border-dashed bg-muted/30 py-4 shadow-none">
+          <CardHeader className="px-4">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <WandSparklesIcon aria-hidden="true" className="size-4 text-primary-on-surface" />
+              {t('examples.title')}
+            </CardTitle>
+            <CardDescription>{t('examples.hint')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 px-4">
+            <div className="flex flex-wrap gap-2">
+              {POLICY_EXAMPLES.map((id) => (
+                <Button key={id} variant="outline" size="sm" onClick={() => applyExample(id)}>
+                  {t(`examples.${id}`)}
+                </Button>
+              ))}
+            </div>
+            {exampleWarnings.length > 0 && (
+              <Alert role="status" className="border-warning/50 bg-warning/10">
+                <TriangleAlertIcon aria-hidden="true" />
+                <AlertDescription>
+                  <ul className="list-inside list-disc">
+                    {exampleWarnings.map((w) => (
+                      <li key={w}>{t(w)}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+        <EditorSection title={t('sections.general')}>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextRow
+              control={control}
+              name="name"
+              label={t('fields.name')}
+              className="sm:col-span-2"
+            />
+            <TextRow
+              control={control}
+              name="priority"
+              label={t('fields.priority')}
+              inputProps={{ inputMode: 'numeric' }}
+            />
+          </div>
+          <SwitchRow control={control} name="active" label={t('fields.active')} />
+        </EditorSection>
+        <RulesFields control={control as unknown as Control<RulesValues>} before={scope} />
+      </SheetForm>
+    </Form>
   );
 }
 
@@ -395,28 +480,29 @@ function DefaultPolicyForm(p: {
     toValues: (est) => rulesValues(est.settings.default_policy, p.locale),
   });
   return (
-    <Card className="p-4">
-      <form noValidate onSubmit={section.submit} className="space-y-4">
-        <p className="text-sm text-slate-600">{t('defaultHint')}</p>
-        <FormAlert state={section.alert} onReload={section.reload} />
-        <fieldset disabled={p.readOnly} className="space-y-4">
-          <RulesFields
-            control={form.control}
-            register={form.register}
-            errors={form.formState.errors}
-            idPrefix="def"
-            isDefault
-          />
-        </fieldset>
-        {!p.readOnly && (
-          <div className="flex items-center justify-end gap-3">
-            <SavedNotice show={section.saved} />
-            <Button type="submit" disabled={section.pending}>
-              {t('common.actions.save', { ns: 'translation' })}
-            </Button>
-          </div>
-        )}
+    <Form {...form}>
+      <form noValidate onSubmit={section.submit}>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('tabs.default')}</CardTitle>
+            <CardDescription>{t('defaultHint')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormErrorAlert state={section.alert} onReload={section.reload} />
+            <fieldset disabled={p.readOnly} className="min-w-0">
+              <RulesFields control={form.control} isDefault />
+            </fieldset>
+          </CardContent>
+          {!p.readOnly && (
+            <CardFooter className="justify-end border-t">
+              <Button type="submit" disabled={section.pending}>
+                {section.pending && <Spinner />}
+                {t('common.actions.save', { ns: 'translation' })}
+              </Button>
+            </CardFooter>
+          )}
+        </Card>
       </form>
-    </Card>
+    </Form>
   );
 }

@@ -250,7 +250,13 @@
     "extraLine": "Extra {{code}} × {{qty}}",
     "lineTotal": "Positionssumme",
     "discount": "Rabatt {{source}}",
-    "vat": "MwSt. {{rate}} % auf {{taxable}}"
+    "vat": "MwSt. {{rate}} % auf {{taxable}}",
+    "chartTitle": "Summe pro Tag",
+    "vatTitle": "MwSt.-Übersicht",
+    "vatRate": "Satz und Bemessungsgrundlage",
+    "vatTax": "Steuer",
+    "showAll": "Alle {{count}} Tage anzeigen",
+    "showLess": "Weniger Tage anzeigen"
   },
   "matrix": {
     "title": "Preismatrix",
@@ -275,7 +281,9 @@
     "dayGaps_other": "{{date}}: {{count}} Kombinationen ohne Preis",
     "dayOk": "{{date}}: vollständig abgedeckt",
     "legendOk": "abgedeckt",
-    "legendGaps": "bis zu {{max}} Kombinationen ohne Preis"
+    "legendGaps": "bis zu {{max}} Kombinationen ohne Preis",
+    "filteredDay": "Lücken am {{date}}",
+    "showAll": "Alle anzeigen"
   },
   "actionSummary": {
     "set": "{{amount}} pro Tag",
@@ -353,5 +361,15 @@
     "stackable": "Kombinierbar.",
     "exclusive": "Nicht kombinierbar.",
     "inactive": "(deaktiviert)"
+  },
+  "sections": {
+    "general": "Allgemein",
+    "options": "Optionen"
+  },
+  "multi": {
+    "all": "Alle",
+    "more": "+{{count}}",
+    "search": "Suchen…",
+    "clear": "Auswahl löschen"
   }
 }

@@ -31,7 +31,8 @@
     "duration": "Duration",
     "payment": "Payment",
     "cancellation": "Cancellation and changes",
-    "other": "Other"
+    "other": "Other",
+    "general": "General"
   },
   "scope": {
     "channels": "Channels",
@@ -118,5 +119,6 @@
     "desk_free": "Desk: no constraints",
     "warnNoPeak": "No August period found: pick the periods by hand.",
     "warnNoGazebo": "No gazebo pack found: pick the packs by hand."
-  }
+  },
+  "daysShort": "days"
 }

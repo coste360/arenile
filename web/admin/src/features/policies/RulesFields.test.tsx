@@ -1,3 +1,4 @@
+import { Form } from '@arenile/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -20,15 +21,12 @@ function Harness({ rules, onSave }: { rules: PolicyRules; onSave: (r: PolicyRule
     defaultValues: rulesValues(rules, 'it'),
   });
   return (
-    <form noValidate onSubmit={form.handleSubmit((v) => onSave(toRules(v)))}>
-      <RulesFields
-        control={form.control}
-        register={form.register}
-        errors={form.formState.errors}
-        idPrefix="t"
-      />
-      <button type="submit">salva</button>
-    </form>
+    <Form {...form}>
+      <form noValidate onSubmit={form.handleSubmit((v) => onSave(toRules(v)))}>
+        <RulesFields control={form.control} />
+        <button type="submit">salva</button>
+      </form>
+    </Form>
   );
 }
 
@@ -65,7 +63,8 @@ describe('cancellation tiers editor', () => {
     const days = within(third).getByLabelText('Fino a giorni prima');
     await user.clear(days);
     await user.type(days, '30');
-    await user.selectOptions(within(third).getByLabelText('Come'), 'credit');
+    await user.click(within(third).getByRole('combobox', { name: 'Come' }));
+    await user.click(await screen.findByRole('option', { name: 'Credito' }));
 
     await user.click(screen.getByRole('button', { name: 'Rimuovi la fascia 2' }));
     expect(tiers().map(daysOf)).toEqual(['7', '30']);

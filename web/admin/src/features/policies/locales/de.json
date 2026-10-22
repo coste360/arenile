@@ -31,7 +31,8 @@
     "duration": "Dauer",
     "payment": "Zahlung",
     "cancellation": "Stornierung und Änderungen",
-    "other": "Sonstiges"
+    "other": "Sonstiges",
+    "general": "Allgemein"
   },
   "scope": {
     "channels": "Kanäle",
@@ -118,5 +119,6 @@
     "desk_free": "Kasse: keine Einschränkungen",
     "warnNoPeak": "Kein August-Zeitraum gefunden: Zeiträume manuell wählen.",
     "warnNoGazebo": "Kein Pavillon-Paket gefunden: Pakete manuell wählen."
-  }
+  },
+  "daysShort": "Tage"
 }

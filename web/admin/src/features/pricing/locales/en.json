@@ -250,7 +250,13 @@
     "extraLine": "Extra {{code}} × {{qty}}",
     "lineTotal": "Line total",
     "discount": "Discount {{source}}",
-    "vat": "VAT {{rate}}% on {{taxable}}"
+    "vat": "VAT {{rate}}% on {{taxable}}",
+    "chartTitle": "Total per day",
+    "vatTitle": "VAT summary",
+    "vatRate": "Rate and taxable amount",
+    "vatTax": "Tax",
+    "showAll": "Show all {{count}} days",
+    "showLess": "Show fewer days"
   },
   "matrix": {
     "title": "Price matrix",
@@ -275,7 +281,9 @@
     "dayGaps_other": "{{date}}: {{count}} combinations without a price",
     "dayOk": "{{date}}: fully covered",
     "legendOk": "covered",
-    "legendGaps": "up to {{max}} combinations without a price"
+    "legendGaps": "up to {{max}} combinations without a price",
+    "filteredDay": "Gaps including {{date}}",
+    "showAll": "Show all"
   },
   "actionSummary": {
     "set": "{{amount}} per day",
@@ -353,5 +361,15 @@
     "stackable": "Stackable.",
     "exclusive": "Not stackable.",
     "inactive": "(inactive)"
+  },
+  "sections": {
+    "general": "General",
+    "options": "Options"
+  },
+  "multi": {
+    "all": "All",
+    "more": "+{{count}}",
+    "search": "Search…",
+    "clear": "Clear selection"
   }
 }

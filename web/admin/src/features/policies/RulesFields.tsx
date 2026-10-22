@@ -1,41 +1,160 @@
-import { Button, Input } from '@arenile/shared/ui';
 import {
-  useFieldArray,
-  useWatch,
-  type Control,
-  type FieldErrors,
-  type UseFormRegister,
-} from 'react-hook-form';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Button,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@arenile/shared/ui';
+import {
+  ArrowDownIcon,
+  ArrowDownWideNarrowIcon,
+  ArrowUpIcon,
+  PlusIcon,
+  Trash2Icon,
+} from 'lucide-react';
+import { useId, type ComponentProps, type ReactNode } from 'react';
+import { useFieldArray, useWatch, type Control, type Path } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Checkbox, Field, Select } from '../configuration/components/fields';
-import { MultiCheck } from '../configuration/components/MultiCheck';
-import { errorAt, fieldAria } from '../configuration/lib/aria';
+import { EuroTextInput, MultiSelect, OptionSelect, TextRow, type Option } from '../pricing/kit';
 import { nextTier, sortTiers, type RulesValues } from './policy.schema';
 
 const FORMULAS = ['half_day', 'day', 'multi_day', 'week', 'fortnight', 'month', 'season'] as const;
+const SECTIONS = ['timing', 'duration', 'payment', 'cancellation', 'other'] as const;
+
+function ChoiceRow({
+  control,
+  name,
+  label,
+  options,
+}: {
+  control: Control<RulesValues>;
+  name: Path<RulesValues>;
+  label: string;
+  options: Option[];
+}) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{label}</FormLabel>
+          <FormControl>
+            <OptionSelect
+              value={field.value as string}
+              onChange={field.onChange}
+              options={options}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+/** Integer percent input with a "%" addon. */
+function PercentIntRow({
+  control,
+  name,
+  label,
+}: {
+  control: Control<RulesValues>;
+  name: Path<RulesValues>;
+  label: string;
+}) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{label}</FormLabel>
+          <InputGroup className="max-w-36">
+            <FormControl>
+              <InputGroupInput
+                inputMode="numeric"
+                className="text-right tabular-nums"
+                {...field}
+                value={field.value as string}
+              />
+            </FormControl>
+            <InputGroupAddon align="inline-end">
+              <InputGroupText aria-hidden="true">%</InputGroupText>
+            </InputGroupAddon>
+          </InputGroup>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+function MoneyRow({
+  control,
+  name,
+  label,
+}: {
+  control: Control<RulesValues>;
+  name: Path<RulesValues>;
+  label: string;
+}) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{label}</FormLabel>
+          <FormControl>
+            <EuroTextInput
+              value={field.value as string}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
 
 /**
- * Editor of the booking rules (spec 9). It is used with forms whose values
- * extend RulesValues; "inherit" / empty leaves a rule to the default policy.
+ * Editor of the booking rules (spec 9), one Accordion item per section. It is
+ * used inside a shadcn <Form> whose values extend RulesValues; "inherit" /
+ * empty leaves a rule to the default policy.
  */
 export function RulesFields({
   control,
-  register,
-  errors,
-  idPrefix,
   isDefault,
+  before,
 }: {
   // The forms extend RulesValues; the editor only touches those fields.
   control: Control<RulesValues>;
-  register: UseFormRegister<RulesValues>;
-  errors: FieldErrors<RulesValues>;
-  idPrefix: string;
   /** Editing the default policy: "inherit" means the built-in default. */
   isDefault?: boolean;
+  /** Extra Accordion items rendered before the rule sections (e.g. the scope). */
+  before?: ReactNode;
 }) {
   const { t } = useTranslation('policies');
-  const tiers = useFieldArray({ control, name: 'cancellation' });
-  const tierValues = useWatch({ control, name: 'cancellation' });
   const [paymentMode, sameDay, balanceDue, cancellationSet, releaseCredit, depositType] = useWatch({
     control,
     name: [
@@ -47,240 +166,444 @@ export function RulesFields({
       'deposit_type',
     ],
   });
-  const id = (name: string) => `${idPrefix}-${name.replace(/\./g, '-')}`;
-  const err = (name: string) => errorAt(errors, name);
-  const text = (
-    name: keyof RulesValues,
-    label: string,
-    opts: { hint?: string; type?: string } = {},
-  ) => (
-    <Field id={id(name)} label={label} error={err(name)} hint={opts.hint}>
-      <Input
-        {...fieldAria(id(name), err(name), !!opts.hint)}
-        type={opts.type ?? 'text'}
-        inputMode={opts.type ? undefined : 'numeric'}
-        {...register(name)}
-      />
-    </Field>
-  );
-  const choice = (
-    name: keyof RulesValues,
-    label: string,
-    options: { value: string; label: string }[],
-  ) => (
-    <Field id={id(name)} label={label} error={err(name)}>
-      <Select {...fieldAria(id(name), err(name))} {...register(name)}>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </Select>
-    </Field>
-  );
+  const numeric = { inputMode: 'numeric' as const, className: 'max-w-32' };
   const inherit = isDefault ? t('inheritBuiltin') : t('inherit');
   const triOptions = [
     { value: 'inherit', label: inherit },
     { value: 'yes', label: t('yes') },
     { value: 'no', label: t('no') },
   ];
+  const section = (id: (typeof SECTIONS)[number], children: ReactNode) => (
+    <AccordionItem value={id}>
+      <AccordionTrigger className="text-base">{t(`sections.${id}`)}</AccordionTrigger>
+      <AccordionContent className="space-y-4 px-1 pt-1">{children}</AccordionContent>
+    </AccordionItem>
+  );
 
   return (
-    <div className="space-y-4">
-      <fieldset className="space-y-3 rounded-md border border-slate-200 p-3">
-        <legend className="px-1 text-sm font-medium">{t('sections.timing')}</legend>
+    <Accordion
+      type="multiple"
+      defaultValue={[...(before ? ['scope'] : []), ...SECTIONS]}
+      className="rounded-lg border px-4"
+    >
+      {before}
+      {section(
+        'timing',
         <div className="grid gap-4 sm:grid-cols-3">
-          {text('min_lead_days', t('fields.min_lead_days'))}
-          {text('cutoff_time', t('fields.cutoff_time'), { type: 'time', hint: t('hints.cutoff') })}
-          {text('max_lead_time_days', t('fields.max_lead_time_days'))}
-          {choice('same_day', t('fields.same_day'), triOptions)}
-          {sameDay === 'yes' &&
-            text('same_day_until', t('fields.same_day_until'), { type: 'time' })}
-        </div>
-      </fieldset>
-      <fieldset className="space-y-3 rounded-md border border-slate-200 p-3">
-        <legend className="px-1 text-sm font-medium">{t('sections.duration')}</legend>
-        <MultiCheck
-          control={control}
-          name="allowed_formulas"
-          id={id('allowed_formulas')}
-          legend={t('fields.allowed_formulas')}
-          hint={t('hints.allFormulas')}
-          options={FORMULAS.map((f) => ({ value: f, label: t(`pricing:formulas.${f}`) }))}
-        />
+          <TextRow
+            control={control}
+            name="min_lead_days"
+            label={t('fields.min_lead_days')}
+            inputProps={numeric}
+          />
+          <TextRow
+            control={control}
+            name="cutoff_time"
+            label={t('fields.cutoff_time')}
+            description={t('hints.cutoff')}
+            inputProps={{ type: 'time', className: 'max-w-32' }}
+          />
+          <TextRow
+            control={control}
+            name="max_lead_time_days"
+            label={t('fields.max_lead_time_days')}
+            inputProps={numeric}
+          />
+          <ChoiceRow
+            control={control}
+            name="same_day"
+            label={t('fields.same_day')}
+            options={triOptions}
+          />
+          {sameDay === 'yes' && (
+            <TextRow
+              control={control}
+              name="same_day_until"
+              label={t('fields.same_day_until')}
+              inputProps={{ type: 'time', className: 'max-w-32' }}
+            />
+          )}
+        </div>,
+      )}
+      {section(
+        'duration',
+        <>
+          <FormField
+            control={control}
+            name="allowed_formulas"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('fields.allowed_formulas')}</FormLabel>
+                <FormControl>
+                  <MultiSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={inherit}
+                    options={FORMULAS.map((f) => ({ value: f, label: t(`pricing:formulas.${f}`) }))}
+                  />
+                </FormControl>
+                <FormDescription>{t('hints.allFormulas')}</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextRow
+              control={control}
+              name="min_days"
+              label={t('fields.min_days')}
+              inputProps={numeric}
+            />
+            <TextRow
+              control={control}
+              name="max_days"
+              label={t('fields.max_days')}
+              inputProps={numeric}
+            />
+            <ChoiceRow
+              control={control}
+              name="fixed_start_weekday"
+              label={t('fields.fixed_start_weekday')}
+              options={[
+                { value: '', label: inherit },
+                { value: '0', label: t('anyWeekday') },
+                ...['1', '2', '3', '4', '5', '6', '7'].map((d) => ({
+                  value: d,
+                  label: t(`pricing:weekdaysShort.${d}`),
+                })),
+              ]}
+            />
+          </div>
+        </>,
+      )}
+      {section(
+        'payment',
         <div className="grid gap-4 sm:grid-cols-3">
-          {text('min_days', t('fields.min_days'))}
-          {text('max_days', t('fields.max_days'))}
-          {choice('fixed_start_weekday', t('fields.fixed_start_weekday'), [
-            { value: '', label: inherit },
-            { value: '0', label: t('anyWeekday') },
-            ...['1', '2', '3', '4', '5', '6', '7'].map((d) => ({
-              value: d,
-              label: t(`pricing:weekdaysShort.${d}`),
-            })),
-          ])}
-        </div>
-      </fieldset>
-      <fieldset className="space-y-3 rounded-md border border-slate-200 p-3">
-        <legend className="px-1 text-sm font-medium">{t('sections.payment')}</legend>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {choice('payment_mode', t('fields.payment_mode'), [
-            { value: '', label: inherit },
-            { value: 'full', label: t('paymentModes.full') },
-            { value: 'deposit', label: t('paymentModes.deposit') },
-            { value: 'none', label: t('paymentModes.none') },
-          ])}
+          <ChoiceRow
+            control={control}
+            name="payment_mode"
+            label={t('fields.payment_mode')}
+            options={[
+              { value: '', label: inherit },
+              { value: 'full', label: t('paymentModes.full') },
+              { value: 'deposit', label: t('paymentModes.deposit') },
+              { value: 'none', label: t('paymentModes.none') },
+            ]}
+          />
           {paymentMode === 'deposit' && (
             <>
-              {choice('deposit_type', t('fields.deposit_type'), [
-                { value: 'percent', label: t('depositTypes.percent') },
-                { value: 'amount', label: t('depositTypes.amount') },
-              ])}
-              {text(
-                'deposit_value',
-                depositType === 'amount' ? t('fields.deposit_amount') : t('fields.deposit_percent'),
+              <ChoiceRow
+                control={control}
+                name="deposit_type"
+                label={t('fields.deposit_type')}
+                options={[
+                  { value: 'percent', label: t('depositTypes.percent') },
+                  { value: 'amount', label: t('depositTypes.amount') },
+                ]}
+              />
+              {depositType === 'amount' ? (
+                <MoneyRow
+                  control={control}
+                  name="deposit_value"
+                  label={t('fields.deposit_amount')}
+                />
+              ) : (
+                <PercentIntRow
+                  control={control}
+                  name="deposit_value"
+                  label={t('fields.deposit_percent')}
+                />
               )}
             </>
           )}
           {paymentMode !== '' && paymentMode !== 'full' && (
             <>
-              {choice('balance_due', t('fields.balance_due'), [
-                { value: '', label: inherit },
-                { value: 'on_arrival', label: t('balance.on_arrival') },
-                { value: 'days_before', label: t('balance.days_before') },
-              ])}
-              {balanceDue === 'days_before' && text('balance_days', t('fields.balance_days'))}
+              <ChoiceRow
+                control={control}
+                name="balance_due"
+                label={t('fields.balance_due')}
+                options={[
+                  { value: '', label: inherit },
+                  { value: 'on_arrival', label: t('balance.on_arrival') },
+                  { value: 'days_before', label: t('balance.days_before') },
+                ]}
+              />
+              {balanceDue === 'days_before' && (
+                <TextRow
+                  control={control}
+                  name="balance_days"
+                  label={t('fields.balance_days')}
+                  inputProps={numeric}
+                />
+              )}
             </>
           )}
-        </div>
-      </fieldset>
-      <fieldset className="space-y-3 rounded-md border border-slate-200 p-3">
-        <legend className="px-1 text-sm font-medium">{t('sections.cancellation')}</legend>
-        <Checkbox
-          id={id('cancellation_set')}
-          label={t('fields.cancellation_set')}
-          {...register('cancellation_set')}
-        />
-        {cancellationSet && (
-          <div className="space-y-2">
-            {tiers.fields.length === 0 && <p className="text-sm text-slate-600">{t('noRefund')}</p>}
-            {tiers.fields.map((f, i) => (
-              <div
-                key={f.id}
-                data-testid="cancellation-tier"
-                className="grid grid-cols-[1fr_1fr_1fr_auto] items-end gap-2"
-              >
-                <Field
-                  id={id(`cancellation.${i}.until_days_before`)}
-                  label={t('fields.until_days_before')}
-                  error={err(`cancellation.${i}.until_days_before`)}
-                >
-                  <Input
-                    {...fieldAria(
-                      id(`cancellation.${i}.until_days_before`),
-                      err(`cancellation.${i}.until_days_before`),
-                    )}
-                    inputMode="numeric"
-                    {...register(`cancellation.${i}.until_days_before`)}
-                  />
-                </Field>
-                <Field
-                  id={id(`cancellation.${i}.refund_percent`)}
-                  label={t('fields.refund_percent')}
-                  error={err(`cancellation.${i}.refund_percent`)}
-                >
-                  <Input
-                    {...fieldAria(
-                      id(`cancellation.${i}.refund_percent`),
-                      err(`cancellation.${i}.refund_percent`),
-                    )}
-                    inputMode="numeric"
-                    {...register(`cancellation.${i}.refund_percent`)}
-                  />
-                </Field>
-                <Field id={id(`cancellation.${i}.as`)} label={t('fields.refund_as')}>
-                  <Select id={id(`cancellation.${i}.as`)} {...register(`cancellation.${i}.as`)}>
-                    <option value="refund">{t('refundAs.refund')}</option>
-                    <option value="credit">{t('refundAs.credit')}</option>
-                  </Select>
-                </Field>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={t('moveTierUp', { n: i + 1 })}
-                    disabled={i === 0}
-                    onClick={() => tiers.move(i, i - 1)}
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={t('moveTierDown', { n: i + 1 })}
-                    disabled={i === tiers.fields.length - 1}
-                    onClick={() => tiers.move(i, i + 1)}
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={t('removeTier', { n: i + 1 })}
-                    onClick={() => tiers.remove(i)}
-                  >
-                    {t('remove')}
-                  </Button>
-                </div>
-              </div>
-            ))}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => tiers.append(nextTier(tierValues ?? []))}
-              >
-                {t('addTier')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={tiers.fields.length < 2}
-                onClick={() => tiers.replace(sortTiers(tierValues ?? []))}
-              >
-                {t('sortTiers')}
-              </Button>
-            </div>
-            <p className="text-xs text-slate-600">{t('hints.tiers')}</p>
+        </div>,
+      )}
+      {section(
+        'cancellation',
+        <>
+          <FormField
+            control={control}
+            name="cancellation_set"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between gap-4 rounded-lg border p-3">
+                <FormLabel>{t('fields.cancellation_set')}</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          {cancellationSet && <TiersTable control={control} />}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextRow
+              control={control}
+              name="modification_until"
+              label={t('fields.modification_until')}
+              inputProps={numeric}
+            />
+            <MoneyRow
+              control={control}
+              name="modification_fee"
+              label={t('fields.modification_fee')}
+            />
+            <ChoiceRow
+              control={control}
+              name="weather"
+              label={t('fields.weather')}
+              options={[
+                { value: 'inherit', label: inherit },
+                { value: 'off', label: t('weather.off') },
+                { value: 'refund', label: t('weather.refund') },
+                { value: 'credit', label: t('weather.credit') },
+              ]}
+            />
           </div>
-        )}
+        </>,
+      )}
+      {section(
+        'other',
         <div className="grid gap-4 sm:grid-cols-3">
-          {text('modification_until', t('fields.modification_until'))}
-          {text('modification_fee', t('fields.modification_fee'))}
-          {choice('weather', t('fields.weather'), [
-            { value: 'inherit', label: inherit },
-            { value: 'off', label: t('weather.off') },
-            { value: 'refund', label: t('weather.refund') },
-            { value: 'credit', label: t('weather.credit') },
-          ])}
+          <ChoiceRow
+            control={control}
+            name="approval_required"
+            label={t('fields.approval_required')}
+            options={triOptions}
+          />
+          <TextRow
+            control={control}
+            name="max_spots_per_booking"
+            label={t('fields.max_spots_per_booking')}
+            inputProps={numeric}
+          />
+          <ChoiceRow
+            control={control}
+            name="allow_spot_change"
+            label={t('fields.allow_spot_change')}
+            options={triOptions}
+          />
+          <ChoiceRow
+            control={control}
+            name="customer_can_release"
+            label={t('fields.customer_can_release')}
+            options={triOptions}
+          />
+          <ChoiceRow
+            control={control}
+            name="release_credit"
+            label={t('fields.release_credit')}
+            options={[
+              { value: 'inherit', label: inherit },
+              { value: 'off', label: t('no') },
+              { value: 'on', label: t('yes') },
+            ]}
+          />
+          {releaseCredit === 'on' && (
+            <PercentIntRow
+              control={control}
+              name="release_credit_percent"
+              label={t('fields.release_credit_percent')}
+            />
+          )}
+        </div>,
+      )}
+    </Accordion>
+  );
+}
+
+/** Editable table of the cancellation tiers (days before → refund %, as refund or credit). */
+function TiersTable({ control }: { control: Control<RulesValues> }) {
+  const { t } = useTranslation('policies');
+  const tiers = useFieldArray({ control, name: 'cancellation' });
+  const tierValues = useWatch({ control, name: 'cancellation' });
+  const captionId = useId();
+  return (
+    <div className="space-y-3">
+      {tiers.fields.length === 0 ? (
+        <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+          {t('noRefund')}
+        </p>
+      ) : (
+        <div className="overflow-hidden rounded-lg border">
+          <Table aria-describedby={captionId}>
+            <TableHeader className="bg-muted/50">
+              <TableRow className="hover:bg-transparent">
+                <TableHead>{t('fields.until_days_before')}</TableHead>
+                <TableHead>{t('fields.refund_percent')}</TableHead>
+                <TableHead>{t('fields.refund_as')}</TableHead>
+                <TableHead>
+                  <span className="sr-only">{t('actions')}</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tiers.fields.map((f, i) => (
+                <TableRow key={f.id} data-testid="cancellation-tier" className="align-top">
+                  <TableCell>
+                    <FormField
+                      control={control}
+                      name={`cancellation.${i}.until_days_before`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <InputGroupLike
+                              ariaLabel={t('fields.until_days_before')}
+                              suffix={t('daysShort')}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <FormField
+                      control={control}
+                      name={`cancellation.${i}.refund_percent`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <InputGroupLike
+                              ariaLabel={t('fields.refund_percent')}
+                              suffix="%"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <FormField
+                      control={control}
+                      name={`cancellation.${i}.as`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <OptionSelect
+                              aria-label={t('fields.refund_as')}
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="min-w-32"
+                              options={[
+                                { value: 'refund', label: t('refundAs.refund') },
+                                { value: 'credit', label: t('refundAs.credit') },
+                              ]}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-0.5">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={t('moveTierUp', { n: i + 1 })}
+                        disabled={i === 0}
+                        onClick={() => tiers.move(i, i - 1)}
+                      >
+                        <ArrowUpIcon aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={t('moveTierDown', { n: i + 1 })}
+                        disabled={i === tiers.fields.length - 1}
+                        onClick={() => tiers.move(i, i + 1)}
+                      >
+                        <ArrowDownIcon aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={t('removeTier', { n: i + 1 })}
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => tiers.remove(i)}
+                      >
+                        <Trash2Icon aria-hidden="true" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
-      </fieldset>
-      <fieldset className="space-y-3 rounded-md border border-slate-200 p-3">
-        <legend className="px-1 text-sm font-medium">{t('sections.other')}</legend>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {choice('approval_required', t('fields.approval_required'), triOptions)}
-          {text('max_spots_per_booking', t('fields.max_spots_per_booking'))}
-          {choice('allow_spot_change', t('fields.allow_spot_change'), triOptions)}
-          {choice('customer_can_release', t('fields.customer_can_release'), triOptions)}
-          {choice('release_credit', t('fields.release_credit'), [
-            { value: 'inherit', label: inherit },
-            { value: 'off', label: t('no') },
-            { value: 'on', label: t('yes') },
-          ])}
-          {releaseCredit === 'on' &&
-            text('release_credit_percent', t('fields.release_credit_percent'))}
-        </div>
-      </fieldset>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => tiers.append(nextTier(tierValues ?? []))}
+        >
+          <PlusIcon aria-hidden="true" />
+          {t('addTier')}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={tiers.fields.length < 2}
+          onClick={() => tiers.replace(sortTiers(tierValues ?? []))}
+        >
+          <ArrowDownWideNarrowIcon aria-hidden="true" />
+          {t('sortTiers')}
+        </Button>
+      </div>
+      <p id={captionId} className="text-xs text-muted-foreground">
+        {t('hints.tiers')}
+      </p>
     </div>
+  );
+}
+
+/** Numeric cell input with a unit addon; FormControl props land on the input. */
+function InputGroupLike({
+  ariaLabel,
+  suffix,
+  value,
+  ...props
+}: Omit<ComponentProps<'input'>, 'value'> & {
+  ariaLabel: string;
+  suffix: string;
+  value: string;
+}) {
+  return (
+    <InputGroup className="max-w-32">
+      <InputGroupInput
+        {...props}
+        value={value}
+        aria-label={ariaLabel}
+        inputMode="numeric"
+        className="text-right tabular-nums"
+      />
+      <InputGroupAddon align="inline-end">
+        <InputGroupText aria-hidden="true">{suffix}</InputGroupText>
+      </InputGroupAddon>
+    </InputGroup>
   );
 }

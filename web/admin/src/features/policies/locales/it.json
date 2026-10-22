@@ -31,7 +31,8 @@
     "duration": "Durata",
     "payment": "Pagamento",
     "cancellation": "Cancellazione e modifiche",
-    "other": "Altro"
+    "other": "Altro",
+    "general": "Generale"
   },
   "scope": {
     "channels": "Canali",
@@ -118,5 +119,6 @@
     "desk_free": "Cassa: nessun vincolo",
     "warnNoPeak": "Nessun periodo di agosto trovato: scegli i periodi a mano.",
     "warnNoGazebo": "Nessun pack gazebo trovato: scegli i pack a mano."
-  }
+  },
+  "daysShort": "gg"
 }

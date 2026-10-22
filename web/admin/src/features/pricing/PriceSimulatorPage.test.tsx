@@ -113,20 +113,17 @@ describe('PriceSimulatorPage', () => {
         return json(200, RESULT);
       }),
     );
-    const date = await screen.findByLabelText('Dal');
-    await user.clear(date);
-    await user.type(date, '2027-08-14');
-    const to = screen.getByLabelText('Al');
-    await user.clear(to);
-    await user.type(to, '2027-08-14');
+    // Date pickers (shadcn Calendar, dd/MM/yyyy) start on the season opening day.
+    expect(await screen.findByLabelText('Dal')).toHaveTextContent('01/05/2027');
+    expect(screen.getByLabelText('Al')).toHaveTextContent('01/05/2027');
     await user.click(screen.getByRole('button', { name: 'Calcola' }));
     await waitFor(() =>
       expect(callsTo(fetchMock, 'POST', `${API}/pricing/simulate`)).toHaveLength(1),
     );
     expect(body).toMatchObject({
       channel: 'desk',
-      starts_on: '2027-08-14',
-      ends_on: '2027-08-14',
+      starts_on: '2027-05-01',
+      ends_on: '2027-05-01',
       slots: 'FULL',
       formula: 'day',
       lines: [{ pack_id: 'p1', zone_id: 'z1' }],
