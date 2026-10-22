@@ -1,0 +1,54 @@
+captainVersion: 4
+services:
+  $$cap_appname:
+    image: ghcr.io/coste360/arenile:$$cap_arenile_version
+    restart: unless-stopped
+    volumes:
+      - $$cap_appname-data:/data
+    environment:
+      ARENILE_ADDR: ":8080"
+      ARENILE_DATA_DIR: "/data"
+      ARENILE_BASE_URL: "https://$$cap_appname.$$cap_root_domain"
+      ARENILE_SECRET_KEY: $$cap_secret_key
+      ARENILE_AUTO_MIGRATE: "true"
+      ARENILE_SMTP_URL: $$cap_smtp_url
+      ARENILE_MAIL_FROM: $$cap_mail_from
+      ARENILE_HOLD_TTL: "10m"
+      ARENILE_LOG_LEVEL: "info"
+      ARENILE_TRUSTED_PROXIES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+      ARENILE_REQUIRE_TOTP_FOR_OWNERS: "false"
+      ARENILE_TELEMETRY: "false"
+    caproverExtra:
+      containerHttpPort: "8080"
+caproverOneClickApp:
+  variables:
+    - id: $$cap_arenile_version
+      label: Versione di Arenile
+      defaultValue: latest
+      description: Tag dell'immagine ghcr.io/coste360/arenile (es. latest oppure v1.2.0).
+      validRegex: /^([^\s^\/])+$/
+    - id: $$cap_secret_key
+      label: Chiave segreta (ARENILE_SECRET_KEY)
+      description: 32 byte in base64, generala con "openssl rand -base64 32" e conservala con cura.
+      validRegex: /^[A-Za-z0-9+\/]{43}=$/
+    - id: $$cap_smtp_url
+      label: Server SMTP (facoltativo)
+      defaultValue: ""
+      description: Formato smtp://utente:password@host:587, per le email di conferma prenotazione.
+    - id: $$cap_mail_from
+      label: Mittente email (facoltativo)
+      defaultValue: ""
+      description: Ad esempio "Lido Esempio <prenotazioni@mio-lido.it>".
+  instructions:
+    start: >-
+      Arenile è il gestionale open source per stabilimenti balneari: mappa di ombrelloni e lettini,
+      listini stagionali, prenotazioni online senza commissioni con widget per il sito del lido e cassa.
+      Questa installazione usa SQLite in un volume persistente.
+    end: >-
+      Arenile è in esecuzione su https://$$cap_appname.$$cap_root_domain. Abilita HTTPS dalla scheda
+      dell'app, imposta l'health check su /healthz e crea il primo utente owner dal terminale del container
+      con il comando "/arenile admin create".
+  displayName: Arenile
+  isOfficial: false
+  description: Gestionale open source per stabilimenti balneari con prenotazioni online senza commissioni.
+  documentation: https://github.com/coste360/arenile

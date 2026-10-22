@@ -1,0 +1,53 @@
+# documentation: https://github.com/coste360/arenile
+# slogan: Gestionale open source per stabilimenti balneari: prenotazioni online senza commissioni, mappa ombrelloni e cassa.
+# tags: stabilimento balneare,lido,prenotazioni,ombrelloni,booking,gestionale,spiaggia,postgresql
+# logo: https://raw.githubusercontent.com/coste360/arenile/main/docs/assets/logo.svg
+# port: 8080
+#
+# Template Coolify (Docker Compose) — installazione con PostgreSQL.
+# Utente e password del database sono generati da Coolify (SERVICE_USER_* / SERVICE_PASSWORD_*).
+# ARENILE_SECRET_KEY va impostata a mano (openssl rand -base64 32).
+
+services:
+  arenile:
+    image: ghcr.io/coste360/arenile:${ARENILE_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - SERVICE_FQDN_ARENILE_8080
+      - ARENILE_ADDR=:8080
+      - ARENILE_DATA_DIR=/data
+      - DATABASE_URL=postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/${POSTGRES_DB:-arenile}?sslmode=disable
+      - ARENILE_BASE_URL=${SERVICE_URL_ARENILE}
+      - ARENILE_SECRET_KEY=${ARENILE_SECRET_KEY:?}
+      - ARENILE_AUTO_MIGRATE=${ARENILE_AUTO_MIGRATE:-true}
+      - ARENILE_SMTP_URL=${ARENILE_SMTP_URL:-}
+      - ARENILE_MAIL_FROM=${ARENILE_MAIL_FROM:-}
+      - ARENILE_HOLD_TTL=${ARENILE_HOLD_TTL:-10m}
+      - ARENILE_LOG_LEVEL=${ARENILE_LOG_LEVEL:-info}
+      - ARENILE_TRUSTED_PROXIES=${ARENILE_TRUSTED_PROXIES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      - ARENILE_REQUIRE_TOTP_FOR_OWNERS=${ARENILE_REQUIRE_TOTP_FOR_OWNERS:-false}
+      - ARENILE_TELEMETRY=false
+    volumes:
+      - arenile-data:/data
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - POSTGRES_DB=${POSTGRES_DB:-arenile}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  arenile-data:
+  postgres-data:

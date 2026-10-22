@@ -1,0 +1,43 @@
+# Keep the build context small and free of secrets and local artefacts.
+.git
+.github
+.devcontainer
+.claude
+.vscode
+.idea
+.DS_Store
+
+# secrets and local config
+.env
+.env.*
+!.env.example
+CLAUDE.local.md
+
+# build output and local data
+bin/
+dist/
+tmp/
+data/
+*.db
+*.db-wal
+*.db-shm
+coverage.out
+
+# frontend artefacts (rebuilt inside the image)
+**/node_modules
+web/**/dist
+.vite
+playwright-report
+test-results
+e2e/
+
+# embedded static dirs: only the placeholders, the image copies fresh builds
+internal/http/static/admin/*
+internal/http/static/booking/*
+!internal/http/static/admin/.gitkeep
+!internal/http/static/booking/.gitkeep
+
+# docs and deploy recipes are not needed to build the binary
+# (BuildKit reads deploy/Dockerfile even though deploy/ is ignored)
+docs/
+deploy/

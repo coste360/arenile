@@ -1,0 +1,35 @@
+# documentation: https://github.com/coste360/arenile
+# slogan: Gestionale open source per stabilimenti balneari: prenotazioni online senza commissioni, mappa ombrelloni e cassa.
+# tags: stabilimento balneare,lido,prenotazioni,ombrelloni,booking,gestionale,spiaggia
+# logo: https://raw.githubusercontent.com/coste360/arenile/main/docs/assets/logo.svg
+# port: 8080
+#
+# Template Coolify (Docker Compose) — installazione con SQLite.
+# Coolify genera dominio e URL tramite le variabili SERVICE_FQDN_* / SERVICE_URL_*.
+# ARENILE_SECRET_KEY va impostata a mano nella scheda "Environment Variables"
+# (openssl rand -base64 32) e conservata: senza di essa i dati cifrati sono persi.
+
+services:
+  arenile:
+    image: ghcr.io/coste360/arenile:${ARENILE_VERSION:-latest}
+    restart: unless-stopped
+    environment:
+      - SERVICE_FQDN_ARENILE_8080
+      - ARENILE_ADDR=:8080
+      - ARENILE_DATA_DIR=/data
+      - ARENILE_BASE_URL=${SERVICE_URL_ARENILE}
+      - ARENILE_SECRET_KEY=${ARENILE_SECRET_KEY:?}
+      - ARENILE_AUTO_MIGRATE=${ARENILE_AUTO_MIGRATE:-true}
+      - ARENILE_SMTP_URL=${ARENILE_SMTP_URL:-}
+      - ARENILE_MAIL_FROM=${ARENILE_MAIL_FROM:-}
+      - ARENILE_HOLD_TTL=${ARENILE_HOLD_TTL:-10m}
+      - ARENILE_LOG_LEVEL=${ARENILE_LOG_LEVEL:-info}
+      # Coolify's Traefik/Caddy proxy runs on the Docker network.
+      - ARENILE_TRUSTED_PROXIES=${ARENILE_TRUSTED_PROXIES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      - ARENILE_REQUIRE_TOTP_FOR_OWNERS=${ARENILE_REQUIRE_TOTP_FOR_OWNERS:-false}
+      - ARENILE_TELEMETRY=false
+    volumes:
+      - arenile-data:/data
+
+volumes:
+  arenile-data:

@@ -1,0 +1,126 @@
+# golangci-lint v2 configuration for Arenile.
+# Run through the Makefile only: `make lint` (installed by `make setup` into ./bin).
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+  build-tags:
+    - integration
+
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - ineffassign
+    - unused
+    - gosec
+    - revive
+    - misspell
+    - bodyclose
+    - sqlclosecheck
+    - errorlint
+    - gocritic
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment # readability of domain structs wins over a few bytes
+        - shadow # `err` shadowing is idiomatic and reviewed by humans
+    errcheck:
+      check-type-assertions: true
+      exclude-functions:
+        - (io.Closer).Close
+        - (net/http.ResponseWriter).Write
+    gosec:
+      excludes:
+        - G104 # unhandled errors: covered by errcheck
+        - G115 # integer overflow conversions: too noisy for int64 cents/IDs
+        - G304 # file inclusion via variable: data dir paths are operator-controlled
+      config:
+        G306: "0640"
+    revive:
+      severity: warning
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: errorf
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: range
+        - name: receiver-naming
+        - name: redefines-builtin-id
+        - name: superfluous-else
+        - name: time-naming
+        - name: unexported-return
+        - name: unreachable-code
+        - name: unused-parameter
+          disabled: true
+        - name: var-declaration
+        - name: var-naming
+        - name: early-return
+        - name: use-any
+    misspell:
+      # No locale: both US and UK English spellings are accepted.
+      ignore-rules:
+        # Italian user-facing strings (the UI source language is Italian).
+        - importo
+        - stabilimento
+        - integrato
+        - comando
+        - continuare
+    errorlint:
+      errorf: true
+      asserts: true
+      comparison: true
+    gocritic:
+      enabled-tags:
+        - diagnostic
+      disabled-checks:
+        - commentFormatting
+      enabled-checks:
+        - unnecessaryBlock
+  exclusions:
+    generated: strict
+    presets:
+      - comments
+      - std-error-handling
+    paths:
+      - ".*\\.gen\\.go$"
+      - "web/"
+      - "e2e/"
+      - "node_modules/"
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
+          - bodyclose
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      extra-rules: false
+    goimports:
+      local-prefixes:
+        - github.com/coste360/arenile
+  exclusions:
+    generated: strict
+    paths:
+      - ".*\\.gen\\.go$"
+      - "web/"
+      - "e2e/"

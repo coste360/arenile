@@ -1,0 +1,58 @@
+{
+  "name": "Arenile",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".",
+    "args": {
+      "GO_VERSION": "1.27.2",
+      "GOLANGCI_LINT_VERSION": "v2.15.0"
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "GOTOOLCHAIN": "local",
+    "ARENILE_DATA_DIR": "${containerWorkspaceFolder}/tmp/data"
+  },
+  "forwardPorts": [8080, 5173, 5174],
+  "portsAttributes": {
+    "8080": { "label": "Arenile (backend)", "onAutoForward": "notify" },
+    "5173": { "label": "Vite admin", "onAutoForward": "silent" },
+    "5174": { "label": "Vite booking", "onAutoForward": "silent" }
+  },
+  "postCreateCommand": "make setup",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "EditorConfig.EditorConfig",
+        "redhat.vscode-yaml",
+        "ms-playwright.playwright",
+        "42Crunch.vscode-openapi"
+      ],
+      "settings": {
+        "go.lintTool": "golangci-lint",
+        "go.lintFlags": ["--fast-only"],
+        "gopls": {
+          "formatting.gofumpt": true,
+          "formatting.local": "github.com/coste360/arenile"
+        },
+        "editor.formatOnSave": true,
+        "[go]": { "editor.defaultFormatter": "golang.go" },
+        "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+        "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
+      }
+    }
+  }
+}
