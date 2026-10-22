@@ -104,8 +104,16 @@ func (s *Service) Simulate(ctx context.Context, p *auth.Principal, establishment
 			return nil, fmt.Errorf("pricingconfig: %w", err)
 		}
 		seasonID = sn.ID
-	} else if _, err := seasonOf(ctx, s.d.DB, es, seasonID); err != nil {
-		return nil, err
+	} else {
+		sn, err := seasonOf(ctx, s.d.DB, es, seasonID)
+		if err != nil {
+			return nil, err
+		}
+		// The season's rules are meaningless outside its dates (a stay of
+		// another year would price as "no rule" or on a wrong period).
+		if in.StartsOn.Before(sn.OpensOn) || in.EndsOn.After(sn.ClosesOn) {
+			return nil, configerr.Invalid("starts_on", fmt.Sprintf("Le date devono rientrare nella stagione (%s – %s).", sn.OpensOn, sn.ClosesOn))
+		}
 	}
 	spotIDs := make([]string, 0, len(in.Lines))
 	for _, l := range in.Lines {
