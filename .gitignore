@@ -1,0 +1,29 @@
+# build
+/bin/
+/dist/
+/tmp/
+internal/http/static/admin/*
+internal/http/static/booking/*
+!internal/http/static/admin/.gitkeep
+!internal/http/static/booking/.gitkeep
+
+# data
+/data/
+*.db
+*.db-wal
+*.db-shm
+
+# node
+node_modules/
+web/**/dist/
+.vite/
+playwright-report/
+test-results/
+
+# env & personal
+.env
+.env.*
+!.env.example
+CLAUDE.local.md
+.DS_Store
+coverage.out
