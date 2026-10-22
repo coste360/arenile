@@ -15,7 +15,8 @@
     "rules": "Price list",
     "simulator": "Simulator",
     "matrix": "Matrix",
-    "coverage": "Coverage"
+    "coverage": "Coverage",
+    "policies": "Policies"
   },
   "tabs": {
     "label": "Price list sections",

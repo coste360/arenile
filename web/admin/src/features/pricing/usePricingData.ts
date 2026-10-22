@@ -16,6 +16,16 @@ export function usePricingData(ctx: ConfigContext) {
     rawZones: zoneItems,
     /** Price categories in use by zones (spot overrides are not listed here). */
     categories: [...new Set(zoneItems.map((z) => z.price_category))].sort(),
+    /** Readable label of each price category: the names of the zones using it. */
+    categoryNames: Object.fromEntries(
+      [...new Set(zoneItems.map((z) => z.price_category))].map((code) => [
+        code,
+        zoneItems
+          .filter((z) => z.price_category === code)
+          .map((z) => name(z.name) || z.code)
+          .join(', ') || code,
+      ]),
+    ) as Record<string, string>,
     name,
     isLoading: packList.isPending || extraList.isPending || zoneList.isPending,
     error: packList.error ?? extraList.error ?? zoneList.error,

@@ -15,7 +15,8 @@
     "rules": "Listino",
     "simulator": "Simulatore",
     "matrix": "Matrice",
-    "coverage": "Copertura"
+    "coverage": "Copertura",
+    "policies": "Policy"
   },
   "tabs": {
     "label": "Sezioni del listino",

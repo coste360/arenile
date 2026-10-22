@@ -18,7 +18,7 @@ export function sortRules<T extends Pick<PriceRule, 'priority' | 'seq'>>(rules: 
 
 /** Names used by the rule summaries. */
 export function useSummaryNames(
-  p: Pick<PricingTabProps, 'packs' | 'extras' | 'zones' | 'name'> & {
+  p: Pick<PricingTabProps, 'packs' | 'extras' | 'zones' | 'name' | 'periods' | 'categoryNames'> & {
     establishmentId: string;
   },
 ) {
@@ -36,6 +36,11 @@ export function useSummaryNames(
       zone: (id) => p.zones.find((z) => z.id === id)?.name ?? short(id),
       agreement: (id) => agreementItems.find((a) => a.id === id)?.name ?? short(id),
       target: catalogName(targetType === 'pack' ? p.packs : p.extras),
+      period: (code) => {
+        const rp = p.periods.find((x) => x.code === code);
+        return (rp && p.name(rp.name)) || code;
+      },
+      category: (code) => p.categoryNames[code] ?? code,
     }),
   };
 }

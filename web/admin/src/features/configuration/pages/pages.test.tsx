@@ -70,7 +70,7 @@ describe('SeasonsPage', () => {
     const timeline = await screen.findByRole('list', {
       name: 'Calendario dei periodi della stagione',
     });
-    expect(within(timeline).getByRole('listitem', { name: /high dal/ })).toBeInTheDocument();
+    expect(within(timeline).getByRole('listitem', { name: /Alta stagione dal/ })).toBeInTheDocument();
     expect(screen.getByText(/giorni della stagione non sono coperti/)).toBeInTheDocument();
   });
 

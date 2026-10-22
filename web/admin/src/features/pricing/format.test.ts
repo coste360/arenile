@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { createAdminTestI18n } from '../../i18n';
-import { describeAction, describeConditions, describeRule, type SummaryNames } from './format';
+import {
+  describeAction,
+  describeConditions,
+  describeRule,
+  summarizeRule,
+  type SummaryNames,
+} from './format';
 
 const i18n = createAdminTestI18n();
 const t = i18n.t.bind(i18n);
@@ -140,6 +146,43 @@ describe('describeRule (it)', () => {
       ),
     ).toBe(
       'Sconto per tutti gli extra: 7 giorni al prezzo di 6, sempre. Non cumulabile. (disattivata)',
+    );
+  });
+});
+
+describe('names instead of codes', () => {
+  const named: SummaryNames = {
+    ...names,
+    period: (code) => ({ peak: 'Ferragosto' })[code] ?? code,
+    category: (code) => ({ row1: 'Prima fila' })[code] ?? code,
+  };
+
+  it('shows period and category names in the conditions', () => {
+    expect(
+      describeConditions(t, { rate_periods: ['peak'], price_categories: ['row1', 'vip'] }, named),
+    ).toBe('periodi: Ferragosto · categorie: Prima fila, vip');
+  });
+
+  it('summarises a rule for the table without repeating the stage', () => {
+    expect(
+      nbsp(
+        summarizeRule(
+          t,
+          {
+            stage: 'base',
+            target_type: 'pack',
+            target_ids: ['p1', 'p2'],
+            conditions: { rate_periods: ['peak'], slots: ['PM'] },
+            action: { type: 'set', amount: 6600 },
+            stackable: false,
+            active: true,
+          },
+          named,
+          'it',
+        ),
+      ),
+    ).toBe(
+      'Ombrellone + 2 lettini, Gazebo · 66,00 € al giorno · periodi: Ferragosto · fascia: pomeriggio',
     );
   });
 });

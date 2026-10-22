@@ -40,6 +40,7 @@ import {
   CalendarCheckIcon,
   EyeIcon,
   ListOrderedIcon,
+  ShieldCheckIcon,
   Table2Icon,
 } from 'lucide-react';
 import { useId, type ComponentProps, type ReactNode } from 'react';
@@ -114,6 +115,7 @@ export function PricingNav({
       label: t('nav.coverage'),
       icon: CalendarCheckIcon,
     },
+    { to: '/e/$establishmentId/policies', label: t('nav.policies'), icon: ShieldCheckIcon },
   ] as const;
   return (
     <nav

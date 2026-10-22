@@ -15,7 +15,8 @@
     "rules": "Grille tarifaire",
     "simulator": "Simulateur",
     "matrix": "Matrice",
-    "coverage": "Couverture"
+    "coverage": "Couverture",
+    "policies": "Politiques"
   },
   "tabs": {
     "label": "Sections de la grille",

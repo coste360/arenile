@@ -113,6 +113,10 @@ export function PoliciesPage() {
   const items = list.data ?? [];
   const [tab, setTab] = useState<'season' | 'default'>('season');
 
+  const periodName = (code: string) => {
+    const rp = sel.periods.find((x) => x.code === code);
+    return (rp && data.name(rp.name)) || code;
+  };
   const scopeParts = (p: BookingPolicy): string[] => {
     const parts: string[] = [];
     for (const c of p.scope.channels ?? []) parts.push(t(`pricing:channels.${c}`));
@@ -123,7 +127,7 @@ export function PoliciesPage() {
       const pk = data.packs.find((x) => x.id === id || x.code === id);
       parts.push(pk ? data.name(pk.name) || pk.code : id);
     }
-    parts.push(...(p.scope.rate_periods ?? []));
+    for (const code of p.scope.rate_periods ?? []) parts.push(periodName(code));
     return parts;
   };
 
@@ -248,6 +252,7 @@ export function PoliciesPage() {
               columns={columns}
               data={items}
               getRowId={(p) => p.id}
+              searchable
               initialSorting={[{ id: 'priority', desc: true }]}
               empty={<EmptyState icon={ShieldCheckIcon} title={t('empty')} bordered={false} />}
             />
@@ -270,7 +275,7 @@ export function PoliciesPage() {
             locale={ctx.uiLocale}
             zones={data.zones}
             packs={data.packs.map((p) => ({ id: p.id, name: data.name(p.name) || p.code }))}
-            periods={sel.periods.map((p) => p.code)}
+            periods={sel.periods.map((p) => ({ code: p.code, name: periodName(p.code) }))}
             catalog={{
               packs: data.packs.map((p) => ({
                 id: p.id,
@@ -322,7 +327,7 @@ function PolicyForm(p: {
   locale: string;
   zones: { id: string; name: string }[];
   packs: { id: string; name: string }[];
-  periods: string[];
+  periods: { code: string; name: string }[];
   catalog: ExampleCatalog;
   onDone: () => void;
 }) {
@@ -396,7 +401,7 @@ function PolicyForm(p: {
               control={control}
               name="scope_periods"
               label={t('scope.periods')}
-              options={p.periods.map((c) => ({ value: c, label: c }))}
+              options={p.periods.map((rp) => ({ value: rp.code, label: rp.name }))}
             />
           )}
         </div>

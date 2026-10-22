@@ -15,7 +15,8 @@
     "rules": "Preisliste",
     "simulator": "Simulator",
     "matrix": "Matrix",
-    "coverage": "Abdeckung"
+    "coverage": "Abdeckung",
+    "policies": "Richtlinien"
   },
   "tabs": {
     "label": "Bereiche der Preisliste",

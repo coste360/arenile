@@ -472,10 +472,17 @@ function RatePeriodsCard({
 function PeriodTimeline({ season, periods }: { season: Season; periods: RatePeriod[] }) {
   const { t, i18n } = useTranslation('configuration');
   const segments = timelineSegments(season, periods);
-  const label = (seg: { periodId: string; code: string; width: number }) => {
+  const nameOf = (seg: { periodId: string; code: string }) => {
     const p = periods.find((x) => x.id === seg.periodId);
-    const name = p ? localize(p.name, i18n.language || 'it', 'it') : '';
-    return name && seg.width > 12 ? name : seg.code;
+    return (p && localize(p.name, i18n.language || 'it', 'it')) || seg.code;
+  };
+  // Full name when the segment is wide enough, a short form on narrow ones, nothing
+  // (tooltip and aria-label still carry the name) when there is no room at all.
+  const label = (seg: { periodId: string; code: string; width: number }) => {
+    const name = nameOf(seg);
+    if (seg.width > 12) return name;
+    if (seg.width > 5) return name.length > 4 ? `${name.slice(0, 3)}.` : name;
+    return '';
   };
   const total = daysBetween(season.opens_on, season.closes_on) + 1;
   const ticks = monthStarts(season.opens_on, season.closes_on);
@@ -499,12 +506,12 @@ function PeriodTimeline({ season, periods }: { season: Season; periods: RatePeri
             key={`${seg.periodId}-${seg.from}`}
             role="listitem"
             aria-label={t('periods.segmentAria', {
-              code: seg.code,
+              code: nameOf(seg),
               from: formatIsoDate(seg.from),
               to: formatIsoDate(seg.to),
             })}
           >
-            <title>{`${seg.code}: ${range(seg.from, seg.to)}`}</title>
+            <title>{`${nameOf(seg)}: ${range(seg.from, seg.to)}`}</title>
             <rect
               x={`${seg.left}%`}
               width={`${seg.width}%`}
@@ -513,7 +520,7 @@ function PeriodTimeline({ season, periods }: { season: Season; periods: RatePeri
               className="stroke-background"
               strokeWidth="1"
             />
-            {seg.width > 5 && (
+            {label(seg) && (
               <text
                 x={`${seg.left + seg.width / 2}%`}
                 y="50%"

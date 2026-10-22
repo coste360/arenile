@@ -37,6 +37,7 @@ import { formatCents } from '@arenile/shared/lib/money';
 import { fixedPrices, type FixedPrice } from './api';
 import { EuroTextInput, FormErrorAlert, TextRow } from './kit';
 import type { PricingTabProps } from './RulesTab';
+import { localize } from '../configuration/lib/i18nText';
 import {
   FIXED_FORMULAS,
   fixedSchema,
@@ -73,6 +74,8 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
   );
   const categories = [...new Set([...p.categories, ...items.map((f) => f.price_category)])].sort();
   const columns = ['', ...p.periods.map((rp) => rp.code)];
+  const periodName = (code: string) =>
+    localize(p.periods.find((rp) => rp.code === code)?.name ?? {}, p.locale, 'it') || code;
   const countByFormula = (f: FixedFormula) => items.filter((x) => x.formula === f).length;
   const packName = (id: string) => {
     const x = p.packs.find((pk) => pk.id === id);
@@ -154,7 +157,7 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
                     <TableHead className="pl-6">{t('fields.price_category')}</TableHead>
                     {columns.map((c) => (
                       <TableHead key={c || 'any'} className="text-right">
-                        {c || t('fixed.anyPeriod')}
+                        {c ? periodName(c) : t('fixed.anyPeriod')}
                       </TableHead>
                     ))}
                   </TableRow>
@@ -162,12 +165,13 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
                 <TableBody>
                   {categories.map((cat) => (
                     <TableRow key={cat}>
-                      <TableHead scope="row" className="pl-6 font-mono text-xs">
-                        {cat}
+                      <TableHead scope="row" className="pl-6">
+                        <span className="block font-medium">{p.categoryNames[cat] ?? cat}</span>
+                        <span className="font-mono text-xs text-muted-foreground">{cat}</span>
                       </TableHead>
                       {columns.map((period) => {
                         const f = byCell.get(fixedCellKey(pack.id, formula, cat, period));
-                        const where = `${packName(pack.id)} · ${t(`formulas.${formula}`)} · ${cat} · ${period || t('fixed.anyPeriod')}`;
+                        const where = `${packName(pack.id)} · ${t(`formulas.${formula}`)} · ${p.categoryNames[cat] ?? cat} · ${period ? periodName(period) : t('fixed.anyPeriod')}`;
                         return (
                           <TableCell key={period || 'any'} className="p-1 text-right">
                             {p.readOnly ? (
@@ -317,7 +321,10 @@ function FixedForm(
                     onChange={field.onChange}
                     options={[
                       { value: '', label: t('fixed.anyPeriod') },
-                      ...p.periods.map((rp) => ({ value: rp.code, label: rp.code })),
+                      ...p.periods.map((rp) => ({
+                        value: rp.code,
+                        label: localize(rp.name, p.locale, 'it') || rp.code,
+                      })),
                     ]}
                   />
                 </FormControl>

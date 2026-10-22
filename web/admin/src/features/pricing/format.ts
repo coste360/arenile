@@ -34,6 +34,10 @@ export interface SummaryNames {
   agreement?: (id: string) => string;
   /** Pack or extra name by id (rule targets). */
   target?: (id: string) => string;
+  /** Rate period name by code (falls back to the code). */
+  period?: (code: string) => string;
+  /** Price category label by code (zone names using it; falls back to the code). */
+  category?: (code: string) => string;
 }
 
 /** Lower-cases a label inside a sentence, except in German where nouns keep their capital. */
@@ -73,7 +77,11 @@ export function conditionParts(
   const parts: string[] = [];
   const list = (xs: string[]) => xs.join(', ');
   if (c.rate_periods?.length) {
-    parts.push(t('pricing:conditionSummary.periods', { list: list(c.rate_periods) }));
+    parts.push(
+      t('pricing:conditionSummary.periods', {
+        list: list(c.rate_periods.map(names.period ?? ((code) => code))),
+      }),
+    );
   }
   if (c.date_ranges?.length) {
     parts.push(
@@ -114,7 +122,11 @@ export function conditionParts(
     );
   }
   if (c.price_categories?.length) {
-    parts.push(t('pricing:conditionSummary.categories', { list: list(c.price_categories) }));
+    parts.push(
+      t('pricing:conditionSummary.categories', {
+        list: list(c.price_categories.map(names.category ?? ((code) => code))),
+      }),
+    );
   }
   if (c.zone_ids?.length) {
     parts.push(t('pricing:conditionSummary.zones', { list: list(c.zone_ids.map(names.zone)) }));
@@ -194,4 +206,24 @@ export function describeRule(
   }
   if (!r.active) out += ` ${t('pricing:ruleSummary.inactive')}`;
   return out;
+}
+
+/**
+ * Compact row summary for the rule tables, where the stage is already the
+ * section title: "Base, Comfort, Gazebo · 66,00 € al giorno · periodi: Ferragosto, fascia: pomeriggio".
+ */
+export function summarizeRule(
+  t: TFunction,
+  r: RuleLike,
+  names: SummaryNames,
+  locale = 'it',
+): string {
+  const targets = r.target_ids?.length
+    ? r.target_ids.map(names.target ?? ((id) => id.slice(0, 8))).join(', ')
+    : t(`pricing:targets.all_${r.target_type}`);
+  return [
+    targets,
+    describeAction(t, r.action, locale),
+    describeConditions(t, r.conditions, names, locale),
+  ].join(' · ');
 }

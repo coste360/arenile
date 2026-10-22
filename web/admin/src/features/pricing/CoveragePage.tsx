@@ -223,6 +223,7 @@ export function CoveragePage() {
             packs={data.packs}
             extras={data.extras}
             zones={data.zones}
+            categoryNames={data.categoryNames}
             name={data.name}
             locale={ctx.uiLocale}
             initial={prefill}

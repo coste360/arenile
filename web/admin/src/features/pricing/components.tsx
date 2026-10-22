@@ -31,6 +31,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { RatePeriod } from '../configuration/api/resources';
 import { errorAt } from '../configuration/lib/aria';
+import { localize } from '../configuration/lib/i18nText';
 import {
   EditorSection,
   EuroTextInput,
@@ -191,7 +192,7 @@ export function ConditionFields<T extends FieldValues>({
   /** Offered as a condition only for rules (not inside promo codes or agreements). */
   agreements?: { id: string; name: string }[];
 }) {
-  const { t } = useTranslation('pricing');
+  const { t, i18n } = useTranslation('pricing');
   // The forms extend ConditionValues; the editor only touches those fields.
   const c = control as unknown as Control<ConditionValues>;
   const ranges = useFieldArray({ control: c, name: 'date_ranges' });
@@ -223,7 +224,10 @@ export function ConditionFields<T extends FieldValues>({
             multi(
               'rate_periods',
               t('fields.rate_periods'),
-              periods.map((p) => ({ value: p.code, label: p.code })),
+              periods.map((p) => ({
+                value: p.code,
+                label: localize(p.name, i18n.language, 'it') || p.code,
+              })),
             )}
           {multi(
             'formulas',

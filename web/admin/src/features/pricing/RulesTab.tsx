@@ -34,7 +34,7 @@ import type { Extra, Pack, RatePeriod } from '../configuration/api/resources';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
 import { priceRules, type PriceRule } from './api';
 import { ActionFields, ConditionFields } from './components';
-import { describeRule, type SummaryNames } from './format';
+import { describeRule, summarizeRule, type SummaryNames } from './format';
 import { EditorSection, FormErrorAlert, SwitchRow, TextRow } from './kit';
 import { STAGE_TONE, sortRules, useSummaryNames } from './ruleNames';
 import {
@@ -56,6 +56,8 @@ export interface PricingTabProps {
   packs: Pack[];
   extras: Extra[];
   zones: { id: string; name: string }[];
+  /** Readable label of each price category code (zone names). */
+  categoryNames: Record<string, string>;
   name: (text: Record<string, string>) => string;
   locale: string;
 }
@@ -68,16 +70,22 @@ export function RulesTab(p: PricingTabProps) {
   const editor = useEditor<PriceRule>();
   const summary = useSummaryNames(p);
   const items = list.data ?? [];
+  // Priority only matters when rules differ in it.
+  const samePriority = items.every((r) => r.priority === items[0]?.priority);
 
   const columns: ColumnDef<PriceRule>[] = [
-    {
-      accessorKey: 'priority',
-      meta: { label: t('fields.priority') },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('fields.priority')} />
-      ),
-      cell: ({ row }) => <span className="tabular-nums">{row.original.priority}</span>,
-    },
+    ...(samePriority
+      ? []
+      : [
+          {
+            accessorKey: 'priority',
+            meta: { label: t('fields.priority') },
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title={t('fields.priority')} />
+            ),
+            cell: ({ row }) => <span className="tabular-nums">{row.original.priority}</span>,
+          } satisfies ColumnDef<PriceRule>,
+        ]),
     {
       accessorKey: 'name',
       meta: { label: t('fields.name') },
@@ -104,7 +112,7 @@ export function RulesTab(p: PricingTabProps) {
       header: t('rules.summary'),
       cell: ({ row }) => (
         <p className="max-w-xl text-sm whitespace-normal text-muted-foreground">
-          {describeRule(t, row.original, summary.names(row.original.target_type), p.locale)}
+          {summarizeRule(t, row.original, summary.names(row.original.target_type), p.locale)}
         </p>
       ),
     },
@@ -133,15 +141,14 @@ export function RulesTab(p: PricingTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">{t('rules.description')}</p>
-        {!p.readOnly && (
+      {!p.readOnly && (
+        <div className="flex justify-end">
           <Button onClick={editor.create}>
             <PlusIcon aria-hidden="true" />
             {t('rules.add')}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
       <QueryState
         isLoading={list.isPending}
         error={list.error}

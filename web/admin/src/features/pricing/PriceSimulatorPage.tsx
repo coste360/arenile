@@ -99,15 +99,27 @@ export function PriceSimulatorPage() {
           packs={data.packs
             .filter((p) => p.active)
             .map((p) => ({ value: p.id, label: data.name(p.name) || p.code }))}
-          zones={data.rawZones.map((z) => ({
-            value: z.id,
-            label: `${data.name(z.name) || z.code} (${z.price_category})`,
-          }))}
+          zones={data.rawZones.map((z) => ({ value: z.id, label: data.name(z.name) || z.code }))}
           extras={data.extras
             .filter((x) => x.active)
             .map((x) => ({ value: x.id, label: data.name(x.name) || x.code }))}
           locale={ctx.uiLocale}
           disabled={!ctx.canConfigure}
+          names={{
+            // The engine reports packs, zones and periods by code; show their names.
+            pack: (code) => {
+              const p = data.packs.find((x) => x.code === code);
+              return (p && data.name(p.name)) || code;
+            },
+            zone: (code) => {
+              const z = data.rawZones.find((x) => x.code === code);
+              return (z && data.name(z.name)) || code;
+            },
+            period: (code) => {
+              const rp = sel.periods.find((x) => x.code === code);
+              return (rp && data.name(rp.name)) || code;
+            },
+          }}
         />
       )}
     </PricingLayout>
@@ -175,6 +187,12 @@ function DateRow({
   );
 }
 
+interface CodeNames {
+  pack: (code: string) => string;
+  zone: (code: string) => string;
+  period: (code: string) => string;
+}
+
 function Simulator(p: {
   establishmentId: string;
   seasonId: string;
@@ -184,6 +202,7 @@ function Simulator(p: {
   extras: Option[];
   locale: string;
   disabled: boolean;
+  names: CodeNames;
 }) {
   const { t } = useTranslation('pricing');
   const simulate = useSimulate(p.establishmentId);
@@ -224,114 +243,116 @@ function Simulator(p: {
   }
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[22rem_1fr]">
-      <Card className="lg:sticky lg:top-4">
-        <CardHeader>
+      <Card className="gap-0 py-0 lg:sticky lg:top-18 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+        <CardHeader className="py-4">
           <CardTitle>{t('simulator.formLabel')}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           <Form {...form}>
-            <form
-              noValidate
-              onSubmit={submit}
-              className="space-y-4"
-              aria-label={t('simulator.formLabel')}
-            >
-              <FormErrorAlert state={alert} />
-              <SelectRow
-                control={control}
-                name="pack_id"
-                label={t('fields.pack')}
-                options={p.packs}
-              />
-              <SelectRow
-                control={control}
-                name="zone_id"
-                label={t('fields.zone')}
-                options={p.zones}
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <DateRow control={control} name="starts_on" label={t('fields.starts_on')} />
-                <DateRow control={control} name="ends_on" label={t('fields.ends_on')} />
+            <form noValidate onSubmit={submit} aria-label={t('simulator.formLabel')}>
+              <div className="space-y-4 px-6 pb-4">
+                <FormErrorAlert state={alert} />
                 <SelectRow
                   control={control}
-                  name="formula"
-                  label={t('fields.formula')}
-                  options={FORMULAS.map((f) => ({ value: f, label: t(`formulas.${f}`) }))}
+                  name="pack_id"
+                  label={t('fields.pack')}
+                  options={p.packs}
                 />
                 <SelectRow
                   control={control}
-                  name="slots"
-                  label={t('fields.slots')}
-                  options={(['FULL', 'AM', 'PM'] as const).map((s) => ({
-                    value: s,
-                    label: t(`slots.${s}`),
-                  }))}
+                  name="zone_id"
+                  label={t('fields.zone')}
+                  options={p.zones}
                 />
-                <SelectRow
-                  control={control}
-                  name="channel"
-                  label={t('fields.channel')}
-                  options={CHANNELS.map((c) => ({ value: c, label: t(`channels.${c}`) }))}
-                />
-                <div className="col-span-2">
-                  <DateRow control={control} name="today" label={t('fields.today')} clearable />
-                </div>
-              </div>
-              <Separator />
-              {p.extras.length > 0 && (
-                <div className="grid grid-cols-[1fr_5rem] gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <DateRow control={control} name="starts_on" label={t('fields.starts_on')} />
+                  <DateRow control={control} name="ends_on" label={t('fields.ends_on')} />
                   <SelectRow
                     control={control}
-                    name="extra_id"
-                    label={t('fields.extra')}
-                    options={[{ value: '', label: t('simulator.noExtra') }, ...p.extras]}
+                    name="formula"
+                    label={t('fields.formula')}
+                    options={FORMULAS.map((f) => ({ value: f, label: t(`formulas.${f}`) }))}
                   />
+                  <SelectRow
+                    control={control}
+                    name="slots"
+                    label={t('fields.slots')}
+                    options={(['FULL', 'AM', 'PM'] as const).map((s) => ({
+                      value: s,
+                      label: t(`slots.${s}`),
+                    }))}
+                  />
+                  <SelectRow
+                    control={control}
+                    name="channel"
+                    label={t('fields.channel')}
+                    options={CHANNELS.map((c) => ({ value: c, label: t(`channels.${c}`) }))}
+                  />
+                  <DateRow control={control} name="today" label={t('fields.today')} clearable />
+                </div>
+                <Separator />
+                {p.extras.length > 0 && (
+                  <div className="grid grid-cols-[1fr_5rem] gap-3">
+                    <SelectRow
+                      control={control}
+                      name="extra_id"
+                      label={t('fields.extra')}
+                      options={[{ value: '', label: t('simulator.noExtra') }, ...p.extras]}
+                    />
+                    <TextRow
+                      control={control}
+                      name="extra_qty"
+                      label={t('fields.quantity')}
+                      inputProps={{ inputMode: 'numeric' }}
+                    />
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-3">
                   <TextRow
                     control={control}
-                    name="extra_qty"
-                    label={t('fields.quantity')}
-                    inputProps={{ inputMode: 'numeric' }}
+                    name="promo_code"
+                    label={t('fields.promo_code')}
+                    inputProps={{
+                      list: 'sim-promo-options',
+                      autoComplete: 'off',
+                      className: 'font-mono',
+                    }}
+                  />
+                  <datalist id="sim-promo-options">
+                    {(promos.data ?? []).map((x) => (
+                      <option key={x.id} value={x.code} />
+                    ))}
+                  </datalist>
+                  <SelectRow
+                    control={control}
+                    name="agreement_id"
+                    label={t('fields.agreement')}
+                    options={[
+                      { value: '', label: t('simulator.noAgreement') },
+                      ...(agreementList.data ?? []).map((a) => ({ value: a.id, label: a.name })),
+                    ]}
                   />
                 </div>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <TextRow
-                  control={control}
-                  name="promo_code"
-                  label={t('fields.promo_code')}
-                  inputProps={{
-                    list: 'sim-promo-options',
-                    autoComplete: 'off',
-                    className: 'font-mono',
-                  }}
-                />
-                <datalist id="sim-promo-options">
-                  {(promos.data ?? []).map((x) => (
-                    <option key={x.id} value={x.code} />
-                  ))}
-                </datalist>
-                <SelectRow
-                  control={control}
-                  name="agreement_id"
-                  label={t('fields.agreement')}
-                  options={[
-                    { value: '', label: t('simulator.noAgreement') },
-                    ...(agreementList.data ?? []).map((a) => ({ value: a.id, label: a.name })),
-                  ]}
-                />
+                <TextRow control={control} name="customer_tags" label={t('fields.customer_tags')} />
               </div>
-              <TextRow control={control} name="customer_tags" label={t('fields.customer_tags')} />
-              <Button type="submit" className="w-full" disabled={p.disabled || simulate.isPending}>
-                {simulate.isPending ? <Spinner /> : <CalculatorIcon aria-hidden="true" />}
-                {t('simulator.run')}
-              </Button>
+              {/* Always in view: the form is long and the card scrolls on its own. */}
+              <div className="sticky bottom-0 border-t bg-card px-6 py-4">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={p.disabled || simulate.isPending}
+                >
+                  {simulate.isPending ? <Spinner /> : <CalculatorIcon aria-hidden="true" />}
+                  {t('simulator.run')}
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
       </Card>
       <div aria-live="polite">
         {result ? (
-          <Breakdown result={result} locale={p.locale} ruleName={ruleName} />
+          <Breakdown result={result} locale={p.locale} ruleName={ruleName} names={p.names} />
         ) : (
           <EmptyState icon={ReceiptTextIcon} title={t('simulator.hint')} />
         )}
@@ -375,10 +396,12 @@ function Breakdown({
   result,
   locale,
   ruleName,
+  names,
 }: {
   result: SimulateResult;
   locale: string;
   ruleName: (id: string) => string;
+  names: CodeNames;
 }) {
   const { t } = useTranslation('pricing');
   const [showAll, setShowAll] = useState(false);
@@ -399,7 +422,14 @@ function Breakdown({
         <Stat label={t('simulator.total')} testId="simulator-total">
           {money(b.total)}
         </Stat>
-        <Stat label={t('simulator.deposit')}>{money(result.deposit_due)}</Stat>
+        {/* With a policy refusal the booking cannot be made: no amount to pay. */}
+        <Stat label={t('simulator.deposit')}>
+          {result.policy.violations.length > 0 ? (
+            <span className="text-muted-foreground">—</span>
+          ) : (
+            money(result.deposit_due)
+          )}
+        </Stat>
         {b.rounding !== 0 && <Stat label={t('simulator.rounding')}>{money(b.rounding)}</Stat>}
       </div>
 
@@ -449,7 +479,7 @@ function Breakdown({
           <Card key={`${line.pack}-${i}`}>
             <CardHeader>
               <CardTitle className="text-base">
-                {t('simulator.line', { pack: line.pack, zone: line.zone })}
+                {t('simulator.line', { pack: names.pack(line.pack), zone: names.zone(line.zone) })}
                 {line.spot ? ` · ${line.spot}` : ''}
               </CardTitle>
               <CardDescription>
@@ -464,7 +494,7 @@ function Breakdown({
                 <div className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
                   <span>
                     {t('simulator.fixed', { formula: t(`formulas.${line.fixed.formula}`) })}
-                    {line.fixed.rate_period ? ` · ${line.fixed.rate_period}` : ''}
+                    {line.fixed.rate_period ? ` · ${names.period(line.fixed.rate_period)}` : ''}
                   </span>
                   <span className="tabular-nums">{money(line.fixed.amount)}</span>
                 </div>
@@ -489,25 +519,25 @@ function Breakdown({
                       <CardContent className="space-y-3 px-4">
                         <ol
                           aria-label={t('simulator.applied')}
-                          className="space-y-2 border-l pl-4 text-sm"
+                          className="space-y-2 border-l pl-3 text-sm"
                         >
-                          <li className="relative">
+                          <li className="flex items-start gap-2">
                             <span
                               aria-hidden="true"
-                              className="absolute top-1.5 -left-[1.3rem] size-2 rounded-full bg-muted-foreground"
+                              className="mt-1.5 size-2 shrink-0 rounded-full bg-muted-foreground"
                             />
-                            <span className="flex justify-between gap-2">
+                            <span className="flex flex-1 justify-between gap-2">
                               <span className="text-muted-foreground">{t('simulator.base')}</span>
                               <span className="tabular-nums">{money(d.base)}</span>
                             </span>
                           </li>
                           {d.applied.map((a, k) => (
-                            <li key={`${a.rule}-${k}`} className="relative">
+                            <li key={`${a.rule}-${k}`} className="flex items-start gap-2">
                               <span
                                 aria-hidden="true"
-                                className="absolute top-1.5 -left-[1.3rem] size-2 rounded-full bg-primary"
+                                className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
                               />
-                              <span className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="flex flex-1 flex-wrap items-center justify-between gap-2">
                                 <span className="flex flex-wrap items-center gap-1.5">
                                   <StatusBadge tone={STAGE_TONE[a.stage]} dot={false}>
                                     {t(`stages.${a.stage}`)}

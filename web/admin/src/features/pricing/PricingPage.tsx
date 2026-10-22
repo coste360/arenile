@@ -33,6 +33,7 @@ export function PricingPage() {
     packs: data.packs,
     extras: data.extras,
     zones: data.zones,
+    categoryNames: data.categoryNames,
     name: data.name,
     locale: ctx.uiLocale,
   };
@@ -70,7 +71,7 @@ export function PricingPage() {
       )}
       {common && (
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="gap-4">
-          <TabsList aria-label={t('tabs.label')}>
+          <TabsList variant="line" aria-label={t('tabs.label')}>
             {TABS.map((id) => (
               <TabsTrigger key={id} value={id}>
                 {t(`tabs.${id}`)}

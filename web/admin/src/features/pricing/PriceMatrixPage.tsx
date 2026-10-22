@@ -21,7 +21,13 @@ import { useSelectedSeason } from './season';
 import { usePricingData } from './usePricingData';
 
 type Cell = PriceMatrix['cells'][number];
-type MatrixRow = { id: string; pack: string; category: string; cells: Record<string, Cell> };
+type MatrixRow = {
+  id: string;
+  pack: string;
+  category: string;
+  categoryName: string;
+  cells: Record<string, Cell>;
+};
 
 /**
  * Matrice di listino (spec 8.7): price categories × rate periods for every
@@ -128,6 +134,7 @@ export function PriceMatrixPage() {
             const p = sel.periods.find((x) => x.code === code);
             return (p && localize(p.name, ctx.uiLocale, 'it')) || code;
           }}
+          categoryName={(code) => data.categoryNames[code] ?? code}
         />
       )}
     </PricingLayout>
@@ -158,10 +165,12 @@ function MatrixTable({
   matrix,
   packName,
   periodName,
+  categoryName,
 }: {
   matrix: PriceMatrix;
   packName: (id: string) => string;
   periodName: (code: string) => string;
+  categoryName: (code: string) => string;
 }) {
   const { t } = useTranslation('pricing');
   if (matrix.pack_ids.length === 0 || matrix.categories.length === 0) {
@@ -172,6 +181,7 @@ function MatrixTable({
       id: `${pack}\u0000${category}`,
       pack: packName(pack),
       category,
+      categoryName: categoryName(category),
       cells: Object.fromEntries(
         matrix.cells
           .filter((c) => c.pack_id === pack && c.price_category === category)
@@ -188,12 +198,18 @@ function MatrixTable({
       cell: ({ row }) => <span className="font-medium">{row.original.pack}</span>,
     },
     {
-      accessorKey: 'category',
+      accessorKey: 'categoryName',
       meta: { label: t('fields.price_category') },
       enableHiding: false,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('fields.price_category')} />
       ),
+      cell: ({ row }) => row.original.categoryName,
+    },
+    {
+      accessorKey: 'category',
+      meta: { label: t('fields.code') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.code')} />,
       cell: ({ row }) => (
         <Badge variant="secondary" className="font-mono">
           {row.original.category}
@@ -232,6 +248,7 @@ function MatrixTable({
         getRowId={(r) => r.id}
         pageSize={0}
         searchable
+        initialColumnVisibility={{ category: false }}
         className="[&_[data-slot=table-container]]:max-h-[70vh] [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-muted"
       />
       <p className="text-xs text-muted-foreground">{t('matrix.note')}</p>
