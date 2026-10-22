@@ -83,7 +83,7 @@ describe('SeasonsPage', () => {
     });
     await user.click(await screen.findByRole('button', { name: 'Nuovo periodo' }));
     const dialog = await screen.findByRole('dialog');
-    await user.type(within(dialog).getByLabelText('Italiano (predefinita)'), 'Bassa');
+    await user.type(within(dialog).getByLabelText('Nome'), 'Bassa');
     // Default range = whole season: overlaps "high".
     await user.click(within(dialog).getByRole('button', { name: 'Salva' }));
     expect(
@@ -93,9 +93,12 @@ describe('SeasonsPage', () => {
     ).toBeInTheDocument();
     expect(callsTo(fetchMock, 'POST', `${API}/rate-periods`)).toHaveLength(0);
 
-    const to = within(dialog).getByLabelText('Al');
-    await user.clear(to);
-    await user.type(to, '2027-06-30');
+    // Shorten the range in the shared DateRangePicker: 1 May – 30 June.
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Intervallo 1: 01/05/2027 – 30/09/2027' }),
+    );
+    await user.click(await screen.findByRole('button', { name: /30 giugno 2027/i }));
+    await user.keyboard('{Escape}');
     await user.click(within(dialog).getByRole('button', { name: 'Salva' }));
     expect(
       await within(dialog).findByText('Il periodo si sovrappone a "peak".'),
@@ -252,10 +255,7 @@ describe('CatalogPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Nuovo pack' }));
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('Codice'), 'base');
-    await user.type(
-      within(dialog).getAllByLabelText('Italiano (predefinita)')[0] as HTMLElement,
-      'Base',
-    );
+    await user.type(within(dialog).getByLabelText('Nome'), 'Base');
     await user.click(within(dialog).getByRole('button', { name: 'Ombrellone' }));
     await user.click(within(dialog).getByRole('button', { name: 'Lettino' }));
     const qty = within(dialog).getByLabelText('Quantità di Lettino');
@@ -315,7 +315,9 @@ describe('TeamPage (owner only)', () => {
         return json(200, MEMBER);
       },
     });
-    await user.selectOptions(await screen.findByLabelText('Ruolo di Anna Cassa'), 'manager');
+    await user.click(await screen.findByRole('combobox', { name: 'Ruolo di Anna Cassa' }));
+    await user.click(await screen.findByRole('option', { name: 'Gestore' }));
+    await waitFor(() => expect(bodies.patch).toHaveLength(1));
     await user.click(screen.getByRole('button', { name: 'Disattiva Anna Cassa' }));
     await waitFor(() => expect(bodies.patch).toHaveLength(2));
     expect(bodies.patch).toEqual([{ role: 'manager', scope: 'establishment' }, { active: false }]);
@@ -379,5 +381,34 @@ describe('NewEstablishmentPage', () => {
     expect(
       await screen.findByText('Solo i proprietari possono creare nuovi stabilimenti.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('ClosuresPage', () => {
+  it('creates one closure per day picked in the multi-select calendar', async () => {
+    const user = userEvent.setup();
+    const bodies: unknown[] = [];
+    const { fetchMock } = renderApp(`/admin/e/${EST_ID}/config/closures`, {
+      ...baseRoutes('manager'),
+      [`GET ${API}/closure-days`]: () => list([]),
+      [`POST ${API}/closure-days`]: async (req) => {
+        const body = (await req.json()) as Record<string, unknown>;
+        bodies.push(body);
+        return json(201, { id: `c${bodies.length}`, version: 1, ...body, ...ts });
+      },
+    });
+    await user.click(await screen.findByRole('button', { name: 'Nuova chiusura' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: / 10 \p{L}+ \d{4}$/iu }));
+    await user.click(within(dialog).getByRole('button', { name: / 12 \p{L}+ \d{4}$/iu }));
+    await user.click(within(dialog).getByLabelText('Mattina'));
+    await user.click(within(dialog).getByRole('button', { name: 'Crea 2 chiusure' }));
+    await waitFor(() => expect(bodies).toHaveLength(2));
+    expect(bodies[0]).toMatchObject({ slots: ['PM'] });
+    expect((bodies[0] as { date: string }).date < (bodies[1] as { date: string }).date).toBe(true);
+    expect(
+      callsTo(fetchMock, 'POST', `${API}/closure-days`)[0]?.headers.get('Idempotency-Key'),
+    ).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

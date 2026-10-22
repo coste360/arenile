@@ -20,13 +20,14 @@ describe('EstablishmentSettingsPage', () => {
         return json(200, establishment({ ...body, version }), { ETag: `"${version}"` });
       },
     });
-    const general = await screen.findByRole('region', { name: 'Dati generali e lingue' });
+    const general = await screen.findByRole('region', { name: 'Dati generali' });
     const name = within(general).getByLabelText('Nome');
     await user.clear(name);
     await user.type(name, 'Lido Nuovo');
     await user.click(within(general).getByRole('button', { name: 'Salva' }));
-    expect(await within(general).findByText('Salvato')).toBeInTheDocument();
+    expect(await screen.findByText('Modifiche salvate')).toBeInTheDocument();
 
+    await user.click(screen.getByRole('tab', { name: 'Prezzi e IVA' }));
     const pricing = screen.getByRole('region', { name: 'Impostazioni dei prezzi' });
     const vat = within(pricing).getByLabelText('IVA predefinita');
     await user.clear(vat);
@@ -40,9 +41,10 @@ describe('EstablishmentSettingsPage', () => {
     expect(bodies[0]).toMatchObject({
       name: 'Lido Nuovo',
       slug: 'lido-demo',
-      enabled_locales: ['it', 'en'],
       address: { city: 'Gaeta', country: 'IT' },
     });
+    // The "Generale" tab does not send the languages edited in the "Lingue" tab.
+    expect(bodies[0]).not.toHaveProperty('enabled_locales');
     // Our own save moved the base version forward: no false conflict.
     expect(second?.headers.get('If-Match')).toBe('"4"');
     expect(bodies[1]).toEqual({
@@ -56,6 +58,7 @@ describe('EstablishmentSettingsPage', () => {
   it('validates with zod before calling the API', async () => {
     const user = userEvent.setup();
     const { fetchMock } = renderApp(PATH, baseRoutes('owner'));
+    await user.click(await screen.findByRole('tab', { name: 'Prezzi e IVA' }));
     const pricing = await screen.findByRole('region', { name: 'Impostazioni dei prezzi' });
     const factor = within(pricing).getByLabelText('Fattore mezza giornata');
     await user.clear(factor);
@@ -80,7 +83,7 @@ describe('EstablishmentSettingsPage', () => {
           ],
         }),
     });
-    const general = await screen.findByRole('region', { name: 'Dati generali e lingue' });
+    const general = await screen.findByRole('region', { name: 'Dati generali' });
     await user.click(within(general).getByRole('button', { name: 'Salva' }));
     expect(
       await within(general).findByText('Indirizzo già usato da un altro stabilimento.'),
@@ -105,6 +108,7 @@ describe('EstablishmentSettingsPage', () => {
           ? json(200, establishment({ version: serverVersion + 1 }))
           : problem(412, 'version_conflict', { current_version: serverVersion }),
     });
+    await user.click(await screen.findByRole('tab', { name: 'Pagina pubblica' }));
     const theme = await screen.findByRole('region', { name: 'Tema della pagina pubblica' });
     // Someone else saves meanwhile.
     serverVersion = 7;
@@ -121,6 +125,7 @@ describe('EstablishmentSettingsPage', () => {
   it('shows a live theme preview with contrast warnings', async () => {
     const user = userEvent.setup();
     renderApp(PATH, baseRoutes('owner'));
+    await user.click(await screen.findByRole('tab', { name: 'Pagina pubblica' }));
     const theme = await screen.findByRole('region', { name: 'Tema della pagina pubblica' });
     const primary = within(theme).getByLabelText('Colore principale');
     await user.clear(primary);
@@ -128,14 +133,14 @@ describe('EstablishmentSettingsPage', () => {
     expect(
       within(theme).getByText(/Contrasto del colore principale sul bianco/),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('theme-preview').style.getPropertyValue('--ar-primary')).toBe(
-      '#ffff00',
-    );
+    expect(screen.getByTestId('theme-preview').style.getPropertyValue('--primary')).toBe('#ffff00');
   });
 
   it('shows the embed snippets of spec 12.1', async () => {
+    const user = userEvent.setup();
     renderApp(PATH, baseRoutes('owner'));
-    const section = await screen.findByRole('region', { name: 'Pagina pubblica e incorporamento' });
+    await user.click(await screen.findByRole('tab', { name: 'Pagina pubblica' }));
+    const section = await screen.findByRole('region', { name: 'Codice da incorporare' });
     const script = within(section).getByLabelText(/Codice consigliato/) as HTMLTextAreaElement;
     expect(script.value).toContain('<div data-arenile="lido-demo" data-lang="it"></div>');
     expect(script.value).toContain('/embed.js" async></script>');

@@ -8,7 +8,7 @@ export function StepDetails({ ctx, dispatch, version, onVersion }: StepProps) {
   if (!ctx.establishment) return null;
   return (
     <div className="space-y-3">
-      <p className="text-sm text-slate-600">{t('details.intro')}</p>
+      <p className="text-sm text-muted-foreground">{t('details.intro')}</p>
       <GeneralSection
         establishment={ctx.establishment}
         version={version}

@@ -1,7 +1,23 @@
-import { Button, Input } from '@arenile/shared/ui';
+import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
+import { Button } from '@arenile/shared/ui/button';
+import { FieldDescription } from '@arenile/shared/ui/field';
+import { Skeleton } from '@arenile/shared/ui/skeleton';
+import { Spinner } from '@arenile/shared/ui/spinner';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@arenile/shared/ui/table';
+import { parseEuroToCents, formatCents } from '@arenile/shared/lib/money';
+import { MoneyInput } from '@arenile/shared/ui/patterns';
+import { CircleCheckIcon, TriangleAlertIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useController, useForm, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ratePeriods, seasons, zones, type RatePeriod } from '../../configuration/api/resources';
 import { FieldError } from '../../configuration/components/fields';
@@ -9,9 +25,13 @@ import { FormAlert } from '../../configuration/components/FormAlert';
 import { errorAt, fieldAria } from '../../configuration/lib/aria';
 import { problemToFormState, type FormAlertState } from '../../configuration/lib/formErrors';
 import { localize } from '../../configuration/lib/i18nText';
-import { formatCents } from '../../configuration/lib/money';
 import { useQuickPricelist, type QuickPricelistResult } from '../api';
-import { emptyGrid, pricelistSchema, toQuickPricelistRequest } from '../wizard.schema';
+import {
+  emptyGrid,
+  pricelistSchema,
+  toQuickPricelistRequest,
+  type PricelistValues,
+} from '../wizard.schema';
 import type { StepProps } from './types';
 
 /**
@@ -36,7 +56,13 @@ export function StepPricelist(props: StepProps) {
   );
 
   if (seasonList.isPending || zoneList.isPending || (season && periodList.isPending)) {
-    return <p className="text-sm text-slate-600">{t('loading')}</p>;
+    return (
+      <div role="status" className="space-y-3">
+        <span className="sr-only">{t('loading')}</span>
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
   }
   const categories = [
     ...new Set([
@@ -50,16 +76,16 @@ export function StepPricelist(props: StepProps) {
   if (!season || categories.length === 0 || periods.length === 0) {
     return (
       <div className="space-y-3">
-        <p
-          role="status"
-          className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
-        >
-          {!season
-            ? t('pricelist.noSeason')
-            : categories.length === 0
-              ? t('pricelist.noZones')
-              : t('pricelist.noPeriods')}
-        </p>
+        <Alert role="status" className="border-warning/50 bg-warning/10">
+          <TriangleAlertIcon aria-hidden="true" />
+          <AlertDescription className="text-foreground">
+            {!season
+              ? t('pricelist.noSeason')
+              : categories.length === 0
+                ? t('pricelist.noZones')
+                : t('pricelist.noPeriods')}
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
@@ -97,9 +123,9 @@ function PricelistGrid({
     defaultValues: emptyGrid(categories.length, periods.length),
   });
   const {
-    register,
     formState: { errors },
   } = form;
+  const periodName = (p: RatePeriod) => localize(p.name, ctx.uiLocale, ctx.defaultLocale) || p.code;
   const currency = ctx.establishment?.currency ?? 'EUR';
 
   const submit = form.handleSubmit(async (values) => {
@@ -120,86 +146,107 @@ function PricelistGrid({
   if (result) {
     return (
       <div className="space-y-4">
-        <div
-          role="status"
-          className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
-        >
-          {t('pricelist.created', { count: result.rules.length, replaced: result.replaced })}
-        </div>
+        <Alert role="status" className="border-success/40 bg-success/10">
+          <CircleCheckIcon aria-hidden="true" className="text-success" />
+          <AlertDescription className="text-foreground">
+            {t('pricelist.created', { count: result.rules.length, replaced: result.replaced })}
+          </AlertDescription>
+        </Alert>
         <Button onClick={() => dispatch({ type: 'complete' })}>{t('continue')}</Button>
       </div>
     );
   }
 
   return (
-    <form noValidate onSubmit={submit} className="space-y-4">
-      <p className="text-sm text-slate-600">{t('pricelist.intro', { year: seasonYear })}</p>
+    <form noValidate onSubmit={submit} className="space-y-5">
+      <p className="text-sm text-muted-foreground">{t('pricelist.intro', { year: seasonYear })}</p>
       <FormAlert state={alert} />
-      <div className="overflow-x-auto">
-        <table className="text-sm">
-          <caption className="sr-only">{t('pricelist.caption', { currency })}</caption>
-          <thead>
-            <tr>
-              <th scope="col" className="px-2 py-1 text-left font-medium text-slate-600">
-                {t('pricelist.category')}
-              </th>
+      <div className="overflow-x-auto rounded-lg border">
+        <Table>
+          <TableCaption className="sr-only">{t('pricelist.caption', { currency })}</TableCaption>
+          <TableHeader className="bg-muted/50">
+            <TableRow className="hover:bg-transparent">
+              <TableHead scope="col">{t('pricelist.category')}</TableHead>
               {periods.map((p) => (
-                <th key={p.id} scope="col" className="px-2 py-1 text-left font-medium">
+                <TableHead key={p.id} scope="col">
                   <span className="inline-flex items-center gap-1.5">
-                    <span
-                      aria-hidden="true"
-                      className="h-3 w-3 rounded"
-                      style={{ backgroundColor: p.color }}
-                    />
-                    {localize(p.name, ctx.uiLocale, ctx.defaultLocale) || p.code}
+                    <svg viewBox="0 0 12 12" aria-hidden="true" className="size-3">
+                      <rect width="12" height="12" rx="3" fill={p.color} />
+                    </svg>
+                    {periodName(p)}
                   </span>
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {categories.map((cat, i) => (
-              <tr key={cat}>
-                <th scope="row" className="px-2 py-1 text-left font-mono text-xs font-medium">
+              <TableRow key={cat}>
+                <TableHead scope="row" className="font-mono text-xs">
                   {cat}
-                </th>
-                {periods.map((p, j) => {
-                  const id = `pl-${i}-${j}`;
-                  const err = errorAt(errors, `cells.${i}.${j}`);
-                  return (
-                    <td key={p.id} className="px-2 py-1 align-top">
-                      <div className="flex items-center gap-1">
-                        <span aria-hidden="true" className="text-slate-500">
-                          €
-                        </span>
-                        <Input
-                          {...fieldAria(id, err)}
-                          aria-label={t('pricelist.cellAria', {
-                            category: cat,
-                            period: localize(p.name, ctx.uiLocale, ctx.defaultLocale) || p.code,
-                          })}
-                          className="w-24"
-                          inputMode="decimal"
-                          placeholder="0,00"
-                          {...register(`cells.${i}.${j}`)}
-                        />
-                      </div>
-                      <FieldError id={id} error={err} />
-                    </td>
-                  );
-                })}
-              </tr>
+                </TableHead>
+                {periods.map((p, j) => (
+                  <TableCell key={p.id} className="align-top">
+                    <PriceCell
+                      control={form.control}
+                      row={i}
+                      col={j}
+                      label={t('pricelist.cellAria', { category: cat, period: periodName(p) })}
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       <FieldError id="pl-cells" error={errorAt(errors, 'cells')} />
-      <p className="text-xs text-slate-600">
-        {t('pricelist.hint', { example: formatCents(2500, ctx.uiLocale, currency) })}
-      </p>
+      <FieldDescription>
+        {t('pricelist.hint', { example: formatCents(2500, currency) })}
+      </FieldDescription>
       <Button type="submit" disabled={quick.isPending}>
+        {quick.isPending && <Spinner />}
         {quick.isPending ? t('pricelist.generating') : t('pricelist.generate')}
       </Button>
     </form>
+  );
+}
+
+/**
+ * Shared MoneyInput in a grid cell. The form keeps the text as typed (so an
+ * invalid amount stays flagged after blur) and the zod schema parses it to
+ * integer cents with the same exact parser.
+ */
+function PriceCell({
+  control,
+  row,
+  col,
+  label,
+}: {
+  control: Control<PricelistValues>;
+  row: number;
+  col: number;
+  label: string;
+}) {
+  const {
+    field: { ref, ...field },
+    fieldState,
+  } = useController({ control, name: `cells.${row}.${col}` });
+  const id = `pl-${row}-${col}`;
+  return (
+    <div className="space-y-1">
+      <MoneyInput
+        {...fieldAria(id, fieldState.error)}
+        ref={ref}
+        aria-label={label}
+        placeholder="0,00"
+        className="w-32"
+        value={field.value.trim() === '' ? null : parseEuroToCents(field.value)}
+        onChange={() => {}}
+        onInput={(e) => field.onChange(e.currentTarget.value)}
+        onBlur={field.onBlur}
+      />
+      <FieldError id={id} error={fieldState.error} />
+    </div>
   );
 }

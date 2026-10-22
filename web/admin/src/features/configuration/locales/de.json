@@ -37,7 +37,8 @@
     "outsideSeason": "Der Zeitraum muss innerhalb der Saisondaten liegen",
     "slotRequired": "Mindestens einen Zeitraum wählen",
     "duplicate": "Komponente bereits vorhanden",
-    "passwordLength": "Das Passwort muss mindestens 12 Zeichen haben"
+    "passwordLength": "Das Passwort muss mindestens 12 Zeichen haben",
+    "dateRequired": "Wählen Sie mindestens einen Tag"
   },
   "establishment": {
     "title": "Betrieb",
@@ -47,7 +48,10 @@
       "title": "Allgemeine Daten und Sprachen",
       "contacts": "Kontakte und Adresse",
       "slugHint": "Adresse der öffentlichen Seite: /b/<adresse>. Eine Änderung macht bereits geteilte Links ungültig.",
-      "currency": "Währung: {{currency}} (nicht änderbar)."
+      "currency": "Währung: {{currency}} (nicht änderbar).",
+      "titleDetails": "Allgemeine Daten",
+      "languages": "Sprachen",
+      "languagesHint": "Aktive Sprachen werden auf der öffentlichen Seite und in E-Mails angeboten; fehlende Texte verwenden die Standardsprache."
     },
     "publicPage": {
       "title": "Öffentliche Seite und Einbettung",
@@ -71,6 +75,13 @@
       "concession_ref": "Referenz der Strandkonzession",
       "booking_enabled": "Online-Buchungen aktiv",
       "allowed_embed_origins": "Zur Einbettung berechtigte Websites"
+    },
+    "tabsLabel": "Einstellungsbereiche",
+    "tabs": {
+      "general": "Allgemein",
+      "languages": "Sprachen",
+      "publicPage": "Öffentliche Seite",
+      "pricing": "Preise und MwSt."
     }
   },
   "embed": {
@@ -79,7 +90,10 @@
     "iframe": "Alternativ: iframe",
     "copy": "Kopieren",
     "copied": "Kopiert",
-    "hint": "Fügen Sie den Code in Ihre Website ein; die Domain muss zu den berechtigten Websites gehören."
+    "hint": "Fügen Sie den Code in Ihre Website ein; die Domain muss zu den berechtigten Websites gehören.",
+    "open": "Öffnen",
+    "title": "Einbettungscode",
+    "description": "Direkter Link und Code zum Einfügen in Ihre Website."
   },
   "theme": {
     "title": "Design der öffentlichen Seite",
@@ -114,7 +128,8 @@
       "primaryText": "Kontrast der Hauptfarbe auf Weiß {{ratio}}:1 (mindestens 4,5:1): Links und Texte verwenden automatisch {{corrected}}.",
       "accentContrast": "Die Akzentfarbe hat {{ratio}}:1 Kontrast auf Weiß (mindestens 3:1): ausgewählte Plätze sind eventuell schlecht sichtbar.",
       "similarColors": "Haupt- und Akzentfarbe sind zu ähnlich: wählen Sie deutlicher unterschiedliche Farben."
-    }
+    },
+    "previewBadge": "Verfügbar"
   },
   "pricingSettings": {
     "title": "Preiseinstellungen",
@@ -195,7 +210,13 @@
       "mid": "Zwischensaison",
       "high": "Hauptsaison",
       "peak": "Spitze"
-    }
+    },
+    "days": "Tage",
+    "views": "Periodenansicht",
+    "viewTimeline": "Zeitachse",
+    "viewCalendar": "Kalender",
+    "presetsLabel": "Typische Zeiträume",
+    "rangeAria": "Zeitraum {{index}}"
   },
   "holidays": {
     "title": "Lokale Feiertage",
@@ -226,12 +247,25 @@
     "fields": {
       "date": "Datum",
       "slots": "Zeiträume",
-      "reason": "Grund"
+      "reason": "Grund",
+      "dates": "Tage"
     },
     "slot": {
       "AM": "Vormittag",
       "PM": "Nachmittag"
-    }
+    },
+    "calendarTitle": "Kalender {{year}}",
+    "calendarHint": "Tippen Sie auf einen Tag, um eine Schließung hinzuzufügen oder zu bearbeiten.",
+    "calendarHintReadOnly": "Schließtage sind hervorgehoben.",
+    "legend": "Legende",
+    "oneSlot": "Ein Zeitfenster",
+    "createdMany_one": "{{count}} Schließung erstellt",
+    "createdMany_other": "{{count}} Schließungen erstellt",
+    "selectedDays_one": "{{count}} Tag ausgewählt: {{list}}",
+    "selectedDays_other": "{{count}} Tage ausgewählt: {{list}}",
+    "pickDays": "Wählen Sie einen oder mehrere Tage im Kalender.",
+    "createMany_one": "{{count}} Schließung erstellen",
+    "createMany_other": "{{count}} Schließungen erstellen"
   },
   "zones": {
     "title": "Zonen",
@@ -304,7 +338,9 @@
       "component_code": "Komponente",
       "zone_id": "Mengenzone",
       "capacity": "Kapazität"
-    }
+    },
+    "overrideRange": "Daten der Änderung {{index}}",
+    "overrideCapacity": "Kapazität der Änderung {{index}}"
   },
   "catalog": {
     "title": "Katalog",
@@ -372,7 +408,10 @@
     "attachTo": {
       "line": "Platz",
       "booking": "Buchung"
-    }
+    },
+    "flags": "Status",
+    "decrease": "{{name}} verringern",
+    "increase": "{{name}} erhöhen"
   },
   "formulas": {
     "half_day": "Halber Tag",
@@ -438,5 +477,11 @@
       "establishment": "Dieser Betrieb",
       "organization": "Gesamte Organisation"
     }
-  }
+  },
+  "toast": {
+    "saved": "Änderungen gespeichert",
+    "created": "Erstellt",
+    "deleted": "Gelöscht"
+  },
+  "unsaved": "Nicht gespeicherte Änderungen"
 }

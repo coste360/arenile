@@ -56,7 +56,8 @@
         "name": "Empty",
         "description": "Nothing prefilled: you configure everything by hand."
       }
-    }
+    },
+    "current": "Current"
   },
   "rows": {
     "intro": "Chosen template: {{template}}. Set how many rows and spots per row: spots are created on the map with automatic numbering.",
@@ -76,7 +77,8 @@
     "alreadyConfigured": "This establishment already has a season or a map ({{spots}} spots): you can continue or edit them in the editor.",
     "openMap": "Open the map",
     "openMaps": "Go to maps",
-    "mapName": "Beach"
+    "mapName": "Beach",
+    "dates": "Opening and closing"
   },
   "pricelist": {
     "intro": "Daily price per category (row) and period of the {{year}} season. Base rules are generated automatically; half day and long formulas are configured in Prices.",
@@ -111,6 +113,8 @@
     "maps": "Edit the map",
     "pricing": "Review prices",
     "settings": "Establishment settings",
-    "restart": "Reopen the guided setup"
-  }
+    "restart": "Reopen the guided setup",
+    "summary": "Summary"
+  },
+  "stepCounter": "Step {{n}} of {{total}}"
 }

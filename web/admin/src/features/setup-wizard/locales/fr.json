@@ -56,7 +56,8 @@
         "name": "Vide",
         "description": "Rien de prérempli : vous configurez tout à la main."
       }
-    }
+    },
+    "current": "Actuel"
   },
   "rows": {
     "intro": "Modèle choisi : {{template}}. Indiquez le nombre de rangées et de places par rangée : les emplacements sont créés sur le plan avec une numérotation automatique.",
@@ -76,7 +77,8 @@
     "alreadyConfigured": "Cet établissement a déjà une saison ou un plan ({{spots}} emplacements) : vous pouvez continuer ou les modifier dans l'éditeur.",
     "openMap": "Ouvrir le plan",
     "openMaps": "Aller aux plans",
-    "mapName": "Plage"
+    "mapName": "Plage",
+    "dates": "Ouverture et fermeture"
   },
   "pricelist": {
     "intro": "Prix journalier par catégorie (rangée) et période de la saison {{year}}. Les règles de base sont générées automatiquement ; demi-journée et durées longues se configurent dans Prix.",
@@ -111,6 +113,8 @@
     "maps": "Modifier le plan",
     "pricing": "Revoir les prix",
     "settings": "Paramètres de l'établissement",
-    "restart": "Rouvrir la configuration guidée"
-  }
+    "restart": "Rouvrir la configuration guidée",
+    "summary": "Récapitulatif"
+  },
+  "stepCounter": "Étape {{n}} sur {{total}}"
 }

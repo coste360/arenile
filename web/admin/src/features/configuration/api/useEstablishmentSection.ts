@@ -1,5 +1,7 @@
 import type { Establishment } from '@arenile/shared/api';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import type { FieldValues, UseFormReturn } from 'react-hook-form';
 import { problemToFormState, type FormAlertState } from '../lib/formErrors';
 import {
@@ -35,6 +37,7 @@ export function useEstablishmentSection<T extends FieldValues>(
   const update = useUpdateEstablishment(establishmentId);
   const [alert, setAlert] = useState<FormAlertState | null>(null);
   const [saved, setSaved] = useState(false);
+  const { t } = useTranslation('configuration');
 
   const submit = form.handleSubmit(async (values) => {
     const current = query.data;
@@ -46,6 +49,7 @@ export function useEstablishmentSection<T extends FieldValues>(
       onVersion(est.version);
       form.reset(toValues(est));
       setSaved(true);
+      toast.success(t('toast.saved'));
       onSaved?.();
     } catch (err) {
       setAlert(

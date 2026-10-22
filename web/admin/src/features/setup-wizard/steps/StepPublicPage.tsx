@@ -1,4 +1,5 @@
-import { Button } from '@arenile/shared/ui';
+import { Button } from '@arenile/shared/ui/button';
+import { ArrowRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PublicPageSection, ThemeSection } from '../../configuration/pages/EstablishmentSections';
 import type { StepProps } from './types';
@@ -10,10 +11,13 @@ export function StepPublicPage({ ctx, dispatch, version, onVersion }: StepProps)
   const props = { establishment: ctx.establishment, version, onVersion, readOnly: false };
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-600">{t('publicPage.intro')}</p>
+      <p className="text-sm text-muted-foreground">{t('publicPage.intro')}</p>
       <PublicPageSection {...props} />
       <ThemeSection {...props} />
-      <Button onClick={() => dispatch({ type: 'complete' })}>{t('continue')}</Button>
+      <Button onClick={() => dispatch({ type: 'complete' })}>
+        {t('continue')}
+        <ArrowRightIcon aria-hidden="true" />
+      </Button>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import type { ApiProblem } from '@arenile/shared/api';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import type { FieldValues, UseFormReturn } from 'react-hook-form';
 import { problemToFormState, type FormAlertState } from '../lib/formErrors';
 import type { UpdateVars, Versioned } from './resource';
@@ -43,6 +45,7 @@ export function useCrudSubmit<T extends FieldValues, TItem extends Versioned, TI
 ) {
   const { form, item, create, update, toInput, onDone, aliases } = opts;
   const [alert, setAlert] = useState<FormAlertState | null>(null);
+  const { t } = useTranslation('configuration');
   const submit = form.handleSubmit(async (values) => {
     setAlert(null);
     try {
@@ -50,6 +53,7 @@ export function useCrudSubmit<T extends FieldValues, TItem extends Versioned, TI
       const saved = item
         ? await update.mutateAsync({ id: item.id, version: item.version, input })
         : await create.mutateAsync(input);
+      toast.success(t(item ? 'toast.saved' : 'toast.created'));
       onDone(saved);
     } catch (err) {
       setAlert(

@@ -9,7 +9,12 @@ import {
   toPackInput,
   toPackValues,
 } from './catalog.schema';
-import { closureSchema, toClosureInput } from './closures.schema';
+import {
+  closureBatchSchema,
+  closureSchema,
+  toClosureInput,
+  toClosureInputs,
+} from './closures.schema';
 import {
   generalPatch,
   generalSchema,
@@ -282,6 +287,22 @@ describe('closures', () => {
       date: '2027-08-10',
       slots: ['AM', 'PM'],
     });
+  });
+
+  it('creates one closure per selected day, sorted and deduplicated', () => {
+    expect(closureBatchSchema.safeParse({ dates: [], slots: ['AM'], reason: '' }).success).toBe(
+      false,
+    );
+    expect(
+      toClosureInputs({
+        dates: ['2027-08-11', '2027-08-10', '2027-08-11'],
+        slots: ['PM'],
+        reason: 'Allerta meteo',
+      }),
+    ).toEqual([
+      { date: '2027-08-10', slots: ['PM'], reason: 'Allerta meteo' },
+      { date: '2027-08-11', slots: ['PM'], reason: 'Allerta meteo' },
+    ]);
   });
 });
 

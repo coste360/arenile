@@ -1,5 +1,11 @@
-import { resolveTheme, themeToCssVars, type Theme } from '@arenile/shared/theme';
-import type { CSSProperties } from 'react';
+import { applyTheme, resolveTheme, type Theme } from '@arenile/shared/theme';
+import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
+import { Badge } from '@arenile/shared/ui/badge';
+import { Button } from '@arenile/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/card';
+import { cn } from '@arenile/shared/lib/utils';
+import { TriangleAlertIcon, UmbrellaIcon } from 'lucide-react';
+import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { themeWarnings } from '../lib/publicPage';
 
@@ -11,64 +17,70 @@ export interface ThemePreviewProps {
 }
 
 /**
- * Live preview of the public page theme (spec 12.5): the same CSS variables
- * the booking page applies, on a miniature of its header, map and summary.
+ * Live preview of the public page theme (spec 12.5): the same shadcn CSS
+ * variables the booking page writes with applyTheme(), scoped to a miniature
+ * of its header, map and summary built with the same components.
  */
 export function ThemePreview({ theme, name, intro }: ThemePreviewProps) {
   const { t } = useTranslation('configuration');
   const resolved = resolveTheme(theme);
-  const style = {
-    ...themeToCssVars(resolved),
-    fontFamily: resolved.fontFamily,
-  } as CSSProperties;
-  const spots = Array.from({ length: 12 }, (_, i) => i);
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (ref.current) applyTheme(resolved, ref.current);
+  });
+  const spots = Array.from({ length: 18 }, (_, i) => i);
   return (
-    <figure className="space-y-2">
-      <figcaption className="text-sm font-medium text-slate-800">{t('theme.preview')}</figcaption>
-      <div
+    <figure className="space-y-2 lg:sticky lg:top-4">
+      <figcaption className="text-sm font-medium">{t('theme.preview')}</figcaption>
+      <Card
+        ref={ref}
         data-testid="theme-preview"
-        style={style}
-        className="overflow-hidden rounded-[var(--ar-radius)] border border-slate-200 bg-white text-slate-900 shadow-sm"
+        className="gap-0 overflow-hidden py-0 font-sans shadow-md"
       >
-        <div className="flex items-center gap-2 bg-[var(--ar-primary)] px-3 py-2 text-[var(--ar-primary-foreground)]">
+        <CardHeader className="flex flex-row items-center gap-2 bg-primary px-4 py-3 text-primary-foreground">
           {resolved.logoUrl ? (
             <img src={resolved.logoUrl} alt="" className="h-6 w-auto" />
           ) : (
-            <span
-              aria-hidden="true"
-              className="inline-block h-6 w-6 rounded-full bg-[var(--ar-primary-foreground)] opacity-30"
-            />
+            <UmbrellaIcon aria-hidden="true" className="size-5 opacity-80" />
           )}
-          <span className="font-semibold">{name}</span>
-        </div>
-        <div className="space-y-3 p-3">
-          <p className="text-sm">{intro || t('theme.previewIntro')}</p>
-          <div className="grid grid-cols-6 gap-1.5" aria-hidden="true">
-            {spots.map((i) => (
-              <span
-                key={i}
-                className={`flex h-6 items-center justify-center rounded-[var(--ar-radius)] text-[10px] ${
-                  i === 4
-                    ? 'bg-[var(--ar-accent)] text-[var(--ar-accent-foreground)]'
-                    : i % 5 === 0
-                      ? 'bg-slate-300 text-slate-700'
-                      : 'border border-[var(--ar-primary)] text-[var(--ar-primary-on-surface)]'
-                }`}
-              >
-                {resolved.showPricesOnMap && i % 5 !== 0 ? '€' : ''}
-              </span>
-            ))}
+          <CardTitle className="text-base">{name}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 p-4">
+          <p className="text-sm text-muted-foreground">{intro || t('theme.previewIntro')}</p>
+          <div className="rounded-lg bg-map-sand/40 p-2" aria-hidden="true">
+            <div className="grid grid-cols-6 gap-1.5">
+              {spots.map((i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    'flex h-7 items-center justify-center rounded-md text-[10px] font-medium',
+                    i === 7
+                      ? 'bg-highlight text-highlight-foreground ring-2 ring-primary'
+                      : i % 5 === 0
+                        ? 'bg-muted text-muted-foreground'
+                        : 'border border-primary bg-background text-primary-on-surface',
+                  )}
+                >
+                  {resolved.showPricesOnMap && i % 5 !== 0 ? '€' : ''}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <a className="text-sm text-[var(--ar-primary-on-surface)] underline" href="#preview">
-              {t('theme.previewLink')}
-            </a>
-            <span className="inline-flex h-8 items-center rounded-[var(--ar-radius)] bg-[var(--ar-primary)] px-3 text-sm font-medium text-[var(--ar-primary-foreground)]">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-highlight text-highlight-foreground">
+                {t('theme.previewBadge')}
+              </Badge>
+              <span className="text-sm text-primary-on-surface underline underline-offset-2">
+                {t('theme.previewLink')}
+              </span>
+            </div>
+            <Button size="sm" tabIndex={-1} aria-hidden="true">
               {t('theme.previewButton')}
-            </span>
+            </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </figure>
   );
 }
@@ -79,18 +91,20 @@ export function ThemeWarnings({ theme }: { theme: Theme }) {
   const warnings = themeWarnings(theme);
   if (warnings.length === 0) return null;
   return (
-    <ul
-      role="status"
-      className="space-y-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
-    >
-      {warnings.map((w) => (
-        <li key={w.key}>
-          {t(`theme.warnings.${w.key}`, {
-            ratio: w.ratio.toFixed(2),
-            corrected: w.corrected ?? '',
-          })}
-        </li>
-      ))}
-    </ul>
+    <Alert role="status" className="border-warning/50 bg-warning/10">
+      <TriangleAlertIcon aria-hidden="true" />
+      <AlertDescription className="text-foreground">
+        <ul className="space-y-1">
+          {warnings.map((w) => (
+            <li key={w.key}>
+              {t(`theme.warnings.${w.key}`, {
+                ratio: w.ratio.toFixed(2),
+                corrected: w.corrected ?? '',
+              })}
+            </li>
+          ))}
+        </ul>
+      </AlertDescription>
+    </Alert>
   );
 }

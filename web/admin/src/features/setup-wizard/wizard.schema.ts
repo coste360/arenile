@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { euroToCents } from '../configuration/lib/money';
+import { parseEuroToCents as euroToCents } from '@arenile/shared/lib/money';
 import { V, intField, isCalendarDate, isoDate } from '../configuration/lib/validation';
 import type { ApplyTemplateRequest, QuickPricelistRequest } from './api';
 import type { TemplateCode } from './progress';

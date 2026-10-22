@@ -56,7 +56,8 @@
         "name": "Leer",
         "description": "Nichts vorausgefüllt: Sie richten alles selbst ein."
       }
-    }
+    },
+    "current": "Aktuell"
   },
   "rows": {
     "intro": "Gewählte Vorlage: {{template}}. Geben Sie die Anzahl der Reihen und Plätze pro Reihe an: Die Plätze werden mit automatischer Nummerierung auf der Karte angelegt.",
@@ -76,7 +77,8 @@
     "alreadyConfigured": "Dieser Betrieb hat bereits eine Saison oder eine Karte ({{spots}} Plätze): Sie können weitermachen oder sie im Editor bearbeiten.",
     "openMap": "Karte öffnen",
     "openMaps": "Zu den Karten",
-    "mapName": "Strand"
+    "mapName": "Strand",
+    "dates": "Öffnung und Schließung"
   },
   "pricelist": {
     "intro": "Tagespreis je Kategorie (Reihe) und Periode der Saison {{year}}. Die Grundregeln werden automatisch erzeugt; Halbtag und lange Formeln richten Sie unter Preise ein.",
@@ -111,6 +113,8 @@
     "maps": "Karte bearbeiten",
     "pricing": "Preise prüfen",
     "settings": "Betriebseinstellungen",
-    "restart": "Geführte Einrichtung erneut öffnen"
-  }
+    "restart": "Geführte Einrichtung erneut öffnen",
+    "summary": "Zusammenfassung"
+  },
+  "stepCounter": "Schritt {{n}} von {{total}}"
 }

@@ -1,22 +1,42 @@
 import type { Establishment } from '@arenile/shared/api';
+import { Button } from '@arenile/shared/ui/button';
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  Input,
-} from '@arenile/shared/ui';
+} from '@arenile/shared/ui/card';
+import { FieldDescription, FieldSeparator } from '@arenile/shared/ui/field';
+import { Input } from '@arenile/shared/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
+import { Spinner } from '@arenile/shared/ui/spinner';
+import { Textarea } from '@arenile/shared/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Building2Icon,
+  CodeIcon,
+  GlobeIcon,
+  LanguagesIcon,
+  PaletteIcon,
+  ReceiptTextIcon,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useEstablishmentSection } from '../api/useEstablishmentSection';
 import { EmbedSnippet } from '../components/EmbedSnippet';
-import { Checkbox, CheckboxGroup, Field, Select, Textarea } from '../components/fields';
-import { FormAlert, SavedNotice } from '../components/FormAlert';
-import { I18nTextInput } from '../components/I18nTextInput';
+import {
+  BooleanField,
+  Field,
+  I18nTextField,
+  MultiCheck,
+  SelectField,
+  SuffixInput,
+} from '../components/fields';
+import { FormAlert } from '../components/FormAlert';
 import { ThemePreview, ThemeWarnings } from '../components/ThemePreview';
 import { fieldAria } from '../lib/aria';
 import { orderedLocales } from '../lib/i18nText';
@@ -41,6 +61,7 @@ import {
   toPricingSettingsValues,
   toPublicPageValues,
   toThemeValues,
+  type GeneralValues,
 } from './establishment.schema';
 
 export interface SectionProps {
@@ -54,24 +75,35 @@ export interface SectionProps {
   submitLabel?: string;
 }
 
+/** Card with an accessible region name; the save row goes in the footer. */
 function SectionCard({
   id,
+  icon: Icon,
   title,
   description,
   children,
+  footer,
 }: {
   id: string;
+  icon: LucideIcon;
   title: string;
   description?: string;
   children: ReactNode;
+  footer?: ReactNode;
 }) {
   return (
     <Card aria-labelledby={`${id}-title`} role="region">
-      <CardHeader>
-        <CardTitle id={`${id}-title`}>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+      <CardHeader className="flex flex-row items-start gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-on-surface">
+          <Icon aria-hidden="true" className="size-4" />
+        </span>
+        <div className="space-y-1.5">
+          <CardTitle id={`${id}-title`}>{title}</CardTitle>
+          {description && <CardDescription>{description}</CardDescription>}
+        </div>
       </CardHeader>
       <CardContent>{children}</CardContent>
+      {footer}
     </Card>
   );
 }
@@ -79,27 +111,47 @@ function SectionCard({
 function SaveRow({
   readOnly,
   pending,
-  saved,
+  dirty,
   label,
 }: {
   readOnly: boolean;
   pending: boolean;
-  saved: boolean;
+  dirty?: boolean;
   label?: string;
 }) {
   const { t } = useTranslation();
   if (readOnly) return null;
   return (
-    <div className="flex items-center gap-3 pt-2">
+    <CardFooter className="justify-end gap-3 border-t">
+      {dirty && (
+        <span className="mr-auto text-sm text-muted-foreground">
+          {t('unsaved', { ns: 'configuration' })}
+        </span>
+      )}
       <Button type="submit" disabled={pending}>
-        {pending ? t('common.actions.saving') : (label ?? t('common.actions.save'))}
+        {pending && <Spinner />}
+        {label ?? t('common.actions.save')}
       </Button>
-      <SavedNotice show={saved} />
-    </div>
+    </CardFooter>
   );
 }
 
 // ---------------------------------------------------------------------------
+
+type GeneralPart = 'all' | 'details' | 'languages';
+const LANGUAGE_KEYS = ['default_locale', 'enabled_locales'] as const;
+
+/** Only the fields shown by `part` are sent, so two tabs never overwrite each other. */
+function partialGeneralPatch(v: GeneralValues, part: GeneralPart) {
+  const patch = generalPatch(v);
+  if (part === 'all') return patch;
+  const out: Record<string, unknown> = {};
+  for (const [k, value] of Object.entries(patch)) {
+    const isLanguage = (LANGUAGE_KEYS as readonly string[]).includes(k);
+    if (isLanguage === (part === 'languages')) out[k] = value;
+  }
+  return out as typeof patch;
+}
 
 export function GeneralSection({
   establishment,
@@ -108,7 +160,8 @@ export function GeneralSection({
   readOnly,
   onSaved,
   submitLabel,
-}: SectionProps) {
+  part = 'all',
+}: SectionProps & { part?: GeneralPart }) {
   const { t } = useTranslation('configuration');
   const form = useForm({
     resolver: zodResolver(generalSchema),
@@ -120,15 +173,20 @@ export function GeneralSection({
     version,
     onVersion,
     onSaved,
-    toPatch: (v) => generalPatch(v),
+    toPatch: (v) => partialGeneralPatch(v, part),
     toValues: toGeneralValues,
     aliases: generalAliases,
   });
   const {
     register,
-    formState: { errors },
+    control,
+    formState: { errors, isDirty },
   } = form;
   const tzs = timezoneOptions(establishment.timezone);
+  const languageOptions = SUPPORTED_LOCALES.map((l) => ({
+    value: l,
+    label: t(`common.languages.${l}`, { ns: 'translation' }),
+  }));
   type TextName =
     | 'name'
     | 'contact_email'
@@ -139,8 +197,16 @@ export function GeneralSection({
     | 'postal_code'
     | 'country'
     | 'concession_ref';
-  const text = (name: TextName, opts: { type?: string; autoComplete?: string } = {}) => (
-    <Field id={`gen-${name}`} label={t(`establishment.fields.${name}`)} error={errors[name]}>
+  const text = (
+    name: TextName,
+    opts: { type?: string; autoComplete?: string; className?: string } = {},
+  ) => (
+    <Field
+      id={`gen-${name}`}
+      label={t(`establishment.fields.${name}`)}
+      error={errors[name]}
+      className={opts.className}
+    >
       <Input
         {...fieldAria(`gen-${name}`, errors[name])}
         disabled={readOnly}
@@ -150,94 +216,105 @@ export function GeneralSection({
       />
     </Field>
   );
-  return (
-    <SectionCard id="general" title={t('establishment.general.title')}>
-      <form noValidate onSubmit={s.submit} className="space-y-4">
-        <FormAlert state={s.alert} onReload={s.reload} />
-        <div className="grid gap-4 sm:grid-cols-2">
-          {text('name')}
-          <Field
-            id="gen-slug"
-            label={t('establishment.fields.slug')}
-            error={errors.slug}
-            hint={t('establishment.general.slugHint')}
-          >
-            <Input
+  const details = (
+    <>
+      <div className="grid gap-5 sm:grid-cols-2">
+        {text('name')}
+        <Field
+          id="gen-slug"
+          label={t('establishment.fields.slug')}
+          error={errors.slug}
+          hint={t('establishment.general.slugHint')}
+        >
+          <InputGroup data-disabled={readOnly || undefined}>
+            <InputGroupAddon>
+              <span className="font-mono text-xs text-muted-foreground">/b/</span>
+            </InputGroupAddon>
+            <InputGroupInput
               {...fieldAria('gen-slug', errors.slug, true)}
               disabled={readOnly}
               {...register('slug')}
             />
-          </Field>
-          <Field
-            id="gen-timezone"
-            label={t('establishment.fields.timezone')}
-            error={errors.timezone}
-          >
-            <Select
-              {...fieldAria('gen-timezone', errors.timezone)}
-              disabled={readOnly}
-              {...register('timezone')}
-            >
-              {tzs.map((tz) => (
-                <option key={tz} value={tz}>
-                  {tz}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field
-            id="gen-default_locale"
-            label={t('establishment.fields.default_locale')}
-            error={errors.default_locale}
-          >
-            <Select
-              {...fieldAria('gen-default_locale', errors.default_locale)}
-              disabled={readOnly}
-              {...register('default_locale')}
-            >
-              {SUPPORTED_LOCALES.map((l) => (
-                <option key={l} value={l}>
-                  {t(`common.languages.${l}`, { ns: 'translation' })}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          </InputGroup>
+        </Field>
+        <SelectField
+          control={control}
+          name="timezone"
+          id="gen-timezone"
+          label={t('establishment.fields.timezone')}
+          disabled={readOnly}
+          options={tzs.map((tz) => ({ value: tz, label: tz }))}
+        />
+      </div>
+      <FieldSeparator className="my-3 *:data-[slot=field-separator-content]:bg-card">
+        {t('establishment.general.contacts')}
+      </FieldSeparator>
+      <div className="grid gap-5 sm:grid-cols-2">
+        {text('contact_email', { type: 'email', autoComplete: 'email' })}
+        {text('contact_phone', { type: 'tel', autoComplete: 'tel' })}
+        {text('street', { autoComplete: 'street-address', className: 'sm:col-span-2' })}
+        {text('city', { autoComplete: 'address-level2' })}
+        {text('province', { autoComplete: 'address-level1' })}
+        {text('postal_code', { autoComplete: 'postal-code' })}
+        {text('country', { autoComplete: 'country' })}
+        {text('concession_ref', { className: 'sm:col-span-2' })}
+      </div>
+      <FieldDescription>
+        {t('establishment.general.currency', { currency: establishment.currency })}
+      </FieldDescription>
+    </>
+  );
+  const languages = (
+    <div className="grid gap-5">
+      <SelectField
+        control={control}
+        name="default_locale"
+        id="gen-default_locale"
+        label={t('establishment.fields.default_locale')}
+        disabled={readOnly}
+        options={languageOptions}
+        className="sm:max-w-xs"
+      />
+      <MultiCheck
+        control={control}
+        name="enabled_locales"
+        id="gen-enabled_locales"
+        legend={t('establishment.fields.enabled_locales')}
+        disabled={readOnly}
+        hint={t('establishment.general.languagesHint')}
+        options={languageOptions}
+      />
+    </div>
+  );
+  const meta = {
+    all: { id: 'general', icon: Building2Icon, title: t('establishment.general.title') },
+    details: { id: 'general', icon: Building2Icon, title: t('establishment.general.titleDetails') },
+    languages: {
+      id: 'languages',
+      icon: LanguagesIcon,
+      title: t('establishment.general.languages'),
+    },
+  }[part];
+  return (
+    <form noValidate onSubmit={s.submit}>
+      <SectionCard
+        {...meta}
+        footer={
+          <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+        }
+      >
+        <div className="space-y-6">
+          <FormAlert state={s.alert} onReload={s.reload} />
+          {part !== 'languages' && details}
+          {part === 'all' && (
+            <FieldSeparator className="my-3 *:data-[slot=field-separator-content]:bg-card">
+              {t('establishment.general.languages')}
+            </FieldSeparator>
+          )}
+          {part !== 'details' && languages}
         </div>
-        <CheckboxGroup
-          id="gen-enabled_locales"
-          legend={t('establishment.fields.enabled_locales')}
-          error={errors.enabled_locales as never}
-        >
-          {SUPPORTED_LOCALES.map((l) => (
-            <Checkbox
-              key={l}
-              id={`gen-locale-${l}`}
-              value={l}
-              disabled={readOnly}
-              label={t(`common.languages.${l}`, { ns: 'translation' })}
-              {...register('enabled_locales')}
-            />
-          ))}
-        </CheckboxGroup>
-        <h3 className="pt-2 text-sm font-semibold text-slate-800">
-          {t('establishment.general.contacts')}
-        </h3>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {text('contact_email', { type: 'email', autoComplete: 'email' })}
-          {text('contact_phone', { type: 'tel', autoComplete: 'tel' })}
-          {text('street', { autoComplete: 'street-address' })}
-          {text('city', { autoComplete: 'address-level2' })}
-          {text('province', { autoComplete: 'address-level1' })}
-          {text('postal_code', { autoComplete: 'postal-code' })}
-          {text('country', { autoComplete: 'country' })}
-          {text('concession_ref')}
-        </div>
-        <p className="text-xs text-slate-600">
-          {t('establishment.general.currency', { currency: establishment.currency })}
-        </p>
-        <SaveRow readOnly={readOnly} pending={s.pending} saved={s.saved} label={submitLabel} />
-      </form>
-    </SectionCard>
+      </SectionCard>
+    </form>
   );
 }
 
@@ -267,43 +344,58 @@ export function PublicPageSection({
   });
   const {
     register,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = form;
   return (
-    <SectionCard
-      id="public-page"
-      title={t('establishment.publicPage.title')}
-      description={t('establishment.publicPage.description')}
-    >
-      <form noValidate onSubmit={s.submit} className="space-y-4">
-        <FormAlert state={s.alert} onReload={s.reload} />
-        <Checkbox
-          id="pp-booking_enabled"
-          disabled={readOnly}
-          label={t('establishment.fields.booking_enabled')}
-          description={t('establishment.publicPage.bookingHint')}
-          {...register('booking_enabled')}
-        />
-        <Field
-          id="pp-origins"
-          label={t('establishment.fields.allowed_embed_origins')}
-          error={errors.allowed_embed_origins}
-          hint={t('establishment.publicPage.originsHint')}
+    <div className="space-y-6">
+      <form noValidate onSubmit={s.submit}>
+        <SectionCard
+          id="public-page"
+          icon={GlobeIcon}
+          title={t('establishment.publicPage.title')}
+          description={t('establishment.publicPage.description')}
+          footer={
+            <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+          }
         >
-          <Textarea
-            {...fieldAria('pp-origins', errors.allowed_embed_origins, true)}
-            disabled={readOnly}
-            placeholder="https://www.lidoesempio.it"
-            rows={3}
-            {...register('allowed_embed_origins')}
-          />
-        </Field>
-        <SaveRow readOnly={readOnly} pending={s.pending} saved={s.saved} label={submitLabel} />
+          <div className="space-y-5">
+            <FormAlert state={s.alert} onReload={s.reload} />
+            <BooleanField
+              control={form.control}
+              name="booking_enabled"
+              id="pp-booking_enabled"
+              variant="switch"
+              disabled={readOnly}
+              label={t('establishment.fields.booking_enabled')}
+              description={t('establishment.publicPage.bookingHint')}
+            />
+            <Field
+              id="pp-origins"
+              label={t('establishment.fields.allowed_embed_origins')}
+              error={errors.allowed_embed_origins}
+              hint={t('establishment.publicPage.originsHint')}
+            >
+              <Textarea
+                {...fieldAria('pp-origins', errors.allowed_embed_origins, true)}
+                disabled={readOnly}
+                placeholder="https://www.lidoesempio.it"
+                rows={3}
+                className="font-mono text-sm"
+                {...register('allowed_embed_origins')}
+              />
+            </Field>
+          </div>
+        </SectionCard>
       </form>
-      <div className="mt-6 border-t border-slate-200 pt-4">
+      <SectionCard
+        id="embed"
+        icon={CodeIcon}
+        title={t('embed.title')}
+        description={t('embed.description')}
+      >
         <EmbedSnippet slug={establishment.slug} lang={establishment.default_locale} />
-      </div>
-    </SectionCard>
+      </SectionCard>
+    </div>
   );
 }
 
@@ -335,17 +427,18 @@ export function ThemeSection({
   const {
     register,
     setValue,
-    formState: { errors },
+    control,
+    formState: { errors, isDirty },
   } = form;
   const values = {
-    logo_url: useWatch({ control: form.control, name: 'logo_url' }),
-    primary_color: useWatch({ control: form.control, name: 'primary_color' }),
-    accent_color: useWatch({ control: form.control, name: 'accent_color' }),
-    font_family: useWatch({ control: form.control, name: 'font_family' }),
-    radius: useWatch({ control: form.control, name: 'radius' }),
-    show_prices_on_map: useWatch({ control: form.control, name: 'show_prices_on_map' }),
-    hide_header_in_embed: useWatch({ control: form.control, name: 'hide_header_in_embed' }),
-    intro: useWatch({ control: form.control, name: 'intro' }),
+    logo_url: useWatch({ control, name: 'logo_url' }),
+    primary_color: useWatch({ control, name: 'primary_color' }),
+    accent_color: useWatch({ control, name: 'accent_color' }),
+    font_family: useWatch({ control, name: 'font_family' }),
+    radius: useWatch({ control, name: 'radius' }),
+    show_prices_on_map: useWatch({ control, name: 'show_prices_on_map' }),
+    hide_header_in_embed: useWatch({ control, name: 'hide_header_in_embed' }),
+    intro: useWatch({ control, name: 'intro' }),
   };
   const locales = orderedLocales(establishment.default_locale, establishment.enabled_locales);
   const previewTheme = {
@@ -359,115 +452,115 @@ export function ThemeSection({
   };
   const colorField = (name: 'primary_color' | 'accent_color') => (
     <Field id={`th-${name}`} label={t(`theme.fields.${name}`)} error={errors[name]}>
-      <div className="flex items-center gap-2">
-        <input
-          type="color"
-          aria-label={t('theme.picker', { field: t(`theme.fields.${name}`) })}
-          disabled={readOnly}
-          value={/^#[0-9a-f]{6}$/i.test(values[name]) ? values[name] : '#000000'}
-          onChange={(e) =>
-            setValue(name, e.target.value, { shouldDirty: true, shouldValidate: true })
-          }
-          className="h-10 w-12 cursor-pointer rounded border border-slate-300 bg-white p-1 disabled:cursor-not-allowed"
-        />
-        <Input
+      <InputGroup data-disabled={readOnly || undefined}>
+        <InputGroupAddon>
+          <input
+            type="color"
+            aria-label={t('theme.picker', { field: t(`theme.fields.${name}`) })}
+            disabled={readOnly}
+            value={/^#[0-9a-f]{6}$/i.test(values[name]) ? values[name] : '#000000'}
+            onChange={(e) =>
+              setValue(name, e.target.value, { shouldDirty: true, shouldValidate: true })
+            }
+            className="size-6 cursor-pointer rounded-md border-0 bg-transparent p-0 disabled:cursor-not-allowed"
+          />
+        </InputGroupAddon>
+        <InputGroupInput
           {...fieldAria(`th-${name}`, errors[name])}
           disabled={readOnly}
-          className="font-mono"
+          className="font-mono uppercase"
           maxLength={7}
           {...register(name)}
         />
-      </div>
+      </InputGroup>
     </Field>
   );
   return (
-    <SectionCard id="theme" title={t('theme.title')} description={t('theme.description')}>
-      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-        <form noValidate onSubmit={s.submit} className="space-y-4">
-          <FormAlert state={s.alert} onReload={s.reload} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            {colorField('primary_color')}
-            {colorField('accent_color')}
-            <Field
-              id="th-font_family"
-              label={t('theme.fields.font_family')}
-              error={errors.font_family}
-            >
-              <Select
-                {...fieldAria('th-font_family', errors.font_family)}
+    <form noValidate onSubmit={s.submit}>
+      <SectionCard
+        id="theme"
+        icon={PaletteIcon}
+        title={t('theme.title')}
+        description={t('theme.description')}
+        footer={
+          <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+        }
+      >
+        <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
+          <div className="space-y-5">
+            <FormAlert state={s.alert} onReload={s.reload} />
+            <div className="grid gap-5 sm:grid-cols-2">
+              {colorField('primary_color')}
+              {colorField('accent_color')}
+              <SelectField
+                control={control}
+                name="font_family"
+                id="th-font_family"
+                label={t('theme.fields.font_family')}
                 disabled={readOnly}
-                {...register('font_family')}
-              >
-                {FONT_FAMILIES.map((f) => (
-                  <option key={f} value={f}>
-                    {t(`theme.fonts.${f}`)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field id="th-radius" label={t('theme.fields.radius')} error={errors.radius}>
-              <Select
-                {...fieldAria('th-radius', errors.radius)}
-                disabled={readOnly}
-                {...register('radius')}
-              >
-                {RADII.map((r) => (
-                  <option key={r} value={r}>
-                    {t(`theme.radii.${r}`)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field
-              id="th-logo_url"
-              label={t('theme.fields.logo_url')}
-              error={errors.logo_url}
-              className="sm:col-span-2"
-            >
-              <Input
-                {...fieldAria('th-logo_url', errors.logo_url)}
-                disabled={readOnly}
-                type="url"
-                placeholder="https://"
-                {...register('logo_url')}
+                options={FONT_FAMILIES.map((f) => ({ value: f, label: t(`theme.fonts.${f}`) }))}
               />
-            </Field>
-          </div>
-          <ThemeWarnings theme={previewTheme} />
-          <div className="space-y-2">
-            <Checkbox
-              id="th-show_prices"
+              <SelectField
+                control={control}
+                name="radius"
+                id="th-radius"
+                label={t('theme.fields.radius')}
+                disabled={readOnly}
+                options={RADII.map((r) => ({ value: r, label: t(`theme.radii.${r}`) }))}
+              />
+              <Field
+                id="th-logo_url"
+                label={t('theme.fields.logo_url')}
+                error={errors.logo_url}
+                className="sm:col-span-2"
+              >
+                <Input
+                  {...fieldAria('th-logo_url', errors.logo_url)}
+                  disabled={readOnly}
+                  type="url"
+                  placeholder="https://"
+                  {...register('logo_url')}
+                />
+              </Field>
+            </div>
+            <ThemeWarnings theme={previewTheme} />
+            <div className="grid gap-3">
+              <BooleanField
+                control={control}
+                name="show_prices_on_map"
+                id="th-show_prices"
+                variant="switch"
+                disabled={readOnly}
+                label={t('theme.fields.show_prices_on_map')}
+              />
+              <BooleanField
+                control={control}
+                name="hide_header_in_embed"
+                id="th-hide_header"
+                variant="switch"
+                disabled={readOnly}
+                label={t('theme.fields.hide_header_in_embed')}
+              />
+            </div>
+            <I18nTextField
+              control={control}
+              name="intro"
+              id="th-intro"
+              label={t('theme.fields.intro')}
+              locales={locales}
+              defaultLocale={establishment.default_locale}
               disabled={readOnly}
-              label={t('theme.fields.show_prices_on_map')}
-              {...register('show_prices_on_map')}
-            />
-            <Checkbox
-              id="th-hide_header"
-              disabled={readOnly}
-              label={t('theme.fields.hide_header_in_embed')}
-              {...register('hide_header_in_embed')}
+              multiline
             />
           </div>
-          <I18nTextInput
-            name="intro"
-            idPrefix="th"
-            label={t('theme.fields.intro')}
-            locales={locales}
-            defaultLocale={establishment.default_locale}
-            register={register}
-            errors={errors}
-            disabled={readOnly}
-            multiline
+          <ThemePreview
+            theme={previewTheme}
+            name={establishment.name}
+            intro={values.intro?.[establishment.default_locale]}
           />
-          <SaveRow readOnly={readOnly} pending={s.pending} saved={s.saved} label={submitLabel} />
-        </form>
-        <ThemePreview
-          theme={previewTheme}
-          name={establishment.name}
-          intro={values.intro?.[establishment.default_locale]}
-        />
-      </div>
-    </SectionCard>
+        </div>
+      </SectionCard>
+    </form>
   );
 }
 
@@ -497,68 +590,63 @@ export function PricingSettingsSection({
   });
   const {
     register,
-    formState: { errors },
+    control,
+    formState: { errors, isDirty },
   } = form;
   return (
-    <SectionCard
-      id="pricing-settings"
-      title={t('pricingSettings.title')}
-      description={t('pricingSettings.description')}
-    >
-      <form noValidate onSubmit={s.submit} className="space-y-4">
-        <FormAlert state={s.alert} onReload={s.reload} />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field
-            id="ps-half_day_factor"
-            label={t('pricingSettings.fields.half_day_factor')}
-            error={errors.half_day_factor}
-            hint={t('pricingSettings.halfDayHint')}
-          >
-            <Input
-              {...fieldAria('ps-half_day_factor', errors.half_day_factor, true)}
-              inputMode="decimal"
-              disabled={readOnly}
-              {...register('half_day_factor')}
-            />
-          </Field>
-          <Field
-            id="ps-rounding"
-            label={t('pricingSettings.fields.rounding')}
-            error={errors.rounding}
-          >
-            <Select
-              {...fieldAria('ps-rounding', errors.rounding)}
-              disabled={readOnly}
-              {...register('rounding')}
+    <form noValidate onSubmit={s.submit}>
+      <SectionCard
+        id="pricing-settings"
+        icon={ReceiptTextIcon}
+        title={t('pricingSettings.title')}
+        description={t('pricingSettings.description')}
+        footer={<SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} />}
+      >
+        <div className="space-y-5">
+          <FormAlert state={s.alert} onReload={s.reload} />
+          <div className="grid gap-5 sm:grid-cols-3">
+            <Field
+              id="ps-half_day_factor"
+              label={t('pricingSettings.fields.half_day_factor')}
+              error={errors.half_day_factor}
+              hint={t('pricingSettings.halfDayHint')}
             >
-              {ROUNDINGS.map((r) => (
-                <option key={r} value={r}>
-                  {t(`pricingSettings.roundings.${r}`)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field
-            id="ps-vat"
-            label={t('pricingSettings.fields.default_vat_rate')}
-            error={errors.default_vat_rate}
-            hint={t('pricingSettings.vatHint')}
-          >
-            <div className="flex items-center gap-2">
-              <Input
+              <SuffixInput
+                {...fieldAria('ps-half_day_factor', errors.half_day_factor, true)}
+                suffix="×"
+                inputMode="decimal"
+                disabled={readOnly}
+                {...register('half_day_factor')}
+              />
+            </Field>
+            <SelectField
+              control={control}
+              name="rounding"
+              id="ps-rounding"
+              label={t('pricingSettings.fields.rounding')}
+              disabled={readOnly}
+              options={ROUNDINGS.map((r) => ({
+                value: r,
+                label: t(`pricingSettings.roundings.${r}`),
+              }))}
+            />
+            <Field
+              id="ps-vat"
+              label={t('pricingSettings.fields.default_vat_rate')}
+              error={errors.default_vat_rate}
+              hint={t('pricingSettings.vatHint')}
+            >
+              <SuffixInput
                 {...fieldAria('ps-vat', errors.default_vat_rate, true)}
+                suffix="%"
                 inputMode="decimal"
                 disabled={readOnly}
                 {...register('default_vat_rate')}
               />
-              <span aria-hidden="true" className="text-sm text-slate-600">
-                %
-              </span>
-            </div>
-          </Field>
+            </Field>
+          </div>
         </div>
-        <SaveRow readOnly={readOnly} pending={s.pending} saved={s.saved} />
-      </form>
-    </SectionCard>
+      </SectionCard>
+    </form>
   );
 }

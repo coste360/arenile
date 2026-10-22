@@ -37,7 +37,8 @@
     "outsideSeason": "L'intervallo deve stare dentro le date della stagione",
     "slotRequired": "Scegli almeno una fascia",
     "duplicate": "Componente già presente",
-    "passwordLength": "La password deve avere almeno 12 caratteri"
+    "passwordLength": "La password deve avere almeno 12 caratteri",
+    "dateRequired": "Scegli almeno un giorno"
   },
   "establishment": {
     "title": "Stabilimento",
@@ -47,7 +48,10 @@
       "title": "Dati generali e lingue",
       "contacts": "Contatti e indirizzo",
       "slugHint": "Indirizzo della pagina pubblica: /b/<indirizzo>. Cambiarlo rompe i link già condivisi.",
-      "currency": "Valuta: {{currency}} (non modificabile)."
+      "currency": "Valuta: {{currency}} (non modificabile).",
+      "titleDetails": "Dati generali",
+      "languages": "Lingue",
+      "languagesHint": "Le lingue attive sono proposte nella pagina pubblica e nelle email; i testi mancanti usano la lingua predefinita."
     },
     "publicPage": {
       "title": "Pagina pubblica e incorporamento",
@@ -71,6 +75,13 @@
       "concession_ref": "Riferimento concessione demaniale",
       "booking_enabled": "Prenotazioni online attive",
       "allowed_embed_origins": "Siti autorizzati all'incorporamento"
+    },
+    "tabsLabel": "Sezioni delle impostazioni",
+    "tabs": {
+      "general": "Generale",
+      "languages": "Lingue",
+      "publicPage": "Pagina pubblica",
+      "pricing": "Prezzi e IVA"
     }
   },
   "embed": {
@@ -79,7 +90,10 @@
     "iframe": "In alternativa: iframe",
     "copy": "Copia",
     "copied": "Copiato",
-    "hint": "Incolla il codice nella pagina del tuo sito; il dominio deve essere tra i siti autorizzati."
+    "hint": "Incolla il codice nella pagina del tuo sito; il dominio deve essere tra i siti autorizzati.",
+    "open": "Apri",
+    "title": "Codice da incorporare",
+    "description": "Link diretto e codice da incollare nel sito dello stabilimento."
   },
   "theme": {
     "title": "Tema della pagina pubblica",
@@ -114,7 +128,8 @@
       "primaryText": "Contrasto del colore principale sul bianco {{ratio}}:1 (minimo 4,5:1): link e testi useranno automaticamente {{corrected}}.",
       "accentContrast": "Il colore di accento ha contrasto {{ratio}}:1 sul bianco (minimo 3:1): le postazioni selezionate potrebbero essere poco visibili.",
       "similarColors": "Colore principale e di accento sono troppo simili: scegli colori più distinti."
-    }
+    },
+    "previewBadge": "Disponibile"
   },
   "pricingSettings": {
     "title": "Impostazioni dei prezzi",
@@ -195,7 +210,13 @@
       "mid": "Media stagione",
       "high": "Alta stagione",
       "peak": "Picco"
-    }
+    },
+    "days": "Giorni",
+    "views": "Vista dei periodi",
+    "viewTimeline": "Linea temporale",
+    "viewCalendar": "Calendario",
+    "presetsLabel": "Periodi tipici",
+    "rangeAria": "Intervallo {{index}}"
   },
   "holidays": {
     "title": "Festività locali",
@@ -226,12 +247,25 @@
     "fields": {
       "date": "Data",
       "slots": "Fasce",
-      "reason": "Motivo"
+      "reason": "Motivo",
+      "dates": "Giorni"
     },
     "slot": {
       "AM": "Mattina",
       "PM": "Pomeriggio"
-    }
+    },
+    "calendarTitle": "Calendario {{year}}",
+    "calendarHint": "Tocca un giorno per aggiungere o modificare una chiusura.",
+    "calendarHintReadOnly": "Giorni di chiusura evidenziati.",
+    "legend": "Legenda",
+    "oneSlot": "Una fascia",
+    "createdMany_one": "{{count}} chiusura creata",
+    "createdMany_other": "{{count}} chiusure create",
+    "selectedDays_one": "{{count}} giorno selezionato: {{list}}",
+    "selectedDays_other": "{{count}} giorni selezionati: {{list}}",
+    "pickDays": "Seleziona uno o più giorni nel calendario.",
+    "createMany_one": "Crea {{count}} chiusura",
+    "createMany_other": "Crea {{count}} chiusure"
   },
   "zones": {
     "title": "Zone",
@@ -304,7 +338,9 @@
       "component_code": "Componente",
       "zone_id": "Zona a quantità",
       "capacity": "Capacità"
-    }
+    },
+    "overrideRange": "Date della variazione {{index}}",
+    "overrideCapacity": "Capacità della variazione {{index}}"
   },
   "catalog": {
     "title": "Catalogo",
@@ -372,7 +408,10 @@
     "attachTo": {
       "line": "Postazione",
       "booking": "Prenotazione"
-    }
+    },
+    "flags": "Stato",
+    "decrease": "Diminuisci {{name}}",
+    "increase": "Aumenta {{name}}"
   },
   "formulas": {
     "half_day": "Mezza giornata",
@@ -438,5 +477,11 @@
       "establishment": "Questo stabilimento",
       "organization": "Tutta l'organizzazione"
     }
-  }
+  },
+  "toast": {
+    "saved": "Modifiche salvate",
+    "created": "Creato",
+    "deleted": "Eliminato"
+  },
+  "unsaved": "Modifiche non salvate"
 }

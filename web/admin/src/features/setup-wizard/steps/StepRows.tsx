@@ -1,10 +1,16 @@
-import { Button, Input } from '@arenile/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
+import { Button } from '@arenile/shared/ui/button';
+import { FieldLegend, FieldSet } from '@arenile/shared/ui/field';
+import { Input } from '@arenile/shared/ui/input';
+import { Skeleton } from '@arenile/shared/ui/skeleton';
+import { Spinner } from '@arenile/shared/ui/spinner';
+import { CircleCheckIcon, InfoIcon, MapIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Field } from '../../configuration/components/fields';
+import { DateRangeField, Field } from '../../configuration/components/fields';
 import { FormAlert } from '../../configuration/components/FormAlert';
 import { fieldAria } from '../../configuration/lib/aria';
 import { problemToFormState, type FormAlertState } from '../../configuration/lib/formErrors';
@@ -33,10 +39,10 @@ function RowsPreview({ rows, spots }: { rows: number; spots: number }) {
   return (
     <svg
       viewBox={`0 0 ${s * cell + 4} ${r * cell + 16}`}
-      className="h-auto max-h-48 w-full max-w-md"
+      className="h-auto max-h-48 w-full max-w-md rounded-lg bg-map-sand/50 p-2"
       aria-hidden="true"
     >
-      <rect x="0" y="0" width={s * cell + 4} height="8" fill="#7dd3fc" rx="2" />
+      <rect x="0" y="0" width={s * cell + 4} height="8" className="fill-map-sea" rx="2" />
       {Array.from({ length: r }, (_, i) =>
         Array.from({ length: s }, (_, j) => (
           <circle
@@ -44,7 +50,7 @@ function RowsPreview({ rows, spots }: { rows: number; spots: number }) {
             cx={j * cell + cell / 2 + 2}
             cy={i * cell + 16 + cell / 2 - 2}
             r={cell / 2 - 1.5}
-            fill="var(--ar-primary)"
+            className="fill-primary"
             opacity={1 - i * (0.5 / Math.max(r, 1))}
           />
         )),
@@ -58,7 +64,15 @@ export function StepRows(props: StepProps) {
   const { t } = useTranslation('setupWizard');
   const templates = useSetupTemplates(props.ctx.establishmentId);
   // Wait for the template (its default rows × spots); a failed load falls back to 8 × 15.
-  if (templates.isPending) return <p className="text-sm text-slate-600">{t('loading')}</p>;
+  if (templates.isPending) {
+    return (
+      <div role="status" className="space-y-3">
+        <span className="sr-only">{t('loading')}</span>
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
   const template = props.progress.template ?? 'classic_rows';
   return (
     <RowsForm
@@ -108,20 +122,18 @@ function RowsForm({
   if (result) {
     return (
       <div className="space-y-4">
-        <div
-          role="status"
-          className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
-        >
-          <p className="font-medium">{t('rows.applied')}</p>
-          <p>
+        <Alert role="status" className="border-success/40 bg-success/10">
+          <CircleCheckIcon aria-hidden="true" className="text-success" />
+          <AlertTitle>{t('rows.applied')}</AlertTitle>
+          <AlertDescription>
             {t('rows.appliedSummary', {
               spots: result.spots_created,
               zones: result.zone_ids.length,
               packs: result.pack_ids.length,
               periods: result.rate_period_ids.length,
             })}
-          </p>
-        </div>
+          </AlertDescription>
+        </Alert>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => dispatch({ type: 'complete' })}>{t('continue')}</Button>
           {result.map_id && (
@@ -130,6 +142,7 @@ function RowsForm({
                 to="/e/$establishmentId/maps/$mapId"
                 params={{ establishmentId: ctx.establishmentId, mapId: result.map_id }}
               >
+                <MapIcon aria-hidden="true" />
                 {t('rows.openMap')}
               </Link>
             </Button>
@@ -142,16 +155,17 @@ function RowsForm({
   if (alreadyApplied) {
     return (
       <div className="space-y-4">
-        <p
-          role="status"
-          className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-900"
-        >
-          {t('rows.alreadyConfigured', { spots: status?.spot_count ?? 0 })}
-        </p>
+        <Alert role="status">
+          <InfoIcon aria-hidden="true" />
+          <AlertDescription>
+            {t('rows.alreadyConfigured', { spots: status?.spot_count ?? 0 })}
+          </AlertDescription>
+        </Alert>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => dispatch({ type: 'complete' })}>{t('continue')}</Button>
           <Button asChild variant="outline">
             <Link to="/e/$establishmentId/maps" params={{ establishmentId: ctx.establishmentId }}>
+              <MapIcon aria-hidden="true" />
               {t('rows.openMaps')}
             </Link>
           </Button>
@@ -161,8 +175,8 @@ function RowsForm({
   }
 
   return (
-    <form noValidate onSubmit={submit} className="space-y-4">
-      <p className="text-sm text-slate-600">
+    <form noValidate onSubmit={submit} className="space-y-6">
+      <p className="text-sm text-muted-foreground">
         {t('rows.intro', { template: t(`template.codes.${template}.name`) })}
       </p>
       <FormAlert state={alert} />
@@ -182,38 +196,36 @@ function RowsForm({
               {...register('spots_per_row')}
             />
           </Field>
-          <p className="text-sm font-medium text-slate-800" aria-live="polite">
+          <p className="pb-2 text-sm font-medium tabular-nums" aria-live="polite">
             {t('rows.total', { count: rows * spots })}
           </p>
         </div>
       )}
       {withRows && <RowsPreview rows={rows} spots={spots} />}
-      {!withRows && <p className="text-sm text-slate-600">{t('rows.noRows')}</p>}
-      <fieldset className="grid gap-4 sm:grid-cols-3">
-        <legend className="mb-2 text-sm font-medium text-slate-800">{t('rows.season')}</legend>
-        <Field id="rows-year" label={t('rows.year')} error={errors.season_year}>
-          <Input
-            {...fieldAria('rows-year', errors.season_year)}
-            inputMode="numeric"
-            {...register('season_year')}
-          />
-        </Field>
-        <Field id="rows-opens" label={t('rows.opensOn')} error={errors.opens_on}>
-          <Input
-            {...fieldAria('rows-opens', errors.opens_on)}
-            type="date"
-            {...register('opens_on')}
-          />
-        </Field>
-        <Field id="rows-closes" label={t('rows.closesOn')} error={errors.closes_on}>
-          <Input
-            {...fieldAria('rows-closes', errors.closes_on)}
-            type="date"
-            {...register('closes_on')}
-          />
-        </Field>
-      </fieldset>
+      {!withRows && <p className="text-sm text-muted-foreground">{t('rows.noRows')}</p>}
+      <FieldSet className="gap-4">
+        <FieldLegend variant="label">{t('rows.season')}</FieldLegend>
+        <div className="grid gap-5 sm:grid-cols-[10rem_1fr]">
+          <Field id="rows-year" label={t('rows.year')} error={errors.season_year}>
+            <Input
+              {...fieldAria('rows-year', errors.season_year)}
+              inputMode="numeric"
+              {...register('season_year')}
+            />
+          </Field>
+          <Field id="rows-dates" label={t('rows.dates')}>
+            <DateRangeField
+              control={form.control}
+              fromName="opens_on"
+              toName="closes_on"
+              id="rows-dates"
+              label={t('rows.dates')}
+            />
+          </Field>
+        </div>
+      </FieldSet>
       <Button type="submit" disabled={apply.isPending}>
+        {apply.isPending && <Spinner />}
         {apply.isPending ? t('rows.applying') : t('rows.apply')}
       </Button>
     </form>

@@ -1,5 +1,16 @@
-import { Button, Card, Input } from '@arenile/shared/ui';
+import { Button } from '@arenile/shared/ui/button';
+import { FieldDescription, FieldLegend, FieldSet } from '@arenile/shared/ui/field';
+import { Input } from '@arenile/shared/ui/input';
+import { formatIsoDate } from '@arenile/shared/lib/dates';
+import {
+  DataTable,
+  DataTableColumnHeader,
+  EmptyState,
+  StatusBadge,
+  type ColumnDef,
+} from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { BoxesIcon, LockIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,14 +23,18 @@ import {
 } from '../api/resources';
 import { useConfigContext } from '../api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../api/useCrud';
-import { Badge, ConfigPage, EmptyState, QueryState } from '../components/ConfigPage';
 import { ComponentIcon } from '../components/ComponentIcon';
-import { ConfirmDelete, FormActions, FormDialog } from '../components/dialogs';
-import { Field, FieldError, Select } from '../components/fields';
+import { ConfigPage, QueryState } from '../components/ConfigPage';
+import { FormActions, FormDialog, RowActions } from '../components/dialogs';
+import {
+  DateRangeField,
+  Field,
+  FieldError,
+  I18nTextField,
+  SelectField,
+} from '../components/fields';
 import { FormAlert } from '../components/FormAlert';
-import { I18nTextInput } from '../components/I18nTextInput';
 import { errorAt, fieldAria } from '../lib/aria';
-import { formatDate } from '../lib/dates';
 import { localize } from '../lib/i18nText';
 import { poolSchema, toPoolInput, toPoolValues } from './inventory.schema';
 
@@ -38,107 +53,119 @@ export function PoolsPage() {
   const readOnly = !ctx.canConfigure;
   const items = list.data ?? [];
   const loc = (text: Record<string, string>) => localize(text, ctx.uiLocale, ctx.defaultLocale);
+  const poolName = (p: Pool) => loc(p.name) || p.component_code;
   const zoneName = (id?: string) => {
     const z = zoneList.data?.find((x) => x.id === id);
     return z ? loc(z.name) || z.code : '—';
   };
+
+  const columns: ColumnDef<Pool>[] = [
+    {
+      id: 'name',
+      accessorFn: poolName,
+      meta: { label: t('fields.name') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.name')} />,
+      cell: ({ row }) => (
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="font-medium">{poolName(row.original)}</span>
+          {row.original.system_managed && (
+            <StatusBadge tone="neutral">{t('pools.systemManaged')}</StatusBadge>
+          )}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'component_code',
+      meta: { label: t('pools.fields.component_code') },
+      header: t('pools.fields.component_code'),
+      cell: ({ row }) => (
+        <span className="inline-flex items-center gap-1.5">
+          <ComponentIcon code={row.original.component_code} className="text-muted-foreground" />
+          <span className="font-mono text-xs">{row.original.component_code}</span>
+        </span>
+      ),
+    },
+    {
+      id: 'zone',
+      accessorFn: (p) => zoneName(p.zone_id),
+      meta: { label: t('pools.fields.zone_id') },
+      header: t('pools.fields.zone_id'),
+    },
+    {
+      accessorKey: 'capacity',
+      meta: { label: t('pools.fields.capacity') },
+      header: () => <span className="block text-right">{t('pools.fields.capacity')}</span>,
+      cell: ({ row }) => (
+        <span className="block text-right tabular-nums">{row.original.capacity}</span>
+      ),
+    },
+    {
+      id: 'overrides',
+      meta: { label: t('pools.overrides') },
+      header: t('pools.overrides'),
+      cell: ({ row }) => (
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {(row.original.capacity_overrides ?? []).map((o) => (
+            <span key={`${o.from}-${o.to}`} className="block">
+              {formatIsoDate(o.from)} – {formatIsoDate(o.to)}: {o.capacity}
+            </span>
+          ))}
+        </span>
+      ),
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      header: () => <span className="sr-only">{t('actions')}</span>,
+      cell: ({ row }) => {
+        const p = row.original;
+        if (p.system_managed) {
+          return (
+            <span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+              <LockIcon aria-hidden="true" className="size-3" />
+              {t('pools.systemHint')}
+            </span>
+          );
+        }
+        return readOnly ? null : (
+          <RowActions
+            editLabel={t('pools.editAria', { name: poolName(p) })}
+            deleteLabel={t('pools.deleteAria', { name: poolName(p) })}
+            deleteMessage={t('pools.deleteConfirm', { name: poolName(p) })}
+            onEdit={() => editor.edit(p)}
+            onDelete={() => remove.mutateAsync({ id: p.id, version: p.version })}
+          />
+        );
+      },
+    },
+  ];
+
+  const addButton = !readOnly && (
+    <Button onClick={editor.create}>
+      <PlusIcon aria-hidden="true" />
+      {t('pools.add')}
+    </Button>
+  );
 
   return (
     <ConfigPage
       title={t('pools.title')}
       description={t('pools.description')}
       readOnly={readOnly}
-      actions={!readOnly && <Button onClick={editor.create}>{t('pools.add')}</Button>}
+      actions={addButton}
     >
-      <QueryState
-        isLoading={list.isPending}
-        error={list.error}
-        onRetry={() => void list.refetch()}
-      />
-      {list.data && items.length === 0 && <EmptyState>{t('pools.empty')}</EmptyState>}
-      {items.length > 0 && (
-        <Card className="overflow-x-auto">
-          <table className="w-full min-w-[40rem] text-sm">
-            <caption className="sr-only">{t('pools.title')}</caption>
-            <thead className="bg-slate-50 text-left text-slate-600">
-              <tr>
-                <th scope="col" className="px-4 py-2 font-medium">
-                  {t('fields.name')}
-                </th>
-                <th scope="col" className="px-4 py-2 font-medium">
-                  {t('pools.fields.component_code')}
-                </th>
-                <th scope="col" className="px-4 py-2 font-medium">
-                  {t('pools.fields.zone_id')}
-                </th>
-                <th scope="col" className="px-4 py-2 text-right font-medium">
-                  {t('pools.fields.capacity')}
-                </th>
-                <th scope="col" className="px-4 py-2 font-medium">
-                  {t('pools.overrides')}
-                </th>
-                <th scope="col" className="px-4 py-2">
-                  <span className="sr-only">{t('actions')}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((p) => {
-                const name = loc(p.name) || p.component_code;
-                return (
-                  <tr key={p.id} className="border-t border-slate-100">
-                    <th scope="row" className="px-4 py-2 text-left font-medium">
-                      {name}
-                      {p.system_managed && (
-                        <span className="ml-2">
-                          <Badge>{t('pools.systemManaged')}</Badge>
-                        </span>
-                      )}
-                    </th>
-                    <td className="px-4 py-2">
-                      <span className="inline-flex items-center gap-1">
-                        <ComponentIcon code={p.component_code} />
-                        <span className="font-mono text-xs">{p.component_code}</span>
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">{zoneName(p.zone_id)}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{p.capacity}</td>
-                    <td className="px-4 py-2 text-xs text-slate-700">
-                      {(p.capacity_overrides ?? []).map((o) => (
-                        <span key={`${o.from}-${o.to}`} className="block">
-                          {formatDate(o.from, ctx.uiLocale)} – {formatDate(o.to, ctx.uiLocale)}:{' '}
-                          {o.capacity}
-                        </span>
-                      ))}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {!readOnly && !p.system_managed && (
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => editor.edit(p)}
-                            aria-label={t('pools.editAria', { name })}
-                          >
-                            {t('common.actions.edit', { ns: 'translation' })}
-                          </Button>
-                          <ConfirmDelete
-                            label={t('pools.deleteAria', { name })}
-                            message={t('pools.deleteConfirm', { name })}
-                            onConfirm={() => remove.mutateAsync({ id: p.id, version: p.version })}
-                          />
-                        </div>
-                      )}
-                      {p.system_managed && (
-                        <span className="text-xs text-slate-500">{t('pools.systemHint')}</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </Card>
+      {list.error ? (
+        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+      ) : (
+        <DataTable
+          caption={t('pools.title')}
+          columns={columns}
+          data={items}
+          loading={list.isPending}
+          getRowId={(p) => p.id}
+          pageSize={0}
+          empty={<EmptyState icon={BoxesIcon} title={t('pools.empty')} bordered={false} />}
+        />
       )}
       <FormDialog
         open={editor.open}
@@ -192,40 +219,36 @@ function PoolForm({
   const s = useCrudSubmit({ form, item, create, update, toInput: toPoolInput, onDone });
   const {
     register,
+    control,
     formState: { errors },
   } = form;
   const loc = (text: Record<string, string>) => localize(text, uiLocale, defaultLocale);
   return (
-    <form noValidate onSubmit={s.submit} className="space-y-4">
+    <form noValidate onSubmit={s.submit} className="space-y-6">
       <FormAlert state={s.alert} onReload={onDone} />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field
+      <div className="grid gap-5 sm:grid-cols-3">
+        <SelectField
+          control={control}
+          name="component_code"
           id="pool-component"
           label={t('pools.fields.component_code')}
-          error={errors.component_code}
-        >
-          <Select
-            {...fieldAria('pool-component', errors.component_code)}
-            {...register('component_code')}
-          >
-            <option value="">{t('choose')}</option>
-            {componentItems.map((c) => (
-              <option key={c.id} value={c.code}>
-                {loc(c.name) || c.code} ({c.code})
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field id="pool-zone" label={t('pools.fields.zone_id')} error={errors.zone_id}>
-          <Select {...fieldAria('pool-zone', errors.zone_id)} {...register('zone_id')}>
-            <option value="">{t('pools.noZone')}</option>
-            {zoneItems.map((z) => (
-              <option key={z.id} value={z.id}>
-                {loc(z.name) || z.code}
-              </option>
-            ))}
-          </Select>
-        </Field>
+          placeholder={t('choose')}
+          options={componentItems.map((c) => ({
+            value: c.code,
+            label: `${loc(c.name) || c.code} (${c.code})`,
+            icon: <ComponentIcon code={c.code} />,
+          }))}
+        />
+        <SelectField
+          control={control}
+          name="zone_id"
+          id="pool-zone"
+          label={t('pools.fields.zone_id')}
+          options={[
+            { value: '', label: t('pools.noZone') },
+            ...zoneItems.map((z) => ({ value: z.id, label: loc(z.name) || z.code })),
+          ]}
+        />
         <Field id="pool-capacity" label={t('pools.fields.capacity')} error={errors.capacity}>
           <Input
             {...fieldAria('pool-capacity', errors.capacity)}
@@ -234,78 +257,61 @@ function PoolForm({
           />
         </Field>
       </div>
-      <I18nTextInput
+      <I18nTextField
+        control={control}
         name="name"
-        idPrefix="pool"
+        id="pool-name"
         label={t('fields.name')}
         locales={locales}
         defaultLocale={defaultLocale}
-        register={register}
-        errors={errors}
       />
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-slate-800">{t('pools.overrides')}</legend>
-        <p className="text-xs text-slate-600">{t('pools.overridesHint')}</p>
+      <FieldSet className="gap-3">
+        <FieldLegend variant="label">{t('pools.overrides')}</FieldLegend>
+        <FieldDescription>{t('pools.overridesHint')}</FieldDescription>
         {overrides.fields.map((f, i) => {
-          const errs = ['from', 'to', 'capacity'].map((k) =>
-            errorAt(errors, `capacity_overrides.${i}.${k}`),
-          );
+          const capErr = errorAt(errors, `capacity_overrides.${i}.capacity`);
           return (
-            <div key={f.id} className="flex flex-wrap items-end gap-2">
-              <div className="space-y-1">
-                <label htmlFor={`pool-o${i}-from`} className="text-xs text-slate-600">
-                  {t('periods.from')}
-                </label>
-                <Input
-                  {...fieldAria(`pool-o${i}-from`, errs[0])}
-                  type="date"
-                  {...register(`capacity_overrides.${i}.from`)}
-                />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor={`pool-o${i}-to`} className="text-xs text-slate-600">
-                  {t('periods.to')}
-                </label>
-                <Input
-                  {...fieldAria(`pool-o${i}-to`, errs[1])}
-                  type="date"
-                  {...register(`capacity_overrides.${i}.to`)}
-                />
-              </div>
+            <div key={f.id} className="flex flex-wrap items-start gap-2 rounded-lg border p-3">
+              <DateRangeField
+                control={control}
+                fromName={`capacity_overrides.${i}.from`}
+                toName={`capacity_overrides.${i}.to`}
+                id={`pool-o${i}`}
+                label={t('pools.overrideRange', { index: i + 1 })}
+              />
               <div className="w-28 space-y-1">
-                <label htmlFor={`pool-o${i}-cap`} className="text-xs text-slate-600">
-                  {t('pools.fields.capacity')}
-                </label>
                 <Input
-                  {...fieldAria(`pool-o${i}-cap`, errs[2])}
+                  {...fieldAria(`pool-o${i}-cap`, capErr)}
+                  aria-label={t('pools.overrideCapacity', { index: i + 1 })}
+                  placeholder={t('pools.fields.capacity')}
                   inputMode="numeric"
                   {...register(`capacity_overrides.${i}.capacity`)}
                 />
+                <FieldError id={`pool-o${i}-cap`} error={capErr} />
               </div>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
+                className="ml-auto"
                 onClick={() => overrides.remove(i)}
                 aria-label={t('pools.removeOverride', { index: i + 1 })}
               >
-                {t('common.actions.delete', { ns: 'translation' })}
+                <XIcon aria-hidden="true" />
               </Button>
-              <div className="w-full">
-                <FieldError id={`pool-o${i}-from`} error={errs[0]} />
-                <FieldError id={`pool-o${i}-to`} error={errs[1]} />
-                <FieldError id={`pool-o${i}-cap`} error={errs[2]} />
-              </div>
             </div>
           );
         })}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => overrides.append({ from: '', to: '', capacity: '' })}
-        >
-          {t('pools.addOverride')}
-        </Button>
-      </fieldset>
+        <div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => overrides.append({ from: '', to: '', capacity: '' })}
+          >
+            <PlusIcon aria-hidden="true" />
+            {t('pools.addOverride')}
+          </Button>
+        </div>
+      </FieldSet>
       <FormActions onCancel={onDone} pending={s.pending} />
     </form>
   );

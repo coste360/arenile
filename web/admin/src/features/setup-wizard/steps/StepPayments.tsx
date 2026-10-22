@@ -1,4 +1,16 @@
-import { Button } from '@arenile/shared/ui';
+import { Badge } from '@arenile/shared/ui/badge';
+import { Button } from '@arenile/shared/ui/button';
+import {
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldTitle,
+  Field as UiField,
+} from '@arenile/shared/ui/field';
+import { RadioGroup, RadioGroupItem } from '@arenile/shared/ui/radio-group';
+import { CheckIcon, CreditCardIcon, WalletIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { StepProps } from './types';
 
@@ -10,47 +22,47 @@ import type { StepProps } from './types';
 export function StepPayments({ dispatch }: StepProps) {
   const { t } = useTranslation('setupWizard');
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-slate-600">{t('payments.intro')}</p>
-      <fieldset className="space-y-3">
-        <legend className="text-sm font-medium text-slate-800">{t('payments.method')}</legend>
-        <label
-          htmlFor="pay-manual"
-          className="flex items-start gap-2 rounded-md border border-slate-200 p-3 text-sm"
-        >
-          <input
-            id="pay-manual"
-            type="radio"
-            name="payment"
-            defaultChecked
-            className="mt-0.5 accent-[var(--ar-primary)]"
-          />
-          <span>
-            <span className="font-medium">{t('payments.manual')}</span>
-            <span className="block text-xs text-slate-600">{t('payments.manualHint')}</span>
-          </span>
-        </label>
-        <label
-          htmlFor="pay-stripe"
-          className="flex items-start gap-2 rounded-md border border-dashed border-slate-300 p-3 text-sm text-slate-500"
-        >
-          <input
-            id="pay-stripe"
-            type="radio"
-            name="payment"
-            disabled
-            aria-describedby="pay-stripe-hint"
-            className="mt-0.5"
-          />
-          <span>
-            <span className="font-medium">{t('payments.stripe')}</span>
-            <span id="pay-stripe-hint" className="block text-xs">
-              {t('payments.stripeLater')}
-            </span>
-          </span>
-        </label>
-      </fieldset>
-      <Button onClick={() => dispatch({ type: 'complete' })}>{t('finish')}</Button>
+    <div className="space-y-5">
+      <p className="text-sm text-muted-foreground">{t('payments.intro')}</p>
+      <FieldSet>
+        <FieldLegend variant="label">{t('payments.method')}</FieldLegend>
+        <RadioGroup defaultValue="manual" className="grid gap-3 sm:grid-cols-2">
+          <FieldLabel htmlFor="pay-manual">
+            <UiField orientation="horizontal">
+              <WalletIcon aria-hidden="true" className="mt-0.5 size-5 text-primary-on-surface" />
+              <FieldContent>
+                <FieldTitle>{t('payments.manual')}</FieldTitle>
+                <FieldDescription>{t('payments.manualHint')}</FieldDescription>
+              </FieldContent>
+              <RadioGroupItem value="manual" id="pay-manual" />
+            </UiField>
+          </FieldLabel>
+          <FieldLabel htmlFor="pay-stripe">
+            <UiField orientation="horizontal" data-disabled="true">
+              <CreditCardIcon aria-hidden="true" className="mt-0.5 size-5 text-muted-foreground" />
+              <FieldContent>
+                <FieldTitle>
+                  {t('payments.stripe')}
+                  <Badge className="bg-highlight text-highlight-foreground">M4</Badge>
+                </FieldTitle>
+                <FieldDescription id="pay-stripe-hint">
+                  {t('payments.stripeLater')}
+                </FieldDescription>
+              </FieldContent>
+              <RadioGroupItem
+                value="stripe"
+                id="pay-stripe"
+                disabled
+                aria-describedby="pay-stripe-hint"
+              />
+            </UiField>
+          </FieldLabel>
+        </RadioGroup>
+      </FieldSet>
+      <Button onClick={() => dispatch({ type: 'complete' })}>
+        <CheckIcon aria-hidden="true" />
+        {t('finish')}
+      </Button>
     </div>
   );
 }

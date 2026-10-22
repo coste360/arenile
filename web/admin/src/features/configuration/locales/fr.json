@@ -37,7 +37,8 @@
     "outsideSeason": "La plage doit être comprise dans les dates de la saison",
     "slotRequired": "Choisissez au moins une tranche",
     "duplicate": "Composant déjà présent",
-    "passwordLength": "Le mot de passe doit comporter au moins 12 caractères"
+    "passwordLength": "Le mot de passe doit comporter au moins 12 caractères",
+    "dateRequired": "Choisissez au moins un jour"
   },
   "establishment": {
     "title": "Établissement",
@@ -47,7 +48,10 @@
       "title": "Données générales et langues",
       "contacts": "Contacts et adresse",
       "slugHint": "Adresse de la page publique : /b/<adresse>. La modifier casse les liens déjà partagés.",
-      "currency": "Devise : {{currency}} (non modifiable)."
+      "currency": "Devise : {{currency}} (non modifiable).",
+      "titleDetails": "Informations générales",
+      "languages": "Langues",
+      "languagesHint": "Les langues actives sont proposées sur la page publique et dans les e-mails ; les textes manquants utilisent la langue par défaut."
     },
     "publicPage": {
       "title": "Page publique et intégration",
@@ -71,6 +75,13 @@
       "concession_ref": "Référence de la concession balnéaire",
       "booking_enabled": "Réservations en ligne actives",
       "allowed_embed_origins": "Sites autorisés à intégrer"
+    },
+    "tabsLabel": "Sections des paramètres",
+    "tabs": {
+      "general": "Général",
+      "languages": "Langues",
+      "publicPage": "Page publique",
+      "pricing": "Prix et TVA"
     }
   },
   "embed": {
@@ -79,7 +90,10 @@
     "iframe": "Sinon : iframe",
     "copy": "Copier",
     "copied": "Copié",
-    "hint": "Collez le code dans votre site ; son domaine doit figurer parmi les sites autorisés."
+    "hint": "Collez le code dans votre site ; son domaine doit figurer parmi les sites autorisés.",
+    "open": "Ouvrir",
+    "title": "Code d'intégration",
+    "description": "Lien direct et code à coller dans votre site."
   },
   "theme": {
     "title": "Thème de la page publique",
@@ -114,7 +128,8 @@
       "primaryText": "Contraste de la couleur principale sur blanc {{ratio}}:1 (minimum 4,5:1) : liens et textes utiliseront automatiquement {{corrected}}.",
       "accentContrast": "La couleur d'accent a un contraste de {{ratio}}:1 sur blanc (minimum 3:1) : les emplacements sélectionnés peuvent être peu visibles.",
       "similarColors": "Les couleurs principale et d'accent sont trop proches : choisissez des couleurs plus distinctes."
-    }
+    },
+    "previewBadge": "Disponible"
   },
   "pricingSettings": {
     "title": "Paramètres de prix",
@@ -195,7 +210,13 @@
       "mid": "Moyenne saison",
       "high": "Haute saison",
       "peak": "Pointe"
-    }
+    },
+    "days": "Jours",
+    "views": "Vue des périodes",
+    "viewTimeline": "Chronologie",
+    "viewCalendar": "Calendrier",
+    "presetsLabel": "Périodes types",
+    "rangeAria": "Intervalle {{index}}"
   },
   "holidays": {
     "title": "Jours fériés locaux",
@@ -226,12 +247,25 @@
     "fields": {
       "date": "Date",
       "slots": "Tranches",
-      "reason": "Motif"
+      "reason": "Motif",
+      "dates": "Jours"
     },
     "slot": {
       "AM": "Matin",
       "PM": "Après-midi"
-    }
+    },
+    "calendarTitle": "Calendrier {{year}}",
+    "calendarHint": "Touchez un jour pour ajouter ou modifier une fermeture.",
+    "calendarHintReadOnly": "Les jours de fermeture sont mis en évidence.",
+    "legend": "Légende",
+    "oneSlot": "Un créneau",
+    "createdMany_one": "{{count}} fermeture créée",
+    "createdMany_other": "{{count}} fermetures créées",
+    "selectedDays_one": "{{count}} jour sélectionné : {{list}}",
+    "selectedDays_other": "{{count}} jours sélectionnés : {{list}}",
+    "pickDays": "Sélectionnez un ou plusieurs jours dans le calendrier.",
+    "createMany_one": "Créer {{count}} fermeture",
+    "createMany_other": "Créer {{count}} fermetures"
   },
   "zones": {
     "title": "Zones",
@@ -304,7 +338,9 @@
       "component_code": "Composant",
       "zone_id": "Zone en quantité",
       "capacity": "Capacité"
-    }
+    },
+    "overrideRange": "Dates de la variation {{index}}",
+    "overrideCapacity": "Capacité de la variation {{index}}"
   },
   "catalog": {
     "title": "Catalogue",
@@ -372,7 +408,10 @@
     "attachTo": {
       "line": "Emplacement",
       "booking": "Réservation"
-    }
+    },
+    "flags": "Statut",
+    "decrease": "Diminuer {{name}}",
+    "increase": "Augmenter {{name}}"
   },
   "formulas": {
     "half_day": "Demi-journée",
@@ -438,5 +477,11 @@
       "establishment": "Cet établissement",
       "organization": "Toute l'organisation"
     }
-  }
+  },
+  "toast": {
+    "saved": "Modifications enregistrées",
+    "created": "Créé",
+    "deleted": "Supprimé"
+  },
+  "unsaved": "Modifications non enregistrées"
 }

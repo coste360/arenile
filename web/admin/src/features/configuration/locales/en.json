@@ -37,7 +37,8 @@
     "outsideSeason": "The range must be within the season dates",
     "slotRequired": "Choose at least one slot",
     "duplicate": "Component already added",
-    "passwordLength": "The password must be at least 12 characters long"
+    "passwordLength": "The password must be at least 12 characters long",
+    "dateRequired": "Choose at least one day"
   },
   "establishment": {
     "title": "Establishment",
@@ -47,7 +48,10 @@
       "title": "General details and languages",
       "contacts": "Contacts and address",
       "slugHint": "Public page address: /b/<address>. Changing it breaks links already shared.",
-      "currency": "Currency: {{currency}} (cannot be changed)."
+      "currency": "Currency: {{currency}} (cannot be changed).",
+      "titleDetails": "General details",
+      "languages": "Languages",
+      "languagesHint": "Enabled languages are offered on the public page and in emails; missing texts fall back to the default language."
     },
     "publicPage": {
       "title": "Public page and embedding",
@@ -71,6 +75,13 @@
       "concession_ref": "Beach concession reference",
       "booking_enabled": "Online bookings enabled",
       "allowed_embed_origins": "Websites allowed to embed"
+    },
+    "tabsLabel": "Settings sections",
+    "tabs": {
+      "general": "General",
+      "languages": "Languages",
+      "publicPage": "Public page",
+      "pricing": "Prices and VAT"
     }
   },
   "embed": {
@@ -79,7 +90,10 @@
     "iframe": "Alternatively: iframe",
     "copy": "Copy",
     "copied": "Copied",
-    "hint": "Paste the code into your website; its domain must be among the allowed websites."
+    "hint": "Paste the code into your website; its domain must be among the allowed websites.",
+    "open": "Open",
+    "title": "Embed code",
+    "description": "Direct link and code to paste into your website."
   },
   "theme": {
     "title": "Public page theme",
@@ -114,7 +128,8 @@
       "primaryText": "Primary colour contrast on white is {{ratio}}:1 (minimum 4.5:1): links and text will automatically use {{corrected}}.",
       "accentContrast": "The accent colour has {{ratio}}:1 contrast on white (minimum 3:1): selected spots may be hard to see.",
       "similarColors": "Primary and accent colours are too similar: choose more distinct colours."
-    }
+    },
+    "previewBadge": "Available"
   },
   "pricingSettings": {
     "title": "Pricing settings",
@@ -195,7 +210,13 @@
       "mid": "Mid season",
       "high": "High season",
       "peak": "Peak"
-    }
+    },
+    "days": "Days",
+    "views": "Period view",
+    "viewTimeline": "Timeline",
+    "viewCalendar": "Calendar",
+    "presetsLabel": "Typical periods",
+    "rangeAria": "Range {{index}}"
   },
   "holidays": {
     "title": "Local holidays",
@@ -226,12 +247,25 @@
     "fields": {
       "date": "Date",
       "slots": "Slots",
-      "reason": "Reason"
+      "reason": "Reason",
+      "dates": "Days"
     },
     "slot": {
       "AM": "Morning",
       "PM": "Afternoon"
-    }
+    },
+    "calendarTitle": "Calendar {{year}}",
+    "calendarHint": "Click a day to add or edit a closure.",
+    "calendarHintReadOnly": "Closure days are highlighted.",
+    "legend": "Legend",
+    "oneSlot": "One slot",
+    "createdMany_one": "{{count}} closure created",
+    "createdMany_other": "{{count}} closures created",
+    "selectedDays_one": "{{count}} day selected: {{list}}",
+    "selectedDays_other": "{{count}} days selected: {{list}}",
+    "pickDays": "Select one or more days in the calendar.",
+    "createMany_one": "Create {{count}} closure",
+    "createMany_other": "Create {{count}} closures"
   },
   "zones": {
     "title": "Zones",
@@ -304,7 +338,9 @@
       "component_code": "Component",
       "zone_id": "Quantity zone",
       "capacity": "Capacity"
-    }
+    },
+    "overrideRange": "Dates of change {{index}}",
+    "overrideCapacity": "Capacity of change {{index}}"
   },
   "catalog": {
     "title": "Catalogue",
@@ -372,7 +408,10 @@
     "attachTo": {
       "line": "Spot",
       "booking": "Booking"
-    }
+    },
+    "flags": "Status",
+    "decrease": "Decrease {{name}}",
+    "increase": "Increase {{name}}"
   },
   "formulas": {
     "half_day": "Half day",
@@ -438,5 +477,11 @@
       "establishment": "This establishment",
       "organization": "Whole organization"
     }
-  }
+  },
+  "toast": {
+    "saved": "Changes saved",
+    "created": "Created",
+    "deleted": "Deleted"
+  },
+  "unsaved": "Unsaved changes"
 }

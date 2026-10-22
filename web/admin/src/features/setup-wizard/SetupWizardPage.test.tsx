@@ -67,8 +67,8 @@ describe('SetupWizardPage', () => {
     await user.click(screen.getByRole('button', { name: 'Salta questo passo' }));
     expect(await stepHeading()).toHaveTextContent('Passo 2 di 6: Modello');
     // The four templates of spec 15.2, server texts when available.
-    const templates = screen.getByRole('list', { name: 'Modelli disponibili' });
-    expect(within(templates).getAllByRole('listitem')).toHaveLength(4);
+    const templates = screen.getByRole('radiogroup', { name: 'Modelli disponibili' });
+    expect(within(templates).getAllByRole('radio')).toHaveLength(4);
     expect(within(templates).getByText('8 file × 15 posti')).toBeInTheDocument();
     expect(within(templates).getByText('Lido con piscina')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Indietro' }));
@@ -195,14 +195,8 @@ describe('SetupWizardPage', () => {
     );
     await stepHeading();
     await user.click(screen.getByRole('button', { name: 'Salta questo passo' }));
-    await user.click(
-      within(await screen.findByRole('article', { name: 'Lido classico a file' })).getByRole(
-        'button',
-        {
-          name: 'Usa questo modello',
-        },
-      ),
-    );
+    await user.click(await screen.findByRole('radio', { name: /^Lido classico a file/ }));
+    await user.click(screen.getByRole('button', { name: /Usa questo modello/ }));
     expect(await stepHeading()).toHaveTextContent('Passo 3 di 6: File sulla mappa');
     expect(screen.getByLabelText('File')).toHaveValue('8');
     expect(screen.getByLabelText('Posti per fila')).toHaveValue('15');

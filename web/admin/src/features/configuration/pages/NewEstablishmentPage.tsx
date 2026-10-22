@@ -1,5 +1,12 @@
 import { useEstablishments, useMe } from '@arenile/shared/api';
-import { Button, Card, CardContent, Input } from '@arenile/shared/ui';
+import { Button } from '@arenile/shared/ui/button';
+import { Card, CardContent, CardFooter } from '@arenile/shared/ui/card';
+import { FieldDescription, FieldSeparator } from '@arenile/shared/ui/field';
+import { Input } from '@arenile/shared/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
+import { Spinner } from '@arenile/shared/ui/spinner';
+import { EmptyState } from '@arenile/shared/ui/patterns';
+import { LockIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -7,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useCreateEstablishment } from '../api/establishment';
 import { ConfigPage, QueryState } from '../components/ConfigPage';
-import { Checkbox, CheckboxGroup, Field, Select } from '../components/fields';
+import { Field, MultiCheck, SelectField } from '../components/fields';
 import { FormAlert } from '../components/FormAlert';
 import { fieldAria } from '../lib/aria';
 import { problemToFormState, type FormAlertState } from '../lib/formErrors';
@@ -38,9 +45,7 @@ export function NewEstablishmentPage() {
   if (orgs.length === 0) {
     return (
       <ConfigPage title={t('new.title')}>
-        <p role="alert" className="text-sm text-slate-700">
-          {t('new.ownerOnly')}
-        </p>
+        <EmptyState icon={LockIcon} title={t('new.ownerOnly')} />
       </ConfigPage>
     );
   }
@@ -93,26 +98,26 @@ function NewEstablishmentForm({
     }
   });
 
+  const languageOptions = SUPPORTED_LOCALES.map((l) => ({
+    value: l,
+    label: t(`common.languages.${l}`, { ns: 'translation' }),
+  }));
+
   return (
-    <Card>
-      <CardContent className="pt-5">
-        <form noValidate onSubmit={onSubmit} className="space-y-4">
+    <form noValidate onSubmit={onSubmit} className="max-w-3xl">
+      <Card>
+        <CardContent className="space-y-6">
           <FormAlert state={alert} />
           {orgs.length > 1 && (
-            <Field id="new-org" label={t('new.fields.organization')} error={errors.organization_id}>
-              <Select
-                {...fieldAria('new-org', errors.organization_id)}
-                {...register('organization_id')}
-              >
-                {orgs.map((o, i) => (
-                  <option key={o} value={o}>
-                    {orgLabel(o, i)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+            <SelectField
+              control={form.control}
+              name="organization_id"
+              id="new-org"
+              label={t('new.fields.organization')}
+              options={orgs.map((o, i) => ({ value: o, label: orgLabel(o, i) }))}
+            />
           )}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             <Field id="new-name" label={t('establishment.fields.name')} error={errors.name}>
               <Input
                 {...fieldAria('new-name', errors.name)}
@@ -130,61 +135,46 @@ function NewEstablishmentForm({
               error={errors.slug}
               hint={t('establishment.general.slugHint')}
             >
-              <Input
-                {...fieldAria('new-slug', errors.slug, true)}
-                {...slugField}
-                onChange={(e) => {
-                  setSlugTouched(true);
-                  void slugField.onChange(e);
-                }}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <span className="font-mono text-xs text-muted-foreground">/b/</span>
+                </InputGroupAddon>
+                <InputGroupInput
+                  {...fieldAria('new-slug', errors.slug, true)}
+                  {...slugField}
+                  onChange={(e) => {
+                    setSlugTouched(true);
+                    void slugField.onChange(e);
+                  }}
+                />
+              </InputGroup>
             </Field>
-            <Field
+            <SelectField
+              control={form.control}
+              name="timezone"
               id="new-timezone"
               label={t('establishment.fields.timezone')}
-              error={errors.timezone}
-            >
-              <Select {...fieldAria('new-timezone', errors.timezone)} {...register('timezone')}>
-                {timezoneOptions('Europe/Rome').map((tz) => (
-                  <option key={tz} value={tz}>
-                    {tz}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field
+              options={timezoneOptions('Europe/Rome').map((tz) => ({ value: tz, label: tz }))}
+            />
+            <SelectField
+              control={form.control}
+              name="default_locale"
               id="new-default_locale"
               label={t('establishment.fields.default_locale')}
-              error={errors.default_locale}
-            >
-              <Select
-                {...fieldAria('new-default_locale', errors.default_locale)}
-                {...register('default_locale')}
-              >
-                {SUPPORTED_LOCALES.map((l) => (
-                  <option key={l} value={l}>
-                    {t(`common.languages.${l}`, { ns: 'translation' })}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+              options={languageOptions}
+            />
           </div>
-          <CheckboxGroup
+          <MultiCheck
+            control={form.control}
+            name="enabled_locales"
             id="new-enabled_locales"
             legend={t('establishment.fields.enabled_locales')}
-            error={errors.enabled_locales as never}
-          >
-            {SUPPORTED_LOCALES.map((l) => (
-              <Checkbox
-                key={l}
-                id={`new-locale-${l}`}
-                value={l}
-                label={t(`common.languages.${l}`, { ns: 'translation' })}
-                {...register('enabled_locales')}
-              />
-            ))}
-          </CheckboxGroup>
-          <div className="grid gap-4 sm:grid-cols-2">
+            options={languageOptions}
+          />
+          <FieldSeparator className="my-3 *:data-[slot=field-separator-content]:bg-card">
+            {t('establishment.general.contacts')}
+          </FieldSeparator>
+          <div className="grid gap-5 sm:grid-cols-2">
             <Field
               id="new-contact_email"
               label={t('establishment.fields.contact_email')}
@@ -208,12 +198,15 @@ function NewEstablishmentForm({
               />
             </Field>
           </div>
-          <p className="text-sm text-slate-600">{t('new.afterCreate')}</p>
+        </CardContent>
+        <CardFooter className="flex-wrap justify-between gap-3 border-t">
+          <FieldDescription>{t('new.afterCreate')}</FieldDescription>
           <Button type="submit" disabled={create.isPending}>
-            {create.isPending ? t('common.actions.saving', { ns: 'translation' }) : t('new.submit')}
+            {create.isPending && <Spinner />}
+            {t('new.submit')}
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }

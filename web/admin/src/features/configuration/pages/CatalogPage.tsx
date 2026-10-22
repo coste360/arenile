@@ -1,6 +1,27 @@
-import { Button, Card, Input, cn } from '@arenile/shared/ui';
+import { Badge } from '@arenile/shared/ui/badge';
+import { Button } from '@arenile/shared/ui/button';
+import { ButtonGroup } from '@arenile/shared/ui/button-group';
+import { FieldDescription, FieldLegend, FieldSeparator, FieldSet } from '@arenile/shared/ui/field';
+import { Input } from '@arenile/shared/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import {
+  DataTable,
+  DataTableColumnHeader,
+  EmptyState,
+  StatusBadge,
+  type ColumnDef,
+} from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRef, useState, type KeyboardEvent } from 'react';
+import {
+  BoxIcon,
+  MinusIcon,
+  PackageIcon,
+  PlusIcon,
+  PuzzleIcon,
+  Trash2Icon,
+  type LucideIcon,
+} from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,13 +36,19 @@ import {
 } from '../api/resources';
 import { useConfigContext, type ConfigContext } from '../api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../api/useCrud';
-import { Badge, EmptyState, ConfigPage, QueryState } from '../components/ConfigPage';
 import { ComponentIcon } from '../components/ComponentIcon';
-import { ConfirmDelete, FormActions, FormDialog } from '../components/dialogs';
-import { Checkbox, Field, FieldError, Select } from '../components/fields';
+import { ConfigPage, QueryState } from '../components/ConfigPage';
+import { FormActions, FormDialog, FormSheet, RowActions } from '../components/dialogs';
+import {
+  BooleanField,
+  Field,
+  FieldError,
+  I18nTextField,
+  MultiCheck,
+  SelectField,
+  SuffixInput,
+} from '../components/fields';
 import { FormAlert } from '../components/FormAlert';
-import { I18nTextInput } from '../components/I18nTextInput';
-import { MultiCheck } from '../components/MultiCheck';
 import { errorAt, fieldAria } from '../lib/aria';
 import { localize } from '../lib/i18nText';
 import { basisPointsToPercentInput } from '../lib/money';
@@ -44,105 +71,94 @@ import {
   toPackValues,
 } from './catalog.schema';
 
-const TABS = ['components', 'packs', 'extras'] as const;
-type Tab = (typeof TABS)[number];
+const TABS: { id: 'components' | 'packs' | 'extras'; icon: LucideIcon }[] = [
+  { id: 'components', icon: BoxIcon },
+  { id: 'packs', icon: PackageIcon },
+  { id: 'extras', icon: PuzzleIcon },
+];
 
 /** Configurazione → Catalogo: components, packs and extras (spec 5.3). */
 export function CatalogPage() {
   const { t } = useTranslation('configuration');
   const ctx = useConfigContext();
-  const [tab, setTab] = useState<Tab>('packs');
-  const refs = useRef<Record<string, HTMLButtonElement | null>>({});
-
-  const onKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    const i = TABS.indexOf(tab);
-    let next: Tab | undefined;
-    if (e.key === 'ArrowRight') next = TABS[(i + 1) % TABS.length];
-    if (e.key === 'ArrowLeft') next = TABS[(i + TABS.length - 1) % TABS.length];
-    if (e.key === 'Home') next = TABS[0];
-    if (e.key === 'End') next = TABS[TABS.length - 1];
-    if (next) {
-      e.preventDefault();
-      setTab(next);
-      refs.current[next]?.focus();
-    }
-  };
-
+  const [tab, setTab] = useState<string>('packs');
   return (
     <ConfigPage
       title={t('catalog.title')}
       description={t('catalog.description')}
       readOnly={!ctx.canConfigure}
     >
-      <div
-        role="tablist"
-        aria-label={t('catalog.title')}
-        className="flex gap-1 border-b border-slate-200"
-      >
-        {TABS.map((id) => (
-          <button
-            key={id}
-            ref={(el) => {
-              refs.current[id] = el;
-            }}
-            id={`tab-${id}`}
-            type="button"
-            role="tab"
-            aria-selected={tab === id}
-            aria-controls={`panel-${id}`}
-            tabIndex={tab === id ? 0 : -1}
-            onClick={() => setTab(id)}
-            onKeyDown={onKey}
-            className={cn(
-              '-mb-px border-b-2 px-4 py-2 text-sm font-medium',
-              tab === id
-                ? 'border-[var(--ar-primary)] text-[var(--ar-primary-on-surface)]'
-                : 'border-transparent text-slate-600 hover:text-slate-900',
-            )}
-          >
-            {t(`catalog.tabs.${id}`)}
-          </button>
-        ))}
-      </div>
-      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} tabIndex={0}>
-        {tab === 'components' && <ComponentsTab ctx={ctx} />}
-        {tab === 'packs' && <PacksTab ctx={ctx} />}
-        {tab === 'extras' && <ExtrasTab ctx={ctx} />}
-      </div>
+      <Tabs value={tab} onValueChange={setTab} className="gap-4">
+        <TabsList aria-label={t('catalog.title')}>
+          {TABS.map(({ id, icon: Icon }) => (
+            <TabsTrigger key={id} value={id}>
+              <Icon aria-hidden="true" />
+              {t(`catalog.tabs.${id}`)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value="components">
+          <ComponentsTab ctx={ctx} />
+        </TabsContent>
+        <TabsContent value="packs">
+          <PacksTab ctx={ctx} />
+        </TabsContent>
+        <TabsContent value="extras">
+          <ExtrasTab ctx={ctx} />
+        </TabsContent>
+      </Tabs>
     </ConfigPage>
   );
 }
 
-function RowActions({
-  readOnly,
-  name,
-  onEdit,
-  onDelete,
-}: {
-  readOnly: boolean;
-  name: string;
-  onEdit: () => void;
-  onDelete: () => Promise<unknown>;
-}) {
-  const { t } = useTranslation('configuration');
-  if (readOnly) return null;
+/** Hint + "Nuovo" button above each tab's table. */
+function TabToolbar({ hint, action }: { hint: string; action: ReactNode }) {
   return (
-    <div className="flex justify-end gap-1">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onEdit}
-        aria-label={t('catalog.editAria', { name })}
-      >
-        {t('common.actions.edit', { ns: 'translation' })}
-      </Button>
-      <ConfirmDelete
-        label={t('catalog.deleteAria', { name })}
-        message={t('catalog.deleteConfirm', { name })}
-        onConfirm={onDelete}
-      />
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <p className="max-w-2xl text-sm text-muted-foreground">{hint}</p>
+      {action}
     </div>
   );
+}
+
+function NameCell({ name, code, icon }: { name: string; code: string; icon?: ReactNode }) {
+  return (
+    <span className="flex items-center gap-3">
+      {icon && (
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+          {icon}
+        </span>
+      )}
+      <span className="flex min-w-0 flex-col">
+        <span className="font-medium">{name}</span>
+        <span className="font-mono text-xs text-muted-foreground">{code}</span>
+      </span>
+    </span>
+  );
+}
+
+function actionsColumn<T extends { id: string; version: number }>(
+  t: (k: string, o?: Record<string, unknown>) => string,
+  readOnly: boolean,
+  nameOf: (x: T) => string,
+  onEdit: (x: T) => void,
+  onDelete: (x: T) => Promise<unknown>,
+): ColumnDef<T> {
+  return {
+    id: 'actions',
+    enableHiding: false,
+    header: () => <span className="sr-only">{t('actions')}</span>,
+    cell: ({ row }) =>
+      readOnly ? null : (
+        <RowActions
+          editLabel={t('catalog.editAria', { name: nameOf(row.original) })}
+          deleteLabel={t('catalog.deleteAria', { name: nameOf(row.original) })}
+          deleteMessage={t('catalog.deleteConfirm', { name: nameOf(row.original) })}
+          onEdit={() => onEdit(row.original)}
+          onDelete={() => onDelete(row.original)}
+        />
+      ),
+  };
 }
 
 // ---- Components ---------------------------------------------------------------------
@@ -155,50 +171,66 @@ function ComponentsTab({ ctx }: { ctx: ConfigContext }) {
   const editor = useEditor<CatalogComponent>();
   const readOnly = !ctx.canConfigure;
   const loc = (x: Record<string, string>) => localize(x, ctx.uiLocale, ctx.defaultLocale);
-  const items = list.data ?? [];
+  const nameOf = (c: CatalogComponent) => loc(c.name) || c.code;
+  const columns: ColumnDef<CatalogComponent>[] = [
+    {
+      id: 'name',
+      accessorFn: nameOf,
+      meta: { label: t('fields.name') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.name')} />,
+      cell: ({ row }) => (
+        <NameCell
+          name={nameOf(row.original)}
+          code={row.original.code}
+          icon={<ComponentIcon code={row.original.code} />}
+        />
+      ),
+    },
+    {
+      id: 'tracked',
+      meta: { label: t('catalog.fields.tracked') },
+      header: t('catalog.fields.tracked'),
+      cell: ({ row }) => {
+        const c = row.original;
+        if (!c.tracked) return <span className="text-muted-foreground">—</span>;
+        const pool = poolList.data?.find((p) => p.id === c.pool_id);
+        return (
+          <StatusBadge tone="info">
+            {pool
+              ? t('catalog.trackedIn', { pool: loc(pool.name) || pool.component_code })
+              : t('catalog.tracked')}
+          </StatusBadge>
+        );
+      },
+    },
+    actionsColumn(t, readOnly, nameOf, editor.edit, (c) =>
+      remove.mutateAsync({ id: c.id, version: c.version }),
+    ),
+  ];
+  const add = !readOnly && (
+    <Button onClick={editor.create}>
+      <PlusIcon aria-hidden="true" />
+      {t('catalog.addComponent')}
+    </Button>
+  );
   return (
-    <div className="space-y-4 pt-4">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm text-slate-600">{t('catalog.componentsHint')}</p>
-        {!readOnly && <Button onClick={editor.create}>{t('catalog.addComponent')}</Button>}
-      </div>
-      <QueryState
-        isLoading={list.isPending}
-        error={list.error}
-        onRetry={() => void list.refetch()}
-      />
-      {list.data && items.length === 0 && <EmptyState>{t('catalog.emptyComponents')}</EmptyState>}
-      {items.length > 0 && (
-        <Card>
-          <ul className="divide-y divide-slate-100">
-            {items.map((c) => {
-              const name = loc(c.name) || c.code;
-              const pool = poolList.data?.find((p) => p.id === c.pool_id);
-              return (
-                <li key={c.id} className="flex flex-wrap items-center gap-3 px-4 py-2">
-                  <ComponentIcon code={c.code} className="text-slate-700" />
-                  <span className="font-medium">{name}</span>
-                  <span className="font-mono text-xs text-slate-500">{c.code}</span>
-                  {c.tracked && (
-                    <Badge tone="blue">
-                      {pool
-                        ? t('catalog.trackedIn', { pool: loc(pool.name) || pool.component_code })
-                        : t('catalog.tracked')}
-                    </Badge>
-                  )}
-                  <span className="ml-auto">
-                    <RowActions
-                      readOnly={readOnly}
-                      name={name}
-                      onEdit={() => editor.edit(c)}
-                      onDelete={() => remove.mutateAsync({ id: c.id, version: c.version })}
-                    />
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
+    <div className="space-y-4">
+      <TabToolbar hint={t('catalog.componentsHint')} action={add} />
+      {list.error ? (
+        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+      ) : (
+        <DataTable
+          caption={t('catalog.tabs.components')}
+          columns={columns}
+          data={list.data ?? []}
+          loading={list.isPending}
+          getRowId={(c) => c.id}
+          searchable
+          pageSize={0}
+          empty={
+            <EmptyState icon={BoxIcon} title={t('catalog.emptyComponents')} bordered={false} />
+          }
+        />
       )}
       <FormDialog
         open={editor.open}
@@ -231,50 +263,60 @@ function ComponentForm({
   const s = useCrudSubmit({ form, item, create, update, toInput: toComponentInput, onDone });
   const {
     register,
+    control,
     formState: { errors },
   } = form;
-  const code = useWatch({ control: form.control, name: 'code' });
-  const tracked = useWatch({ control: form.control, name: 'tracked' });
+  const code = useWatch({ control, name: 'code' });
+  const tracked = useWatch({ control, name: 'tracked' });
   return (
-    <form noValidate onSubmit={s.submit} className="space-y-4">
+    <form noValidate onSubmit={s.submit} className="space-y-5">
       <FormAlert state={s.alert} onReload={onDone} />
-      <Field
-        id="cmp-code"
-        label={t('fields.code')}
-        error={errors.code}
-        hint={t('catalog.componentCodeHint')}
-      >
-        <div className="flex items-center gap-2">
-          <ComponentIcon code={code} className="text-slate-700" />
-          <Input {...fieldAria('cmp-code', errors.code, true)} {...register('code')} />
-        </div>
-      </Field>
-      <I18nTextInput
+      <div className="flex items-start gap-4">
+        <span className="mt-6 flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-on-surface">
+          <ComponentIcon code={code} className="size-5" />
+        </span>
+        <Field
+          id="cmp-code"
+          label={t('fields.code')}
+          error={errors.code}
+          hint={t('catalog.componentCodeHint')}
+          className="flex-1"
+        >
+          <Input
+            {...fieldAria('cmp-code', errors.code, true)}
+            className="font-mono"
+            {...register('code')}
+          />
+        </Field>
+      </div>
+      <I18nTextField
+        control={control}
         name="name"
-        idPrefix="cmp"
+        id="cmp-name"
         label={t('fields.name')}
         locales={ctx.locales}
         defaultLocale={ctx.defaultLocale}
-        register={register}
-        errors={errors}
       />
-      <Checkbox
+      <BooleanField
+        control={control}
+        name="tracked"
         id="cmp-tracked"
+        variant="switch"
         label={t('catalog.fields.tracked')}
         description={t('catalog.trackedHint')}
-        {...register('tracked')}
       />
       {tracked && (
-        <Field id="cmp-pool" label={t('catalog.fields.pool_id')} error={errors.pool_id}>
-          <Select {...fieldAria('cmp-pool', errors.pool_id)} {...register('pool_id')}>
-            <option value="">{t('choose')}</option>
-            {(poolList.data ?? []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {localize(p.name, ctx.uiLocale, ctx.defaultLocale) || p.component_code}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        <SelectField
+          control={control}
+          name="pool_id"
+          id="cmp-pool"
+          label={t('catalog.fields.pool_id')}
+          placeholder={t('choose')}
+          options={(poolList.data ?? []).map((p) => ({
+            value: p.id,
+            label: localize(p.name, ctx.uiLocale, ctx.defaultLocale) || p.component_code,
+          }))}
+        />
       )}
       <FormActions onCancel={onDone} pending={s.pending} />
     </form>
@@ -291,76 +333,107 @@ function PacksTab({ ctx }: { ctx: ConfigContext }) {
   const readOnly = !ctx.canConfigure;
   const items = [...(list.data ?? [])].sort((a, b) => a.sort_order - b.sort_order);
   const loc = (x: Record<string, string>) => localize(x, ctx.uiLocale, ctx.defaultLocale);
-  return (
-    <div className="space-y-4 pt-4">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm text-slate-600">{t('catalog.packsHint')}</p>
-        {!readOnly && <Button onClick={editor.create}>{t('catalog.addPack')}</Button>}
-      </div>
-      <QueryState
-        isLoading={list.isPending}
-        error={list.error}
-        onRetry={() => void list.refetch()}
-      />
-      {list.data && items.length === 0 && <EmptyState>{t('catalog.emptyPacks')}</EmptyState>}
-      {items.length > 0 && (
-        <Card>
-          <ul className="divide-y divide-slate-100">
-            {items.map((p) => {
-              const name = loc(p.name) || p.code;
-              return (
-                <li key={p.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-                  <span className="font-medium">{name}</span>
-                  <span className="font-mono text-xs text-slate-500">{p.code}</span>
-                  <span
-                    className="flex flex-wrap items-center gap-2 text-sm text-slate-700"
-                    aria-label={t('catalog.compositionAria', {
-                      list: Object.entries(p.composition)
-                        .map(([c, q]) => `${q} × ${c}`)
-                        .join(', '),
-                    })}
-                  >
-                    {Object.entries(p.composition).map(([code, qty]) => (
-                      <span
-                        key={code}
-                        className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5"
-                        aria-hidden="true"
-                      >
-                        {qty}× <ComponentIcon code={code} />
-                      </span>
-                    ))}
-                  </span>
-                  {!p.active && <Badge tone="amber">{t('catalog.inactive')}</Badge>}
-                  {p.requires_approval && <Badge>{t('catalog.fields.requires_approval')}</Badge>}
-                  {p.vat_rate_bp !== undefined && (
-                    <Badge>
-                      {t('catalog.vatBadge', {
-                        rate: basisPointsToPercentInput(p.vat_rate_bp, ctx.uiLocale),
-                      })}
-                    </Badge>
-                  )}
-                  <span className="ml-auto">
-                    <RowActions
-                      readOnly={readOnly}
-                      name={name}
-                      onEdit={() => editor.edit(p)}
-                      onDelete={() => remove.mutateAsync({ id: p.id, version: p.version })}
-                    />
-                  </span>
-                </li>
-              );
+  const nameOf = (p: Pack) => loc(p.name) || p.code;
+  const columns: ColumnDef<Pack>[] = [
+    {
+      id: 'name',
+      accessorFn: nameOf,
+      meta: { label: t('fields.name') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.name')} />,
+      cell: ({ row }) => (
+        <NameCell
+          name={nameOf(row.original)}
+          code={row.original.code}
+          icon={<PackageIcon aria-hidden="true" className="size-4" />}
+        />
+      ),
+    },
+    {
+      id: 'composition',
+      meta: { label: t('catalog.fields.composition') },
+      header: t('catalog.fields.composition'),
+      cell: ({ row }) => {
+        const entries = Object.entries(row.original.composition);
+        return (
+          <span
+            role="img"
+            className="flex flex-wrap items-center gap-1.5"
+            aria-label={t('catalog.compositionAria', {
+              list: entries.map(([c, q]) => `${q} × ${c}`).join(', '),
             })}
-          </ul>
-        </Card>
+          >
+            {entries.map(([code, qty]) => (
+              <Badge key={code} variant="secondary" className="gap-1 tabular-nums">
+                {qty}×
+                <ComponentIcon code={code} className="size-3.5" />
+              </Badge>
+            ))}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'flags',
+      meta: { label: t('catalog.flags') },
+      header: t('catalog.flags'),
+      cell: ({ row }) => {
+        const p = row.original;
+        return (
+          <span className="flex flex-wrap gap-1.5">
+            {p.active ? (
+              <StatusBadge tone="success">{t('catalog.fields.active')}</StatusBadge>
+            ) : (
+              <StatusBadge tone="warning">{t('catalog.inactive')}</StatusBadge>
+            )}
+            {p.requires_approval && (
+              <StatusBadge tone="highlight">{t('catalog.fields.requires_approval')}</StatusBadge>
+            )}
+            {p.vat_rate_bp !== undefined && (
+              <Badge variant="outline">
+                {t('catalog.vatBadge', {
+                  rate: basisPointsToPercentInput(p.vat_rate_bp, ctx.uiLocale),
+                })}
+              </Badge>
+            )}
+          </span>
+        );
+      },
+    },
+    actionsColumn(t, readOnly, nameOf, editor.edit, (p) =>
+      remove.mutateAsync({ id: p.id, version: p.version }),
+    ),
+  ];
+  const add = !readOnly && (
+    <Button onClick={editor.create}>
+      <PlusIcon aria-hidden="true" />
+      {t('catalog.addPack')}
+    </Button>
+  );
+  return (
+    <div className="space-y-4">
+      <TabToolbar hint={t('catalog.packsHint')} action={add} />
+      {list.error ? (
+        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+      ) : (
+        <DataTable
+          caption={t('catalog.tabs.packs')}
+          columns={columns}
+          data={items}
+          loading={list.isPending}
+          getRowId={(p) => p.id}
+          searchable
+          pageSize={0}
+          empty={<EmptyState icon={PackageIcon} title={t('catalog.emptyPacks')} bordered={false} />}
+        />
       )}
-      <FormDialog
+      <FormSheet
         open={editor.open}
         onOpenChange={editor.setOpen}
-        wide
         title={editor.item ? t('catalog.editPack') : t('catalog.addPack')}
+        description={t('catalog.packsHint')}
       >
         <PackForm key={editor.key} ctx={ctx} item={editor.item} onDone={editor.close} />
-      </FormDialog>
+      </FormSheet>
     </div>
   );
 }
@@ -388,18 +461,30 @@ function PackForm({ ctx, item, onDone }: { ctx: ConfigContext; item?: Pack; onDo
   const {
     register,
     control,
+    setValue,
     formState: { errors },
   } = form;
   const loc = (x: Record<string, string>) => localize(x, ctx.uiLocale, ctx.defaultLocale);
   const compositionValues = useWatch({ control, name: 'composition' });
   const used = new Set(compositionValues.map((c) => c.component_code));
   const available = (componentList.data ?? []).filter((c) => !used.has(c.code));
+  const step = (i: number, delta: number) => {
+    const current = Number.parseInt(compositionValues[i]?.quantity ?? '0', 10) || 0;
+    setValue(`composition.${i}.quantity`, String(Math.max(1, current + delta)), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
   return (
-    <form noValidate onSubmit={s.submit} className="space-y-4">
+    <form noValidate onSubmit={s.submit} className="space-y-6">
       <FormAlert state={s.alert} onReload={onDone} />
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-3">
         <Field id="pack-code" label={t('fields.code')} error={errors.code}>
-          <Input {...fieldAria('pack-code', errors.code)} {...register('code')} />
+          <Input
+            {...fieldAria('pack-code', errors.code)}
+            className="font-mono"
+            {...register('code')}
+          />
         </Field>
         <Field id="pack-sort" label={t('fields.sort_order')} error={errors.sort_order}>
           <Input
@@ -414,70 +499,88 @@ function PackForm({ ctx, item, onDone }: { ctx: ConfigContext; item?: Pack; onDo
           error={errors.vat_rate}
           hint={t('catalog.vatHint')}
         >
-          <Input
+          <SuffixInput
             {...fieldAria('pack-vat', errors.vat_rate, true)}
+            suffix="%"
             inputMode="decimal"
             {...register('vat_rate')}
           />
         </Field>
       </div>
-      <I18nTextInput
+      <I18nTextField
+        control={control}
         name="name"
-        idPrefix="pack"
+        id="pack-name"
         label={t('fields.name')}
         locales={ctx.locales}
         defaultLocale={ctx.defaultLocale}
-        register={register}
-        errors={errors}
       />
-      <I18nTextInput
+      <I18nTextField
+        control={control}
         name="description"
-        idPrefix="pack"
+        id="pack-description"
         label={t('fields.description')}
         locales={ctx.locales}
         defaultLocale={ctx.defaultLocale}
-        register={register}
-        errors={errors}
         multiline
       />
-      <fieldset className="space-y-2 rounded-md border border-slate-200 p-3">
-        <legend className="px-1 text-sm font-medium text-slate-800">
+      <FieldSet className="gap-3 rounded-lg border p-4">
+        <FieldLegend variant="label" className="px-1">
           {t('catalog.fields.composition')}
-        </legend>
+        </FieldLegend>
         {composition.fields.length === 0 && (
-          <p className="text-sm text-slate-600">{t('catalog.compositionEmpty')}</p>
+          <FieldDescription>{t('catalog.compositionEmpty')}</FieldDescription>
         )}
-        <ul className="space-y-2">
+        <ul className="divide-y">
           {composition.fields.map((f, i) => {
             const code = compositionValues[i]?.component_code ?? f.component_code;
             const cmp = componentList.data?.find((c) => c.code === code);
+            const label = cmp ? loc(cmp.name) || code : code;
             const qtyErr = errorAt(errors, `composition.${i}.quantity`);
             const codeErr = errorAt(errors, `composition.${i}.component_code`);
             return (
-              <li key={f.id} className="flex flex-wrap items-center gap-2">
-                <ComponentIcon code={code} className="text-slate-700" />
-                <span className="min-w-32 text-sm font-medium">
-                  {cmp ? loc(cmp.name) || code : code}
+              <li key={f.id} className="flex flex-wrap items-center gap-3 py-2">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                  <ComponentIcon code={code} />
                 </span>
-                <label htmlFor={`pack-c${i}-qty`} className="sr-only">
-                  {t('catalog.quantityOf', { name: cmp ? loc(cmp.name) || code : code })}
-                </label>
-                <Input
-                  {...fieldAria(`pack-c${i}-qty`, qtyErr)}
-                  className="w-20"
-                  inputMode="numeric"
-                  {...register(`composition.${i}.quantity`)}
-                />
+                <span className="min-w-28 flex-1 text-sm font-medium">{label}</span>
+                <ButtonGroup>
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label={t('catalog.decrease', { name: label })}
+                    onClick={() => step(i, -1)}
+                  >
+                    <MinusIcon aria-hidden="true" />
+                  </Button>
+                  <Input
+                    {...fieldAria(`pack-c${i}-qty`, qtyErr)}
+                    aria-label={t('catalog.quantityOf', { name: label })}
+                    className="h-8 w-14 text-center tabular-nums"
+                    inputMode="numeric"
+                    {...register(`composition.${i}.quantity`)}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label={t('catalog.increase', { name: label })}
+                    onClick={() => step(i, 1)}
+                  >
+                    <PlusIcon aria-hidden="true" />
+                  </Button>
+                </ButtonGroup>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon-sm"
                   onClick={() => composition.remove(i)}
-                  aria-label={t('catalog.removeComponent', { name: code })}
+                  aria-label={t('catalog.removeComponent', { name: label })}
                 >
-                  ×
+                  <Trash2Icon aria-hidden="true" />
                 </Button>
-                <FieldError id={`pack-c${i}-qty`} error={qtyErr} />
-                <FieldError id={`pack-c${i}-code`} error={codeErr} />
+                <div className="w-full empty:hidden">
+                  <FieldError id={`pack-c${i}-qty`} error={qtyErr} />
+                  <FieldError id={`pack-c${i}-code`} error={codeErr} />
+                </div>
               </li>
             );
           })}
@@ -485,7 +588,7 @@ function PackForm({ ctx, item, onDone }: { ctx: ConfigContext; item?: Pack; onDo
         <FieldError id="pack-composition" error={errorAt(errors, 'composition')} />
         {available.length > 0 ? (
           <div
-            className="flex flex-wrap gap-2 pt-1"
+            className="flex flex-wrap gap-2"
             role="group"
             aria-label={t('catalog.addToComposition')}
           >
@@ -503,10 +606,10 @@ function PackForm({ ctx, item, onDone }: { ctx: ConfigContext; item?: Pack; onDo
           </div>
         ) : (
           componentList.data?.length === 0 && (
-            <p className="text-sm text-amber-800">{t('catalog.noComponents')}</p>
+            <FieldDescription>{t('catalog.noComponents')}</FieldDescription>
           )
         )}
-      </fieldset>
+      </FieldSet>
       <MultiCheck
         control={control}
         name="allowed_formulas"
@@ -542,7 +645,8 @@ function PackForm({ ctx, item, onDone }: { ctx: ConfigContext; item?: Pack; onDo
           }))}
         />
       )}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <FieldSeparator />
+      <div className="grid gap-5 sm:grid-cols-3">
         <Field
           id="pack-max"
           label={t('catalog.fields.max_per_booking')}
@@ -568,12 +672,20 @@ function PackForm({ ctx, item, onDone }: { ctx: ConfigContext; item?: Pack; onDo
           />
         </Field>
       </div>
-      <div className="flex flex-wrap gap-6">
-        <Checkbox id="pack-active" label={t('catalog.fields.active')} {...register('active')} />
-        <Checkbox
+      <div className="grid gap-3 sm:grid-cols-2">
+        <BooleanField
+          control={control}
+          name="active"
+          id="pack-active"
+          variant="switch"
+          label={t('catalog.fields.active')}
+        />
+        <BooleanField
+          control={control}
+          name="requires_approval"
           id="pack-approval"
+          variant="switch"
           label={t('catalog.fields.requires_approval')}
-          {...register('requires_approval')}
         />
       </div>
       <FormActions onCancel={onDone} pending={s.pending} />
@@ -591,55 +703,89 @@ function ExtrasTab({ ctx }: { ctx: ConfigContext }) {
   const readOnly = !ctx.canConfigure;
   const items = [...(list.data ?? [])].sort((a, b) => a.sort_order - b.sort_order);
   const loc = (x: Record<string, string>) => localize(x, ctx.uiLocale, ctx.defaultLocale);
+  const nameOf = (x: Extra) => loc(x.name) || x.code;
+  const columns: ColumnDef<Extra>[] = [
+    {
+      id: 'name',
+      accessorFn: nameOf,
+      meta: { label: t('fields.name') },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.name')} />,
+      cell: ({ row }) => (
+        <NameCell
+          name={nameOf(row.original)}
+          code={row.original.code}
+          icon={
+            row.original.component_code ? (
+              <ComponentIcon code={row.original.component_code} />
+            ) : (
+              <PuzzleIcon aria-hidden="true" className="size-4" />
+            )
+          }
+        />
+      ),
+    },
+    {
+      accessorKey: 'pricing_unit',
+      meta: { label: t('catalog.fields.pricing_unit') },
+      header: t('catalog.fields.pricing_unit'),
+      cell: ({ row }) => (
+        <Badge variant="outline">{t(`catalog.pricingUnits.${row.original.pricing_unit}`)}</Badge>
+      ),
+    },
+    {
+      accessorKey: 'attach_to',
+      meta: { label: t('catalog.fields.attach_to') },
+      header: t('catalog.fields.attach_to'),
+      cell: ({ row }) => (
+        <StatusBadge tone="info">{t(`catalog.attachTo.${row.original.attach_to}`)}</StatusBadge>
+      ),
+    },
+    {
+      accessorKey: 'active',
+      meta: { label: t('team.status') },
+      header: t('team.status'),
+      cell: ({ row }) =>
+        row.original.active ? (
+          <StatusBadge tone="success">{t('catalog.fields.active')}</StatusBadge>
+        ) : (
+          <StatusBadge tone="warning">{t('catalog.inactive')}</StatusBadge>
+        ),
+    },
+    actionsColumn(t, readOnly, nameOf, editor.edit, (x) =>
+      remove.mutateAsync({ id: x.id, version: x.version }),
+    ),
+  ];
+  const add = !readOnly && (
+    <Button onClick={editor.create}>
+      <PlusIcon aria-hidden="true" />
+      {t('catalog.addExtra')}
+    </Button>
+  );
   return (
-    <div className="space-y-4 pt-4">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm text-slate-600">{t('catalog.extrasHint')}</p>
-        {!readOnly && <Button onClick={editor.create}>{t('catalog.addExtra')}</Button>}
-      </div>
-      <QueryState
-        isLoading={list.isPending}
-        error={list.error}
-        onRetry={() => void list.refetch()}
-      />
-      {list.data && items.length === 0 && <EmptyState>{t('catalog.emptyExtras')}</EmptyState>}
-      {items.length > 0 && (
-        <Card>
-          <ul className="divide-y divide-slate-100">
-            {items.map((x) => {
-              const name = loc(x.name) || x.code;
-              return (
-                <li key={x.id} className="flex flex-wrap items-center gap-3 px-4 py-2">
-                  {x.component_code && (
-                    <ComponentIcon code={x.component_code} className="text-slate-700" />
-                  )}
-                  <span className="font-medium">{name}</span>
-                  <span className="font-mono text-xs text-slate-500">{x.code}</span>
-                  <Badge>{t(`catalog.pricingUnits.${x.pricing_unit}`)}</Badge>
-                  <Badge tone="blue">{t(`catalog.attachTo.${x.attach_to}`)}</Badge>
-                  {!x.active && <Badge tone="amber">{t('catalog.inactive')}</Badge>}
-                  <span className="ml-auto">
-                    <RowActions
-                      readOnly={readOnly}
-                      name={name}
-                      onEdit={() => editor.edit(x)}
-                      onDelete={() => remove.mutateAsync({ id: x.id, version: x.version })}
-                    />
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
+    <div className="space-y-4">
+      <TabToolbar hint={t('catalog.extrasHint')} action={add} />
+      {list.error ? (
+        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+      ) : (
+        <DataTable
+          caption={t('catalog.tabs.extras')}
+          columns={columns}
+          data={items}
+          loading={list.isPending}
+          getRowId={(x) => x.id}
+          searchable
+          pageSize={0}
+          empty={<EmptyState icon={PuzzleIcon} title={t('catalog.emptyExtras')} bordered={false} />}
+        />
       )}
-      <FormDialog
+      <FormSheet
         open={editor.open}
         onOpenChange={editor.setOpen}
-        wide
         title={editor.item ? t('catalog.editExtra') : t('catalog.addExtra')}
+        description={t('catalog.extrasHint')}
       >
         <ExtraForm key={editor.key} ctx={ctx} item={editor.item} onDone={editor.close} />
-      </FormDialog>
+      </FormSheet>
     </div>
   );
 }
@@ -679,50 +825,54 @@ function ExtraForm({
   const attachTo = useWatch({ control, name: 'attach_to' });
   const loc = (x: Record<string, string>) => localize(x, ctx.uiLocale, ctx.defaultLocale);
   return (
-    <form noValidate onSubmit={s.submit} className="space-y-4">
+    <form noValidate onSubmit={s.submit} className="space-y-6">
       <FormAlert state={s.alert} onReload={onDone} />
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2">
         <Field id="ex-code" label={t('fields.code')} error={errors.code}>
-          <Input {...fieldAria('ex-code', errors.code)} {...register('code')} />
+          <Input
+            {...fieldAria('ex-code', errors.code)}
+            className="font-mono"
+            {...register('code')}
+          />
         </Field>
-        <Field id="ex-unit" label={t('catalog.fields.pricing_unit')} error={errors.pricing_unit}>
-          <Select {...fieldAria('ex-unit', errors.pricing_unit)} {...register('pricing_unit')}>
-            {PRICING_UNITS.map((u) => (
-              <option key={u} value={u}>
-                {t(`catalog.pricingUnits.${u}`)}
-              </option>
-            ))}
-          </Select>
+        <Field id="ex-sort" label={t('fields.sort_order')} error={errors.sort_order}>
+          <Input
+            {...fieldAria('ex-sort', errors.sort_order)}
+            inputMode="numeric"
+            {...register('sort_order')}
+          />
         </Field>
-        <Field id="ex-attach" label={t('catalog.fields.attach_to')} error={errors.attach_to}>
-          <Select {...fieldAria('ex-attach', errors.attach_to)} {...register('attach_to')}>
-            {ATTACH_TO.map((a) => (
-              <option key={a} value={a}>
-                {t(`catalog.attachTo.${a}`)}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field
+        <SelectField
+          control={control}
+          name="pricing_unit"
+          id="ex-unit"
+          label={t('catalog.fields.pricing_unit')}
+          options={PRICING_UNITS.map((u) => ({ value: u, label: t(`catalog.pricingUnits.${u}`) }))}
+        />
+        <SelectField
+          control={control}
+          name="attach_to"
+          id="ex-attach"
+          label={t('catalog.fields.attach_to')}
+          options={ATTACH_TO.map((a) => ({ value: a, label: t(`catalog.attachTo.${a}`) }))}
+        />
+        <SelectField
+          control={control}
+          name="component_code"
           id="ex-component"
           label={t('catalog.fields.component_code')}
-          error={errors.component_code}
           hint={t('catalog.extraComponentHint')}
-        >
-          <Select
-            {...fieldAria('ex-component', errors.component_code, true)}
-            {...register('component_code')}
-          >
-            <option value="">{t('catalog.noComponent')}</option>
-            {(componentList.data ?? [])
+          options={[
+            { value: '', label: t('catalog.noComponent') },
+            ...(componentList.data ?? [])
               .filter((c) => c.tracked)
-              .map((c) => (
-                <option key={c.id} value={c.code}>
-                  {loc(c.name) || c.code}
-                </option>
-              ))}
-          </Select>
-        </Field>
+              .map((c) => ({
+                value: c.code,
+                label: loc(c.name) || c.code,
+                icon: <ComponentIcon code={c.code} />,
+              })),
+          ]}
+        />
         <Field id="ex-max" label={t('catalog.fields.max_quantity')} error={errors.max_quantity}>
           <Input
             {...fieldAria('ex-max', errors.max_quantity)}
@@ -736,30 +886,29 @@ function ExtraForm({
           error={errors.vat_rate}
           hint={t('catalog.vatHint')}
         >
-          <Input
+          <SuffixInput
             {...fieldAria('ex-vat', errors.vat_rate, true)}
+            suffix="%"
             inputMode="decimal"
             {...register('vat_rate')}
           />
         </Field>
       </div>
-      <I18nTextInput
+      <I18nTextField
+        control={control}
         name="name"
-        idPrefix="ex"
+        id="ex-name"
         label={t('fields.name')}
         locales={ctx.locales}
         defaultLocale={ctx.defaultLocale}
-        register={register}
-        errors={errors}
       />
-      <I18nTextInput
+      <I18nTextField
+        control={control}
         name="description"
-        idPrefix="ex"
+        id="ex-description"
         label={t('fields.description')}
         locales={ctx.locales}
         defaultLocale={ctx.defaultLocale}
-        register={register}
-        errors={errors}
         multiline
       />
       <MultiCheck
@@ -782,16 +931,13 @@ function ExtraForm({
           }))}
         />
       )}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field id="ex-sort" label={t('fields.sort_order')} error={errors.sort_order}>
-          <Input
-            {...fieldAria('ex-sort', errors.sort_order)}
-            inputMode="numeric"
-            {...register('sort_order')}
-          />
-        </Field>
-      </div>
-      <Checkbox id="ex-active" label={t('catalog.fields.active')} {...register('active')} />
+      <BooleanField
+        control={control}
+        name="active"
+        id="ex-active"
+        variant="switch"
+        label={t('catalog.fields.active')}
+      />
       <FormActions onCancel={onDone} pending={s.pending} />
     </form>
   );

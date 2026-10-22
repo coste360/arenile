@@ -56,7 +56,8 @@
         "name": "Vuoto",
         "description": "Nessun dato precompilato: configuri tutto a mano."
       }
-    }
+    },
+    "current": "Attuale"
   },
   "rows": {
     "intro": "Modello scelto: {{template}}. Indica quante file e quanti posti per fila: le postazioni vengono create sulla mappa con numerazione automatica.",
@@ -76,7 +77,8 @@
     "alreadyConfigured": "Questo stabilimento ha già una stagione o una mappa ({{spots}} postazioni): puoi continuare o modificarle dall'editor.",
     "openMap": "Apri la mappa",
     "openMaps": "Vai alle mappe",
-    "mapName": "Spiaggia"
+    "mapName": "Spiaggia",
+    "dates": "Apertura e chiusura"
   },
   "pricelist": {
     "intro": "Prezzo giornaliero per categoria (fila) e periodo della stagione {{year}}. Le regole base vengono generate automaticamente; mezza giornata e formule lunghe si configurano nei Prezzi.",
@@ -111,6 +113,8 @@
     "maps": "Modifica la mappa",
     "pricing": "Rivedi i prezzi",
     "settings": "Impostazioni dello stabilimento",
-    "restart": "Riapri la configurazione guidata"
-  }
+    "restart": "Riapri la configurazione guidata",
+    "summary": "Riepilogo"
+  },
+  "stepCounter": "Passo {{n}} di {{total}}"
 }

@@ -26,6 +26,7 @@ export const V = {
   overlap: 'configuration:validation.overlap',
   outsideSeason: 'configuration:validation.outsideSeason',
   slotRequired: 'configuration:validation.slotRequired',
+  dateRequired: 'configuration:validation.dateRequired',
 } as const;
 
 export const ISO_DATE_RE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
