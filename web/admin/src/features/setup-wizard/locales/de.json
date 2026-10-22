@@ -1,4 +1,116 @@
 {
   "title": "Geführte Einrichtung",
-  "description": "Daten, Vorlage, Reihen auf dem Plan, Schnellpreisliste, öffentliche Seite und Zahlungen."
+  "description": "Daten, Vorlage, Reihen auf der Karte, Schnellpreisliste, öffentliche Seite und Zahlungen. Jeder Schritt kann übersprungen und später geändert werden.",
+  "loading": "Wird geladen…",
+  "forbidden": "Die geführte Einrichtung ist Inhabern und Managern vorbehalten.",
+  "progress": "Fortschritt der Einrichtung",
+  "progressText": "{{done}} von {{total}} Schritten erledigt oder übersprungen",
+  "stepsLabel": "Schritte der Einrichtung",
+  "stepHeading": "Schritt {{n}} von {{total}}: {{name}}",
+  "back": "Zurück",
+  "skip": "Diesen Schritt überspringen",
+  "skipAndFinish": "Überspringen und abschließen",
+  "continue": "Weiter",
+  "saveAndContinue": "Speichern und weiter",
+  "finish": "Einrichtung abschließen",
+  "steps": {
+    "details": "Daten und Sprachen",
+    "template": "Vorlage",
+    "rows": "Reihen auf der Karte",
+    "pricelist": "Schnellpreisliste",
+    "publicPage": "Öffentliche Seite",
+    "payments": "Zahlungen"
+  },
+  "state": {
+    "pending": "offen",
+    "done": "erledigt",
+    "skipped": "übersprungen"
+  },
+  "details": {
+    "intro": "Prüfen Sie Name, Sprachen und Kontakte: Sie erscheinen auf der öffentlichen Seite und in den E-Mails an Kunden."
+  },
+  "template": {
+    "intro": "Wählen Sie die Vorlage, die Ihrem Betrieb am nächsten kommt: Sie legt Saison, Zonen, Katalog und Tarifperioden an, die Sie ändern können.",
+    "listLabel": "Verfügbare Vorlagen",
+    "use": "Diese Vorlage verwenden",
+    "selected": "Gewählt: weiter",
+    "layout": "Anordnung",
+    "rowsBySpots": "{{rows}} Reihen × {{spots}} Plätze",
+    "zones": "Zonen",
+    "packs": "Pakete",
+    "periods": "Perioden",
+    "codes": {
+      "classic_rows": {
+        "name": "Klassisches Strandbad mit Reihen",
+        "description": "Sonnenschirme in nummerierten Reihen, Preis nach Reihe und Periode. Der häufigste Fall."
+      },
+      "quantity_beach": {
+        "name": "Ausgestatteter Strand nach Menge",
+        "description": "Ausstattung ohne festen Platz: verkauft wird die Anzahl von Schirmen und Liegen."
+      },
+      "lido_with_pool": {
+        "name": "Strandbad mit Pool",
+        "description": "Reihen am Strand und ein Poolbereich mit Liegen nach Menge."
+      },
+      "empty": {
+        "name": "Leer",
+        "description": "Nichts vorausgefüllt: Sie richten alles selbst ein."
+      }
+    }
+  },
+  "rows": {
+    "intro": "Gewählte Vorlage: {{template}}. Geben Sie die Anzahl der Reihen und Plätze pro Reihe an: Die Plätze werden mit automatischer Nummerierung auf der Karte angelegt.",
+    "rows": "Reihen",
+    "spotsPerRow": "Plätze pro Reihe",
+    "total_one": "{{count}} Platz",
+    "total_other": "{{count}} Plätze",
+    "noRows": "Diese Vorlage verwendet keine Karte mit Reihen: Es werden Zonen und Ausstattung nach Menge angelegt.",
+    "season": "Erste Saison",
+    "year": "Jahr",
+    "opensOn": "Öffnung",
+    "closesOn": "Schließung",
+    "apply": "Saison und Karte anlegen",
+    "applying": "Wird angelegt…",
+    "applied": "Einrichtung angelegt.",
+    "appliedSummary": "Plätze: {{spots}} · Zonen: {{zones}} · Pakete: {{packs}} · Perioden: {{periods}}.",
+    "alreadyConfigured": "Dieser Betrieb hat bereits eine Saison oder eine Karte ({{spots}} Plätze): Sie können weitermachen oder sie im Editor bearbeiten.",
+    "openMap": "Karte öffnen",
+    "openMaps": "Zu den Karten",
+    "mapName": "Strand"
+  },
+  "pricelist": {
+    "intro": "Tagespreis je Kategorie (Reihe) und Periode der Saison {{year}}. Die Grundregeln werden automatisch erzeugt; Halbtag und lange Formeln richten Sie unter Preise ein.",
+    "caption": "Tagespreise in {{currency}}",
+    "category": "Kategorie",
+    "cellAria": "Tagespreis {{category}}, Periode {{period}}",
+    "hint": "Beträge inkl. MwSt., z. B. {{example}}. Nicht benötigte Zellen leer lassen.",
+    "generate": "Preisregeln erzeugen",
+    "generating": "Wird erzeugt…",
+    "created_one": "{{count}} Preisregel erstellt (ersetzt: {{replaced}}).",
+    "created_other": "{{count}} Preisregeln erstellt (ersetzt: {{replaced}}).",
+    "atLeastOne": "Mindestens einen Preis eingeben",
+    "noSeason": "Eine Saison ist nötig: Schließen Sie den vorigen Schritt ab oder legen Sie sie unter Saisons und Perioden an.",
+    "noZones": "Zonen mit Preiskategorie sind nötig: Wenden Sie eine Vorlage an oder legen Sie sie unter Zonen an.",
+    "noPeriods": "Tarifperioden sind nötig: Legen Sie sie unter Saisons und Perioden an."
+  },
+  "publicPage": {
+    "intro": "Aktivieren Sie Online-Buchungen, wählen Sie die Farben und kopieren Sie den Code für Ihre Website."
+  },
+  "payments": {
+    "intro": "Wählen Sie, wie Sie kassieren.",
+    "method": "Zahlungsart",
+    "manual": "Manuelle Zahlung",
+    "manualHint": "Kassiert an der Kasse (bar, Karte, Überweisung); Online-Buchungen werden vor Ort bezahlt.",
+    "stripe": "Stripe (Online-Zahlung)",
+    "stripeLater": "Verfügbar ab Meilenstein M4."
+  },
+  "finished": {
+    "title": "Einrichtung abgeschlossen",
+    "text": "Alles Weitere können Sie über das Menü Einrichtung verfeinern.",
+    "skipped": "Übersprungene Schritte: {{steps}}.",
+    "maps": "Karte bearbeiten",
+    "pricing": "Preise prüfen",
+    "settings": "Betriebseinstellungen",
+    "restart": "Geführte Einrichtung erneut öffnen"
+  }
 }

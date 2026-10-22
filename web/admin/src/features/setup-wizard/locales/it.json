@@ -1,4 +1,116 @@
 {
   "title": "Configurazione guidata",
-  "description": "Dati, modello, file sulla mappa, listino rapido, pagina pubblica e pagamenti."
+  "description": "Dati, modello, file sulla mappa, listino rapido, pagina pubblica e pagamenti. Ogni passo si può saltare e modificare in seguito.",
+  "loading": "Caricamento…",
+  "forbidden": "La configurazione guidata è riservata a proprietari e gestori.",
+  "progress": "Avanzamento della configurazione",
+  "progressText": "{{done}} passi su {{total}} completati o saltati",
+  "stepsLabel": "Passi della configurazione",
+  "stepHeading": "Passo {{n}} di {{total}}: {{name}}",
+  "back": "Indietro",
+  "skip": "Salta questo passo",
+  "skipAndFinish": "Salta e concludi",
+  "continue": "Continua",
+  "saveAndContinue": "Salva e continua",
+  "finish": "Concludi la configurazione",
+  "steps": {
+    "details": "Dati e lingue",
+    "template": "Modello",
+    "rows": "File sulla mappa",
+    "pricelist": "Listino rapido",
+    "publicPage": "Pagina pubblica",
+    "payments": "Pagamenti"
+  },
+  "state": {
+    "pending": "da fare",
+    "done": "completato",
+    "skipped": "saltato"
+  },
+  "details": {
+    "intro": "Controlla nome, lingue e contatti: compaiono sulla pagina pubblica e nelle email ai clienti."
+  },
+  "template": {
+    "intro": "Scegli il modello più vicino al tuo stabilimento: crea stagione, zone, catalogo e periodi tariffari che potrai modificare.",
+    "listLabel": "Modelli disponibili",
+    "use": "Usa questo modello",
+    "selected": "Scelto: continua",
+    "layout": "Disposizione",
+    "rowsBySpots": "{{rows}} file × {{spots}} posti",
+    "zones": "Zone",
+    "packs": "Pack",
+    "periods": "Periodi",
+    "codes": {
+      "classic_rows": {
+        "name": "Lido classico a file",
+        "description": "Ombrelloni in file numerate, prezzo per fila e periodo. Il caso più comune."
+      },
+      "quantity_beach": {
+        "name": "Spiaggia attrezzata a quantità",
+        "description": "Attrezzature senza posto fisso: si vende il numero di ombrelloni e lettini."
+      },
+      "lido_with_pool": {
+        "name": "Lido con piscina",
+        "description": "File in spiaggia più un'area piscina con lettini a quantità."
+      },
+      "empty": {
+        "name": "Vuoto",
+        "description": "Nessun dato precompilato: configuri tutto a mano."
+      }
+    }
+  },
+  "rows": {
+    "intro": "Modello scelto: {{template}}. Indica quante file e quanti posti per fila: le postazioni vengono create sulla mappa con numerazione automatica.",
+    "rows": "File",
+    "spotsPerRow": "Posti per fila",
+    "total_one": "{{count}} postazione",
+    "total_other": "{{count}} postazioni",
+    "noRows": "Questo modello non usa una mappa a file: verranno create zone e attrezzature a quantità.",
+    "season": "Prima stagione",
+    "year": "Anno",
+    "opensOn": "Apertura",
+    "closesOn": "Chiusura",
+    "apply": "Crea stagione e mappa",
+    "applying": "Creazione in corso…",
+    "applied": "Configurazione creata.",
+    "appliedSummary": "Postazioni: {{spots}} · zone: {{zones}} · pack: {{packs}} · periodi: {{periods}}.",
+    "alreadyConfigured": "Questo stabilimento ha già una stagione o una mappa ({{spots}} postazioni): puoi continuare o modificarle dall'editor.",
+    "openMap": "Apri la mappa",
+    "openMaps": "Vai alle mappe",
+    "mapName": "Spiaggia"
+  },
+  "pricelist": {
+    "intro": "Prezzo giornaliero per categoria (fila) e periodo della stagione {{year}}. Le regole base vengono generate automaticamente; mezza giornata e formule lunghe si configurano nei Prezzi.",
+    "caption": "Prezzi giornalieri in {{currency}}",
+    "category": "Categoria",
+    "cellAria": "Prezzo giornaliero {{category}}, periodo {{period}}",
+    "hint": "Importi IVA inclusa, ad esempio {{example}}. Lascia vuote le celle che non ti servono.",
+    "generate": "Genera le regole di prezzo",
+    "generating": "Generazione in corso…",
+    "created_one": "Creata {{count}} regola di prezzo (sostituite: {{replaced}}).",
+    "created_other": "Create {{count}} regole di prezzo (sostituite: {{replaced}}).",
+    "atLeastOne": "Inserisci almeno un prezzo",
+    "noSeason": "Serve una stagione: completa il passo precedente o creala in Stagioni e periodi.",
+    "noZones": "Servono zone con una categoria di prezzo: applica un modello o creale in Zone.",
+    "noPeriods": "Servono periodi tariffari: creali in Stagioni e periodi."
+  },
+  "publicPage": {
+    "intro": "Attiva le prenotazioni online, scegli i colori e copia il codice da incollare sul tuo sito."
+  },
+  "payments": {
+    "intro": "Scegli come incassare.",
+    "method": "Metodo di pagamento",
+    "manual": "Pagamento manuale",
+    "manualHint": "Incassi in cassa (contanti, POS, bonifico); le prenotazioni online restano da saldare in loco.",
+    "stripe": "Stripe (pagamento online)",
+    "stripeLater": "Disponibile dalla milestone M4."
+  },
+  "finished": {
+    "title": "Configurazione completata",
+    "text": "Puoi rifinire tutto dalle voci del menu Configurazione.",
+    "skipped": "Passi saltati: {{steps}}.",
+    "maps": "Modifica la mappa",
+    "pricing": "Rivedi i prezzi",
+    "settings": "Impostazioni dello stabilimento",
+    "restart": "Riapri la configurazione guidata"
+  }
 }

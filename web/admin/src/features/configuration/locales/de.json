@@ -1,34 +1,442 @@
 {
+  "readOnly": "Ihre Rolle erlaubt nur das Ansehen: Änderungen sind Inhabern und Managern vorbehalten.",
+  "actions": "Aktionen",
+  "choose": "Auswählen…",
+  "fields": {
+    "code": "Code",
+    "name": "Name",
+    "description": "Beschreibung",
+    "sort_order": "Reihenfolge"
+  },
+  "i18nText": {
+    "default": "{{language}} (Standard)",
+    "fallbackPlaceholder": "Leer: Standardsprache wird verwendet"
+  },
+  "conflict": {
+    "reload": "Aktuelle Daten neu laden"
+  },
+  "validation": {
+    "required": "Pflichtfeld",
+    "code": "Kleinbuchstaben, Ziffern, Bindestriche oder Unterstriche verwenden (max. 64)",
+    "date": "Gültiges Datum eingeben",
+    "dateOrder": "Das Enddatum muss gleich oder nach dem Anfangsdatum liegen",
+    "amount": "Gültigen Betrag eingeben, z. B. 25 oder 25,50",
+    "percent": "Prozentsatz zwischen 0 und 100 eingeben (max. 2 Dezimalstellen)",
+    "integer": "Gültige ganze Zahl eingeben",
+    "email": "Gültige E-Mail-Adresse eingeben",
+    "color": "Hex-Farbe verwenden, z. B. #0e6ba8",
+    "url": "Gültige https://-Adresse eingeben",
+    "origin": "Jede Zeile muss ein Ursprung wie https://www.beispiel.de sein (ohne Pfad)",
+    "slug": "Nur Kleinbuchstaben, Ziffern und Bindestriche (nicht am Anfang oder Ende)",
+    "decimal": "Gültige Dezimalzahl eingeben (max. 4 Dezimalstellen)",
+    "halfDayFactor": "Der Faktor muss größer als 0 und höchstens 1 sein",
+    "defaultLocaleText": "Der Text in der Standardsprache ist erforderlich",
+    "localeRequired": "Mindestens eine Sprache aktivieren, einschließlich der Standardsprache",
+    "monthDay": "Format MM-TT verwenden, z. B. 08-16",
+    "overlap": "Der Zeitraum überschneidet sich mit einer anderen Tarifperiode der Saison",
+    "outsideSeason": "Der Zeitraum muss innerhalb der Saisondaten liegen",
+    "slotRequired": "Mindestens einen Zeitraum wählen",
+    "duplicate": "Komponente bereits vorhanden",
+    "passwordLength": "Das Passwort muss mindestens 12 Zeichen haben"
+  },
   "establishment": {
     "title": "Betrieb",
-    "description": "Daten, Sprachen, Design, öffentliche Seite und Preiseinstellungen."
+    "description": "Daten, Sprachen, Design, öffentliche Seite und Preiseinstellungen.",
+    "openWizard": "Geführte Einrichtung",
+    "general": {
+      "title": "Allgemeine Daten und Sprachen",
+      "contacts": "Kontakte und Adresse",
+      "slugHint": "Adresse der öffentlichen Seite: /b/<adresse>. Eine Änderung macht bereits geteilte Links ungültig.",
+      "currency": "Währung: {{currency}} (nicht änderbar)."
+    },
+    "publicPage": {
+      "title": "Öffentliche Seite und Einbettung",
+      "description": "Online-Buchungen und Websites, die das Widget einbetten dürfen.",
+      "bookingHint": "Wenn deaktiviert, zeigt die öffentliche Seite nur die Kontakte.",
+      "originsHint": "Ein Ursprung pro Zeile. Leer: nur direkter Link und gleiche Domain."
+    },
+    "fields": {
+      "name": "Name",
+      "slug": "Öffentliche Adresse",
+      "timezone": "Zeitzone",
+      "default_locale": "Standardsprache",
+      "enabled_locales": "Aktive Sprachen",
+      "contact_email": "E-Mail",
+      "contact_phone": "Telefon",
+      "street": "Adresse",
+      "city": "Ort",
+      "province": "Provinz",
+      "postal_code": "PLZ",
+      "country": "Land (ISO-Code)",
+      "concession_ref": "Referenz der Strandkonzession",
+      "booking_enabled": "Online-Buchungen aktiv",
+      "allowed_embed_origins": "Zur Einbettung berechtigte Websites"
+    }
+  },
+  "embed": {
+    "publicUrl": "Öffentliche Seite:",
+    "script": "Empfohlener Code (Skript, passt die Höhe an)",
+    "iframe": "Alternativ: iframe",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "hint": "Fügen Sie den Code in Ihre Website ein; die Domain muss zu den berechtigten Websites gehören."
+  },
+  "theme": {
+    "title": "Design der öffentlichen Seite",
+    "description": "Farben, Schrift und Texte; die Vorschau aktualisiert sich beim Bearbeiten.",
+    "preview": "Vorschau",
+    "previewIntro": "Daten, Platz und Paket wählen: in einer Minute gebucht.",
+    "previewLink": "Buchungsbedingungen",
+    "previewButton": "Buchen",
+    "picker": "Farbauswahl: {{field}}",
+    "fields": {
+      "primary_color": "Hauptfarbe",
+      "accent_color": "Akzentfarbe",
+      "font_family": "Schrift",
+      "radius": "Eckenradius",
+      "logo_url": "Logo-URL",
+      "show_prices_on_map": "Preise auf der Karte anzeigen",
+      "hide_header_in_embed": "Kopfzeile ausblenden, wenn die Seite eingebettet ist",
+      "intro": "Einleitungstext"
+    },
+    "fonts": {
+      "Inter": "Inter",
+      "system": "System",
+      "serif": "Serifen"
+    },
+    "radii": {
+      "none": "Keiner",
+      "sm": "Klein",
+      "md": "Mittel",
+      "lg": "Groß"
+    },
+    "warnings": {
+      "primaryText": "Kontrast der Hauptfarbe auf Weiß {{ratio}}:1 (mindestens 4,5:1): Links und Texte verwenden automatisch {{corrected}}.",
+      "accentContrast": "Die Akzentfarbe hat {{ratio}}:1 Kontrast auf Weiß (mindestens 3:1): ausgewählte Plätze sind eventuell schlecht sichtbar.",
+      "similarColors": "Haupt- und Akzentfarbe sind zu ähnlich: wählen Sie deutlicher unterschiedliche Farben."
+    }
+  },
+  "pricingSettings": {
+    "title": "Preiseinstellungen",
+    "description": "Werte, die die Preisberechnung verwendet, wenn eine Regel nichts anderes festlegt.",
+    "halfDayHint": "Halbtagespreis = Tag × Faktor (z. B. 0,6).",
+    "vatHint": "Satz für Pakete ohne eigenen Satz. Mit Ihrem Steuerberater prüfen.",
+    "fields": {
+      "half_day_factor": "Halbtagesfaktor",
+      "rounding": "Rundung der Summe",
+      "default_vat_rate": "Standard-MwSt."
+    },
+    "roundings": {
+      "none": "Keine",
+      "euro": "Auf ganze Euro",
+      "fifty_cents": "Auf 50 Cent"
+    }
   },
   "new": {
     "title": "Neuer Betrieb",
-    "description": "Einen weiteren Betrieb Ihrer Organisation anlegen."
+    "description": "Einen weiteren Betrieb Ihrer Organisation anlegen.",
+    "ownerOnly": "Nur Inhaber können neue Betriebe anlegen.",
+    "organization": "Organisation {{index}}",
+    "organizationWith": "Organisation {{index}} ({{names}})",
+    "afterCreate": "Nach dem Anlegen öffnet sich die geführte Einrichtung.",
+    "submit": "Betrieb anlegen",
+    "fields": {
+      "organization": "Organisation"
+    }
   },
   "seasons": {
-    "title": "Saisons und Zeiträume",
-    "description": "Öffnungssaisons und Tarifzeiträume."
+    "title": "Saisons und Perioden",
+    "description": "Öffnungssaisons und Tarifperioden.",
+    "add": "Neue Saison",
+    "empty": "Keine Saison: legen Sie eine an oder nutzen Sie die geführte Einrichtung.",
+    "dates": "Geöffnet",
+    "editTitle": "Saison {{year}}",
+    "editAria": "Saison {{year}} bearbeiten",
+    "deleteAria": "Saison {{year}} löschen",
+    "deleteConfirm": "Die Saison {{year}} wird mit ihren Tarifperioden gelöscht.",
+    "fields": {
+      "year": "Jahr",
+      "opens_on": "Öffnet am",
+      "closes_on": "Schließt am",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Entwurf",
+      "active": "Aktiv",
+      "closed": "Geschlossen"
+    }
+  },
+  "periods": {
+    "title": "Tarifperioden {{year}}",
+    "description": "Neben-, Zwischen-, Hauptsaison und Spitze: jeder Tag der Saison gehört höchstens zu einer Periode.",
+    "add": "Neue Periode",
+    "empty": "Keine Tarifperioden für diese Saison.",
+    "timeline": "Kalender der Tarifperioden der Saison",
+    "segmentAria": "{{code}} vom {{from}} bis {{to}}",
+    "uncovered_one": "{{count}} Tag der Saison ist von keiner Periode abgedeckt.",
+    "uncovered_other": "{{count}} Tage der Saison sind von keiner Periode abgedeckt.",
+    "editTitle": "Periode {{code}}",
+    "editAria": "Periode {{code}} bearbeiten",
+    "deleteAria": "Periode {{code}} löschen",
+    "deleteConfirm": "Die Periode {{code}} wird gelöscht; Regeln, die sie verwenden, gelten nicht mehr.",
+    "codeHint": "low, mid, high, peak oder ein freier Code.",
+    "rangesHint": "Ein oder mehrere Zeiträume zwischen {{from}} und {{to}}.",
+    "from": "Von",
+    "to": "Bis",
+    "addRange": "Zeitraum hinzufügen",
+    "removeRange": "Zeitraum {{index}} entfernen",
+    "fields": {
+      "code": "Code",
+      "color": "Farbe",
+      "ranges": "Zeiträume"
+    },
+    "presets": {
+      "low": "Nebensaison",
+      "mid": "Zwischensaison",
+      "high": "Hauptsaison",
+      "peak": "Spitze"
+    }
+  },
+  "holidays": {
+    "title": "Lokale Feiertage",
+    "description": "Tage, die von Preisregeln als Feiertage behandelt werden (zusätzlich zu den nationalen Feiertagen).",
+    "dates": "Bestimmte Daten",
+    "recurring": "Jährliche Feiertage",
+    "recurringHint": "Format MM-TT, z. B. 08-16 für den Schutzpatron.",
+    "addDate": "Datum hinzufügen",
+    "addRecurring": "Jährlichen Feiertag hinzufügen",
+    "dateAria": "Feiertag {{index}}",
+    "recurringAria": "Jährlicher Feiertag {{index}}",
+    "removeAria": "Feiertag {{index}} entfernen",
+    "removeRecurringAria": "Jährlichen Feiertag {{index}} entfernen"
   },
   "closures": {
     "title": "Schließtage",
-    "description": "Außerordentliche Schließtage."
+    "description": "Außerordentliche Schließtage.",
+    "add": "Neuer Schließtag",
+    "empty": "Keine außerordentlichen Schließtage in diesem Jahr.",
+    "year": "Jahr",
+    "wholeDay": "Ganzer Tag",
+    "editTitle": "Schließtag bearbeiten",
+    "editAria": "Schließtag am {{date}} bearbeiten",
+    "deleteAria": "Schließtag am {{date}} löschen",
+    "deleteConfirm": "Der Schließtag am {{date}} wird gelöscht.",
+    "formHint": "Unwetter, Veranstaltungen oder Arbeiten: In den gewählten Zeiträumen sind keine Plätze buchbar.",
+    "reasonPlaceholder": "Z. B. Unwetterwarnung",
+    "fields": {
+      "date": "Datum",
+      "slots": "Zeiträume",
+      "reason": "Grund"
+    },
+    "slot": {
+      "AM": "Vormittag",
+      "PM": "Nachmittag"
+    }
   },
   "zones": {
     "title": "Zonen",
-    "description": "Zonen, Zuweisungsarten und Online-Kontingente."
+    "description": "Zonen, Zuweisungsart und Online-Kontingente.",
+    "add": "Neue Zone",
+    "empty": "Keine Zonen: legen Sie eine an oder wenden Sie eine Vorlage in der geführten Einrichtung an.",
+    "online": "Online-Verkauf",
+    "onlineAll": "Alle online",
+    "deskOnly": "Nur Kasse",
+    "spots": "Plätze",
+    "noMap": "Keine Karte",
+    "autoAssignShort": "automatische Zuweisung",
+    "priceCategoryHint": "Schlüssel für Preisregeln, z. B. row1.",
+    "autoAssignHint": "Bei Bestätigung wählt das System einen freien Platz; sonst weist ihn das Personal zu.",
+    "editTitle": "Zone {{name}}",
+    "editAria": "Zone {{name}} bearbeiten",
+    "deleteAria": "Zone {{name}} löschen",
+    "deleteConfirm": "Die Zone {{name}} wird gelöscht.",
+    "fields": {
+      "assignment_mode": "Zuweisungsart",
+      "price_category": "Preiskategorie",
+      "map_id": "Karte",
+      "auto_assign": "Automatische Zuweisung",
+      "online_visible": "Auf der öffentlichen Seite sichtbar",
+      "quota_type": "Online-Kontingent",
+      "quota_value": "Kontingentwert"
+    },
+    "modes": {
+      "seat": "Gewählter Platz",
+      "zone": "Zone",
+      "quantity": "Menge"
+    },
+    "modeHints": {
+      "seat": "Der Kunde wählt den genauen Platz auf der Karte.",
+      "zone": "Der Kunde wählt die Zone; der Platz wird später zugewiesen.",
+      "quantity": "Nur Anzahl der Ausstattung, ohne Position (z. B. freie Liegen)."
+    },
+    "quotaTypes": {
+      "none": "Keine Begrenzung",
+      "percent": "Prozentsatz",
+      "count": "Anzahl"
+    },
+    "quotaHints": {
+      "none": "",
+      "percent": "Anteil der online verkaufbaren Plätze (0–100).",
+      "count": "Höchstzahl der online verkaufbaren Plätze."
+    },
+    "quota": {
+      "percent": "Online {{value}} %",
+      "count": "Online max. {{value}}"
+    }
   },
   "pools": {
-    "title": "Kontingente",
-    "description": "Mengenbestand ohne Position."
+    "title": "Pools",
+    "description": "Mengenbestand ohne Position.",
+    "add": "Neuer Pool",
+    "empty": "Keine Pools.",
+    "systemManaged": "Vom System verwaltet",
+    "systemHint": "Von der Zone erstellt: über die Zone bearbeiten.",
+    "noZone": "Keine Zone",
+    "overrides": "Kapazität nach Zeitraum",
+    "overridesHint": "Optional: abweichende Kapazität an einigen Tagen (z. B. zusätzliche Liegen im August).",
+    "addOverride": "Abweichung hinzufügen",
+    "removeOverride": "Abweichung {{index}} entfernen",
+    "editTitle": "Pool bearbeiten",
+    "editAria": "Pool {{name}} bearbeiten",
+    "deleteAria": "Pool {{name}} löschen",
+    "deleteConfirm": "Der Pool {{name}} wird gelöscht.",
+    "fields": {
+      "component_code": "Komponente",
+      "zone_id": "Mengenzone",
+      "capacity": "Kapazität"
+    }
   },
   "catalog": {
     "title": "Katalog",
-    "description": "Komponenten, Pakete und Extras."
+    "description": "Komponenten, Pakete und Extras.",
+    "tabs": {
+      "components": "Komponenten",
+      "packs": "Pakete",
+      "extras": "Extras"
+    },
+    "componentsHint": "Physische Ausstattung (Schirm, Liege, Liegestuhl). Erfasste verbrauchen einen Pool.",
+    "packsHint": "Verkaufbare Produkte aus Komponenten, z. B. Schirm + 2 Liegen.",
+    "extrasHint": "Optionale Zusätze zu einem Paket oder zur Buchung.",
+    "addComponent": "Neue Komponente",
+    "addPack": "Neues Paket",
+    "addExtra": "Neues Extra",
+    "editComponent": "Komponente bearbeiten",
+    "editPack": "Paket bearbeiten",
+    "editExtra": "Extra bearbeiten",
+    "emptyComponents": "Keine Komponenten.",
+    "emptyPacks": "Keine Pakete.",
+    "emptyExtras": "Keine Extras.",
+    "editAria": "{{name}} bearbeiten",
+    "deleteAria": "{{name}} löschen",
+    "deleteConfirm": "{{name}} wird aus dem Katalog entfernt.",
+    "tracked": "Erfasst",
+    "trackedIn": "Erfasst in {{pool}}",
+    "trackedHint": "Buchungen verbrauchen die Verfügbarkeit des gewählten Pools.",
+    "componentCodeHint": "Z. B. umbrella, sunbed, deckchair: das Symbol ergibt sich aus dem Code.",
+    "inactive": "Inaktiv",
+    "vatBadge": "MwSt. {{rate}} %",
+    "vatHint": "Leer: Standard-MwSt. des Betriebs.",
+    "compositionAria": "Zusammensetzung: {{list}}",
+    "compositionEmpty": "Mindestens eine Komponente hinzufügen.",
+    "addToComposition": "Komponente zum Paket hinzufügen",
+    "quantityOf": "Menge von {{name}}",
+    "removeComponent": "{{name}} aus dem Paket entfernen",
+    "noComponents": "Legen Sie zuerst die Komponenten im Reiter Komponenten an.",
+    "noComponent": "Keine",
+    "extraComponentHint": "Vom Extra verbrauchte erfasste Komponente, falls vorhanden.",
+    "allIfEmpty": "Keine Auswahl: alle.",
+    "fields": {
+      "tracked": "Bestand erfasst",
+      "pool_id": "Pool",
+      "composition": "Zusammensetzung",
+      "allowed_formulas": "Erlaubte Formeln",
+      "channels": "Verkaufskanäle",
+      "requires_spot_kind": "Kompatible Platztypen",
+      "allowed_zone_ids": "Erlaubte Zonen",
+      "max_per_booking": "Maximum pro Buchung",
+      "image": "Bild-URL",
+      "active": "Aktiv",
+      "requires_approval": "Erfordert Freigabe",
+      "vat_rate": "MwSt. (%)",
+      "pricing_unit": "Preiseinheit",
+      "attach_to": "Hinzugefügt zu",
+      "component_code": "Verbrauchte Komponente",
+      "max_quantity": "Höchstmenge",
+      "allowed_pack_ids": "Kompatible Pakete"
+    },
+    "pricingUnits": {
+      "per_booking": "Pro Buchung",
+      "per_day": "Pro Tag",
+      "per_slot": "Pro Zeitraum"
+    },
+    "attachTo": {
+      "line": "Platz",
+      "booking": "Buchung"
+    }
+  },
+  "formulas": {
+    "half_day": "Halber Tag",
+    "day": "Tag",
+    "multi_day": "Mehrere Tage",
+    "week": "Woche",
+    "fortnight": "Zwei Wochen",
+    "month": "Monat",
+    "season": "Saison"
+  },
+  "channels": {
+    "desk": "Kasse",
+    "online": "Online",
+    "api": "API"
+  },
+  "spotKinds": {
+    "umbrella": "Sonnenschirm",
+    "gazebo": "Pavillon",
+    "tent": "Zelt",
+    "palm": "Palme",
+    "custom": "Sonstiges"
+  },
+  "roles": {
+    "owner": "Inhaber",
+    "manager": "Manager",
+    "cashier": "Kassierer",
+    "beach_staff": "Strandpersonal",
+    "viewer": "Nur Lesen"
   },
   "team": {
     "title": "Benutzer",
-    "description": "Benutzer und Rollen des Betriebs."
+    "description": "Benutzer und Rollen des Betriebs.",
+    "ownerOnly": "Die Verwaltung von Benutzern und Rollen ist Inhabern vorbehalten.",
+    "invite": "Benutzer einladen",
+    "inviteHint": "Existiert die E-Mail bereits, erhält der Benutzer nur die neue Rolle.",
+    "inviteSubmit": "Benutzer hinzufügen",
+    "empty": "Keine Benutzer.",
+    "status": "Status",
+    "active": "Aktiv",
+    "inactive": "Deaktiviert",
+    "deactivate": "Deaktivieren",
+    "reactivate": "Reaktivieren",
+    "deactivateAria": "{{name}} deaktivieren",
+    "reactivateAria": "{{name}} reaktivieren",
+    "removeAria": "Zugriff für {{name}} entziehen",
+    "removeConfirm": "{{name}} kann nicht mehr auf diesen Betrieb zugreifen.",
+    "roleOf": "Rolle von {{name}}",
+    "totp": "2FA",
+    "createdNew": "Benutzer {{name}} angelegt.",
+    "createdExisting": "{{name}} hatte bereits ein Konto und hat die neue Rolle erhalten.",
+    "initialPassword": "Anfangspasswort (nur einmal angezeigt, sicher weitergeben):",
+    "passwordHint": "Optional: wenn leer, wird eines erzeugt und einmal angezeigt.",
+    "rolesHint": "Inhaber: alles. Manager: Einrichtung, Buchungen, Kasse. Kassierer: Buchungen und Kasse. Strandpersonal: Check-in und Sperren. Nur Lesen: Ansicht und Berichte.",
+    "fields": {
+      "email": "E-Mail",
+      "name": "Name",
+      "role": "Rolle",
+      "scope": "Geltungsbereich",
+      "locale": "Sprache",
+      "password": "Anfangspasswort"
+    },
+    "scopes": {
+      "establishment": "Dieser Betrieb",
+      "organization": "Gesamte Organisation"
+    }
   }
 }

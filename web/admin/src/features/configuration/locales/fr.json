@@ -1,34 +1,442 @@
 {
+  "readOnly": "Votre rôle permet seulement la consultation : les modifications sont réservées aux propriétaires et aux gérants.",
+  "actions": "Actions",
+  "choose": "Choisir…",
+  "fields": {
+    "code": "Code",
+    "name": "Nom",
+    "description": "Description",
+    "sort_order": "Ordre"
+  },
+  "i18nText": {
+    "default": "{{language}} (par défaut)",
+    "fallbackPlaceholder": "Vide : la langue par défaut est utilisée"
+  },
+  "conflict": {
+    "reload": "Recharger les données à jour"
+  },
+  "validation": {
+    "required": "Champ obligatoire",
+    "code": "Utilisez des minuscules, chiffres, tirets ou underscores (max 64)",
+    "date": "Saisissez une date valide",
+    "dateOrder": "La date de fin doit être égale ou postérieure à la date de début",
+    "amount": "Saisissez un montant valide, par ex. 25 ou 25,50",
+    "percent": "Saisissez un pourcentage entre 0 et 100 (2 décimales max)",
+    "integer": "Saisissez un nombre entier valide",
+    "email": "Saisissez une adresse e-mail valide",
+    "color": "Utilisez une couleur hexadécimale, par ex. #0e6ba8",
+    "url": "Saisissez une adresse https:// valide",
+    "origin": "Chaque ligne doit être une origine comme https://www.exemple.fr (sans chemin)",
+    "slug": "Uniquement minuscules, chiffres et tirets (pas au début ni à la fin)",
+    "decimal": "Saisissez un nombre décimal valide (4 décimales max)",
+    "halfDayFactor": "Le facteur doit être supérieur à 0 et au plus égal à 1",
+    "defaultLocaleText": "Le texte dans la langue par défaut est obligatoire",
+    "localeRequired": "Activez au moins une langue, y compris la langue par défaut",
+    "monthDay": "Utilisez le format MM-JJ, par ex. 08-16",
+    "overlap": "La plage chevauche une autre période tarifaire de la saison",
+    "outsideSeason": "La plage doit être comprise dans les dates de la saison",
+    "slotRequired": "Choisissez au moins une tranche",
+    "duplicate": "Composant déjà présent",
+    "passwordLength": "Le mot de passe doit comporter au moins 12 caractères"
+  },
   "establishment": {
     "title": "Établissement",
-    "description": "Données, langues, thème, page publique et paramètres de prix."
+    "description": "Données, langues, thème, page publique et paramètres de prix.",
+    "openWizard": "Configuration guidée",
+    "general": {
+      "title": "Données générales et langues",
+      "contacts": "Contacts et adresse",
+      "slugHint": "Adresse de la page publique : /b/<adresse>. La modifier casse les liens déjà partagés.",
+      "currency": "Devise : {{currency}} (non modifiable)."
+    },
+    "publicPage": {
+      "title": "Page publique et intégration",
+      "description": "Réservations en ligne et sites autorisés à intégrer le widget.",
+      "bookingHint": "Si désactivée, la page publique n'affiche que les contacts.",
+      "originsHint": "Une origine par ligne. Vide : lien direct et même domaine uniquement."
+    },
+    "fields": {
+      "name": "Nom",
+      "slug": "Adresse publique",
+      "timezone": "Fuseau horaire",
+      "default_locale": "Langue par défaut",
+      "enabled_locales": "Langues actives",
+      "contact_email": "E-mail",
+      "contact_phone": "Téléphone",
+      "street": "Adresse",
+      "city": "Commune",
+      "province": "Province",
+      "postal_code": "Code postal",
+      "country": "Pays (code ISO)",
+      "concession_ref": "Référence de la concession balnéaire",
+      "booking_enabled": "Réservations en ligne actives",
+      "allowed_embed_origins": "Sites autorisés à intégrer"
+    }
+  },
+  "embed": {
+    "publicUrl": "Page publique :",
+    "script": "Code recommandé (script, gère la hauteur)",
+    "iframe": "Sinon : iframe",
+    "copy": "Copier",
+    "copied": "Copié",
+    "hint": "Collez le code dans votre site ; son domaine doit figurer parmi les sites autorisés."
+  },
+  "theme": {
+    "title": "Thème de la page publique",
+    "description": "Couleurs, police et textes ; l'aperçu se met à jour pendant la saisie.",
+    "preview": "Aperçu",
+    "previewIntro": "Choisissez dates, emplacement et formule : réservé en une minute.",
+    "previewLink": "Conditions de réservation",
+    "previewButton": "Réserver",
+    "picker": "Sélecteur de couleur : {{field}}",
+    "fields": {
+      "primary_color": "Couleur principale",
+      "accent_color": "Couleur d'accent",
+      "font_family": "Police",
+      "radius": "Arrondi",
+      "logo_url": "URL du logo",
+      "show_prices_on_map": "Afficher les prix sur le plan",
+      "hide_header_in_embed": "Masquer l'en-tête quand la page est intégrée",
+      "intro": "Texte d'introduction"
+    },
+    "fonts": {
+      "Inter": "Inter",
+      "system": "Système",
+      "serif": "Avec empattements"
+    },
+    "radii": {
+      "none": "Aucun",
+      "sm": "Petit",
+      "md": "Moyen",
+      "lg": "Grand"
+    },
+    "warnings": {
+      "primaryText": "Contraste de la couleur principale sur blanc {{ratio}}:1 (minimum 4,5:1) : liens et textes utiliseront automatiquement {{corrected}}.",
+      "accentContrast": "La couleur d'accent a un contraste de {{ratio}}:1 sur blanc (minimum 3:1) : les emplacements sélectionnés peuvent être peu visibles.",
+      "similarColors": "Les couleurs principale et d'accent sont trop proches : choisissez des couleurs plus distinctes."
+    }
+  },
+  "pricingSettings": {
+    "title": "Paramètres de prix",
+    "description": "Valeurs utilisées par le moteur de prix lorsqu'une règle ne précise rien d'autre.",
+    "halfDayHint": "Prix demi-journée = journée × facteur (par ex. 0,6).",
+    "vatHint": "Taux appliqué aux formules sans taux propre. Vérifiez avec votre comptable.",
+    "fields": {
+      "half_day_factor": "Facteur demi-journée",
+      "rounding": "Arrondi du total",
+      "default_vat_rate": "TVA par défaut"
+    },
+    "roundings": {
+      "none": "Aucun",
+      "euro": "À l'euro",
+      "fifty_cents": "Aux 50 centimes"
+    }
   },
   "new": {
     "title": "Nouvel établissement",
-    "description": "Créez un autre établissement de votre organisation."
+    "description": "Créez un autre établissement de votre organisation.",
+    "ownerOnly": "Seuls les propriétaires peuvent créer de nouveaux établissements.",
+    "organization": "Organisation {{index}}",
+    "organizationWith": "Organisation {{index}} ({{names}})",
+    "afterCreate": "La configuration guidée s'ouvre après la création.",
+    "submit": "Créer l'établissement",
+    "fields": {
+      "organization": "Organisation"
+    }
   },
   "seasons": {
     "title": "Saisons et périodes",
-    "description": "Saisons d'ouverture et périodes tarifaires."
+    "description": "Saisons d'ouverture et périodes tarifaires.",
+    "add": "Nouvelle saison",
+    "empty": "Aucune saison : créez-en une ou utilisez la configuration guidée.",
+    "dates": "Ouverture",
+    "editTitle": "Saison {{year}}",
+    "editAria": "Modifier la saison {{year}}",
+    "deleteAria": "Supprimer la saison {{year}}",
+    "deleteConfirm": "La saison {{year}} sera supprimée avec ses périodes tarifaires.",
+    "fields": {
+      "year": "Année",
+      "opens_on": "Ouvre le",
+      "closes_on": "Ferme le",
+      "status": "État"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "active": "Active",
+      "closed": "Fermée"
+    }
+  },
+  "periods": {
+    "title": "Périodes tarifaires {{year}}",
+    "description": "Basse, moyenne, haute saison et pointe : chaque jour de la saison appartient au plus à une période.",
+    "add": "Nouvelle période",
+    "empty": "Aucune période tarifaire pour cette saison.",
+    "timeline": "Calendrier des périodes de la saison",
+    "segmentAria": "{{code}} du {{from}} au {{to}}",
+    "uncovered_one": "{{count}} jour de la saison n'est couvert par aucune période.",
+    "uncovered_other": "{{count}} jours de la saison ne sont couverts par aucune période.",
+    "editTitle": "Période {{code}}",
+    "editAria": "Modifier la période {{code}}",
+    "deleteAria": "Supprimer la période {{code}}",
+    "deleteConfirm": "La période {{code}} sera supprimée ; les règles qui l'utilisent ne s'appliqueront plus.",
+    "codeHint": "low, mid, high, peak ou un code libre.",
+    "rangesHint": "Une ou plusieurs plages entre le {{from}} et le {{to}}.",
+    "from": "Du",
+    "to": "Au",
+    "addRange": "Ajouter une plage",
+    "removeRange": "Retirer la plage {{index}}",
+    "fields": {
+      "code": "Code",
+      "color": "Couleur",
+      "ranges": "Plages de dates"
+    },
+    "presets": {
+      "low": "Basse saison",
+      "mid": "Moyenne saison",
+      "high": "Haute saison",
+      "peak": "Pointe"
+    }
+  },
+  "holidays": {
+    "title": "Jours fériés locaux",
+    "description": "Jours traités comme fériés par les règles de prix (en plus des fériés nationaux).",
+    "dates": "Dates précises",
+    "recurring": "Fêtes annuelles",
+    "recurringHint": "Format MM-JJ, par ex. 08-16 pour le saint patron.",
+    "addDate": "Ajouter une date",
+    "addRecurring": "Ajouter une fête annuelle",
+    "dateAria": "Jour férié {{index}}",
+    "recurringAria": "Fête annuelle {{index}}",
+    "removeAria": "Retirer le jour férié {{index}}",
+    "removeRecurringAria": "Retirer la fête annuelle {{index}}"
   },
   "closures": {
     "title": "Fermetures",
-    "description": "Jours de fermeture exceptionnelle."
+    "description": "Jours de fermeture exceptionnelle.",
+    "add": "Nouvelle fermeture",
+    "empty": "Aucune fermeture exceptionnelle cette année.",
+    "year": "Année",
+    "wholeDay": "Journée entière",
+    "editTitle": "Modifier la fermeture",
+    "editAria": "Modifier la fermeture du {{date}}",
+    "deleteAria": "Supprimer la fermeture du {{date}}",
+    "deleteConfirm": "La fermeture du {{date}} sera supprimée.",
+    "formHint": "Intempéries, événements ou travaux : les emplacements ne seront pas réservables sur les tranches choisies.",
+    "reasonPlaceholder": "Par ex. alerte météo",
+    "fields": {
+      "date": "Date",
+      "slots": "Tranches",
+      "reason": "Motif"
+    },
+    "slot": {
+      "AM": "Matin",
+      "PM": "Après-midi"
+    }
   },
   "zones": {
     "title": "Zones",
-    "description": "Zones, modes d'attribution et quotas en ligne."
+    "description": "Zones, mode d'attribution et quotas en ligne.",
+    "add": "Nouvelle zone",
+    "empty": "Aucune zone : créez-en une ou appliquez un modèle depuis la configuration guidée.",
+    "online": "Vente en ligne",
+    "onlineAll": "Tout en ligne",
+    "deskOnly": "Caisse uniquement",
+    "spots": "Emplacements",
+    "noMap": "Aucun plan",
+    "autoAssignShort": "attribution automatique",
+    "priceCategoryHint": "Clé utilisée par les règles de prix, par ex. row1.",
+    "autoAssignHint": "À la confirmation le système choisit un emplacement libre ; sinon le personnel l'attribue.",
+    "editTitle": "Zone {{name}}",
+    "editAria": "Modifier la zone {{name}}",
+    "deleteAria": "Supprimer la zone {{name}}",
+    "deleteConfirm": "La zone {{name}} sera supprimée.",
+    "fields": {
+      "assignment_mode": "Mode d'attribution",
+      "price_category": "Catégorie de prix",
+      "map_id": "Plan",
+      "auto_assign": "Attribution automatique",
+      "online_visible": "Visible sur la page publique",
+      "quota_type": "Quota en ligne",
+      "quota_value": "Valeur du quota"
+    },
+    "modes": {
+      "seat": "Emplacement choisi",
+      "zone": "Zone",
+      "quantity": "Quantité"
+    },
+    "modeHints": {
+      "seat": "Le client choisit l'emplacement exact sur le plan.",
+      "zone": "Le client choisit la zone ; l'emplacement est attribué ensuite.",
+      "quantity": "Seulement un nombre d'équipements, sans position (par ex. transats libres)."
+    },
+    "quotaTypes": {
+      "none": "Sans limite",
+      "percent": "Pourcentage",
+      "count": "Nombre"
+    },
+    "quotaHints": {
+      "none": "",
+      "percent": "Part des emplacements vendables en ligne (0–100).",
+      "count": "Nombre maximal d'emplacements vendables en ligne."
+    },
+    "quota": {
+      "percent": "En ligne {{value}} %",
+      "count": "En ligne max {{value}}"
+    }
   },
   "pools": {
-    "title": "Stocks",
-    "description": "Inventaire en quantité sans position."
+    "title": "Pools",
+    "description": "Stock en quantité sans position.",
+    "add": "Nouveau pool",
+    "empty": "Aucun pool.",
+    "systemManaged": "Géré par le système",
+    "systemHint": "Créé par la zone : modifiez-le depuis la zone.",
+    "noZone": "Aucune zone",
+    "overrides": "Capacité par période",
+    "overridesHint": "Facultatif : une capacité différente à certaines dates (par ex. transats supplémentaires en août).",
+    "addOverride": "Ajouter une variation",
+    "removeOverride": "Retirer la variation {{index}}",
+    "editTitle": "Modifier le pool",
+    "editAria": "Modifier le pool {{name}}",
+    "deleteAria": "Supprimer le pool {{name}}",
+    "deleteConfirm": "Le pool {{name}} sera supprimé.",
+    "fields": {
+      "component_code": "Composant",
+      "zone_id": "Zone en quantité",
+      "capacity": "Capacité"
+    }
   },
   "catalog": {
     "title": "Catalogue",
-    "description": "Composants, formules et suppléments."
+    "description": "Composants, formules et extras.",
+    "tabs": {
+      "components": "Composants",
+      "packs": "Formules",
+      "extras": "Extras"
+    },
+    "componentsHint": "Équipements physiques (parasol, transat, chaise longue). Ceux suivis consomment un pool.",
+    "packsHint": "Produits vendables composés de composants, par ex. parasol + 2 transats.",
+    "extrasHint": "Ajouts facultatifs à une formule ou à la réservation.",
+    "addComponent": "Nouveau composant",
+    "addPack": "Nouvelle formule",
+    "addExtra": "Nouvel extra",
+    "editComponent": "Modifier le composant",
+    "editPack": "Modifier la formule",
+    "editExtra": "Modifier l'extra",
+    "emptyComponents": "Aucun composant.",
+    "emptyPacks": "Aucune formule.",
+    "emptyExtras": "Aucun extra.",
+    "editAria": "Modifier {{name}}",
+    "deleteAria": "Supprimer {{name}}",
+    "deleteConfirm": "{{name}} sera retiré du catalogue.",
+    "tracked": "Suivi",
+    "trackedIn": "Suivi dans {{pool}}",
+    "trackedHint": "Les réservations consomment la disponibilité du pool choisi.",
+    "componentCodeHint": "Par ex. umbrella, sunbed, deckchair : l'icône est choisie d'après le code.",
+    "inactive": "Inactif",
+    "vatBadge": "TVA {{rate}} %",
+    "vatHint": "Vide : TVA par défaut de l'établissement.",
+    "compositionAria": "Composition : {{list}}",
+    "compositionEmpty": "Ajoutez au moins un composant.",
+    "addToComposition": "Ajouter un composant à la formule",
+    "quantityOf": "Quantité de {{name}}",
+    "removeComponent": "Retirer {{name}} de la formule",
+    "noComponents": "Créez d'abord les composants dans l'onglet Composants.",
+    "noComponent": "Aucun",
+    "extraComponentHint": "Composant suivi consommé par l'extra, le cas échéant.",
+    "allIfEmpty": "Aucune sélection : tous.",
+    "fields": {
+      "tracked": "Stock suivi",
+      "pool_id": "Pool",
+      "composition": "Composition",
+      "allowed_formulas": "Durées autorisées",
+      "channels": "Canaux de vente",
+      "requires_spot_kind": "Types d'emplacement compatibles",
+      "allowed_zone_ids": "Zones autorisées",
+      "max_per_booking": "Maximum par réservation",
+      "image": "URL de l'image",
+      "active": "Actif",
+      "requires_approval": "Nécessite une approbation",
+      "vat_rate": "TVA (%)",
+      "pricing_unit": "Unité de prix",
+      "attach_to": "Ajouté à",
+      "component_code": "Composant consommé",
+      "max_quantity": "Quantité maximale",
+      "allowed_pack_ids": "Formules compatibles"
+    },
+    "pricingUnits": {
+      "per_booking": "Par réservation",
+      "per_day": "Par jour",
+      "per_slot": "Par tranche"
+    },
+    "attachTo": {
+      "line": "Emplacement",
+      "booking": "Réservation"
+    }
+  },
+  "formulas": {
+    "half_day": "Demi-journée",
+    "day": "Journée",
+    "multi_day": "Plusieurs jours",
+    "week": "Semaine",
+    "fortnight": "Quinzaine",
+    "month": "Mois",
+    "season": "Saison"
+  },
+  "channels": {
+    "desk": "Caisse",
+    "online": "En ligne",
+    "api": "API"
+  },
+  "spotKinds": {
+    "umbrella": "Parasol",
+    "gazebo": "Gazebo",
+    "tent": "Tente",
+    "palm": "Palmier",
+    "custom": "Autre"
+  },
+  "roles": {
+    "owner": "Propriétaire",
+    "manager": "Gérant",
+    "cashier": "Caissier",
+    "beach_staff": "Personnel de plage",
+    "viewer": "Lecture seule"
   },
   "team": {
     "title": "Utilisateurs",
-    "description": "Utilisateurs et rôles de l'établissement."
+    "description": "Utilisateurs et rôles de l'établissement.",
+    "ownerOnly": "La gestion des utilisateurs et des rôles est réservée aux propriétaires.",
+    "invite": "Inviter un utilisateur",
+    "inviteHint": "Si l'e-mail existe déjà, l'utilisateur reçoit seulement le nouveau rôle.",
+    "inviteSubmit": "Ajouter l'utilisateur",
+    "empty": "Aucun utilisateur.",
+    "status": "État",
+    "active": "Actif",
+    "inactive": "Désactivé",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "deactivateAria": "Désactiver {{name}}",
+    "reactivateAria": "Réactiver {{name}}",
+    "removeAria": "Retirer l'accès de {{name}}",
+    "removeConfirm": "{{name}} ne pourra plus accéder à cet établissement.",
+    "roleOf": "Rôle de {{name}}",
+    "totp": "2FA",
+    "createdNew": "Utilisateur {{name}} créé.",
+    "createdExisting": "{{name}} avait déjà un compte : il a reçu le nouveau rôle.",
+    "initialPassword": "Mot de passe initial (affiché une seule fois, transmettez-le de façon sûre) :",
+    "passwordHint": "Facultatif : s'il est vide, il est généré et affiché une fois.",
+    "rolesHint": "Propriétaire : tout. Gérant : configuration, réservations, caisse. Caissier : réservations et caisse. Personnel de plage : arrivées et blocages. Lecture seule : consultation et rapports.",
+    "fields": {
+      "email": "E-mail",
+      "name": "Nom",
+      "role": "Rôle",
+      "scope": "Portée",
+      "locale": "Langue",
+      "password": "Mot de passe initial"
+    },
+    "scopes": {
+      "establishment": "Cet établissement",
+      "organization": "Toute l'organisation"
+    }
   }
 }

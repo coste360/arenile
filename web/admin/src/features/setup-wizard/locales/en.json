@@ -1,4 +1,116 @@
 {
   "title": "Guided setup",
-  "description": "Details, template, map rows, quick price list, public page and payments."
+  "description": "Details, template, map rows, quick price list, public page and payments. Every step can be skipped and changed later.",
+  "loading": "Loading…",
+  "forbidden": "The guided setup is reserved to owners and managers.",
+  "progress": "Setup progress",
+  "progressText": "{{done}} of {{total}} steps completed or skipped",
+  "stepsLabel": "Setup steps",
+  "stepHeading": "Step {{n}} of {{total}}: {{name}}",
+  "back": "Back",
+  "skip": "Skip this step",
+  "skipAndFinish": "Skip and finish",
+  "continue": "Continue",
+  "saveAndContinue": "Save and continue",
+  "finish": "Finish setup",
+  "steps": {
+    "details": "Details and languages",
+    "template": "Template",
+    "rows": "Map rows",
+    "pricelist": "Quick price list",
+    "publicPage": "Public page",
+    "payments": "Payments"
+  },
+  "state": {
+    "pending": "to do",
+    "done": "completed",
+    "skipped": "skipped"
+  },
+  "details": {
+    "intro": "Check name, languages and contacts: they appear on the public page and in emails to customers."
+  },
+  "template": {
+    "intro": "Pick the template closest to your establishment: it creates season, zones, catalogue and rate periods that you can change.",
+    "listLabel": "Available templates",
+    "use": "Use this template",
+    "selected": "Chosen: continue",
+    "layout": "Layout",
+    "rowsBySpots": "{{rows}} rows × {{spots}} spots",
+    "zones": "Zones",
+    "packs": "Packs",
+    "periods": "Periods",
+    "codes": {
+      "classic_rows": {
+        "name": "Classic lido with rows",
+        "description": "Umbrellas in numbered rows, priced by row and period. The most common case."
+      },
+      "quantity_beach": {
+        "name": "Equipped beach by quantity",
+        "description": "Equipment without fixed places: you sell a number of umbrellas and sunbeds."
+      },
+      "lido_with_pool": {
+        "name": "Lido with pool",
+        "description": "Rows on the beach plus a pool area with sunbeds by quantity."
+      },
+      "empty": {
+        "name": "Empty",
+        "description": "Nothing prefilled: you configure everything by hand."
+      }
+    }
+  },
+  "rows": {
+    "intro": "Chosen template: {{template}}. Set how many rows and spots per row: spots are created on the map with automatic numbering.",
+    "rows": "Rows",
+    "spotsPerRow": "Spots per row",
+    "total_one": "{{count}} spot",
+    "total_other": "{{count}} spots",
+    "noRows": "This template does not use a map with rows: zones and quantity equipment will be created.",
+    "season": "First season",
+    "year": "Year",
+    "opensOn": "Opening",
+    "closesOn": "Closing",
+    "apply": "Create season and map",
+    "applying": "Creating…",
+    "applied": "Setup created.",
+    "appliedSummary": "Spots: {{spots}} · zones: {{zones}} · packs: {{packs}} · periods: {{periods}}.",
+    "alreadyConfigured": "This establishment already has a season or a map ({{spots}} spots): you can continue or edit them in the editor.",
+    "openMap": "Open the map",
+    "openMaps": "Go to maps",
+    "mapName": "Beach"
+  },
+  "pricelist": {
+    "intro": "Daily price per category (row) and period of the {{year}} season. Base rules are generated automatically; half day and long formulas are configured in Prices.",
+    "caption": "Daily prices in {{currency}}",
+    "category": "Category",
+    "cellAria": "Daily price {{category}}, period {{period}}",
+    "hint": "Amounts including VAT, e.g. {{example}}. Leave the cells you do not need empty.",
+    "generate": "Generate price rules",
+    "generating": "Generating…",
+    "created_one": "{{count}} price rule created (replaced: {{replaced}}).",
+    "created_other": "{{count}} price rules created (replaced: {{replaced}}).",
+    "atLeastOne": "Enter at least one price",
+    "noSeason": "A season is needed: complete the previous step or create it in Seasons and periods.",
+    "noZones": "Zones with a price category are needed: apply a template or create them in Zones.",
+    "noPeriods": "Rate periods are needed: create them in Seasons and periods."
+  },
+  "publicPage": {
+    "intro": "Turn on online bookings, choose the colours and copy the code to paste into your website."
+  },
+  "payments": {
+    "intro": "Choose how you collect payments.",
+    "method": "Payment method",
+    "manual": "Manual payment",
+    "manualHint": "Collected at the desk (cash, card, bank transfer); online bookings are paid on site.",
+    "stripe": "Stripe (online payment)",
+    "stripeLater": "Available from milestone M4."
+  },
+  "finished": {
+    "title": "Setup completed",
+    "text": "You can fine-tune everything from the Configuration menu.",
+    "skipped": "Skipped steps: {{steps}}.",
+    "maps": "Edit the map",
+    "pricing": "Review prices",
+    "settings": "Establishment settings",
+    "restart": "Reopen the guided setup"
+  }
 }

@@ -1,34 +1,442 @@
 {
+  "readOnly": "Your role can only view this page: changes are reserved to owners and managers.",
+  "actions": "Actions",
+  "choose": "Choose…",
+  "fields": {
+    "code": "Code",
+    "name": "Name",
+    "description": "Description",
+    "sort_order": "Order"
+  },
+  "i18nText": {
+    "default": "{{language}} (default)",
+    "fallbackPlaceholder": "Empty: the default language is used"
+  },
+  "conflict": {
+    "reload": "Reload the latest data"
+  },
+  "validation": {
+    "required": "Required field",
+    "code": "Use lowercase letters, digits, dashes or underscores (max 64)",
+    "date": "Enter a valid date",
+    "dateOrder": "The end date must be on or after the start date",
+    "amount": "Enter a valid amount, e.g. 25 or 25.50",
+    "percent": "Enter a percentage between 0 and 100 (max 2 decimals)",
+    "integer": "Enter a valid whole number",
+    "email": "Enter a valid email address",
+    "color": "Use a hex colour, e.g. #0e6ba8",
+    "url": "Enter a valid https:// address",
+    "origin": "Each line must be an origin such as https://www.example.com (no path)",
+    "slug": "Only lowercase letters, digits and dashes (not at the start or end)",
+    "decimal": "Enter a valid decimal number (max 4 decimals)",
+    "halfDayFactor": "The factor must be greater than 0 and at most 1",
+    "defaultLocaleText": "The text in the default language is required",
+    "localeRequired": "Enable at least one language, including the default one",
+    "monthDay": "Use the MM-DD format, e.g. 08-16",
+    "overlap": "The range overlaps another rate period of the season",
+    "outsideSeason": "The range must be within the season dates",
+    "slotRequired": "Choose at least one slot",
+    "duplicate": "Component already added",
+    "passwordLength": "The password must be at least 12 characters long"
+  },
   "establishment": {
     "title": "Establishment",
-    "description": "Details, languages, theme, public page and price settings."
+    "description": "Details, languages, theme, public page and pricing settings.",
+    "openWizard": "Guided setup",
+    "general": {
+      "title": "General details and languages",
+      "contacts": "Contacts and address",
+      "slugHint": "Public page address: /b/<address>. Changing it breaks links already shared.",
+      "currency": "Currency: {{currency}} (cannot be changed)."
+    },
+    "publicPage": {
+      "title": "Public page and embedding",
+      "description": "Online bookings and websites allowed to embed the widget.",
+      "bookingHint": "When off, the public page only shows the contacts.",
+      "originsHint": "One origin per line. Empty: direct link and same domain only."
+    },
+    "fields": {
+      "name": "Name",
+      "slug": "Public address",
+      "timezone": "Time zone",
+      "default_locale": "Default language",
+      "enabled_locales": "Enabled languages",
+      "contact_email": "Email",
+      "contact_phone": "Phone",
+      "street": "Address",
+      "city": "Town",
+      "province": "Province",
+      "postal_code": "Postcode",
+      "country": "Country (ISO code)",
+      "concession_ref": "Beach concession reference",
+      "booking_enabled": "Online bookings enabled",
+      "allowed_embed_origins": "Websites allowed to embed"
+    }
+  },
+  "embed": {
+    "publicUrl": "Public page:",
+    "script": "Recommended code (script, handles the height)",
+    "iframe": "Alternatively: iframe",
+    "copy": "Copy",
+    "copied": "Copied",
+    "hint": "Paste the code into your website; its domain must be among the allowed websites."
+  },
+  "theme": {
+    "title": "Public page theme",
+    "description": "Colours, font and texts; the preview updates while you edit.",
+    "preview": "Preview",
+    "previewIntro": "Pick dates, spot and package: booked in a minute.",
+    "previewLink": "Booking terms",
+    "previewButton": "Book",
+    "picker": "Colour picker: {{field}}",
+    "fields": {
+      "primary_color": "Primary colour",
+      "accent_color": "Accent colour",
+      "font_family": "Font",
+      "radius": "Corner radius",
+      "logo_url": "Logo URL",
+      "show_prices_on_map": "Show prices on the map",
+      "hide_header_in_embed": "Hide the header when the page is embedded",
+      "intro": "Intro text"
+    },
+    "fonts": {
+      "Inter": "Inter",
+      "system": "System",
+      "serif": "Serif"
+    },
+    "radii": {
+      "none": "None",
+      "sm": "Small",
+      "md": "Medium",
+      "lg": "Large"
+    },
+    "warnings": {
+      "primaryText": "Primary colour contrast on white is {{ratio}}:1 (minimum 4.5:1): links and text will automatically use {{corrected}}.",
+      "accentContrast": "The accent colour has {{ratio}}:1 contrast on white (minimum 3:1): selected spots may be hard to see.",
+      "similarColors": "Primary and accent colours are too similar: choose more distinct colours."
+    }
+  },
+  "pricingSettings": {
+    "title": "Pricing settings",
+    "description": "Values used by the pricing engine when a rule does not say otherwise.",
+    "halfDayHint": "Half-day price = day × factor (e.g. 0.6).",
+    "vatHint": "Rate applied to packs without their own rate. Check with your accountant.",
+    "fields": {
+      "half_day_factor": "Half-day factor",
+      "rounding": "Total rounding",
+      "default_vat_rate": "Default VAT"
+    },
+    "roundings": {
+      "none": "None",
+      "euro": "To the euro",
+      "fifty_cents": "To 50 cents"
+    }
   },
   "new": {
     "title": "New establishment",
-    "description": "Create another establishment of your organisation."
+    "description": "Create another establishment of your organization.",
+    "ownerOnly": "Only owners can create new establishments.",
+    "organization": "Organization {{index}}",
+    "organizationWith": "Organization {{index}} ({{names}})",
+    "afterCreate": "The guided setup opens after creation.",
+    "submit": "Create establishment",
+    "fields": {
+      "organization": "Organization"
+    }
   },
   "seasons": {
     "title": "Seasons and periods",
-    "description": "Opening seasons and rate periods."
+    "description": "Opening seasons and rate periods.",
+    "add": "New season",
+    "empty": "No seasons: create one or use the guided setup.",
+    "dates": "Open",
+    "editTitle": "Season {{year}}",
+    "editAria": "Edit season {{year}}",
+    "deleteAria": "Delete season {{year}}",
+    "deleteConfirm": "Season {{year}} will be deleted with its rate periods.",
+    "fields": {
+      "year": "Year",
+      "opens_on": "Opens on",
+      "closes_on": "Closes on",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "closed": "Closed"
+    }
+  },
+  "periods": {
+    "title": "Rate periods {{year}}",
+    "description": "Low, mid, high season and peak: each day of the season belongs to at most one period.",
+    "add": "New period",
+    "empty": "No rate periods for this season.",
+    "timeline": "Calendar of the season's rate periods",
+    "segmentAria": "{{code}} from {{from}} to {{to}}",
+    "uncovered_one": "{{count}} day of the season is not covered by any period.",
+    "uncovered_other": "{{count}} days of the season are not covered by any period.",
+    "editTitle": "Period {{code}}",
+    "editAria": "Edit period {{code}}",
+    "deleteAria": "Delete period {{code}}",
+    "deleteConfirm": "Period {{code}} will be deleted; rules using it will no longer apply.",
+    "codeHint": "low, mid, high, peak or a free code.",
+    "rangesHint": "One or more ranges between {{from}} and {{to}}.",
+    "from": "From",
+    "to": "To",
+    "addRange": "Add range",
+    "removeRange": "Remove range {{index}}",
+    "fields": {
+      "code": "Code",
+      "color": "Colour",
+      "ranges": "Date ranges"
+    },
+    "presets": {
+      "low": "Low season",
+      "mid": "Mid season",
+      "high": "High season",
+      "peak": "Peak"
+    }
+  },
+  "holidays": {
+    "title": "Local holidays",
+    "description": "Days treated as holidays by price rules (in addition to national holidays).",
+    "dates": "Specific dates",
+    "recurring": "Yearly holidays",
+    "recurringHint": "MM-DD format, e.g. 08-16 for the patron saint.",
+    "addDate": "Add date",
+    "addRecurring": "Add yearly holiday",
+    "dateAria": "Holiday {{index}}",
+    "recurringAria": "Yearly holiday {{index}}",
+    "removeAria": "Remove holiday {{index}}",
+    "removeRecurringAria": "Remove yearly holiday {{index}}"
   },
   "closures": {
     "title": "Closures",
-    "description": "Extraordinary closing days."
+    "description": "Extraordinary closure days.",
+    "add": "New closure",
+    "empty": "No extraordinary closures this year.",
+    "year": "Year",
+    "wholeDay": "Whole day",
+    "editTitle": "Edit closure",
+    "editAria": "Edit the closure of {{date}}",
+    "deleteAria": "Delete the closure of {{date}}",
+    "deleteConfirm": "The closure of {{date}} will be deleted.",
+    "formHint": "Bad weather, events or works: spots cannot be booked in the selected slots.",
+    "reasonPlaceholder": "E.g. weather alert",
+    "fields": {
+      "date": "Date",
+      "slots": "Slots",
+      "reason": "Reason"
+    },
+    "slot": {
+      "AM": "Morning",
+      "PM": "Afternoon"
+    }
   },
   "zones": {
     "title": "Zones",
-    "description": "Zones, assignment modes and online quotas."
+    "description": "Zones, assignment mode and online quotas.",
+    "add": "New zone",
+    "empty": "No zones: create one or apply a template from the guided setup.",
+    "online": "Online sales",
+    "onlineAll": "All online",
+    "deskOnly": "Desk only",
+    "spots": "Spots",
+    "noMap": "No map",
+    "autoAssignShort": "automatic assignment",
+    "priceCategoryHint": "Key used by price rules, e.g. row1.",
+    "autoAssignHint": "On confirmation the system picks a free spot; otherwise staff assign it.",
+    "editTitle": "Zone {{name}}",
+    "editAria": "Edit zone {{name}}",
+    "deleteAria": "Delete zone {{name}}",
+    "deleteConfirm": "Zone {{name}} will be deleted.",
+    "fields": {
+      "assignment_mode": "Assignment mode",
+      "price_category": "Price category",
+      "map_id": "Map",
+      "auto_assign": "Automatic assignment",
+      "online_visible": "Visible on the public page",
+      "quota_type": "Online quota",
+      "quota_value": "Quota value"
+    },
+    "modes": {
+      "seat": "Chosen spot",
+      "zone": "Zone",
+      "quantity": "Quantity"
+    },
+    "modeHints": {
+      "seat": "The customer picks the exact spot on the map.",
+      "zone": "The customer picks the zone; the spot is assigned later.",
+      "quantity": "Only a number of items, without position (e.g. free sunbeds)."
+    },
+    "quotaTypes": {
+      "none": "No limit",
+      "percent": "Percentage",
+      "count": "Number"
+    },
+    "quotaHints": {
+      "none": "",
+      "percent": "Share of spots that can be sold online (0–100).",
+      "count": "Maximum number of spots that can be sold online."
+    },
+    "quota": {
+      "percent": "Online {{value}}%",
+      "count": "Online max {{value}}"
+    }
   },
   "pools": {
     "title": "Pools",
-    "description": "Quantity inventory without position."
+    "description": "Quantity inventory without position.",
+    "add": "New pool",
+    "empty": "No pools.",
+    "systemManaged": "Managed by the system",
+    "systemHint": "Created by the zone: edit it from the zone.",
+    "noZone": "No zone",
+    "overrides": "Capacity by period",
+    "overridesHint": "Optional: a different capacity on some dates (e.g. extra sunbeds in August).",
+    "addOverride": "Add change",
+    "removeOverride": "Remove change {{index}}",
+    "editTitle": "Edit pool",
+    "editAria": "Edit pool {{name}}",
+    "deleteAria": "Delete pool {{name}}",
+    "deleteConfirm": "Pool {{name}} will be deleted.",
+    "fields": {
+      "component_code": "Component",
+      "zone_id": "Quantity zone",
+      "capacity": "Capacity"
+    }
   },
   "catalog": {
     "title": "Catalogue",
-    "description": "Components, packs and extras."
+    "description": "Components, packs and extras.",
+    "tabs": {
+      "components": "Components",
+      "packs": "Packs",
+      "extras": "Extras"
+    },
+    "componentsHint": "Physical items (umbrella, sunbed, deckchair). Tracked ones use a pool.",
+    "packsHint": "Sellable products made of components, e.g. umbrella + 2 sunbeds.",
+    "extrasHint": "Optional additions to a pack or to the booking.",
+    "addComponent": "New component",
+    "addPack": "New pack",
+    "addExtra": "New extra",
+    "editComponent": "Edit component",
+    "editPack": "Edit pack",
+    "editExtra": "Edit extra",
+    "emptyComponents": "No components.",
+    "emptyPacks": "No packs.",
+    "emptyExtras": "No extras.",
+    "editAria": "Edit {{name}}",
+    "deleteAria": "Delete {{name}}",
+    "deleteConfirm": "{{name}} will be removed from the catalogue.",
+    "tracked": "Tracked",
+    "trackedIn": "Tracked in {{pool}}",
+    "trackedHint": "Bookings use the availability of the chosen pool.",
+    "componentCodeHint": "E.g. umbrella, sunbed, deckchair: the icon is picked from the code.",
+    "inactive": "Inactive",
+    "vatBadge": "VAT {{rate}}%",
+    "vatHint": "Empty: the establishment's default VAT.",
+    "compositionAria": "Composition: {{list}}",
+    "compositionEmpty": "Add at least one component.",
+    "addToComposition": "Add a component to the pack",
+    "quantityOf": "Quantity of {{name}}",
+    "removeComponent": "Remove {{name}} from the pack",
+    "noComponents": "Create the components first in the Components tab.",
+    "noComponent": "None",
+    "extraComponentHint": "Tracked component used by the extra, if any.",
+    "allIfEmpty": "No selection: all.",
+    "fields": {
+      "tracked": "Stock tracked",
+      "pool_id": "Pool",
+      "composition": "Composition",
+      "allowed_formulas": "Allowed formulas",
+      "channels": "Sales channels",
+      "requires_spot_kind": "Compatible spot types",
+      "allowed_zone_ids": "Allowed zones",
+      "max_per_booking": "Maximum per booking",
+      "image": "Image URL",
+      "active": "Active",
+      "requires_approval": "Requires approval",
+      "vat_rate": "VAT (%)",
+      "pricing_unit": "Pricing unit",
+      "attach_to": "Added to",
+      "component_code": "Component used",
+      "max_quantity": "Maximum quantity",
+      "allowed_pack_ids": "Compatible packs"
+    },
+    "pricingUnits": {
+      "per_booking": "Per booking",
+      "per_day": "Per day",
+      "per_slot": "Per slot"
+    },
+    "attachTo": {
+      "line": "Spot",
+      "booking": "Booking"
+    }
+  },
+  "formulas": {
+    "half_day": "Half day",
+    "day": "Day",
+    "multi_day": "Several days",
+    "week": "Week",
+    "fortnight": "Fortnight",
+    "month": "Month",
+    "season": "Season"
+  },
+  "channels": {
+    "desk": "Desk",
+    "online": "Online",
+    "api": "API"
+  },
+  "spotKinds": {
+    "umbrella": "Umbrella",
+    "gazebo": "Gazebo",
+    "tent": "Tent",
+    "palm": "Palm",
+    "custom": "Other"
+  },
+  "roles": {
+    "owner": "Owner",
+    "manager": "Manager",
+    "cashier": "Cashier",
+    "beach_staff": "Beach staff",
+    "viewer": "Read only"
   },
   "team": {
     "title": "Users",
-    "description": "Users and roles of the establishment."
+    "description": "Users and roles of the establishment.",
+    "ownerOnly": "Managing users and roles is reserved to owners.",
+    "invite": "Invite user",
+    "inviteHint": "If the email already exists, the user only gets the new role.",
+    "inviteSubmit": "Add user",
+    "empty": "No users.",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Deactivated",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivateAria": "Deactivate {{name}}",
+    "reactivateAria": "Reactivate {{name}}",
+    "removeAria": "Revoke access for {{name}}",
+    "removeConfirm": "{{name}} will no longer be able to access this establishment.",
+    "roleOf": "Role of {{name}}",
+    "totp": "2FA",
+    "createdNew": "User {{name}} created.",
+    "createdExisting": "{{name}} already had an account: they received the new role.",
+    "initialPassword": "Initial password (shown only once, share it securely):",
+    "passwordHint": "Optional: if empty one is generated and shown once.",
+    "rolesHint": "Owner: everything. Manager: configuration, bookings, cash desk. Cashier: bookings and cash desk. Beach staff: check-in and blocks. Read only: viewing and reports.",
+    "fields": {
+      "email": "Email",
+      "name": "Name",
+      "role": "Role",
+      "scope": "Scope",
+      "locale": "Language",
+      "password": "Initial password"
+    },
+    "scopes": {
+      "establishment": "This establishment",
+      "organization": "Whole organization"
+    }
   }
 }

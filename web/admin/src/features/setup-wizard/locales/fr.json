@@ -1,4 +1,116 @@
 {
   "title": "Configuration guidée",
-  "description": "Données, modèle, rangées du plan, tarif rapide, page publique et paiements."
+  "description": "Données, modèle, rangées sur le plan, tarif rapide, page publique et paiements. Chaque étape peut être passée et modifiée plus tard.",
+  "loading": "Chargement…",
+  "forbidden": "La configuration guidée est réservée aux propriétaires et aux gérants.",
+  "progress": "Avancement de la configuration",
+  "progressText": "{{done}} étapes sur {{total}} terminées ou passées",
+  "stepsLabel": "Étapes de la configuration",
+  "stepHeading": "Étape {{n}} sur {{total}} : {{name}}",
+  "back": "Retour",
+  "skip": "Passer cette étape",
+  "skipAndFinish": "Passer et terminer",
+  "continue": "Continuer",
+  "saveAndContinue": "Enregistrer et continuer",
+  "finish": "Terminer la configuration",
+  "steps": {
+    "details": "Données et langues",
+    "template": "Modèle",
+    "rows": "Rangées sur le plan",
+    "pricelist": "Tarif rapide",
+    "publicPage": "Page publique",
+    "payments": "Paiements"
+  },
+  "state": {
+    "pending": "à faire",
+    "done": "terminée",
+    "skipped": "passée"
+  },
+  "details": {
+    "intro": "Vérifiez le nom, les langues et les contacts : ils apparaissent sur la page publique et dans les e-mails aux clients."
+  },
+  "template": {
+    "intro": "Choisissez le modèle le plus proche de votre établissement : il crée saison, zones, catalogue et périodes tarifaires que vous pourrez modifier.",
+    "listLabel": "Modèles disponibles",
+    "use": "Utiliser ce modèle",
+    "selected": "Choisi : continuer",
+    "layout": "Disposition",
+    "rowsBySpots": "{{rows}} rangées × {{spots}} places",
+    "zones": "Zones",
+    "packs": "Formules",
+    "periods": "Périodes",
+    "codes": {
+      "classic_rows": {
+        "name": "Plage classique en rangées",
+        "description": "Parasols en rangées numérotées, prix par rangée et période. Le cas le plus courant."
+      },
+      "quantity_beach": {
+        "name": "Plage équipée en quantité",
+        "description": "Équipements sans place fixe : on vend un nombre de parasols et de transats."
+      },
+      "lido_with_pool": {
+        "name": "Plage avec piscine",
+        "description": "Rangées sur la plage et espace piscine avec transats en quantité."
+      },
+      "empty": {
+        "name": "Vide",
+        "description": "Rien de prérempli : vous configurez tout à la main."
+      }
+    }
+  },
+  "rows": {
+    "intro": "Modèle choisi : {{template}}. Indiquez le nombre de rangées et de places par rangée : les emplacements sont créés sur le plan avec une numérotation automatique.",
+    "rows": "Rangées",
+    "spotsPerRow": "Places par rangée",
+    "total_one": "{{count}} emplacement",
+    "total_other": "{{count}} emplacements",
+    "noRows": "Ce modèle n'utilise pas de plan en rangées : des zones et des équipements en quantité seront créés.",
+    "season": "Première saison",
+    "year": "Année",
+    "opensOn": "Ouverture",
+    "closesOn": "Fermeture",
+    "apply": "Créer la saison et le plan",
+    "applying": "Création en cours…",
+    "applied": "Configuration créée.",
+    "appliedSummary": "Emplacements : {{spots}} · zones : {{zones}} · formules : {{packs}} · périodes : {{periods}}.",
+    "alreadyConfigured": "Cet établissement a déjà une saison ou un plan ({{spots}} emplacements) : vous pouvez continuer ou les modifier dans l'éditeur.",
+    "openMap": "Ouvrir le plan",
+    "openMaps": "Aller aux plans",
+    "mapName": "Plage"
+  },
+  "pricelist": {
+    "intro": "Prix journalier par catégorie (rangée) et période de la saison {{year}}. Les règles de base sont générées automatiquement ; demi-journée et durées longues se configurent dans Prix.",
+    "caption": "Prix journaliers en {{currency}}",
+    "category": "Catégorie",
+    "cellAria": "Prix journalier {{category}}, période {{period}}",
+    "hint": "Montants TTC, par ex. {{example}}. Laissez vides les cellules inutiles.",
+    "generate": "Générer les règles de prix",
+    "generating": "Génération en cours…",
+    "created_one": "{{count}} règle de prix créée (remplacées : {{replaced}}).",
+    "created_other": "{{count}} règles de prix créées (remplacées : {{replaced}}).",
+    "atLeastOne": "Saisissez au moins un prix",
+    "noSeason": "Une saison est nécessaire : terminez l'étape précédente ou créez-la dans Saisons et périodes.",
+    "noZones": "Des zones avec une catégorie de prix sont nécessaires : appliquez un modèle ou créez-les dans Zones.",
+    "noPeriods": "Des périodes tarifaires sont nécessaires : créez-les dans Saisons et périodes."
+  },
+  "publicPage": {
+    "intro": "Activez les réservations en ligne, choisissez les couleurs et copiez le code à coller dans votre site."
+  },
+  "payments": {
+    "intro": "Choisissez comment encaisser.",
+    "method": "Mode de paiement",
+    "manual": "Paiement manuel",
+    "manualHint": "Encaissé à la caisse (espèces, carte, virement) ; les réservations en ligne sont réglées sur place.",
+    "stripe": "Stripe (paiement en ligne)",
+    "stripeLater": "Disponible à partir du jalon M4."
+  },
+  "finished": {
+    "title": "Configuration terminée",
+    "text": "Vous pouvez tout affiner depuis le menu Configuration.",
+    "skipped": "Étapes passées : {{steps}}.",
+    "maps": "Modifier le plan",
+    "pricing": "Revoir les prix",
+    "settings": "Paramètres de l'établissement",
+    "restart": "Rouvrir la configuration guidée"
+  }
 }
