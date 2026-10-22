@@ -54,10 +54,8 @@ describe('BookingPage', () => {
     renderPage('/b/lido-demo', ok());
     expect(await screen.findByText('Lido Demo')).toBeInTheDocument();
     expect(screen.getByText('Benvenuti al Lido')).toBeInTheDocument();
-    expect(document.documentElement.style.getPropertyValue('--ar-primary')).toBe('#ffe600');
-    expect(document.documentElement.style.getPropertyValue('--ar-primary-foreground')).toBe(
-      '#111827',
-    );
+    expect(document.documentElement.style.getPropertyValue('--primary')).toBe('#ffe600');
+    expect(document.documentElement.style.getPropertyValue('--primary-foreground')).toBe('#111827');
     expect(document.title).toBe('Lido Demo – Prenota il tuo posto in spiaggia');
     expect(document.getElementById('arenile-jsonld')?.textContent).toContain('LocalBusiness');
     expect(screen.getByRole('link', { name: '+39 0771 000000' })).toHaveAttribute(
@@ -79,6 +77,24 @@ describe('BookingPage', () => {
     await user.click(screen.getByRole('button', { name: /Chi e pagamento/ }));
     expect(screen.getByRole('region', { name: '4. Chi e pagamento' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Avanti' })).toBeDisabled();
+  });
+
+  it('picks the stay dates with the lazy shadcn date range picker (dd/MM/yyyy)', async () => {
+    const user = userEvent.setup();
+    renderPage('/b/lido-demo', ok());
+    const trigger = await screen.findByRole('button', { name: /Date del soggiorno/ });
+    expect(trigger).toHaveTextContent('Seleziona un periodo');
+    expect(screen.getByText(/tocca due volte lo stesso giorno/)).toBeInTheDocument();
+    expect(document.querySelector('input[type="date"]')).toBeNull();
+    await user.click(trigger);
+    const grid = await screen.findByRole('grid');
+    const enabled = Array.from(grid.querySelectorAll<HTMLButtonElement>('button:not([disabled])'));
+    expect(enabled.length).toBeGreaterThan(0);
+    await user.click(enabled[0]!);
+    expect(screen.getByRole('button', { name: /Date del soggiorno/ }).textContent).toMatch(
+      /\d{2}\/\d{2}\/\d{4} – /,
+    );
+    expect(screen.getByText('1 giorno selezionato')).toBeInTheDocument();
   });
 
   it('hides the header in embed mode and marks the page noindex', async () => {
