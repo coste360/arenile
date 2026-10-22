@@ -33,7 +33,7 @@ Poi configura l'app dalla dashboard:
 - **Container HTTP Port**: `8080`;
 - **Persistent Directories**: percorso `/data` (database SQLite, file caricati, backup);
 - **Environment Variables**: almeno `ARENILE_BASE_URL` e `ARENILE_SECRET_KEY`
-  (elenco completo in `deploy/env.example`).
+  (elenco completo in `.env.example`).
 
 ## Note
 

@@ -1,0 +1,61 @@
+## 29. Edizione desktop e app mobile
+
+Due modi in più per usare Arenile, pensati per chi lavora soprattutto in cassa e per lo staff in spiaggia. Entrambi riusano il core senza duplicarlo.
+
+### 29.1 Edizione desktop (tutto in uno, senza server online)
+
+**Obiettivo:** un lido che oggi usa il quaderno scarica un file, fa doppio clic e gestisce prenotazioni, mappa, abbonati e cassa dal PC della cassa, senza internet, senza VPS e senza configurazione.
+
+**Cosa contiene**
+- Lo stesso binario del server (core, migrazioni, SQLite, pannello e pagina pubblica incorporati) più un piccolo *launcher* con icona nella barra di sistema.
+- Piattaforme: Windows (`.exe` con installer), macOS (`.app` in `.dmg`, Apple Silicon e Intel), Linux (AppImage).
+- Dati nella cartella utente del sistema operativo (`%APPDATA%\Arenile`, `~/Library/Application Support/Arenile`, `~/.local/share/arenile`), non accanto all'eseguibile.
+
+**Comportamento**
+- All'avvio il launcher esegue le migrazioni, avvia il server su `127.0.0.1` con una porta libera e apre il pannello nel browser predefinito.
+- Menu della barra di sistema: *Apri pannello*, *Backup ora*, *Apri cartella dati*, *Avvio automatico all'accensione*, *Esci*.
+- Primo avvio: creazione guidata dell'utente owner dal browser (nessun comando da terminale), poi configurazione guidata (sezione 15.2).
+- `ARENILE_SECRET_KEY` generata al primo avvio e salvata nel portachiavi del sistema operativo (fallback: file nella cartella dati con permessi ristretti). `ARENILE_BASE_URL` non è richiesto.
+- Backup automatico giornaliero e alla chiusura, con retention configurabile, su una cartella a scelta (anche una chiavetta USB). Ripristino dal menu.
+- Aggiornamenti: controllo della nuova versione **solo se il gestore lo abilita** (nessuna chiamata di rete di default, coerente con `ARENILE_TELEMETRY=false`).
+
+**Limiti voluti**
+- **Niente prenotazione online:** senza un server raggiungibile da internet la pagina pubblica e il widget non hanno senso. In modalità desktop la sezione "Pagina pubblica" del pannello spiega come passare a un'istanza online.
+- **Niente sincronizzazione con un'istanza online.** Un modello ibrido richiederebbe la risoluzione dei conflitti e metterebbe in discussione la garanzia contro le doppie prenotazioni (sezione 7, ADR 0003). È escluso.
+- Pagamenti: solo driver `manual`.
+
+**Passaggio a un'istanza online:** il backup del desktop è lo stesso database SQLite dell'edizione server. `arenile restore --in FILE` su una VPS porta tutto online senza conversioni; da lì si attiva la pagina pubblica.
+
+**Modalità rete locale (opzionale, M7):** il gestore può esporre il server desktop sulla Wi-Fi del lido perché l'app mobile dello staff lo usi senza internet. Si attiva esplicitamente dal menu, usa TLS con certificato autogenerato e abbinamento dei dispositivi tramite QR code che contiene indirizzo, impronta del certificato e codice monouso (sezione 29.2).
+
+**Architettura e build**
+- Stesso repository e stesso modulo Go: il launcher è `cmd/arenile-desktop` e importa i package `internal/` del core (che Go non consente di importare da un altro modulo). Il core resta senza CGO; solo il launcher può usare CGO per l'icona nella barra di sistema, ed è compilato sui runner nativi di ciascun sistema operativo.
+- Release con lo stesso tag dell'edizione server: binari firmati (Authenticode su Windows; Developer ID e notarizzazione Apple su macOS).
+- Il pannello rileva la modalità desktop da un flag esposto dall'API (nessun fork del frontend).
+
+### 29.2 App mobile (si collega a un'istanza Arenile)
+
+**Obiettivo:** un'unica app pubblicata da Coste360 su App Store e Google Play, che ogni gestore collega alla **propria** istanza Arenile, sul modello di Matomo, Nextcloud o Home Assistant. È pensata per lo staff in spiaggia e per il gestore in movimento.
+
+**Collegamento e autenticazione**
+- L'app non ha un server predefinito: l'utente scansiona un QR code generato dal pannello (*Configurazione → Dispositivi*) oppure inserisce l'indirizzo dell'istanza e fa login.
+- Il QR contiene indirizzo dell'istanza e codice di abbinamento monouso a breve scadenza; l'app lo scambia con un **token per dispositivo** legato all'utente, con i permessi del suo ruolo (sezione 16).
+- I token per dispositivo sono elencati e revocabili dal pannello (nome del dispositivo, ultimo utilizzo). Niente cookie: autenticazione con header `Authorization`, quindi nessun requisito CORS né CSRF per l'app.
+- L'istanza può essere una VPS del gestore, un hosting gestito, oppure l'edizione desktop in modalità rete locale (29.1).
+
+**Privacy first**
+- L'app parla solo con l'istanza del gestore: nessun dato passa da Coste360, nessuna telemetria, nessun SDK di analisi o pubblicità.
+- Notifiche push: per vincolo tecnico di Apple e Google passano da un server centrale. Sono **facoltative**: l'istanza può usare un relay push di Coste360 che riceve solo un identificativo opaco del dispositivo e un testo generico ("Nuova prenotazione"), oppure nessuna push (l'app aggiorna i dati all'apertura).
+
+**Funzioni (prima versione)**
+- Vista operativa della mappa del giorno con colori per stato (sezione 11.3) e ricerca.
+- Check-in con scansione del QR della prenotazione, incasso rapido in contanti, rilascio giorno degli abbonati, note.
+- Funzionamento offline con le stesse regole del pannello (sezione 21.2): consultazione in cache, check-in, note e incassi in contanti messi in coda con chiavi di idempotenza; creazione e spostamento di prenotazioni solo online.
+- Notifiche al gestore (sezione 19) se le push sono attive.
+
+**Contratto e compatibilità**
+- Repository separato (`coste360/arenile-mobile`, Expo + React Native + TypeScript): ciclo di rilascio legato agli store, toolchain diversa.
+- Il client API è generato da `api/openapi.yaml`, pubblicato come asset di ogni release del core. L'app non importa codice del pannello.
+- Il server espone versione e capacità (`GET /api/admin/v1/meta`); l'app dichiara la versione minima di Arenile supportata e mostra un messaggio chiaro se l'istanza è troppo vecchia.
+- Per la revisione degli store si usa la demo pubblica azzerata ogni notte (sezione 26).
+- La licenza dell'app (AGPL-3.0 come il core oppure proprietaria Coste360, consentito dal CLA) va decisa prima della pubblicazione.

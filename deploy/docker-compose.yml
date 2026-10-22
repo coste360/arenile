@@ -1,7 +1,7 @@
 # Arenile — installazione standard con SQLite (spec 24.3).
 #
 # Uso:
-#   cp deploy/env.example .env   # imposta ARENILE_BASE_URL, ARENILE_SECRET_KEY e il primo owner
+#   cp .env.example .env   # imposta ARENILE_BASE_URL, ARENILE_SECRET_KEY e il primo owner
 #                                # (ARENILE_BOOTSTRAP_OWNER_* + ARENILE_ADMIN_PASSWORD)
 #   docker compose -f deploy/docker-compose.yml --env-file .env up -d
 #

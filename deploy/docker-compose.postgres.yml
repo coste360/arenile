@@ -1,7 +1,7 @@
 # Arenile — installazione con PostgreSQL (spec 24.3, variante).
 #
 # Uso:
-#   cp deploy/env.example .env   # imposta ARENILE_BASE_URL, ARENILE_SECRET_KEY, POSTGRES_PASSWORD
+#   cp .env.example .env   # imposta ARENILE_BASE_URL, ARENILE_SECRET_KEY, POSTGRES_PASSWORD
 #                                # e il primo owner (ARENILE_BOOTSTRAP_OWNER_* + ARENILE_ADMIN_PASSWORD)
 #   docker compose -f deploy/docker-compose.postgres.yml --env-file .env up -d
 #

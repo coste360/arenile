@@ -41,10 +41,22 @@
 - Traduzioni inglese, tedesco, francese.
 - **Accettazione:** ciclo completo di fine stagione → nuova stagione (copia configurazione, proposta rinnovi, conferme) eseguito senza interventi manuali sul database.
 
+### M6 — Edizione desktop (sezione 29.1)
+- Launcher `cmd/arenile-desktop` con icona nella barra di sistema, server su `127.0.0.1`, apertura automatica del pannello.
+- Pacchetti firmati per Windows (installer `.exe`), macOS (`.dmg`, notarizzato) e Linux (AppImage), pubblicati con lo stesso tag dell'edizione server.
+- Primo avvio guidato dal browser, chiave segreta nel portachiavi del sistema, backup automatici su cartella a scelta, ripristino dal menu.
+- Modalità desktop rilevata dal pannello: pagina pubblica e pagamenti online disattivati con spiegazione del passaggio a un'istanza online.
+- **Accettazione:** su un PC Windows e un Mac senza connessione, un gestore scarica il pacchetto, lo installa e registra la prima prenotazione in cassa in meno di 10 minuti senza usare il terminale; il backup prodotto dal desktop, ripristinato con `arenile restore` su una VPS, porta online tutti i dati senza perdite.
+
+### M7 — App mobile (sezione 29.2)
+- Lato core: token per dispositivo con abbinamento tramite QR code, pagina *Dispositivi* nel pannello con revoca, endpoint `GET /api/admin/v1/meta`, pubblicazione di `openapi.yaml` come asset di release, modalità rete locale dell'edizione desktop.
+- Repository `coste360/arenile-mobile` (Expo): collegamento all'istanza, mappa del giorno, check-in con QR, incasso in contanti, rilasci, offline con coda.
+- Notifiche push facoltative tramite relay che non riceve dati personali.
+- **Accettazione:** lo staff collega un telefono a un'istanza scansionando un QR in meno di un minuto; con il telefono offline esegue check-in e incassi che, alla riconnessione, arrivano al server senza duplicati; nessuna richiesta di rete verso domini diversi dall'istanza (verificato con un proxy di ispezione), salvo il relay push se attivato.
+
 ### Dopo l'MVP
 - Driver Satispay e altri provider; driver per registratori telematici.
 - Notifiche WhatsApp e SMS tramite estensioni.
-- App Expo per lo staff in spiaggia.
 - Bar e ristorante con addebito sulla postazione.
 - Prezzi per occupazione (regole `occupancy_percent`) abilitati nell'interfaccia.
 - Multi-mappa avanzata e virtualizzazione per stabilimenti molto grandi.
