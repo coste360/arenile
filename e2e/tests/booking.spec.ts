@@ -8,6 +8,16 @@ test('/b/lido-demo shows the establishment name', async ({ page, request }) => {
   await expect(page.getByText(name).first()).toBeVisible();
   await expect(page).toHaveTitle(new RegExp(name));
   await expect(page.getByRole('button', { name: /Quando/ })).toBeVisible();
+
+  // "Quando": shadcn date range picker (lazy), dd/MM/yyyy, never a native date input.
+  const dates = page.getByRole('button', { name: /Date del soggiorno/ });
+  await expect(dates).toBeVisible();
+  await expect(page.locator('input[type="date"]')).toHaveCount(0);
+  await dates.click();
+  const grid = page.getByRole('grid').first();
+  await expect(grid).toBeVisible();
+  await grid.locator('button:not([disabled])').first().click();
+  await expect(dates).toHaveText(/\d{2}\/\d{2}\/\d{4} – /);
 });
 
 test('/b/lido-demo has no serious accessibility violations', async ({ page, request }) => {

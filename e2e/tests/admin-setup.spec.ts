@@ -1,5 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-import { DEMO_OWNER_EMAIL, DEMO_OWNER_PASSWORD } from './helpers';
+import { expect, test } from '@playwright/test';
+import { establishmentSwitcher, login } from './helpers';
 
 /**
  * M1/M2 acceptance through the panel (spec 28): an owner creates a new
@@ -7,14 +7,6 @@ import { DEMO_OWNER_EMAIL, DEMO_OWNER_PASSWORD } from './helpers';
  * the guided setup, generates the quick price list, moves a spot in the map
  * editor and saves, then reads a quote in the price simulator.
  */
-
-async function login(page: Page) {
-  await page.goto('/admin/login');
-  await page.getByLabel('Email').fill(DEMO_OWNER_EMAIL);
-  await page.getByLabel('Password').fill(DEMO_OWNER_PASSWORD);
-  await page.getByRole('button', { name: 'Accedi' }).click();
-  await expect(page).not.toHaveURL(/\/login/);
-}
 
 const PRICES: Record<string, number> = { row1: 30, row2: 26, standard: 22, gazebo: 60 };
 const PERIOD_EXTRA: Record<string, number> = { low: 0, mid: 5, high: 10, peak: 18 };
@@ -25,10 +17,11 @@ test('owner configures a new lido from the classic template, edits the map and s
   test.setTimeout(120_000);
   await login(page);
 
-  // Establishment switcher → new establishment.
-  const switcher = page.getByRole('combobox', { name: 'Stabilimento' });
+  // Establishment switcher (shadcn DropdownMenu in the sidebar) → new establishment.
+  const switcher = establishmentSwitcher(page);
   await expect(switcher).toBeEnabled();
-  await switcher.selectOption({ label: '+ Nuovo stabilimento' });
+  await switcher.click();
+  await page.getByRole('menuitem', { name: 'Nuovo stabilimento' }).click();
   await expect(page.getByRole('heading', { name: 'Nuovo stabilimento' })).toBeVisible();
   // Unique per run and per worker: the slug is derived from the name and must not collide.
   const name = `Lido E2E ${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -38,14 +31,21 @@ test('owner configures a new lido from the classic template, edits the map and s
   // The guided setup opens on the new establishment.
   await expect(page).toHaveURL(/\/admin\/e\/[0-9a-f-]{36}\/setup/);
   const establishmentId = /\/e\/([0-9a-f-]{36})\//.exec(page.url())?.[1] as string;
-  await expect(page.getByRole('combobox', { name: 'Stabilimento' })).toHaveValue(establishmentId);
-  await expect(page.getByRole('combobox', { name: 'Stabilimento' }).locator('option:checked')).toHaveText(name);
+  await expect(establishmentSwitcher(page)).toHaveAccessibleName(`Stabilimento: ${name}`);
+  await establishmentSwitcher(page).click();
+  await expect(page.getByRole('menuitemradio', { name, checked: true })).toBeVisible();
+  await page.keyboard.press('Escape');
 
   // Step 1 (details) is optional.
   await page.getByRole('button', { name: 'Salta questo passo' }).click();
 
   // Step 2: classic template.
-  const classic = page.getByRole('listitem').filter({ hasText: 'Lido classico a file' });
+  const classic = page
+    .getByRole('listitem')
+    .or(page.locator('[data-slot="card"]'))
+    .filter({ hasText: 'Lido classico a file' })
+    .filter({ has: page.getByRole('button', { name: 'Usa questo modello' }) })
+    .last();
   await classic.getByRole('button', { name: 'Usa questo modello' }).click();
 
   // Step 3: 8 rows × 15 spots (defaults), season and map are created.
@@ -112,6 +112,6 @@ test('owner configures a new lido from the classic template, edits the map and s
   const result = page.getByRole('region', { name: 'Risultato della simulazione' });
   await expect(result).toBeVisible();
   await expect(result.getByTestId('simulator-total')).toContainText('€');
-  await expect(result.getByRole('columnheader', { name: 'Regole applicate' })).toBeVisible();
+  await expect(result.getByRole('list', { name: 'Regole applicate' }).first()).toBeVisible();
   await expect(result.getByText(/Listino rapido/).first()).toBeVisible();
 });
