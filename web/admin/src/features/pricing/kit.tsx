@@ -683,25 +683,29 @@ type TextScaledProps = Omit<ScaledInputProps, 'value' | 'onChange'> & {
   onChange: (v: string) => void;
 };
 
-/** MoneyInput bound to the form's euro text ("12,50"); invalid input clears the value. */
+/**
+ * MoneyInput bound to the form's euro text ("12,50"). Unreadable input is kept
+ * as typed, so the zod schema rejects it and the error stays visible (an empty
+ * string would silently drop an optional amount).
+ */
 export function EuroTextInput({ value, onChange, allowNegative, ...props }: TextScaledProps) {
   return (
     <MoneyInput
       {...props}
       allowNegative={allowNegative}
       value={parseEuroToCents(value, { allowNegative })}
-      onChange={(c) => onChange(c == null ? '' : formatScaled(c, 2, { grouping: false }))}
+      onChange={(c, text) => onChange(c == null ? text : formatScaled(c, 2, { grouping: false }))}
     />
   );
 }
 
-/** PercentInput bound to the form's percent text ("12,5"). */
+/** PercentInput bound to the form's percent text ("12,5"); unreadable input is kept as typed. */
 export function PercentTextInput({ value, onChange, ...props }: TextScaledProps) {
   return (
     <PercentInput
       {...props}
       value={parsePercentToBasisPoints(value)}
-      onChange={(bp) => onChange(bp == null ? '' : basisPointsToPercentText(bp))}
+      onChange={(bp, text) => onChange(bp == null ? text : basisPointsToPercentText(bp))}
     />
   );
 }

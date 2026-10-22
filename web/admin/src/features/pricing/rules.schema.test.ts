@@ -40,10 +40,14 @@ describe('rule form', () => {
       stackable: true,
       active: true,
     };
-    const values = ruleValues(
-      { ...rule, id: 'r1', seq: 1, version: 1, created_at: '', updated_at: '' },
-      'it',
-    );
+    const values = ruleValues({
+      ...rule,
+      id: 'r1',
+      seq: 1,
+      version: 1,
+      created_at: '',
+      updated_at: '',
+    });
     expect(values.amount).toBe('-2,50');
     expect(ruleSchema.safeParse(values).success).toBe(true);
     expect(toRuleInput('s1', values)).toEqual(rule);
@@ -51,7 +55,7 @@ describe('rule form', () => {
 
   it('rejects an action not allowed in the stage and incoherent dates', () => {
     const values = {
-      ...ruleValues(undefined, 'it'),
+      ...ruleValues(undefined),
       action_type: 'percent_off' as const,
       percent: '10',
     };
@@ -78,7 +82,7 @@ describe('rule form', () => {
   });
 
   it('converts euro amounts without floating point', () => {
-    const values = { ...ruleValues(undefined, 'it'), name: 'Base', amount: '19,99' };
+    const values = { ...ruleValues(undefined), name: 'Base', amount: '19,99' };
     expect(toRuleInput('s1', values).action).toEqual({ type: 'set', amount: 1999 });
   });
 });
@@ -124,13 +128,14 @@ describe('conditions', () => {
 });
 
 describe('euro and percent inputs (exact, integer based)', () => {
-  const base = { ...ruleValues(undefined, 'it'), name: 'X' };
+  const base = { ...ruleValues(undefined), name: 'X' };
   it.each([
     ['0,10', 10],
     ['0,29', 29],
     ['1,005', null],
     ['19.99', 1999],
-    ['1.234,56', null],
+    ['1.234,56', 123456],
+    ['abc', null],
     ['4,35', 435],
     ['1000000', 100000000],
   ])('set %s → %s cents', (amount, cents) => {
@@ -177,13 +182,12 @@ describe('euro and percent inputs (exact, integer based)', () => {
     };
     const action = toRuleInput('s1', values).action;
     expect(action).toEqual({ type: 'multiply', factor: '1.2' });
-    expect(actionValues(action, 'set', 'it').factor).toBe('1,2');
-    expect(actionValues(action, 'set', 'en').factor).toBe('1.2');
+    expect(actionValues(action, 'set').factor).toBe('1,2');
   });
 
   it('round-trips cents through the input string for every cent value up to 10 €', () => {
     for (let c = 0; c <= 1000; c++) {
-      const v = actionValues({ type: 'set', amount: c }, 'set', 'it');
+      const v = actionValues({ type: 'set', amount: c }, 'set');
       expect(toAction(v)).toEqual({ type: 'set', amount: c });
     }
   });
@@ -192,7 +196,7 @@ describe('euro and percent inputs (exact, integer based)', () => {
 describe('promo form', () => {
   it('builds a 10% code with validity and limits', () => {
     const values = {
-      ...promoValues(undefined, 'it'),
+      ...promoValues(undefined),
       code: 'BENVENUTO10',
       percent: '10',
       valid_from: '2027-05-01',
@@ -228,10 +232,10 @@ describe('policy rules form', () => {
       approval_required: true,
       weather_policy: { enabled: true, as: 'credit' as const },
     };
-    expect(toRules(rulesValues(rules, 'it'))).toEqual(rules);
+    expect(toRules(rulesValues(rules))).toEqual(rules);
   });
 
   it('leaves out everything that inherits', () => {
-    expect(toRules(rulesValues({}, 'it'))).toEqual({});
+    expect(toRules(rulesValues({}))).toEqual({});
   });
 });

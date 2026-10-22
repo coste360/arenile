@@ -216,7 +216,7 @@ export function RuleForm(
   const { t } = useTranslation('pricing');
   const form = useForm<RuleValues>({
     resolver: zodResolver(ruleSchema),
-    defaultValues: { ...ruleValues(p.item, p.locale), ...(p.item ? {} : p.initial) },
+    defaultValues: { ...ruleValues(p.item), ...(p.item ? {} : p.initial) },
   });
   const summary = useSummaryNames(p);
   const create = priceRules.useCreate(p.establishmentId);

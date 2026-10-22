@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  apiDecimalToInput,
   basisPointsToPercentText,
   centsToEuroText,
+  decimalSeparator,
   formatBasisPoints,
   formatCents,
   parseEuroToCents,
   parsePercentToBasisPoints,
+  toApiDecimal,
 } from './money';
 
 describe('parseEuroToCents', () => {
@@ -53,8 +56,22 @@ describe('formatting', () => {
     expect(centsToEuroText(-1999)).toBe('-19,99');
   });
 
-  it('formats currency for display', () => {
+  it('formats currency for display with grouping, also below 10.000', () => {
     expect(formatCents(123450).replace(/\s/g, ' ')).toBe('1.234,50 €');
+    expect(formatCents(2500).replace(/\s/g, ' ')).toBe('25,00 €');
+    expect(formatCents(100000, 'EUR').replace(/\s/g, ' ')).toBe('1.000,00 €');
+  });
+
+  it('converts exact decimals to and from the API format', () => {
+    expect(toApiDecimal('0,6')).toBe('0.6');
+    expect(toApiDecimal('1.2', 6)).toBe('1.2');
+    expect(toApiDecimal('12,5', 2)).toBe('12.5');
+    expect(toApiDecimal('1', 2)).toBe('1');
+    expect(toApiDecimal('12,345', 2)).toBeNull();
+    expect(toApiDecimal('abc')).toBeNull();
+    expect(apiDecimalToInput('0.6')).toBe('0,6');
+    expect(decimalSeparator('it')).toBe(',');
+    expect(decimalSeparator('en')).toBe('.');
   });
 
   it('round-trips basis points', () => {

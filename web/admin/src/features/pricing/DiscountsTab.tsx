@@ -231,7 +231,7 @@ function PromoForm(p: PricingTabProps & { item?: PromoCode; onDone: () => void }
   const { t } = useTranslation('pricing');
   const form = useForm<PromoValues>({
     resolver: zodResolver(promoSchema),
-    defaultValues: promoValues(p.item, p.locale),
+    defaultValues: promoValues(p.item),
   });
   const s = useCrudSubmit({
     form,
@@ -441,7 +441,7 @@ function AgreementForm(p: PricingTabProps & { item?: Agreement; onDone: () => vo
   const { t } = useTranslation('pricing');
   const form = useForm<AgreementValues>({
     resolver: zodResolver(agreementSchema),
-    defaultValues: agreementValues(p.item, p.locale),
+    defaultValues: agreementValues(p.item),
   });
   const s = useCrudSubmit({
     form,

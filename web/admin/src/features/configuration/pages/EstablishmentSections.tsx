@@ -572,9 +572,8 @@ export function PricingSettingsSection({
   onVersion,
   readOnly,
 }: SectionProps) {
-  const { t, i18n } = useTranslation('configuration');
-  const locale = i18n.language || 'it';
-  const toValues = (e: Establishment) => toPricingSettingsValues(e, locale);
+  const { t } = useTranslation('configuration');
+  const toValues = (e: Establishment) => toPricingSettingsValues(e);
   const form = useForm({
     resolver: zodResolver(pricingSettingsSchema),
     defaultValues: toValues(establishment),

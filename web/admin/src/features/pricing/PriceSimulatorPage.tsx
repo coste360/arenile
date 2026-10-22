@@ -45,7 +45,7 @@ import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { useConfigContext } from '../configuration/api/useConfigContext';
 import { problemToFormState, type FormAlertState } from '../configuration/lib/formErrors';
-import { formatCents } from '../configuration/lib/money';
+import { formatCents } from '@arenile/shared/lib/money';
 import { agreements, priceRules, promoCodes, useSimulate, type SimulateResult } from './api';
 import {
   FormErrorAlert,
@@ -384,7 +384,7 @@ function Breakdown({
   const { t } = useTranslation('pricing');
   const [showAll, setShowAll] = useState(false);
   const b = result.breakdown;
-  const money = (c: number) => formatCents(c, locale, b.currency);
+  const money = (c: number) => formatCents(c, b.currency);
   const allDays = b.lines.flatMap((l) => l.days);
   const chartData = allDays.map((d) => ({
     day: formatIsoDate(d.date).slice(0, 5),

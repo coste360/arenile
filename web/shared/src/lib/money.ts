@@ -119,3 +119,24 @@ export function formatBasisPoints(bp: number, locale = 'it-IT'): string {
     bp / 10_000,
   );
 }
+
+/** Decimal separator of `locale` ("," for it/de/fr, "." for en), e.g. for CSV exports. */
+export function decimalSeparator(locale: string): string {
+  const part = new Intl.NumberFormat(locale).formatToParts(1.5).find((p) => p.type === 'decimal');
+  return part?.value ?? ',';
+}
+
+/**
+ * Normalises a user-typed exact decimal ("0,6", "1.2") to the API `Decimal`
+ * string ("0.6", "1.2") with at most `maxDecimals` decimals; null if malformed.
+ */
+export function toApiDecimal(input: string, maxDecimals = 4): string | null {
+  const scaled = parseScaled(input, maxDecimals);
+  if (scaled === null) return null;
+  return formatScaled(scaled, maxDecimals, { minDecimals: 0, grouping: false }).replace(',', '.');
+}
+
+/** API `Decimal` ("0.6") → editable Italian text ("0,6"). */
+export function apiDecimalToInput(value: string): string {
+  return value.replace('.', ',');
+}

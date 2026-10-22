@@ -51,7 +51,7 @@ import {
 import { FormAlert } from '../components/FormAlert';
 import { errorAt, fieldAria } from '../lib/aria';
 import { localize } from '../lib/i18nText';
-import { basisPointsToPercentInput } from '../lib/money';
+import { basisPointsToPercentText as basisPointsToPercentInput } from '@arenile/shared/lib/money';
 import {
   ATTACH_TO,
   CHANNELS,
@@ -391,7 +391,7 @@ function PacksTab({ ctx }: { ctx: ConfigContext }) {
             {p.vat_rate_bp !== undefined && (
               <Badge variant="outline">
                 {t('catalog.vatBadge', {
-                  rate: basisPointsToPercentInput(p.vat_rate_bp, ctx.uiLocale),
+                  rate: basisPointsToPercentInput(p.vat_rate_bp),
                 })}
               </Badge>
             )}
@@ -444,7 +444,7 @@ function PackForm({ ctx, item, onDone }: { ctx: ConfigContext; item?: Pack; onDo
   const zoneList = zones.useList(ctx.establishmentId);
   const form = useForm({
     resolver: zodResolver(packSchema(ctx.defaultLocale)),
-    defaultValues: toPackValues(item, ctx.locales, ctx.uiLocale),
+    defaultValues: toPackValues(item, ctx.locales),
   });
   const composition = useFieldArray({ control: form.control, name: 'composition' });
   const create = packs.useCreate(ctx.establishmentId);
@@ -804,7 +804,7 @@ function ExtraForm({
   const packList = packs.useList(ctx.establishmentId);
   const form = useForm({
     resolver: zodResolver(extraSchema(ctx.defaultLocale)),
-    defaultValues: toExtraValues(item, ctx.locales, ctx.uiLocale),
+    defaultValues: toExtraValues(item, ctx.locales),
   });
   const create = extras.useCreate(ctx.establishmentId);
   const update = extras.useUpdate(ctx.establishmentId);

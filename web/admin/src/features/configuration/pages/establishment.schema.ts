@@ -3,10 +3,10 @@ import { z } from 'zod';
 import type { EstablishmentUpdate } from '../api/establishment';
 import {
   apiDecimalToInput,
-  basisPointsToPercentInput,
-  percentToBasisPoints,
+  basisPointsToPercentText as basisPointsToPercentInput,
+  parsePercentToBasisPoints as percentToBasisPoints,
   toApiDecimal,
-} from '../lib/money';
+} from '@arenile/shared/lib/money';
 import { normalizeOrigin, splitLines } from '../lib/publicPage';
 import {
   HEX_COLOR_RE,
@@ -219,12 +219,12 @@ export const pricingSettingsSchema = z.object({
 
 export type PricingSettingsValues = z.infer<typeof pricingSettingsSchema>;
 
-export function toPricingSettingsValues(e: Establishment, locale = 'it'): PricingSettingsValues {
+export function toPricingSettingsValues(e: Establishment): PricingSettingsValues {
   const p = e.settings.pricing;
   return {
-    half_day_factor: apiDecimalToInput(p.half_day_factor || '0.6', locale),
+    half_day_factor: apiDecimalToInput(p.half_day_factor || '0.6'),
     rounding: p.rounding ?? 'none',
-    default_vat_rate: basisPointsToPercentInput(p.default_vat_rate_bp ?? 0, locale),
+    default_vat_rate: basisPointsToPercentInput(p.default_vat_rate_bp ?? 0),
   };
 }
 

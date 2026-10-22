@@ -18,7 +18,7 @@ import { RulesFields } from './RulesFields';
 function Harness({ rules, onSave }: { rules: PolicyRules; onSave: (r: PolicyRules) => void }) {
   const form = useForm<DefaultPolicyValues>({
     resolver: zodResolver(defaultPolicySchema),
-    defaultValues: rulesValues(rules, 'it'),
+    defaultValues: rulesValues(rules),
   });
   return (
     <Form {...form}>
@@ -105,5 +105,19 @@ describe('cancellation tiers editor', () => {
     const { user, saved } = setup({ cancellation: [] });
     await user.click(screen.getByRole('button', { name: 'salva' }));
     expect(saved).toEqual([{ cancellation: [] }]);
+  });
+});
+
+describe('money fields', () => {
+  it('rejects an unreadable modification fee instead of silently dropping it', async () => {
+    const { user, saved } = setup({});
+    const fee = screen.getByLabelText('Costo modifica (€)');
+    await user.type(fee, 'abc');
+    await user.click(screen.getByRole('button', { name: 'salva' }));
+    expect(saved).toHaveLength(0);
+    expect(
+      await screen.findByText('Inserisci un importo valido, ad esempio 25 o 25,50'),
+    ).toBeInTheDocument();
+    expect(fee).toHaveAttribute('aria-invalid', 'true');
   });
 });

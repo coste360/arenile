@@ -9,7 +9,7 @@ import { CalendarXIcon, DownloadIcon, LockIcon, Table2Icon } from 'lucide-react'
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConfigContext } from '../configuration/api/useConfigContext';
-import { formatCents } from '../configuration/lib/money';
+import { formatCents } from '@arenile/shared/lib/money';
 import { usePriceMatrix, type Channel, type Formula, type PriceMatrix, type Slots } from './api';
 import { OptionSelect, PricingLayout, QueryState, SeasonSelect } from './kit';
 import { downloadCsv, matrixToCsv } from './matrixCsv';
@@ -126,7 +126,6 @@ export function PriceMatrixPage() {
             const p = sel.periods.find((x) => x.code === code);
             return (p && localize(p.name, ctx.uiLocale, 'it')) || code;
           }}
-          locale={ctx.uiLocale}
         />
       )}
     </PricingLayout>
@@ -157,12 +156,10 @@ function MatrixTable({
   matrix,
   packName,
   periodName,
-  locale,
 }: {
   matrix: PriceMatrix;
   packName: (id: string) => string;
   periodName: (code: string) => string;
-  locale: string;
 }) {
   const { t } = useTranslation('pricing');
   if (matrix.pack_ids.length === 0 || matrix.categories.length === 0) {
@@ -215,7 +212,7 @@ function MatrixTable({
             {!c ? (
               <span className="text-muted-foreground">—</span>
             ) : c.priced ? (
-              formatCents(c.price, locale)
+              formatCents(c.price)
             ) : (
               <Badge variant="destructive">{t('matrix.noPrice')}</Badge>
             )}

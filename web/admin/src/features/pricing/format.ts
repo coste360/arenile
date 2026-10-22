@@ -1,10 +1,10 @@
 import type { TFunction } from 'i18next';
-import { formatCents } from '../configuration/lib/money';
+import { formatCents } from '@arenile/shared/lib/money';
 import type { PriceAction, PriceConditions, PriceRuleInput } from './api';
 
 /** Human summary of a price action, e.g. "−10%", "+5,00 € al giorno", "7 giorni al prezzo di 6". */
 export function describeAction(t: TFunction, a: PriceAction, locale: string): string {
-  const money = (c: number) => formatCents(c, locale);
+  const money = (c: number) => formatCents(c);
   const pct = (p?: string) => (p ?? '0').replace('.', locale.startsWith('en') ? '.' : ',');
   switch (a.type) {
     case 'set':

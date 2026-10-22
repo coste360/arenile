@@ -328,7 +328,7 @@ function PolicyForm(p: {
   const [exampleWarnings, setExampleWarnings] = useState<string[]>([]);
   const form = useForm<PolicyValues>({
     resolver: zodResolver(policySchema),
-    defaultValues: policyValues(p.item, p.locale),
+    defaultValues: policyValues(p.item),
   });
   const s = useCrudSubmit({
     form,
@@ -469,7 +469,7 @@ function DefaultPolicyForm(p: {
   const [version, setVersion] = useState(p.startVersion);
   const form = useForm<DefaultPolicyValues>({
     resolver: zodResolver(defaultPolicySchema),
-    defaultValues: rulesValues(p.rules, p.locale),
+    defaultValues: rulesValues(p.rules),
   });
   const section = useEstablishmentSection({
     establishmentId: p.establishmentId,
@@ -477,7 +477,7 @@ function DefaultPolicyForm(p: {
     version,
     onVersion: setVersion,
     toPatch: (v, current) => ({ settings: { ...current.settings, default_policy: toRules(v) } }),
-    toValues: (est) => rulesValues(est.settings.default_policy, p.locale),
+    toValues: (est) => rulesValues(est.settings.default_policy),
   });
   return (
     <Form {...form}>

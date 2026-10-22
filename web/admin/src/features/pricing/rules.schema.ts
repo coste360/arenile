@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import {
   apiDecimalToInput,
-  centsToEuroInput,
-  euroToCents,
+  centsToEuroText as centsToEuroInput,
+  parseEuroToCents as euroToCents,
   toApiDecimal,
-} from '../configuration/lib/money';
+} from '@arenile/shared/lib/money';
 import {
   CODE_RE,
   V,
@@ -149,18 +149,13 @@ export function toAction(v: ActionValues): PriceAction {
   }
 }
 
-export function actionValues(
-  a: PriceAction | undefined,
-  fallback: ActionType,
-  locale: string,
-): ActionValues {
+export function actionValues(a: PriceAction | undefined, fallback: ActionType): ActionValues {
   const amount = a?.amount ?? 0;
   return {
     action_type: a?.type ?? fallback,
-    amount:
-      a?.amount == null ? '' : (amount < 0 ? '-' : '') + centsToEuroInput(Math.abs(amount), locale),
-    percent: a?.percent ? apiDecimalToInput(a.percent, locale) : '',
-    factor: a?.factor ? apiDecimalToInput(a.factor, locale) : '',
+    amount: a?.amount == null ? '' : (amount < 0 ? '-' : '') + centsToEuroInput(Math.abs(amount)),
+    percent: a?.percent ? apiDecimalToInput(a.percent) : '',
+    factor: a?.factor ? apiDecimalToInput(a.factor) : '',
     per: a?.per ?? '',
     every: a?.every ? String(a.every) : '',
     free: a?.free ? String(a.free) : '',
@@ -380,7 +375,7 @@ export const ruleSchema = z
 
 export type RuleValues = z.infer<typeof ruleSchema>;
 
-export function ruleValues(r: PriceRule | undefined, locale: string): RuleValues {
+export function ruleValues(r: PriceRule | undefined): RuleValues {
   return {
     name: r?.name ?? '',
     stage: r?.stage ?? 'base',
@@ -389,7 +384,7 @@ export function ruleValues(r: PriceRule | undefined, locale: string): RuleValues
     priority: String(r?.priority ?? 0),
     stackable: r?.stackable ?? false,
     active: r?.active ?? true,
-    ...actionValues(r?.action, 'set', locale),
+    ...actionValues(r?.action, 'set'),
     ...conditionValues(r?.conditions),
   };
 }
@@ -427,13 +422,13 @@ export const fixedSchema = z.object({
 
 export type FixedValues = z.infer<typeof fixedSchema>;
 
-export function fixedValues(f: FixedPrice | undefined, locale: string): FixedValues {
+export function fixedValues(f: FixedPrice | undefined): FixedValues {
   return {
     pack_id: f?.pack_id ?? '',
     formula: f?.formula ?? 'week',
     price_category: f?.price_category ?? '',
     rate_period_code: f?.rate_period_code ?? '',
-    amount: f ? centsToEuroInput(f.amount, locale) : '',
+    amount: f ? centsToEuroInput(f.amount) : '',
   };
 }
 
@@ -494,7 +489,7 @@ export const promoSchema = z
 
 export type PromoValues = z.infer<typeof promoSchema>;
 
-export function promoValues(p: PromoCode | undefined, locale: string): PromoValues {
+export function promoValues(p: PromoCode | undefined): PromoValues {
   return {
     code: p?.code ?? '',
     description: p?.description ?? '',
@@ -504,7 +499,7 @@ export function promoValues(p: PromoCode | undefined, locale: string): PromoValu
     valid_to: p?.valid_to ?? '',
     stackable: p?.stackable ?? false,
     active: p?.active ?? true,
-    ...actionValues(p?.action, 'percent_off', locale),
+    ...actionValues(p?.action, 'percent_off'),
     ...conditionValues(p?.conditions),
   };
 }
@@ -542,7 +537,7 @@ export const agreementSchema = z
 
 export type AgreementValues = z.infer<typeof agreementSchema>;
 
-export function agreementValues(a: Agreement | undefined, locale: string): AgreementValues {
+export function agreementValues(a: Agreement | undefined): AgreementValues {
   return {
     name: a?.name ?? '',
     code: a?.code ?? '',
@@ -552,7 +547,7 @@ export function agreementValues(a: Agreement | undefined, locale: string): Agree
     valid_to: a?.valid_to ?? '',
     stackable: a?.stackable ?? false,
     active: a?.active ?? true,
-    ...actionValues(a?.action, 'percent_off', locale),
+    ...actionValues(a?.action, 'percent_off'),
     ...conditionValues(a?.conditions),
   };
 }

@@ -1,4 +1,4 @@
-import { centsToEuroInput } from '../configuration/lib/money';
+import { decimalSeparator, formatScaled } from '@arenile/shared/lib/money';
 import type { PriceMatrix } from './api';
 
 /**
@@ -17,8 +17,9 @@ export function matrixToCsv(
     noPrice: string;
   },
 ): string {
-  const decimal = centsToEuroInput(150, opts.locale).includes(',') ? ',' : '.';
+  const decimal = decimalSeparator(opts.locale) === ',' ? ',' : '.';
   const sep = decimal === ',' ? ';' : ',';
+  const euro = (cents: number) => formatScaled(cents, 2, { grouping: false }).replace(',', decimal);
   const cell = (v: string) =>
     v.includes(sep) || /["\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
   const index = new Map(
@@ -33,7 +34,7 @@ export function matrixToCsv(
         ...matrix.rate_periods.map((period) => {
           const c = index.get(`${pack}\u0000${cat}\u0000${period}`);
           if (!c) return '';
-          return c.priced ? centsToEuroInput(c.price, opts.locale) : opts.noPrice;
+          return c.priced ? euro(c.price) : opts.noPrice;
         }),
       ]);
     }

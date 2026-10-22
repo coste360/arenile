@@ -59,6 +59,24 @@ describe('MoneyInput / PercentInput', () => {
     expect(input).toHaveAttribute('aria-invalid', 'true');
   });
 
+  it('reports the raw text, applies a value received while focused on blur and names the unit', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { rerender } = renderWithI18n(
+      <MoneyInput aria-label="Prezzo" value={1000} onChange={onChange} />,
+    );
+    const input = screen.getByLabelText('Prezzo');
+    expect(input).toHaveAccessibleDescription('euro');
+    await user.clear(input);
+    await user.type(input, 'abc');
+    expect(onChange).toHaveBeenLastCalledWith(null, 'abc');
+    // A reset while the field is focused is applied when the user leaves it.
+    rerender(<MoneyInput aria-label="Prezzo" value={2500} onChange={onChange} />);
+    expect(input).toHaveValue('abc');
+    await user.tab();
+    expect(input).toHaveValue('25,00');
+  });
+
   it('binds percentages to basis points', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -67,7 +85,7 @@ describe('MoneyInput / PercentInput', () => {
     expect(input).toHaveValue('22');
     await user.clear(input);
     await user.type(input, '5,5');
-    expect(onChange).toHaveBeenLastCalledWith(550);
+    expect(onChange).toHaveBeenLastCalledWith(550, '5,5');
   });
 });
 

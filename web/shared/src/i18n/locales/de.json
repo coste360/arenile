@@ -260,6 +260,10 @@
     "i18nText": {
       "languages": "Sprachen",
       "missing": "fehlt"
+    },
+    "money": {
+      "euro": "Euro",
+      "percent": "Prozent"
     }
   }
 }

@@ -1,6 +1,9 @@
 import type { Schemas } from '@arenile/shared/api';
 import { z } from 'zod';
-import { centsToEuroInput, euroToCents } from '../configuration/lib/money';
+import {
+  centsToEuroText as centsToEuroInput,
+  parseEuroToCents as euroToCents,
+} from '@arenile/shared/lib/money';
 import { V, intField, optionalInt } from '../configuration/lib/validation';
 
 export type PolicyRules = Schemas['PolicyRules'];
@@ -201,7 +204,7 @@ export function toRules(v: RulesValues): PolicyRules {
   return r;
 }
 
-export function rulesValues(r: PolicyRules | undefined, locale: string): RulesValues {
+export function rulesValues(r: PolicyRules | undefined): RulesValues {
   const balance = r?.payment?.balance_due ?? '';
   const deposit = r?.payment?.deposit;
   return {
@@ -222,7 +225,7 @@ export function rulesValues(r: PolicyRules | undefined, locale: string): RulesVa
       deposit?.value == null
         ? ''
         : deposit.type === 'amount'
-          ? centsToEuroInput(deposit.value, locale)
+          ? centsToEuroInput(deposit.value)
           : String(deposit.value),
     balance_due: balance === '' ? '' : balance === 'on_arrival' ? 'on_arrival' : 'days_before',
     balance_days: balance.startsWith('days_before:') ? balance.slice('days_before:'.length) : '',
@@ -236,8 +239,7 @@ export function rulesValues(r: PolicyRules | undefined, locale: string): RulesVa
       r?.modification?.allowed_until_days_before != null
         ? String(r.modification.allowed_until_days_before)
         : '',
-    modification_fee:
-      r?.modification?.fee != null ? centsToEuroInput(r.modification.fee, locale) : '',
+    modification_fee: r?.modification?.fee != null ? centsToEuroInput(r.modification.fee) : '',
     weather:
       r?.weather_policy === undefined
         ? 'inherit'
@@ -281,7 +283,7 @@ export const policySchema = z
 
 export type PolicyValues = z.infer<typeof policySchema>;
 
-export function policyValues(p: BookingPolicy | undefined, locale: string): PolicyValues {
+export function policyValues(p: BookingPolicy | undefined): PolicyValues {
   return {
     name: p?.name ?? '',
     priority: String(p?.priority ?? 0),
@@ -290,7 +292,7 @@ export function policyValues(p: BookingPolicy | undefined, locale: string): Poli
     scope_zones: p?.scope.zones ?? [],
     scope_packs: p?.scope.packs ?? [],
     scope_periods: p?.scope.rate_periods ?? [],
-    ...rulesValues(p?.rules, locale),
+    ...rulesValues(p?.rules),
   };
 }
 

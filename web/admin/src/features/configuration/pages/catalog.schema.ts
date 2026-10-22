@@ -8,7 +8,10 @@ import type {
   PackInput,
 } from '../api/resources';
 import { compactI18n, i18nFormValue } from '../lib/i18nText';
-import { basisPointsToPercentInput, percentToBasisPoints } from '../lib/money';
+import {
+  basisPointsToPercentText as basisPointsToPercentInput,
+  parsePercentToBasisPoints as percentToBasisPoints,
+} from '@arenile/shared/lib/money';
 import {
   V,
   codeField,
@@ -44,8 +47,8 @@ function vatToBp(v: string): number | undefined {
   return v.trim() === '' ? undefined : (percentToBasisPoints(v) ?? undefined);
 }
 
-function bpToVat(bp: number | undefined, locale: string): string {
-  return bp === undefined || bp === null ? '' : basisPointsToPercentInput(bp, locale);
+function bpToVat(bp: number | undefined): string {
+  return bp === undefined || bp === null ? '' : basisPointsToPercentInput(bp);
 }
 
 // ---- Components ---------------------------------------------------------------------
@@ -128,7 +131,7 @@ export function packSchema(defaultLocale: string) {
 
 export type PackValues = z.infer<ReturnType<typeof packSchema>>;
 
-export function toPackValues(p: Pack | undefined, locales: string[], locale = 'it'): PackValues {
+export function toPackValues(p: Pack | undefined, locales: string[]): PackValues {
   return {
     code: p?.code ?? '',
     name: i18nFormValue(p?.name, locales),
@@ -148,7 +151,7 @@ export function toPackValues(p: Pack | undefined, locales: string[], locale = 'i
     requires_approval: p?.requires_approval ?? false,
     sort_order: p ? String(p.sort_order) : '',
     active: p?.active ?? true,
-    vat_rate: bpToVat(p?.vat_rate_bp, locale),
+    vat_rate: bpToVat(p?.vat_rate_bp),
   };
 }
 
@@ -197,7 +200,7 @@ export function extraSchema(defaultLocale: string) {
 
 export type ExtraValues = z.infer<ReturnType<typeof extraSchema>>;
 
-export function toExtraValues(e: Extra | undefined, locales: string[], locale = 'it'): ExtraValues {
+export function toExtraValues(e: Extra | undefined, locales: string[]): ExtraValues {
   return {
     code: e?.code ?? '',
     name: i18nFormValue(e?.name, locales),
@@ -210,7 +213,7 @@ export function toExtraValues(e: Extra | undefined, locales: string[], locale = 
     channels: e?.channels ?? ['desk', 'online'],
     sort_order: e ? String(e.sort_order) : '',
     active: e?.active ?? true,
-    vat_rate: bpToVat(e?.vat_rate_bp, locale),
+    vat_rate: bpToVat(e?.vat_rate_bp),
   };
 }
 

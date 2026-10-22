@@ -60,7 +60,7 @@ describe('policy examples (spec 9)', () => {
     const catalog = { packs: PACKS, periods: PERIODS };
     const build = (id: Parameters<typeof policyExample>[0]) => {
       const values = {
-        ...policyValues(undefined, 'it'),
+        ...policyValues(undefined),
         name: id,
         ...policyExample(id, catalog).values,
       };

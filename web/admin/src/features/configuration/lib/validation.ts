@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { euroToCents, percentToBasisPoints, toApiDecimal } from './money';
+import {
+  parseEuroToCents as euroToCents,
+  parsePercentToBasisPoints as percentToBasisPoints,
+  toApiDecimal,
+} from '@arenile/shared/lib/money';
 
 /**
  * Shared zod building blocks. Messages are i18n keys (namespace-qualified so

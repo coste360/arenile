@@ -33,7 +33,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
-import { formatCents } from '../configuration/lib/money';
+import { formatCents } from '@arenile/shared/lib/money';
 import { fixedPrices, type FixedPrice } from './api';
 import {
   DeleteButton,
@@ -179,7 +179,7 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
                           <TableCell key={period || 'any'} className="p-1 text-right">
                             {p.readOnly ? (
                               <span className="px-2 tabular-nums">
-                                {f ? formatCents(f.amount, p.locale) : '—'}
+                                {f ? formatCents(f.amount) : '—'}
                               </span>
                             ) : (
                               <Button
@@ -197,11 +197,7 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
                                     : 'w-full justify-end text-muted-foreground'
                                 }
                               >
-                                {f ? (
-                                  formatCents(f.amount, p.locale)
-                                ) : (
-                                  <PlusIcon aria-hidden="true" />
-                                )}
+                                {f ? formatCents(f.amount) : <PlusIcon aria-hidden="true" />}
                               </Button>
                             )}
                           </TableCell>
@@ -248,7 +244,7 @@ function FixedForm(
   const { t } = useTranslation('pricing');
   const form = useForm<FixedValues>({
     resolver: zodResolver(fixedSchema),
-    defaultValues: { ...fixedValues(p.item, p.locale), ...(p.item ? {} : p.initial) },
+    defaultValues: { ...fixedValues(p.item), ...(p.item ? {} : p.initial) },
   });
   const remove = fixedPrices.useRemove(p.establishmentId);
   const create = fixedPrices.useCreate(p.establishmentId);
