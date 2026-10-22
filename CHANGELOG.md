@@ -10,6 +10,9 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 
 ### Added
 
+- Pannello e pagina di prenotazione con UI kit shadcn/ui (ADR 0009): barra laterale con selettore dello stabilimento e menu utente, breadcrumb, palette comandi (Ctrl/⌘+K), tema chiaro/scuro/sistema, toast; tabelle con ordinamento e filtro, pannelli laterali di modifica, calendari e selettori di date gg/MM/aaaa in italiano al posto di `<input type="date">`, importi con `MoneyInput`; editor della mappa con barra degli strumenti a icone, zoom fino al 400%, legenda e pannello proprietà; stagioni con linea temporale e calendario, chiusure su calendario, simulatore con grafico e dettaglio per giorno; pagina pubblica mobile-first con passo "Quando" e selettore del periodo.
+- Controllo `web/scripts/css-guard.mjs` in `npm run lint`: rifiuta fogli di stile diversi dal tema, CSS-in-JS, `style={…}` fuori dalla geometria della mappa e i vecchi token `--ar-*`.
+- Test e2e del guscio del pannello (tema scuro persistente, palette comandi) e del selettore di date della pagina pubblica.
 - M1 — stabilimenti: creazione di nuovi stabilimenti dal pannello (solo owner dell'organizzazione) con selettore, impostazioni con `If-Match` (fuso, lingue, origini embed, tema, impostazioni prezzi, festività locali, policy predefinita), archiviazione e ripristino.
 - M1 — stagioni, periodi tariffari (senza sovrapposizioni, serializzati sulla stagione) e giorni di chiusura per fascia AM/PM; copia delle date di stagione.
 - M1 — utenti e ruoli (solo owner): aggiunta con password iniziale o temporanea, cambio ruolo e ambito, disattivazione con chiusura delle sessioni; l'ultimo owner attivo non può essere rimosso.
@@ -39,6 +42,9 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 
 ### Changed
 
+- Interfaccia senza CSS custom: un solo foglio di stile (`web/shared/src/styles/globals.css`, variabili del tema shadcn); rimossi `index.css` delle due app, `tokens.css`, le primitive scritte a mano e i token `--ar-*`. Il tema dello stabilimento sovrascrive le variabili shadcn (`--primary`, `--highlight`, `--radius`, `--app-font`) con lo stesso controllo del contrasto.
+- Matrice di listino e linea temporale delle stagioni mostrano il nome del periodo tariffario invece del codice; il simulatore mostra l'effetto delle regole come importo o percentuale ("= 25,00 €", "−10%") invece del formato interno del motore.
+- JS iniziale della pagina di prenotazione: 119,7 KB gzip su 150 (prima 118,3).
 - Licenza cambiata da AGPL-3.0 a Business Source License 1.1 (BUSL-1.1), con conversione in AGPL-3.0-or-later tre anni dopo il rilascio di ogni versione (ADR 0007); aggiunto `.github/CODEOWNERS`.
 - Roadmap estesa con M6 (edizione desktop, locale o client remoto) e M7 (app mobile), sezione 29 della specifica.
 - `pkg/ext`: `PaymentProvider.ParseWebhook` riceve anche le credenziali decifrate dello stabilimento (`ParseWebhook(ctx, r, creds)`), diversamente dalla spec 13.1 ([ADR 0006](docs/adr/0006-deviazioni-m0-dalla-specifica.md)).
@@ -54,6 +60,8 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 
 ### Fixed
 
+- Selettore di date: l'elenco degli anni non andava oltre l'anno corrente, impedendo di scegliere date della stagione successiva.
+- Campo importo: un valore non valido veniva cancellato all'uscita dal campo invece di restare visibile con l'errore.
 - Un `PUT` della mappa senza header `If-Match` risponde 428 `precondition_required` invece di 400.
 - `If-Match: *` è una precondizione soddisfatta da qualsiasi versione (RFC 9110): il salvataggio della mappa e l'applicazione del generatore la accettano invece di rispondere 428. La forma debole `W/"3"` resta accettata (proxy che comprimono le risposte, ADR 0008).
 - Salvataggio della mappa e modifica o eliminazione di una zona si serializzano sulle righe delle zone coinvolte: su PostgreSQL non è più possibile che un salvataggio che aggiunge postazioni a una zona e la modifica della stessa zona in `quantity` vadano entrambi a buon fine (`TestConcurrency_ZoneUpdateVsSaveMap`); la capacità del pool implicito è calcolata dopo il lock.

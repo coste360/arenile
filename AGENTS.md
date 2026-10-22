@@ -54,6 +54,10 @@ The specification (Italian) lives in `docs/spec/`, one file per section; it is a
 - Never modify a migration that is already on `main`; add a new one, for both dialects.
 - No new runtime dependency (Go module or npm package) without explaining why in the PR.
 - User-facing strings go through i18n keys; Italian is the source language.
+- Frontend UI = shadcn/ui only (`web/shared/src/ui`, ADR 0009): no custom CSS (no new `.css`
+  files, CSS modules, CSS-in-JS or `style={{…}}` outside map geometry), only shadcn variants and
+  Tailwind utilities on theme tokens. Add components with `npx shadcn@latest add <name> --cwd shared`
+  (from `web/`); `npm run lint` (CSS guard) enforces it. Details in `web/shared/src/ui/README.md`.
 - Never log emails, phone numbers, tokens or secrets in clear.
 - Code comments and identifiers in English.
 - License: the project is BSL 1.1 (SPDX `BUSL-1.1`, converts to AGPL-3.0-or-later three years
