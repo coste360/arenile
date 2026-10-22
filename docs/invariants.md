@@ -14,7 +14,7 @@ Regole:
 
 Convenzioni dei test: unit `TestXxx_Scenario`; integrazione con build tag `integration`
 (`go test -tags=integration ./...`, SQLite in memoria sempre, PostgreSQL se `ARENILE_TEST_POSTGRES_URL`);
-concorrenza `TestConcurrency_*` con `go test -race -run Concurrency ./internal/...`.
+concorrenza `TestConcurrency_*` con `make test-race`, cioè `go test -race -tags=integration -run ^TestConcurrency ./internal/...`.
 
 ## Disponibilità (spec 7)
 

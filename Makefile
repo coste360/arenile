@@ -232,8 +232,12 @@ test-db: ## Test di integrazione su SQLite e PostgreSQL (container effimero)
 		go test -tags=integration $(PKG)
 
 .PHONY: test-race
-test-race: ## Test di concorrenza con -race (disponibilita', pagamenti)
-	go test -race -run Concurrency ./internal/...
+test-race: ## Test di concorrenza TestConcurrency_* con -race (fallisce se non ne trova nessuno)
+	@set -euo pipefail; \
+	n="$$(go test -tags=integration -list '^TestConcurrency' ./internal/... | grep -c '^TestConcurrency' || true)"; \
+	if [ "$${n:-0}" -eq 0 ]; then echo "test-race: nessun test TestConcurrency_* trovato" >&2; exit 1; fi; \
+	echo "test-race: $$n test di concorrenza"; \
+	go test -race -tags=integration -run '^TestConcurrency' ./internal/...
 
 .PHONY: e2e
 e2e: web-build ## Test end-to-end Playwright con server di prova e dati demo

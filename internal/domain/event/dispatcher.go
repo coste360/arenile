@@ -65,11 +65,14 @@ func (d *Dispatcher) DispatchPending(ctx context.Context) (int, error) {
 			}
 		}
 		now := d.clock.Now()
+		claimed := false
 		err := store.RunInTx(ctx, d.db, func(ctx context.Context, tx bun.Tx) error {
 			fresh, err := store.MarkOutboxEventDispatched(ctx, tx, row.ID, now)
 			if err != nil || !fresh {
+				// Another dispatcher (instance) got there first.
 				return err
 			}
+			claimed = true
 			if ev.EstablishmentID == "" {
 				return nil
 			}
@@ -95,7 +98,9 @@ func (d *Dispatcher) DispatchPending(ctx context.Context) (int, error) {
 		if err != nil {
 			return n, fmt.Errorf("event: dispatch %s: %w", ev.ID, err)
 		}
-		n++
+		if claimed {
+			n++
+		}
 	}
 	return n, nil
 }
@@ -174,12 +179,15 @@ func (d *Deliverer) CreateEndpoint(ctx context.Context, db bun.IDB, es store.Est
 	if err != nil {
 		return nil, "", err
 	}
-	enc, err := d.keys.EncryptString(secret)
+	id := store.NewID()
+	// The endpoint id is the AAD: a ciphertext copied onto another row does
+	// not decrypt there.
+	enc, err := d.keys.Encrypt([]byte(secret), []byte(id))
 	if err != nil {
 		return nil, "", fmt.Errorf("event: encrypt webhook secret: %w", err)
 	}
 	now := d.clock.Now()
-	ep := &store.WebhookEndpoint{ID: store.NewID(), URL: in.URL, Secret: enc, Events: in.Events, Active: true, CreatedAt: now, UpdatedAt: now}
+	ep := &store.WebhookEndpoint{ID: id, URL: in.URL, Secret: enc, Events: in.Events, Active: true, CreatedAt: now, UpdatedAt: now}
 	if err := store.InsertWebhookEndpoint(ctx, db, es, ep); err != nil {
 		return nil, "", err
 	}
@@ -196,16 +204,36 @@ func (d *Deliverer) DeliverDue(ctx context.Context, limit int) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	attempts := 0
 	for i := range due {
 		if err := ctx.Err(); err != nil {
-			return i, err
+			return attempts, err
 		}
+		// Claim the row with a lease before sending, so that another
+		// instance polling the same database does not deliver it too. If this
+		// process dies mid-attempt, the delivery becomes due again when the
+		// lease expires.
+		now := d.clock.Now()
+		lease := now.Add(d.leaseDuration())
+		claimed, err := store.ClaimWebhookDelivery(ctx, d.db, due[i].ID, now, lease)
+		if err != nil {
+			return attempts, err
+		}
+		if !claimed {
+			continue
+		}
+		due[i].NextAttemptAt = &lease
+		attempts++
 		if err := d.attempt(ctx, &due[i]); err != nil {
 			d.log.ErrorContext(ctx, "webhook attempt", slog.String("delivery_id", due[i].ID), slog.String("error", err.Error()))
 		}
 	}
-	return len(due), nil
+	return attempts, nil
 }
+
+// leaseDuration bounds how long a claimed delivery stays invisible to other
+// instances: the HTTP timeout plus a margin for the database writes.
+func (d *Deliverer) leaseDuration() time.Duration { return 2*d.opts.Timeout + 30*time.Second }
 
 func (d *Deliverer) attempt(ctx context.Context, del *store.WebhookDelivery) error {
 	ep, err := store.GetWebhookEndpointByID(ctx, d.db, del.EndpointID)
@@ -226,10 +254,11 @@ func (d *Deliverer) attempt(ctx context.Context, del *store.WebhookDelivery) err
 	if err != nil {
 		return err
 	}
-	secret, err := d.keys.DecryptString(ep.Secret)
+	secretBytes, err := d.keys.Decrypt(ep.Secret, []byte(ep.ID))
 	if err != nil {
 		return fmt.Errorf("event: decrypt endpoint secret: %w", err)
 	}
+	secret := string(secretBytes)
 
 	status, excerpt, sendErr := d.send(ctx, ep.URL, secret, body, row, now)
 	del.Attempt++

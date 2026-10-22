@@ -94,6 +94,14 @@ func Each(t *testing.T, fn func(t *testing.T, db *store.DB)) {
 	t.Run("postgres", func(t *testing.T) { fn(t, Postgres(t)) })
 }
 
+// EachConcurrent is Each with a file-backed SQLite database (several
+// connections, WAL), for TestConcurrency_* tests.
+func EachConcurrent(t *testing.T, fn func(t *testing.T, db *store.DB)) {
+	t.Helper()
+	t.Run("sqlite", func(t *testing.T) { fn(t, SQLiteFile(t)) })
+	t.Run("postgres", func(t *testing.T) { fn(t, Postgres(t)) })
+}
+
 func migrate(t testing.TB, db *store.DB) {
 	t.Helper()
 	r, err := db.Migrator()

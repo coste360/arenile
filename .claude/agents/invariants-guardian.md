@@ -22,7 +22,7 @@ For each invariant (INV-xx) touched by the change, directly or indirectly:
    (number, statement, "Verificata da", status) and add it.
 
 Run the relevant tests (`go test ./internal/domain/...`, `go test -tags=integration ./internal/store/...`,
-`go test -race -run Concurrency ./internal/...`).
+`make test-race`, i.e. `go test -race -tags=integration -run ^TestConcurrency ./internal/...`).
 
 Report a table: invariant, impact (none / at risk / violated), evidence (test name + result).
 End with exactly one line: `INVARIANTS OK` or `INVARIANTS AT RISK`.

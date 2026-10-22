@@ -98,7 +98,7 @@ func Idempotency(o IdempotencyOptions) Middleware {
 			claimed, existing, err := store.ClaimIdempotencyKey(ctx, o.DB, row)
 			if err == nil && !claimed && !existing.ExpiresAt.After(now) {
 				// Expired record: forget it and claim again.
-				if err = store.ReleaseIdempotencyKey(ctx, o.DB, scope, key); err == nil {
+				if err = store.ReleaseExpiredIdempotencyKey(ctx, o.DB, scope, key, now); err == nil {
 					claimed, existing, err = store.ClaimIdempotencyKey(ctx, o.DB, row)
 				}
 			}

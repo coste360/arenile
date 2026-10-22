@@ -136,6 +136,24 @@ func ListDueWebhookDeliveries(ctx context.Context, db bun.IDB, now time.Time, li
 	return ds, nil
 }
 
+// ClaimWebhookDelivery atomically takes a due delivery for one attempt by
+// moving next_attempt_at to leaseUntil. It reports false when another worker
+// claimed it first (or it is no longer due), which makes concurrent
+// deliverers on the same database safe on both SQLite and PostgreSQL.
+func ClaimWebhookDelivery(ctx context.Context, db bun.IDB, id string, now, leaseUntil time.Time) (bool, error) {
+	res, err := db.NewUpdate().Model((*WebhookDelivery)(nil)).
+		Set("next_attempt_at = ?", leaseUntil).Set("updated_at = ?", now).
+		Where("id = ?", id).
+		Where("delivered_at IS NULL").Where("failed_at IS NULL").
+		Where("next_attempt_at IS NOT NULL").Where("next_attempt_at <= ?", now).
+		Exec(ctx)
+	if err != nil {
+		return false, wrapWrite("claim webhook delivery", err)
+	}
+	n, _ := res.RowsAffected()
+	return n == 1, nil
+}
+
 // UpdateWebhookDelivery persists the outcome of a delivery attempt.
 func UpdateWebhookDelivery(ctx context.Context, db bun.IDB, d *WebhookDelivery) error {
 	_, err := db.NewUpdate().Model(d).
@@ -182,6 +200,15 @@ func CompleteIdempotencyKey(ctx context.Context, db bun.IDB, scope, key string, 
 func ReleaseIdempotencyKey(ctx context.Context, db bun.IDB, scope, key string) error {
 	_, err := db.NewDelete().Model((*IdempotencyKey)(nil)).Where("scope = ?", scope).Where("key = ?", key).Exec(ctx)
 	return wrapWrite("release idempotency key", err)
+}
+
+// ReleaseExpiredIdempotencyKey deletes a key only if it has expired at now,
+// so that concurrent requests reclaiming the same expired key cannot delete
+// a fresh claim made by one of them.
+func ReleaseExpiredIdempotencyKey(ctx context.Context, db bun.IDB, scope, key string, now time.Time) error {
+	_, err := db.NewDelete().Model((*IdempotencyKey)(nil)).
+		Where("scope = ?", scope).Where("key = ?", key).Where("expires_at <= ?", now).Exec(ctx)
+	return wrapWrite("release expired idempotency key", err)
 }
 
 // DeleteExpiredIdempotencyKeys removes expired keys.
