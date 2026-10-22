@@ -1,0 +1,12 @@
+---
+paths:
+  - "internal/migrations/**"
+  - "internal/store/**"
+---
+- Every migration exists for both `sqlite/` and `postgres/` with the same number.
+- Migrations are forward-only and must not lose data; add, backfill, then switch.
+- Never edit a migration already merged on `main`.
+- New unique constraints or indexes on hot tables need a note in the PR.
+- Use only the common SQL subset in `internal/store`; dialect differences stay in migrations.
+- Every operational table has `establishment_id` with an index; every operational query filters on it.
+- Run `make test-db` after any change here.
