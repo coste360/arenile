@@ -9,7 +9,6 @@
   "stepHeading": "Step {{n}} of {{total}}: {{name}}",
   "back": "Back",
   "skip": "Skip this step",
-  "skipAndFinish": "Skip and finish",
   "continue": "Continue",
   "saveAndContinue": "Save and continue",
   "finish": "Finish setup",
@@ -104,7 +103,7 @@
     "manual": "Manual payment",
     "manualHint": "Collected at the desk (cash, card, bank transfer); online bookings are paid on site.",
     "stripe": "Stripe (online payment)",
-    "stripeLater": "Available from milestone M4."
+    "stripeLater": "Available soon."
   },
   "finished": {
     "title": "Setup completed",

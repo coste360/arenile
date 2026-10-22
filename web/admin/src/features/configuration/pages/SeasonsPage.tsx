@@ -115,9 +115,11 @@ export function SeasonsPage() {
         const active = s.id === selected?.id;
         return (
           <Button
-            variant={active ? 'secondary' : 'ghost'}
-            size="sm"
-            className="font-semibold tabular-nums"
+            variant="link"
+            className={cn(
+              'h-auto p-0 font-semibold tabular-nums',
+              active ? 'text-foreground underline' : 'text-muted-foreground',
+            )}
             onClick={() => select(s.id)}
             aria-pressed={active}
           >

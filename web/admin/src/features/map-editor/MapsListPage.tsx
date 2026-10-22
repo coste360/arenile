@@ -6,7 +6,6 @@ import {
   DeleteButton,
   EmptyState,
   FormDialog,
-  PageHeader,
   QueryState,
 } from '@arenile/shared/ui/patterns';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -31,7 +30,7 @@ import { problemToFormState } from '../configuration/lib/formErrors';
 import { localize } from '../configuration/lib/i18nText';
 import { MapSettingsForm } from './dialogs';
 import type { ApiMap, SeaSide } from './model/types';
-import { ReadOnlyNotice } from './ui';
+import { ConfigPage } from '../configuration/components/ConfigPage';
 
 const SEA_ICONS: Record<SeaSide, LucideIcon> = {
   top: ArrowUpIcon,
@@ -164,20 +163,19 @@ export function MapsListPage() {
   };
 
   return (
-    <section aria-labelledby="page-title" className="mx-auto max-w-5xl space-y-6">
-      <PageHeader
-        title={t('maps.title')}
-        description={t('maps.description')}
-        actions={
-          !readOnly && (
-            <Button onClick={openCreate}>
-              <PlusIcon aria-hidden="true" />
-              {t('maps.add')}
-            </Button>
-          )
-        }
-      />
-      {readOnly && <ReadOnlyNotice />}
+    <ConfigPage
+      title={t('maps.title')}
+      description={t('maps.description')}
+      readOnly={readOnly}
+      actions={
+        !readOnly && (
+          <Button onClick={openCreate}>
+            <PlusIcon aria-hidden="true" />
+            {t('maps.add')}
+          </Button>
+        )
+      }
+    >
       {list.error ? (
         <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
       ) : (
@@ -238,6 +236,6 @@ export function MapsListPage() {
           }}
         />
       </FormDialog>
-    </section>
+    </ConfigPage>
   );
 }

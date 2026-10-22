@@ -1,5 +1,4 @@
 import { Badge } from '@arenile/shared/ui/badge';
-import { Button } from '@arenile/shared/ui/button';
 import {
   FieldContent,
   FieldDescription,
@@ -10,16 +9,15 @@ import {
   Field as UiField,
 } from '@arenile/shared/ui/field';
 import { RadioGroup, RadioGroupItem } from '@arenile/shared/ui/radio-group';
-import { CheckIcon, CreditCardIcon, WalletIcon } from 'lucide-react';
+import { CreditCardIcon, WalletIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { StepProps } from './types';
 
 /**
  * Step 6: payments. Manual payments (desk) need no configuration; online
- * payments with Stripe arrive with M4 (spec 13, 28), so the option is shown
- * disabled.
+ * payments with Stripe are not available yet (spec 13, 28), so the option is
+ * shown disabled. The page footer closes the setup.
  */
-export function StepPayments({ dispatch }: StepProps) {
+export function StepPayments() {
   const { t } = useTranslation('setupWizard');
   return (
     <div className="space-y-5">
@@ -43,7 +41,7 @@ export function StepPayments({ dispatch }: StepProps) {
               <FieldContent>
                 <FieldTitle>
                   {t('payments.stripe')}
-                  <Badge className="bg-highlight text-highlight-foreground">M4</Badge>
+                  <Badge variant="outline">{t('common.inArrivo', { ns: 'translation' })}</Badge>
                 </FieldTitle>
                 <FieldDescription id="pay-stripe-hint">
                   {t('payments.stripeLater')}
@@ -59,10 +57,6 @@ export function StepPayments({ dispatch }: StepProps) {
           </FieldLabel>
         </RadioGroup>
       </FieldSet>
-      <Button onClick={() => dispatch({ type: 'complete' })}>
-        <CheckIcon aria-hidden="true" />
-        {t('finish')}
-      </Button>
     </div>
   );
 }

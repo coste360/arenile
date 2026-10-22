@@ -238,10 +238,17 @@ function Wizard({ ctx, status }: { ctx: ConfigContext; status: SetupStatus | und
                 <ArrowLeftIcon aria-hidden="true" />
                 {t('back')}
               </Button>
-              <Button variant="outline" onClick={() => dispatch({ type: 'skip' })}>
-                <SkipForwardIcon aria-hidden="true" />
-                {progress.current === STEPS.length - 1 ? t('skipAndFinish') : t('skip')}
-              </Button>
+              {progress.current === STEPS.length - 1 ? (
+                <Button onClick={() => dispatch({ type: 'complete' })}>
+                  <CheckIcon aria-hidden="true" />
+                  {t('finish')}
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={() => dispatch({ type: 'skip' })}>
+                  <SkipForwardIcon aria-hidden="true" />
+                  {t('skip')}
+                </Button>
+              )}
             </CardFooter>
           </Card>
         )}

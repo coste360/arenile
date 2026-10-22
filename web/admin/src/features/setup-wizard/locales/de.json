@@ -9,7 +9,6 @@
   "stepHeading": "Schritt {{n}} von {{total}}: {{name}}",
   "back": "Zurück",
   "skip": "Diesen Schritt überspringen",
-  "skipAndFinish": "Überspringen und abschließen",
   "continue": "Weiter",
   "saveAndContinue": "Speichern und weiter",
   "finish": "Einrichtung abschließen",
@@ -104,7 +103,7 @@
     "manual": "Manuelle Zahlung",
     "manualHint": "Kassiert an der Kasse (bar, Karte, Überweisung); Online-Buchungen werden vor Ort bezahlt.",
     "stripe": "Stripe (Online-Zahlung)",
-    "stripeLater": "Verfügbar ab Meilenstein M4."
+    "stripeLater": "Bald verfügbar."
   },
   "finished": {
     "title": "Einrichtung abgeschlossen",

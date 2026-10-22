@@ -82,7 +82,7 @@ describe('SetupWizardPage', () => {
 
     for (let i = 0; i < 5; i++)
       await user.click(screen.getByRole('button', { name: 'Salta questo passo' }));
-    await user.click(screen.getByRole('button', { name: 'Salta e concludi' }));
+    await user.click(screen.getByRole('button', { name: 'Concludi la configurazione' }));
     expect(
       await screen.findByRole('heading', { name: 'Configurazione completata' }),
     ).toBeInTheDocument();
@@ -339,7 +339,7 @@ describe('SetupWizardPage', () => {
     expect(await stepHeading()).toHaveTextContent('Passo 1 di 6');
   });
 
-  it('shows the payments step with Stripe available from M4', async () => {
+  it('shows the payments step with Stripe coming soon', async () => {
     const user = userEvent.setup();
     renderApp(PATH, routes());
     await stepHeading();
@@ -347,7 +347,8 @@ describe('SetupWizardPage', () => {
     await user.click(within(nav).getByRole('button', { name: /Pagamenti/ }));
     expect(screen.getByLabelText(/Pagamento manuale/)).toBeChecked();
     expect(screen.getByLabelText(/Stripe/)).toBeDisabled();
-    expect(screen.getByText('Disponibile dalla milestone M4.')).toBeInTheDocument();
+    expect(screen.getByText('Disponibile a breve.')).toBeInTheDocument();
+    expect(screen.queryByText(/M4/)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Concludi la configurazione' }));
     expect(
       await screen.findByRole('heading', { name: 'Configurazione completata' }),

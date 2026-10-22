@@ -9,7 +9,6 @@
   "stepHeading": "Passo {{n}} di {{total}}: {{name}}",
   "back": "Indietro",
   "skip": "Salta questo passo",
-  "skipAndFinish": "Salta e concludi",
   "continue": "Continua",
   "saveAndContinue": "Salva e continua",
   "finish": "Concludi la configurazione",
@@ -104,7 +103,7 @@
     "manual": "Pagamento manuale",
     "manualHint": "Incassi in cassa (contanti, POS, bonifico); le prenotazioni online restano da saldare in loco.",
     "stripe": "Stripe (pagamento online)",
-    "stripeLater": "Disponibile dalla milestone M4."
+    "stripeLater": "Disponibile a breve."
   },
   "finished": {
     "title": "Configurazione completata",

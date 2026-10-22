@@ -9,7 +9,6 @@
   "stepHeading": "Étape {{n}} sur {{total}} : {{name}}",
   "back": "Retour",
   "skip": "Passer cette étape",
-  "skipAndFinish": "Passer et terminer",
   "continue": "Continuer",
   "saveAndContinue": "Enregistrer et continuer",
   "finish": "Terminer la configuration",
@@ -104,7 +103,7 @@
     "manual": "Paiement manuel",
     "manualHint": "Encaissé à la caisse (espèces, carte, virement) ; les réservations en ligne sont réglées sur place.",
     "stripe": "Stripe (paiement en ligne)",
-    "stripeLater": "Disponible à partir du jalon M4."
+    "stripeLater": "Bientôt disponible."
   },
   "finished": {
     "title": "Configuration terminée",
