@@ -1,0 +1,240 @@
+// Package httpserver assembles the HTTP router of Arenile: middlewares,
+// the handlers generated from api/openapi.yaml, the embedded SPAs and the
+// routes contributed by extensions.
+package httpserver
+
+import (
+	"context"
+	"encoding/json"
+	"log/slog"
+	"net/http"
+	"net/netip"
+	"strings"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/uptrace/bun"
+
+	"github.com/coste360/arenile/internal/clock"
+	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/http/admin"
+	"github.com/coste360/arenile/internal/http/api"
+	"github.com/coste360/arenile/internal/http/middleware"
+	"github.com/coste360/arenile/internal/http/problem"
+	"github.com/coste360/arenile/internal/http/public"
+	"github.com/coste360/arenile/internal/http/sse"
+	"github.com/coste360/arenile/internal/http/static"
+	"github.com/coste360/arenile/pkg/ext"
+)
+
+// ReadinessChecker reports whether the service can serve traffic.
+type ReadinessChecker interface {
+	// Ping checks the database connection.
+	Ping(ctx context.Context) error
+	// MigrationsAligned reports whether no migration is pending.
+	MigrationsAligned(ctx context.Context) (bool, error)
+}
+
+// Deps are the dependencies of the router.
+type Deps struct {
+	DB             bun.IDB
+	Clock          clock.Clock
+	Log            *slog.Logger
+	Version        string
+	Auth           *auth.Service
+	Establishments *establishment.Service
+	Bus            ext.EventBus
+	Readiness      ReadinessChecker
+	TrustedProxies []netip.Prefix
+	SecureCookies  bool
+	Static         *static.Handler
+	// Metrics, when non-nil, is mounted at /metrics (disabled by default).
+	Metrics http.Handler
+	// Extensions contribute routes, a tenant resolver and admin UI plugins.
+	Extensions ext.Extensions
+	// SSEHeartbeat overrides the SSE heartbeat (tests).
+	SSEHeartbeat time.Duration
+	// PublicReadsPerMinute and PublicCreationsPerMinute override the public
+	// API limits (defaults 60 and 10, spec 17.2).
+	PublicReadsPerMinute     int
+	PublicCreationsPerMinute int
+}
+
+// Paths that do not require authentication under /api/admin/.
+const (
+	loginPath      = "/api/admin/v1/auth/login"
+	authPathPrefix = "/api/admin/v1/auth/"
+)
+
+// New builds the root handler.
+func New(d Deps) http.Handler {
+	if d.Log == nil {
+		d.Log = slog.New(slog.DiscardHandler)
+	}
+	if d.Clock == nil {
+		d.Clock = clock.System{}
+	}
+	if d.Static == nil {
+		d.Static = static.New()
+	}
+	reads, creations := d.PublicReadsPerMinute, d.PublicCreationsPerMinute
+	if reads <= 0 {
+		reads = 60
+	}
+	if creations <= 0 {
+		creations = 10
+	}
+	sessionTTL := 7 * 24 * time.Hour
+	if d.Auth != nil {
+		sessionTTL = d.Auth.SessionTTL()
+	}
+
+	var pluginOrigins []string
+	for _, p := range d.Extensions.AdminUIPlugins {
+		if o := originOf(p.PageURL); o != "" {
+			pluginOrigins = append(pluginOrigins, o)
+		}
+	}
+
+	r := chi.NewRouter()
+	r.Use(
+		chimw.GetHead,
+		middleware.RequestContext(d.TrustedProxies),
+		middleware.AccessLog(d.Log),
+		middleware.Recoverer(d.Log),
+		middleware.SecurityHeaders(middleware.SecurityOptions{
+			EmbedOrigins:      d.Establishments.EmbedOrigins,
+			AdminFrameSources: pluginOrigins,
+			Log:               d.Log,
+		}),
+		middleware.OnPrefix("/api/", middleware.LimitBody(1<<20), middleware.RequireJSON),
+		middleware.OnPrefix("/api/admin/",
+			middleware.Authenticate(d.Auth, d.Log),
+			middleware.RequireAuth([]string{loginPath}, authPathPrefix),
+			middleware.CSRF(d.SecureCookies, sessionTTL),
+		),
+		middleware.OnPrefix("/api/public/", middleware.PublicRateLimit(
+			auth.NewRateLimiter(d.Clock, reads, time.Minute),
+			auth.NewRateLimiter(d.Clock, creations, time.Minute),
+		)),
+		middleware.OnPrefix("/api/", middleware.Idempotency(middleware.IdempotencyOptions{
+			DB: d.DB, Clock: d.Clock, Log: d.Log, Skip: []string{authPathPrefix},
+		})),
+	)
+
+	srv := &server{
+		Handlers: &admin.Handlers{
+			Auth: d.Auth, Establishments: d.Establishments, Log: d.Log, SecureCookies: d.SecureCookies,
+			Stream: &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
+		},
+		public: &public.Handlers{Establishments: d.Establishments, TenantResolver: d.Extensions.TenantResolver, Log: d.Log},
+		ops:    &ops{readiness: d.Readiness, version: d.Version},
+	}
+	api.HandlerWithOptions(srv, api.ChiServerOptions{
+		BaseRouter: r,
+		ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			problem.Write(w, r, problem.BadRequest, problem.Detail(err.Error()))
+		},
+	})
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/admin/", http.StatusFound) })
+	r.Get("/admin", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/admin/", http.StatusMovedPermanently)
+	})
+	r.Get("/admin/*", d.Static.Admin)
+	r.Get("/b/{slug}", d.Static.Booking)
+	r.Get("/b/{slug}/*", d.Static.Booking)
+	r.Get("/embed.js", d.Static.EmbedJS)
+	if d.Metrics != nil {
+		r.Handle("/metrics", d.Metrics)
+	}
+	if d.Extensions.HTTPRoutes != nil {
+		d.Extensions.HTTPRoutes(r)
+	}
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			problem.Write(w, r, problem.NotFound)
+			return
+		}
+		http.NotFound(w, r)
+	})
+	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		problem.Write(w, r, problem.MethodNotAllowed)
+	})
+	return r
+}
+
+// server composes the handler groups into api.ServerInterface.
+type server struct {
+	*admin.Handlers
+	public *public.Handlers
+	ops    *ops
+}
+
+var _ api.ServerInterface = (*server)(nil)
+
+func (s *server) GetPublicEstablishment(w http.ResponseWriter, r *http.Request, slug api.Slug) {
+	s.public.GetPublicEstablishment(w, r, slug)
+}
+func (s *server) GetHealthz(w http.ResponseWriter, r *http.Request) { s.ops.healthz(w, r) }
+func (s *server) GetReadyz(w http.ResponseWriter, r *http.Request)  { s.ops.readyz(w, r) }
+
+type ops struct {
+	readiness ReadinessChecker
+	version   string
+}
+
+func (o *ops) healthz(w http.ResponseWriter, _ *http.Request) {
+	v := o.version
+	writeJSON(w, http.StatusOK, api.HealthStatus{Status: api.HealthStatusStatusOk, Version: &v})
+}
+
+func (o *ops) readyz(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+	defer cancel()
+	checks := map[string]string{}
+	ok := true
+	if o.readiness == nil {
+		checks["database"], ok = "not configured", false
+	} else {
+		if err := o.readiness.Ping(ctx); err != nil {
+			checks["database"], ok = "unreachable", false
+		} else {
+			checks["database"] = "ok"
+		}
+		aligned, err := o.readiness.MigrationsAligned(ctx)
+		switch {
+		case err != nil:
+			checks["migrations"], ok = "unknown", false
+		case !aligned:
+			checks["migrations"], ok = "pending", false
+		default:
+			checks["migrations"] = "ok"
+		}
+	}
+	status, code := api.ReadinessStatusStatus("ok"), http.StatusOK
+	if !ok {
+		status, code = api.ReadinessStatusStatus("unavailable"), http.StatusServiceUnavailable
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, code, api.ReadinessStatus{Status: status, Checks: checks})
+}
+
+func writeJSON(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(v)
+}
+
+func originOf(u string) string {
+	scheme, rest, ok := strings.Cut(u, "://")
+	if !ok || (scheme != "https" && scheme != "http") {
+		return ""
+	}
+	if i := strings.IndexAny(rest, "/?#"); i >= 0 {
+		rest = rest[:i]
+	}
+	return scheme + "://" + rest
+}

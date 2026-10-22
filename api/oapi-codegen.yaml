@@ -1,0 +1,9 @@
+# Generates the Go server interface and models from api/openapi.yaml.
+# Run: go tool oapi-codegen -config api/oapi-codegen.yaml api/openapi.yaml
+package: api
+output: internal/http/api/api.gen.go
+generate:
+  chi-server: true
+  models: true
+output-options:
+  skip-prune: true

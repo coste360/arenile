@@ -1,0 +1,156 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"net/http"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/coste360/arenile/internal/app/builtin"
+	"github.com/coste360/arenile/internal/clock"
+	"github.com/coste360/arenile/internal/config"
+	"github.com/coste360/arenile/internal/store"
+	"github.com/coste360/arenile/internal/store/storetest"
+	"github.com/coste360/arenile/pkg/ext"
+)
+
+func devConfig(t *testing.T) config.Config {
+	t.Helper()
+	cfg, err := config.Parse(func(k string) (string, bool) {
+		switch k {
+		case config.EnvDev:
+			return "true", true
+		case config.EnvDataDir:
+			return t.TempDir(), true
+		case config.EnvAddr:
+			return "127.0.0.1:0", true
+		case config.EnvLogLevel:
+			return "error", true
+		}
+		return "", false
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cfg
+}
+
+// TestSmoke_ServeHealthAndReady starts the full application on a random
+// port with a temporary SQLite database.
+func TestSmoke_ServeHealthAndReady(t *testing.T) {
+	cfg := devConfig(t)
+	a, err := New(cfg, WithVersion("smoke"), WithoutSignalHandling(), WithLogger(slog.New(slog.DiscardHandler)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() { done <- a.Run(ctx) }()
+	select {
+	case <-a.Ready():
+	case err := <-done:
+		t.Fatalf("run exited early: %v", err)
+	case <-time.After(10 * time.Second):
+		t.Fatal("server not ready")
+	}
+	base := "http://" + a.Addr()
+	for path, want := range map[string]string{"/healthz": "ok", "/readyz": "ok"} {
+		resp, err := http.Get(base + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var body map[string]any
+		_ = json.NewDecoder(resp.Body).Decode(&body)
+		resp.Body.Close()
+		if resp.StatusCode != 200 || body["status"] != want {
+			t.Fatalf("%s: %d %v", path, resp.StatusCode, body)
+		}
+	}
+	if _, err := os.Stat(cfg.SQLitePath()); err != nil {
+		t.Fatalf("sqlite file not created: %v", err)
+	}
+	if got := a.Jobs().Jobs(); len(got) != 4 {
+		t.Fatalf("core jobs: %v", got)
+	}
+	cancel()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("run: %v", err)
+		}
+	case <-time.After(ShutdownTimeout + 5*time.Second):
+		t.Fatal("graceful shutdown timed out")
+	}
+}
+
+func TestNew_RequiresServeConfig(t *testing.T) {
+	cfg, _ := config.Parse(func(k string) (string, bool) {
+		if k == config.EnvDataDir {
+			return t.TempDir(), true
+		}
+		return "", false
+	})
+	if _, err := New(cfg, WithLogger(slog.New(slog.DiscardHandler))); !errors.Is(err, config.ErrInvalid) {
+		t.Fatalf("production without base url/key must fail: %v", err)
+	}
+}
+
+type fakeProvider struct{ builtin.Manual }
+
+func (fakeProvider) Code() string { return "stripe" }
+
+func TestRegistry_BuiltinsAndExtensions(t *testing.T) {
+	r := NewRegistry(clock.System{}, ext.Extensions{PaymentProviders: []ext.PaymentProvider{fakeProvider{}}})
+	if _, ok := r.PaymentProvider("manual"); !ok {
+		t.Fatal("manual provider must be registered")
+	}
+	if _, ok := r.PaymentProvider("stripe"); !ok {
+		t.Fatal("extension provider must be registered")
+	}
+	if got := r.PaymentProviderCodes(); len(got) != 2 || got[0] != "manual" {
+		t.Fatal(got)
+	}
+	f, ok := r.FiscalDriver("none")
+	if !ok {
+		t.Fatal("none fiscal driver")
+	}
+	res, err := f.Issue(context.Background(), ext.FiscalDocumentRequest{})
+	if err != nil || res.Ref == "" {
+		t.Fatal(res, err)
+	}
+	m, _ := r.PaymentProvider("manual")
+	if _, err := m.Refund(context.Background(), ext.RefundRequest{}); !errors.Is(err, ext.ErrNotSupported) {
+		t.Fatal("manual refunds are recorded manually")
+	}
+	pr, err := m.CreatePayment(context.Background(), ext.CreatePaymentRequest{Amount: 1000})
+	if err != nil || pr.Mode != ext.PaymentModeNone {
+		t.Fatal(pr, err)
+	}
+}
+
+func TestSeedDemo_Idempotent(t *testing.T) {
+	db := storetest.SQLite(t)
+	ctx := context.Background()
+	c := clock.NewFake(time.Date(2027, 5, 1, 8, 0, 0, 0, time.UTC))
+	first, err := SeedDemo(ctx, db, c)
+	if err != nil || !first.Created {
+		t.Fatalf("first seed: %+v %v", first, err)
+	}
+	second, err := SeedDemo(ctx, db, c)
+	if err != nil || second.Created || second.EstablishmentID != first.EstablishmentID {
+		t.Fatalf("second seed: %+v %v", second, err)
+	}
+	e, err := store.GetEstablishmentBySlug(ctx, db, DemoSlug)
+	if err != nil || !e.BookingEnabled || e.Timezone != "Europe/Rome" || len(e.EnabledLocales) != 4 {
+		t.Fatalf("demo establishment: %+v %v", e, err)
+	}
+	var orgs int
+	_ = db.NewSelect().TableExpr("organizations").ColumnExpr("count(*)").Scan(ctx, &orgs)
+	if orgs != 1 {
+		t.Fatalf("organizations: %d", orgs)
+	}
+}

@@ -1,0 +1,799 @@
+openapi: 3.1.0
+info:
+  title: Arenile API
+  version: 0.1.0
+  summary: Gestionale open source per stabilimenti balneari.
+  description: |
+    Contratto unico (spec-first) delle API REST di Arenile.
+
+    - `/api/admin/v1` — API del pannello del gestore (sessione via cookie o chiave API).
+    - `/api/public/v1` — API pubblica della pagina di prenotazione.
+
+    Convenzioni (specifica, sezione 17.1):
+    - errori in `application/problem+json` (RFC 9457) con `type` stabile (slug);
+    - paginazione a cursore (`?cursor=&limit=`);
+    - `Idempotency-Key` accettato sui `POST` che creano risorse o pagamenti;
+    - le richieste del pannello autenticate via cookie che modificano dati
+      devono inviare l'header `X-CSRF-Token` uguale al cookie `arenile_csrf`;
+    - date di calendario `YYYY-MM-DD`, istanti RFC 3339 UTC.
+  license:
+    name: AGPL-3.0-only
+    identifier: AGPL-3.0-only
+  contact:
+    name: Coste360 SRL
+    url: https://github.com/coste360/arenile
+servers:
+  - url: /
+    description: Stessa origine dell'istanza Arenile
+tags:
+  - name: ops
+    description: Stato del processo
+  - name: auth
+    description: Autenticazione del pannello
+  - name: establishments
+    description: Stabilimenti
+  - name: realtime
+    description: Eventi in tempo reale (SSE)
+  - name: public
+    description: API pubblica della pagina di prenotazione
+
+paths:
+  /healthz:
+    get:
+      operationId: getHealthz
+      tags: [ops]
+      summary: Processo vivo
+      security: []
+      responses:
+        "200":
+          description: Il processo risponde
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /readyz:
+    get:
+      operationId: getReadyz
+      tags: [ops]
+      summary: Pronto a servire (database raggiungibile, migrazioni allineate)
+      security: []
+      responses:
+        "200":
+          description: Pronto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessStatus"
+        "503":
+          description: Non pronto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessStatus"
+
+  /api/admin/v1/auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Accesso con email e password (e codice TOTP se attivo)
+      description: |
+        In caso di successo imposta il cookie di sessione `arenile_session`
+        (HttpOnly, Secure, SameSite=Lax) e il cookie `arenile_csrf`.
+        Il token di sessione viene sempre ruotato.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Accesso effettuato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/admin/v1/auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Chiude la sessione corrente
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Sessione chiusa
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/admin/v1/auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Utente corrente, appartenenze e permessi
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Utente corrente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/admin/v1/auth/totp/enroll:
+    post:
+      operationId: enrollTotp
+      tags: [auth]
+      summary: Avvia l'attivazione del secondo fattore TOTP
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Segreto da registrare nell'app di autenticazione
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TotpEnrollment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/auth/totp/confirm:
+    post:
+      operationId: confirmTotp
+      tags: [auth]
+      summary: Conferma l'attivazione del TOTP con un codice valido
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TotpConfirmRequest"
+      responses:
+        "204":
+          description: TOTP attivo
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /api/admin/v1/establishments:
+    get:
+      operationId: listEstablishments
+      tags: [establishments]
+      summary: Stabilimenti accessibili all'utente corrente
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di stabilimenti
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstablishmentList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/admin/v1/establishments/{id}:
+    get:
+      operationId: getEstablishment
+      tags: [establishments]
+      summary: Dettaglio di uno stabilimento
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Stabilimento
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Establishment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/admin/v1/stream:
+    get:
+      operationId: streamEvents
+      tags: [realtime]
+      summary: Flusso SSE degli eventi di uno stabilimento
+      description: |
+        Server-Sent Events. Ogni messaggio ha `event:` uguale al tipo di
+        evento di dominio e `data:` con un oggetto `StreamMessage`. Un commento
+        `: ping` viene inviato periodicamente come heartbeat.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: establishment
+          in: query
+          required: true
+          description: ID dello stabilimento
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: Flusso di eventi
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/public/v1/{slug}:
+    get:
+      operationId: getPublicEstablishment
+      tags: [public]
+      summary: Dati pubblici dello stabilimento (tema, lingue, prenotazione attiva)
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Stabilimento
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicEstablishment"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: arenile_session
+      description: Sessione del pannello (cookie HttpOnly impostato dal login).
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: "ar_live_<prefix>_<secret>"
+      description: Chiave API server-to-server legata a uno stabilimento.
+
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+      schema:
+        type: string
+        maxLength: 512
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Numero massimo di elementi (default 50).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: |
+        Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+        richiesta ripetuta con la stessa chiave restituisce la risposta
+        originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+    CSRFToken:
+      name: X-CSRF-Token
+      in: header
+      required: false
+      description: |
+        Obbligatorio per le richieste autenticate via cookie che modificano
+        dati: deve coincidere con il valore del cookie `arenile_csrf`.
+      schema:
+        type: string
+    EstablishmentID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+
+  responses:
+    BadRequest:
+      description: Richiesta non valida
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Unauthorized:
+      description: Autenticazione assente o non valida
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: Permesso negato
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: Risorsa inesistente
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Conflict:
+      description: Conflitto con lo stato corrente
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    TooManyRequests:
+      description: Troppe richieste
+      headers:
+        Retry-After:
+          description: Secondi da attendere
+          schema:
+            type: integer
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+
+  schemas:
+    ProblemType:
+      type: string
+      description: |
+        Slug stabile del tipo di errore. I client devono basarsi su questo
+        valore, mai sul testo di `title` o `detail`.
+      enum:
+        - bad_request
+        - validation_failed
+        - unauthorized
+        - invalid_credentials
+        - totp_required
+        - invalid_totp
+        - totp_enrolment_required
+        - totp_already_enabled
+        - forbidden
+        - csrf_failed
+        - not_found
+        - conflict
+        - method_not_allowed
+        - unsupported_media_type
+        - rate_limited
+        - idempotency_key_reused
+        - idempotency_in_progress
+        - internal_error
+        - spot_unavailable
+        - no_price
+        - policy_violation
+        - hold_expired
+    Problem:
+      type: object
+      description: Errore RFC 9457 (`application/problem+json`).
+      required: [type, title, status]
+      properties:
+        type:
+          $ref: "#/components/schemas/ProblemType"
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        request_id:
+          type: string
+        retry_after:
+          type: integer
+          description: Secondi da attendere (solo per `rate_limited`).
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        version:
+          type: string
+    ReadinessStatus:
+      type: object
+      required: [status, checks]
+      properties:
+        status:
+          type: string
+          enum: [ok, unavailable]
+        checks:
+          type: object
+          additionalProperties:
+            type: string
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          maxLength: 1024
+        totp_code:
+          type: string
+          pattern: "^[0-9]{6}$"
+    Role:
+      type: string
+      enum: [owner, manager, cashier, beach_staff, viewer]
+    Permission:
+      type: string
+      enum:
+        - establishment.configure
+        - users.manage
+        - payments.configure
+        - bookings.write
+        - cash.operate
+        - refunds.issue
+        - operations.run
+        - bookings.read
+        - reports.read
+    User:
+      type: object
+      required: [id, email, name, locale, totp_enabled]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        email:
+          type: string
+        name:
+          type: string
+        locale:
+          type: string
+        totp_enabled:
+          type: boolean
+        last_login_at:
+          type: string
+          format: date-time
+    Membership:
+      type: object
+      required: [organization_id, role, permissions]
+      properties:
+        organization_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente quando il ruolo vale per tutti gli stabilimenti dell'organizzazione.
+        role:
+          $ref: "#/components/schemas/Role"
+        permissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Permission"
+    Me:
+      type: object
+      required: [principal_type, memberships, totp_enrolment_required]
+      properties:
+        principal_type:
+          type: string
+          enum: [user, api_key]
+        user:
+          $ref: "#/components/schemas/User"
+        api_key:
+          $ref: "#/components/schemas/ApiKeyInfo"
+        memberships:
+          type: array
+          items:
+            $ref: "#/components/schemas/Membership"
+        totp_enrolment_required:
+          type: boolean
+          description: |
+            Vero quando l'installazione richiede il TOTP ai proprietari e
+            l'utente non lo ha ancora attivato: finché resta vero sono
+            consentite solo le operazioni di autenticazione.
+    ApiKeyInfo:
+      type: object
+      required: [id, name, prefix, establishment_id, scopes]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        prefix:
+          type: string
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        scopes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Permission"
+    TotpEnrollment:
+      type: object
+      required: [secret, otpauth_url]
+      properties:
+        secret:
+          type: string
+          description: Segreto base32 da inserire manualmente.
+        otpauth_url:
+          type: string
+          description: URI `otpauth://` da mostrare come QR.
+    TotpConfirmRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: "^[0-9]{6}$"
+
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        province:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+    Geo:
+      type: object
+      required: [lat, lon]
+      properties:
+        lat:
+          type: number
+          format: double
+        lon:
+          type: number
+          format: double
+    Theme:
+      type: object
+      description: Tema della pagina pubblica (specifica 12.5).
+      properties:
+        logo_url:
+          type: string
+        primary_color:
+          type: string
+        accent_color:
+          type: string
+        font_family:
+          type: string
+          enum: [Inter, system, serif]
+        radius:
+          type: string
+          enum: [none, sm, md, lg]
+        show_prices_on_map:
+          type: boolean
+        hide_header_in_embed:
+          type: boolean
+        custom_texts:
+          type: object
+          description: "Testi personalizzati per lingua, es. {\"it\": {\"intro\": \"...\"}}."
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+    Establishment:
+      type: object
+      required:
+        - id
+        - organization_id
+        - slug
+        - name
+        - timezone
+        - currency
+        - default_locale
+        - enabled_locales
+        - contact_email
+        - contact_phone
+        - address
+        - booking_enabled
+        - allowed_embed_origins
+        - theme
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        organization_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        slug:
+          type: string
+        name:
+          type: string
+        timezone:
+          type: string
+        currency:
+          type: string
+        default_locale:
+          type: string
+        enabled_locales:
+          type: array
+          items:
+            type: string
+        contact_email:
+          type: string
+        contact_phone:
+          type: string
+        address:
+          $ref: "#/components/schemas/Address"
+        geo:
+          $ref: "#/components/schemas/Geo"
+        concession_ref:
+          type: string
+        booking_enabled:
+          type: boolean
+        allowed_embed_origins:
+          type: array
+          items:
+            type: string
+        theme:
+          $ref: "#/components/schemas/Theme"
+        archived_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    EstablishmentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Establishment"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PublicEstablishment:
+      type: object
+      required:
+        - slug
+        - name
+        - timezone
+        - currency
+        - default_locale
+        - enabled_locales
+        - booking_enabled
+        - theme
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        timezone:
+          type: string
+        currency:
+          type: string
+        default_locale:
+          type: string
+        enabled_locales:
+          type: array
+          items:
+            type: string
+        booking_enabled:
+          type: boolean
+        contact_email:
+          type: string
+        contact_phone:
+          type: string
+        address:
+          $ref: "#/components/schemas/Address"
+        theme:
+          $ref: "#/components/schemas/Theme"
+    StreamMessage:
+      type: object
+      description: Messaggio leggero inviato sul flusso SSE (specifica 21.1).
+      required: [id, type, establishment_id, occurred_at]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        establishment_id:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        spot_ids:
+          type: array
+          items:
+            type: string
+        dates:
+          type: array
+          items:
+            type: string
+            format: date
