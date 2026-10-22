@@ -12,7 +12,11 @@ Installazione del gestionale per stabilimenti balneari Arenile su [CapRover](htt
 4. A installazione completata, dalla scheda dell'app:
    - abilita **HTTPS** e **Force HTTPS**;
    - imposta un dominio personalizzato (es. `prenota.mio-lido.it`) e aggiorna `ARENILE_BASE_URL`;
-   - crea il primo utente owner dal terminale del container: `/arenile admin create`.
+   - crea il primo utente owner: l'immagine è distroless e non ha una shell, quindi imposta nelle
+     **Environment Variables** `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `ARENILE_BOOTSTRAP_OWNER_NAME`,
+     `ARENILE_BOOTSTRAP_OWNER_ORG` e `ARENILE_ADMIN_PASSWORD` e riavvia l'app: l'owner viene creato
+     solo se il database non ha ancora utenti. In alternativa, via SSH sul server:
+     `docker exec -e ARENILE_ADMIN_PASSWORD='...' $(docker ps -qf name=srv-captain--arenile) /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"`.
 
 ## Opzione 2 — App con `captain-definition`
 

@@ -18,6 +18,10 @@ services:
       ARENILE_TRUSTED_PROXIES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
       ARENILE_REQUIRE_TOTP_FOR_OWNERS: "false"
       ARENILE_TELEMETRY: "false"
+      ARENILE_BOOTSTRAP_OWNER_EMAIL: $$cap_owner_email
+      ARENILE_BOOTSTRAP_OWNER_NAME: $$cap_owner_name
+      ARENILE_BOOTSTRAP_OWNER_ORG: $$cap_owner_org
+      ARENILE_ADMIN_PASSWORD: $$cap_owner_password
     caproverExtra:
       containerHttpPort: "8080"
 caproverOneClickApp:
@@ -31,6 +35,20 @@ caproverOneClickApp:
       label: Chiave segreta (ARENILE_SECRET_KEY)
       description: 32 byte in base64, generala con "openssl rand -base64 32" e conservala con cura.
       validRegex: /^[A-Za-z0-9+\/]{43}=$/
+    - id: $$cap_owner_email
+      label: Email del primo utente owner
+      description: Creato al primo avvio (solo se non esistono utenti). L'immagine non ha shell, quindi non serve il terminale.
+      validRegex: /^[^@\s]+@[^@\s]+$/
+    - id: $$cap_owner_name
+      label: Nome del primo utente owner
+      defaultValue: Titolare
+    - id: $$cap_owner_org
+      label: Nome dell'organizzazione (es. Lido Esempio)
+      validRegex: /.+/
+    - id: $$cap_owner_password
+      label: Password del primo utente owner
+      description: Almeno 10 caratteri. Puoi rimuovere la variabile ARENILE_ADMIN_PASSWORD dopo il primo accesso.
+      validRegex: /^.{10,}$/
     - id: $$cap_smtp_url
       label: Server SMTP (facoltativo)
       defaultValue: ""
@@ -46,8 +64,9 @@ caproverOneClickApp:
       Questa installazione usa SQLite in un volume persistente.
     end: >-
       Arenile è in esecuzione su https://$$cap_appname.$$cap_root_domain. Abilita HTTPS dalla scheda
-      dell'app, imposta l'health check su /healthz e crea il primo utente owner dal terminale del container
-      con il comando "/arenile admin create".
+      dell'app e imposta l'health check su /healthz. Il primo utente owner è stato creato all'avvio con l'email
+      indicata: accedi al pannello su https://$$cap_appname.$$cap_root_domain/admin/ e, se vuoi, rimuovi
+      poi la variabile ARENILE_ADMIN_PASSWORD dalla scheda dell'app.
   displayName: Arenile
   isOfficial: false
   description: Gestionale open source per stabilimenti balneari con prenotazioni online senza commissioni.

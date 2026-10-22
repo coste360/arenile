@@ -182,6 +182,12 @@ func InsertUser(ctx context.Context, db bun.IDB, u *User) error {
 	return wrapWrite("insert user", err)
 }
 
+// HasUsers reports whether at least one user exists (first-owner bootstrap).
+func HasUsers(ctx context.Context, db bun.IDB) (bool, error) {
+	ok, err := db.NewSelect().Model((*User)(nil)).Exists(ctx)
+	return ok, wrapRead("has users", err)
+}
+
 // GetUser loads a user by id.
 func GetUser(ctx context.Context, db bun.IDB, id string) (*User, error) {
 	u := new(User)

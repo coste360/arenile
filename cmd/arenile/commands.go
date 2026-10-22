@@ -26,7 +26,7 @@ import (
 )
 
 // EnvAdminPassword provides the password to `admin create` non-interactively.
-const EnvAdminPassword = "ARENILE_ADMIN_PASSWORD" //nolint:gosec // G101: environment variable name, not a credential
+const EnvAdminPassword = config.EnvAdminPassword
 
 func (c *cli) serve(ctx context.Context, args []string) error {
 	fs := newFlagSet("serve", c.stderr)

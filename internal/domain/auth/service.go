@@ -483,6 +483,11 @@ type CreateOwnerInput struct {
 	Password         string
 	OrganizationName string
 	Locale           string
+	// OnlyIfNoUsers makes the creation conditional on an empty users table
+	// (first-owner bootstrap at startup); otherwise ErrUsersExist.
+	OnlyIfNoUsers bool
+	// Source is recorded in the audit log ("cli" when empty).
+	Source string
 }
 
 // CreateOwnerResult reports what was created.
@@ -514,7 +519,18 @@ func (s *Service) CreateOwner(ctx context.Context, in CreateOwnerInput) (*Create
 	}
 	now := s.clock.Now()
 	res := &CreateOwnerResult{}
+	source := in.Source
+	if source == "" {
+		source = "cli"
+	}
 	err = store.RunInTx(ctx, s.db, func(ctx context.Context, tx bun.Tx) error {
+		if in.OnlyIfNoUsers {
+			if has, err := store.HasUsers(ctx, tx); err != nil {
+				return err
+			} else if has {
+				return ErrUsersExist
+			}
+		}
 		if _, err := store.GetUserByEmail(ctx, tx, email); err == nil {
 			return ErrUserExists
 		} else if !errors.Is(err, store.ErrNotFound) {
@@ -544,11 +560,11 @@ func (s *Service) CreateOwner(ctx context.Context, in CreateOwnerInput) (*Create
 		res.User, res.Organization = user, org
 		return s.audit.Record(ctx, tx, audit.Entry{
 			Actor: audit.SystemActor, Action: "user.created", EntityType: "user", EntityID: user.ID,
-			Diff: map[string]any{"organization_id": org.ID, "role": RoleOwner, "source": "cli"},
+			Diff: map[string]any{"organization_id": org.ID, "role": RoleOwner, "source": source},
 		})
 	})
 	if err != nil {
-		if errors.Is(err, ErrUserExists) {
+		if errors.Is(err, ErrUserExists) || errors.Is(err, ErrUsersExist) {
 			return nil, err
 		}
 		return nil, fmt.Errorf("auth: create owner: %w", err)

@@ -87,6 +87,49 @@ func TestSmoke_ServeHealthAndReady(t *testing.T) {
 	}
 }
 
+// TestNew_BootstrapOwner creates the first owner from the environment once,
+// then is a no-op on restart even with different values.
+func TestNew_BootstrapOwner(t *testing.T) {
+	dir := t.TempDir()
+	parse := func(email string) config.Config {
+		cfg, err := config.Parse(func(k string) (string, bool) {
+			switch k {
+			case config.EnvDev:
+				return "true", true
+			case config.EnvDataDir:
+				return dir, true
+			case config.EnvBootstrapOwnerEmail:
+				return email, true
+			case config.EnvBootstrapOwnerName:
+				return "Titolare", true
+			case config.EnvBootstrapOwnerOrg:
+				return "Lido Prova", true
+			case config.EnvAdminPassword:
+				return "una-password-lunga-e-sicura", true
+			}
+			return "", false
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return cfg
+	}
+	ctx := context.Background()
+	for i, email := range []string{"owner@lido.it", "altro@lido.it"} {
+		a, err := New(parse(email), WithoutSignalHandling(), WithLogger(slog.New(slog.DiscardHandler)))
+		if err != nil {
+			t.Fatalf("run %d: %v", i, err)
+		}
+		if _, err := store.GetUserByEmail(ctx, a.DB(), "owner@lido.it"); err != nil {
+			t.Fatalf("run %d: bootstrap owner missing: %v", i, err)
+		}
+		if _, err := store.GetUserByEmail(ctx, a.DB(), "altro@lido.it"); !errors.Is(err, store.ErrNotFound) {
+			t.Fatalf("run %d: second bootstrap must be skipped, got %v", i, err)
+		}
+		_ = a.Close()
+	}
+}
+
 func TestNew_RequiresServeConfig(t *testing.T) {
 	cfg, _ := config.Parse(func(k string) (string, bool) {
 		if k == config.EnvDataDir {

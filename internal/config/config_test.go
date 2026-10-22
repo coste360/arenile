@@ -97,6 +97,8 @@ func TestParse_Invalid(t *testing.T) {
 		{"bad smtp", map[string]string{EnvSMTPURL: "http://x"}},
 		{"short key", map[string]string{EnvSecretKey: base64.StdEncoding.EncodeToString([]byte("too short"))}},
 		{"non base64 key", map[string]string{EnvSecretKey: "%%%"}},
+		{"bootstrap owner without password", map[string]string{EnvBootstrapOwnerEmail: "a@b.it", EnvBootstrapOwnerName: "A", EnvBootstrapOwnerOrg: "Lido"}},
+		{"bootstrap owner without org", map[string]string{EnvBootstrapOwnerEmail: "a@b.it", EnvBootstrapOwnerName: "A", EnvAdminPassword: "x"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,0 +1,52 @@
+# Arenile — istanza locale di prova, compilata dai sorgenti (spec 28, M0).
+#
+#   docker compose up --build        # oppure: make up
+#
+# Avvia un'istanza vuota su http://localhost:8080 in modalità sviluppo
+# (ARENILE_DEV=true: chiave segreta generata e salvata nel volume, cookie non
+# Secure su http). Per creare il primo utente owner al primo avvio:
+#
+#   ARENILE_BOOTSTRAP_OWNER_EMAIL=titolare@lido.test ARENILE_BOOTSTRAP_OWNER_NAME="Mario Rossi" \
+#   ARENILE_BOOTSTRAP_OWNER_ORG="Lido Prova" ARENILE_ADMIN_PASSWORD=password-di-prova \
+#     docker compose up --build
+#
+# oppure, con l'istanza già avviata:
+#
+#   docker compose exec -e ARENILE_ADMIN_PASSWORD=password-di-prova arenile \
+#     /arenile admin create --email titolare@lido.test --name "Mario Rossi" --org "Lido Prova"
+#
+# NON usare questo file in produzione: vedi deploy/docker-compose.yml.
+name: arenile-dev
+
+services:
+  arenile:
+    image: arenile:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        VERSION: dev
+    ports:
+      - "127.0.0.1:${ARENILE_PUBLISH_PORT:-8080}:8080"
+    volumes:
+      - arenile-dev-data:/data
+    environment:
+      ARENILE_DEV: "true"
+      ARENILE_ADDR: ":8080"
+      ARENILE_DATA_DIR: "/data"
+      ARENILE_BASE_URL: "http://localhost:${ARENILE_PUBLISH_PORT:-8080}"
+      ARENILE_LOG_LEVEL: "${ARENILE_LOG_LEVEL:-info}"
+      ARENILE_BOOTSTRAP_OWNER_EMAIL: "${ARENILE_BOOTSTRAP_OWNER_EMAIL:-}"
+      ARENILE_BOOTSTRAP_OWNER_NAME: "${ARENILE_BOOTSTRAP_OWNER_NAME:-}"
+      ARENILE_BOOTSTRAP_OWNER_ORG: "${ARENILE_BOOTSTRAP_OWNER_ORG:-}"
+      ARENILE_ADMIN_PASSWORD: "${ARENILE_ADMIN_PASSWORD:-}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  arenile-dev-data:

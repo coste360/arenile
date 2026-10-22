@@ -26,6 +26,7 @@ var (
 	ErrRateLimited         = errors.New("auth: too many attempts")
 	ErrWeakPassword        = errors.New("auth: password does not meet policy")
 	ErrUserExists          = errors.New("auth: user already exists")
+	ErrUsersExist          = errors.New("auth: users already exist, bootstrap skipped")
 	ErrInvalidInput        = errors.New("auth: invalid input")
 	ErrNoSecretKey         = errors.New("auth: secret key not configured")
 )

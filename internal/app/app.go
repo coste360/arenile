@@ -123,6 +123,10 @@ func New(cfg config.Config, opts ...Option) (*App, error) {
 		_ = db.Close()
 		return nil, err
 	}
+	if err := a.bootstrapOwner(ctx); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
 	return a, nil
 }
 
@@ -207,6 +211,29 @@ func (a *App) wire() error {
 		SecureCookies:  a.cfg.SecureCookies(),
 		Extensions:     x,
 	})
+	return nil
+}
+
+// bootstrapOwner creates the first owner from ARENILE_BOOTSTRAP_OWNER_* when
+// the database has no users yet (ADR 0006). It is a no-op afterwards, so the
+// variables can stay set across restarts.
+func (a *App) bootstrapOwner(ctx context.Context) error {
+	b := a.cfg.BootstrapOwner
+	if !b.Enabled() {
+		return nil
+	}
+	res, err := a.Auth.CreateOwner(ctx, auth.CreateOwnerInput{
+		Email: b.Email, Name: b.Name, Password: b.Password, OrganizationName: b.Organization,
+		OnlyIfNoUsers: true, Source: "bootstrap",
+	})
+	switch {
+	case errors.Is(err, auth.ErrUsersExist), errors.Is(err, auth.ErrUserExists):
+		a.log.Debug("bootstrap owner skipped: users already exist")
+		return nil
+	case err != nil:
+		return fmt.Errorf("app: bootstrap owner: %w", err)
+	}
+	a.log.Info("bootstrap owner created", slog.String("user_id", res.User.ID), slog.String("organization_id", res.Organization.ID))
 	return nil
 }
 

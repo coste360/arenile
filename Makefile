@@ -283,6 +283,10 @@ build: web-build ## Compila il binario statico in bin/arenile
 docker: ## Costruisce l'immagine Docker locale ghcr.io/coste360/arenile:dev
 	docker build -f deploy/Dockerfile --build-arg VERSION=$(VERSION) -t $(IMAGE):dev .
 
+.PHONY: up
+up: ## Avvia un'istanza locale vuota con docker compose (compose.yaml, build dai sorgenti)
+	docker compose up --build
+
 .PHONY: clean
 clean: ## Rimuove binario, build del frontend e file temporanei (conserva ./bin/golangci-lint)
 	rm -rf bin/arenile tmp dist coverage.out web/admin/dist web/booking/dist playwright-report test-results e2e/playwright-report e2e/test-results

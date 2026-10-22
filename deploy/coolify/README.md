@@ -23,10 +23,23 @@ la piattaforma self-hosted per il deploy su VPS. Due template Docker Compose pro
    per le email di conferma prenotazione.
 5. Assegna il dominio al servizio `arenile` (Coolify valorizza `SERVICE_FQDN_ARENILE_8080`
    e quindi `ARENILE_BASE_URL`) e premi **Deploy**.
-6. Crea il primo utente owner dal terminale del container (scheda **Terminal**):
+6. Crea il primo utente owner. L'immagine è distroless e **non ha una shell**, quindi la scheda
+   **Terminal** di Coolify non funziona: imposta invece, prima del primo deploy, le variabili
 
    ```sh
-   /arenile admin create
+   ARENILE_BOOTSTRAP_OWNER_EMAIL=titolare@mio-lido.it
+   ARENILE_BOOTSTRAP_OWNER_NAME=Mario Rossi
+   ARENILE_BOOTSTRAP_OWNER_ORG=Lido Esempio
+   ARENILE_ADMIN_PASSWORD=<almeno 10 caratteri>
+   ```
+
+   All'avvio Arenile crea l'owner solo se il database non ha ancora utenti; ai riavvii successivi
+   le variabili vengono ignorate (puoi rimuovere la password dopo il primo accesso).
+   In alternativa, da una shell SSH sul server:
+
+   ```sh
+   docker exec -e ARENILE_ADMIN_PASSWORD='...' <container-arenile> \
+     /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
    ```
 
 ## Note

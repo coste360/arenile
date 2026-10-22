@@ -1,9 +1,18 @@
 # Arenile — installazione standard con SQLite (spec 24.3).
 #
 # Uso:
-#   cp deploy/env.example .env   # imposta almeno ARENILE_BASE_URL e ARENILE_SECRET_KEY
+#   cp deploy/env.example .env   # imposta ARENILE_BASE_URL, ARENILE_SECRET_KEY e il primo owner
+#                                # (ARENILE_BOOTSTRAP_OWNER_* + ARENILE_ADMIN_PASSWORD)
 #   docker compose -f deploy/docker-compose.yml --env-file .env up -d
-#   docker compose -f deploy/docker-compose.yml exec arenile /arenile admin create
+#
+# Senza immagine pubblicata, "up" compila l'immagine dai sorgenti (sezione build).
+# In alternativa al bootstrap via variabili, crea l'owner dall'host
+# (l'immagine distroless non ha shell, ma "exec" lancia direttamente il binario):
+#   docker compose -f deploy/docker-compose.yml exec -e ARENILE_ADMIN_PASSWORD='...' arenile \
+#     /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
+#
+# Con ARENILE_TLS_AUTOCERT_DOMAINS (TLS diretto senza reverse proxy) pubblica
+# anche le porte 80 e 443: decommenta le righe in "ports".
 #
 # Aggiornamento: docker compose pull && docker compose up -d
 # Il database SQLite, i file caricati e i backup vivono nel volume "arenile-data".
@@ -12,9 +21,19 @@ name: arenile
 services:
   arenile:
     image: ghcr.io/coste360/arenile:${ARENILE_VERSION:-latest}
+    # Builds from source when the image is not available locally or on the
+    # registry (e.g. a fresh clone before the first release).
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        VERSION: "${ARENILE_VERSION:-dev}"
     restart: unless-stopped
     ports:
       - "${ARENILE_PUBLISH_PORT:-8080}:8080"
+      # Solo con ARENILE_TLS_AUTOCERT_DOMAINS (Let's Encrypt integrato):
+      # - "80:80"
+      # - "443:443"
     volumes:
       - arenile-data:/data
     environment:
@@ -31,6 +50,12 @@ services:
       ARENILE_TRUSTED_PROXIES: "${ARENILE_TRUSTED_PROXIES:-}"
       ARENILE_REQUIRE_TOTP_FOR_OWNERS: "${ARENILE_REQUIRE_TOTP_FOR_OWNERS:-false}"
       ARENILE_TELEMETRY: "${ARENILE_TELEMETRY:-false}"
+      # Primo utente owner, creato all'avvio solo se il database non ha utenti
+      # (l'immagine è distroless e non ha una shell per "admin create").
+      ARENILE_BOOTSTRAP_OWNER_EMAIL: "${ARENILE_BOOTSTRAP_OWNER_EMAIL:-}"
+      ARENILE_BOOTSTRAP_OWNER_NAME: "${ARENILE_BOOTSTRAP_OWNER_NAME:-}"
+      ARENILE_BOOTSTRAP_OWNER_ORG: "${ARENILE_BOOTSTRAP_OWNER_ORG:-}"
+      ARENILE_ADMIN_PASSWORD: "${ARENILE_ADMIN_PASSWORD:-}"
     # The image is distroless (no shell, no curl): health is exposed on
     # GET /healthz and /readyz for an external reverse proxy or orchestrator.
     read_only: true

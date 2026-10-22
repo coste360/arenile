@@ -36,6 +36,14 @@ const (
 	EnvRequireTOTPForOwners = "ARENILE_REQUIRE_TOTP_FOR_OWNERS"
 	EnvTelemetry            = "ARENILE_TELEMETRY"
 	EnvDev                  = "ARENILE_DEV"
+
+	// First-owner bootstrap (ADR 0006): when all four are set and the
+	// database has no users, `serve` creates the owner once at startup.
+	// Needed on distroless images, which have no shell for `admin create`.
+	EnvBootstrapOwnerEmail = "ARENILE_BOOTSTRAP_OWNER_EMAIL"
+	EnvBootstrapOwnerName  = "ARENILE_BOOTSTRAP_OWNER_NAME"
+	EnvBootstrapOwnerOrg   = "ARENILE_BOOTSTRAP_OWNER_ORG"
+	EnvAdminPassword       = "ARENILE_ADMIN_PASSWORD" //nolint:gosec // G101: environment variable name, not a credential
 )
 
 // DevKeyFile is the file, inside the data directory, where a generated
@@ -63,9 +71,29 @@ type Config struct {
 	Telemetry            bool
 	Dev                  bool
 
+	// BootstrapOwner is the optional first owner created by `serve` when the
+	// database has no users. Zero value means disabled.
+	BootstrapOwner BootstrapOwner
+
 	// GeneratedSecretKey is set (base64) only when a development key was just
 	// generated. The caller must show it once on stderr, never through slog.
 	GeneratedSecretKey string
+}
+
+// BootstrapOwner describes the first owner account created at startup.
+type BootstrapOwner struct {
+	Email        string
+	Name         string
+	Organization string
+	Password     string
+}
+
+// Enabled reports whether a bootstrap owner is configured.
+func (b BootstrapOwner) Enabled() bool { return b.Email != "" }
+
+// LogValue never exposes the password.
+func (b BootstrapOwner) LogValue() slog.Value {
+	return slog.GroupValue(slog.String("email", b.Email), slog.String("organization", b.Organization))
 }
 
 // Lookup returns an environment value and whether it was set.
@@ -155,6 +183,21 @@ func Parse(lookup Lookup) (Config, error) {
 			errs = append(errs, fmt.Errorf("%s: must be one or more comma-separated base64 32-byte keys: %w", EnvSecretKey, kerr))
 		}
 		cfg.SecretKeys = keys
+	}
+
+	if v := get(EnvBootstrapOwnerEmail, ""); v != "" {
+		cfg.BootstrapOwner = BootstrapOwner{
+			Email:        v,
+			Name:         get(EnvBootstrapOwnerName, ""),
+			Organization: get(EnvBootstrapOwnerOrg, ""),
+		}
+		// The password is taken verbatim: leading/trailing spaces are legal.
+		if pw, ok := lookup(EnvAdminPassword); ok {
+			cfg.BootstrapOwner.Password = pw
+		}
+		if cfg.BootstrapOwner.Name == "" || cfg.BootstrapOwner.Organization == "" || cfg.BootstrapOwner.Password == "" {
+			errs = append(errs, fmt.Errorf("%s requires %s, %s and %s", EnvBootstrapOwnerEmail, EnvBootstrapOwnerName, EnvBootstrapOwnerOrg, EnvAdminPassword))
+		}
 	}
 
 	if len(errs) > 0 {

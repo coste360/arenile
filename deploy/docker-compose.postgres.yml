@@ -1,9 +1,16 @@
 # Arenile — installazione con PostgreSQL (spec 24.3, variante).
 #
 # Uso:
-#   cp deploy/env.example .env   # imposta ARENILE_BASE_URL, ARENILE_SECRET_KEY e POSTGRES_PASSWORD
+#   cp deploy/env.example .env   # imposta ARENILE_BASE_URL, ARENILE_SECRET_KEY, POSTGRES_PASSWORD
+#                                # e il primo owner (ARENILE_BOOTSTRAP_OWNER_* + ARENILE_ADMIN_PASSWORD)
 #   docker compose -f deploy/docker-compose.postgres.yml --env-file .env up -d
-#   docker compose -f deploy/docker-compose.postgres.yml exec arenile /arenile admin create
+#
+# POSTGRES_PASSWORD finisce dentro DATABASE_URL senza codifica: usa solo
+# caratteri URL-safe, ad esempio generala con: openssl rand -hex 24
+#
+# In alternativa al bootstrap via variabili, crea l'owner dall'host:
+#   docker compose -f deploy/docker-compose.postgres.yml exec -e ARENILE_ADMIN_PASSWORD='...' arenile \
+#     /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
 #
 # Con PostgreSQL il backup si esegue con pg_dump, ad esempio:
 #   docker compose -f deploy/docker-compose.postgres.yml exec postgres \
@@ -34,12 +41,22 @@ services:
 
   arenile:
     image: ghcr.io/coste360/arenile:${ARENILE_VERSION:-latest}
+    # Builds from source when the image is not available locally or on the
+    # registry (e.g. a fresh clone before the first release).
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        VERSION: "${ARENILE_VERSION:-dev}"
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
       - "${ARENILE_PUBLISH_PORT:-8080}:8080"
+      # Solo con ARENILE_TLS_AUTOCERT_DOMAINS (Let's Encrypt integrato):
+      # - "80:80"
+      # - "443:443"
     volumes:
       # Still needed with PostgreSQL: uploaded files and local exports.
       - arenile-data:/data
@@ -58,6 +75,12 @@ services:
       ARENILE_TRUSTED_PROXIES: "${ARENILE_TRUSTED_PROXIES:-}"
       ARENILE_REQUIRE_TOTP_FOR_OWNERS: "${ARENILE_REQUIRE_TOTP_FOR_OWNERS:-false}"
       ARENILE_TELEMETRY: "${ARENILE_TELEMETRY:-false}"
+      # Primo utente owner, creato all'avvio solo se il database non ha utenti
+      # (l'immagine è distroless e non ha una shell per "admin create").
+      ARENILE_BOOTSTRAP_OWNER_EMAIL: "${ARENILE_BOOTSTRAP_OWNER_EMAIL:-}"
+      ARENILE_BOOTSTRAP_OWNER_NAME: "${ARENILE_BOOTSTRAP_OWNER_NAME:-}"
+      ARENILE_BOOTSTRAP_OWNER_ORG: "${ARENILE_BOOTSTRAP_OWNER_ORG:-}"
+      ARENILE_ADMIN_PASSWORD: "${ARENILE_ADMIN_PASSWORD:-}"
     read_only: true
     tmpfs:
       - /tmp
