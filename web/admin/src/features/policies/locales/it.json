@@ -1,4 +1,122 @@
 {
   "title": "Policy di prenotazione",
-  "description": "Anticipo, durata, pagamento, cancellazione e approvazione."
+  "description": "Anticipo, durata, pagamento, cancellazione e approvazione.",
+  "tabs": {
+    "label": "Tipo di policy",
+    "season": "Policy della stagione",
+    "default": "Policy predefinita"
+  },
+  "seasonHint": "Valgono per la stagione selezionata e sovrascrivono la policy predefinita dove l'ambito corrisponde; con più policy vince la priorità più alta.",
+  "defaultHint": "Vale per ogni prenotazione quando nessuna policy di stagione la sostituisce.",
+  "add": "Nuova policy",
+  "empty": "Nessuna policy per questa stagione: vale la policy predefinita.",
+  "editTitle": "Modifica policy {{name}}",
+  "editAria": "Modifica la policy {{name}}",
+  "deleteAria": "Elimina la policy {{name}}",
+  "deleteConfirm": "La policy {{name}} verrà eliminata.",
+  "actions": "Azioni",
+  "inactive": "disattivata",
+  "scopeAll": "Tutto",
+  "inherit": "Come la predefinita",
+  "inheritBuiltin": "Valore di sistema",
+  "yes": "Sì",
+  "no": "No",
+  "anyWeekday": "Qualsiasi giorno",
+  "noRefund": "Nessuna fascia: le cancellazioni non sono rimborsate.",
+  "addTier": "Aggiungi fascia",
+  "remove": "Rimuovi",
+  "removeTier": "Rimuovi la fascia {{n}}",
+  "sections": {
+    "timing": "Anticipo",
+    "duration": "Durata",
+    "payment": "Pagamento",
+    "cancellation": "Cancellazione e modifiche",
+    "other": "Altro"
+  },
+  "scope": {
+    "channels": "Canali",
+    "zones": "Zone",
+    "packs": "Pack",
+    "periods": "Periodi"
+  },
+  "paymentModes": {
+    "full": "Intero alla prenotazione",
+    "deposit": "Acconto",
+    "none": "In loco"
+  },
+  "depositTypes": {
+    "percent": "Percentuale",
+    "amount": "Importo fisso"
+  },
+  "balance": {
+    "on_arrival": "All'arrivo",
+    "days_before": "Giorni prima"
+  },
+  "refundAs": {
+    "refund": "Rimborso",
+    "credit": "Credito"
+  },
+  "weather": {
+    "off": "Nessuna tutela",
+    "refund": "Rimborso",
+    "credit": "Credito"
+  },
+  "fields": {
+    "name": "Nome",
+    "priority": "Priorità",
+    "active": "Attiva",
+    "scope": "Ambito",
+    "min_lead_days": "Anticipo minimo (giorni)",
+    "cutoff_time": "Orario limite",
+    "max_lead_time_days": "Anticipo massimo (giorni)",
+    "same_day": "Prenotazione in giornata",
+    "same_day_until": "In giornata fino alle",
+    "allowed_formulas": "Formule ammesse",
+    "min_days": "Giorni minimi",
+    "max_days": "Giorni massimi",
+    "fixed_start_weekday": "Giorno di inizio obbligato",
+    "payment_mode": "Pagamento online",
+    "deposit_type": "Tipo di acconto",
+    "deposit_percent": "Acconto (%)",
+    "deposit_amount": "Acconto (€)",
+    "balance_due": "Saldo",
+    "balance_days": "Giorni prima dell'arrivo",
+    "cancellation_set": "Definisci le fasce di rimborso",
+    "until_days_before": "Fino a giorni prima",
+    "refund_percent": "Rimborso (%)",
+    "refund_as": "Come",
+    "modification_until": "Modifiche fino a giorni prima",
+    "modification_fee": "Costo modifica (€)",
+    "weather": "Maltempo",
+    "approval_required": "Richiede approvazione",
+    "max_spots_per_booking": "Postazioni massime per prenotazione",
+    "allow_spot_change": "Cambio postazione durante il soggiorno",
+    "customer_can_release": "Il cliente può liberare giorni dell'abbonamento",
+    "release_credit": "Credito per giorni liberati",
+    "release_credit_percent": "Credito (%)"
+  },
+  "hints": {
+    "cutoff": "Dopo quest'ora l'anticipo conta da domani.",
+    "allFormulas": "Nessuna selezione = come la predefinita.",
+    "scope": "Dimensioni vuote = tutte.",
+    "tiers": "Ogni fascia vale fino a N giorni prima dell’arrivo; il motore le legge dalla più lontana alla più vicina."
+  },
+  "validation": {
+    "time": "Formato HH:MM.",
+    "maxDays": "Deve essere almeno pari ai giorni minimi.",
+    "duplicateTier": "Esiste già una fascia con questi giorni."
+  },
+  "moveTierUp": "Sposta su la fascia {{n}}",
+  "moveTierDown": "Sposta giù la fascia {{n}}",
+  "sortTiers": "Ordina per giorni",
+  "examples": {
+    "title": "Esempi rapidi",
+    "hint": "Compilano ambito e regole dell’esempio; puoi poi modificare tutto.",
+    "august_weeks": "Agosto online: settimane sabato-sabato",
+    "gazebo_approval": "Gazebo con approvazione",
+    "online_full": "Online: pagamento totale",
+    "desk_free": "Cassa: nessun vincolo",
+    "warnNoPeak": "Nessun periodo di agosto trovato: scegli i periodi a mano.",
+    "warnNoGazebo": "Nessun pack gazebo trovato: scegli i pack a mano."
+  }
 }

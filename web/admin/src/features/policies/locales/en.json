@@ -1,4 +1,122 @@
 {
   "title": "Booking policies",
-  "description": "Lead time, duration, payment, cancellation and approval."
+  "description": "Lead time, duration, payment, cancellation and approval.",
+  "tabs": {
+    "label": "Policy type",
+    "season": "Season policies",
+    "default": "Default policy"
+  },
+  "seasonHint": "They apply to the selected season and override the default policy where the scope matches; with several policies the highest priority wins.",
+  "defaultHint": "Applies to every booking unless a season policy overrides it.",
+  "add": "New policy",
+  "empty": "No policies for this season: the default policy applies.",
+  "editTitle": "Edit policy {{name}}",
+  "editAria": "Edit policy {{name}}",
+  "deleteAria": "Delete policy {{name}}",
+  "deleteConfirm": "Policy {{name}} will be deleted.",
+  "actions": "Actions",
+  "inactive": "inactive",
+  "scopeAll": "Everything",
+  "inherit": "As default",
+  "inheritBuiltin": "System value",
+  "yes": "Yes",
+  "no": "No",
+  "anyWeekday": "Any day",
+  "noRefund": "No tiers: cancellations are not refunded.",
+  "addTier": "Add tier",
+  "remove": "Remove",
+  "removeTier": "Remove tier {{n}}",
+  "sections": {
+    "timing": "Lead time",
+    "duration": "Duration",
+    "payment": "Payment",
+    "cancellation": "Cancellation and changes",
+    "other": "Other"
+  },
+  "scope": {
+    "channels": "Channels",
+    "zones": "Zones",
+    "packs": "Packs",
+    "periods": "Periods"
+  },
+  "paymentModes": {
+    "full": "Full at booking",
+    "deposit": "Deposit",
+    "none": "On site"
+  },
+  "depositTypes": {
+    "percent": "Percentage",
+    "amount": "Fixed amount"
+  },
+  "balance": {
+    "on_arrival": "On arrival",
+    "days_before": "Days before"
+  },
+  "refundAs": {
+    "refund": "Refund",
+    "credit": "Credit"
+  },
+  "weather": {
+    "off": "No protection",
+    "refund": "Refund",
+    "credit": "Credit"
+  },
+  "fields": {
+    "name": "Name",
+    "priority": "Priority",
+    "active": "Active",
+    "scope": "Scope",
+    "min_lead_days": "Minimum lead time (days)",
+    "cutoff_time": "Cutoff time",
+    "max_lead_time_days": "Maximum lead time (days)",
+    "same_day": "Same-day booking",
+    "same_day_until": "Same day until",
+    "allowed_formulas": "Allowed formulas",
+    "min_days": "Minimum days",
+    "max_days": "Maximum days",
+    "fixed_start_weekday": "Required start weekday",
+    "payment_mode": "Online payment",
+    "deposit_type": "Deposit type",
+    "deposit_percent": "Deposit (%)",
+    "deposit_amount": "Deposit (€)",
+    "balance_due": "Balance due",
+    "balance_days": "Days before arrival",
+    "cancellation_set": "Define refund tiers",
+    "until_days_before": "Up to days before",
+    "refund_percent": "Refund (%)",
+    "refund_as": "As",
+    "modification_until": "Changes up to days before",
+    "modification_fee": "Change fee (€)",
+    "weather": "Bad weather",
+    "approval_required": "Requires approval",
+    "max_spots_per_booking": "Maximum spots per booking",
+    "allow_spot_change": "Spot change during the stay",
+    "customer_can_release": "Customer can release season days",
+    "release_credit": "Credit for released days",
+    "release_credit_percent": "Credit (%)"
+  },
+  "hints": {
+    "cutoff": "After this time the lead time counts from tomorrow.",
+    "allFormulas": "No selection = as default.",
+    "scope": "Empty dimensions = all.",
+    "tiers": "Each tier applies until N days before arrival; the engine reads them from the furthest to the closest."
+  },
+  "validation": {
+    "time": "Format HH:MM.",
+    "maxDays": "Must be at least the minimum days.",
+    "duplicateTier": "A tier with these days already exists."
+  },
+  "moveTierUp": "Move tier {{n}} up",
+  "moveTierDown": "Move tier {{n}} down",
+  "sortTiers": "Sort by days",
+  "examples": {
+    "title": "Quick examples",
+    "hint": "They fill in the scope and rules of the example; you can then change anything.",
+    "august_weeks": "August online: Saturday-to-Saturday weeks",
+    "gazebo_approval": "Gazebos need approval",
+    "online_full": "Online: full payment",
+    "desk_free": "Desk: no constraints",
+    "warnNoPeak": "No August period found: pick the periods by hand.",
+    "warnNoGazebo": "No gazebo pack found: pick the packs by hand."
+  }
 }

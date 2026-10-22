@@ -1,4 +1,122 @@
 {
-  "title": "Règles de réservation",
-  "description": "Délai, durée, paiement, annulation et approbation."
+  "title": "Politiques de réservation",
+  "description": "Délai, durée, paiement, annulation et validation.",
+  "tabs": {
+    "label": "Type de politique",
+    "season": "Politiques de la saison",
+    "default": "Politique par défaut"
+  },
+  "seasonHint": "Elles s'appliquent à la saison choisie et remplacent la politique par défaut quand le périmètre correspond ; la priorité la plus haute l'emporte.",
+  "defaultHint": "S'applique à chaque réservation sauf si une politique de saison la remplace.",
+  "add": "Nouvelle politique",
+  "empty": "Aucune politique pour cette saison : la politique par défaut s'applique.",
+  "editTitle": "Modifier la politique {{name}}",
+  "editAria": "Modifier la politique {{name}}",
+  "deleteAria": "Supprimer la politique {{name}}",
+  "deleteConfirm": "La politique {{name}} sera supprimée.",
+  "actions": "Actions",
+  "inactive": "inactive",
+  "scopeAll": "Tout",
+  "inherit": "Comme par défaut",
+  "inheritBuiltin": "Valeur système",
+  "yes": "Oui",
+  "no": "Non",
+  "anyWeekday": "N'importe quel jour",
+  "noRefund": "Aucun palier : les annulations ne sont pas remboursées.",
+  "addTier": "Ajouter un palier",
+  "remove": "Retirer",
+  "removeTier": "Retirer le palier {{n}}",
+  "sections": {
+    "timing": "Délai",
+    "duration": "Durée",
+    "payment": "Paiement",
+    "cancellation": "Annulation et modifications",
+    "other": "Autre"
+  },
+  "scope": {
+    "channels": "Canaux",
+    "zones": "Zones",
+    "packs": "Formules",
+    "periods": "Périodes"
+  },
+  "paymentModes": {
+    "full": "Total à la réservation",
+    "deposit": "Acompte",
+    "none": "Sur place"
+  },
+  "depositTypes": {
+    "percent": "Pourcentage",
+    "amount": "Montant fixe"
+  },
+  "balance": {
+    "on_arrival": "À l'arrivée",
+    "days_before": "Jours avant"
+  },
+  "refundAs": {
+    "refund": "Remboursement",
+    "credit": "Avoir"
+  },
+  "weather": {
+    "off": "Aucune protection",
+    "refund": "Remboursement",
+    "credit": "Avoir"
+  },
+  "fields": {
+    "name": "Nom",
+    "priority": "Priorité",
+    "active": "Active",
+    "scope": "Périmètre",
+    "min_lead_days": "Délai minimum (jours)",
+    "cutoff_time": "Heure limite",
+    "max_lead_time_days": "Délai maximum (jours)",
+    "same_day": "Réservation le jour même",
+    "same_day_until": "Le jour même jusqu'à",
+    "allowed_formulas": "Formules autorisées",
+    "min_days": "Jours minimum",
+    "max_days": "Jours maximum",
+    "fixed_start_weekday": "Jour d'arrivée imposé",
+    "payment_mode": "Paiement en ligne",
+    "deposit_type": "Type d'acompte",
+    "deposit_percent": "Acompte (%)",
+    "deposit_amount": "Acompte (€)",
+    "balance_due": "Solde",
+    "balance_days": "Jours avant l'arrivée",
+    "cancellation_set": "Définir les paliers de remboursement",
+    "until_days_before": "Jusqu'à jours avant",
+    "refund_percent": "Remboursement (%)",
+    "refund_as": "Sous forme de",
+    "modification_until": "Modifications jusqu'à jours avant",
+    "modification_fee": "Frais de modification (€)",
+    "weather": "Mauvais temps",
+    "approval_required": "Validation requise",
+    "max_spots_per_booking": "Emplacements max. par réservation",
+    "allow_spot_change": "Changement d'emplacement pendant le séjour",
+    "customer_can_release": "Le client peut libérer des jours d'abonnement",
+    "release_credit": "Avoir pour jours libérés",
+    "release_credit_percent": "Avoir (%)"
+  },
+  "hints": {
+    "cutoff": "Après cette heure, le délai compte à partir de demain.",
+    "allFormulas": "Aucune sélection = comme par défaut.",
+    "scope": "Dimensions vides = toutes.",
+    "tiers": "Chaque palier s’applique jusqu’à N jours avant l’arrivée ; le moteur les lit du plus éloigné au plus proche."
+  },
+  "validation": {
+    "time": "Format HH:MM.",
+    "maxDays": "Doit être au moins égal au minimum.",
+    "duplicateTier": "Un palier avec ces jours existe déjà."
+  },
+  "moveTierUp": "Monter le palier {{n}}",
+  "moveTierDown": "Descendre le palier {{n}}",
+  "sortTiers": "Trier par jours",
+  "examples": {
+    "title": "Exemples rapides",
+    "hint": "Ils remplissent la portée et les règles de l’exemple ; vous pouvez ensuite tout modifier.",
+    "august_weeks": "Août en ligne : semaines samedi-samedi",
+    "gazebo_approval": "Gazebos avec approbation",
+    "online_full": "En ligne : paiement total",
+    "desk_free": "Caisse : aucune contrainte",
+    "warnNoPeak": "Aucune période d’août trouvée : choisissez les périodes manuellement.",
+    "warnNoGazebo": "Aucun pack gazebo trouvé : choisissez les packs manuellement."
+  }
 }

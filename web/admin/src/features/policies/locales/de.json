@@ -1,4 +1,122 @@
 {
-  "title": "Buchungsregeln",
-  "description": "Vorlaufzeit, Dauer, Zahlung, Stornierung und Genehmigung."
+  "title": "Buchungsrichtlinien",
+  "description": "Vorlauf, Dauer, Zahlung, Stornierung und Freigabe.",
+  "tabs": {
+    "label": "Richtlinientyp",
+    "season": "Saisonrichtlinien",
+    "default": "Standardrichtlinie"
+  },
+  "seasonHint": "Sie gelten für die gewählte Saison und überschreiben die Standardrichtlinie im passenden Bereich; bei mehreren gewinnt die höchste Priorität.",
+  "defaultHint": "Gilt für jede Buchung, sofern keine Saisonrichtlinie sie ersetzt.",
+  "add": "Neue Richtlinie",
+  "empty": "Keine Richtlinien für diese Saison: Es gilt die Standardrichtlinie.",
+  "editTitle": "Richtlinie {{name}} bearbeiten",
+  "editAria": "Richtlinie {{name}} bearbeiten",
+  "deleteAria": "Richtlinie {{name}} löschen",
+  "deleteConfirm": "Richtlinie {{name}} wird gelöscht.",
+  "actions": "Aktionen",
+  "inactive": "inaktiv",
+  "scopeAll": "Alles",
+  "inherit": "Wie Standard",
+  "inheritBuiltin": "Systemwert",
+  "yes": "Ja",
+  "no": "Nein",
+  "anyWeekday": "Beliebiger Tag",
+  "noRefund": "Keine Stufen: Stornierungen werden nicht erstattet.",
+  "addTier": "Stufe hinzufügen",
+  "remove": "Entfernen",
+  "removeTier": "Stufe {{n}} entfernen",
+  "sections": {
+    "timing": "Vorlauf",
+    "duration": "Dauer",
+    "payment": "Zahlung",
+    "cancellation": "Stornierung und Änderungen",
+    "other": "Sonstiges"
+  },
+  "scope": {
+    "channels": "Kanäle",
+    "zones": "Zonen",
+    "packs": "Pakete",
+    "periods": "Zeiträume"
+  },
+  "paymentModes": {
+    "full": "Vollständig bei Buchung",
+    "deposit": "Anzahlung",
+    "none": "Vor Ort"
+  },
+  "depositTypes": {
+    "percent": "Prozent",
+    "amount": "Festbetrag"
+  },
+  "balance": {
+    "on_arrival": "Bei Ankunft",
+    "days_before": "Tage vorher"
+  },
+  "refundAs": {
+    "refund": "Erstattung",
+    "credit": "Guthaben"
+  },
+  "weather": {
+    "off": "Kein Schutz",
+    "refund": "Erstattung",
+    "credit": "Guthaben"
+  },
+  "fields": {
+    "name": "Name",
+    "priority": "Priorität",
+    "active": "Aktiv",
+    "scope": "Geltungsbereich",
+    "min_lead_days": "Mindestvorlauf (Tage)",
+    "cutoff_time": "Annahmeschluss",
+    "max_lead_time_days": "Maximaler Vorlauf (Tage)",
+    "same_day": "Buchung am selben Tag",
+    "same_day_until": "Am selben Tag bis",
+    "allowed_formulas": "Erlaubte Formeln",
+    "min_days": "Mindesttage",
+    "max_days": "Höchsttage",
+    "fixed_start_weekday": "Vorgeschriebener Anreisetag",
+    "payment_mode": "Online-Zahlung",
+    "deposit_type": "Art der Anzahlung",
+    "deposit_percent": "Anzahlung (%)",
+    "deposit_amount": "Anzahlung (€)",
+    "balance_due": "Restzahlung",
+    "balance_days": "Tage vor Ankunft",
+    "cancellation_set": "Erstattungsstufen festlegen",
+    "until_days_before": "Bis Tage vorher",
+    "refund_percent": "Erstattung (%)",
+    "refund_as": "Als",
+    "modification_until": "Änderungen bis Tage vorher",
+    "modification_fee": "Änderungsgebühr (€)",
+    "weather": "Schlechtwetter",
+    "approval_required": "Freigabe erforderlich",
+    "max_spots_per_booking": "Max. Plätze pro Buchung",
+    "allow_spot_change": "Platzwechsel während des Aufenthalts",
+    "customer_can_release": "Kunde kann Saisontage freigeben",
+    "release_credit": "Guthaben für freigegebene Tage",
+    "release_credit_percent": "Guthaben (%)"
+  },
+  "hints": {
+    "cutoff": "Nach dieser Uhrzeit zählt der Vorlauf ab morgen.",
+    "allFormulas": "Keine Auswahl = wie Standard.",
+    "scope": "Leere Dimensionen = alle.",
+    "tiers": "Jede Stufe gilt bis N Tage vor der Ankunft; die Engine liest sie von der fernsten zur nächsten."
+  },
+  "validation": {
+    "time": "Format HH:MM.",
+    "maxDays": "Muss mindestens den Mindesttagen entsprechen.",
+    "duplicateTier": "Eine Stufe mit diesen Tagen existiert bereits."
+  },
+  "moveTierUp": "Stufe {{n}} nach oben",
+  "moveTierDown": "Stufe {{n}} nach unten",
+  "sortTiers": "Nach Tagen sortieren",
+  "examples": {
+    "title": "Schnellbeispiele",
+    "hint": "Sie füllen Geltungsbereich und Regeln des Beispiels aus; danach ist alles änderbar.",
+    "august_weeks": "August online: Wochen Samstag bis Samstag",
+    "gazebo_approval": "Pavillons mit Freigabe",
+    "online_full": "Online: Vollzahlung",
+    "desk_free": "Kasse: keine Einschränkungen",
+    "warnNoPeak": "Kein August-Zeitraum gefunden: Zeiträume manuell wählen.",
+    "warnNoGazebo": "Kein Pavillon-Paket gefunden: Pakete manuell wählen."
+  }
 }
