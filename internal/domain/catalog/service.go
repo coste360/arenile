@@ -74,22 +74,16 @@ func (s *Service) WithDB(db bun.IDB) *Service {
 }
 
 // ChangeData is the payload (version 1) of the config.pricing_changed event
-// emitted by pack and extra mutations.
-type ChangeData struct {
-	// Entity is "pack" or "extra".
-	Entity   string `json:"entity"`
-	EntityID string `json:"entity_id"`
-	Code     string `json:"code"`
-	// Change is created | updated | archived | deleted.
-	Change string `json:"change"`
-}
+// emitted by pack and extra mutations: the shared event.ConfigChange with
+// Entity "pack" or "extra", EntityID, Code and Change.
+type ChangeData = event.ConfigChange
 
 // Change kinds of ChangeData.
 const (
-	ChangeCreated  = "created"
-	ChangeUpdated  = "updated"
-	ChangeArchived = "archived"
-	ChangeDeleted  = "deleted"
+	ChangeCreated  = event.ChangeCreated
+	ChangeUpdated  = event.ChangeUpdated
+	ChangeArchived = event.ChangeArchived
+	ChangeDeleted  = event.ChangeDeleted
 )
 
 // authorize resolves the establishment in the principal's scope and checks perm.

@@ -75,12 +75,12 @@ func (s *Service) view(ctx context.Context, p *auth.Principal, establishmentID s
 
 // record writes the audit entry and the config.map_changed event of a
 // change, in the transaction of the change.
-func (s *Service) record(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, action string, data MapChangedData, diff any) error {
+func (s *Service) record(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, action string, data event.ConfigChange, diff any) error {
 	if err := s.d.Audit.Record(ctx, tx, audit.Entry{
 		EstablishmentID: es.ID(),
 		Actor:           p.Actor(reqctx.From(ctx).ClientIP),
 		Action:          action,
-		EntityType:      data.EntityType,
+		EntityType:      data.Entity,
 		EntityID:        data.EntityID,
 		Diff:            diff,
 	}); err != nil {
@@ -94,7 +94,10 @@ func (s *Service) record(ctx context.Context, tx bun.IDB, p *auth.Principal, es 
 
 func (s *Service) now() time.Time { return s.d.Clock.Now().UTC() }
 
-// today is the current calendar date in the establishment timezone.
+// today is the current calendar date in the establishment timezone. An
+// establishment whose timezone does not load is an error: the future
+// allocation check must never run on the wrong day (same rule as the policy
+// evaluation).
 func (s *Service) today(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (calendar.Date, error) {
 	e, err := store.GetEstablishment(ctx, db, es)
 	if err != nil {
@@ -102,7 +105,7 @@ func (s *Service) today(ctx context.Context, db bun.IDB, es store.EstablishmentS
 	}
 	loc, err := time.LoadLocation(e.Timezone)
 	if err != nil {
-		loc = time.UTC
+		return calendar.Date{}, fmt.Errorf("mapping: establishment timezone %q: %w", e.Timezone, err)
 	}
 	return calendar.In(s.d.Clock.Now(), loc), nil
 }

@@ -264,8 +264,8 @@ func (s *Service) Update(ctx context.Context, p *auth.Principal, id string, in U
 			return err
 		}
 		if settingsChanged {
-			if _, err := s.w.Outbox.Write(ctx, tx, event.ConfigPricingChanged, es.ID(), 1, map[string]any{
-				"resource": "establishment_settings", "resource_id": es.ID(), "action": "updated", "version": next.Version,
+			if _, err := s.w.Outbox.Write(ctx, tx, event.ConfigPricingChanged, es.ID(), 1, event.ConfigChange{
+				Entity: "establishment_settings", EntityID: es.ID(), Change: event.ChangeUpdated, Version: next.Version,
 			}); err != nil {
 				return err
 			}

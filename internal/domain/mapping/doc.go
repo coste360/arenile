@@ -18,8 +18,15 @@
 // maps.version with a conditional UPDATE (concurrent saves: one wins, the
 // others get configerr.VersionConflictError), resyncs the implicit pools,
 // writes the audit log and emits event.ConfigMapChanged (payload
-// MapChangedData, version 1). Zone and pool mutations emit the same event
-// with entity_type zone / pool.
+// event.ConfigChange, version 1). Zone and pool mutations emit the same
+// event with entity zone / pool.
+//
+// Locking: map saves, zone updates/deletions and map deletions lock the
+// zone rows they touch first (store.LockZones, a no-op UPDATE that is a row
+// lock on PostgreSQL), then the map row. Spot counts and the implicit pool
+// capacity are read after the lock, so a save adding spots to a zone and an
+// update turning it into `quantity` can never both commit
+// (TestConcurrency_ZoneUpdateVsSaveMap).
 //
 // Future allocations: deleting a spot (or a map) whose spots have
 // allocations from today (establishment timezone) is refused with
@@ -35,7 +42,11 @@
 // Hand-made pools may be bound only to `quantity` zones.
 //
 // Deleting a map deletes its spots, decorations and zones (with their
-// pools). A zone with spots or bound pools cannot be deleted.
+// implicit pools). A zone with spots, with hand-made pools bound to it or
+// referenced by price rules, promo codes, agreements (conditions.zone_ids),
+// packs (allowed_zone_ids) or booking policies (scope.zones) cannot be
+// deleted, alone or with its map: ZoneReferencedError lists the references
+// (409 conflict).
 //
 // Composition: Service.WithDB(tx) lets the guided setup run these use cases
 // inside its own transaction (they become savepoints).

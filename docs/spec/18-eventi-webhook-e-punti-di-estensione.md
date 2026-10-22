@@ -27,6 +27,40 @@ Formato:
 }
 ```
 
+**Eventi di configurazione.** `config.pricing_changed` e `config.map_changed` condividono il payload
+versione 1 (`event.ConfigChange`). I consumatori li trattano come "ricarica la configurazione dello
+stabilimento": `entity` e `change` sono sempre presenti, gli altri campi solo quando pertinenti.
+
+```json
+{
+  "type": "config.pricing_changed",
+  "version": 1,
+  "data": {
+    "entity": "price_rule",
+    "entity_id": "01J...",
+    "change": "updated",
+    "season_id": "01J...",
+    "code": "base",
+    "map_id": "01J...",
+    "version": 3,
+    "reason": "setup_template",
+    "template": "classic_rows",
+    "map_ids": ["01J..."],
+    "zone_ids": ["01J..."],
+    "counts": { "spots": 120, "rules_created": 16 }
+  }
+}
+```
+
+- `entity` di `config.pricing_changed`: `price_rule`, `fixed_price`, `promo_code`, `agreement`,
+  `booking_policy`, `season_copy`, `season`, `rate_period`, `establishment_settings`, `pack`, `extra`,
+  `setup`; di `config.map_changed`: `map`, `zone`, `pool`, `setup`.
+- `change`: `created`, `updated`, `deleted`, `archived`, `copied`, `saved`, `rows_generated`, `applied`.
+- `season_id` per le entità legate a una stagione; `map_id` per mappa, zone e pool; `code` per pack ed
+  extra; `version` è la nuova versione dell'entità.
+- `reason` (`setup_template`, `quick_pricelist`), `template`, `map_ids`, `zone_ids` e `counts` descrivono
+  le modifiche in blocco della configurazione guidata, che scrive un solo evento per tipo.
+
 ### 18.2 Webhook in uscita
 
 - Configurabili per stabilimento, con filtro sugli eventi.

@@ -103,8 +103,9 @@ func (s *Service) QuickPricelist(ctx context.Context, p *auth.Principal, establi
 		}); err != nil {
 			return err
 		}
-		_, err = s.d.Outbox.Write(ctx, tx, event.ConfigPricingChanged, es.ID(), 1, map[string]any{
-			"reason": "quick_pricelist", "season_id": season.ID, "rules_created": len(res.Rules), "rules_replaced": res.Replaced,
+		_, err = s.d.Outbox.Write(ctx, tx, event.ConfigPricingChanged, es.ID(), 1, event.ConfigChange{
+			Entity: event.EntitySetup, EntityID: es.ID(), Change: event.ChangeApplied, Reason: "quick_pricelist", SeasonID: season.ID,
+			Counts: map[string]int{"rules_created": len(res.Rules), "rules_replaced": res.Replaced},
 		})
 		return err
 	})

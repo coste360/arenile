@@ -92,12 +92,12 @@ func (s *Service) record(ctx context.Context, tx bun.IDB, p *auth.Principal, es 
 	})
 }
 
-// pricingChanged emits config.pricing_changed in tx. Payload (version 1):
-// {"resource": "season"|"rate_period", "resource_id", "season_id",
-// "action": "created"|"updated"|"deleted"|"copied"}.
+// pricingChanged emits config.pricing_changed in tx with the shared
+// event.ConfigChange payload (version 1): entity "season" or "rate_period",
+// its id and season, change created | updated | deleted | copied.
 func (s *Service) pricingChanged(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, resource, id, seasonID, action string) error {
-	_, err := s.d.Outbox.Write(ctx, tx, event.ConfigPricingChanged, es.ID(), 1, map[string]any{
-		"resource": resource, "resource_id": id, "season_id": seasonID, "action": action,
+	_, err := s.d.Outbox.Write(ctx, tx, event.ConfigPricingChanged, es.ID(), 1, event.ConfigChange{
+		Entity: resource, EntityID: id, SeasonID: seasonID, Change: action,
 	})
 	return err
 }

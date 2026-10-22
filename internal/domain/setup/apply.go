@@ -760,15 +760,21 @@ func (a *applier) record(ctx context.Context, actor audit.Actor) error {
 	}); err != nil {
 		return err
 	}
+	// One event per type for the whole application (ADR 0008), with the
+	// shared payload: entity "setup", reason "setup_template".
 	if len(r.MapIDs) > 0 || len(r.ZoneIDs) > 0 {
-		if _, err := a.s.d.Outbox.Write(ctx, a.tx, event.ConfigMapChanged, a.es.ID(), 1, map[string]any{
-			"reason": "setup_template", "template": r.Template, "map_ids": nonNilIDs(r.MapIDs), "zone_ids": nonNilIDs(r.ZoneIDs),
+		if _, err := a.s.d.Outbox.Write(ctx, a.tx, event.ConfigMapChanged, a.es.ID(), 1, event.ConfigChange{
+			Entity: event.EntitySetup, EntityID: a.es.ID(), Change: event.ChangeApplied, Reason: "setup_template",
+			Template: string(r.Template), MapIDs: nonNilIDs(r.MapIDs), ZoneIDs: nonNilIDs(r.ZoneIDs),
+			Counts: map[string]int{"spots": r.SpotsCreated, "pools": len(r.PoolIDs)},
 		}); err != nil {
 			return err
 		}
 	}
-	if _, err := a.s.d.Outbox.Write(ctx, a.tx, event.ConfigPricingChanged, a.es.ID(), 1, map[string]any{
-		"reason": "setup_template", "template": r.Template, "season_id": r.SeasonID, "rules_created": len(r.QuickRules),
+	if _, err := a.s.d.Outbox.Write(ctx, a.tx, event.ConfigPricingChanged, a.es.ID(), 1, event.ConfigChange{
+		Entity: event.EntitySetup, EntityID: a.es.ID(), Change: event.ChangeApplied, Reason: "setup_template",
+		Template: string(r.Template), SeasonID: r.SeasonID,
+		Counts: map[string]int{"rules_created": len(r.QuickRules), "packs": len(r.PackIDs), "extras": len(r.ExtraIDs), "policies": len(r.PolicyIDs)},
 	}); err != nil {
 		return err
 	}

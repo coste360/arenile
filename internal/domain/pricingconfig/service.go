@@ -61,22 +61,17 @@ const (
 
 // Change kinds of PricingChanged.
 const (
-	ChangeCreated = "created"
-	ChangeUpdated = "updated"
-	ChangeDeleted = "deleted"
-	ChangeCopied  = "copied"
+	ChangeCreated = event.ChangeCreated
+	ChangeUpdated = event.ChangeUpdated
+	ChangeDeleted = event.ChangeDeleted
+	ChangeCopied  = event.ChangeCopied
 )
 
 // PricingChanged is the payload (version 1) of event.ConfigPricingChanged
-// written by this package: which configuration object changed and how.
-// Consumers (caches, the public booking page) reload the price list of the
-// season; the event carries no prices.
-type PricingChanged struct {
-	Entity   string `json:"entity"`
-	EntityID string `json:"entity_id,omitempty"`
-	Change   string `json:"change"`
-	SeasonID string `json:"season_id,omitempty"`
-}
+// written by this package: the shared event.ConfigChange with the entity
+// that changed, how, and its season. Consumers (caches, the public booking
+// page) reload the price list of the season; the event carries no prices.
+type PricingChanged = event.ConfigChange
 
 // Maximum lengths of free-text fields.
 const (

@@ -9,6 +9,7 @@ import (
 
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -54,7 +55,7 @@ func (s *Service) CreatePool(ctx context.Context, p *auth.Principal, establishme
 		if err := store.InsertPool(ctx, tx, es, pl); err != nil {
 			return err
 		}
-		data := MapChangedData{EntityType: "pool", EntityID: pl.ID, Action: "created", Version: pl.Version}
+		data := event.ConfigChange{Entity: "pool", EntityID: pl.ID, Change: event.ChangeCreated, Version: pl.Version}
 		return s.record(ctx, tx, p, es, "pool.created", data, map[string]any{"after": pl})
 	})
 	if err != nil {
@@ -103,7 +104,7 @@ func (s *Service) UpdatePool(ctx context.Context, p *auth.Principal, establishme
 			}
 			return &configerr.VersionConflictError{Current: latest.Version}
 		}
-		data := MapChangedData{EntityType: "pool", EntityID: poolID, Action: "updated", Version: next.Version}
+		data := event.ConfigChange{Entity: "pool", EntityID: poolID, Change: event.ChangeUpdated, Version: next.Version}
 		if err := s.record(ctx, tx, p, es, "pool.updated", data, map[string]any{"before": before, "after": next}); err != nil {
 			return err
 		}
@@ -136,7 +137,7 @@ func (s *Service) DeletePool(ctx context.Context, p *auth.Principal, establishme
 		if err := store.DeletePool(ctx, tx, es, poolID); err != nil {
 			return notFound(err, ErrPoolNotFound)
 		}
-		data := MapChangedData{EntityType: "pool", EntityID: poolID, Action: "deleted", Version: cur.Version}
+		data := event.ConfigChange{Entity: "pool", EntityID: poolID, Change: event.ChangeDeleted, Version: cur.Version}
 		return s.record(ctx, tx, p, es, "pool.deleted", data, map[string]any{"before": cur})
 	})
 	if err != nil {

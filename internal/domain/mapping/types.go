@@ -2,6 +2,7 @@ package mapping
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/store"
@@ -58,6 +59,7 @@ var (
 	ErrZoneCodeTaken      = fmt.Errorf("%w: zone code already used in this establishment", configerr.ErrConflict)
 	ErrZoneHasSpots       = fmt.Errorf("%w: the zone still has spots", configerr.ErrConflict)
 	ErrZoneHasPools       = fmt.Errorf("%w: the zone has bound pools", configerr.ErrConflict)
+	ErrZoneReferenced     = fmt.Errorf("%w: the zone is referenced by price rules, promo codes, agreements, packs or booking policies", configerr.ErrConflict)
 	ErrSystemPoolReadOnly = fmt.Errorf("%w: system managed pools are read-only", configerr.ErrConflict)
 	ErrLabelsTaken        = fmt.Errorf("%w: generated labels already exist on the map", configerr.ErrConflict)
 	ErrSpotHasAllocations = configerr.ErrSpotHasFutureAllocations
@@ -173,11 +175,34 @@ type GenerateResult struct {
 	Document          *Document
 }
 
-// MapChangedData is the payload of event.ConfigMapChanged (version 1).
-type MapChangedData struct {
-	MapID      string `json:"map_id,omitempty"`
-	EntityType string `json:"entity_type"` // map | zone | pool
-	EntityID   string `json:"entity_id"`
-	Action     string `json:"action"` // created | saved | rows_generated | updated | deleted
-	Version    int64  `json:"version,omitempty"`
+// ZoneReference is a configuration entity that names a zone: a price rule,
+// promo code or agreement (conditions.zone_ids), a pack (allowed_zone_ids)
+// or a booking policy (scope.zones, by id or code).
+type ZoneReference struct {
+	// Kind is price_rule | promo_code | agreement | pack | booking_policy.
+	Kind string `json:"kind"`
+	ID   string `json:"id"`
+	// Name is the rule, agreement or policy name, or the promo/pack code.
+	Name string `json:"name"`
+}
+
+// ZoneReferencedError refuses the deletion of a zone (or of its map) while
+// other configuration entities reference it; References lists them so that
+// the panel can show what to change first. It Is configerr.ErrConflict.
+type ZoneReferencedError struct {
+	ZoneID     string
+	References []ZoneReference
+}
+
+func (e *ZoneReferencedError) Error() string {
+	parts := make([]string, len(e.References))
+	for i, r := range e.References {
+		parts[i] = fmt.Sprintf("%s %q (%s)", r.Kind, r.Name, r.ID)
+	}
+	return fmt.Sprintf("%v: %s", ErrZoneReferenced, strings.Join(parts, ", "))
+}
+
+// Is reports ErrZoneReferenced and configerr.ErrConflict.
+func (e *ZoneReferencedError) Is(target error) bool {
+	return target == ErrZoneReferenced || target == configerr.ErrConflict
 }
