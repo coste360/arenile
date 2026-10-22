@@ -14,10 +14,15 @@ import { useQuickPricelist, type QuickPricelistResult } from '../api';
 import { emptyGrid, pricelistSchema, toQuickPricelistRequest } from '../wizard.schema';
 import type { StepProps } from './types';
 
-/** Step 4: quick price list — daily price per price category and rate period. */
+/**
+ * Step 4: quick price list — daily price per price category and rate period.
+ * The rows are the categories the server requires a price for: those of the
+ * zones plus the spot overrides, as reported by the setup status
+ * (`price_categories`); zones alone would miss the overrides.
+ */
 export function StepPricelist(props: StepProps) {
   const { t } = useTranslation('setupWizard');
-  const { ctx, progress } = props;
+  const { ctx, progress, status } = props;
   const seasonList = seasons.useList(ctx.establishmentId);
   const zoneList = zones.useList(ctx.establishmentId);
   const season =
@@ -34,11 +39,12 @@ export function StepPricelist(props: StepProps) {
     return <p className="text-sm text-slate-600">{t('loading')}</p>;
   }
   const categories = [
-    ...new Set(
-      [...(zoneList.data ?? [])]
+    ...new Set([
+      ...[...(zoneList.data ?? [])]
         .sort((a, b) => a.sort_order - b.sort_order)
         .map((z) => z.price_category),
-    ),
+      ...(status?.price_categories ?? []),
+    ]),
   ];
   const periods = [...(periodList.data ?? [])].sort((a, b) => a.sort_order - b.sort_order);
   if (!season || categories.length === 0 || periods.length === 0) {

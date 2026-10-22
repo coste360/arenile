@@ -25,6 +25,7 @@ const EMPTY_STATUS = {
   has_catalog: false,
   has_prices: false,
   booking_enabled: false,
+  price_categories: [] as string[],
 };
 
 const TEMPLATES = [
@@ -95,99 +96,102 @@ describe('SetupWizardPage', () => {
     let applied = false;
     const { fetchMock } = renderApp(
       PATH,
-      routes({
-        [`POST ${API}/setup/apply-template`]: async (req) => {
-          applyBodies.push(await req.json());
-          applied = true;
-          return json(201, {
-            template: 'classic_rows',
-            season_id: 's1',
-            map_id: 'm1',
-            zone_ids: ['z1', 'z2'],
-            pool_ids: [],
-            component_ids: ['c1', 'c2'],
-            pack_ids: ['p1'],
-            extra_ids: [],
-            rate_period_ids: ['r1', 'r2'],
-            spots_created: 120,
-          });
-        },
-        [`GET ${API}/seasons`]: () =>
-          list(
-            applied
-              ? [
-                  {
-                    id: 's1',
-                    establishment_id: EST_ID,
-                    year: 2027,
-                    opens_on: '2027-05-01',
-                    closes_on: '2027-09-30',
-                    status: 'draft',
-                    version: 1,
-                    ...ts,
-                  },
-                ]
-              : [],
-          ),
-        [`GET ${API}/zones`]: () =>
-          list([
-            {
-              id: 'z1',
-              code: 'row1',
-              name: { it: 'Fila 1' },
-              assignment_mode: 'seat',
-              online_visible: true,
-              price_category: 'row1',
-              auto_assign: false,
-              sort_order: 0,
-              spot_count: 15,
-              version: 1,
-              ...ts,
-            },
-            {
-              id: 'z2',
-              code: 'row2',
-              name: { it: 'Fila 2' },
-              assignment_mode: 'seat',
-              online_visible: true,
-              price_category: 'row2',
-              auto_assign: false,
-              sort_order: 1,
-              spot_count: 15,
-              version: 1,
-              ...ts,
-            },
-          ]),
-        [`GET ${API}/rate-periods`]: () =>
-          list([
-            {
-              id: 'r1',
+      routes(
+        {
+          [`POST ${API}/setup/apply-template`]: async (req) => {
+            applyBodies.push(await req.json());
+            applied = true;
+            return json(201, {
+              template: 'classic_rows',
               season_id: 's1',
-              code: 'low',
-              name: { it: 'Bassa' },
-              color: '#7dd3fc',
-              ranges: [],
-              sort_order: 0,
-              version: 1,
-              ...ts,
-            },
-            {
-              id: 'r2',
-              season_id: 's1',
-              code: 'high',
-              name: { it: 'Alta' },
-              color: '#fb923c',
-              ranges: [],
-              sort_order: 1,
-              version: 1,
-              ...ts,
-            },
-          ]),
-        [`POST ${API}/setup/quick-pricelist`]: async (req) => {
-          quickBodies.push(await req.json());
-          return json(201, { rules: [{}, {}, {}], replaced: 0 });
+              map_id: 'm1',
+              zone_ids: ['z1', 'z2'],
+              pool_ids: [],
+              component_ids: ['c1', 'c2'],
+              pack_ids: ['p1'],
+              extra_ids: [],
+              rate_period_ids: ['r1', 'r2'],
+              spots_created: 120,
+            });
+          },
+          [`GET ${API}/seasons`]: () =>
+            list(
+              applied
+                ? [
+                    {
+                      id: 's1',
+                      establishment_id: EST_ID,
+                      year: 2027,
+                      opens_on: '2027-05-01',
+                      closes_on: '2027-09-30',
+                      status: 'draft',
+                      version: 1,
+                      ...ts,
+                    },
+                  ]
+                : [],
+            ),
+          [`GET ${API}/zones`]: () =>
+            list([
+              {
+                id: 'z1',
+                code: 'row1',
+                name: { it: 'Fila 1' },
+                assignment_mode: 'seat',
+                online_visible: true,
+                price_category: 'row1',
+                auto_assign: false,
+                sort_order: 0,
+                spot_count: 15,
+                version: 1,
+                ...ts,
+              },
+              {
+                id: 'z2',
+                code: 'row2',
+                name: { it: 'Fila 2' },
+                assignment_mode: 'seat',
+                online_visible: true,
+                price_category: 'row2',
+                auto_assign: false,
+                sort_order: 1,
+                spot_count: 15,
+                version: 1,
+                ...ts,
+              },
+            ]),
+          [`GET ${API}/rate-periods`]: () =>
+            list([
+              {
+                id: 'r1',
+                season_id: 's1',
+                code: 'low',
+                name: { it: 'Bassa' },
+                color: '#7dd3fc',
+                ranges: [],
+                sort_order: 0,
+                version: 1,
+                ...ts,
+              },
+              {
+                id: 'r2',
+                season_id: 's1',
+                code: 'high',
+                name: { it: 'Alta' },
+                color: '#fb923c',
+                ranges: [],
+                sort_order: 1,
+                version: 1,
+                ...ts,
+              },
+            ]),
+          [`POST ${API}/setup/quick-pricelist`]: async (req) => {
+            quickBodies.push(await req.json());
+            return json(201, { rules: [{}, {}, {}], replaced: 0 });
+          },
         },
-      }),
+        { ...EMPTY_STATUS, price_categories: ['angolo', 'row1', 'row2'] },
+      ),
     );
     await stepHeading();
     await user.click(screen.getByRole('button', { name: 'Salta questo passo' }));
@@ -212,6 +216,9 @@ describe('SetupWizardPage', () => {
     await user.click(screen.getByRole('button', { name: 'Continua' }));
 
     expect(await stepHeading()).toHaveTextContent('Passo 4 di 6: Listino rapido');
+    // The grid has a row per zone category and per spot override category
+    // reported by the status (an override has no zone to take it from).
+    expect(await screen.findByLabelText('Prezzo giornaliero angolo, periodo Bassa')).toBeVisible();
     await user.type(await screen.findByLabelText('Prezzo giornaliero row1, periodo Bassa'), '25');
     await user.type(screen.getByLabelText('Prezzo giornaliero row1, periodo Alta'), '32,50');
     await user.type(screen.getByLabelText('Prezzo giornaliero row2, periodo Alta'), '28.9');

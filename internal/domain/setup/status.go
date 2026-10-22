@@ -19,6 +19,9 @@ type Status struct {
 	HasCatalog     bool
 	HasPrices      bool
 	BookingEnabled bool
+	// PriceCategories are the categories the quick price list must price:
+	// those of the zones and of the spot overrides, sorted.
+	PriceCategories []string
 }
 
 // ListTemplates returns the setup templates (auth.PermBookingsRead on the
@@ -86,5 +89,8 @@ func (s *Service) status(ctx context.Context, db bun.IDB, es store.Establishment
 	st.HasMap = results[2] > 0
 	st.HasCatalog = results[4] > 0
 	st.HasPrices = results[5] > 0
+	if st.PriceCategories, err = categoriesInUse(ctx, db, es); err != nil {
+		return nil, err
+	}
 	return st, nil
 }

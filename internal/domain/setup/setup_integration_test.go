@@ -638,7 +638,7 @@ func TestStatus_Progress(t *testing.T) {
 	ctx := context.Background()
 	f := newFixture(t, db, "status")
 	st, err := f.svc.Status(ctx, f.owner(), f.est.ID)
-	if err != nil || *st != (Status{}) {
+	if err != nil || st.HasSeason || st.HasRatePeriods || st.HasMap || st.SpotCount != 0 || st.HasCatalog || st.HasPrices || st.BookingEnabled || len(st.PriceCategories) != 0 {
 		t.Fatalf("empty status: %+v %v", st, err)
 	}
 	half := pricing.MustParseDecimal("0.5")
@@ -654,6 +654,19 @@ func TestStatus_Progress(t *testing.T) {
 	st, err = f.svc.Status(ctx, f.principal(auth.RoleViewer), f.est.ID)
 	if err != nil || !st.HasSeason || !st.HasRatePeriods || !st.HasMap || st.SpotCount != 124 || !st.HasCatalog || !st.HasPrices || st.BookingEnabled {
 		t.Fatalf("status: %+v %v", st, err)
+	}
+	// The categories the quick price list requires: zones plus spot
+	// overrides (the wizard grid builds its rows from them).
+	if want := []string{CategoryGazebo, CategoryRow1, CategoryRow2, CategoryStandard}; !slices.Equal(st.PriceCategories, want) {
+		t.Fatalf("price categories %v, want %v", st.PriceCategories, want)
+	}
+	if _, err := db.NewUpdate().TableExpr("spots").Set("price_category_override = ?", "angolo").
+		Where("establishment_id = ? AND label = ?", f.est.ID, "A1").Exec(ctx); err != nil {
+		t.Fatal(err)
+	}
+	st, err = f.svc.Status(ctx, f.owner(), f.est.ID)
+	if err != nil || !slices.Contains(st.PriceCategories, "angolo") || len(st.PriceCategories) != 5 {
+		t.Fatalf("categories with override: %v %v", st.PriceCategories, err)
 	}
 }
 

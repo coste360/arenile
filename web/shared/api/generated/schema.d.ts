@@ -2412,6 +2412,8 @@ export interface components {
         };
         /** @description Avanzamento della configurazione guidata. */
         SetupStatus: {
+            /** @description Categorie di prezzo in uso (zone e override delle postazioni), ordinate: il listino rapido richiede un prezzo per ciascuna in ogni periodo tariffario. */
+            price_categories: string[];
             has_season: boolean;
             has_rate_periods: boolean;
             has_map: boolean;
@@ -2533,9 +2535,9 @@ export interface components {
         CSRFToken: string;
         EstablishmentID: string;
         Slug: string;
-        /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+        /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
         IfMatch: string;
-        /** @description ETag (versione) della mappa letta in precedenza; obbligatorio. */
+        /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
         IfMatchRequired: string;
         MapID: string;
         TeamUserID: string;
@@ -2845,7 +2847,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3131,7 +3133,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3173,7 +3175,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3355,7 +3357,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3397,7 +3399,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3537,7 +3539,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3579,7 +3581,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3717,7 +3719,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3759,7 +3761,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3897,7 +3899,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3939,7 +3941,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4075,7 +4077,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4117,7 +4119,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4255,7 +4257,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4297,7 +4299,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4435,7 +4437,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4477,7 +4479,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4619,7 +4621,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4661,7 +4663,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4801,7 +4803,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4843,7 +4845,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -4981,7 +4983,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5023,7 +5025,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5161,7 +5163,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5203,7 +5205,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5341,7 +5343,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5383,7 +5385,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5519,7 +5521,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio. */
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
                 "If-Match": components["parameters"]["IfMatchRequired"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5562,7 +5564,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
@@ -5596,7 +5598,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano

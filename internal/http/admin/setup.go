@@ -38,6 +38,7 @@ func (h *Handlers) GetSetupStatus(w http.ResponseWriter, r *http.Request, establ
 	writeJSON(w, http.StatusOK, api.SetupStatus{
 		HasSeason: st.HasSeason, HasRatePeriods: st.HasRatePeriods, HasMap: st.HasMap, SpotCount: st.SpotCount,
 		HasCatalog: st.HasCatalog, HasPrices: st.HasPrices, BookingEnabled: st.BookingEnabled,
+		PriceCategories: append([]string{}, st.PriceCategories...),
 	})
 }
 

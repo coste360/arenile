@@ -2404,7 +2404,10 @@ type SetupStatus struct {
 	HasPrices      bool `json:"has_prices"`
 	HasRatePeriods bool `json:"has_rate_periods"`
 	HasSeason      bool `json:"has_season"`
-	SpotCount      int  `json:"spot_count"`
+
+	// PriceCategories Categorie di prezzo in uso (zone e override delle postazioni), ordinate: il listino rapido richiede un prezzo per ciascuna in ogni periodo tariffario.
+	PriceCategories []string `json:"price_categories"`
+	SpotCount       int      `json:"spot_count"`
 }
 
 // SetupTemplate defines model for SetupTemplate.
@@ -2926,7 +2929,7 @@ type CreateEstablishmentParams struct {
 
 // UpdateEstablishmentParams defines parameters for UpdateEstablishment.
 type UpdateEstablishmentParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -2960,7 +2963,7 @@ type CreateAgreementParams struct {
 
 // DeleteAgreementParams defines parameters for DeleteAgreement.
 type DeleteAgreementParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -2970,7 +2973,7 @@ type DeleteAgreementParams struct {
 
 // UpdateAgreementParams defines parameters for UpdateAgreement.
 type UpdateAgreementParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3007,7 +3010,7 @@ type CreateClosureDayParams struct {
 
 // DeleteClosureDayParams defines parameters for DeleteClosureDay.
 type DeleteClosureDayParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3017,7 +3020,7 @@ type DeleteClosureDayParams struct {
 
 // UpdateClosureDayParams defines parameters for UpdateClosureDay.
 type UpdateClosureDayParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3048,7 +3051,7 @@ type CreateComponentParams struct {
 
 // DeleteComponentParams defines parameters for DeleteComponent.
 type DeleteComponentParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3058,7 +3061,7 @@ type DeleteComponentParams struct {
 
 // UpdateComponentParams defines parameters for UpdateComponent.
 type UpdateComponentParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3092,7 +3095,7 @@ type CreateExtraParams struct {
 
 // DeleteExtraParams defines parameters for DeleteExtra.
 type DeleteExtraParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3102,7 +3105,7 @@ type DeleteExtraParams struct {
 
 // UpdateExtraParams defines parameters for UpdateExtra.
 type UpdateExtraParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3139,7 +3142,7 @@ type CreateFixedPriceParams struct {
 
 // DeleteFixedPriceParams defines parameters for DeleteFixedPrice.
 type DeleteFixedPriceParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3149,7 +3152,7 @@ type DeleteFixedPriceParams struct {
 
 // UpdateFixedPriceParams defines parameters for UpdateFixedPrice.
 type UpdateFixedPriceParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3180,7 +3183,7 @@ type CreateMapParams struct {
 
 // DeleteMapParams defines parameters for DeleteMap.
 type DeleteMapParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3190,7 +3193,7 @@ type DeleteMapParams struct {
 
 // SaveMapParams defines parameters for SaveMap.
 type SaveMapParams struct {
-	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio.
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
 	IfMatch IfMatchRequired `json:"If-Match"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3200,7 +3203,7 @@ type SaveMapParams struct {
 
 // GenerateMapRowsParams defines parameters for GenerateMapRows.
 type GenerateMapRowsParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3234,7 +3237,7 @@ type CreatePackParams struct {
 
 // DeletePackParams defines parameters for DeletePack.
 type DeletePackParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3244,7 +3247,7 @@ type DeletePackParams struct {
 
 // UpdatePackParams defines parameters for UpdatePack.
 type UpdatePackParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3278,7 +3281,7 @@ type CreatePolicyParams struct {
 
 // DeletePolicyParams defines parameters for DeletePolicy.
 type DeletePolicyParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3288,7 +3291,7 @@ type DeletePolicyParams struct {
 
 // UpdatePolicyParams defines parameters for UpdatePolicy.
 type UpdatePolicyParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3322,7 +3325,7 @@ type CreatePoolParams struct {
 
 // DeletePoolParams defines parameters for DeletePool.
 type DeletePoolParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3332,7 +3335,7 @@ type DeletePoolParams struct {
 
 // UpdatePoolParams defines parameters for UpdatePool.
 type UpdatePoolParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3372,7 +3375,7 @@ type CreatePriceRuleParams struct {
 
 // DeletePriceRuleParams defines parameters for DeletePriceRule.
 type DeletePriceRuleParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3382,7 +3385,7 @@ type DeletePriceRuleParams struct {
 
 // UpdatePriceRuleParams defines parameters for UpdatePriceRule.
 type UpdatePriceRuleParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3450,7 +3453,7 @@ type CreatePromoCodeParams struct {
 
 // DeletePromoCodeParams defines parameters for DeletePromoCode.
 type DeletePromoCodeParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3460,7 +3463,7 @@ type DeletePromoCodeParams struct {
 
 // UpdatePromoCodeParams defines parameters for UpdatePromoCode.
 type UpdatePromoCodeParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3494,7 +3497,7 @@ type CreateRatePeriodParams struct {
 
 // DeleteRatePeriodParams defines parameters for DeleteRatePeriod.
 type DeleteRatePeriodParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3504,7 +3507,7 @@ type DeleteRatePeriodParams struct {
 
 // UpdateRatePeriodParams defines parameters for UpdateRatePeriod.
 type UpdateRatePeriodParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3535,7 +3538,7 @@ type CreateSeasonParams struct {
 
 // DeleteSeasonParams defines parameters for DeleteSeason.
 type DeleteSeasonParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3545,7 +3548,7 @@ type DeleteSeasonParams struct {
 
 // UpdateSeasonParams defines parameters for UpdateSeason.
 type UpdateSeasonParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3650,7 +3653,7 @@ type CreateZoneParams struct {
 
 // DeleteZoneParams defines parameters for DeleteZone.
 type DeleteZoneParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -3660,7 +3663,7 @@ type DeleteZoneParams struct {
 
 // UpdateZoneParams defines parameters for UpdateZone.
 type UpdateZoneParams struct {
-	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
