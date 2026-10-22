@@ -1,9 +1,10 @@
 import { createApiClient } from '@arenile/shared/api';
-import { createI18n, resolveLocale } from '@arenile/shared/i18n';
+import { resolveLocale } from '@arenile/shared/i18n';
 import { applyTheme } from '@arenile/shared/theme';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { createAdminI18n } from './i18n';
 import './index.css';
 
 async function bootstrap() {
@@ -11,7 +12,7 @@ async function bootstrap() {
     param: new URLSearchParams(window.location.search).get('lang'),
     browser: navigator.languages,
   });
-  const i18n = await createI18n(locale);
+  const i18n = await createAdminI18n(locale);
   document.documentElement.lang = locale;
   applyTheme(null);
   const api = createApiClient();

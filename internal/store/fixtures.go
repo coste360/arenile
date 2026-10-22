@@ -22,6 +22,7 @@ func NewEstablishmentDefaults(organizationID, slug, name string, now time.Time) 
 		AllowedEmbedOrigins: []string{},
 		Theme:               Theme{},
 		Settings:            JSON("{}"),
+		Version:             1,
 		CreatedAt:           now,
 		UpdatedAt:           now,
 	}

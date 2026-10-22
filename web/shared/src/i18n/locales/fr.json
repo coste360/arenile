@@ -17,13 +17,30 @@
       "notFound": "Introuvable.",
       "forbidden": "Vous n'êtes pas autorisé à effectuer cette action.",
       "tooManyRequests": "Trop de requêtes. Patientez un instant puis réessayez.",
-      "title": "Une erreur est survenue"
+      "title": "Une erreur est survenue",
+      "validation": "Certaines données ne sont pas valides : vérifiez les champs signalés.",
+      "conflict": "L'opération est en conflit avec des données existantes (par exemple un code déjà utilisé).",
+      "versionConflict": "Un autre utilisateur a modifié ces données. Rechargez pour voir la dernière version.",
+      "notImplemented": "Fonction pas encore disponible.",
+      "spotHasFutureAllocations": "L'emplacement a des réservations futures : vous pouvez seulement le désactiver.",
+      "noPrice": "Il manque un prix pour les dates demandées."
     },
     "languages": {
       "it": "Italiano",
       "en": "English",
       "de": "Deutsch",
       "fr": "Français"
+    },
+    "actions": {
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "create": "Créer",
+      "add": "Ajouter",
+      "confirmDelete": "Confirmez-vous la suppression ?",
+      "saving": "Enregistrement…",
+      "saved": "Enregistré"
     }
   },
   "map": {
@@ -96,7 +113,21 @@
     "reports": "Rapports",
     "settings": "Configuration",
     "openMenu": "Ouvrir le menu",
-    "closeMenu": "Fermer le menu"
+    "closeMenu": "Fermer le menu",
+    "configuration": "Paramètres de l'établissement",
+    "config": {
+      "establishment": "Établissement",
+      "seasons": "Saisons et périodes",
+      "closures": "Fermetures",
+      "maps": "Plans",
+      "zones": "Zones",
+      "pools": "Stocks",
+      "catalog": "Catalogue",
+      "pricing": "Prix",
+      "policies": "Règles",
+      "setup": "Configuration guidée",
+      "team": "Utilisateurs"
+    }
   },
   "admin": {
     "placeholder": {
@@ -130,7 +161,13 @@
     },
     "user": "Utilisateur connecté",
     "totpEnrolmentRequired": "Pour continuer, activez la vérification en deux étapes depuis votre profil.",
-    "skipToContent": "Aller au contenu"
+    "skipToContent": "Aller au contenu",
+    "switcher": {
+      "label": "Établissement",
+      "placeholder": "Choisissez un établissement",
+      "new": "+ Nouvel établissement",
+      "none": "Aucun établissement"
+    }
   },
   "booking": {
     "title": "Réservez votre place à la plage",

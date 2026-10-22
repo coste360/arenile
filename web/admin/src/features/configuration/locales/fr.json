@@ -1,0 +1,34 @@
+{
+  "establishment": {
+    "title": "Établissement",
+    "description": "Données, langues, thème, page publique et paramètres de prix."
+  },
+  "new": {
+    "title": "Nouvel établissement",
+    "description": "Créez un autre établissement de votre organisation."
+  },
+  "seasons": {
+    "title": "Saisons et périodes",
+    "description": "Saisons d'ouverture et périodes tarifaires."
+  },
+  "closures": {
+    "title": "Fermetures",
+    "description": "Jours de fermeture exceptionnelle."
+  },
+  "zones": {
+    "title": "Zones",
+    "description": "Zones, modes d'attribution et quotas en ligne."
+  },
+  "pools": {
+    "title": "Stocks",
+    "description": "Inventaire en quantité sans position."
+  },
+  "catalog": {
+    "title": "Catalogue",
+    "description": "Composants, formules et suppléments."
+  },
+  "team": {
+    "title": "Utilisateurs",
+    "description": "Utilisateurs et rôles de l'établissement."
+  }
+}

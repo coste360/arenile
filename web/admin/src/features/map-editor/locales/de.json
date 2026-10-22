@@ -1,0 +1,10 @@
+{
+  "maps": {
+    "title": "Pläne",
+    "description": "Pläne des Betriebs."
+  },
+  "editor": {
+    "title": "Plan-Editor",
+    "description": "Reihengenerator, Plätze, Dekorationen und versioniertes Speichern."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "maps": {
+    "title": "Plans",
+    "description": "Plans de l'établissement."
+  },
+  "editor": {
+    "title": "Éditeur de plan",
+    "description": "Générateur de rangées, emplacements, décorations et enregistrement versionné."
+  }
+}

@@ -105,9 +105,153 @@ const placeholderRoutes = [
   placeholderRoute('report'),
 ] as const;
 
+// ---- M1/M2 configuration --------------------------------------------------
+// Establishment-scoped routes live under /e/$establishmentId: the URL is the
+// source of truth for the current establishment (see ./establishment). Feature
+// pages are lazy-loaded from their folder's index.ts and owned by the feature
+// builders; this file only wires them.
+
+/** Optional `?seasonId=` shared by the season-dependent pages. */
+export interface SeasonSearch {
+  seasonId?: string;
+}
+
+export function validateSeasonSearch(search: Record<string, unknown>): SeasonSearch {
+  return { seasonId: typeof search.seasonId === 'string' ? search.seasonId : undefined };
+}
+
+const newEstablishmentRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: 'establishments/new',
+  component: lazyRouteComponent(() => import('./features/configuration'), 'NewEstablishmentPage'),
+});
+
+const establishmentRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: 'e/$establishmentId',
+  component: Outlet,
+});
+
+const establishmentIndexRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: '/',
+  beforeLoad: ({ params }) => {
+    throw redirect({ to: '/e/$establishmentId/config/establishment', params });
+  },
+});
+
+const establishmentSettingsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/establishment',
+  component: lazyRouteComponent(
+    () => import('./features/configuration'),
+    'EstablishmentSettingsPage',
+  ),
+});
+const seasonsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/seasons',
+  validateSearch: validateSeasonSearch,
+  component: lazyRouteComponent(() => import('./features/configuration'), 'SeasonsPage'),
+});
+const closuresRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/closures',
+  component: lazyRouteComponent(() => import('./features/configuration'), 'ClosuresPage'),
+});
+const zonesRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/zones',
+  component: lazyRouteComponent(() => import('./features/configuration'), 'ZonesPage'),
+});
+const poolsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/pools',
+  component: lazyRouteComponent(() => import('./features/configuration'), 'PoolsPage'),
+});
+const catalogRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/catalog',
+  component: lazyRouteComponent(() => import('./features/configuration'), 'CatalogPage'),
+});
+const teamRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/team',
+  component: lazyRouteComponent(() => import('./features/configuration'), 'TeamPage'),
+});
+const mapsListRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'maps',
+  component: lazyRouteComponent(() => import('./features/map-editor'), 'MapsListPage'),
+});
+const mapEditorRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'maps/$mapId',
+  component: lazyRouteComponent(() => import('./features/map-editor'), 'MapEditorPage'),
+});
+const setupWizardRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'setup',
+  component: lazyRouteComponent(() => import('./features/setup-wizard'), 'SetupWizardPage'),
+});
+const pricingRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'pricing',
+  validateSearch: validateSeasonSearch,
+  component: lazyRouteComponent(() => import('./features/pricing'), 'PricingPage'),
+});
+const priceSimulatorRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'pricing/simulator',
+  validateSearch: validateSeasonSearch,
+  component: lazyRouteComponent(() => import('./features/pricing'), 'PriceSimulatorPage'),
+});
+const priceMatrixRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'pricing/matrix',
+  validateSearch: validateSeasonSearch,
+  component: lazyRouteComponent(() => import('./features/pricing'), 'PriceMatrixPage'),
+});
+const coverageRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'pricing/coverage',
+  validateSearch: validateSeasonSearch,
+  component: lazyRouteComponent(() => import('./features/pricing'), 'CoveragePage'),
+});
+const policiesRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'policies',
+  validateSearch: validateSeasonSearch,
+  component: lazyRouteComponent(() => import('./features/policies'), 'PoliciesPage'),
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([indexRoute, mapRoute, settingsRoute, ...placeholderRoutes]),
+  appRoute.addChildren([
+    indexRoute,
+    mapRoute,
+    settingsRoute,
+    ...placeholderRoutes,
+    newEstablishmentRoute,
+    establishmentRoute.addChildren([
+      establishmentIndexRoute,
+      establishmentSettingsRoute,
+      seasonsRoute,
+      closuresRoute,
+      zonesRoute,
+      poolsRoute,
+      catalogRoute,
+      teamRoute,
+      mapsListRoute,
+      mapEditorRoute,
+      setupWizardRoute,
+      pricingRoute,
+      priceSimulatorRoute,
+      priceMatrixRoute,
+      coverageRoute,
+      policiesRoute,
+    ]),
+  ]),
 ]);
 
 export function createAppRouter(context: RouterContext, history?: RouterHistory) {

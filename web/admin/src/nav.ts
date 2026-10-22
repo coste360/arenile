@@ -47,3 +47,23 @@ export const NAV_ITEMS = [
 ] as const;
 
 export type NavPath = (typeof NAV_ITEMS)[number]['to'];
+
+/**
+ * "Configurazione" submenu (spec 15.1 item 9), scoped to the current
+ * establishment: every path is under /e/$establishmentId.
+ */
+export const CONFIG_NAV_ITEMS = [
+  { to: '/e/$establishmentId/setup', labelKey: 'nav.config.setup' },
+  { to: '/e/$establishmentId/config/establishment', labelKey: 'nav.config.establishment' },
+  { to: '/e/$establishmentId/config/seasons', labelKey: 'nav.config.seasons' },
+  { to: '/e/$establishmentId/config/closures', labelKey: 'nav.config.closures' },
+  { to: '/e/$establishmentId/maps', labelKey: 'nav.config.maps' },
+  { to: '/e/$establishmentId/config/zones', labelKey: 'nav.config.zones' },
+  { to: '/e/$establishmentId/config/pools', labelKey: 'nav.config.pools' },
+  { to: '/e/$establishmentId/config/catalog', labelKey: 'nav.config.catalog' },
+  { to: '/e/$establishmentId/pricing', labelKey: 'nav.config.pricing' },
+  { to: '/e/$establishmentId/policies', labelKey: 'nav.config.policies' },
+  { to: '/e/$establishmentId/config/team', labelKey: 'nav.config.team', ownerOnly: true },
+] as const;
+
+export type ConfigNavPath = (typeof CONFIG_NAV_ITEMS)[number]['to'];

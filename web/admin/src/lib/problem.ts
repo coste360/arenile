@@ -12,6 +12,18 @@ export function problemMessageKey(error: unknown): string {
       return 'common.errors.forbidden';
     case 'rate_limited':
       return 'common.errors.tooManyRequests';
+    case 'validation_failed':
+      return 'common.errors.validation';
+    case 'conflict':
+      return 'common.errors.conflict';
+    case 'version_conflict':
+      return 'common.errors.versionConflict';
+    case 'not_implemented':
+      return 'common.errors.notImplemented';
+    case 'spot_has_future_allocations':
+      return 'common.errors.spotHasFutureAllocations';
+    case 'no_price':
+      return 'common.errors.noPrice';
     default:
       return 'common.errors.generic';
   }

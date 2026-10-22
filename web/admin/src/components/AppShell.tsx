@@ -3,7 +3,8 @@ import { Button, cn } from '@arenile/shared/ui';
 import { Link, Outlet, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NAV_ITEMS } from '../nav';
+import { EstablishmentSwitcher, useCurrentEstablishment, useIsOwner } from '../establishment';
+import { CONFIG_NAV_ITEMS, NAV_ITEMS } from '../nav';
 import { OfflineIndicator } from './OfflineIndicator';
 
 /** Panel layout with the navigation of spec 15.1. */
@@ -23,6 +24,15 @@ export function AppShell() {
   };
 
   const userName = me.data?.user?.name || me.data?.api_key?.name || '';
+  const current = useCurrentEstablishment();
+  const isOwner = useIsOwner();
+  const linkClass =
+    'block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100';
+  const activeLinkProps = {
+    className:
+      'bg-[var(--ar-primary)] !text-[var(--ar-primary-foreground)] hover:!bg-[var(--ar-primary)]',
+    'aria-current': 'page' as const,
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -50,6 +60,7 @@ export function AppShell() {
           {t('common.appName')}
         </span>
         <div className="ml-auto flex items-center gap-3">
+          <EstablishmentSwitcher />
           <OfflineIndicator />
           {userName && (
             <span className="hidden text-sm text-slate-700 sm:inline" title={t('admin.user')}>
@@ -70,33 +81,54 @@ export function AppShell() {
         </div>
       )}
       <div className="md:flex">
-        <nav
+        <div
           id="main-nav"
-          aria-label={t('nav.main')}
           className={cn(
-            'border-b border-slate-200 bg-white md:sticky md:top-14 md:block md:h-[calc(100vh-3.5rem)] md:w-56 md:shrink-0 md:border-b-0 md:border-r',
+            'border-b border-slate-200 bg-white md:sticky md:top-14 md:block md:h-[calc(100vh-3.5rem)] md:w-56 md:shrink-0 md:overflow-y-auto md:border-b-0 md:border-r',
             menuOpen ? 'block' : 'hidden',
           )}
         >
-          <ul className="space-y-0.5 p-2">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.to}>
-                <Link
-                  to={item.to}
-                  onClick={() => setMenuOpen(false)}
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                  activeProps={{
-                    className:
-                      'bg-[var(--ar-primary)] !text-[var(--ar-primary-foreground)] hover:!bg-[var(--ar-primary)]',
-                    'aria-current': 'page',
-                  }}
-                >
-                  {t(item.labelKey)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          <nav aria-label={t('nav.main')}>
+            <ul className="space-y-0.5 p-2">
+              {NAV_ITEMS.map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    onClick={() => setMenuOpen(false)}
+                    className={linkClass}
+                    activeProps={activeLinkProps}
+                  >
+                    {t(item.labelKey)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          {current.id && (
+            <nav aria-label={t('nav.configuration')} className="border-t border-slate-200">
+              <p className="px-5 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {current.establishment?.name ?? t('nav.configuration')}
+              </p>
+              <ul className="space-y-0.5 p-2 pt-0">
+                {CONFIG_NAV_ITEMS.filter((item) => !('ownerOnly' in item) || isOwner).map(
+                  (item) => (
+                    <li key={item.to}>
+                      <Link
+                        to={item.to}
+                        params={{ establishmentId: current.id as string }}
+                        onClick={() => setMenuOpen(false)}
+                        className={linkClass}
+                        activeProps={activeLinkProps}
+                      >
+                        {t(item.labelKey)}
+                      </Link>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </nav>
+          )}
+        </div>
         <main id="main" tabIndex={-1} className="min-w-0 flex-1 p-4 md:p-6">
           <Outlet />
         </main>

@@ -10,6 +10,9 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/policy"
+	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/http/httpctx"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -29,6 +32,14 @@ func TestError_Mapping(t *testing.T) {
 		{"conflict", store.ErrConflict, 409, "conflict"},
 		{"rate limited", &auth.RateLimitError{RetryAfter: 1500 * time.Millisecond}, 429, "rate_limited"},
 		{"unknown", errors.New("db exploded: secret detail"), 500, "internal_error"},
+		{"validation", configerr.Invalid("code", "obbligatorio"), 400, "validation_failed"},
+		{"config conflict", fmt.Errorf("%w: duplicate code", configerr.ErrConflict), 409, "conflict"},
+		{"config not found", configerr.ErrNotFound, 404, "not_found"},
+		{"version conflict", &configerr.VersionConflictError{Current: 7}, 412, "version_conflict"},
+		{"if-match required", configerr.ErrPreconditionRequired, 428, "precondition_required"},
+		{"spots allocated", &configerr.SpotsAllocatedError{SpotIDs: []string{"s1"}}, 409, "spot_has_future_allocations"},
+		{"no price", &pricing.NoPriceError{}, 422, "no_price"},
+		{"policy violation", &policy.ViolationError{Violations: []policy.Violation{{Code: policy.CodeTooManySpots}}}, 422, "policy_violation"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -78,4 +89,32 @@ func contains(s, sub string) bool {
 		}
 	}
 	return false
+}
+
+func TestError_ConfigExtensions(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		key  string
+		want string
+	}{
+		{"current version", &configerr.VersionConflictError{Current: 7}, "current_version", "7"},
+		{"spot ids", &configerr.SpotsAllocatedError{SpotIDs: []string{"s1", "s2"}}, "spot_ids", `["s1","s2"]`},
+		{"violations", &policy.ViolationError{Violations: []policy.Violation{{Code: policy.CodeTooManySpots, Params: map[string]string{"max": "4"}}}}, "violations", `[{"code":"too_many_spots","params":{"max":"4"}}]`},
+		{"field errors", configerr.Invalid("ranges[0].from", "data non valida"), "errors", `[{"field":"ranges[0].from","message":"data non valida"}]`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPut, "/api/admin/v1/x", nil)
+			w := httptest.NewRecorder()
+			Error(w, r, nil, tt.err)
+			var body map[string]json.RawMessage
+			if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+				t.Fatal(err)
+			}
+			if got := string(body[tt.key]); got != tt.want {
+				t.Fatalf("%s = %s, want %s", tt.key, got, tt.want)
+			}
+		})
+	}
 }

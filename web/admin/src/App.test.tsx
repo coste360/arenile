@@ -1,10 +1,10 @@
 import { createApiClient } from '@arenile/shared/api';
-import { createTestI18n } from '@arenile/shared/i18n';
 import { createMemoryHistory } from '@tanstack/react-router';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { App } from './App';
+import { createAdminTestI18n } from './i18n';
 import { createQueryClient } from './lib/queryClient';
 import { safeRedirect } from './router';
 
@@ -66,7 +66,12 @@ function setup(path: string, routes: Record<string, Handler>) {
   });
   const history = createMemoryHistory({ initialEntries: [path] });
   render(
-    <App api={api} i18n={createTestI18n()} queryClient={createQueryClient()} history={history} />,
+    <App
+      api={api}
+      i18n={createAdminTestI18n()}
+      queryClient={createQueryClient()}
+      history={history}
+    />,
   );
   return { fetchMock, history };
 }
@@ -184,6 +189,111 @@ describe('admin app', () => {
     expect(await screen.findByRole('group', { name: 'Mappa dimostrativa' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Postazione A1:/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Adatta alla vista' })).toBeInTheDocument();
+  });
+});
+
+const OWNER_ME = {
+  ...ME,
+  memberships: [{ organization_id: 'o1', role: 'owner', permissions: [] }],
+};
+
+describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
+  const routes = {
+    'GET /api/admin/v1/auth/me': () => json(200, OWNER_ME),
+    'GET /api/admin/v1/establishments': () =>
+      json(200, { items: [ESTABLISHMENT, { ...ESTABLISHMENT, id: 'e2', name: 'Lido Due' }] }),
+  };
+
+  it.each([
+    ['/admin/e/e1/config/establishment', 'Stabilimento'],
+    ['/admin/e/e1/config/seasons', 'Stagioni e periodi'],
+    ['/admin/e/e1/config/closures', 'Chiusure'],
+    ['/admin/e/e1/config/zones', 'Zone'],
+    ['/admin/e/e1/config/pools', 'Pool'],
+    ['/admin/e/e1/config/catalog', 'Catalogo'],
+    ['/admin/e/e1/config/team', 'Utenti'],
+    ['/admin/e/e1/maps', 'Mappe'],
+    ['/admin/e/e1/maps/m1', 'Editor della mappa'],
+    ['/admin/e/e1/setup', 'Configurazione guidata'],
+    ['/admin/e/e1/pricing', 'Prezzi'],
+    ['/admin/e/e1/pricing/simulator', 'Simulatore prezzi'],
+    ['/admin/e/e1/pricing/matrix', 'Matrice di listino'],
+    ['/admin/e/e1/pricing/coverage', 'Verifica di copertura'],
+    ['/admin/e/e1/policies', 'Policy di prenotazione'],
+    ['/admin/establishments/new', 'Nuovo stabilimento'],
+  ])('%s renders its feature page', async (path, title) => {
+    setup(path, routes);
+    expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeInTheDocument();
+  });
+
+  it('redirects /e/:id to the establishment settings', async () => {
+    const { history } = setup('/admin/e/e1', routes);
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e1/config/establishment'));
+  });
+
+  it('shows the configuration menu of the current establishment', async () => {
+    setup('/admin/e/e2/config/seasons', routes);
+    const nav = await screen.findByRole('navigation', {
+      name: 'Configurazione dello stabilimento',
+    });
+    expect(await within(nav).findByText('Lido Due')).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Stagioni e periodi' })).toHaveAttribute(
+      'href',
+      '/admin/e/e2/config/seasons',
+    );
+    expect(within(nav).getByRole('link', { name: 'Utenti' })).toBeInTheDocument();
+  });
+
+  it('hides owner-only entries from managers', async () => {
+    setup('/admin/e/e1/config/seasons', {
+      ...routes,
+      'GET /api/admin/v1/auth/me': () =>
+        json(200, {
+          ...ME,
+          memberships: [{ organization_id: 'o1', role: 'manager', permissions: [] }],
+        }),
+    });
+    const nav = await screen.findByRole('navigation', {
+      name: 'Configurazione dello stabilimento',
+    });
+    expect(within(nav).queryByRole('link', { name: 'Utenti' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: '+ Nuovo stabilimento' })).not.toBeInTheDocument();
+  });
+
+  it('switches establishment keeping the section', async () => {
+    const user = userEvent.setup();
+    const { history } = setup('/admin/e/e1/pricing', routes);
+    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
+    await screen.findByRole('option', { name: 'Lido Due' });
+    await user.selectOptions(select, 'e2');
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/pricing'));
+  });
+
+  it('switches from a map document to the maps list', async () => {
+    const user = userEvent.setup();
+    const { history } = setup('/admin/e/e1/maps/m1', routes);
+    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
+    await screen.findByRole('option', { name: 'Lido Due' });
+    await user.selectOptions(select, 'e2');
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/maps'));
+  });
+
+  it('opens the new establishment page from the switcher (owners)', async () => {
+    const user = userEvent.setup();
+    const { history } = setup('/admin/oggi', routes);
+    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
+    await screen.findByRole('option', { name: 'Lido Demo' });
+    await user.selectOptions(select, '__new__');
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/establishments/new'));
+  });
+
+  it('goes to the establishment settings when switching from a global page', async () => {
+    const user = userEvent.setup();
+    const { history } = setup('/admin/oggi', routes);
+    const select = await screen.findByRole('combobox', { name: 'Stabilimento' });
+    await screen.findByRole('option', { name: 'Lido Due' });
+    await user.selectOptions(select, 'e2');
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/config/establishment'));
   });
 });
 

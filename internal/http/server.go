@@ -18,7 +18,13 @@ import (
 
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/season"
+	"github.com/coste360/arenile/internal/domain/setup"
+	"github.com/coste360/arenile/internal/domain/team"
 	"github.com/coste360/arenile/internal/http/admin"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/middleware"
@@ -45,6 +51,14 @@ type Deps struct {
 	Version        string
 	Auth           *auth.Service
 	Establishments *establishment.Service
+	// Configuration services (M1/M2); nil ones answer as not configured.
+	Team           *team.Service
+	Seasons        *season.Service
+	Mapping        *mapping.Service
+	Catalog        *catalog.Service
+	Pricing        *pricingconfig.Service
+	Policies       *pricingconfig.PolicyService
+	Setup          *setup.Service
 	Bus            ext.EventBus
 	Readiness      ReadinessChecker
 	TrustedProxies []netip.Prefix
@@ -127,6 +141,8 @@ func New(d Deps) http.Handler {
 	srv := &server{
 		Handlers: &admin.Handlers{
 			Auth: d.Auth, Establishments: d.Establishments, Log: d.Log, SecureCookies: d.SecureCookies,
+			Team: d.Team, Seasons: d.Seasons, Mapping: d.Mapping, Catalog: d.Catalog,
+			Pricing: d.Pricing, Policies: d.Policies, Setup: d.Setup,
 			Stream: &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
 		},
 		public: &public.Handlers{Establishments: d.Establishments, TenantResolver: d.Extensions.TenantResolver, Log: d.Log},

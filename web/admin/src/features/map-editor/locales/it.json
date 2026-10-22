@@ -1,0 +1,10 @@
+{
+  "maps": {
+    "title": "Mappe",
+    "description": "Elenco delle mappe dello stabilimento."
+  },
+  "editor": {
+    "title": "Editor della mappa",
+    "description": "Generatore di file, postazioni, decorazioni e salvataggio con controllo di versione."
+  }
+}

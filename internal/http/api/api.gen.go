@@ -9,10 +9,185 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/coste360/arenile/internal/calendar"
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
+
+// Defines values for AmountPer.
+const (
+	AmountPerBooking AmountPer = "booking"
+	AmountPerDay     AmountPer = "day"
+	AmountPerLine    AmountPer = "line"
+)
+
+// Valid indicates whether the value is a known member of the AmountPer enum.
+func (e AmountPer) Valid() bool {
+	switch e {
+	case AmountPerBooking:
+		return true
+	case AmountPerDay:
+		return true
+	case AmountPerLine:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AssignmentMode.
+const (
+	AssignmentModeQuantity AssignmentMode = "quantity"
+	AssignmentModeSeat     AssignmentMode = "seat"
+	AssignmentModeZone     AssignmentMode = "zone"
+)
+
+// Valid indicates whether the value is a known member of the AssignmentMode enum.
+func (e AssignmentMode) Valid() bool {
+	switch e {
+	case AssignmentModeQuantity:
+		return true
+	case AssignmentModeSeat:
+		return true
+	case AssignmentModeZone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for Channel.
+const (
+	Api    Channel = "api"
+	Desk   Channel = "desk"
+	Online Channel = "online"
+)
+
+// Valid indicates whether the value is a known member of the Channel enum.
+func (e Channel) Valid() bool {
+	switch e {
+	case Api:
+		return true
+	case Desk:
+		return true
+	case Online:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DecorationKind.
+const (
+	DecorationKindBar        DecorationKind = "bar"
+	DecorationKindCabinBlock DecorationKind = "cabin_block"
+	DecorationKindCustom     DecorationKind = "custom"
+	DecorationKindEntrance   DecorationKind = "entrance"
+	DecorationKindLifeguard  DecorationKind = "lifeguard"
+	DecorationKindShower     DecorationKind = "shower"
+	DecorationKindText       DecorationKind = "text"
+	DecorationKindWalkway    DecorationKind = "walkway"
+)
+
+// Valid indicates whether the value is a known member of the DecorationKind enum.
+func (e DecorationKind) Valid() bool {
+	switch e {
+	case DecorationKindBar:
+		return true
+	case DecorationKindCabinBlock:
+		return true
+	case DecorationKindCustom:
+		return true
+	case DecorationKindEntrance:
+		return true
+	case DecorationKindLifeguard:
+		return true
+	case DecorationKindShower:
+		return true
+	case DecorationKindText:
+		return true
+	case DecorationKindWalkway:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ExtraAttachTo.
+const (
+	ExtraAttachToBooking ExtraAttachTo = "booking"
+	ExtraAttachToLine    ExtraAttachTo = "line"
+)
+
+// Valid indicates whether the value is a known member of the ExtraAttachTo enum.
+func (e ExtraAttachTo) Valid() bool {
+	switch e {
+	case ExtraAttachToBooking:
+		return true
+	case ExtraAttachToLine:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FixedFormula.
+const (
+	FixedFormulaFortnight FixedFormula = "fortnight"
+	FixedFormulaMonth     FixedFormula = "month"
+	FixedFormulaSeason    FixedFormula = "season"
+	FixedFormulaWeek      FixedFormula = "week"
+)
+
+// Valid indicates whether the value is a known member of the FixedFormula enum.
+func (e FixedFormula) Valid() bool {
+	switch e {
+	case FixedFormulaFortnight:
+		return true
+	case FixedFormulaMonth:
+		return true
+	case FixedFormulaSeason:
+		return true
+	case FixedFormulaWeek:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for Formula.
+const (
+	FormulaDay       Formula = "day"
+	FormulaFortnight Formula = "fortnight"
+	FormulaHalfDay   Formula = "half_day"
+	FormulaMonth     Formula = "month"
+	FormulaMultiDay  Formula = "multi_day"
+	FormulaSeason    Formula = "season"
+	FormulaWeek      Formula = "week"
+)
+
+// Valid indicates whether the value is a known member of the Formula enum.
+func (e Formula) Valid() bool {
+	switch e {
+	case FormulaDay:
+		return true
+	case FormulaFortnight:
+		return true
+	case FormulaHalfDay:
+		return true
+	case FormulaMonth:
+		return true
+	case FormulaMultiDay:
+		return true
+	case FormulaSeason:
+		return true
+	case FormulaWeek:
+		return true
+	default:
+		return false
+	}
+}
 
 // Defines values for HealthStatusStatus.
 const (
@@ -23,6 +198,24 @@ const (
 func (e HealthStatusStatus) Valid() bool {
 	switch e {
 	case HealthStatusStatusOk:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MapBackgroundType.
+const (
+	Geojson MapBackgroundType = "geojson"
+	Image   MapBackgroundType = "image"
+)
+
+// Valid indicates whether the value is a known member of the MapBackgroundType enum.
+func (e MapBackgroundType) Valid() bool {
+	switch e {
+	case Geojson:
+		return true
+	case Image:
 		return true
 	default:
 		return false
@@ -41,6 +234,24 @@ func (e MePrincipalType) Valid() bool {
 	case MePrincipalTypeApiKey:
 		return true
 	case MePrincipalTypeUser:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OnlineQuotaType.
+const (
+	OnlineQuotaTypeCount   OnlineQuotaType = "count"
+	OnlineQuotaTypePercent OnlineQuotaType = "percent"
+)
+
+// Valid indicates whether the value is a known member of the OnlineQuotaType enum.
+func (e OnlineQuotaType) Valid() bool {
+	switch e {
+	case OnlineQuotaTypeCount:
+		return true
+	case OnlineQuotaTypePercent:
 		return true
 	default:
 		return false
@@ -86,30 +297,220 @@ func (e Permission) Valid() bool {
 	}
 }
 
+// Defines values for PolicyCancellationTierAs.
+const (
+	PolicyCancellationTierAsCredit PolicyCancellationTierAs = "credit"
+	PolicyCancellationTierAsRefund PolicyCancellationTierAs = "refund"
+)
+
+// Valid indicates whether the value is a known member of the PolicyCancellationTierAs enum.
+func (e PolicyCancellationTierAs) Valid() bool {
+	switch e {
+	case PolicyCancellationTierAsCredit:
+		return true
+	case PolicyCancellationTierAsRefund:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyDepositType.
+const (
+	PolicyDepositTypeAmount  PolicyDepositType = "amount"
+	PolicyDepositTypePercent PolicyDepositType = "percent"
+)
+
+// Valid indicates whether the value is a known member of the PolicyDepositType enum.
+func (e PolicyDepositType) Valid() bool {
+	switch e {
+	case PolicyDepositTypeAmount:
+		return true
+	case PolicyDepositTypePercent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyPaymentMode.
+const (
+	PolicyPaymentModeDeposit PolicyPaymentMode = "deposit"
+	PolicyPaymentModeFull    PolicyPaymentMode = "full"
+	PolicyPaymentModeNone    PolicyPaymentMode = "none"
+)
+
+// Valid indicates whether the value is a known member of the PolicyPaymentMode enum.
+func (e PolicyPaymentMode) Valid() bool {
+	switch e {
+	case PolicyPaymentModeDeposit:
+		return true
+	case PolicyPaymentModeFull:
+		return true
+	case PolicyPaymentModeNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicySameDayBookingOnlySlot.
+const (
+	PolicySameDayBookingOnlySlotAM      PolicySameDayBookingOnlySlot = "AM"
+	PolicySameDayBookingOnlySlotPM      PolicySameDayBookingOnlySlot = "PM"
+	PolicySameDayBookingOnlySlotPMAfter PolicySameDayBookingOnlySlot = "PM_after"
+)
+
+// Valid indicates whether the value is a known member of the PolicySameDayBookingOnlySlot enum.
+func (e PolicySameDayBookingOnlySlot) Valid() bool {
+	switch e {
+	case PolicySameDayBookingOnlySlotAM:
+		return true
+	case PolicySameDayBookingOnlySlotPM:
+		return true
+	case PolicySameDayBookingOnlySlotPMAfter:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PolicyWeatherAs.
+const (
+	PolicyWeatherAsCredit PolicyWeatherAs = "credit"
+	PolicyWeatherAsRefund PolicyWeatherAs = "refund"
+)
+
+// Valid indicates whether the value is a known member of the PolicyWeatherAs enum.
+func (e PolicyWeatherAs) Valid() bool {
+	switch e {
+	case PolicyWeatherAsCredit:
+		return true
+	case PolicyWeatherAsRefund:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PriceActionType.
+const (
+	Add        PriceActionType = "add"
+	AmountOff  PriceActionType = "amount_off"
+	FreeDays   PriceActionType = "free_days"
+	Multiply   PriceActionType = "multiply"
+	PercentOff PriceActionType = "percent_off"
+	Set        PriceActionType = "set"
+)
+
+// Valid indicates whether the value is a known member of the PriceActionType enum.
+func (e PriceActionType) Valid() bool {
+	switch e {
+	case Add:
+		return true
+	case AmountOff:
+		return true
+	case FreeDays:
+		return true
+	case Multiply:
+		return true
+	case PercentOff:
+		return true
+	case Set:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PriceStage.
+const (
+	Base     PriceStage = "base"
+	Discount PriceStage = "discount"
+	Modifier PriceStage = "modifier"
+)
+
+// Valid indicates whether the value is a known member of the PriceStage enum.
+func (e PriceStage) Valid() bool {
+	switch e {
+	case Base:
+		return true
+	case Discount:
+		return true
+	case Modifier:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PriceTargetType.
+const (
+	PriceTargetTypeExtra PriceTargetType = "extra"
+	PriceTargetTypePack  PriceTargetType = "pack"
+)
+
+// Valid indicates whether the value is a known member of the PriceTargetType enum.
+func (e PriceTargetType) Valid() bool {
+	switch e {
+	case PriceTargetTypeExtra:
+		return true
+	case PriceTargetTypePack:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PricingUnit.
+const (
+	PerBooking PricingUnit = "per_booking"
+	PerDay     PricingUnit = "per_day"
+	PerSlot    PricingUnit = "per_slot"
+)
+
+// Valid indicates whether the value is a known member of the PricingUnit enum.
+func (e PricingUnit) Valid() bool {
+	switch e {
+	case PerBooking:
+		return true
+	case PerDay:
+		return true
+	case PerSlot:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProblemType.
 const (
-	ProblemTypeBadRequest            ProblemType = "bad_request"
-	ProblemTypeConflict              ProblemType = "conflict"
-	ProblemTypeCsrfFailed            ProblemType = "csrf_failed"
-	ProblemTypeForbidden             ProblemType = "forbidden"
-	ProblemTypeHoldExpired           ProblemType = "hold_expired"
-	ProblemTypeIdempotencyInProgress ProblemType = "idempotency_in_progress"
-	ProblemTypeIdempotencyKeyReused  ProblemType = "idempotency_key_reused"
-	ProblemTypeInternalError         ProblemType = "internal_error"
-	ProblemTypeInvalidCredentials    ProblemType = "invalid_credentials"
-	ProblemTypeInvalidTotp           ProblemType = "invalid_totp"
-	ProblemTypeMethodNotAllowed      ProblemType = "method_not_allowed"
-	ProblemTypeNoPrice               ProblemType = "no_price"
-	ProblemTypeNotFound              ProblemType = "not_found"
-	ProblemTypePolicyViolation       ProblemType = "policy_violation"
-	ProblemTypeRateLimited           ProblemType = "rate_limited"
-	ProblemTypeSpotUnavailable       ProblemType = "spot_unavailable"
-	ProblemTypeTotpAlreadyEnabled    ProblemType = "totp_already_enabled"
-	ProblemTypeTotpEnrolmentRequired ProblemType = "totp_enrolment_required"
-	ProblemTypeTotpRequired          ProblemType = "totp_required"
-	ProblemTypeUnauthorized          ProblemType = "unauthorized"
-	ProblemTypeUnsupportedMediaType  ProblemType = "unsupported_media_type"
-	ProblemTypeValidationFailed      ProblemType = "validation_failed"
+	ProblemTypeBadRequest               ProblemType = "bad_request"
+	ProblemTypeConflict                 ProblemType = "conflict"
+	ProblemTypeCsrfFailed               ProblemType = "csrf_failed"
+	ProblemTypeForbidden                ProblemType = "forbidden"
+	ProblemTypeHoldExpired              ProblemType = "hold_expired"
+	ProblemTypeIdempotencyInProgress    ProblemType = "idempotency_in_progress"
+	ProblemTypeIdempotencyKeyReused     ProblemType = "idempotency_key_reused"
+	ProblemTypeInternalError            ProblemType = "internal_error"
+	ProblemTypeInvalidCredentials       ProblemType = "invalid_credentials"
+	ProblemTypeInvalidTotp              ProblemType = "invalid_totp"
+	ProblemTypeMethodNotAllowed         ProblemType = "method_not_allowed"
+	ProblemTypeNoPrice                  ProblemType = "no_price"
+	ProblemTypeNotFound                 ProblemType = "not_found"
+	ProblemTypeNotImplemented           ProblemType = "not_implemented"
+	ProblemTypePolicyViolation          ProblemType = "policy_violation"
+	ProblemTypePreconditionRequired     ProblemType = "precondition_required"
+	ProblemTypeRateLimited              ProblemType = "rate_limited"
+	ProblemTypeSpotHasFutureAllocations ProblemType = "spot_has_future_allocations"
+	ProblemTypeSpotUnavailable          ProblemType = "spot_unavailable"
+	ProblemTypeTotpAlreadyEnabled       ProblemType = "totp_already_enabled"
+	ProblemTypeTotpEnrolmentRequired    ProblemType = "totp_enrolment_required"
+	ProblemTypeTotpRequired             ProblemType = "totp_required"
+	ProblemTypeUnauthorized             ProblemType = "unauthorized"
+	ProblemTypeUnsupportedMediaType     ProblemType = "unsupported_media_type"
+	ProblemTypeValidationFailed         ProblemType = "validation_failed"
+	ProblemTypeVersionConflict          ProblemType = "version_conflict"
 )
 
 // Valid indicates whether the value is a known member of the ProblemType enum.
@@ -141,9 +542,15 @@ func (e ProblemType) Valid() bool {
 		return true
 	case ProblemTypeNotFound:
 		return true
+	case ProblemTypeNotImplemented:
+		return true
 	case ProblemTypePolicyViolation:
 		return true
+	case ProblemTypePreconditionRequired:
+		return true
 	case ProblemTypeRateLimited:
+		return true
+	case ProblemTypeSpotHasFutureAllocations:
 		return true
 	case ProblemTypeSpotUnavailable:
 		return true
@@ -158,6 +565,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeUnsupportedMediaType:
 		return true
 	case ProblemTypeValidationFailed:
+		return true
+	case ProblemTypeVersionConflict:
 		return true
 	default:
 		return false
@@ -209,6 +618,252 @@ func (e Role) Valid() bool {
 	}
 }
 
+// Defines values for Rounding.
+const (
+	RoundingEuro       Rounding = "euro"
+	RoundingFiftyCents Rounding = "fifty_cents"
+	RoundingNone       Rounding = "none"
+)
+
+// Valid indicates whether the value is a known member of the Rounding enum.
+func (e Rounding) Valid() bool {
+	switch e {
+	case RoundingEuro:
+		return true
+	case RoundingFiftyCents:
+		return true
+	case RoundingNone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RowGeneratorRequestDirection.
+const (
+	Ltr RowGeneratorRequestDirection = "ltr"
+	Rtl RowGeneratorRequestDirection = "rtl"
+)
+
+// Valid indicates whether the value is a known member of the RowGeneratorRequestDirection enum.
+func (e RowGeneratorRequestDirection) Valid() bool {
+	switch e {
+	case Ltr:
+		return true
+	case Rtl:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RowGeneratorRequestNumbering.
+const (
+	Continuous RowGeneratorRequestNumbering = "continuous"
+	PerRow     RowGeneratorRequestNumbering = "per_row"
+)
+
+// Valid indicates whether the value is a known member of the RowGeneratorRequestNumbering enum.
+func (e RowGeneratorRequestNumbering) Valid() bool {
+	switch e {
+	case Continuous:
+		return true
+	case PerRow:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RowGeneratorRequestRowLabelStyle.
+const (
+	Letters RowGeneratorRequestRowLabelStyle = "letters"
+	Numbers RowGeneratorRequestRowLabelStyle = "numbers"
+)
+
+// Valid indicates whether the value is a known member of the RowGeneratorRequestRowLabelStyle enum.
+func (e RowGeneratorRequestRowLabelStyle) Valid() bool {
+	switch e {
+	case Letters:
+		return true
+	case Numbers:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SeaSide.
+const (
+	Bottom SeaSide = "bottom"
+	Left   SeaSide = "left"
+	Right  SeaSide = "right"
+	Top    SeaSide = "top"
+)
+
+// Valid indicates whether the value is a known member of the SeaSide enum.
+func (e SeaSide) Valid() bool {
+	switch e {
+	case Bottom:
+		return true
+	case Left:
+		return true
+	case Right:
+		return true
+	case Top:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SeasonStatus.
+const (
+	Active SeasonStatus = "active"
+	Closed SeasonStatus = "closed"
+	Draft  SeasonStatus = "draft"
+)
+
+// Valid indicates whether the value is a known member of the SeasonStatus enum.
+func (e SeasonStatus) Valid() bool {
+	switch e {
+	case Active:
+		return true
+	case Closed:
+		return true
+	case Draft:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SetupTemplateCode.
+const (
+	ClassicRows   SetupTemplateCode = "classic_rows"
+	Empty         SetupTemplateCode = "empty"
+	LidoWithPool  SetupTemplateCode = "lido_with_pool"
+	QuantityBeach SetupTemplateCode = "quantity_beach"
+)
+
+// Valid indicates whether the value is a known member of the SetupTemplateCode enum.
+func (e SetupTemplateCode) Valid() bool {
+	switch e {
+	case ClassicRows:
+		return true
+	case Empty:
+		return true
+	case LidoWithPool:
+		return true
+	case QuantityBeach:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ShapeType.
+const (
+	Circle ShapeType = "circle"
+	Rect   ShapeType = "rect"
+)
+
+// Valid indicates whether the value is a known member of the ShapeType enum.
+func (e ShapeType) Valid() bool {
+	switch e {
+	case Circle:
+		return true
+	case Rect:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for Slot.
+const (
+	SlotAM Slot = "AM"
+	SlotPM Slot = "PM"
+)
+
+// Valid indicates whether the value is a known member of the Slot enum.
+func (e Slot) Valid() bool {
+	switch e {
+	case SlotAM:
+		return true
+	case SlotPM:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for Slots.
+const (
+	SlotsAM   Slots = "AM"
+	SlotsFULL Slots = "FULL"
+	SlotsPM   Slots = "PM"
+)
+
+// Valid indicates whether the value is a known member of the Slots enum.
+func (e Slots) Valid() bool {
+	switch e {
+	case SlotsAM:
+		return true
+	case SlotsFULL:
+		return true
+	case SlotsPM:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SpotKind.
+const (
+	SpotKindCustom   SpotKind = "custom"
+	SpotKindGazebo   SpotKind = "gazebo"
+	SpotKindPalm     SpotKind = "palm"
+	SpotKindTent     SpotKind = "tent"
+	SpotKindUmbrella SpotKind = "umbrella"
+)
+
+// Valid indicates whether the value is a known member of the SpotKind enum.
+func (e SpotKind) Valid() bool {
+	switch e {
+	case SpotKindCustom:
+		return true
+	case SpotKindGazebo:
+		return true
+	case SpotKindPalm:
+		return true
+	case SpotKindTent:
+		return true
+	case SpotKindUmbrella:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TeamScope.
+const (
+	TeamScopeEstablishment TeamScope = "establishment"
+	TeamScopeOrganization  TeamScope = "organization"
+)
+
+// Valid indicates whether the value is a known member of the TeamScope enum.
+func (e TeamScope) Valid() bool {
+	switch e {
+	case TeamScopeEstablishment:
+		return true
+	case TeamScopeOrganization:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ThemeFontFamily.
 const (
 	Inter  ThemeFontFamily = "Inter"
@@ -232,22 +887,22 @@ func (e ThemeFontFamily) Valid() bool {
 
 // Defines values for ThemeRadius.
 const (
-	Lg   ThemeRadius = "lg"
-	Md   ThemeRadius = "md"
-	None ThemeRadius = "none"
-	Sm   ThemeRadius = "sm"
+	ThemeRadiusLg   ThemeRadius = "lg"
+	ThemeRadiusMd   ThemeRadius = "md"
+	ThemeRadiusNone ThemeRadius = "none"
+	ThemeRadiusSm   ThemeRadius = "sm"
 )
 
 // Valid indicates whether the value is a known member of the ThemeRadius enum.
 func (e ThemeRadius) Valid() bool {
 	switch e {
-	case Lg:
+	case ThemeRadiusLg:
 		return true
-	case Md:
+	case ThemeRadiusMd:
 		return true
-	case None:
+	case ThemeRadiusNone:
 		return true
-	case Sm:
+	case ThemeRadiusSm:
 		return true
 	default:
 		return false
@@ -263,6 +918,69 @@ type Address struct {
 	Street     *string `json:"street,omitempty"`
 }
 
+// Agreement Convenzione: come un codice promozionale, ma assegnata a un cliente o a un partner (hotel).
+type Agreement struct {
+	// Action Azione di prezzo (spec 8.3).
+	Action PriceAction `json:"action"`
+	Active bool        `json:"active"`
+
+	// Code Assente = solo selezione dal pannello.
+	Code *string `json:"code,omitempty"`
+
+	// Conditions Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+	Conditions  PriceConditions `json:"conditions"`
+	CreatedAt   time.Time       `json:"created_at"`
+	Id          string          `json:"id"`
+	Name        string          `json:"name"`
+	Notes       string          `json:"notes"`
+	PartnerName string          `json:"partner_name"`
+	Stackable   bool            `json:"stackable"`
+	UpdatedAt   time.Time       `json:"updated_at"`
+
+	// ValidFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidFrom *Date `json:"valid_from,omitempty"`
+
+	// ValidTo Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidTo *Date `json:"valid_to,omitempty"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// AgreementInput defines model for AgreementInput.
+type AgreementInput struct {
+	// Action Azione di prezzo (spec 8.3).
+	Action PriceAction `json:"action"`
+	Active *bool       `json:"active,omitempty"`
+
+	// Code Assente = solo selezione dal pannello.
+	Code *string `json:"code,omitempty"`
+
+	// Conditions Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+	Conditions  *PriceConditions `json:"conditions,omitempty"`
+	Name        string           `json:"name"`
+	Notes       *string          `json:"notes,omitempty"`
+	PartnerName *string          `json:"partner_name,omitempty"`
+	Stackable   *bool            `json:"stackable,omitempty"`
+
+	// ValidFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidFrom *Date `json:"valid_from,omitempty"`
+
+	// ValidTo Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidTo *Date `json:"valid_to,omitempty"`
+}
+
+// AgreementList defines model for AgreementList.
+type AgreementList struct {
+	Items []Agreement `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// AmountPer defines model for AmountPer.
+type AmountPer string
+
 // ApiKeyInfo defines model for ApiKeyInfo.
 type ApiKeyInfo struct {
 	EstablishmentId string       `json:"establishment_id"`
@@ -270,6 +988,278 @@ type ApiKeyInfo struct {
 	Name            string       `json:"name"`
 	Prefix          string       `json:"prefix"`
 	Scopes          []Permission `json:"scopes"`
+}
+
+// AppliedRule defines model for AppliedRule.
+type AppliedRule struct {
+	Effect string     `json:"effect"`
+	Rule   string     `json:"rule"`
+	Stage  PriceStage `json:"stage"`
+}
+
+// ApplyTemplateRequest defines model for ApplyTemplateRequest.
+type ApplyTemplateRequest struct {
+	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ClosesOn *Date `json:"closes_on,omitempty"`
+
+	// MapName Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	MapName *I18nText `json:"map_name,omitempty"`
+
+	// OpensOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	OpensOn     *Date `json:"opens_on,omitempty"`
+	Rows        *int  `json:"rows,omitempty"`
+	SeasonYear  *int  `json:"season_year,omitempty"`
+	SpotsPerRow *int  `json:"spots_per_row,omitempty"`
+
+	// Template Modelli di spec 15.2.
+	Template SetupTemplateCode `json:"template"`
+}
+
+// ApplyTemplateResult defines model for ApplyTemplateResult.
+type ApplyTemplateResult struct {
+	ComponentIds  []string `json:"component_ids"`
+	ExtraIds      []string `json:"extra_ids"`
+	MapId         *string  `json:"map_id,omitempty"`
+	PackIds       []string `json:"pack_ids"`
+	PoolIds       []string `json:"pool_ids"`
+	RatePeriodIds []string `json:"rate_period_ids"`
+	SeasonId      *string  `json:"season_id,omitempty"`
+	SpotsCreated  int      `json:"spots_created"`
+
+	// Template Modelli di spec 15.2.
+	Template SetupTemplateCode `json:"template"`
+	ZoneIds  []string          `json:"zone_ids"`
+}
+
+// AssignmentMode Modalità di assegnazione della zona (spec 5.2).
+type AssignmentMode string
+
+// BasisPoints Aliquota in punti base (2200 = 22%).
+type BasisPoints = int64
+
+// BookingPolicy Policy di prenotazione con ambito e priorità (spec 9).
+type BookingPolicy struct {
+	Active    bool      `json:"active"`
+	CreatedAt time.Time `json:"created_at"`
+	Id        string    `json:"id"`
+	Name      string    `json:"name"`
+	Priority  int       `json:"priority"`
+
+	// Rules Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default.
+	Rules PolicyRules `json:"rules"`
+
+	// Scope Ambito della policy; dimensioni vuote = tutto.
+	Scope     PolicyScope `json:"scope"`
+	SeasonId  string      `json:"season_id"`
+	UpdatedAt time.Time   `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// BookingPolicyInput defines model for BookingPolicyInput.
+type BookingPolicyInput struct {
+	Active   *bool  `json:"active,omitempty"`
+	Name     string `json:"name"`
+	Priority *int   `json:"priority,omitempty"`
+
+	// Rules Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default.
+	Rules PolicyRules `json:"rules"`
+
+	// Scope Ambito della policy; dimensioni vuote = tutto.
+	Scope    PolicyScope `json:"scope"`
+	SeasonId string      `json:"season_id"`
+}
+
+// BookingPolicyList defines model for BookingPolicyList.
+type BookingPolicyList struct {
+	Items []BookingPolicy `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// CapacityOverride defines model for CapacityOverride.
+type CapacityOverride struct {
+	Capacity int `json:"capacity"`
+
+	// From Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	From Date `json:"from"`
+
+	// To Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	To Date `json:"to"`
+}
+
+// Channel Canale di vendita.
+type Channel string
+
+// ClosureDay Giorno di chiusura straordinaria (maltempo, eventi).
+type ClosureDay struct {
+	CreatedAt time.Time `json:"created_at"`
+
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date      Date      `json:"date"`
+	Id        string    `json:"id"`
+	Reason    string    `json:"reason"`
+	Slots     []Slot    `json:"slots"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// ClosureDayInput defines model for ClosureDayInput.
+type ClosureDayInput struct {
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date   Date    `json:"date"`
+	Reason *string `json:"reason,omitempty"`
+	Slots  []Slot  `json:"slots"`
+}
+
+// ClosureDayList defines model for ClosureDayList.
+type ClosureDayList struct {
+	Items []ClosureDay `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// Component Componente fisico di inventario.
+type Component struct {
+	Code      string    `json:"code"`
+	CreatedAt time.Time `json:"created_at"`
+	Id        string    `json:"id"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name I18nText `json:"name"`
+
+	// PoolId Pool da cui consumare se tracked.
+	PoolId    *string   `json:"pool_id,omitempty"`
+	Tracked   bool      `json:"tracked"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// ComponentInput defines model for ComponentInput.
+type ComponentInput struct {
+	Code string `json:"code"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name I18nText `json:"name"`
+
+	// PoolId Pool da cui consumare se tracked.
+	PoolId  *string `json:"pool_id,omitempty"`
+	Tracked bool    `json:"tracked"`
+}
+
+// ComponentList defines model for ComponentList.
+type ComponentList struct {
+	Items []Component `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// ComponentQuantities Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+type ComponentQuantities map[string]int
+
+// CoverageGap defines model for CoverageGap.
+type CoverageGap struct {
+	// Channel Canale di vendita.
+	Channel Channel `json:"channel"`
+
+	// From Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	From          Date   `json:"from"`
+	PackId        string `json:"pack_id"`
+	PriceCategory string `json:"price_category"`
+
+	// To Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	To Date `json:"to"`
+}
+
+// CoverageReport defines model for CoverageReport.
+type CoverageReport struct {
+	Complete bool `json:"complete"`
+
+	// From Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	From     Date          `json:"from"`
+	Gaps     []CoverageGap `json:"gaps"`
+	SeasonId string        `json:"season_id"`
+
+	// To Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	To Date `json:"to"`
+}
+
+// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+type Date = calendar.Date
+
+// DateRange Intervallo inclusivo.
+type DateRange struct {
+	// From Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	From Date `json:"from"`
+
+	// To Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	To Date `json:"to"`
+}
+
+// DayBreakdown defines model for DayBreakdown.
+type DayBreakdown struct {
+	Applied []AppliedRule `json:"applied"`
+
+	// Base Importo in centesimi di euro (IVA inclusa).
+	Base Money `json:"base"`
+
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date Date `json:"date"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money `json:"total"`
+}
+
+// Decimal Numero decimale esatto come stringa (es. "1.2", "0.5", "10"). Mai float nel calcolo.
+type Decimal = string
+
+// Decoration Elemento decorativo non prenotabile.
+type Decoration struct {
+	Id   string         `json:"id"`
+	Kind DecorationKind `json:"kind"`
+
+	// Label Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Label    *I18nText `json:"label,omitempty"`
+	MapId    string    `json:"map_id"`
+	Rotation float64   `json:"rotation"`
+	Shape    Shape     `json:"shape"`
+	X        float64   `json:"x"`
+	Y        float64   `json:"y"`
+}
+
+// DecorationInput defines model for DecorationInput.
+type DecorationInput struct {
+	// Id Assente = nuovo elemento.
+	Id   *string        `json:"id,omitempty"`
+	Kind DecorationKind `json:"kind"`
+
+	// Label Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Label    *I18nText `json:"label,omitempty"`
+	Rotation *float64  `json:"rotation,omitempty"`
+	Shape    Shape     `json:"shape"`
+	X        float64   `json:"x"`
+	Y        float64   `json:"y"`
+}
+
+// DecorationKind defines model for DecorationKind.
+type DecorationKind string
+
+// DiscountBreakdown defines model for DiscountBreakdown.
+type DiscountBreakdown struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount Money  `json:"amount"`
+	Source string `json:"source"`
 }
 
 // Establishment defines model for Establishment.
@@ -289,12 +1279,40 @@ type Establishment struct {
 	Id                  string     `json:"id"`
 	Name                string     `json:"name"`
 	OrganizationId      string     `json:"organization_id"`
-	Slug                string     `json:"slug"`
+
+	// Settings Impostazioni versionate. In scrittura sostituisce l'intero documento.
+	Settings EstablishmentSettings `json:"settings"`
+	Slug     string                `json:"slug"`
 
 	// Theme Tema della pagina pubblica (specifica 12.5).
 	Theme     Theme     `json:"theme"`
 	Timezone  string    `json:"timezone"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// EstablishmentCreate defines model for EstablishmentCreate.
+type EstablishmentCreate struct {
+	Address      *Address `json:"address,omitempty"`
+	ContactEmail *string  `json:"contact_email,omitempty"`
+	ContactPhone *string  `json:"contact_phone,omitempty"`
+
+	// Currency Default EUR.
+	Currency *string `json:"currency,omitempty"`
+
+	// DefaultLocale Default it.
+	DefaultLocale  *string   `json:"default_locale,omitempty"`
+	EnabledLocales *[]string `json:"enabled_locales,omitempty"`
+	Name           string    `json:"name"`
+
+	// OrganizationId Obbligatorio se l'utente è proprietario di più organizzazioni.
+	OrganizationId *string `json:"organization_id,omitempty"`
+	Slug           string  `json:"slug"`
+
+	// Timezone Default Europe/Rome.
+	Timezone *string `json:"timezone,omitempty"`
 }
 
 // EstablishmentList defines model for EstablishmentList.
@@ -305,11 +1323,182 @@ type EstablishmentList struct {
 	NextCursor *string `json:"next_cursor,omitempty"`
 }
 
+// EstablishmentSettings Impostazioni versionate. In scrittura sostituisce l'intero documento.
+type EstablishmentSettings struct {
+	// DefaultPolicy Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default.
+	DefaultPolicy PolicyRules `json:"default_policy"`
+
+	// Pricing Impostazioni dei prezzi dello stabilimento (spec 8.1, 8.5).
+	Pricing PricingSettings `json:"pricing"`
+}
+
+// EstablishmentUpdate Aggiornamento parziale: solo i campi presenti vengono modificati.
+type EstablishmentUpdate struct {
+	Address             *Address  `json:"address,omitempty"`
+	AllowedEmbedOrigins *[]string `json:"allowed_embed_origins,omitempty"`
+
+	// Archived true archivia lo stabilimento, false lo ripristina.
+	Archived       *bool `json:"archived,omitempty"`
+	BookingEnabled *bool `json:"booking_enabled,omitempty"`
+
+	// ConcessionRef Stringa vuota per rimuovere.
+	ConcessionRef  *string   `json:"concession_ref,omitempty"`
+	ContactEmail   *string   `json:"contact_email,omitempty"`
+	ContactPhone   *string   `json:"contact_phone,omitempty"`
+	Currency       *string   `json:"currency,omitempty"`
+	DefaultLocale  *string   `json:"default_locale,omitempty"`
+	EnabledLocales *[]string `json:"enabled_locales,omitempty"`
+	Geo            *Geo      `json:"geo,omitempty"`
+	Name           *string   `json:"name,omitempty"`
+
+	// Settings Impostazioni versionate. In scrittura sostituisce l'intero documento.
+	Settings *EstablishmentSettings `json:"settings,omitempty"`
+	Slug     *string                `json:"slug,omitempty"`
+
+	// Theme Tema della pagina pubblica (specifica 12.5).
+	Theme    *Theme  `json:"theme,omitempty"`
+	Timezone *string `json:"timezone,omitempty"`
+}
+
+// Extra Aggiunta opzionale a un pack o alla prenotazione.
+type Extra struct {
+	Active         bool          `json:"active"`
+	AllowedPackIds *[]string     `json:"allowed_pack_ids,omitempty"`
+	AttachTo       ExtraAttachTo `json:"attach_to"`
+	Channels       []Channel     `json:"channels"`
+	Code           string        `json:"code"`
+
+	// ComponentCode Componente tracciato consumato, se presente.
+	ComponentCode *string   `json:"component_code,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description I18nText `json:"description"`
+	Id          string   `json:"id"`
+	MaxQuantity int      `json:"max_quantity"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name        I18nText    `json:"name"`
+	PricingUnit PricingUnit `json:"pricing_unit"`
+	SortOrder   int         `json:"sort_order"`
+	UpdatedAt   time.Time   `json:"updated_at"`
+
+	// VatRateBp Aliquota in punti base (2200 = 22%).
+	VatRateBp *BasisPoints `json:"vat_rate_bp,omitempty"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// ExtraAttachTo defines model for ExtraAttachTo.
+type ExtraAttachTo string
+
+// ExtraBreakdown defines model for ExtraBreakdown.
+type ExtraBreakdown struct {
+	Code string `json:"code"`
+	Qty  int    `json:"qty"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money `json:"total"`
+}
+
+// ExtraInput defines model for ExtraInput.
+type ExtraInput struct {
+	Active         *bool         `json:"active,omitempty"`
+	AllowedPackIds *[]string     `json:"allowed_pack_ids,omitempty"`
+	AttachTo       ExtraAttachTo `json:"attach_to"`
+	Channels       []Channel     `json:"channels"`
+	Code           string        `json:"code"`
+
+	// ComponentCode Componente tracciato consumato, se presente.
+	ComponentCode *string `json:"component_code,omitempty"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description *I18nText `json:"description,omitempty"`
+	MaxQuantity *int      `json:"max_quantity,omitempty"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name        I18nText    `json:"name"`
+	PricingUnit PricingUnit `json:"pricing_unit"`
+	SortOrder   *int        `json:"sort_order,omitempty"`
+
+	// VatRateBp Aliquota in punti base (2200 = 22%).
+	VatRateBp *BasisPoints `json:"vat_rate_bp,omitempty"`
+}
+
+// ExtraList defines model for ExtraList.
+type ExtraList struct {
+	Items []Extra `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
 // FieldError defines model for FieldError.
 type FieldError struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
 }
+
+// FixedBreakdown defines model for FixedBreakdown.
+type FixedBreakdown struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount Money `json:"amount"`
+
+	// Formula Formula a durata fissa.
+	Formula    FixedFormula `json:"formula"`
+	RatePeriod *string      `json:"rate_period,omitempty"`
+}
+
+// FixedFormula Formula a durata fissa.
+type FixedFormula string
+
+// FixedPrice Prezzo a pacchetto per settimana, quindicina, mese o stagione.
+type FixedPrice struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount    Money     `json:"amount"`
+	CreatedAt time.Time `json:"created_at"`
+
+	// Formula Formula a durata fissa.
+	Formula       FixedFormula `json:"formula"`
+	Id            string       `json:"id"`
+	PackId        string       `json:"pack_id"`
+	PriceCategory string       `json:"price_category"`
+
+	// RatePeriodCode Assente = valido in ogni periodo.
+	RatePeriodCode *string   `json:"rate_period_code,omitempty"`
+	SeasonId       string    `json:"season_id"`
+	UpdatedAt      time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// FixedPriceInput defines model for FixedPriceInput.
+type FixedPriceInput struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount Money `json:"amount"`
+
+	// Formula Formula a durata fissa.
+	Formula       FixedFormula `json:"formula"`
+	PackId        string       `json:"pack_id"`
+	PriceCategory string       `json:"price_category"`
+
+	// RatePeriodCode Assente = valido in ogni periodo.
+	RatePeriodCode *string `json:"rate_period_code,omitempty"`
+	SeasonId       string  `json:"season_id"`
+}
+
+// FixedPriceList defines model for FixedPriceList.
+type FixedPriceList struct {
+	Items []FixedPrice `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// Formula Formula di durata.
+type Formula string
 
 // Geo defines model for Geo.
 type Geo struct {
@@ -326,11 +1515,106 @@ type HealthStatus struct {
 // HealthStatusStatus defines model for HealthStatus.Status.
 type HealthStatusStatus string
 
+// I18nText Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+type I18nText map[string]string
+
+// IntRange Intervallo intero inclusivo; un estremo assente è aperto.
+type IntRange struct {
+	Max *int `json:"max,omitempty"`
+	Min *int `json:"min,omitempty"`
+}
+
+// LineBreakdown defines model for LineBreakdown.
+type LineBreakdown struct {
+	Days   []DayBreakdown   `json:"days"`
+	Extras []ExtraBreakdown `json:"extras"`
+	Fixed  *FixedBreakdown  `json:"fixed,omitempty"`
+	Pack   string           `json:"pack"`
+	Spot   *string          `json:"spot,omitempty"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money  `json:"total"`
+	Zone  string `json:"zone"`
+}
+
 // LoginRequest defines model for LoginRequest.
 type LoginRequest struct {
 	Email    openapi_types.Email `json:"email"`
 	Password string              `json:"password"`
 	TotpCode *string             `json:"totp_code,omitempty"`
+}
+
+// Map defines model for Map.
+type Map struct {
+	// Background Sfondo opzionale della mappa (spec 11.2).
+	Background *MapBackground `json:"background,omitempty"`
+	CreatedAt  time.Time      `json:"created_at"`
+	GridSize   int            `json:"grid_size"`
+	Height     int            `json:"height"`
+	Id         string         `json:"id"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name      I18nText  `json:"name"`
+	SeaSide   SeaSide   `json:"sea_side"`
+	SortOrder int       `json:"sort_order"`
+	SpotCount int       `json:"spot_count"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+	Width   int     `json:"width"`
+}
+
+// MapBackground Sfondo opzionale della mappa (spec 11.2).
+type MapBackground struct {
+	// Geojson Perimetro GeoJSON (type=geojson).
+	Geojson  *map[string]interface{} `json:"geojson,omitempty"`
+	OffsetX  *float64                `json:"offset_x,omitempty"`
+	OffsetY  *float64                `json:"offset_y,omitempty"`
+	Opacity  *float64                `json:"opacity,omitempty"`
+	Rotation *float64                `json:"rotation,omitempty"`
+	Scale    *float64                `json:"scale,omitempty"`
+	Type     MapBackgroundType       `json:"type"`
+
+	// Url URL dell'immagine (type=image).
+	Url *string `json:"url,omitempty"`
+}
+
+// MapBackgroundType defines model for MapBackground.Type.
+type MapBackgroundType string
+
+// MapDocument Documento completo della mappa; la versione è anche nell'header ETag.
+type MapDocument struct {
+	Decorations []Decoration `json:"decorations"`
+	Map         Map          `json:"map"`
+	Spots       []Spot       `json:"spots"`
+}
+
+// MapInput defines model for MapInput.
+type MapInput struct {
+	// Background Sfondo opzionale della mappa (spec 11.2).
+	Background *MapBackground `json:"background,omitempty"`
+	GridSize   int            `json:"grid_size"`
+	Height     int            `json:"height"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name      I18nText `json:"name"`
+	SeaSide   SeaSide  `json:"sea_side"`
+	SortOrder *int     `json:"sort_order,omitempty"`
+	Width     int      `json:"width"`
+}
+
+// MapList defines model for MapList.
+type MapList struct {
+	Items      []Map   `json:"items"`
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// MapSaveRequest Salvataggio transazionale dell'intero documento: postazioni e decorazioni assenti vengono eliminate (rifiutato con spot_has_future_allocations se una postazione eliminata ha allocazioni future: va disattivata).
+type MapSaveRequest struct {
+	Decorations []DecorationInput `json:"decorations"`
+	Map         MapInput          `json:"map"`
+	Spots       []SpotInput       `json:"spots"`
 }
 
 // Me defines model for Me.
@@ -358,29 +1642,523 @@ type Membership struct {
 	Role            Role         `json:"role"`
 }
 
+// Money Importo in centesimi di euro (IVA inclusa).
+type Money = int64
+
+// MonthDay Ricorrenza annuale `MM-DD`.
+type MonthDay = string
+
+// OnlineQuota defines model for OnlineQuota.
+type OnlineQuota struct {
+	Type  OnlineQuotaType `json:"type"`
+	Value int             `json:"value"`
+}
+
+// OnlineQuotaType defines model for OnlineQuota.Type.
+type OnlineQuotaType string
+
+// Pack Prodotto vendibile composto da componenti.
+type Pack struct {
+	Active          bool      `json:"active"`
+	AllowedFormulas []Formula `json:"allowed_formulas"`
+
+	// AllowedZoneIds Assente = tutte le zone.
+	AllowedZoneIds *[]string `json:"allowed_zone_ids,omitempty"`
+	Channels       []Channel `json:"channels"`
+	Code           string    `json:"code"`
+
+	// Composition Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	Composition ComponentQuantities `json:"composition"`
+	CreatedAt   time.Time           `json:"created_at"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description   I18nText `json:"description"`
+	Id            string   `json:"id"`
+	Image         *string  `json:"image,omitempty"`
+	MaxPerBooking int      `json:"max_per_booking"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name             I18nText `json:"name"`
+	RequiresApproval bool     `json:"requires_approval"`
+
+	// RequiresSpotKind Tipi di postazione compatibili; assente = tutti.
+	RequiresSpotKind *[]SpotKind `json:"requires_spot_kind,omitempty"`
+	SortOrder        int         `json:"sort_order"`
+	UpdatedAt        time.Time   `json:"updated_at"`
+
+	// VatRateBp Aliquota in punti base (2200 = 22%).
+	VatRateBp *BasisPoints `json:"vat_rate_bp,omitempty"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// PackInput defines model for PackInput.
+type PackInput struct {
+	Active          *bool     `json:"active,omitempty"`
+	AllowedFormulas []Formula `json:"allowed_formulas"`
+
+	// AllowedZoneIds Assente = tutte le zone.
+	AllowedZoneIds *[]string `json:"allowed_zone_ids,omitempty"`
+	Channels       []Channel `json:"channels"`
+	Code           string    `json:"code"`
+
+	// Composition Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	Composition ComponentQuantities `json:"composition"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description   *I18nText `json:"description,omitempty"`
+	Image         *string   `json:"image,omitempty"`
+	MaxPerBooking *int      `json:"max_per_booking,omitempty"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name             I18nText `json:"name"`
+	RequiresApproval *bool    `json:"requires_approval,omitempty"`
+
+	// RequiresSpotKind Tipi di postazione compatibili; assente = tutti.
+	RequiresSpotKind *[]SpotKind `json:"requires_spot_kind,omitempty"`
+	SortOrder        *int        `json:"sort_order,omitempty"`
+
+	// VatRateBp Aliquota in punti base (2200 = 22%).
+	VatRateBp *BasisPoints `json:"vat_rate_bp,omitempty"`
+}
+
+// PackList defines model for PackList.
+type PackList struct {
+	Items []Pack `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
 // Permission defines model for Permission.
 type Permission string
 
+// PolicyCancellationTier defines model for PolicyCancellationTier.
+type PolicyCancellationTier struct {
+	As              *PolicyCancellationTierAs `json:"as,omitempty"`
+	RefundPercent   int                       `json:"refund_percent"`
+	UntilDaysBefore int                       `json:"until_days_before"`
+}
+
+// PolicyCancellationTierAs defines model for PolicyCancellationTier.As.
+type PolicyCancellationTierAs string
+
+// PolicyDeposit defines model for PolicyDeposit.
+type PolicyDeposit struct {
+	Type *PolicyDepositType `json:"type,omitempty"`
+
+	// Value Percentuale intera o importo in centesimi.
+	Value *int64 `json:"value,omitempty"`
+}
+
+// PolicyDepositType defines model for PolicyDeposit.Type.
+type PolicyDepositType string
+
+// PolicyDuration defines model for PolicyDuration.
+type PolicyDuration struct {
+	AllowedFormulas *[]Formula `json:"allowed_formulas,omitempty"`
+
+	// FixedStartWeekday ISO 1..7; 0 = qualsiasi.
+	FixedStartWeekday *int `json:"fixed_start_weekday,omitempty"`
+	MaxDays           *int `json:"max_days,omitempty"`
+	MinDays           *int `json:"min_days,omitempty"`
+}
+
+// PolicyEvaluation defines model for PolicyEvaluation.
+type PolicyEvaluation struct {
+	// PolicyId Assente se vale solo la policy di default.
+	PolicyId *string `json:"policy_id,omitempty"`
+
+	// Rules Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default.
+	Rules      PolicyRules       `json:"rules"`
+	Violations []PolicyViolation `json:"violations"`
+}
+
+// PolicyMinLeadTime defines model for PolicyMinLeadTime.
+type PolicyMinLeadTime struct {
+	CutoffTime *string `json:"cutoff_time,omitempty"`
+	Days       *int    `json:"days,omitempty"`
+}
+
+// PolicyModification defines model for PolicyModification.
+type PolicyModification struct {
+	AllowedUntilDaysBefore *int `json:"allowed_until_days_before,omitempty"`
+
+	// Fee Importo in centesimi di euro (IVA inclusa).
+	Fee *Money `json:"fee,omitempty"`
+}
+
+// PolicyPayment defines model for PolicyPayment.
+type PolicyPayment struct {
+	BalanceDue *string            `json:"balance_due,omitempty"`
+	Deposit    *PolicyDeposit     `json:"deposit,omitempty"`
+	Mode       *PolicyPaymentMode `json:"mode,omitempty"`
+}
+
+// PolicyPaymentMode defines model for PolicyPayment.Mode.
+type PolicyPaymentMode string
+
+// PolicyRules Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default.
+type PolicyRules struct {
+	AllowSpotChangeDuringStay    *bool                      `json:"allow_spot_change_during_stay,omitempty"`
+	ApprovalRequired             *bool                      `json:"approval_required,omitempty"`
+	Cancellation                 *[]PolicyCancellationTier  `json:"cancellation,omitempty"`
+	CustomerCanReleaseSeasonDays *bool                      `json:"customer_can_release_season_days,omitempty"`
+	Duration                     *PolicyDuration            `json:"duration,omitempty"`
+	MaxLeadTimeDays              *int                       `json:"max_lead_time_days,omitempty"`
+	MaxSpotsPerBooking           *int                       `json:"max_spots_per_booking,omitempty"`
+	MinLeadTime                  *PolicyMinLeadTime         `json:"min_lead_time,omitempty"`
+	Modification                 *PolicyModification        `json:"modification,omitempty"`
+	Payment                      *PolicyPayment             `json:"payment,omitempty"`
+	SameDayBooking               *PolicySameDayBooking      `json:"same_day_booking,omitempty"`
+	SeasonReleaseCredit          *PolicySeasonReleaseCredit `json:"season_release_credit,omitempty"`
+	WeatherPolicy                *PolicyWeather             `json:"weather_policy,omitempty"`
+}
+
+// PolicySameDayBooking defines model for PolicySameDayBooking.
+type PolicySameDayBooking struct {
+	Enabled  *bool                         `json:"enabled,omitempty"`
+	OnlySlot *PolicySameDayBookingOnlySlot `json:"only_slot,omitempty"`
+	Until    *string                       `json:"until,omitempty"`
+}
+
+// PolicySameDayBookingOnlySlot defines model for PolicySameDayBooking.OnlySlot.
+type PolicySameDayBookingOnlySlot string
+
+// PolicyScope Ambito della policy; dimensioni vuote = tutto.
+type PolicyScope struct {
+	Channels *[]Channel `json:"channels,omitempty"`
+
+	// Packs ID o codici di pack.
+	Packs *[]string `json:"packs,omitempty"`
+
+	// RatePeriods Codici dei periodi tariffari.
+	RatePeriods *[]string `json:"rate_periods,omitempty"`
+
+	// Zones ID o codici di zona.
+	Zones *[]string `json:"zones,omitempty"`
+}
+
+// PolicySeasonReleaseCredit defines model for PolicySeasonReleaseCredit.
+type PolicySeasonReleaseCredit struct {
+	Enabled *bool `json:"enabled,omitempty"`
+	Percent *int  `json:"percent,omitempty"`
+}
+
+// PolicyViolation defines model for PolicyViolation.
+type PolicyViolation struct {
+	// Code Codice stabile (es. lead_time_too_short).
+	Code   string             `json:"code"`
+	Params *map[string]string `json:"params,omitempty"`
+}
+
+// PolicyWeather defines model for PolicyWeather.
+type PolicyWeather struct {
+	As      *PolicyWeatherAs `json:"as,omitempty"`
+	Enabled *bool            `json:"enabled,omitempty"`
+}
+
+// PolicyWeatherAs defines model for PolicyWeather.As.
+type PolicyWeatherAs string
+
+// Pool Inventario a quantità senza posizione.
+type Pool struct {
+	Capacity          int                `json:"capacity"`
+	CapacityOverrides []CapacityOverride `json:"capacity_overrides"`
+	ComponentCode     string             `json:"component_code"`
+	CreatedAt         time.Time          `json:"created_at"`
+	Id                string             `json:"id"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name I18nText `json:"name"`
+
+	// SystemManaged Pool implicito di una zona `zone`: non modificabile né eliminabile.
+	SystemManaged bool      `json:"system_managed"`
+	UpdatedAt     time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+	ZoneId  *string `json:"zone_id,omitempty"`
+}
+
+// PoolInput defines model for PoolInput.
+type PoolInput struct {
+	Capacity          int                 `json:"capacity"`
+	CapacityOverrides *[]CapacityOverride `json:"capacity_overrides,omitempty"`
+	ComponentCode     string              `json:"component_code"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name   I18nText `json:"name"`
+	ZoneId *string  `json:"zone_id,omitempty"`
+}
+
+// PoolList defines model for PoolList.
+type PoolList struct {
+	Items []Pool `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// PriceAction Azione di prezzo (spec 8.3).
+type PriceAction struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount *Money `json:"amount,omitempty"`
+	Every  *int   `json:"every,omitempty"`
+
+	// Factor Numero decimale esatto come stringa (es. "1.2", "0.5", "10"). Mai float nel calcolo.
+	Factor *Decimal   `json:"factor,omitempty"`
+	Free   *int       `json:"free,omitempty"`
+	Per    *AmountPer `json:"per,omitempty"`
+
+	// Percent Numero decimale esatto come stringa (es. "1.2", "0.5", "10"). Mai float nel calcolo.
+	Percent *Decimal        `json:"percent,omitempty"`
+	Type    PriceActionType `json:"type"`
+}
+
+// PriceActionType defines model for PriceActionType.
+type PriceActionType string
+
+// PriceBreakdown Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo.
+type PriceBreakdown struct {
+	Currency      string              `json:"currency"`
+	Discounts     []DiscountBreakdown `json:"discounts"`
+	EngineVersion int                 `json:"engine_version"`
+	Extras        *[]ExtraBreakdown   `json:"extras,omitempty"`
+	Lines         []LineBreakdown     `json:"lines"`
+
+	// Rounding Importo in centesimi di euro (IVA inclusa).
+	Rounding Money `json:"rounding"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money          `json:"total"`
+	Vat   []VatBreakdown `json:"vat"`
+}
+
+// PriceConditions Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+type PriceConditions struct {
+	AgreementIds *[]string    `json:"agreement_ids,omitempty"`
+	Channels     *[]Channel   `json:"channels,omitempty"`
+	CustomerTags *[]string    `json:"customer_tags,omitempty"`
+	DateRanges   *[]DateRange `json:"date_ranges,omitempty"`
+	Formulas     *[]Formula   `json:"formulas,omitempty"`
+	Holidays     *bool        `json:"holidays,omitempty"`
+
+	// LeadTimeDays Intervallo intero inclusivo; un estremo assente è aperto.
+	LeadTimeDays *IntRange `json:"lead_time_days,omitempty"`
+	MaxDays      *int      `json:"max_days,omitempty"`
+	MinDays      *int      `json:"min_days,omitempty"`
+
+	// OccupancyPercent Intervallo intero inclusivo; un estremo assente è aperto.
+	OccupancyPercent *IntRange `json:"occupancy_percent,omitempty"`
+	PriceCategories  *[]string `json:"price_categories,omitempty"`
+	RatePeriods      *[]string `json:"rate_periods,omitempty"`
+	Slots            *[]Slot   `json:"slots,omitempty"`
+	SpotAttributes   *[]string `json:"spot_attributes,omitempty"`
+
+	// Weekdays Giorni ISO (1 = lunedì … 7 = domenica).
+	Weekdays *[]int    `json:"weekdays,omitempty"`
+	ZoneIds  *[]string `json:"zone_ids,omitempty"`
+}
+
+// PriceMatrix Matrice pack × categoria × periodo generata dal motore (spec 8.7).
+type PriceMatrix struct {
+	Categories []string          `json:"categories"`
+	Cells      []PriceMatrixCell `json:"cells"`
+
+	// Channel Canale di vendita.
+	Channel Channel `json:"channel"`
+
+	// Formula Formula di durata.
+	Formula     Formula  `json:"formula"`
+	PackIds     []string `json:"pack_ids"`
+	RatePeriods []string `json:"rate_periods"`
+	SeasonId    string   `json:"season_id"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+}
+
+// PriceMatrixCell defines model for PriceMatrixCell.
+type PriceMatrixCell struct {
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date   Date   `json:"date"`
+	PackId string `json:"pack_id"`
+
+	// Price Importo in centesimi di euro (IVA inclusa).
+	Price         Money  `json:"price"`
+	PriceCategory string `json:"price_category"`
+	Priced        bool   `json:"priced"`
+	RatePeriod    string `json:"rate_period"`
+	ZoneId        string `json:"zone_id"`
+}
+
+// PriceRule Regola di prezzo (spec 6.4, 8).
+type PriceRule struct {
+	// Action Azione di prezzo (spec 8.3).
+	Action PriceAction `json:"action"`
+	Active bool        `json:"active"`
+
+	// Conditions Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+	Conditions PriceConditions `json:"conditions"`
+	CreatedAt  time.Time       `json:"created_at"`
+	Id         string          `json:"id"`
+	Name       string          `json:"name"`
+	Priority   int             `json:"priority"`
+	SeasonId   string          `json:"season_id"`
+
+	// Seq Ordine di recenza (spareggio).
+	Seq       int64      `json:"seq"`
+	Stackable bool       `json:"stackable"`
+	Stage     PriceStage `json:"stage"`
+
+	// TargetIds Assente = tutti i target del tipo.
+	TargetIds  *[]string       `json:"target_ids,omitempty"`
+	TargetType PriceTargetType `json:"target_type"`
+	UpdatedAt  time.Time       `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// PriceRuleInput defines model for PriceRuleInput.
+type PriceRuleInput struct {
+	// Action Azione di prezzo (spec 8.3).
+	Action PriceAction `json:"action"`
+	Active *bool       `json:"active,omitempty"`
+
+	// Conditions Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+	Conditions PriceConditions `json:"conditions"`
+	Name       string          `json:"name"`
+	Priority   *int            `json:"priority,omitempty"`
+	SeasonId   string          `json:"season_id"`
+	Stackable  *bool           `json:"stackable,omitempty"`
+	Stage      PriceStage      `json:"stage"`
+
+	// TargetIds Assente = tutti i target del tipo.
+	TargetIds  *[]string       `json:"target_ids,omitempty"`
+	TargetType PriceTargetType `json:"target_type"`
+}
+
+// PriceRuleList defines model for PriceRuleList.
+type PriceRuleList struct {
+	Items []PriceRule `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// PriceStage defines model for PriceStage.
+type PriceStage string
+
+// PriceTargetType defines model for PriceTargetType.
+type PriceTargetType string
+
+// PricingSettings Impostazioni dei prezzi dello stabilimento (spec 8.1, 8.5).
+type PricingSettings struct {
+	// DefaultVatRateBp Aliquota in punti base (2200 = 22%).
+	DefaultVatRateBp BasisPoints `json:"default_vat_rate_bp"`
+
+	// HalfDayFactor Numero decimale esatto come stringa (es. "1.2", "0.5", "10"). Mai float nel calcolo.
+	HalfDayFactor          Decimal     `json:"half_day_factor"`
+	LocalHolidays          *[]Date     `json:"local_holidays,omitempty"`
+	RecurringLocalHolidays *[]MonthDay `json:"recurring_local_holidays,omitempty"`
+
+	// Rounding Arrotondamento del totale finale.
+	Rounding Rounding `json:"rounding"`
+}
+
+// PricingUnit defines model for PricingUnit.
+type PricingUnit string
+
 // Problem Errore RFC 9457 (`application/problem+json`).
 type Problem struct {
-	Detail    *string       `json:"detail,omitempty"`
-	Errors    *[]FieldError `json:"errors,omitempty"`
-	Instance  *string       `json:"instance,omitempty"`
-	RequestId *string       `json:"request_id,omitempty"`
+	// CurrentVersion Versione corrente della risorsa (solo per `version_conflict`).
+	CurrentVersion *int64        `json:"current_version,omitempty"`
+	Detail         *string       `json:"detail,omitempty"`
+	Errors         *[]FieldError `json:"errors,omitempty"`
+	Instance       *string       `json:"instance,omitempty"`
+	RequestId      *string       `json:"request_id,omitempty"`
 
 	// RetryAfter Secondi da attendere (solo per `rate_limited`).
-	RetryAfter *int   `json:"retry_after,omitempty"`
-	Status     int    `json:"status"`
-	Title      string `json:"title"`
+	RetryAfter *int `json:"retry_after,omitempty"`
+
+	// SpotIds Postazioni con allocazioni future (solo per `spot_has_future_allocations`).
+	SpotIds *[]string `json:"spot_ids,omitempty"`
+	Status  int       `json:"status"`
+	Title   string    `json:"title"`
 
 	// Type Slug stabile del tipo di errore. I client devono basarsi su questo
 	// valore, mai sul testo di `title` o `detail`.
 	Type ProblemType `json:"type"`
+
+	// Violations Vincoli violati (solo per `policy_violation`).
+	Violations *[]PolicyViolation `json:"violations,omitempty"`
 }
 
 // ProblemType Slug stabile del tipo di errore. I client devono basarsi su questo
 // valore, mai sul testo di `title` o `detail`.
 type ProblemType string
+
+// PromoCode Codice promozionale (univoco per stabilimento senza distinzione di maiuscole).
+type PromoCode struct {
+	// Action Azione di prezzo (spec 8.3).
+	Action PriceAction `json:"action"`
+	Active bool        `json:"active"`
+	Code   string      `json:"code"`
+
+	// Conditions Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+	Conditions         PriceConditions `json:"conditions"`
+	CreatedAt          time.Time       `json:"created_at"`
+	Description        string          `json:"description"`
+	Id                 string          `json:"id"`
+	MaxUses            *int            `json:"max_uses,omitempty"`
+	MaxUsesPerCustomer *int            `json:"max_uses_per_customer,omitempty"`
+	Stackable          bool            `json:"stackable"`
+	UpdatedAt          time.Time       `json:"updated_at"`
+
+	// Uses Utilizzi registrati (solo lettura).
+	Uses int `json:"uses"`
+
+	// ValidFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidFrom *Date `json:"valid_from,omitempty"`
+
+	// ValidTo Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidTo *Date `json:"valid_to,omitempty"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// PromoCodeInput defines model for PromoCodeInput.
+type PromoCodeInput struct {
+	// Action Azione di prezzo (spec 8.3).
+	Action PriceAction `json:"action"`
+	Active *bool       `json:"active,omitempty"`
+	Code   string      `json:"code"`
+
+	// Conditions Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+	Conditions         *PriceConditions `json:"conditions,omitempty"`
+	Description        *string          `json:"description,omitempty"`
+	MaxUses            *int             `json:"max_uses,omitempty"`
+	MaxUsesPerCustomer *int             `json:"max_uses_per_customer,omitempty"`
+	Stackable          *bool            `json:"stackable,omitempty"`
+
+	// ValidFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidFrom *Date `json:"valid_from,omitempty"`
+
+	// ValidTo Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ValidTo *Date `json:"valid_to,omitempty"`
+}
+
+// PromoCodeList defines model for PromoCodeList.
+type PromoCodeList struct {
+	Items []PromoCode `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
 
 // PublicEstablishment defines model for PublicEstablishment.
 type PublicEstablishment struct {
@@ -399,6 +2177,71 @@ type PublicEstablishment struct {
 	Timezone string `json:"timezone"`
 }
 
+// QuickPrice defines model for QuickPrice.
+type QuickPrice struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount         Money  `json:"amount"`
+	PriceCategory  string `json:"price_category"`
+	RatePeriodCode string `json:"rate_period_code"`
+}
+
+// QuickPricelistRequest Listino rapido: prezzo giornaliero per categoria e periodo → regole base (spec 15.2).
+type QuickPricelistRequest struct {
+	// PackIds Vuoto = tutti i pack attivi.
+	PackIds *[]string    `json:"pack_ids,omitempty"`
+	Prices  []QuickPrice `json:"prices"`
+
+	// ReplaceExisting true sostituisce le regole base generate in precedenza dal listino rapido.
+	ReplaceExisting *bool  `json:"replace_existing,omitempty"`
+	SeasonId        string `json:"season_id"`
+}
+
+// QuickPricelistResult defines model for QuickPricelistResult.
+type QuickPricelistResult struct {
+	Replaced int         `json:"replaced"`
+	Rules    []PriceRule `json:"rules"`
+}
+
+// RatePeriod Periodo tariffario di una stagione; i periodi non si sovrappongono nella stessa stagione.
+type RatePeriod struct {
+	// Code `low`, `mid`, `high`, `peak` o libero.
+	Code      string    `json:"code"`
+	Color     string    `json:"color"`
+	CreatedAt time.Time `json:"created_at"`
+	Id        string    `json:"id"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name      I18nText    `json:"name"`
+	Ranges    []DateRange `json:"ranges"`
+	SeasonId  string      `json:"season_id"`
+	SortOrder int         `json:"sort_order"`
+	UpdatedAt time.Time   `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// RatePeriodInput defines model for RatePeriodInput.
+type RatePeriodInput struct {
+	// Code `low`, `mid`, `high`, `peak` o libero.
+	Code  string  `json:"code"`
+	Color *string `json:"color,omitempty"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name      I18nText    `json:"name"`
+	Ranges    []DateRange `json:"ranges"`
+	SeasonId  string      `json:"season_id"`
+	SortOrder *int        `json:"sort_order,omitempty"`
+}
+
+// RatePeriodList defines model for RatePeriodList.
+type RatePeriodList struct {
+	Items []RatePeriod `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
 // ReadinessStatus defines model for ReadinessStatus.
 type ReadinessStatus struct {
 	Checks map[string]string     `json:"checks"`
@@ -411,6 +2254,332 @@ type ReadinessStatusStatus string
 // Role defines model for Role.
 type Role string
 
+// Rounding Arrotondamento del totale finale.
+type Rounding string
+
+// RowGeneratorRequest Generatore di file (spec 11.2).
+type RowGeneratorRequest struct {
+	// Apply false = anteprima; true = aggiunge le postazioni alla mappa (richiede If-Match).
+	Apply *bool `json:"apply,omitempty"`
+
+	// Capacity Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	Capacity  *ComponentQuantities          `json:"capacity,omitempty"`
+	Direction *RowGeneratorRequestDirection `json:"direction,omitempty"`
+
+	// FirstRowLabel Etichetta della prima fila (default A o 1).
+	FirstRowLabel *string   `json:"first_row_label,omitempty"`
+	Kind          *SpotKind `json:"kind,omitempty"`
+
+	// LabelFormat Default "{row}{number}".
+	LabelFormat *string `json:"label_format,omitempty"`
+
+	// NumberStart Default 1.
+	NumberStart *int `json:"number_start,omitempty"`
+
+	// Numbering Numerazione che riparte a ogni fila o continua.
+	Numbering *RowGeneratorRequestNumbering `json:"numbering,omitempty"`
+
+	// OriginX Coordinata x della prima postazione.
+	OriginX       *float64                          `json:"origin_x,omitempty"`
+	OriginY       *float64                          `json:"origin_y,omitempty"`
+	Rotation      *float64                          `json:"rotation,omitempty"`
+	RowLabelStyle *RowGeneratorRequestRowLabelStyle `json:"row_label_style,omitempty"`
+	Rows          int                               `json:"rows"`
+	Shape         *Shape                            `json:"shape,omitempty"`
+
+	// SpacingX Distanza tra postazioni della stessa fila.
+	SpacingX float64 `json:"spacing_x"`
+
+	// SpacingY Distanza tra file.
+	SpacingY    float64 `json:"spacing_y"`
+	SpotsPerRow int     `json:"spots_per_row"`
+
+	// ZoneId Zona assegnata alle postazioni generate.
+	ZoneId string `json:"zone_id"`
+}
+
+// RowGeneratorRequestDirection defines model for RowGeneratorRequest.Direction.
+type RowGeneratorRequestDirection string
+
+// RowGeneratorRequestNumbering Numerazione che riparte a ogni fila o continua.
+type RowGeneratorRequestNumbering string
+
+// RowGeneratorRequestRowLabelStyle defines model for RowGeneratorRequest.RowLabelStyle.
+type RowGeneratorRequestRowLabelStyle string
+
+// RowGeneratorResult defines model for RowGeneratorResult.
+type RowGeneratorResult struct {
+	Applied bool `json:"applied"`
+
+	// ConflictingLabels Etichette già presenti sulla mappa.
+	ConflictingLabels []string `json:"conflicting_labels"`
+
+	// Document Documento completo della mappa; la versione è anche nell'header ETag.
+	Document *MapDocument `json:"document,omitempty"`
+	Spots    []SpotInput  `json:"spots"`
+}
+
+// SeaSide defines model for SeaSide.
+type SeaSide string
+
+// Season Stagione di apertura annuale (spec 6.1).
+type Season struct {
+	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ClosesOn        Date      `json:"closes_on"`
+	CreatedAt       time.Time `json:"created_at"`
+	EstablishmentId string    `json:"establishment_id"`
+	Id              string    `json:"id"`
+
+	// OpensOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	OpensOn   Date         `json:"opens_on"`
+	Status    SeasonStatus `json:"status"`
+	UpdatedAt time.Time    `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+	Year    int     `json:"year"`
+}
+
+// SeasonCopyRequest Copia di stagione (spec 8.7): date spostate mantenendo il giorno della settimana dove ha senso.
+type SeasonCopyRequest struct {
+	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ClosesOn *Date `json:"closes_on,omitempty"`
+
+	// IncludeFixedPrices Default true.
+	IncludeFixedPrices *bool `json:"include_fixed_prices,omitempty"`
+
+	// IncludePolicies Default true.
+	IncludePolicies *bool `json:"include_policies,omitempty"`
+
+	// IncludePriceRules Default true.
+	IncludePriceRules *bool `json:"include_price_rules,omitempty"`
+
+	// IncludeRatePeriods Default true.
+	IncludeRatePeriods *bool `json:"include_rate_periods,omitempty"`
+
+	// OpensOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	OpensOn    *Date `json:"opens_on,omitempty"`
+	TargetYear int   `json:"target_year"`
+}
+
+// SeasonCopyResult defines model for SeasonCopyResult.
+type SeasonCopyResult struct {
+	FixedPrices int `json:"fixed_prices"`
+	Policies    int `json:"policies"`
+	PriceRules  int `json:"price_rules"`
+	RatePeriods int `json:"rate_periods"`
+
+	// Season Stagione di apertura annuale (spec 6.1).
+	Season   Season   `json:"season"`
+	Warnings []string `json:"warnings"`
+}
+
+// SeasonInput defines model for SeasonInput.
+type SeasonInput struct {
+	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ClosesOn Date `json:"closes_on"`
+
+	// OpensOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	OpensOn Date          `json:"opens_on"`
+	Status  *SeasonStatus `json:"status,omitempty"`
+	Year    int           `json:"year"`
+}
+
+// SeasonList defines model for SeasonList.
+type SeasonList struct {
+	Items []Season `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// SeasonStatus defines model for SeasonStatus.
+type SeasonStatus string
+
+// SetupStatus Avanzamento della configurazione guidata.
+type SetupStatus struct {
+	BookingEnabled bool `json:"booking_enabled"`
+	HasCatalog     bool `json:"has_catalog"`
+	HasMap         bool `json:"has_map"`
+	HasPrices      bool `json:"has_prices"`
+	HasRatePeriods bool `json:"has_rate_periods"`
+	HasSeason      bool `json:"has_season"`
+	SpotCount      int  `json:"spot_count"`
+}
+
+// SetupTemplate defines model for SetupTemplate.
+type SetupTemplate struct {
+	// Code Modelli di spec 15.2.
+	Code SetupTemplateCode `json:"code"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description I18nText `json:"description"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name  I18nText            `json:"name"`
+	Packs []SetupTemplatePack `json:"packs"`
+
+	// RatePeriods Codici dei periodi proposti.
+	RatePeriods []string `json:"rate_periods"`
+
+	// Rows File proposte (0 se nessuna mappa a file).
+	Rows        int                 `json:"rows"`
+	SpotsPerRow int                 `json:"spots_per_row"`
+	Zones       []SetupTemplateZone `json:"zones"`
+}
+
+// SetupTemplateCode Modelli di spec 15.2.
+type SetupTemplateCode string
+
+// SetupTemplateList defines model for SetupTemplateList.
+type SetupTemplateList struct {
+	Items []SetupTemplate `json:"items"`
+}
+
+// SetupTemplatePack defines model for SetupTemplatePack.
+type SetupTemplatePack struct {
+	Code string `json:"code"`
+
+	// Composition Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	Composition ComponentQuantities `json:"composition"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name I18nText `json:"name"`
+}
+
+// SetupTemplateZone defines model for SetupTemplateZone.
+type SetupTemplateZone struct {
+	// AssignmentMode Modalità di assegnazione della zona (spec 5.2).
+	AssignmentMode AssignmentMode `json:"assignment_mode"`
+	Code           string         `json:"code"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name          I18nText `json:"name"`
+	PriceCategory string   `json:"price_category"`
+}
+
+// Shape defines model for Shape.
+type Shape struct {
+	H    float64   `json:"h"`
+	Type ShapeType `json:"type"`
+	W    float64   `json:"w"`
+}
+
+// ShapeType defines model for Shape.Type.
+type ShapeType string
+
+// SimulateExtra defines model for SimulateExtra.
+type SimulateExtra struct {
+	ExtraId  string `json:"extra_id"`
+	Quantity int    `json:"quantity"`
+}
+
+// SimulateLine defines model for SimulateLine.
+type SimulateLine struct {
+	Extras *[]SimulateExtra `json:"extras,omitempty"`
+	PackId string           `json:"pack_id"`
+	SpotId *string          `json:"spot_id,omitempty"`
+	ZoneId *string          `json:"zone_id,omitempty"`
+}
+
+// SimulateRequest Stesso input della quotazione, con canale selezionabile (spec 8.7). today default = oggi nel fuso dello stabilimento.
+type SimulateRequest struct {
+	AgreementId *string `json:"agreement_id,omitempty"`
+
+	// Channel Canale di vendita.
+	Channel      Channel   `json:"channel"`
+	CustomerTags *[]string `json:"customer_tags,omitempty"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn Date             `json:"ends_on"`
+	Extras *[]SimulateExtra `json:"extras,omitempty"`
+
+	// Formula Formula di durata.
+	Formula   Formula        `json:"formula"`
+	Lines     []SimulateLine `json:"lines"`
+	PromoCode *string        `json:"promo_code,omitempty"`
+
+	// SeasonId Default: stagione che contiene starts_on.
+	SeasonId *string `json:"season_id,omitempty"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date `json:"starts_on"`
+
+	// Today Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Today *Date `json:"today,omitempty"`
+}
+
+// SimulateResult defines model for SimulateResult.
+type SimulateResult struct {
+	// Breakdown Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo.
+	Breakdown PriceBreakdown `json:"breakdown"`
+
+	// DepositDue Importo in centesimi di euro (IVA inclusa).
+	DepositDue Money            `json:"deposit_due"`
+	Policy     PolicyEvaluation `json:"policy"`
+}
+
+// Slot Fascia: mattina o pomeriggio.
+type Slot string
+
+// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+type Slots string
+
+// Spot Postazione prenotabile.
+type Spot struct {
+	Active     bool     `json:"active"`
+	Attributes []string `json:"attributes"`
+
+	// Capacity Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	Capacity ComponentQuantities `json:"capacity"`
+	Id       string              `json:"id"`
+	Kind     SpotKind            `json:"kind"`
+	Label    string              `json:"label"`
+	MapId    string              `json:"map_id"`
+
+	// MaxExtra Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	MaxExtra              ComponentQuantities `json:"max_extra"`
+	Number                int                 `json:"number"`
+	PriceCategoryOverride *string             `json:"price_category_override,omitempty"`
+	Rotation              float64             `json:"rotation"`
+	RowLabel              string              `json:"row_label"`
+	Shape                 Shape               `json:"shape"`
+	X                     float64             `json:"x"`
+	Y                     float64             `json:"y"`
+	ZoneId                string              `json:"zone_id"`
+}
+
+// SpotInput defines model for SpotInput.
+type SpotInput struct {
+	Active     *bool     `json:"active,omitempty"`
+	Attributes *[]string `json:"attributes,omitempty"`
+
+	// Capacity Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	Capacity *ComponentQuantities `json:"capacity,omitempty"`
+
+	// Id ID di una postazione esistente da aggiornare; assente = nuova postazione.
+	Id    *string  `json:"id,omitempty"`
+	Kind  SpotKind `json:"kind"`
+	Label string   `json:"label"`
+
+	// MaxExtra Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
+	MaxExtra              *ComponentQuantities `json:"max_extra,omitempty"`
+	Number                *int                 `json:"number,omitempty"`
+	PriceCategoryOverride *string              `json:"price_category_override,omitempty"`
+	Rotation              *float64             `json:"rotation,omitempty"`
+	RowLabel              *string              `json:"row_label,omitempty"`
+	Shape                 Shape                `json:"shape"`
+	X                     float64              `json:"x"`
+	Y                     float64              `json:"y"`
+	ZoneId                string               `json:"zone_id"`
+}
+
+// SpotKind defines model for SpotKind.
+type SpotKind string
+
 // StreamMessage Messaggio leggero inviato sul flusso SSE (specifica 21.1).
 type StreamMessage struct {
 	Dates           *[]openapi_types.Date `json:"dates,omitempty"`
@@ -420,6 +2589,76 @@ type StreamMessage struct {
 	SpotIds         *[]string             `json:"spot_ids,omitempty"`
 	Type            string                `json:"type"`
 }
+
+// TeamMember Utente con accesso allo stabilimento; role è il ruolo efficace qui.
+type TeamMember struct {
+	Active      bool             `json:"active"`
+	Email       string           `json:"email"`
+	LastLoginAt *time.Time       `json:"last_login_at,omitempty"`
+	Locale      string           `json:"locale"`
+	Memberships []TeamMembership `json:"memberships"`
+	Name        string           `json:"name"`
+	Role        Role             `json:"role"`
+
+	// Scope Il ruolo vale per questo stabilimento o per tutta l'organizzazione.
+	Scope       TeamScope `json:"scope"`
+	TotpEnabled bool      `json:"totp_enabled"`
+	UserId      string    `json:"user_id"`
+}
+
+// TeamMemberCreate Crea l'utente (o riusa quello con la stessa email) e gli assegna il ruolo.
+type TeamMemberCreate struct {
+	Email  openapi_types.Email `json:"email"`
+	Locale *string             `json:"locale,omitempty"`
+	Name   string              `json:"name"`
+
+	// Password Password iniziale; se assente ne viene generata una e restituita una sola volta.
+	Password *string `json:"password,omitempty"`
+	Role     Role    `json:"role"`
+
+	// Scope Il ruolo vale per questo stabilimento o per tutta l'organizzazione.
+	Scope *TeamScope `json:"scope,omitempty"`
+}
+
+// TeamMemberCreated defines model for TeamMemberCreated.
+type TeamMemberCreated struct {
+	// InitialPassword Presente solo se generata dal server; mostrarla una volta.
+	InitialPassword *string `json:"initial_password,omitempty"`
+
+	// Member Utente con accesso allo stabilimento; role è il ruolo efficace qui.
+	Member TeamMember `json:"member"`
+
+	// UserCreated false se l'utente esisteva già ed è stato solo aggiunto.
+	UserCreated bool `json:"user_created"`
+}
+
+// TeamMemberList defines model for TeamMemberList.
+type TeamMemberList struct {
+	Items      []TeamMember `json:"items"`
+	NextCursor *string      `json:"next_cursor,omitempty"`
+}
+
+// TeamMemberUpdate defines model for TeamMemberUpdate.
+type TeamMemberUpdate struct {
+	// Active false disattiva l'utente.
+	Active *bool `json:"active,omitempty"`
+	Role   *Role `json:"role,omitempty"`
+
+	// Scope Il ruolo vale per questo stabilimento o per tutta l'organizzazione.
+	Scope *TeamScope `json:"scope,omitempty"`
+}
+
+// TeamMembership defines model for TeamMembership.
+type TeamMembership struct {
+	// EstablishmentId Assente per i ruoli validi su tutta l'organizzazione.
+	EstablishmentId *string `json:"establishment_id,omitempty"`
+	Id              string  `json:"id"`
+	OrganizationId  string  `json:"organization_id"`
+	Role            Role    `json:"role"`
+}
+
+// TeamScope Il ruolo vale per questo stabilimento o per tutta l'organizzazione.
+type TeamScope string
 
 // Theme Tema della pagina pubblica (specifica 12.5).
 type Theme struct {
@@ -465,8 +2704,96 @@ type User struct {
 	TotpEnabled bool       `json:"totp_enabled"`
 }
 
+// VatBreakdown defines model for VatBreakdown.
+type VatBreakdown struct {
+	// Rate Numero decimale esatto come stringa (es. "1.2", "0.5", "10"). Mai float nel calcolo.
+	Rate Decimal `json:"rate"`
+
+	// Tax Importo in centesimi di euro (IVA inclusa).
+	Tax Money `json:"tax"`
+
+	// Taxable Importo in centesimi di euro (IVA inclusa).
+	Taxable Money `json:"taxable"`
+}
+
+// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+type Version = int64
+
+// Zone Raggruppamento logico di postazioni. Le zone `zone` hanno un pool implicito gestito dal sistema (spec 7.5).
+type Zone struct {
+	// AssignmentMode Modalità di assegnazione della zona (spec 5.2).
+	AssignmentMode AssignmentMode `json:"assignment_mode"`
+
+	// AutoAssign Assegnazione automatica alla conferma (solo modalità zone).
+	AutoAssign bool      `json:"auto_assign"`
+	Code       string    `json:"code"`
+	CreatedAt  time.Time `json:"created_at"`
+	Id         string    `json:"id"`
+
+	// MapId Assente per le zone solo a quantità.
+	MapId *string `json:"map_id,omitempty"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name          I18nText     `json:"name"`
+	OnlineQuota   *OnlineQuota `json:"online_quota,omitempty"`
+	OnlineVisible bool         `json:"online_visible"`
+
+	// PoolId Pool implicito (zone `zone`) o pool legato (zone `quantity`).
+	PoolId *string `json:"pool_id,omitempty"`
+
+	// PriceCategory Chiave usata dalle regole di prezzo (es. row1).
+	PriceCategory string `json:"price_category"`
+	SortOrder     int    `json:"sort_order"`
+
+	// SpotCount Postazioni attive della zona.
+	SpotCount int       `json:"spot_count"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// ZoneInput defines model for ZoneInput.
+type ZoneInput struct {
+	// AssignmentMode Modalità di assegnazione della zona (spec 5.2).
+	AssignmentMode AssignmentMode `json:"assignment_mode"`
+
+	// AutoAssign Assegnazione automatica alla conferma (solo modalità zone).
+	AutoAssign *bool  `json:"auto_assign,omitempty"`
+	Code       string `json:"code"`
+
+	// MapId Assente per le zone solo a quantità.
+	MapId *string `json:"map_id,omitempty"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name          I18nText     `json:"name"`
+	OnlineQuota   *OnlineQuota `json:"online_quota,omitempty"`
+	OnlineVisible *bool        `json:"online_visible,omitempty"`
+
+	// PriceCategory Chiave usata dalle regole di prezzo (es. row1).
+	PriceCategory string `json:"price_category"`
+	SortOrder     *int   `json:"sort_order,omitempty"`
+}
+
+// ZoneList defines model for ZoneList.
+type ZoneList struct {
+	Items []Zone `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// AgreementID defines model for AgreementID.
+type AgreementID = string
+
 // CSRFToken defines model for CSRFToken.
 type CSRFToken = string
+
+// ClosureDayID defines model for ClosureDayID.
+type ClosureDayID = string
+
+// ComponentID defines model for ComponentID.
+type ComponentID = string
 
 // Cursor defines model for Cursor.
 type Cursor = string
@@ -474,14 +2801,56 @@ type Cursor = string
 // EstablishmentID defines model for EstablishmentID.
 type EstablishmentID = string
 
+// ExtraID defines model for ExtraID.
+type ExtraID = string
+
+// FixedPriceID defines model for FixedPriceID.
+type FixedPriceID = string
+
 // IdempotencyKey defines model for IdempotencyKey.
 type IdempotencyKey = string
+
+// IfMatch defines model for IfMatch.
+type IfMatch = string
+
+// IfMatchRequired defines model for IfMatchRequired.
+type IfMatchRequired = string
 
 // Limit defines model for Limit.
 type Limit = int
 
+// MapID defines model for MapID.
+type MapID = string
+
+// PackID defines model for PackID.
+type PackID = string
+
+// PolicyID defines model for PolicyID.
+type PolicyID = string
+
+// PoolID defines model for PoolID.
+type PoolID = string
+
+// PriceRuleID defines model for PriceRuleID.
+type PriceRuleID = string
+
+// PromoCodeID defines model for PromoCodeID.
+type PromoCodeID = string
+
+// RatePeriodID defines model for RatePeriodID.
+type RatePeriodID = string
+
+// SeasonID defines model for SeasonID.
+type SeasonID = string
+
 // Slug defines model for Slug.
 type Slug = string
+
+// TeamUserID defines model for TeamUserID.
+type TeamUserID = string
+
+// ZoneID defines model for ZoneID.
+type ZoneID = string
 
 // BadRequest Errore RFC 9457 (`application/problem+json`).
 type BadRequest = Problem
@@ -495,11 +2864,23 @@ type Forbidden = Problem
 // NotFound Errore RFC 9457 (`application/problem+json`).
 type NotFound = Problem
 
+// NotImplemented Errore RFC 9457 (`application/problem+json`).
+type NotImplemented = Problem
+
+// PreconditionFailed Errore RFC 9457 (`application/problem+json`).
+type PreconditionFailed = Problem
+
+// PreconditionRequired Errore RFC 9457 (`application/problem+json`).
+type PreconditionRequired = Problem
+
 // TooManyRequests Errore RFC 9457 (`application/problem+json`).
 type TooManyRequests = Problem
 
 // Unauthorized Errore RFC 9457 (`application/problem+json`).
 type Unauthorized = Problem
+
+// UnprocessableEntity Errore RFC 9457 (`application/problem+json`).
+type UnprocessableEntity = Problem
 
 // LogoutParams defines parameters for Logout.
 type LogoutParams struct {
@@ -531,6 +2912,762 @@ type ListEstablishmentsParams struct {
 	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
+// CreateEstablishmentParams defines parameters for CreateEstablishment.
+type CreateEstablishmentParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateEstablishmentParams defines parameters for UpdateEstablishment.
+type UpdateEstablishmentParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListAgreementsParams defines parameters for ListAgreements.
+type ListAgreementsParams struct {
+	// Active Filtra per stato.
+	Active *bool `form:"active,omitempty" json:"active,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateAgreementParams defines parameters for CreateAgreement.
+type CreateAgreementParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteAgreementParams defines parameters for DeleteAgreement.
+type DeleteAgreementParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateAgreementParams defines parameters for UpdateAgreement.
+type UpdateAgreementParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListClosureDaysParams defines parameters for ListClosureDays.
+type ListClosureDaysParams struct {
+	// From Data iniziale inclusa (YYYY-MM-DD).
+	From *string `form:"from,omitempty" json:"from,omitempty"`
+
+	// To Data finale inclusa (YYYY-MM-DD).
+	To *string `form:"to,omitempty" json:"to,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateClosureDayParams defines parameters for CreateClosureDay.
+type CreateClosureDayParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteClosureDayParams defines parameters for DeleteClosureDay.
+type DeleteClosureDayParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateClosureDayParams defines parameters for UpdateClosureDay.
+type UpdateClosureDayParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListComponentsParams defines parameters for ListComponents.
+type ListComponentsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateComponentParams defines parameters for CreateComponent.
+type CreateComponentParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteComponentParams defines parameters for DeleteComponent.
+type DeleteComponentParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateComponentParams defines parameters for UpdateComponent.
+type UpdateComponentParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListExtrasParams defines parameters for ListExtras.
+type ListExtrasParams struct {
+	// Active Filtra per stato.
+	Active *bool `form:"active,omitempty" json:"active,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateExtraParams defines parameters for CreateExtra.
+type CreateExtraParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteExtraParams defines parameters for DeleteExtra.
+type DeleteExtraParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateExtraParams defines parameters for UpdateExtra.
+type UpdateExtraParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListFixedPricesParams defines parameters for ListFixedPrices.
+type ListFixedPricesParams struct {
+	// SeasonId Filtra per stagione.
+	SeasonId *string `form:"season_id,omitempty" json:"season_id,omitempty"`
+
+	// PackId Filtra per pack.
+	PackId *string `form:"pack_id,omitempty" json:"pack_id,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateFixedPriceParams defines parameters for CreateFixedPrice.
+type CreateFixedPriceParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteFixedPriceParams defines parameters for DeleteFixedPrice.
+type DeleteFixedPriceParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateFixedPriceParams defines parameters for UpdateFixedPrice.
+type UpdateFixedPriceParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListMapsParams defines parameters for ListMaps.
+type ListMapsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateMapParams defines parameters for CreateMap.
+type CreateMapParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteMapParams defines parameters for DeleteMap.
+type DeleteMapParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// SaveMapParams defines parameters for SaveMap.
+type SaveMapParams struct {
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio.
+	IfMatch IfMatchRequired `json:"If-Match"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// GenerateMapRowsParams defines parameters for GenerateMapRows.
+type GenerateMapRowsParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListPacksParams defines parameters for ListPacks.
+type ListPacksParams struct {
+	// Active Filtra per stato.
+	Active *bool `form:"active,omitempty" json:"active,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreatePackParams defines parameters for CreatePack.
+type CreatePackParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeletePackParams defines parameters for DeletePack.
+type DeletePackParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdatePackParams defines parameters for UpdatePack.
+type UpdatePackParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListPoliciesParams defines parameters for ListPolicies.
+type ListPoliciesParams struct {
+	// SeasonId Filtra per stagione.
+	SeasonId *string `form:"season_id,omitempty" json:"season_id,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreatePolicyParams defines parameters for CreatePolicy.
+type CreatePolicyParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeletePolicyParams defines parameters for DeletePolicy.
+type DeletePolicyParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdatePolicyParams defines parameters for UpdatePolicy.
+type UpdatePolicyParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListPoolsParams defines parameters for ListPools.
+type ListPoolsParams struct {
+	// ZoneId Filtra per zona.
+	ZoneId *string `form:"zone_id,omitempty" json:"zone_id,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreatePoolParams defines parameters for CreatePool.
+type CreatePoolParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeletePoolParams defines parameters for DeletePool.
+type DeletePoolParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdatePoolParams defines parameters for UpdatePool.
+type UpdatePoolParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListPriceRulesParams defines parameters for ListPriceRules.
+type ListPriceRulesParams struct {
+	// SeasonId Filtra per stagione.
+	SeasonId *string `form:"season_id,omitempty" json:"season_id,omitempty"`
+
+	// Stage Filtra per stage.
+	Stage *PriceStage `form:"stage,omitempty" json:"stage,omitempty"`
+
+	// TargetType Filtra per tipo di target.
+	TargetType *PriceTargetType `form:"target_type,omitempty" json:"target_type,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreatePriceRuleParams defines parameters for CreatePriceRule.
+type CreatePriceRuleParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeletePriceRuleParams defines parameters for DeletePriceRule.
+type DeletePriceRuleParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdatePriceRuleParams defines parameters for UpdatePriceRule.
+type UpdatePriceRuleParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// GetPriceCoverageParams defines parameters for GetPriceCoverage.
+type GetPriceCoverageParams struct {
+	SeasonId string    `form:"season_id" json:"season_id"`
+	PackIds  *[]string `form:"pack_ids,omitempty" json:"pack_ids,omitempty"`
+
+	// Channels Default desk e online.
+	Channels *[]Channel `form:"channels,omitempty" json:"channels,omitempty"`
+	Slots    *Slots     `form:"slots,omitempty" json:"slots,omitempty"`
+}
+
+// GetPriceMatrixParams defines parameters for GetPriceMatrix.
+type GetPriceMatrixParams struct {
+	SeasonId string `form:"season_id" json:"season_id"`
+
+	// PackIds Vuoto = tutti i pack attivi.
+	PackIds *[]string `form:"pack_ids,omitempty" json:"pack_ids,omitempty"`
+
+	// Formula day (default) o half_day.
+	Formula *Formula `form:"formula,omitempty" json:"formula,omitempty"`
+
+	// Channel Default desk.
+	Channel *Channel `form:"channel,omitempty" json:"channel,omitempty"`
+
+	// Slots Default FULL.
+	Slots *Slots `form:"slots,omitempty" json:"slots,omitempty"`
+}
+
+// SimulatePriceParams defines parameters for SimulatePrice.
+type SimulatePriceParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListPromoCodesParams defines parameters for ListPromoCodes.
+type ListPromoCodesParams struct {
+	// Active Filtra per stato.
+	Active *bool `form:"active,omitempty" json:"active,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreatePromoCodeParams defines parameters for CreatePromoCode.
+type CreatePromoCodeParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeletePromoCodeParams defines parameters for DeletePromoCode.
+type DeletePromoCodeParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdatePromoCodeParams defines parameters for UpdatePromoCode.
+type UpdatePromoCodeParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListRatePeriodsParams defines parameters for ListRatePeriods.
+type ListRatePeriodsParams struct {
+	// SeasonId Filtra per stagione.
+	SeasonId *string `form:"season_id,omitempty" json:"season_id,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateRatePeriodParams defines parameters for CreateRatePeriod.
+type CreateRatePeriodParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteRatePeriodParams defines parameters for DeleteRatePeriod.
+type DeleteRatePeriodParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateRatePeriodParams defines parameters for UpdateRatePeriod.
+type UpdateRatePeriodParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListSeasonsParams defines parameters for ListSeasons.
+type ListSeasonsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateSeasonParams defines parameters for CreateSeason.
+type CreateSeasonParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteSeasonParams defines parameters for DeleteSeason.
+type DeleteSeasonParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateSeasonParams defines parameters for UpdateSeason.
+type UpdateSeasonParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CopySeasonParams defines parameters for CopySeason.
+type CopySeasonParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ApplySetupTemplateParams defines parameters for ApplySetupTemplate.
+type ApplySetupTemplateParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CreateQuickPricelistParams defines parameters for CreateQuickPricelist.
+type CreateQuickPricelistParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListTeamMembersParams defines parameters for ListTeamMembers.
+type ListTeamMembersParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateTeamMemberParams defines parameters for CreateTeamMember.
+type CreateTeamMemberParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RemoveTeamMemberParams defines parameters for RemoveTeamMember.
+type RemoveTeamMemberParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateTeamMemberParams defines parameters for UpdateTeamMember.
+type UpdateTeamMemberParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListZonesParams defines parameters for ListZones.
+type ListZonesParams struct {
+	// MapId Filtra per mappa.
+	MapId *string `form:"map_id,omitempty" json:"map_id,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateZoneParams defines parameters for CreateZone.
+type CreateZoneParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteZoneParams defines parameters for DeleteZone.
+type DeleteZoneParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateZoneParams defines parameters for UpdateZone.
+type UpdateZoneParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict.
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // StreamEventsParams defines parameters for StreamEvents.
 type StreamEventsParams struct {
 	// Establishment ID dello stabilimento
@@ -542,6 +3679,117 @@ type LoginJSONRequestBody = LoginRequest
 
 // ConfirmTotpJSONRequestBody defines body for ConfirmTotp for application/json ContentType.
 type ConfirmTotpJSONRequestBody = TotpConfirmRequest
+
+// CreateEstablishmentJSONRequestBody defines body for CreateEstablishment for application/json ContentType.
+type CreateEstablishmentJSONRequestBody = EstablishmentCreate
+
+// UpdateEstablishmentJSONRequestBody defines body for UpdateEstablishment for application/json ContentType.
+type UpdateEstablishmentJSONRequestBody = EstablishmentUpdate
+
+// CreateAgreementJSONRequestBody defines body for CreateAgreement for application/json ContentType.
+type CreateAgreementJSONRequestBody = AgreementInput
+
+// UpdateAgreementJSONRequestBody defines body for UpdateAgreement for application/json ContentType.
+type UpdateAgreementJSONRequestBody = AgreementInput
+
+// CreateClosureDayJSONRequestBody defines body for CreateClosureDay for application/json ContentType.
+type CreateClosureDayJSONRequestBody = ClosureDayInput
+
+// UpdateClosureDayJSONRequestBody defines body for UpdateClosureDay for application/json ContentType.
+type UpdateClosureDayJSONRequestBody = ClosureDayInput
+
+// CreateComponentJSONRequestBody defines body for CreateComponent for application/json ContentType.
+type CreateComponentJSONRequestBody = ComponentInput
+
+// UpdateComponentJSONRequestBody defines body for UpdateComponent for application/json ContentType.
+type UpdateComponentJSONRequestBody = ComponentInput
+
+// CreateExtraJSONRequestBody defines body for CreateExtra for application/json ContentType.
+type CreateExtraJSONRequestBody = ExtraInput
+
+// UpdateExtraJSONRequestBody defines body for UpdateExtra for application/json ContentType.
+type UpdateExtraJSONRequestBody = ExtraInput
+
+// CreateFixedPriceJSONRequestBody defines body for CreateFixedPrice for application/json ContentType.
+type CreateFixedPriceJSONRequestBody = FixedPriceInput
+
+// UpdateFixedPriceJSONRequestBody defines body for UpdateFixedPrice for application/json ContentType.
+type UpdateFixedPriceJSONRequestBody = FixedPriceInput
+
+// CreateMapJSONRequestBody defines body for CreateMap for application/json ContentType.
+type CreateMapJSONRequestBody = MapInput
+
+// SaveMapJSONRequestBody defines body for SaveMap for application/json ContentType.
+type SaveMapJSONRequestBody = MapSaveRequest
+
+// GenerateMapRowsJSONRequestBody defines body for GenerateMapRows for application/json ContentType.
+type GenerateMapRowsJSONRequestBody = RowGeneratorRequest
+
+// CreatePackJSONRequestBody defines body for CreatePack for application/json ContentType.
+type CreatePackJSONRequestBody = PackInput
+
+// UpdatePackJSONRequestBody defines body for UpdatePack for application/json ContentType.
+type UpdatePackJSONRequestBody = PackInput
+
+// CreatePolicyJSONRequestBody defines body for CreatePolicy for application/json ContentType.
+type CreatePolicyJSONRequestBody = BookingPolicyInput
+
+// UpdatePolicyJSONRequestBody defines body for UpdatePolicy for application/json ContentType.
+type UpdatePolicyJSONRequestBody = BookingPolicyInput
+
+// CreatePoolJSONRequestBody defines body for CreatePool for application/json ContentType.
+type CreatePoolJSONRequestBody = PoolInput
+
+// UpdatePoolJSONRequestBody defines body for UpdatePool for application/json ContentType.
+type UpdatePoolJSONRequestBody = PoolInput
+
+// CreatePriceRuleJSONRequestBody defines body for CreatePriceRule for application/json ContentType.
+type CreatePriceRuleJSONRequestBody = PriceRuleInput
+
+// UpdatePriceRuleJSONRequestBody defines body for UpdatePriceRule for application/json ContentType.
+type UpdatePriceRuleJSONRequestBody = PriceRuleInput
+
+// SimulatePriceJSONRequestBody defines body for SimulatePrice for application/json ContentType.
+type SimulatePriceJSONRequestBody = SimulateRequest
+
+// CreatePromoCodeJSONRequestBody defines body for CreatePromoCode for application/json ContentType.
+type CreatePromoCodeJSONRequestBody = PromoCodeInput
+
+// UpdatePromoCodeJSONRequestBody defines body for UpdatePromoCode for application/json ContentType.
+type UpdatePromoCodeJSONRequestBody = PromoCodeInput
+
+// CreateRatePeriodJSONRequestBody defines body for CreateRatePeriod for application/json ContentType.
+type CreateRatePeriodJSONRequestBody = RatePeriodInput
+
+// UpdateRatePeriodJSONRequestBody defines body for UpdateRatePeriod for application/json ContentType.
+type UpdateRatePeriodJSONRequestBody = RatePeriodInput
+
+// CreateSeasonJSONRequestBody defines body for CreateSeason for application/json ContentType.
+type CreateSeasonJSONRequestBody = SeasonInput
+
+// UpdateSeasonJSONRequestBody defines body for UpdateSeason for application/json ContentType.
+type UpdateSeasonJSONRequestBody = SeasonInput
+
+// CopySeasonJSONRequestBody defines body for CopySeason for application/json ContentType.
+type CopySeasonJSONRequestBody = SeasonCopyRequest
+
+// ApplySetupTemplateJSONRequestBody defines body for ApplySetupTemplate for application/json ContentType.
+type ApplySetupTemplateJSONRequestBody = ApplyTemplateRequest
+
+// CreateQuickPricelistJSONRequestBody defines body for CreateQuickPricelist for application/json ContentType.
+type CreateQuickPricelistJSONRequestBody = QuickPricelistRequest
+
+// CreateTeamMemberJSONRequestBody defines body for CreateTeamMember for application/json ContentType.
+type CreateTeamMemberJSONRequestBody = TeamMemberCreate
+
+// UpdateTeamMemberJSONRequestBody defines body for UpdateTeamMember for application/json ContentType.
+type UpdateTeamMemberJSONRequestBody = TeamMemberUpdate
+
+// CreateZoneJSONRequestBody defines body for CreateZone for application/json ContentType.
+type CreateZoneJSONRequestBody = ZoneInput
+
+// UpdateZoneJSONRequestBody defines body for UpdateZone for application/json ContentType.
+type UpdateZoneJSONRequestBody = ZoneInput
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -563,9 +3811,264 @@ type ServerInterface interface {
 	// ListEstablishments Stabilimenti accessibili all'utente corrente
 	// (GET /api/admin/v1/establishments)
 	ListEstablishments(w http.ResponseWriter, r *http.Request, params ListEstablishmentsParams)
+	// CreateEstablishment Crea un nuovo stabilimento (solo proprietari)
+	// (POST /api/admin/v1/establishments)
+	CreateEstablishment(w http.ResponseWriter, r *http.Request, params CreateEstablishmentParams)
 	// GetEstablishment Dettaglio di uno stabilimento
-	// (GET /api/admin/v1/establishments/{id})
-	GetEstablishment(w http.ResponseWriter, r *http.Request, id EstablishmentID)
+	// (GET /api/admin/v1/establishments/{establishmentId})
+	GetEstablishment(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// UpdateEstablishment Aggiorna, archivia o ripristina uno stabilimento
+	// (PATCH /api/admin/v1/establishments/{establishmentId})
+	UpdateEstablishment(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateEstablishmentParams)
+	// ListAgreements Elenco convenzioni
+	// (GET /api/admin/v1/establishments/{establishmentId}/agreements)
+	ListAgreements(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListAgreementsParams)
+	// CreateAgreement Crea convenzione
+	// (POST /api/admin/v1/establishments/{establishmentId}/agreements)
+	CreateAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateAgreementParams)
+	// DeleteAgreement Elimina convenzione
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
+	DeleteAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID, params DeleteAgreementParams)
+	// GetAgreement Dettaglio convenzione
+	// (GET /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
+	GetAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID)
+	// UpdateAgreement Sostituisce convenzione
+	// (PUT /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
+	UpdateAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID, params UpdateAgreementParams)
+	// ListClosureDays Elenco giorni di chiusura
+	// (GET /api/admin/v1/establishments/{establishmentId}/closure-days)
+	ListClosureDays(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListClosureDaysParams)
+	// CreateClosureDay Crea giorno di chiusura
+	// (POST /api/admin/v1/establishments/{establishmentId}/closure-days)
+	CreateClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateClosureDayParams)
+	// DeleteClosureDay Elimina giorno di chiusura
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId})
+	DeleteClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, closureDayId ClosureDayID, params DeleteClosureDayParams)
+	// GetClosureDay Dettaglio giorno di chiusura
+	// (GET /api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId})
+	GetClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, closureDayId ClosureDayID)
+	// UpdateClosureDay Sostituisce giorno di chiusura
+	// (PUT /api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId})
+	UpdateClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, closureDayId ClosureDayID, params UpdateClosureDayParams)
+	// ListComponents Elenco componenti
+	// (GET /api/admin/v1/establishments/{establishmentId}/components)
+	ListComponents(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListComponentsParams)
+	// CreateComponent Crea componente
+	// (POST /api/admin/v1/establishments/{establishmentId}/components)
+	CreateComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateComponentParams)
+	// DeleteComponent Elimina componente
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/components/{componentId})
+	DeleteComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, componentId ComponentID, params DeleteComponentParams)
+	// GetComponent Dettaglio componente
+	// (GET /api/admin/v1/establishments/{establishmentId}/components/{componentId})
+	GetComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, componentId ComponentID)
+	// UpdateComponent Sostituisce componente
+	// (PUT /api/admin/v1/establishments/{establishmentId}/components/{componentId})
+	UpdateComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, componentId ComponentID, params UpdateComponentParams)
+	// ListExtras Elenco extra
+	// (GET /api/admin/v1/establishments/{establishmentId}/extras)
+	ListExtras(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListExtrasParams)
+	// CreateExtra Crea extra
+	// (POST /api/admin/v1/establishments/{establishmentId}/extras)
+	CreateExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateExtraParams)
+	// DeleteExtra Elimina extra
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
+	DeleteExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID, params DeleteExtraParams)
+	// GetExtra Dettaglio extra
+	// (GET /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
+	GetExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID)
+	// UpdateExtra Sostituisce extra
+	// (PUT /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
+	UpdateExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID, params UpdateExtraParams)
+	// ListFixedPrices Elenco prezzi a durata fissa
+	// (GET /api/admin/v1/establishments/{establishmentId}/fixed-prices)
+	ListFixedPrices(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListFixedPricesParams)
+	// CreateFixedPrice Crea prezzo a durata fissa
+	// (POST /api/admin/v1/establishments/{establishmentId}/fixed-prices)
+	CreateFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateFixedPriceParams)
+	// DeleteFixedPrice Elimina prezzo a durata fissa
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId})
+	DeleteFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, fixedPriceId FixedPriceID, params DeleteFixedPriceParams)
+	// GetFixedPrice Dettaglio prezzo a durata fissa
+	// (GET /api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId})
+	GetFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, fixedPriceId FixedPriceID)
+	// UpdateFixedPrice Sostituisce prezzo a durata fissa
+	// (PUT /api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId})
+	UpdateFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, fixedPriceId FixedPriceID, params UpdateFixedPriceParams)
+	// ListMaps Elenco mappe
+	// (GET /api/admin/v1/establishments/{establishmentId}/maps)
+	ListMaps(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMapsParams)
+	// CreateMap Crea una mappa vuota
+	// (POST /api/admin/v1/establishments/{establishmentId}/maps)
+	CreateMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateMapParams)
+	// DeleteMap Elimina una mappa (rifiutato se ha postazioni con allocazioni future)
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/maps/{mapId})
+	DeleteMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params DeleteMapParams)
+	// GetMap Documento completo della mappa (mappa, postazioni, decorazioni)
+	// (GET /api/admin/v1/establishments/{establishmentId}/maps/{mapId})
+	GetMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID)
+	// SaveMap Salvataggio transazionale della mappa con controllo di versione
+	// (PUT /api/admin/v1/establishments/{establishmentId}/maps/{mapId})
+	SaveMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params SaveMapParams)
+	// GenerateMapRows Generatore di file: anteprima o applicazione
+	// (POST /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/generate-rows)
+	GenerateMapRows(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params GenerateMapRowsParams)
+	// ListPacks Elenco pack
+	// (GET /api/admin/v1/establishments/{establishmentId}/packs)
+	ListPacks(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPacksParams)
+	// CreatePack Crea pack
+	// (POST /api/admin/v1/establishments/{establishmentId}/packs)
+	CreatePack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePackParams)
+	// DeletePack Elimina pack
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/packs/{packId})
+	DeletePack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, packId PackID, params DeletePackParams)
+	// GetPack Dettaglio pack
+	// (GET /api/admin/v1/establishments/{establishmentId}/packs/{packId})
+	GetPack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, packId PackID)
+	// UpdatePack Sostituisce pack
+	// (PUT /api/admin/v1/establishments/{establishmentId}/packs/{packId})
+	UpdatePack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, packId PackID, params UpdatePackParams)
+	// ListPolicies Elenco policy
+	// (GET /api/admin/v1/establishments/{establishmentId}/policies)
+	ListPolicies(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPoliciesParams)
+	// CreatePolicy Crea policy
+	// (POST /api/admin/v1/establishments/{establishmentId}/policies)
+	CreatePolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePolicyParams)
+	// DeletePolicy Elimina policy
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/policies/{policyId})
+	DeletePolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, policyId PolicyID, params DeletePolicyParams)
+	// GetPolicy Dettaglio policy
+	// (GET /api/admin/v1/establishments/{establishmentId}/policies/{policyId})
+	GetPolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, policyId PolicyID)
+	// UpdatePolicy Sostituisce policy
+	// (PUT /api/admin/v1/establishments/{establishmentId}/policies/{policyId})
+	UpdatePolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, policyId PolicyID, params UpdatePolicyParams)
+	// ListPools Elenco pool
+	// (GET /api/admin/v1/establishments/{establishmentId}/pools)
+	ListPools(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPoolsParams)
+	// CreatePool Crea pool
+	// (POST /api/admin/v1/establishments/{establishmentId}/pools)
+	CreatePool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePoolParams)
+	// DeletePool Elimina pool
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/pools/{poolId})
+	DeletePool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, poolId PoolID, params DeletePoolParams)
+	// GetPool Dettaglio pool
+	// (GET /api/admin/v1/establishments/{establishmentId}/pools/{poolId})
+	GetPool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, poolId PoolID)
+	// UpdatePool Sostituisce pool
+	// (PUT /api/admin/v1/establishments/{establishmentId}/pools/{poolId})
+	UpdatePool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, poolId PoolID, params UpdatePoolParams)
+	// ListPriceRules Elenco regole di prezzo
+	// (GET /api/admin/v1/establishments/{establishmentId}/price-rules)
+	ListPriceRules(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPriceRulesParams)
+	// CreatePriceRule Crea regola di prezzo
+	// (POST /api/admin/v1/establishments/{establishmentId}/price-rules)
+	CreatePriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePriceRuleParams)
+	// DeletePriceRule Elimina regola di prezzo
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId})
+	DeletePriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, priceRuleId PriceRuleID, params DeletePriceRuleParams)
+	// GetPriceRule Dettaglio regola di prezzo
+	// (GET /api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId})
+	GetPriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, priceRuleId PriceRuleID)
+	// UpdatePriceRule Sostituisce regola di prezzo
+	// (PUT /api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId})
+	UpdatePriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, priceRuleId PriceRuleID, params UpdatePriceRuleParams)
+	// GetPriceCoverage Verifica di copertura: giorni senza prezzo per pack attivo e categoria
+	// (GET /api/admin/v1/establishments/{establishmentId}/pricing/coverage)
+	GetPriceCoverage(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetPriceCoverageParams)
+	// GetPriceMatrix Matrice di listino pack × categoria × periodo
+	// (GET /api/admin/v1/establishments/{establishmentId}/pricing/matrix)
+	GetPriceMatrix(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetPriceMatrixParams)
+	// SimulatePrice Simulatore: quotazione con dettaglio passo per passo e policy
+	// (POST /api/admin/v1/establishments/{establishmentId}/pricing/simulate)
+	SimulatePrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SimulatePriceParams)
+	// ListPromoCodes Elenco codici promozionali
+	// (GET /api/admin/v1/establishments/{establishmentId}/promo-codes)
+	ListPromoCodes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPromoCodesParams)
+	// CreatePromoCode Crea codice promozionale
+	// (POST /api/admin/v1/establishments/{establishmentId}/promo-codes)
+	CreatePromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePromoCodeParams)
+	// DeletePromoCode Elimina codice promozionale
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId})
+	DeletePromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, promoCodeId PromoCodeID, params DeletePromoCodeParams)
+	// GetPromoCode Dettaglio codice promozionale
+	// (GET /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId})
+	GetPromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, promoCodeId PromoCodeID)
+	// UpdatePromoCode Sostituisce codice promozionale
+	// (PUT /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId})
+	UpdatePromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, promoCodeId PromoCodeID, params UpdatePromoCodeParams)
+	// ListRatePeriods Elenco periodi tariffari
+	// (GET /api/admin/v1/establishments/{establishmentId}/rate-periods)
+	ListRatePeriods(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRatePeriodsParams)
+	// CreateRatePeriod Crea periodo tariffario
+	// (POST /api/admin/v1/establishments/{establishmentId}/rate-periods)
+	CreateRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateRatePeriodParams)
+	// DeleteRatePeriod Elimina periodo tariffario
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
+	DeleteRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID, params DeleteRatePeriodParams)
+	// GetRatePeriod Dettaglio periodo tariffario
+	// (GET /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
+	GetRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID)
+	// UpdateRatePeriod Sostituisce periodo tariffario
+	// (PUT /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
+	UpdateRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID, params UpdateRatePeriodParams)
+	// ListSeasons Elenco stagioni
+	// (GET /api/admin/v1/establishments/{establishmentId}/seasons)
+	ListSeasons(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonsParams)
+	// CreateSeason Crea stagione
+	// (POST /api/admin/v1/establishments/{establishmentId}/seasons)
+	CreateSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateSeasonParams)
+	// DeleteSeason Elimina stagione
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId})
+	DeleteSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params DeleteSeasonParams)
+	// GetSeason Dettaglio stagione
+	// (GET /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId})
+	GetSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID)
+	// UpdateSeason Sostituisce stagione
+	// (PUT /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId})
+	UpdateSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params UpdateSeasonParams)
+	// CopySeason Copia stagione sull'anno indicato (periodi, regole, prezzi fissi, policy)
+	// (POST /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/copy)
+	CopySeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params CopySeasonParams)
+	// ApplySetupTemplate Applica un modello (stagione, mappa, zone, catalogo)
+	// (POST /api/admin/v1/establishments/{establishmentId}/setup/apply-template)
+	ApplySetupTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ApplySetupTemplateParams)
+	// CreateQuickPricelist Listino rapido: genera le regole base da prezzo per categoria e periodo
+	// (POST /api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist)
+	CreateQuickPricelist(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateQuickPricelistParams)
+	// GetSetupStatus Avanzamento della configurazione guidata
+	// (GET /api/admin/v1/establishments/{establishmentId}/setup/status)
+	GetSetupStatus(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// ListSetupTemplates Modelli della configurazione guidata
+	// (GET /api/admin/v1/establishments/{establishmentId}/setup/templates)
+	ListSetupTemplates(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// ListTeamMembers Utenti con accesso allo stabilimento
+	// (GET /api/admin/v1/establishments/{establishmentId}/team)
+	ListTeamMembers(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListTeamMembersParams)
+	// CreateTeamMember Crea o invita un utente con un ruolo (solo owner)
+	// (POST /api/admin/v1/establishments/{establishmentId}/team)
+	CreateTeamMember(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateTeamMemberParams)
+	// RemoveTeamMember Revoca l'accesso dell'utente allo stabilimento (solo owner)
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/team/{userId})
+	RemoveTeamMember(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, userId TeamUserID, params RemoveTeamMemberParams)
+	// UpdateTeamMember Cambia ruolo o disattiva un utente (solo owner)
+	// (PATCH /api/admin/v1/establishments/{establishmentId}/team/{userId})
+	UpdateTeamMember(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, userId TeamUserID, params UpdateTeamMemberParams)
+	// ListZones Elenco zone
+	// (GET /api/admin/v1/establishments/{establishmentId}/zones)
+	ListZones(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListZonesParams)
+	// CreateZone Crea zona
+	// (POST /api/admin/v1/establishments/{establishmentId}/zones)
+	CreateZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateZoneParams)
+	// DeleteZone Elimina zona
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/zones/{zoneId})
+	DeleteZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, zoneId ZoneID, params DeleteZoneParams)
+	// GetZone Dettaglio zona
+	// (GET /api/admin/v1/establishments/{establishmentId}/zones/{zoneId})
+	GetZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, zoneId ZoneID)
+	// UpdateZone Sostituisce zona
+	// (PUT /api/admin/v1/establishments/{establishmentId}/zones/{zoneId})
+	UpdateZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, zoneId ZoneID, params UpdateZoneParams)
 	// StreamEvents Flusso SSE degli eventi di uno stabilimento
 	// (GET /api/admin/v1/stream)
 	StreamEvents(w http.ResponseWriter, r *http.Request, params StreamEventsParams)
@@ -620,9 +4123,519 @@ func (_ Unimplemented) ListEstablishments(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// CreateEstablishment Crea un nuovo stabilimento (solo proprietari)
+// (POST /api/admin/v1/establishments)
+func (_ Unimplemented) CreateEstablishment(w http.ResponseWriter, r *http.Request, params CreateEstablishmentParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // GetEstablishment Dettaglio di uno stabilimento
-// (GET /api/admin/v1/establishments/{id})
-func (_ Unimplemented) GetEstablishment(w http.ResponseWriter, r *http.Request, id EstablishmentID) {
+// (GET /api/admin/v1/establishments/{establishmentId})
+func (_ Unimplemented) GetEstablishment(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateEstablishment Aggiorna, archivia o ripristina uno stabilimento
+// (PATCH /api/admin/v1/establishments/{establishmentId})
+func (_ Unimplemented) UpdateEstablishment(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateEstablishmentParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListAgreements Elenco convenzioni
+// (GET /api/admin/v1/establishments/{establishmentId}/agreements)
+func (_ Unimplemented) ListAgreements(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListAgreementsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateAgreement Crea convenzione
+// (POST /api/admin/v1/establishments/{establishmentId}/agreements)
+func (_ Unimplemented) CreateAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateAgreementParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteAgreement Elimina convenzione
+// (DELETE /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
+func (_ Unimplemented) DeleteAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID, params DeleteAgreementParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetAgreement Dettaglio convenzione
+// (GET /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
+func (_ Unimplemented) GetAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateAgreement Sostituisce convenzione
+// (PUT /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
+func (_ Unimplemented) UpdateAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID, params UpdateAgreementParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListClosureDays Elenco giorni di chiusura
+// (GET /api/admin/v1/establishments/{establishmentId}/closure-days)
+func (_ Unimplemented) ListClosureDays(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListClosureDaysParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateClosureDay Crea giorno di chiusura
+// (POST /api/admin/v1/establishments/{establishmentId}/closure-days)
+func (_ Unimplemented) CreateClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateClosureDayParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteClosureDay Elimina giorno di chiusura
+// (DELETE /api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId})
+func (_ Unimplemented) DeleteClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, closureDayId ClosureDayID, params DeleteClosureDayParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetClosureDay Dettaglio giorno di chiusura
+// (GET /api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId})
+func (_ Unimplemented) GetClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, closureDayId ClosureDayID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateClosureDay Sostituisce giorno di chiusura
+// (PUT /api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId})
+func (_ Unimplemented) UpdateClosureDay(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, closureDayId ClosureDayID, params UpdateClosureDayParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListComponents Elenco componenti
+// (GET /api/admin/v1/establishments/{establishmentId}/components)
+func (_ Unimplemented) ListComponents(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListComponentsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateComponent Crea componente
+// (POST /api/admin/v1/establishments/{establishmentId}/components)
+func (_ Unimplemented) CreateComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateComponentParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteComponent Elimina componente
+// (DELETE /api/admin/v1/establishments/{establishmentId}/components/{componentId})
+func (_ Unimplemented) DeleteComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, componentId ComponentID, params DeleteComponentParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetComponent Dettaglio componente
+// (GET /api/admin/v1/establishments/{establishmentId}/components/{componentId})
+func (_ Unimplemented) GetComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, componentId ComponentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateComponent Sostituisce componente
+// (PUT /api/admin/v1/establishments/{establishmentId}/components/{componentId})
+func (_ Unimplemented) UpdateComponent(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, componentId ComponentID, params UpdateComponentParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListExtras Elenco extra
+// (GET /api/admin/v1/establishments/{establishmentId}/extras)
+func (_ Unimplemented) ListExtras(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListExtrasParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateExtra Crea extra
+// (POST /api/admin/v1/establishments/{establishmentId}/extras)
+func (_ Unimplemented) CreateExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateExtraParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteExtra Elimina extra
+// (DELETE /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
+func (_ Unimplemented) DeleteExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID, params DeleteExtraParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetExtra Dettaglio extra
+// (GET /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
+func (_ Unimplemented) GetExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateExtra Sostituisce extra
+// (PUT /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
+func (_ Unimplemented) UpdateExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID, params UpdateExtraParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListFixedPrices Elenco prezzi a durata fissa
+// (GET /api/admin/v1/establishments/{establishmentId}/fixed-prices)
+func (_ Unimplemented) ListFixedPrices(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListFixedPricesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateFixedPrice Crea prezzo a durata fissa
+// (POST /api/admin/v1/establishments/{establishmentId}/fixed-prices)
+func (_ Unimplemented) CreateFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateFixedPriceParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteFixedPrice Elimina prezzo a durata fissa
+// (DELETE /api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId})
+func (_ Unimplemented) DeleteFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, fixedPriceId FixedPriceID, params DeleteFixedPriceParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetFixedPrice Dettaglio prezzo a durata fissa
+// (GET /api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId})
+func (_ Unimplemented) GetFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, fixedPriceId FixedPriceID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateFixedPrice Sostituisce prezzo a durata fissa
+// (PUT /api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId})
+func (_ Unimplemented) UpdateFixedPrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, fixedPriceId FixedPriceID, params UpdateFixedPriceParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListMaps Elenco mappe
+// (GET /api/admin/v1/establishments/{establishmentId}/maps)
+func (_ Unimplemented) ListMaps(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMapsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateMap Crea una mappa vuota
+// (POST /api/admin/v1/establishments/{establishmentId}/maps)
+func (_ Unimplemented) CreateMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateMapParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteMap Elimina una mappa (rifiutato se ha postazioni con allocazioni future)
+// (DELETE /api/admin/v1/establishments/{establishmentId}/maps/{mapId})
+func (_ Unimplemented) DeleteMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params DeleteMapParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetMap Documento completo della mappa (mappa, postazioni, decorazioni)
+// (GET /api/admin/v1/establishments/{establishmentId}/maps/{mapId})
+func (_ Unimplemented) GetMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SaveMap Salvataggio transazionale della mappa con controllo di versione
+// (PUT /api/admin/v1/establishments/{establishmentId}/maps/{mapId})
+func (_ Unimplemented) SaveMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params SaveMapParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GenerateMapRows Generatore di file: anteprima o applicazione
+// (POST /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/generate-rows)
+func (_ Unimplemented) GenerateMapRows(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params GenerateMapRowsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListPacks Elenco pack
+// (GET /api/admin/v1/establishments/{establishmentId}/packs)
+func (_ Unimplemented) ListPacks(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPacksParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreatePack Crea pack
+// (POST /api/admin/v1/establishments/{establishmentId}/packs)
+func (_ Unimplemented) CreatePack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePackParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeletePack Elimina pack
+// (DELETE /api/admin/v1/establishments/{establishmentId}/packs/{packId})
+func (_ Unimplemented) DeletePack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, packId PackID, params DeletePackParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPack Dettaglio pack
+// (GET /api/admin/v1/establishments/{establishmentId}/packs/{packId})
+func (_ Unimplemented) GetPack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, packId PackID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePack Sostituisce pack
+// (PUT /api/admin/v1/establishments/{establishmentId}/packs/{packId})
+func (_ Unimplemented) UpdatePack(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, packId PackID, params UpdatePackParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListPolicies Elenco policy
+// (GET /api/admin/v1/establishments/{establishmentId}/policies)
+func (_ Unimplemented) ListPolicies(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPoliciesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreatePolicy Crea policy
+// (POST /api/admin/v1/establishments/{establishmentId}/policies)
+func (_ Unimplemented) CreatePolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePolicyParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeletePolicy Elimina policy
+// (DELETE /api/admin/v1/establishments/{establishmentId}/policies/{policyId})
+func (_ Unimplemented) DeletePolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, policyId PolicyID, params DeletePolicyParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPolicy Dettaglio policy
+// (GET /api/admin/v1/establishments/{establishmentId}/policies/{policyId})
+func (_ Unimplemented) GetPolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, policyId PolicyID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePolicy Sostituisce policy
+// (PUT /api/admin/v1/establishments/{establishmentId}/policies/{policyId})
+func (_ Unimplemented) UpdatePolicy(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, policyId PolicyID, params UpdatePolicyParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListPools Elenco pool
+// (GET /api/admin/v1/establishments/{establishmentId}/pools)
+func (_ Unimplemented) ListPools(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPoolsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreatePool Crea pool
+// (POST /api/admin/v1/establishments/{establishmentId}/pools)
+func (_ Unimplemented) CreatePool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePoolParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeletePool Elimina pool
+// (DELETE /api/admin/v1/establishments/{establishmentId}/pools/{poolId})
+func (_ Unimplemented) DeletePool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, poolId PoolID, params DeletePoolParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPool Dettaglio pool
+// (GET /api/admin/v1/establishments/{establishmentId}/pools/{poolId})
+func (_ Unimplemented) GetPool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, poolId PoolID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePool Sostituisce pool
+// (PUT /api/admin/v1/establishments/{establishmentId}/pools/{poolId})
+func (_ Unimplemented) UpdatePool(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, poolId PoolID, params UpdatePoolParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListPriceRules Elenco regole di prezzo
+// (GET /api/admin/v1/establishments/{establishmentId}/price-rules)
+func (_ Unimplemented) ListPriceRules(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPriceRulesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreatePriceRule Crea regola di prezzo
+// (POST /api/admin/v1/establishments/{establishmentId}/price-rules)
+func (_ Unimplemented) CreatePriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePriceRuleParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeletePriceRule Elimina regola di prezzo
+// (DELETE /api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId})
+func (_ Unimplemented) DeletePriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, priceRuleId PriceRuleID, params DeletePriceRuleParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPriceRule Dettaglio regola di prezzo
+// (GET /api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId})
+func (_ Unimplemented) GetPriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, priceRuleId PriceRuleID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePriceRule Sostituisce regola di prezzo
+// (PUT /api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId})
+func (_ Unimplemented) UpdatePriceRule(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, priceRuleId PriceRuleID, params UpdatePriceRuleParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPriceCoverage Verifica di copertura: giorni senza prezzo per pack attivo e categoria
+// (GET /api/admin/v1/establishments/{establishmentId}/pricing/coverage)
+func (_ Unimplemented) GetPriceCoverage(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetPriceCoverageParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPriceMatrix Matrice di listino pack × categoria × periodo
+// (GET /api/admin/v1/establishments/{establishmentId}/pricing/matrix)
+func (_ Unimplemented) GetPriceMatrix(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetPriceMatrixParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SimulatePrice Simulatore: quotazione con dettaglio passo per passo e policy
+// (POST /api/admin/v1/establishments/{establishmentId}/pricing/simulate)
+func (_ Unimplemented) SimulatePrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SimulatePriceParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListPromoCodes Elenco codici promozionali
+// (GET /api/admin/v1/establishments/{establishmentId}/promo-codes)
+func (_ Unimplemented) ListPromoCodes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPromoCodesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreatePromoCode Crea codice promozionale
+// (POST /api/admin/v1/establishments/{establishmentId}/promo-codes)
+func (_ Unimplemented) CreatePromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePromoCodeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeletePromoCode Elimina codice promozionale
+// (DELETE /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId})
+func (_ Unimplemented) DeletePromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, promoCodeId PromoCodeID, params DeletePromoCodeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPromoCode Dettaglio codice promozionale
+// (GET /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId})
+func (_ Unimplemented) GetPromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, promoCodeId PromoCodeID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePromoCode Sostituisce codice promozionale
+// (PUT /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId})
+func (_ Unimplemented) UpdatePromoCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, promoCodeId PromoCodeID, params UpdatePromoCodeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListRatePeriods Elenco periodi tariffari
+// (GET /api/admin/v1/establishments/{establishmentId}/rate-periods)
+func (_ Unimplemented) ListRatePeriods(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRatePeriodsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateRatePeriod Crea periodo tariffario
+// (POST /api/admin/v1/establishments/{establishmentId}/rate-periods)
+func (_ Unimplemented) CreateRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateRatePeriodParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteRatePeriod Elimina periodo tariffario
+// (DELETE /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
+func (_ Unimplemented) DeleteRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID, params DeleteRatePeriodParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetRatePeriod Dettaglio periodo tariffario
+// (GET /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
+func (_ Unimplemented) GetRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateRatePeriod Sostituisce periodo tariffario
+// (PUT /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
+func (_ Unimplemented) UpdateRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID, params UpdateRatePeriodParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListSeasons Elenco stagioni
+// (GET /api/admin/v1/establishments/{establishmentId}/seasons)
+func (_ Unimplemented) ListSeasons(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateSeason Crea stagione
+// (POST /api/admin/v1/establishments/{establishmentId}/seasons)
+func (_ Unimplemented) CreateSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateSeasonParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteSeason Elimina stagione
+// (DELETE /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId})
+func (_ Unimplemented) DeleteSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params DeleteSeasonParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetSeason Dettaglio stagione
+// (GET /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId})
+func (_ Unimplemented) GetSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateSeason Sostituisce stagione
+// (PUT /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId})
+func (_ Unimplemented) UpdateSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params UpdateSeasonParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CopySeason Copia stagione sull'anno indicato (periodi, regole, prezzi fissi, policy)
+// (POST /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/copy)
+func (_ Unimplemented) CopySeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params CopySeasonParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ApplySetupTemplate Applica un modello (stagione, mappa, zone, catalogo)
+// (POST /api/admin/v1/establishments/{establishmentId}/setup/apply-template)
+func (_ Unimplemented) ApplySetupTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ApplySetupTemplateParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateQuickPricelist Listino rapido: genera le regole base da prezzo per categoria e periodo
+// (POST /api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist)
+func (_ Unimplemented) CreateQuickPricelist(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateQuickPricelistParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetSetupStatus Avanzamento della configurazione guidata
+// (GET /api/admin/v1/establishments/{establishmentId}/setup/status)
+func (_ Unimplemented) GetSetupStatus(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListSetupTemplates Modelli della configurazione guidata
+// (GET /api/admin/v1/establishments/{establishmentId}/setup/templates)
+func (_ Unimplemented) ListSetupTemplates(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListTeamMembers Utenti con accesso allo stabilimento
+// (GET /api/admin/v1/establishments/{establishmentId}/team)
+func (_ Unimplemented) ListTeamMembers(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListTeamMembersParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateTeamMember Crea o invita un utente con un ruolo (solo owner)
+// (POST /api/admin/v1/establishments/{establishmentId}/team)
+func (_ Unimplemented) CreateTeamMember(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateTeamMemberParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RemoveTeamMember Revoca l'accesso dell'utente allo stabilimento (solo owner)
+// (DELETE /api/admin/v1/establishments/{establishmentId}/team/{userId})
+func (_ Unimplemented) RemoveTeamMember(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, userId TeamUserID, params RemoveTeamMemberParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateTeamMember Cambia ruolo o disattiva un utente (solo owner)
+// (PATCH /api/admin/v1/establishments/{establishmentId}/team/{userId})
+func (_ Unimplemented) UpdateTeamMember(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, userId TeamUserID, params UpdateTeamMemberParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListZones Elenco zone
+// (GET /api/admin/v1/establishments/{establishmentId}/zones)
+func (_ Unimplemented) ListZones(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListZonesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateZone Crea zona
+// (POST /api/admin/v1/establishments/{establishmentId}/zones)
+func (_ Unimplemented) CreateZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateZoneParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteZone Elimina zona
+// (DELETE /api/admin/v1/establishments/{establishmentId}/zones/{zoneId})
+func (_ Unimplemented) DeleteZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, zoneId ZoneID, params DeleteZoneParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetZone Dettaglio zona
+// (GET /api/admin/v1/establishments/{establishmentId}/zones/{zoneId})
+func (_ Unimplemented) GetZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, zoneId ZoneID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateZone Sostituisce zona
+// (PUT /api/admin/v1/establishments/{establishmentId}/zones/{zoneId})
+func (_ Unimplemented) UpdateZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, zoneId ZoneID, params UpdateZoneParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -856,23 +4869,5574 @@ func (siw *ServerInterfaceWrapper) ListEstablishments(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r)
 }
 
+// CreateEstablishment operation middleware
+func (siw *ServerInterfaceWrapper) CreateEstablishment(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateEstablishmentParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateEstablishment(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetEstablishment operation middleware
 func (siw *ServerInterfaceWrapper) GetEstablishment(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	_ = err
 
-	// ------------- Path parameter "id" -------------
-	var id EstablishmentID
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetEstablishment(w, r, id)
+		siw.Handler.GetEstablishment(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateEstablishment operation middleware
+func (siw *ServerInterfaceWrapper) UpdateEstablishment(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateEstablishmentParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateEstablishment(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListAgreements operation middleware
+func (siw *ServerInterfaceWrapper) ListAgreements(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListAgreementsParams
+
+	// ------------- Optional query parameter "active" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "active", r.URL.Query(), &params.Active, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "active"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "active", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListAgreements(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateAgreement operation middleware
+func (siw *ServerInterfaceWrapper) CreateAgreement(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateAgreementParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateAgreement(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteAgreement operation middleware
+func (siw *ServerInterfaceWrapper) DeleteAgreement(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "agreementId" -------------
+	var agreementId AgreementID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "agreementId", chi.URLParam(r, "agreementId"), &agreementId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "agreementId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteAgreementParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteAgreement(w, r, establishmentId, agreementId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAgreement operation middleware
+func (siw *ServerInterfaceWrapper) GetAgreement(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "agreementId" -------------
+	var agreementId AgreementID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "agreementId", chi.URLParam(r, "agreementId"), &agreementId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "agreementId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAgreement(w, r, establishmentId, agreementId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateAgreement operation middleware
+func (siw *ServerInterfaceWrapper) UpdateAgreement(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "agreementId" -------------
+	var agreementId AgreementID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "agreementId", chi.URLParam(r, "agreementId"), &agreementId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "agreementId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateAgreementParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateAgreement(w, r, establishmentId, agreementId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListClosureDays operation middleware
+func (siw *ServerInterfaceWrapper) ListClosureDays(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListClosureDaysParams
+
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListClosureDays(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateClosureDay operation middleware
+func (siw *ServerInterfaceWrapper) CreateClosureDay(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateClosureDayParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateClosureDay(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteClosureDay operation middleware
+func (siw *ServerInterfaceWrapper) DeleteClosureDay(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "closureDayId" -------------
+	var closureDayId ClosureDayID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "closureDayId", chi.URLParam(r, "closureDayId"), &closureDayId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "closureDayId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteClosureDayParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteClosureDay(w, r, establishmentId, closureDayId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetClosureDay operation middleware
+func (siw *ServerInterfaceWrapper) GetClosureDay(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "closureDayId" -------------
+	var closureDayId ClosureDayID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "closureDayId", chi.URLParam(r, "closureDayId"), &closureDayId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "closureDayId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetClosureDay(w, r, establishmentId, closureDayId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateClosureDay operation middleware
+func (siw *ServerInterfaceWrapper) UpdateClosureDay(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "closureDayId" -------------
+	var closureDayId ClosureDayID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "closureDayId", chi.URLParam(r, "closureDayId"), &closureDayId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "closureDayId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateClosureDayParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateClosureDay(w, r, establishmentId, closureDayId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListComponents operation middleware
+func (siw *ServerInterfaceWrapper) ListComponents(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListComponentsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListComponents(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateComponent operation middleware
+func (siw *ServerInterfaceWrapper) CreateComponent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateComponentParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateComponent(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteComponent operation middleware
+func (siw *ServerInterfaceWrapper) DeleteComponent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "componentId" -------------
+	var componentId ComponentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "componentId", chi.URLParam(r, "componentId"), &componentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "componentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteComponentParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteComponent(w, r, establishmentId, componentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetComponent operation middleware
+func (siw *ServerInterfaceWrapper) GetComponent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "componentId" -------------
+	var componentId ComponentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "componentId", chi.URLParam(r, "componentId"), &componentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "componentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetComponent(w, r, establishmentId, componentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateComponent operation middleware
+func (siw *ServerInterfaceWrapper) UpdateComponent(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "componentId" -------------
+	var componentId ComponentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "componentId", chi.URLParam(r, "componentId"), &componentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "componentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateComponentParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateComponent(w, r, establishmentId, componentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListExtras operation middleware
+func (siw *ServerInterfaceWrapper) ListExtras(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListExtrasParams
+
+	// ------------- Optional query parameter "active" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "active", r.URL.Query(), &params.Active, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "active"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "active", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListExtras(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateExtra operation middleware
+func (siw *ServerInterfaceWrapper) CreateExtra(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateExtraParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateExtra(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteExtra operation middleware
+func (siw *ServerInterfaceWrapper) DeleteExtra(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "extraId" -------------
+	var extraId ExtraID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "extraId", chi.URLParam(r, "extraId"), &extraId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "extraId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteExtraParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteExtra(w, r, establishmentId, extraId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetExtra operation middleware
+func (siw *ServerInterfaceWrapper) GetExtra(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "extraId" -------------
+	var extraId ExtraID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "extraId", chi.URLParam(r, "extraId"), &extraId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "extraId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetExtra(w, r, establishmentId, extraId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateExtra operation middleware
+func (siw *ServerInterfaceWrapper) UpdateExtra(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "extraId" -------------
+	var extraId ExtraID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "extraId", chi.URLParam(r, "extraId"), &extraId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "extraId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateExtraParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateExtra(w, r, establishmentId, extraId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListFixedPrices operation middleware
+func (siw *ServerInterfaceWrapper) ListFixedPrices(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListFixedPricesParams
+
+	// ------------- Optional query parameter "season_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "season_id", r.URL.Query(), &params.SeasonId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "season_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "season_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "pack_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "pack_id", r.URL.Query(), &params.PackId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "pack_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pack_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListFixedPrices(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateFixedPrice operation middleware
+func (siw *ServerInterfaceWrapper) CreateFixedPrice(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateFixedPriceParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateFixedPrice(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteFixedPrice operation middleware
+func (siw *ServerInterfaceWrapper) DeleteFixedPrice(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "fixedPriceId" -------------
+	var fixedPriceId FixedPriceID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "fixedPriceId", chi.URLParam(r, "fixedPriceId"), &fixedPriceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "fixedPriceId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteFixedPriceParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteFixedPrice(w, r, establishmentId, fixedPriceId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetFixedPrice operation middleware
+func (siw *ServerInterfaceWrapper) GetFixedPrice(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "fixedPriceId" -------------
+	var fixedPriceId FixedPriceID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "fixedPriceId", chi.URLParam(r, "fixedPriceId"), &fixedPriceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "fixedPriceId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetFixedPrice(w, r, establishmentId, fixedPriceId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateFixedPrice operation middleware
+func (siw *ServerInterfaceWrapper) UpdateFixedPrice(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "fixedPriceId" -------------
+	var fixedPriceId FixedPriceID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "fixedPriceId", chi.URLParam(r, "fixedPriceId"), &fixedPriceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "fixedPriceId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateFixedPriceParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateFixedPrice(w, r, establishmentId, fixedPriceId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListMaps operation middleware
+func (siw *ServerInterfaceWrapper) ListMaps(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListMapsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListMaps(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateMap operation middleware
+func (siw *ServerInterfaceWrapper) CreateMap(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateMapParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateMap(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteMap operation middleware
+func (siw *ServerInterfaceWrapper) DeleteMap(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "mapId" -------------
+	var mapId MapID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "mapId", chi.URLParam(r, "mapId"), &mapId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "mapId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteMapParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteMap(w, r, establishmentId, mapId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetMap operation middleware
+func (siw *ServerInterfaceWrapper) GetMap(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "mapId" -------------
+	var mapId MapID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "mapId", chi.URLParam(r, "mapId"), &mapId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "mapId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMap(w, r, establishmentId, mapId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SaveMap operation middleware
+func (siw *ServerInterfaceWrapper) SaveMap(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "mapId" -------------
+	var mapId MapID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "mapId", chi.URLParam(r, "mapId"), &mapId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "mapId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SaveMapParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatchRequired
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = IfMatch
+
+	} else {
+		err := fmt.Errorf("Header parameter If-Match is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
+		return
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SaveMap(w, r, establishmentId, mapId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GenerateMapRows operation middleware
+func (siw *ServerInterfaceWrapper) GenerateMapRows(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "mapId" -------------
+	var mapId MapID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "mapId", chi.URLParam(r, "mapId"), &mapId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "mapId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GenerateMapRowsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GenerateMapRows(w, r, establishmentId, mapId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListPacks operation middleware
+func (siw *ServerInterfaceWrapper) ListPacks(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPacksParams
+
+	// ------------- Optional query parameter "active" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "active", r.URL.Query(), &params.Active, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "active"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "active", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListPacks(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreatePack operation middleware
+func (siw *ServerInterfaceWrapper) CreatePack(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePackParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreatePack(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePack operation middleware
+func (siw *ServerInterfaceWrapper) DeletePack(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "packId" -------------
+	var packId PackID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "packId", chi.URLParam(r, "packId"), &packId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "packId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeletePackParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePack(w, r, establishmentId, packId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPack operation middleware
+func (siw *ServerInterfaceWrapper) GetPack(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "packId" -------------
+	var packId PackID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "packId", chi.URLParam(r, "packId"), &packId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "packId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPack(w, r, establishmentId, packId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePack operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePack(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "packId" -------------
+	var packId PackID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "packId", chi.URLParam(r, "packId"), &packId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "packId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePackParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePack(w, r, establishmentId, packId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListPolicies operation middleware
+func (siw *ServerInterfaceWrapper) ListPolicies(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPoliciesParams
+
+	// ------------- Optional query parameter "season_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "season_id", r.URL.Query(), &params.SeasonId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "season_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "season_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListPolicies(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreatePolicy operation middleware
+func (siw *ServerInterfaceWrapper) CreatePolicy(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePolicyParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreatePolicy(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePolicy operation middleware
+func (siw *ServerInterfaceWrapper) DeletePolicy(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "policyId" -------------
+	var policyId PolicyID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "policyId", chi.URLParam(r, "policyId"), &policyId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "policyId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeletePolicyParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePolicy(w, r, establishmentId, policyId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPolicy operation middleware
+func (siw *ServerInterfaceWrapper) GetPolicy(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "policyId" -------------
+	var policyId PolicyID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "policyId", chi.URLParam(r, "policyId"), &policyId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "policyId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPolicy(w, r, establishmentId, policyId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePolicy operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePolicy(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "policyId" -------------
+	var policyId PolicyID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "policyId", chi.URLParam(r, "policyId"), &policyId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "policyId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePolicyParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePolicy(w, r, establishmentId, policyId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListPools operation middleware
+func (siw *ServerInterfaceWrapper) ListPools(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPoolsParams
+
+	// ------------- Optional query parameter "zone_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "zone_id", r.URL.Query(), &params.ZoneId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "zone_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zone_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListPools(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreatePool operation middleware
+func (siw *ServerInterfaceWrapper) CreatePool(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePoolParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreatePool(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePool operation middleware
+func (siw *ServerInterfaceWrapper) DeletePool(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "poolId" -------------
+	var poolId PoolID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "poolId", chi.URLParam(r, "poolId"), &poolId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "poolId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeletePoolParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePool(w, r, establishmentId, poolId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPool operation middleware
+func (siw *ServerInterfaceWrapper) GetPool(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "poolId" -------------
+	var poolId PoolID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "poolId", chi.URLParam(r, "poolId"), &poolId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "poolId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPool(w, r, establishmentId, poolId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePool operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePool(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "poolId" -------------
+	var poolId PoolID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "poolId", chi.URLParam(r, "poolId"), &poolId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "poolId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePoolParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePool(w, r, establishmentId, poolId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListPriceRules operation middleware
+func (siw *ServerInterfaceWrapper) ListPriceRules(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPriceRulesParams
+
+	// ------------- Optional query parameter "season_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "season_id", r.URL.Query(), &params.SeasonId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "season_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "season_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "stage" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "stage", r.URL.Query(), &params.Stage, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "stage"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "stage", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "target_type" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "target_type", r.URL.Query(), &params.TargetType, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "target_type"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "target_type", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListPriceRules(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreatePriceRule operation middleware
+func (siw *ServerInterfaceWrapper) CreatePriceRule(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePriceRuleParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreatePriceRule(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePriceRule operation middleware
+func (siw *ServerInterfaceWrapper) DeletePriceRule(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "priceRuleId" -------------
+	var priceRuleId PriceRuleID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "priceRuleId", chi.URLParam(r, "priceRuleId"), &priceRuleId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "priceRuleId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeletePriceRuleParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePriceRule(w, r, establishmentId, priceRuleId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPriceRule operation middleware
+func (siw *ServerInterfaceWrapper) GetPriceRule(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "priceRuleId" -------------
+	var priceRuleId PriceRuleID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "priceRuleId", chi.URLParam(r, "priceRuleId"), &priceRuleId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "priceRuleId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPriceRule(w, r, establishmentId, priceRuleId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePriceRule operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePriceRule(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "priceRuleId" -------------
+	var priceRuleId PriceRuleID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "priceRuleId", chi.URLParam(r, "priceRuleId"), &priceRuleId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "priceRuleId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePriceRuleParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePriceRule(w, r, establishmentId, priceRuleId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPriceCoverage operation middleware
+func (siw *ServerInterfaceWrapper) GetPriceCoverage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPriceCoverageParams
+
+	// ------------- Required query parameter "season_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "season_id", r.URL.Query(), &params.SeasonId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "season_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "season_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "pack_ids" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "pack_ids", r.URL.Query(), &params.PackIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "pack_ids"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pack_ids", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "channels" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "channels", r.URL.Query(), &params.Channels, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "channels"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channels", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "slots" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "slots", r.URL.Query(), &params.Slots, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "slots"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slots", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPriceCoverage(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPriceMatrix operation middleware
+func (siw *ServerInterfaceWrapper) GetPriceMatrix(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPriceMatrixParams
+
+	// ------------- Required query parameter "season_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "season_id", r.URL.Query(), &params.SeasonId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "season_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "season_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "pack_ids" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "pack_ids", r.URL.Query(), &params.PackIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "pack_ids"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pack_ids", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "formula" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "formula", r.URL.Query(), &params.Formula, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "formula"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "formula", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "channel" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "channel", r.URL.Query(), &params.Channel, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "channel"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "slots" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "slots", r.URL.Query(), &params.Slots, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "slots"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slots", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPriceMatrix(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SimulatePrice operation middleware
+func (siw *ServerInterfaceWrapper) SimulatePrice(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SimulatePriceParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SimulatePrice(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListPromoCodes operation middleware
+func (siw *ServerInterfaceWrapper) ListPromoCodes(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPromoCodesParams
+
+	// ------------- Optional query parameter "active" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "active", r.URL.Query(), &params.Active, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "active"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "active", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListPromoCodes(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreatePromoCode operation middleware
+func (siw *ServerInterfaceWrapper) CreatePromoCode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePromoCodeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreatePromoCode(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePromoCode operation middleware
+func (siw *ServerInterfaceWrapper) DeletePromoCode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "promoCodeId" -------------
+	var promoCodeId PromoCodeID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "promoCodeId", chi.URLParam(r, "promoCodeId"), &promoCodeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "promoCodeId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeletePromoCodeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePromoCode(w, r, establishmentId, promoCodeId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPromoCode operation middleware
+func (siw *ServerInterfaceWrapper) GetPromoCode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "promoCodeId" -------------
+	var promoCodeId PromoCodeID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "promoCodeId", chi.URLParam(r, "promoCodeId"), &promoCodeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "promoCodeId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPromoCode(w, r, establishmentId, promoCodeId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePromoCode operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePromoCode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "promoCodeId" -------------
+	var promoCodeId PromoCodeID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "promoCodeId", chi.URLParam(r, "promoCodeId"), &promoCodeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "promoCodeId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePromoCodeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePromoCode(w, r, establishmentId, promoCodeId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListRatePeriods operation middleware
+func (siw *ServerInterfaceWrapper) ListRatePeriods(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListRatePeriodsParams
+
+	// ------------- Optional query parameter "season_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "season_id", r.URL.Query(), &params.SeasonId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "season_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "season_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListRatePeriods(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateRatePeriod operation middleware
+func (siw *ServerInterfaceWrapper) CreateRatePeriod(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateRatePeriodParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateRatePeriod(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteRatePeriod operation middleware
+func (siw *ServerInterfaceWrapper) DeleteRatePeriod(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ratePeriodId" -------------
+	var ratePeriodId RatePeriodID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ratePeriodId", chi.URLParam(r, "ratePeriodId"), &ratePeriodId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ratePeriodId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteRatePeriodParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteRatePeriod(w, r, establishmentId, ratePeriodId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetRatePeriod operation middleware
+func (siw *ServerInterfaceWrapper) GetRatePeriod(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ratePeriodId" -------------
+	var ratePeriodId RatePeriodID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ratePeriodId", chi.URLParam(r, "ratePeriodId"), &ratePeriodId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ratePeriodId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetRatePeriod(w, r, establishmentId, ratePeriodId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateRatePeriod operation middleware
+func (siw *ServerInterfaceWrapper) UpdateRatePeriod(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ratePeriodId" -------------
+	var ratePeriodId RatePeriodID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ratePeriodId", chi.URLParam(r, "ratePeriodId"), &ratePeriodId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ratePeriodId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateRatePeriodParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateRatePeriod(w, r, establishmentId, ratePeriodId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListSeasons operation middleware
+func (siw *ServerInterfaceWrapper) ListSeasons(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListSeasonsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListSeasons(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateSeason operation middleware
+func (siw *ServerInterfaceWrapper) CreateSeason(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateSeasonParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateSeason(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteSeason operation middleware
+func (siw *ServerInterfaceWrapper) DeleteSeason(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "seasonId" -------------
+	var seasonId SeasonID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "seasonId", chi.URLParam(r, "seasonId"), &seasonId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "seasonId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteSeasonParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteSeason(w, r, establishmentId, seasonId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetSeason operation middleware
+func (siw *ServerInterfaceWrapper) GetSeason(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "seasonId" -------------
+	var seasonId SeasonID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "seasonId", chi.URLParam(r, "seasonId"), &seasonId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "seasonId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSeason(w, r, establishmentId, seasonId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateSeason operation middleware
+func (siw *ServerInterfaceWrapper) UpdateSeason(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "seasonId" -------------
+	var seasonId SeasonID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "seasonId", chi.URLParam(r, "seasonId"), &seasonId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "seasonId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateSeasonParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateSeason(w, r, establishmentId, seasonId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CopySeason operation middleware
+func (siw *ServerInterfaceWrapper) CopySeason(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "seasonId" -------------
+	var seasonId SeasonID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "seasonId", chi.URLParam(r, "seasonId"), &seasonId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "seasonId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CopySeasonParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CopySeason(w, r, establishmentId, seasonId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ApplySetupTemplate operation middleware
+func (siw *ServerInterfaceWrapper) ApplySetupTemplate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ApplySetupTemplateParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ApplySetupTemplate(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateQuickPricelist operation middleware
+func (siw *ServerInterfaceWrapper) CreateQuickPricelist(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateQuickPricelistParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateQuickPricelist(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetSetupStatus operation middleware
+func (siw *ServerInterfaceWrapper) GetSetupStatus(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSetupStatus(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListSetupTemplates operation middleware
+func (siw *ServerInterfaceWrapper) ListSetupTemplates(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListSetupTemplates(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListTeamMembers operation middleware
+func (siw *ServerInterfaceWrapper) ListTeamMembers(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListTeamMembersParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListTeamMembers(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateTeamMember operation middleware
+func (siw *ServerInterfaceWrapper) CreateTeamMember(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateTeamMemberParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateTeamMember(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RemoveTeamMember operation middleware
+func (siw *ServerInterfaceWrapper) RemoveTeamMember(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "userId" -------------
+	var userId TeamUserID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", chi.URLParam(r, "userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "userId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RemoveTeamMemberParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RemoveTeamMember(w, r, establishmentId, userId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateTeamMember operation middleware
+func (siw *ServerInterfaceWrapper) UpdateTeamMember(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "userId" -------------
+	var userId TeamUserID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", chi.URLParam(r, "userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "userId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateTeamMemberParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateTeamMember(w, r, establishmentId, userId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListZones operation middleware
+func (siw *ServerInterfaceWrapper) ListZones(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListZonesParams
+
+	// ------------- Optional query parameter "map_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "map_id", r.URL.Query(), &params.MapId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "map_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "map_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListZones(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateZone operation middleware
+func (siw *ServerInterfaceWrapper) CreateZone(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateZoneParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateZone(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteZone operation middleware
+func (siw *ServerInterfaceWrapper) DeleteZone(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "zoneId" -------------
+	var zoneId ZoneID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "zoneId", chi.URLParam(r, "zoneId"), &zoneId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zoneId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteZoneParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteZone(w, r, establishmentId, zoneId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetZone operation middleware
+func (siw *ServerInterfaceWrapper) GetZone(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "zoneId" -------------
+	var zoneId ZoneID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "zoneId", chi.URLParam(r, "zoneId"), &zoneId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zoneId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetZone(w, r, establishmentId, zoneId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateZone operation middleware
+func (siw *ServerInterfaceWrapper) UpdateZone(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "zoneId" -------------
+	var zoneId ZoneID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "zoneId", chi.URLParam(r, "zoneId"), &zoneId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zoneId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateZoneParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateZone(w, r, establishmentId, zoneId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1107,7 +10671,262 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/admin/v1/establishments", wrapper.ListEstablishments)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/admin/v1/establishments/{id}", wrapper.GetEstablishment)
+		r.Post(options.BaseURL+"/api/admin/v1/establishments", wrapper.CreateEstablishment)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}", wrapper.GetEstablishment)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}", wrapper.UpdateEstablishment)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/team", wrapper.ListTeamMembers)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/team", wrapper.CreateTeamMember)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/team/{userId}", wrapper.RemoveTeamMember)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/team/{userId}", wrapper.UpdateTeamMember)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/seasons", wrapper.ListSeasons)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/seasons", wrapper.CreateSeason)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}", wrapper.DeleteSeason)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}", wrapper.GetSeason)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}", wrapper.UpdateSeason)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/copy", wrapper.CopySeason)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/rate-periods", wrapper.ListRatePeriods)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/rate-periods", wrapper.CreateRatePeriod)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId}", wrapper.DeleteRatePeriod)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId}", wrapper.GetRatePeriod)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId}", wrapper.UpdateRatePeriod)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/closure-days", wrapper.ListClosureDays)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/closure-days", wrapper.CreateClosureDay)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId}", wrapper.DeleteClosureDay)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId}", wrapper.GetClosureDay)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId}", wrapper.UpdateClosureDay)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/zones", wrapper.ListZones)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/zones", wrapper.CreateZone)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/zones/{zoneId}", wrapper.DeleteZone)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/zones/{zoneId}", wrapper.GetZone)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/zones/{zoneId}", wrapper.UpdateZone)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pools", wrapper.ListPools)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pools", wrapper.CreatePool)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pools/{poolId}", wrapper.DeletePool)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pools/{poolId}", wrapper.GetPool)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pools/{poolId}", wrapper.UpdatePool)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/components", wrapper.ListComponents)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/components", wrapper.CreateComponent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/components/{componentId}", wrapper.DeleteComponent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/components/{componentId}", wrapper.GetComponent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/components/{componentId}", wrapper.UpdateComponent)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/packs", wrapper.ListPacks)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/packs", wrapper.CreatePack)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/packs/{packId}", wrapper.DeletePack)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/packs/{packId}", wrapper.GetPack)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/packs/{packId}", wrapper.UpdatePack)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/extras", wrapper.ListExtras)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/extras", wrapper.CreateExtra)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/extras/{extraId}", wrapper.DeleteExtra)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/extras/{extraId}", wrapper.GetExtra)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/extras/{extraId}", wrapper.UpdateExtra)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/price-rules", wrapper.ListPriceRules)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/price-rules", wrapper.CreatePriceRule)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId}", wrapper.DeletePriceRule)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId}", wrapper.GetPriceRule)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId}", wrapper.UpdatePriceRule)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/fixed-prices", wrapper.ListFixedPrices)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/fixed-prices", wrapper.CreateFixedPrice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId}", wrapper.DeleteFixedPrice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId}", wrapper.GetFixedPrice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId}", wrapper.UpdateFixedPrice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/promo-codes", wrapper.ListPromoCodes)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/promo-codes", wrapper.CreatePromoCode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId}", wrapper.DeletePromoCode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId}", wrapper.GetPromoCode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId}", wrapper.UpdatePromoCode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/agreements", wrapper.ListAgreements)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/agreements", wrapper.CreateAgreement)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/agreements/{agreementId}", wrapper.DeleteAgreement)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/agreements/{agreementId}", wrapper.GetAgreement)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/agreements/{agreementId}", wrapper.UpdateAgreement)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/policies", wrapper.ListPolicies)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/policies", wrapper.CreatePolicy)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/policies/{policyId}", wrapper.DeletePolicy)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/policies/{policyId}", wrapper.GetPolicy)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/policies/{policyId}", wrapper.UpdatePolicy)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/maps", wrapper.ListMaps)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/maps", wrapper.CreateMap)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/maps/{mapId}", wrapper.DeleteMap)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/maps/{mapId}", wrapper.GetMap)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/maps/{mapId}", wrapper.SaveMap)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/maps/{mapId}/generate-rows", wrapper.GenerateMapRows)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pricing/simulate", wrapper.SimulatePrice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pricing/matrix", wrapper.GetPriceMatrix)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/pricing/coverage", wrapper.GetPriceCoverage)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/setup/templates", wrapper.ListSetupTemplates)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/setup/status", wrapper.GetSetupStatus)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/setup/apply-template", wrapper.ApplySetupTemplate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist", wrapper.CreateQuickPricelist)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/stream", wrapper.StreamEvents)

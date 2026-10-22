@@ -17,13 +17,30 @@
       "notFound": "Nicht gefunden.",
       "forbidden": "Sie haben keine Berechtigung für diese Aktion.",
       "tooManyRequests": "Zu viele Anfragen. Bitte warten Sie einen Moment.",
-      "title": "Etwas ist schiefgelaufen"
+      "title": "Etwas ist schiefgelaufen",
+      "validation": "Einige Angaben sind ungültig: Bitte die markierten Felder prüfen.",
+      "conflict": "Der Vorgang steht im Konflikt mit vorhandenen Daten (z. B. ein bereits verwendeter Code).",
+      "versionConflict": "Ein anderer Benutzer hat diese Daten geändert. Neu laden, um die aktuelle Version zu sehen.",
+      "notImplemented": "Funktion noch nicht verfügbar.",
+      "spotHasFutureAllocations": "Der Platz hat zukünftige Buchungen: Er kann nur deaktiviert werden.",
+      "noPrice": "Für die gewählten Daten fehlt ein Preis."
     },
     "languages": {
       "it": "Italiano",
       "en": "English",
       "de": "Deutsch",
       "fr": "Français"
+    },
+    "actions": {
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "edit": "Bearbeiten",
+      "create": "Erstellen",
+      "add": "Hinzufügen",
+      "confirmDelete": "Löschen bestätigen?",
+      "saving": "Wird gespeichert…",
+      "saved": "Gespeichert"
     }
   },
   "map": {
@@ -96,7 +113,21 @@
     "reports": "Berichte",
     "settings": "Einstellungen",
     "openMenu": "Menü öffnen",
-    "closeMenu": "Menü schließen"
+    "closeMenu": "Menü schließen",
+    "configuration": "Einstellungen des Betriebs",
+    "config": {
+      "establishment": "Betrieb",
+      "seasons": "Saisons und Zeiträume",
+      "closures": "Schließtage",
+      "maps": "Pläne",
+      "zones": "Zonen",
+      "pools": "Kontingente",
+      "catalog": "Katalog",
+      "pricing": "Preise",
+      "policies": "Regeln",
+      "setup": "Geführte Einrichtung",
+      "team": "Benutzer"
+    }
   },
   "admin": {
     "placeholder": {
@@ -130,7 +161,13 @@
     },
     "user": "Angemeldeter Benutzer",
     "totpEnrolmentRequired": "Um fortzufahren, aktivieren Sie die Zwei-Faktor-Bestätigung in Ihrem Profil.",
-    "skipToContent": "Zum Inhalt springen"
+    "skipToContent": "Zum Inhalt springen",
+    "switcher": {
+      "label": "Betrieb",
+      "placeholder": "Betrieb auswählen",
+      "new": "+ Neuer Betrieb",
+      "none": "Keine Betriebe"
+    }
   },
   "booking": {
     "title": "Buchen Sie Ihren Platz am Strand",

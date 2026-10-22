@@ -1,0 +1,10 @@
+{
+  "maps": {
+    "title": "Maps",
+    "description": "Maps of the establishment."
+  },
+  "editor": {
+    "title": "Map editor",
+    "description": "Row generator, spots, decorations and versioned save."
+  }
+}

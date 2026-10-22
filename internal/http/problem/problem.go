@@ -12,7 +12,10 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/policy"
+	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/httpctx"
 	"github.com/coste360/arenile/internal/store"
@@ -41,6 +44,14 @@ const (
 	IdempotencyKeyReused  = api.ProblemType("idempotency_key_reused")
 	IdempotencyInProgress = api.ProblemType("idempotency_in_progress")
 	InternalError         = api.ProblemType("internal_error")
+	SpotUnavailable       = api.ProblemType("spot_unavailable")
+	NoPrice               = api.ProblemType("no_price")
+	PolicyViolation       = api.ProblemType("policy_violation")
+	HoldExpired           = api.ProblemType("hold_expired")
+	VersionConflict       = api.ProblemType("version_conflict")
+	PreconditionRequired  = api.ProblemType("precondition_required")
+	SpotHasFutureAllocs   = api.ProblemType("spot_has_future_allocations")
+	NotImplemented        = api.ProblemType("not_implemented")
 )
 
 type meta struct {
@@ -69,6 +80,14 @@ var catalog = map[api.ProblemType]meta{
 	IdempotencyKeyReused:  {http.StatusUnprocessableEntity, "Chiave di idempotenza già usata con un'altra richiesta"},
 	IdempotencyInProgress: {http.StatusConflict, "Richiesta con la stessa chiave di idempotenza in corso"},
 	InternalError:         {http.StatusInternalServerError, "Errore interno"},
+	SpotUnavailable:       {http.StatusConflict, "Postazione non disponibile"},
+	NoPrice:               {http.StatusUnprocessableEntity, "Prezzo mancante per le date richieste"},
+	PolicyViolation:       {http.StatusUnprocessableEntity, "La richiesta non rispetta le regole di prenotazione"},
+	HoldExpired:           {http.StatusGone, "Prenotazione provvisoria scaduta"},
+	VersionConflict:       {http.StatusPreconditionFailed, "La risorsa è stata modificata da un altro utente"},
+	PreconditionRequired:  {http.StatusPreconditionRequired, "Header If-Match obbligatorio"},
+	SpotHasFutureAllocs:   {http.StatusConflict, "Postazione con prenotazioni future: puoi solo disattivarla"},
+	NotImplemented:        {http.StatusNotImplemented, "Operazione non ancora disponibile"},
 }
 
 // Option customises a problem.
@@ -79,6 +98,15 @@ func Detail(d string) Option { return func(p *api.Problem) { p.Detail = &d } }
 
 // Fields attaches field validation errors.
 func Fields(errs ...api.FieldError) Option { return func(p *api.Problem) { p.Errors = &errs } }
+
+// CurrentVersion sets current_version (version_conflict).
+func CurrentVersion(v int64) Option { return func(p *api.Problem) { p.CurrentVersion = &v } }
+
+// SpotIDs sets spot_ids (spot_has_future_allocations).
+func SpotIDs(ids []string) Option { return func(p *api.Problem) { p.SpotIds = &ids } }
+
+// Violations sets violations (policy_violation).
+func Violations(vs []api.PolicyViolation) Option { return func(p *api.Problem) { p.Violations = &vs } }
 
 // RetryAfter sets retry_after (seconds) and the Retry-After header.
 func RetryAfter(d time.Duration) Option {
@@ -132,7 +160,13 @@ func WriteProblem(w http.ResponseWriter, p api.Problem) {
 // Error maps a domain error to a problem response. Unknown errors are logged
 // and reported as internal_error without details.
 func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) {
-	var rl *auth.RateLimitError
+	var (
+		rl  *auth.RateLimitError
+		ve  *configerr.ValidationError
+		vc  *configerr.VersionConflictError
+		sa  *configerr.SpotsAllocatedError
+		pve *policy.ViolationError
+	)
 	switch {
 	case errors.As(err, &rl):
 		Write(w, r, RateLimited, RetryAfter(rl.RetryAfter))
@@ -158,6 +192,40 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, BadRequest, Detail("Cursore di paginazione non valido."))
 	case errors.Is(err, auth.ErrInvalidInput), errors.Is(err, auth.ErrWeakPassword), errors.Is(err, establishment.ErrInvalidSlug):
 		Write(w, r, ValidationFailed, Detail(err.Error()))
+	case errors.As(err, &ve):
+		fields := make([]api.FieldError, len(ve.Fields))
+		for i, f := range ve.Fields {
+			fields[i] = api.FieldError{Field: f.Field, Message: f.Message}
+		}
+		Write(w, r, ValidationFailed, Fields(fields...))
+	case errors.Is(err, configerr.ErrValidation):
+		Write(w, r, ValidationFailed, Detail(err.Error()))
+	case errors.As(err, &vc):
+		Write(w, r, VersionConflict, CurrentVersion(vc.Current))
+	case errors.Is(err, configerr.ErrVersionConflict):
+		Write(w, r, VersionConflict)
+	case errors.Is(err, configerr.ErrPreconditionRequired):
+		Write(w, r, PreconditionRequired)
+	case errors.As(err, &sa):
+		Write(w, r, SpotHasFutureAllocs, SpotIDs(sa.SpotIDs))
+	case errors.Is(err, configerr.ErrSpotHasFutureAllocations):
+		Write(w, r, SpotHasFutureAllocs)
+	case errors.Is(err, configerr.ErrNotFound):
+		Write(w, r, NotFound)
+	case errors.Is(err, configerr.ErrConflict):
+		Write(w, r, Conflict, Detail(err.Error()))
+	case errors.Is(err, pricing.ErrNoPrice):
+		Write(w, r, NoPrice, Detail(err.Error()))
+	case errors.As(err, &pve):
+		vs := make([]api.PolicyViolation, len(pve.Violations))
+		for i, v := range pve.Violations {
+			vs[i] = api.PolicyViolation{Code: string(v.Code)}
+			if len(v.Params) > 0 {
+				params := v.Params
+				vs[i].Params = &params
+			}
+		}
+		Write(w, r, PolicyViolation, Violations(vs))
 	case errors.Is(err, store.ErrConflict):
 		Write(w, r, Conflict)
 	default:

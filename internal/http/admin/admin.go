@@ -5,13 +5,20 @@ package admin
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/season"
+	"github.com/coste360/arenile/internal/domain/setup"
+	"github.com/coste360/arenile/internal/domain/team"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/httpctx"
 	"github.com/coste360/arenile/internal/http/middleware"
@@ -20,10 +27,20 @@ import (
 	"github.com/coste360/arenile/internal/store"
 )
 
-// Handlers implements the admin operations of api.ServerInterface.
+// Handlers implements the admin operations of api.ServerInterface. The
+// configuration handlers (M1/M2) live in one file per area, each owned by
+// the builder of the matching domain package: establishments_write.go,
+// team.go, seasons.go, maps.go, catalog.go, pricing.go, policies.go, setup.go.
 type Handlers struct {
 	Auth           *auth.Service
 	Establishments *establishment.Service
+	Team           *team.Service
+	Seasons        *season.Service
+	Mapping        *mapping.Service
+	Catalog        *catalog.Service
+	Pricing        *pricingconfig.Service
+	Policies       *pricingconfig.PolicyService
+	Setup          *setup.Service
 	Stream         *sse.Server
 	Log            *slog.Logger
 	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
@@ -147,7 +164,7 @@ func (h *Handlers) ListEstablishments(w http.ResponseWriter, r *http.Request, pa
 	writeJSON(w, http.StatusOK, out)
 }
 
-// GetEstablishment implements GET /api/admin/v1/establishments/{id}.
+// GetEstablishment implements GET /api/admin/v1/establishments/{establishmentId}.
 func (h *Handlers) GetEstablishment(w http.ResponseWriter, r *http.Request, id api.EstablishmentID) {
 	p, _ := auth.PrincipalFrom(r.Context())
 	e, err := h.Establishments.Get(r.Context(), p, id)
@@ -155,7 +172,7 @@ func (h *Handlers) GetEstablishment(w http.ResponseWriter, r *http.Request, id a
 		problem.Error(w, r, h.Log, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, EstablishmentToAPI(e))
+	writeVersioned(w, http.StatusOK, e.Version, EstablishmentToAPI(e))
 }
 
 // StreamEvents implements GET /api/admin/v1/stream.
@@ -209,11 +226,56 @@ func EstablishmentToAPI(e *store.Establishment) api.Establishment {
 		ContactEmail: e.ContactEmail, ContactPhone: e.ContactPhone, Address: AddressToAPI(e.Address),
 		ConcessionRef: e.ConcessionRef, BookingEnabled: e.BookingEnabled, AllowedEmbedOrigins: nonNil(e.AllowedEmbedOrigins),
 		Theme: ThemeToAPI(e.Theme), ArchivedAt: utcPtr(e.ArchivedAt), CreatedAt: e.CreatedAt.UTC(), UpdatedAt: e.UpdatedAt.UTC(),
+		Version: max(e.Version, 1),
 	}
+	// A malformed stored document falls back to the defaults (never fails a read).
+	settings, _ := establishment.ParseSettings(e.Settings, e.Currency)
+	out.Settings = SettingsToAPI(settings)
 	if e.Geo != nil {
 		out.Geo = &api.Geo{Lat: e.Geo.Lat, Lon: e.Geo.Lon}
 	}
 	return out
+}
+
+// SettingsToAPI maps the establishment settings document.
+func SettingsToAPI(s establishment.Settings) api.EstablishmentSettings {
+	out := api.EstablishmentSettings{
+		Pricing: api.PricingSettings{
+			HalfDayFactor:    s.Pricing.HalfDayFactor.String(),
+			Rounding:         api.Rounding(s.Pricing.Rounding),
+			DefaultVatRateBp: s.Pricing.DefaultVATRateBP,
+		},
+	}
+	if len(s.Pricing.LocalHolidays) > 0 {
+		lh := append([]api.Date(nil), s.Pricing.LocalHolidays...)
+		out.Pricing.LocalHolidays = &lh
+	}
+	if len(s.Pricing.RecurringLocalHolidays) > 0 {
+		rh := make([]api.MonthDay, len(s.Pricing.RecurringLocalHolidays))
+		for i, md := range s.Pricing.RecurringLocalHolidays {
+			rh[i] = md.String()
+		}
+		out.Pricing.RecurringLocalHolidays = &rh
+	}
+	// policy.Rules and api.PolicyRules share the JSON shape of spec 9.
+	_ = ConvertJSON(s.DefaultPolicy, &out.DefaultPolicy)
+	return out
+}
+
+// ConvertJSON copies src into dst through their JSON encoding. Use it between
+// API models and engine types that share the same JSON shape (PolicyRules <->
+// policy.Rules, PriceConditions <-> pricing.Conditions, API -> pricing.Action).
+// Note: pricing.Decimal marshals as a JSON number while api.Decimal is a
+// string, so engine -> API conversions of actions need Decimal.String().
+func ConvertJSON(src, dst any) error {
+	b, err := json.Marshal(src)
+	if err != nil {
+		return fmt.Errorf("admin: convert: %w", err)
+	}
+	if err := json.Unmarshal(b, dst); err != nil {
+		return fmt.Errorf("admin: convert: %w", err)
+	}
+	return nil
 }
 
 // AddressToAPI maps an address.

@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "title": "Prices",
+    "description": "Price rules, fixed-duration prices, promo codes, agreements and season copy."
+  },
+  "simulator": {
+    "title": "Price simulator",
+    "description": "Quote with step-by-step detail."
+  },
+  "matrix": {
+    "title": "Price matrix",
+    "description": "Prices by pack, category and period."
+  },
+  "coverage": {
+    "title": "Coverage check",
+    "description": "Days of the season without a price."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "title": "Prezzi",
+    "description": "Regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni e copia di stagione."
+  },
+  "simulator": {
+    "title": "Simulatore prezzi",
+    "description": "Quotazione con dettaglio passo per passo."
+  },
+  "matrix": {
+    "title": "Matrice di listino",
+    "description": "Prezzi per pack, categoria e periodo."
+  },
+  "coverage": {
+    "title": "Verifica di copertura",
+    "description": "Giorni della stagione senza prezzo."
+  }
+}

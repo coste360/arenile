@@ -94,6 +94,9 @@ func normalizeEstablishment(e *Establishment) {
 	if e.Settings == nil {
 		e.Settings = JSON("{}")
 	}
+	if e.Version == 0 {
+		e.Version = 1
+	}
 }
 
 // GetEstablishment loads the establishment proven by es.

@@ -138,14 +138,15 @@ export interface paths {
         /** Stabilimenti accessibili all'utente corrente */
         get: operations["listEstablishments"];
         put?: never;
-        post?: never;
+        /** Crea un nuovo stabilimento (solo proprietari) */
+        post: operations["createEstablishment"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/admin/v1/establishments/{id}": {
+    "/api/admin/v1/establishments/{establishmentId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -156,6 +157,759 @@ export interface paths {
         get: operations["getEstablishment"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Aggiorna, archivia o ripristina uno stabilimento
+         * @description Configurazione (owner, manager). L'archiviazione è riservata ai proprietari.
+         */
+        patch: operations["updateEstablishment"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Utenti con accesso allo stabilimento */
+        get: operations["listTeamMembers"];
+        put?: never;
+        /** Crea o invita un utente con un ruolo (solo owner) */
+        post: operations["createTeamMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/team/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoca l'accesso dell'utente allo stabilimento (solo owner) */
+        delete: operations["removeTeamMember"];
+        options?: never;
+        head?: never;
+        /** Cambia ruolo o disattiva un utente (solo owner) */
+        patch: operations["updateTeamMember"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/seasons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco stagioni */
+        get: operations["listSeasons"];
+        put?: never;
+        /** Crea stagione */
+        post: operations["createSeason"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio stagione */
+        get: operations["getSeason"];
+        /**
+         * Sostituisce stagione
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateSeason"];
+        post?: never;
+        /** Elimina stagione */
+        delete: operations["deleteSeason"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Copia stagione sull'anno indicato (periodi, regole, prezzi fissi, policy) */
+        post: operations["copySeason"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/rate-periods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco periodi tariffari */
+        get: operations["listRatePeriods"];
+        put?: never;
+        /** Crea periodo tariffario */
+        post: operations["createRatePeriod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio periodo tariffario */
+        get: operations["getRatePeriod"];
+        /**
+         * Sostituisce periodo tariffario
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateRatePeriod"];
+        post?: never;
+        /** Elimina periodo tariffario */
+        delete: operations["deleteRatePeriod"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/closure-days": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco giorni di chiusura */
+        get: operations["listClosureDays"];
+        put?: never;
+        /** Crea giorno di chiusura */
+        post: operations["createClosureDay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio giorno di chiusura */
+        get: operations["getClosureDay"];
+        /**
+         * Sostituisce giorno di chiusura
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateClosureDay"];
+        post?: never;
+        /** Elimina giorno di chiusura */
+        delete: operations["deleteClosureDay"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco zone */
+        get: operations["listZones"];
+        put?: never;
+        /** Crea zona */
+        post: operations["createZone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/zones/{zoneId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio zona */
+        get: operations["getZone"];
+        /**
+         * Sostituisce zona
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateZone"];
+        post?: never;
+        /** Elimina zona */
+        delete: operations["deleteZone"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/pools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco pool */
+        get: operations["listPools"];
+        put?: never;
+        /** Crea pool */
+        post: operations["createPool"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/pools/{poolId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio pool */
+        get: operations["getPool"];
+        /**
+         * Sostituisce pool
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updatePool"];
+        post?: never;
+        /** Elimina pool */
+        delete: operations["deletePool"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/components": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco componenti */
+        get: operations["listComponents"];
+        put?: never;
+        /** Crea componente */
+        post: operations["createComponent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/components/{componentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio componente */
+        get: operations["getComponent"];
+        /**
+         * Sostituisce componente
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateComponent"];
+        post?: never;
+        /** Elimina componente */
+        delete: operations["deleteComponent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/packs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco pack */
+        get: operations["listPacks"];
+        put?: never;
+        /** Crea pack */
+        post: operations["createPack"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/packs/{packId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio pack */
+        get: operations["getPack"];
+        /**
+         * Sostituisce pack
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updatePack"];
+        post?: never;
+        /** Elimina pack */
+        delete: operations["deletePack"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/extras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco extra */
+        get: operations["listExtras"];
+        put?: never;
+        /** Crea extra */
+        post: operations["createExtra"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/extras/{extraId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio extra */
+        get: operations["getExtra"];
+        /**
+         * Sostituisce extra
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateExtra"];
+        post?: never;
+        /** Elimina extra */
+        delete: operations["deleteExtra"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/price-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco regole di prezzo */
+        get: operations["listPriceRules"];
+        put?: never;
+        /** Crea regola di prezzo */
+        post: operations["createPriceRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio regola di prezzo */
+        get: operations["getPriceRule"];
+        /**
+         * Sostituisce regola di prezzo
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updatePriceRule"];
+        post?: never;
+        /** Elimina regola di prezzo */
+        delete: operations["deletePriceRule"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/fixed-prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco prezzi a durata fissa */
+        get: operations["listFixedPrices"];
+        put?: never;
+        /** Crea prezzo a durata fissa */
+        post: operations["createFixedPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio prezzo a durata fissa */
+        get: operations["getFixedPrice"];
+        /**
+         * Sostituisce prezzo a durata fissa
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateFixedPrice"];
+        post?: never;
+        /** Elimina prezzo a durata fissa */
+        delete: operations["deleteFixedPrice"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/promo-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco codici promozionali */
+        get: operations["listPromoCodes"];
+        put?: never;
+        /** Crea codice promozionale */
+        post: operations["createPromoCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio codice promozionale */
+        get: operations["getPromoCode"];
+        /**
+         * Sostituisce codice promozionale
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updatePromoCode"];
+        post?: never;
+        /** Elimina codice promozionale */
+        delete: operations["deletePromoCode"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/agreements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco convenzioni */
+        get: operations["listAgreements"];
+        put?: never;
+        /** Crea convenzione */
+        post: operations["createAgreement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/agreements/{agreementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio convenzione */
+        get: operations["getAgreement"];
+        /**
+         * Sostituisce convenzione
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updateAgreement"];
+        post?: never;
+        /** Elimina convenzione */
+        delete: operations["deleteAgreement"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco policy */
+        get: operations["listPolicies"];
+        put?: never;
+        /** Crea policy */
+        post: operations["createPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/policies/{policyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio policy */
+        get: operations["getPolicy"];
+        /**
+         * Sostituisce policy
+         * @description Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma consigliato.
+         */
+        put: operations["updatePolicy"];
+        post?: never;
+        /** Elimina policy */
+        delete: operations["deletePolicy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/maps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco mappe */
+        get: operations["listMaps"];
+        put?: never;
+        /** Crea una mappa vuota */
+        post: operations["createMap"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/maps/{mapId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Documento completo della mappa (mappa, postazioni, decorazioni) */
+        get: operations["getMap"];
+        /**
+         * Salvataggio transazionale della mappa con controllo di versione
+         * @description Richiede If-Match con la versione letta; in caso di conflitto risponde 412 version_conflict con current_version.
+         */
+        put: operations["saveMap"];
+        post?: never;
+        /** Elimina una mappa (rifiutato se ha postazioni con allocazioni future) */
+        delete: operations["deleteMap"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/maps/{mapId}/generate-rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generatore di file: anteprima o applicazione */
+        post: operations["generateMapRows"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/pricing/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Simulatore: quotazione con dettaglio passo per passo e policy */
+        post: operations["simulatePrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/pricing/matrix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Matrice di listino pack × categoria × periodo */
+        get: operations["getPriceMatrix"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/pricing/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verifica di copertura: giorni senza prezzo per pack attivo e categoria */
+        get: operations["getPriceCoverage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/setup/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Modelli della configurazione guidata */
+        get: operations["listSetupTemplates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/setup/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Avanzamento della configurazione guidata */
+        get: operations["getSetupStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/setup/apply-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Applica un modello (stagione, mappa, zone, catalogo) */
+        post: operations["applySetupTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Listino rapido: genera le regole base da prezzo per categoria e periodo */
+        post: operations["createQuickPricelist"];
         delete?: never;
         options?: never;
         head?: never;
@@ -210,7 +964,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -222,6 +976,15 @@ export interface components {
             /** @description Secondi da attendere (solo per `rate_limited`). */
             retry_after?: number;
             errors?: components["schemas"]["FieldError"][];
+            /**
+             * Format: int64
+             * @description Versione corrente della risorsa (solo per `version_conflict`).
+             */
+            current_version?: number;
+            /** @description Postazioni con allocazioni future (solo per `spot_has_future_allocations`). */
+            spot_ids?: string[];
+            /** @description Vincoli violati (solo per `policy_violation`). */
+            violations?: components["schemas"]["PolicyViolation"][];
         };
         FieldError: {
             field: string;
@@ -351,6 +1114,8 @@ export interface components {
             booking_enabled: boolean;
             allowed_embed_origins: string[];
             theme: components["schemas"]["Theme"];
+            settings: components["schemas"]["EstablishmentSettings"];
+            version: components["schemas"]["Version"];
             /** Format: date-time */
             archived_at?: string;
             /** Format: date-time */
@@ -385,6 +1150,1275 @@ export interface components {
             occurred_at: string;
             spot_ids?: string[];
             dates?: string[];
+        };
+        /** @description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita. */
+        I18nText: {
+            [key: string]: string;
+        };
+        /**
+         * Format: int64
+         * @description Importo in centesimi di euro (IVA inclusa).
+         */
+        Money: number;
+        /**
+         * Format: date
+         * @description Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+         */
+        Date: string;
+        /** @description Ricorrenza annuale `MM-DD`. */
+        MonthDay: string;
+        /** @description Numero decimale esatto come stringa (es. "1.2", "0.5", "10"). Mai float nel calcolo. */
+        Decimal: string;
+        /**
+         * Format: int64
+         * @description Aliquota in punti base (2200 = 22%).
+         */
+        BasisPoints: number;
+        /**
+         * Format: int64
+         * @description Versione per la concorrenza ottimistica; coincide con l'ETag.
+         */
+        Version: number;
+        /**
+         * @description Fascia: mattina o pomeriggio.
+         * @enum {string}
+         */
+        Slot: "AM" | "PM";
+        /**
+         * @description Fasce prenotate: mattina, pomeriggio o giorno intero.
+         * @enum {string}
+         */
+        Slots: "AM" | "PM" | "FULL";
+        /**
+         * @description Formula di durata.
+         * @enum {string}
+         */
+        Formula: "half_day" | "day" | "multi_day" | "week" | "fortnight" | "month" | "season";
+        /**
+         * @description Formula a durata fissa.
+         * @enum {string}
+         */
+        FixedFormula: "week" | "fortnight" | "month" | "season";
+        /**
+         * @description Canale di vendita.
+         * @enum {string}
+         */
+        Channel: "desk" | "online" | "api";
+        /** @enum {string} */
+        SeasonStatus: "draft" | "active" | "closed";
+        /**
+         * @description Modalità di assegnazione della zona (spec 5.2).
+         * @enum {string}
+         */
+        AssignmentMode: "seat" | "zone" | "quantity";
+        /** @enum {string} */
+        SpotKind: "umbrella" | "gazebo" | "tent" | "palm" | "custom";
+        /** @enum {string} */
+        DecorationKind: "walkway" | "shower" | "lifeguard" | "bar" | "entrance" | "cabin_block" | "text" | "custom";
+        /** @enum {string} */
+        SeaSide: "top" | "bottom" | "left" | "right";
+        /** @enum {string} */
+        PricingUnit: "per_booking" | "per_day" | "per_slot";
+        /** @enum {string} */
+        ExtraAttachTo: "line" | "booking";
+        /** @enum {string} */
+        PriceStage: "base" | "modifier" | "discount";
+        /** @enum {string} */
+        PriceTargetType: "pack" | "extra";
+        /** @enum {string} */
+        PriceActionType: "set" | "add" | "multiply" | "percent_off" | "amount_off" | "free_days";
+        /** @enum {string} */
+        AmountPer: "booking" | "line" | "day";
+        /**
+         * @description Arrotondamento del totale finale.
+         * @enum {string}
+         */
+        Rounding: "none" | "euro" | "fifty_cents";
+        /**
+         * @description Modelli di spec 15.2.
+         * @enum {string}
+         */
+        SetupTemplateCode: "classic_rows" | "quantity_beach" | "lido_with_pool" | "empty";
+        /**
+         * @description Il ruolo vale per questo stabilimento o per tutta l'organizzazione.
+         * @enum {string}
+         */
+        TeamScope: "establishment" | "organization";
+        /** @description Intervallo inclusivo. */
+        DateRange: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+        };
+        /** @description Intervallo intero inclusivo; un estremo assente è aperto. */
+        IntRange: {
+            min?: number;
+            max?: number;
+        };
+        Shape: {
+            /** @enum {string} */
+            type: "circle" | "rect";
+            /** Format: double */
+            w: number;
+            /** Format: double */
+            h: number;
+        };
+        /** @description Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}). */
+        ComponentQuantities: {
+            [key: string]: number;
+        };
+        OnlineQuota: {
+            /** @enum {string} */
+            type: "percent" | "count";
+            value: number;
+        };
+        CapacityOverride: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            capacity: number;
+        };
+        /** @description Sfondo opzionale della mappa (spec 11.2). */
+        MapBackground: {
+            /** @enum {string} */
+            type: "image" | "geojson";
+            /** @description URL dell'immagine (type=image). */
+            url?: string;
+            /** @description Perimetro GeoJSON (type=geojson). */
+            geojson?: {
+                [key: string]: unknown;
+            };
+            /** Format: double */
+            scale?: number;
+            /** Format: double */
+            rotation?: number;
+            /** Format: double */
+            offset_x?: number;
+            /** Format: double */
+            offset_y?: number;
+            /** Format: double */
+            opacity?: number;
+        };
+        /** @description Impostazioni dei prezzi dello stabilimento (spec 8.1, 8.5). */
+        PricingSettings: {
+            half_day_factor: components["schemas"]["Decimal"];
+            rounding: components["schemas"]["Rounding"];
+            default_vat_rate_bp: components["schemas"]["BasisPoints"];
+            local_holidays?: components["schemas"]["Date"][];
+            recurring_local_holidays?: components["schemas"]["MonthDay"][];
+        };
+        /** @description Impostazioni versionate. In scrittura sostituisce l'intero documento. */
+        EstablishmentSettings: {
+            pricing: components["schemas"]["PricingSettings"];
+            default_policy: components["schemas"]["PolicyRules"];
+        };
+        EstablishmentCreate: {
+            /**
+             * Format: uuid
+             * @description Obbligatorio se l'utente è proprietario di più organizzazioni.
+             */
+            organization_id?: string;
+            name: string;
+            slug: string;
+            /** @description Default Europe/Rome. */
+            timezone?: string;
+            /** @description Default EUR. */
+            currency?: string;
+            /** @description Default it. */
+            default_locale?: string;
+            enabled_locales?: string[];
+            contact_email?: string;
+            contact_phone?: string;
+            address?: components["schemas"]["Address"];
+        };
+        /** @description Aggiornamento parziale: solo i campi presenti vengono modificati. */
+        EstablishmentUpdate: {
+            name?: string;
+            slug?: string;
+            timezone?: string;
+            currency?: string;
+            default_locale?: string;
+            enabled_locales?: string[];
+            contact_email?: string;
+            contact_phone?: string;
+            address?: components["schemas"]["Address"];
+            geo?: components["schemas"]["Geo"];
+            /** @description Stringa vuota per rimuovere. */
+            concession_ref?: string;
+            booking_enabled?: boolean;
+            allowed_embed_origins?: string[];
+            theme?: components["schemas"]["Theme"];
+            settings?: components["schemas"]["EstablishmentSettings"];
+            /** @description true archivia lo stabilimento, false lo ripristina. */
+            archived?: boolean;
+        };
+        TeamMembership: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            organization_id: string;
+            /**
+             * Format: uuid
+             * @description Assente per i ruoli validi su tutta l'organizzazione.
+             */
+            establishment_id?: string;
+            role: components["schemas"]["Role"];
+        };
+        /** @description Utente con accesso allo stabilimento; role è il ruolo efficace qui. */
+        TeamMember: {
+            /** Format: uuid */
+            user_id: string;
+            email: string;
+            name: string;
+            locale: string;
+            active: boolean;
+            totp_enabled: boolean;
+            /** Format: date-time */
+            last_login_at?: string;
+            role: components["schemas"]["Role"];
+            scope: components["schemas"]["TeamScope"];
+            memberships: components["schemas"]["TeamMembership"][];
+        };
+        TeamMemberList: {
+            items: components["schemas"]["TeamMember"][];
+            next_cursor?: string;
+        };
+        /** @description Crea l'utente (o riusa quello con la stessa email) e gli assegna il ruolo. */
+        TeamMemberCreate: {
+            /** Format: email */
+            email: string;
+            name: string;
+            locale?: string;
+            role: components["schemas"]["Role"];
+            scope?: components["schemas"]["TeamScope"];
+            /** @description Password iniziale; se assente ne viene generata una e restituita una sola volta. */
+            password?: string;
+        };
+        TeamMemberCreated: {
+            member: components["schemas"]["TeamMember"];
+            /** @description false se l'utente esisteva già ed è stato solo aggiunto. */
+            user_created: boolean;
+            /** @description Presente solo se generata dal server; mostrarla una volta. */
+            initial_password?: string;
+        };
+        TeamMemberUpdate: {
+            role?: components["schemas"]["Role"];
+            scope?: components["schemas"]["TeamScope"];
+            /** @description false disattiva l'utente. */
+            active?: boolean;
+        };
+        SeasonInput: {
+            year: number;
+            opens_on: components["schemas"]["Date"];
+            closes_on: components["schemas"]["Date"];
+            status?: components["schemas"]["SeasonStatus"];
+        };
+        /** @description Stagione di apertura annuale (spec 6.1). */
+        Season: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            establishment_id: string;
+            year: number;
+            opens_on: components["schemas"]["Date"];
+            closes_on: components["schemas"]["Date"];
+            status: components["schemas"]["SeasonStatus"];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        SeasonList: {
+            items: components["schemas"]["Season"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        RatePeriodInput: {
+            /** Format: uuid */
+            season_id: string;
+            /** @description `low`, `mid`, `high`, `peak` o libero. */
+            code: string;
+            name: components["schemas"]["I18nText"];
+            color?: string;
+            ranges: components["schemas"]["DateRange"][];
+            sort_order?: number;
+        };
+        /** @description Periodo tariffario di una stagione; i periodi non si sovrappongono nella stessa stagione. */
+        RatePeriod: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            season_id: string;
+            /** @description `low`, `mid`, `high`, `peak` o libero. */
+            code: string;
+            name: components["schemas"]["I18nText"];
+            color: string;
+            ranges: components["schemas"]["DateRange"][];
+            sort_order: number;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        RatePeriodList: {
+            items: components["schemas"]["RatePeriod"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        ClosureDayInput: {
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slot"][];
+            reason?: string;
+        };
+        /** @description Giorno di chiusura straordinaria (maltempo, eventi). */
+        ClosureDay: {
+            /** Format: uuid */
+            id: string;
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slot"][];
+            reason: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ClosureDayList: {
+            items: components["schemas"]["ClosureDay"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        ZoneInput: {
+            /**
+             * Format: uuid
+             * @description Assente per le zone solo a quantità.
+             */
+            map_id?: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            assignment_mode: components["schemas"]["AssignmentMode"];
+            online_visible?: boolean;
+            online_quota?: components["schemas"]["OnlineQuota"];
+            /** @description Chiave usata dalle regole di prezzo (es. row1). */
+            price_category: string;
+            /** @description Assegnazione automatica alla conferma (solo modalità zone). */
+            auto_assign?: boolean;
+            sort_order?: number;
+        };
+        /** @description Raggruppamento logico di postazioni. Le zone `zone` hanno un pool implicito gestito dal sistema (spec 7.5). */
+        Zone: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Assente per le zone solo a quantità.
+             */
+            map_id?: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            assignment_mode: components["schemas"]["AssignmentMode"];
+            online_visible: boolean;
+            online_quota?: components["schemas"]["OnlineQuota"];
+            /** @description Chiave usata dalle regole di prezzo (es. row1). */
+            price_category: string;
+            /** @description Assegnazione automatica alla conferma (solo modalità zone). */
+            auto_assign: boolean;
+            sort_order: number;
+            /** @description Postazioni attive della zona. */
+            spot_count: number;
+            /**
+             * Format: uuid
+             * @description Pool implicito (zone `zone`) o pool legato (zone `quantity`).
+             */
+            pool_id?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ZoneList: {
+            items: components["schemas"]["Zone"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        PoolInput: {
+            /** Format: uuid */
+            zone_id?: string;
+            component_code: string;
+            name: components["schemas"]["I18nText"];
+            capacity: number;
+            capacity_overrides?: components["schemas"]["CapacityOverride"][];
+        };
+        /** @description Inventario a quantità senza posizione. */
+        Pool: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            zone_id?: string;
+            component_code: string;
+            name: components["schemas"]["I18nText"];
+            capacity: number;
+            capacity_overrides: components["schemas"]["CapacityOverride"][];
+            /** @description Pool implicito di una zona `zone`: non modificabile né eliminabile. */
+            system_managed: boolean;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        PoolList: {
+            items: components["schemas"]["Pool"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        ComponentInput: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            tracked: boolean;
+            /**
+             * Format: uuid
+             * @description Pool da cui consumare se tracked.
+             */
+            pool_id?: string;
+        };
+        /** @description Componente fisico di inventario. */
+        Component: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            tracked: boolean;
+            /**
+             * Format: uuid
+             * @description Pool da cui consumare se tracked.
+             */
+            pool_id?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ComponentList: {
+            items: components["schemas"]["Component"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        PackInput: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description?: components["schemas"]["I18nText"];
+            image?: string;
+            composition: components["schemas"]["ComponentQuantities"];
+            /** @description Tipi di postazione compatibili; assente = tutti. */
+            requires_spot_kind?: components["schemas"]["SpotKind"][];
+            /** @description Assente = tutte le zone. */
+            allowed_zone_ids?: string[];
+            allowed_formulas: components["schemas"]["Formula"][];
+            channels: components["schemas"]["Channel"][];
+            max_per_booking?: number;
+            requires_approval?: boolean;
+            sort_order?: number;
+            active?: boolean;
+            vat_rate_bp?: components["schemas"]["BasisPoints"];
+        };
+        /** @description Prodotto vendibile composto da componenti. */
+        Pack: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description: components["schemas"]["I18nText"];
+            image?: string;
+            composition: components["schemas"]["ComponentQuantities"];
+            /** @description Tipi di postazione compatibili; assente = tutti. */
+            requires_spot_kind?: components["schemas"]["SpotKind"][];
+            /** @description Assente = tutte le zone. */
+            allowed_zone_ids?: string[];
+            allowed_formulas: components["schemas"]["Formula"][];
+            channels: components["schemas"]["Channel"][];
+            max_per_booking: number;
+            requires_approval: boolean;
+            sort_order: number;
+            active: boolean;
+            vat_rate_bp?: components["schemas"]["BasisPoints"];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        PackList: {
+            items: components["schemas"]["Pack"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        ExtraInput: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description?: components["schemas"]["I18nText"];
+            /** @description Componente tracciato consumato, se presente. */
+            component_code?: string;
+            pricing_unit: components["schemas"]["PricingUnit"];
+            max_quantity?: number;
+            attach_to: components["schemas"]["ExtraAttachTo"];
+            allowed_pack_ids?: string[];
+            channels: components["schemas"]["Channel"][];
+            sort_order?: number;
+            active?: boolean;
+            vat_rate_bp?: components["schemas"]["BasisPoints"];
+        };
+        /** @description Aggiunta opzionale a un pack o alla prenotazione. */
+        Extra: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description: components["schemas"]["I18nText"];
+            /** @description Componente tracciato consumato, se presente. */
+            component_code?: string;
+            pricing_unit: components["schemas"]["PricingUnit"];
+            max_quantity: number;
+            attach_to: components["schemas"]["ExtraAttachTo"];
+            allowed_pack_ids?: string[];
+            channels: components["schemas"]["Channel"][];
+            sort_order: number;
+            active: boolean;
+            vat_rate_bp?: components["schemas"]["BasisPoints"];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ExtraList: {
+            items: components["schemas"]["Extra"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        /** @description Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND. */
+        PriceConditions: {
+            rate_periods?: string[];
+            date_ranges?: components["schemas"]["DateRange"][];
+            /** @description Giorni ISO (1 = lunedì … 7 = domenica). */
+            weekdays?: number[];
+            holidays?: boolean;
+            slots?: components["schemas"]["Slot"][];
+            formulas?: components["schemas"]["Formula"][];
+            price_categories?: string[];
+            zone_ids?: string[];
+            spot_attributes?: string[];
+            channels?: components["schemas"]["Channel"][];
+            min_days?: number;
+            max_days?: number;
+            lead_time_days?: components["schemas"]["IntRange"];
+            occupancy_percent?: components["schemas"]["IntRange"];
+            customer_tags?: string[];
+            agreement_ids?: string[];
+        };
+        /** @description Azione di prezzo (spec 8.3). */
+        PriceAction: {
+            type: components["schemas"]["PriceActionType"];
+            amount?: components["schemas"]["Money"];
+            factor?: components["schemas"]["Decimal"];
+            percent?: components["schemas"]["Decimal"];
+            per?: components["schemas"]["AmountPer"];
+            every?: number;
+            free?: number;
+        };
+        PriceRuleInput: {
+            /** Format: uuid */
+            season_id: string;
+            name: string;
+            target_type: components["schemas"]["PriceTargetType"];
+            /** @description Assente = tutti i target del tipo. */
+            target_ids?: string[];
+            conditions: components["schemas"]["PriceConditions"];
+            action: components["schemas"]["PriceAction"];
+            priority?: number;
+            stage: components["schemas"]["PriceStage"];
+            stackable?: boolean;
+            active?: boolean;
+        };
+        /** @description Regola di prezzo (spec 6.4, 8). */
+        PriceRule: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            season_id: string;
+            name: string;
+            target_type: components["schemas"]["PriceTargetType"];
+            /** @description Assente = tutti i target del tipo. */
+            target_ids?: string[];
+            conditions: components["schemas"]["PriceConditions"];
+            action: components["schemas"]["PriceAction"];
+            priority: number;
+            stage: components["schemas"]["PriceStage"];
+            stackable: boolean;
+            active: boolean;
+            /**
+             * Format: int64
+             * @description Ordine di recenza (spareggio).
+             */
+            seq: number;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        PriceRuleList: {
+            items: components["schemas"]["PriceRule"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        FixedPriceInput: {
+            /** Format: uuid */
+            season_id: string;
+            /** Format: uuid */
+            pack_id: string;
+            formula: components["schemas"]["FixedFormula"];
+            price_category: string;
+            /** @description Assente = valido in ogni periodo. */
+            rate_period_code?: string;
+            amount: components["schemas"]["Money"];
+        };
+        /** @description Prezzo a pacchetto per settimana, quindicina, mese o stagione. */
+        FixedPrice: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            season_id: string;
+            /** Format: uuid */
+            pack_id: string;
+            formula: components["schemas"]["FixedFormula"];
+            price_category: string;
+            /** @description Assente = valido in ogni periodo. */
+            rate_period_code?: string;
+            amount: components["schemas"]["Money"];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        FixedPriceList: {
+            items: components["schemas"]["FixedPrice"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        PromoCodeInput: {
+            code: string;
+            description?: string;
+            action: components["schemas"]["PriceAction"];
+            conditions?: components["schemas"]["PriceConditions"];
+            valid_from?: components["schemas"]["Date"];
+            valid_to?: components["schemas"]["Date"];
+            max_uses?: number;
+            max_uses_per_customer?: number;
+            stackable?: boolean;
+            active?: boolean;
+        };
+        /** @description Codice promozionale (univoco per stabilimento senza distinzione di maiuscole). */
+        PromoCode: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            description: string;
+            action: components["schemas"]["PriceAction"];
+            conditions: components["schemas"]["PriceConditions"];
+            valid_from?: components["schemas"]["Date"];
+            valid_to?: components["schemas"]["Date"];
+            max_uses?: number;
+            max_uses_per_customer?: number;
+            stackable: boolean;
+            active: boolean;
+            /** @description Utilizzi registrati (solo lettura). */
+            uses: number;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        PromoCodeList: {
+            items: components["schemas"]["PromoCode"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        AgreementInput: {
+            /** @description Assente = solo selezione dal pannello. */
+            code?: string;
+            name: string;
+            partner_name?: string;
+            notes?: string;
+            action: components["schemas"]["PriceAction"];
+            conditions?: components["schemas"]["PriceConditions"];
+            valid_from?: components["schemas"]["Date"];
+            valid_to?: components["schemas"]["Date"];
+            stackable?: boolean;
+            active?: boolean;
+        };
+        /** @description Convenzione: come un codice promozionale, ma assegnata a un cliente o a un partner (hotel). */
+        Agreement: {
+            /** Format: uuid */
+            id: string;
+            /** @description Assente = solo selezione dal pannello. */
+            code?: string;
+            name: string;
+            partner_name: string;
+            notes: string;
+            action: components["schemas"]["PriceAction"];
+            conditions: components["schemas"]["PriceConditions"];
+            valid_from?: components["schemas"]["Date"];
+            valid_to?: components["schemas"]["Date"];
+            stackable: boolean;
+            active: boolean;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        AgreementList: {
+            items: components["schemas"]["Agreement"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        /** @description Ambito della policy; dimensioni vuote = tutto. */
+        PolicyScope: {
+            channels?: components["schemas"]["Channel"][];
+            /** @description ID o codici di zona. */
+            zones?: string[];
+            /** @description ID o codici di pack. */
+            packs?: string[];
+            /** @description Codici dei periodi tariffari. */
+            rate_periods?: string[];
+        };
+        PolicyMinLeadTime: {
+            days?: number;
+            cutoff_time?: string;
+        };
+        PolicySameDayBooking: {
+            enabled?: boolean;
+            until?: string;
+            /** @enum {string} */
+            only_slot?: "AM" | "PM" | "PM_after";
+        };
+        PolicyDuration: {
+            allowed_formulas?: components["schemas"]["Formula"][];
+            min_days?: number;
+            max_days?: number;
+            /** @description ISO 1..7; 0 = qualsiasi. */
+            fixed_start_weekday?: number;
+        };
+        PolicyDeposit: {
+            /** @enum {string} */
+            type?: "percent" | "amount";
+            /**
+             * Format: int64
+             * @description Percentuale intera o importo in centesimi.
+             */
+            value?: number;
+        };
+        PolicyPayment: {
+            /** @enum {string} */
+            mode?: "full" | "deposit" | "none";
+            deposit?: components["schemas"]["PolicyDeposit"];
+            balance_due?: string;
+        };
+        PolicyCancellationTier: {
+            until_days_before: number;
+            refund_percent: number;
+            /** @enum {string} */
+            as?: "refund" | "credit";
+        };
+        PolicyModification: {
+            allowed_until_days_before?: number;
+            fee?: components["schemas"]["Money"];
+        };
+        PolicyWeather: {
+            enabled?: boolean;
+            /** @enum {string} */
+            as?: "refund" | "credit";
+        };
+        PolicySeasonReleaseCredit: {
+            enabled?: boolean;
+            percent?: number;
+        };
+        /** @description Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default. */
+        PolicyRules: {
+            min_lead_time?: components["schemas"]["PolicyMinLeadTime"];
+            max_lead_time_days?: number;
+            same_day_booking?: components["schemas"]["PolicySameDayBooking"];
+            duration?: components["schemas"]["PolicyDuration"];
+            payment?: components["schemas"]["PolicyPayment"];
+            cancellation?: components["schemas"]["PolicyCancellationTier"][];
+            modification?: components["schemas"]["PolicyModification"];
+            weather_policy?: components["schemas"]["PolicyWeather"];
+            approval_required?: boolean;
+            max_spots_per_booking?: number;
+            allow_spot_change_during_stay?: boolean;
+            customer_can_release_season_days?: boolean;
+            season_release_credit?: components["schemas"]["PolicySeasonReleaseCredit"];
+        };
+        BookingPolicyInput: {
+            /** Format: uuid */
+            season_id: string;
+            name: string;
+            scope: components["schemas"]["PolicyScope"];
+            rules: components["schemas"]["PolicyRules"];
+            priority?: number;
+            active?: boolean;
+        };
+        /** @description Policy di prenotazione con ambito e priorità (spec 9). */
+        BookingPolicy: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            season_id: string;
+            name: string;
+            scope: components["schemas"]["PolicyScope"];
+            rules: components["schemas"]["PolicyRules"];
+            priority: number;
+            active: boolean;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        BookingPolicyList: {
+            items: components["schemas"]["BookingPolicy"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        /** @description Copia di stagione (spec 8.7): date spostate mantenendo il giorno della settimana dove ha senso. */
+        SeasonCopyRequest: {
+            target_year: number;
+            opens_on?: components["schemas"]["Date"];
+            closes_on?: components["schemas"]["Date"];
+            /** @description Default true. */
+            include_rate_periods?: boolean;
+            /** @description Default true. */
+            include_price_rules?: boolean;
+            /** @description Default true. */
+            include_fixed_prices?: boolean;
+            /** @description Default true. */
+            include_policies?: boolean;
+        };
+        SeasonCopyResult: {
+            season: components["schemas"]["Season"];
+            rate_periods: number;
+            price_rules: number;
+            fixed_prices: number;
+            policies: number;
+            warnings: string[];
+        };
+        MapInput: {
+            name: components["schemas"]["I18nText"];
+            width: number;
+            height: number;
+            grid_size: number;
+            background?: components["schemas"]["MapBackground"];
+            sea_side: components["schemas"]["SeaSide"];
+            sort_order?: number;
+        };
+        Map: {
+            /** Format: uuid */
+            id: string;
+            name: components["schemas"]["I18nText"];
+            width: number;
+            height: number;
+            grid_size: number;
+            background?: components["schemas"]["MapBackground"];
+            sea_side: components["schemas"]["SeaSide"];
+            sort_order: number;
+            spot_count: number;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        MapList: {
+            items: components["schemas"]["Map"][];
+            next_cursor?: string;
+        };
+        /** @description Postazione prenotabile. */
+        Spot: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            map_id: string;
+            /** Format: uuid */
+            zone_id: string;
+            label: string;
+            row_label: string;
+            number: number;
+            kind: components["schemas"]["SpotKind"];
+            /** Format: double */
+            x: number;
+            /** Format: double */
+            y: number;
+            /** Format: double */
+            rotation: number;
+            shape: components["schemas"]["Shape"];
+            capacity: components["schemas"]["ComponentQuantities"];
+            max_extra: components["schemas"]["ComponentQuantities"];
+            price_category_override?: string;
+            attributes: string[];
+            active: boolean;
+        };
+        SpotInput: {
+            /**
+             * Format: uuid
+             * @description ID di una postazione esistente da aggiornare; assente = nuova postazione.
+             */
+            id?: string;
+            /** Format: uuid */
+            zone_id: string;
+            label: string;
+            row_label?: string;
+            number?: number;
+            kind: components["schemas"]["SpotKind"];
+            /** Format: double */
+            x: number;
+            /** Format: double */
+            y: number;
+            /** Format: double */
+            rotation?: number;
+            shape: components["schemas"]["Shape"];
+            capacity?: components["schemas"]["ComponentQuantities"];
+            max_extra?: components["schemas"]["ComponentQuantities"];
+            price_category_override?: string;
+            attributes?: string[];
+            active?: boolean;
+        };
+        /** @description Elemento decorativo non prenotabile. */
+        Decoration: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            map_id: string;
+            kind: components["schemas"]["DecorationKind"];
+            /** Format: double */
+            x: number;
+            /** Format: double */
+            y: number;
+            /** Format: double */
+            rotation: number;
+            shape: components["schemas"]["Shape"];
+            label?: components["schemas"]["I18nText"];
+        };
+        DecorationInput: {
+            /**
+             * Format: uuid
+             * @description Assente = nuovo elemento.
+             */
+            id?: string;
+            kind: components["schemas"]["DecorationKind"];
+            /** Format: double */
+            x: number;
+            /** Format: double */
+            y: number;
+            /** Format: double */
+            rotation?: number;
+            shape: components["schemas"]["Shape"];
+            label?: components["schemas"]["I18nText"];
+        };
+        /** @description Documento completo della mappa; la versione è anche nell'header ETag. */
+        MapDocument: {
+            map: components["schemas"]["Map"];
+            spots: components["schemas"]["Spot"][];
+            decorations: components["schemas"]["Decoration"][];
+        };
+        /** @description Salvataggio transazionale dell'intero documento: postazioni e decorazioni assenti vengono eliminate (rifiutato con spot_has_future_allocations se una postazione eliminata ha allocazioni future: va disattivata). */
+        MapSaveRequest: {
+            map: components["schemas"]["MapInput"];
+            spots: components["schemas"]["SpotInput"][];
+            decorations: components["schemas"]["DecorationInput"][];
+        };
+        /** @description Generatore di file (spec 11.2). */
+        RowGeneratorRequest: {
+            /**
+             * Format: uuid
+             * @description Zona assegnata alle postazioni generate.
+             */
+            zone_id: string;
+            rows: number;
+            spots_per_row: number;
+            /**
+             * Format: double
+             * @description Coordinata x della prima postazione.
+             */
+            origin_x?: number;
+            /** Format: double */
+            origin_y?: number;
+            /**
+             * Format: double
+             * @description Distanza tra postazioni della stessa fila.
+             */
+            spacing_x: number;
+            /**
+             * Format: double
+             * @description Distanza tra file.
+             */
+            spacing_y: number;
+            /** @enum {string} */
+            row_label_style?: "letters" | "numbers";
+            /** @description Etichetta della prima fila (default A o 1). */
+            first_row_label?: string;
+            /** @description Default 1. */
+            number_start?: number;
+            /**
+             * @description Numerazione che riparte a ogni fila o continua.
+             * @enum {string}
+             */
+            numbering?: "per_row" | "continuous";
+            /** @enum {string} */
+            direction?: "ltr" | "rtl";
+            /** @description Default "{row}{number}". */
+            label_format?: string;
+            kind?: components["schemas"]["SpotKind"];
+            shape?: components["schemas"]["Shape"];
+            /** Format: double */
+            rotation?: number;
+            capacity?: components["schemas"]["ComponentQuantities"];
+            /** @description false = anteprima; true = aggiunge le postazioni alla mappa (richiede If-Match). */
+            apply?: boolean;
+        };
+        RowGeneratorResult: {
+            spots: components["schemas"]["SpotInput"][];
+            /** @description Etichette già presenti sulla mappa. */
+            conflicting_labels: string[];
+            applied: boolean;
+            document?: components["schemas"]["MapDocument"];
+        };
+        SimulateExtra: {
+            /** Format: uuid */
+            extra_id: string;
+            quantity: number;
+        };
+        SimulateLine: {
+            /** Format: uuid */
+            pack_id: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            spot_id?: string;
+            extras?: components["schemas"]["SimulateExtra"][];
+        };
+        /** @description Stesso input della quotazione, con canale selezionabile (spec 8.7). today default = oggi nel fuso dello stabilimento. */
+        SimulateRequest: {
+            /**
+             * Format: uuid
+             * @description Default: stagione che contiene starts_on.
+             */
+            season_id?: string;
+            channel: components["schemas"]["Channel"];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            formula: components["schemas"]["Formula"];
+            today?: components["schemas"]["Date"];
+            lines: components["schemas"]["SimulateLine"][];
+            extras?: components["schemas"]["SimulateExtra"][];
+            customer_tags?: string[];
+            /** Format: uuid */
+            agreement_id?: string;
+            promo_code?: string;
+        };
+        AppliedRule: {
+            rule: string;
+            stage: components["schemas"]["PriceStage"];
+            effect: string;
+        };
+        DayBreakdown: {
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            base: components["schemas"]["Money"];
+            applied: components["schemas"]["AppliedRule"][];
+            total: components["schemas"]["Money"];
+        };
+        ExtraBreakdown: {
+            code: string;
+            qty: number;
+            total: components["schemas"]["Money"];
+        };
+        FixedBreakdown: {
+            formula: components["schemas"]["FixedFormula"];
+            rate_period?: string;
+            amount: components["schemas"]["Money"];
+        };
+        LineBreakdown: {
+            pack: string;
+            zone: string;
+            spot?: string;
+            fixed?: components["schemas"]["FixedBreakdown"];
+            days: components["schemas"]["DayBreakdown"][];
+            extras: components["schemas"]["ExtraBreakdown"][];
+            total: components["schemas"]["Money"];
+        };
+        DiscountBreakdown: {
+            source: string;
+            amount: components["schemas"]["Money"];
+        };
+        VatBreakdown: {
+            rate: components["schemas"]["Decimal"];
+            taxable: components["schemas"]["Money"];
+            tax: components["schemas"]["Money"];
+        };
+        /** @description Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo. */
+        PriceBreakdown: {
+            engine_version: number;
+            currency: string;
+            lines: components["schemas"]["LineBreakdown"][];
+            extras?: components["schemas"]["ExtraBreakdown"][];
+            discounts: components["schemas"]["DiscountBreakdown"][];
+            rounding: components["schemas"]["Money"];
+            total: components["schemas"]["Money"];
+            vat: components["schemas"]["VatBreakdown"][];
+        };
+        PolicyViolation: {
+            /** @description Codice stabile (es. lead_time_too_short). */
+            code: string;
+            params?: {
+                [key: string]: string;
+            };
+        };
+        PolicyEvaluation: {
+            /**
+             * Format: uuid
+             * @description Assente se vale solo la policy di default.
+             */
+            policy_id?: string;
+            rules: components["schemas"]["PolicyRules"];
+            violations: components["schemas"]["PolicyViolation"][];
+        };
+        SimulateResult: {
+            breakdown: components["schemas"]["PriceBreakdown"];
+            deposit_due: components["schemas"]["Money"];
+            policy: components["schemas"]["PolicyEvaluation"];
+        };
+        PriceMatrixCell: {
+            /** Format: uuid */
+            pack_id: string;
+            price_category: string;
+            rate_period: string;
+            /** Format: uuid */
+            zone_id: string;
+            date: components["schemas"]["Date"];
+            priced: boolean;
+            price: components["schemas"]["Money"];
+        };
+        /** @description Matrice pack × categoria × periodo generata dal motore (spec 8.7). */
+        PriceMatrix: {
+            /** Format: uuid */
+            season_id: string;
+            formula: components["schemas"]["Formula"];
+            channel: components["schemas"]["Channel"];
+            slots: components["schemas"]["Slots"];
+            pack_ids: string[];
+            categories: string[];
+            rate_periods: string[];
+            cells: components["schemas"]["PriceMatrixCell"][];
+        };
+        CoverageGap: {
+            /** Format: uuid */
+            pack_id: string;
+            price_category: string;
+            channel: components["schemas"]["Channel"];
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+        };
+        CoverageReport: {
+            /** Format: uuid */
+            season_id: string;
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            complete: boolean;
+            gaps: components["schemas"]["CoverageGap"][];
+        };
+        SetupTemplateZone: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            assignment_mode: components["schemas"]["AssignmentMode"];
+            price_category: string;
+        };
+        SetupTemplatePack: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            composition: components["schemas"]["ComponentQuantities"];
+        };
+        SetupTemplate: {
+            code: components["schemas"]["SetupTemplateCode"];
+            name: components["schemas"]["I18nText"];
+            description: components["schemas"]["I18nText"];
+            /** @description File proposte (0 se nessuna mappa a file). */
+            rows: number;
+            spots_per_row: number;
+            zones: components["schemas"]["SetupTemplateZone"][];
+            packs: components["schemas"]["SetupTemplatePack"][];
+            /** @description Codici dei periodi proposti. */
+            rate_periods: string[];
+        };
+        SetupTemplateList: {
+            items: components["schemas"]["SetupTemplate"][];
+        };
+        ApplyTemplateRequest: {
+            template: components["schemas"]["SetupTemplateCode"];
+            season_year?: number;
+            opens_on?: components["schemas"]["Date"];
+            closes_on?: components["schemas"]["Date"];
+            rows?: number;
+            spots_per_row?: number;
+            map_name?: components["schemas"]["I18nText"];
+        };
+        ApplyTemplateResult: {
+            template: components["schemas"]["SetupTemplateCode"];
+            /** Format: uuid */
+            season_id?: string;
+            /** Format: uuid */
+            map_id?: string;
+            zone_ids: string[];
+            pool_ids: string[];
+            component_ids: string[];
+            pack_ids: string[];
+            extra_ids: string[];
+            rate_period_ids: string[];
+            spots_created: number;
+        };
+        QuickPrice: {
+            price_category: string;
+            rate_period_code: string;
+            amount: components["schemas"]["Money"];
+        };
+        /** @description Listino rapido: prezzo giornaliero per categoria e periodo → regole base (spec 15.2). */
+        QuickPricelistRequest: {
+            /** Format: uuid */
+            season_id: string;
+            /** @description Vuoto = tutti i pack attivi. */
+            pack_ids?: string[];
+            prices: components["schemas"]["QuickPrice"][];
+            /** @description true sostituisce le regole base generate in precedenza dal listino rapido. */
+            replace_existing?: boolean;
+        };
+        QuickPricelistResult: {
+            rules: components["schemas"]["PriceRule"][];
+            replaced: number;
+        };
+        /** @description Avanzamento della configurazione guidata. */
+        SetupStatus: {
+            has_season: boolean;
+            has_rate_periods: boolean;
+            has_map: boolean;
+            spot_count: number;
+            has_catalog: boolean;
+            has_prices: boolean;
+            booking_enabled: boolean;
         };
     };
     responses: {
@@ -444,6 +2478,42 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
+        /** @description Versione non aggiornata (version_conflict, con current_version) */
+        PreconditionFailed: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Header If-Match mancante (precondition_required) */
+        PreconditionRequired: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Richiesta valida ma non elaborabile (no_price, policy_violation) */
+        UnprocessableEntity: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Operazione non ancora disponibile (not_implemented) */
+        NotImplemented: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
     };
     parameters: {
         /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
@@ -463,9 +2533,31 @@ export interface components {
         CSRFToken: string;
         EstablishmentID: string;
         Slug: string;
+        /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+        IfMatch: string;
+        /** @description ETag (versione) della mappa letta in precedenza; obbligatorio. */
+        IfMatchRequired: string;
+        MapID: string;
+        TeamUserID: string;
+        SeasonID: string;
+        RatePeriodID: string;
+        ClosureDayID: string;
+        ZoneID: string;
+        PoolID: string;
+        ComponentID: string;
+        PackID: string;
+        ExtraID: string;
+        PriceRuleID: string;
+        FixedPriceID: string;
+        PromoCodeID: string;
+        AgreementID: string;
+        PolicyID: string;
     };
     requestBodies: never;
-    headers: never;
+    headers: {
+        /** @description Versione della risorsa (`"<version>"`), da reinviare in If-Match. */
+        ETag: string;
+    };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
@@ -682,12 +2774,53 @@ export interface operations {
             403: components["responses"]["Forbidden"];
         };
     };
+    createEstablishment: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EstablishmentCreate"];
+            };
+        };
+        responses: {
+            /** @description Stabilimento creato */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Establishment"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+        };
+    };
     getEstablishment: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: components["parameters"]["EstablishmentID"];
+                establishmentId: components["parameters"]["EstablishmentID"];
             };
             cookie?: never;
         };
@@ -696,6 +2829,7 @@ export interface operations {
             /** @description Stabilimento */
             200: {
                 headers: {
+                    ETag: components["headers"]["ETag"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -705,6 +2839,3040 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    updateEstablishment: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EstablishmentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Stabilimento aggiornato */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Establishment"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listTeamMembers: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di utenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMemberList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createTeamMember: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamMemberCreate"];
+            };
+        };
+        responses: {
+            /** @description Utente aggiunto */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMemberCreated"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    removeTeamMember: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                userId: components["parameters"]["TeamUserID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accesso revocato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    updateTeamMember: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                userId: components["parameters"]["TeamUserID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamMemberUpdate"];
+            };
+        };
+        responses: {
+            /** @description Utente aggiornato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMember"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listSeasons: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di stagioni */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createSeason: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonInput"];
+            };
+        };
+        responses: {
+            /** @description Stagione creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Season"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getSeason: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                seasonId: components["parameters"]["SeasonID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stagione */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Season"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateSeason: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                seasonId: components["parameters"]["SeasonID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonInput"];
+            };
+        };
+        responses: {
+            /** @description Stagione aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Season"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteSeason: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                seasonId: components["parameters"]["SeasonID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    copySeason: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                seasonId: components["parameters"]["SeasonID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonCopyRequest"];
+            };
+        };
+        responses: {
+            /** @description Stagione copiata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonCopyResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    listRatePeriods: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stagione. */
+                season_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di periodi tariffari */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RatePeriodList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createRatePeriod: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RatePeriodInput"];
+            };
+        };
+        responses: {
+            /** @description Periodo tariffario creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RatePeriod"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getRatePeriod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ratePeriodId: components["parameters"]["RatePeriodID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Periodo tariffario */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RatePeriod"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateRatePeriod: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ratePeriodId: components["parameters"]["RatePeriodID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RatePeriodInput"];
+            };
+        };
+        responses: {
+            /** @description Periodo tariffario aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RatePeriod"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteRatePeriod: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ratePeriodId: components["parameters"]["RatePeriodID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listClosureDays: {
+        parameters: {
+            query?: {
+                /** @description Data iniziale inclusa (YYYY-MM-DD). */
+                from?: string;
+                /** @description Data finale inclusa (YYYY-MM-DD). */
+                to?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di giorni di chiusura */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosureDayList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createClosureDay: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClosureDayInput"];
+            };
+        };
+        responses: {
+            /** @description Giorno di chiusura creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosureDay"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getClosureDay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                closureDayId: components["parameters"]["ClosureDayID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Giorno di chiusura */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosureDay"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateClosureDay: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                closureDayId: components["parameters"]["ClosureDayID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClosureDayInput"];
+            };
+        };
+        responses: {
+            /** @description Giorno di chiusura aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosureDay"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteClosureDay: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                closureDayId: components["parameters"]["ClosureDayID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listZones: {
+        parameters: {
+            query?: {
+                /** @description Filtra per mappa. */
+                map_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di zone */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ZoneList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createZone: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ZoneInput"];
+            };
+        };
+        responses: {
+            /** @description Zona creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Zone"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                zoneId: components["parameters"]["ZoneID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zona */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Zone"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateZone: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                zoneId: components["parameters"]["ZoneID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ZoneInput"];
+            };
+        };
+        responses: {
+            /** @description Zona aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Zone"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteZone: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                zoneId: components["parameters"]["ZoneID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listPools: {
+        parameters: {
+            query?: {
+                /** @description Filtra per zona. */
+                zone_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di pool */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PoolList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPool: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PoolInput"];
+            };
+        };
+        responses: {
+            /** @description Pool creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pool"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getPool: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                poolId: components["parameters"]["PoolID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pool */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pool"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updatePool: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                poolId: components["parameters"]["PoolID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PoolInput"];
+            };
+        };
+        responses: {
+            /** @description Pool aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pool"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deletePool: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                poolId: components["parameters"]["PoolID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listComponents: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di componenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComponentList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createComponent: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComponentInput"];
+            };
+        };
+        responses: {
+            /** @description Componente creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Component"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getComponent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                componentId: components["parameters"]["ComponentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Componente */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Component"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateComponent: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                componentId: components["parameters"]["ComponentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComponentInput"];
+            };
+        };
+        responses: {
+            /** @description Componente aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Component"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteComponent: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                componentId: components["parameters"]["ComponentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listPacks: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stato. */
+                active?: boolean;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di pack */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPack: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackInput"];
+            };
+        };
+        responses: {
+            /** @description Pack creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pack"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getPack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                packId: components["parameters"]["PackID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pack */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pack"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updatePack: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                packId: components["parameters"]["PackID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackInput"];
+            };
+        };
+        responses: {
+            /** @description Pack aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pack"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deletePack: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                packId: components["parameters"]["PackID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listExtras: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stato. */
+                active?: boolean;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di extra */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtraList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createExtra: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtraInput"];
+            };
+        };
+        responses: {
+            /** @description Extra creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extra"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getExtra: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                extraId: components["parameters"]["ExtraID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Extra */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extra"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateExtra: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                extraId: components["parameters"]["ExtraID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtraInput"];
+            };
+        };
+        responses: {
+            /** @description Extra aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Extra"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteExtra: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                extraId: components["parameters"]["ExtraID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listPriceRules: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stagione. */
+                season_id?: string;
+                /** @description Filtra per stage. */
+                stage?: components["schemas"]["PriceStage"];
+                /** @description Filtra per tipo di target. */
+                target_type?: components["schemas"]["PriceTargetType"];
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di regole di prezzo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRuleList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPriceRule: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceRuleInput"];
+            };
+        };
+        responses: {
+            /** @description Regola di prezzo creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRule"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getPriceRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                priceRuleId: components["parameters"]["PriceRuleID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Regola di prezzo */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRule"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updatePriceRule: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                priceRuleId: components["parameters"]["PriceRuleID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceRuleInput"];
+            };
+        };
+        responses: {
+            /** @description Regola di prezzo aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceRule"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deletePriceRule: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                priceRuleId: components["parameters"]["PriceRuleID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listFixedPrices: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stagione. */
+                season_id?: string;
+                /** @description Filtra per pack. */
+                pack_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di prezzi a durata fissa */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedPriceList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createFixedPrice: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FixedPriceInput"];
+            };
+        };
+        responses: {
+            /** @description Prezzo a durata fissa creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedPrice"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getFixedPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                fixedPriceId: components["parameters"]["FixedPriceID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prezzo a durata fissa */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedPrice"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateFixedPrice: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                fixedPriceId: components["parameters"]["FixedPriceID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FixedPriceInput"];
+            };
+        };
+        responses: {
+            /** @description Prezzo a durata fissa aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedPrice"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteFixedPrice: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                fixedPriceId: components["parameters"]["FixedPriceID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listPromoCodes: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stato. */
+                active?: boolean;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di codici promozionali */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCodeList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPromoCode: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoCodeInput"];
+            };
+        };
+        responses: {
+            /** @description Codice promozionale creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getPromoCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                promoCodeId: components["parameters"]["PromoCodeID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Codice promozionale */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCode"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updatePromoCode: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                promoCodeId: components["parameters"]["PromoCodeID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoCodeInput"];
+            };
+        };
+        responses: {
+            /** @description Codice promozionale aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoCode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deletePromoCode: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                promoCodeId: components["parameters"]["PromoCodeID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listAgreements: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stato. */
+                active?: boolean;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di convenzioni */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgreementList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createAgreement: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgreementInput"];
+            };
+        };
+        responses: {
+            /** @description Convenzione creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Agreement"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getAgreement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                agreementId: components["parameters"]["AgreementID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Convenzione */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Agreement"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateAgreement: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                agreementId: components["parameters"]["AgreementID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgreementInput"];
+            };
+        };
+        responses: {
+            /** @description Convenzione aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Agreement"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deleteAgreement: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                agreementId: components["parameters"]["AgreementID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listPolicies: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stagione. */
+                season_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di policy */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingPolicyList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createPolicy: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingPolicyInput"];
+            };
+        };
+        responses: {
+            /** @description Policy creato/a */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingPolicy"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                policyId: components["parameters"]["PolicyID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Policy */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingPolicy"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updatePolicy: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                policyId: components["parameters"]["PolicyID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingPolicyInput"];
+            };
+        };
+        responses: {
+            /** @description Policy aggiornato/a */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingPolicy"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    deletePolicy: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                policyId: components["parameters"]["PolicyID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    listMaps: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di mappe */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createMap: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MapInput"];
+            };
+        };
+        responses: {
+            /** @description Mappa creata */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapDocument"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    getMap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                mapId: components["parameters"]["MapID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Documento della mappa */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapDocument"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    saveMap: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio. */
+                "If-Match": components["parameters"]["IfMatchRequired"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                mapId: components["parameters"]["MapID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MapSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description Mappa salvata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapDocument"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
+        };
+    };
+    deleteMap: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                mapId: components["parameters"]["MapID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminata */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+        };
+    };
+    generateMapRows: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                mapId: components["parameters"]["MapID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RowGeneratorRequest"];
+            };
+        };
+        responses: {
+            /** @description Postazioni generate */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RowGeneratorResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
+        };
+    };
+    simulatePrice: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulateRequest"];
+            };
+        };
+        responses: {
+            /** @description Risultato della simulazione */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulateResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+        };
+    };
+    getPriceMatrix: {
+        parameters: {
+            query: {
+                season_id: string;
+                /** @description Vuoto = tutti i pack attivi. */
+                pack_ids?: string[];
+                /** @description day (default) o half_day. */
+                formula?: components["schemas"]["Formula"];
+                /** @description Default desk. */
+                channel?: components["schemas"]["Channel"];
+                /** @description Default FULL. */
+                slots?: components["schemas"]["Slots"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matrice di listino */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceMatrix"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getPriceCoverage: {
+        parameters: {
+            query: {
+                season_id: string;
+                pack_ids?: string[];
+                /** @description Default desk e online. */
+                channels?: components["schemas"]["Channel"][];
+                slots?: components["schemas"]["Slots"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Esito della verifica */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listSetupTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Modelli */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupTemplateList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getSetupStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupStatus"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    applySetupTemplate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyTemplateRequest"];
+            };
+        };
+        responses: {
+            /** @description Modello applicato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplyTemplateResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    createQuickPricelist: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuickPricelistRequest"];
+            };
+        };
+        responses: {
+            /** @description Regole generate */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuickPricelistResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     streamEvents: {

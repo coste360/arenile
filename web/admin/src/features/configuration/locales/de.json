@@ -1,0 +1,34 @@
+{
+  "establishment": {
+    "title": "Betrieb",
+    "description": "Daten, Sprachen, Design, öffentliche Seite und Preiseinstellungen."
+  },
+  "new": {
+    "title": "Neuer Betrieb",
+    "description": "Einen weiteren Betrieb Ihrer Organisation anlegen."
+  },
+  "seasons": {
+    "title": "Saisons und Zeiträume",
+    "description": "Öffnungssaisons und Tarifzeiträume."
+  },
+  "closures": {
+    "title": "Schließtage",
+    "description": "Außerordentliche Schließtage."
+  },
+  "zones": {
+    "title": "Zonen",
+    "description": "Zonen, Zuweisungsarten und Online-Kontingente."
+  },
+  "pools": {
+    "title": "Kontingente",
+    "description": "Mengenbestand ohne Position."
+  },
+  "catalog": {
+    "title": "Katalog",
+    "description": "Komponenten, Pakete und Extras."
+  },
+  "team": {
+    "title": "Benutzer",
+    "description": "Benutzer und Rollen des Betriebs."
+  }
+}

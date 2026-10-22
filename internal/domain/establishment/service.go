@@ -6,12 +6,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 
 	"github.com/uptrace/bun"
 
+	"github.com/coste360/arenile/internal/clock"
+	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -50,10 +54,32 @@ func ValidateSlug(slug string) error {
 // Service implements establishment use cases.
 type Service struct {
 	db bun.IDB
+	w  WriteDeps
 }
 
-// NewService returns a Service.
-func NewService(db bun.IDB) *Service { return &Service{db: db} }
+// WriteDeps are the dependencies of the configuration use cases (create,
+// update, archive: M1), which write the audit log and outbox events.
+type WriteDeps struct {
+	Clock  clock.Clock
+	Audit  *audit.Writer
+	Outbox *event.Outbox
+	Log    *slog.Logger
+}
+
+// Option configures a Service.
+type Option func(*Service)
+
+// WithWriteDeps sets the dependencies of the write use cases.
+func WithWriteDeps(d WriteDeps) Option { return func(s *Service) { s.w = d } }
+
+// NewService returns a Service. The read use cases need only db.
+func NewService(db bun.IDB, opts ...Option) *Service {
+	s := &Service{db: db}
+	for _, o := range opts {
+		o(s)
+	}
+	return s
+}
 
 // List returns the non-archived establishments visible to p.
 func (s *Service) List(ctx context.Context, p *auth.Principal, cursor string, limit int) (store.Page[store.Establishment], error) {

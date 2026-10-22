@@ -17,13 +17,30 @@
       "notFound": "Not found.",
       "forbidden": "You are not allowed to perform this action.",
       "tooManyRequests": "Too many requests. Please wait a moment and try again.",
-      "title": "Something went wrong"
+      "title": "Something went wrong",
+      "validation": "Some data is not valid: check the highlighted fields.",
+      "conflict": "The operation conflicts with existing data (for example a code already in use).",
+      "versionConflict": "Another user changed this data. Reload to see the latest version.",
+      "notImplemented": "Feature not available yet.",
+      "spotHasFutureAllocations": "The spot has future bookings: you can only deactivate it.",
+      "noPrice": "A price is missing for the requested dates."
     },
     "languages": {
       "it": "Italiano",
       "en": "English",
       "de": "Deutsch",
       "fr": "Français"
+    },
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "add": "Add",
+      "confirmDelete": "Do you confirm the deletion?",
+      "saving": "Saving…",
+      "saved": "Saved"
     }
   },
   "map": {
@@ -96,7 +113,21 @@
     "reports": "Reports",
     "settings": "Settings",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "configuration": "Establishment settings",
+    "config": {
+      "establishment": "Establishment",
+      "seasons": "Seasons and periods",
+      "closures": "Closures",
+      "maps": "Maps",
+      "zones": "Zones",
+      "pools": "Pools",
+      "catalog": "Catalogue",
+      "pricing": "Prices",
+      "policies": "Policies",
+      "setup": "Guided setup",
+      "team": "Users"
+    }
   },
   "admin": {
     "placeholder": {
@@ -130,7 +161,13 @@
     },
     "user": "Signed-in user",
     "totpEnrolmentRequired": "To continue you must enable two-step verification from your profile.",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "switcher": {
+      "label": "Establishment",
+      "placeholder": "Choose an establishment",
+      "new": "+ New establishment",
+      "none": "No establishments"
+    }
   },
   "booking": {
     "title": "Book your spot on the beach",

@@ -1,0 +1,34 @@
+{
+  "establishment": {
+    "title": "Stabilimento",
+    "description": "Dati, lingue, tema, pagina pubblica e impostazioni dei prezzi."
+  },
+  "new": {
+    "title": "Nuovo stabilimento",
+    "description": "Crea un altro stabilimento della tua organizzazione."
+  },
+  "seasons": {
+    "title": "Stagioni e periodi",
+    "description": "Stagioni di apertura e periodi tariffari."
+  },
+  "closures": {
+    "title": "Chiusure",
+    "description": "Giorni di chiusura straordinaria."
+  },
+  "zones": {
+    "title": "Zone",
+    "description": "Zone, modalità di assegnazione e quote online."
+  },
+  "pools": {
+    "title": "Pool",
+    "description": "Inventario a quantità senza posizione."
+  },
+  "catalog": {
+    "title": "Catalogo",
+    "description": "Componenti, pack ed extra."
+  },
+  "team": {
+    "title": "Utenti",
+    "description": "Utenti e ruoli dello stabilimento."
+  }
+}

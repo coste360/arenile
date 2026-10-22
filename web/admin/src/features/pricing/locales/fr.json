@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "title": "Prix",
+    "description": "Règles de prix, prix à durée fixe, codes promo, conventions et copie de saison."
+  },
+  "simulator": {
+    "title": "Simulateur de prix",
+    "description": "Devis avec détail étape par étape."
+  },
+  "matrix": {
+    "title": "Grille tarifaire",
+    "description": "Prix par formule, catégorie et période."
+  },
+  "coverage": {
+    "title": "Vérification de couverture",
+    "description": "Jours de la saison sans prix."
+  }
+}

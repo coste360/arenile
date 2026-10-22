@@ -10,6 +10,8 @@ Milestone **M0 — Fondamenta** (in sviluppo).
 
 ### Added
 
+- M1/M2 (in sviluppo): contratto API di amministrazione per stabilimenti, utenti, stagioni, periodi tariffari, chiusure, mappe (documento versionato con `ETag`/`If-Match`, generatore di file), zone, pool, componenti, pack, extra, regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni, policy, simulatore, matrice di listino, verifica di copertura, copia di stagione e configurazione guidata; migrazione `00002_inventory_catalog_pricing` per SQLite e PostgreSQL; nuovi tipi di errore `version_conflict`, `precondition_required`, `spot_has_future_allocations`, `not_implemented`; pannello con rotte per stabilimento (`/admin/e/{id}/...`), selettore dello stabilimento e menu Configurazione.
+
 - Specifica tecnica e funzionale completa in `docs/spec/` (un file per sezione).
 - Struttura del repository: monobinario Go (`cmd/arenile`), SPA pannello e booking in `web/` (npm workspaces), contratto API in `api/openapi.yaml`.
 - Librerie di base: `internal/clock` (orologio iniettabile), `internal/money` (importi in centesimi, arrotondamento half-even, scorporo IVA), `internal/calendar` (date di calendario, intervalli, fasce AM/PM).

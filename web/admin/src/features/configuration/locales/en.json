@@ -1,0 +1,34 @@
+{
+  "establishment": {
+    "title": "Establishment",
+    "description": "Details, languages, theme, public page and price settings."
+  },
+  "new": {
+    "title": "New establishment",
+    "description": "Create another establishment of your organisation."
+  },
+  "seasons": {
+    "title": "Seasons and periods",
+    "description": "Opening seasons and rate periods."
+  },
+  "closures": {
+    "title": "Closures",
+    "description": "Extraordinary closing days."
+  },
+  "zones": {
+    "title": "Zones",
+    "description": "Zones, assignment modes and online quotas."
+  },
+  "pools": {
+    "title": "Pools",
+    "description": "Quantity inventory without position."
+  },
+  "catalog": {
+    "title": "Catalogue",
+    "description": "Components, packs and extras."
+  },
+  "team": {
+    "title": "Users",
+    "description": "Users and roles of the establishment."
+  }
+}

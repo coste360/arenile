@@ -26,8 +26,14 @@ import (
 	"github.com/coste360/arenile/internal/crypto"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/season"
+	"github.com/coste360/arenile/internal/domain/setup"
+	"github.com/coste360/arenile/internal/domain/team"
 	httpserver "github.com/coste360/arenile/internal/http"
 	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/store"
@@ -77,6 +83,13 @@ type App struct {
 
 	Auth           *auth.Service
 	Establishments *establishment.Service
+	Team           *team.Service
+	Seasons        *season.Service
+	Mapping        *mapping.Service
+	Catalog        *catalog.Service
+	Pricing        *pricingconfig.Service
+	Policies       *pricingconfig.PolicyService
+	Setup          *setup.Service
 	Outbox         *event.Outbox
 	Bus            ext.EventBus
 
@@ -177,8 +190,11 @@ func (a *App) wire() error {
 		return err
 	}
 	a.Auth = authSvc
-	a.Establishments = establishment.NewService(a.db)
 	a.Outbox = event.NewOutbox(c)
+	a.Establishments = establishment.NewService(a.db, establishment.WithWriteDeps(establishment.WriteDeps{
+		Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
+	}))
+	a.wireConfiguration(aw)
 	a.registry = NewRegistry(c, x)
 	if x.EventBus != nil {
 		a.Bus = x.EventBus
@@ -206,12 +222,34 @@ func (a *App) wire() error {
 	a.handler = httpserver.New(httpserver.Deps{
 		DB: a.db, Clock: c, Log: a.log, Version: a.opts.version,
 		Auth: authSvc, Establishments: a.Establishments, Bus: a.Bus,
+		Team: a.Team, Seasons: a.Seasons, Mapping: a.Mapping, Catalog: a.Catalog,
+		Pricing: a.Pricing, Policies: a.Policies, Setup: a.Setup,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),
 		Extensions:     x,
 	})
 	return nil
+}
+
+// wireConfiguration builds the M1/M2 configuration services. They share the
+// database, clock, audit writer and outbox; setup composes the others.
+func (a *App) wireConfiguration(aw *audit.Writer) {
+	c := a.opts.clock
+	a.Team = team.NewService(team.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Auth: a.Auth})
+	a.Seasons = season.NewService(season.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log})
+	// Allocations arrive with M3: until then no spot has future allocations.
+	a.Mapping = mapping.NewService(mapping.Deps{
+		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Allocations: mapping.NoAllocations{},
+	})
+	a.Catalog = catalog.NewService(catalog.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log})
+	pd := pricingconfig.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log}
+	a.Pricing = pricingconfig.NewService(pd)
+	a.Policies = pricingconfig.NewPolicyService(pd)
+	a.Setup = setup.NewService(setup.Deps{
+		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
+		Seasons: a.Seasons, Mapping: a.Mapping, Catalog: a.Catalog, Pricing: a.Pricing,
+	})
 }
 
 // bootstrapOwner creates the first owner from ARENILE_BOOTSTRAP_OWNER_* when

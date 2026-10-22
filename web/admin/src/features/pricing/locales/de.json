@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "title": "Preise",
+    "description": "Preisregeln, Festpreise, Aktionscodes, Vereinbarungen und Saisonkopie."
+  },
+  "simulator": {
+    "title": "Preissimulator",
+    "description": "Angebot mit schrittweiser Aufschlüsselung."
+  },
+  "matrix": {
+    "title": "Preismatrix",
+    "description": "Preise nach Paket, Kategorie und Zeitraum."
+  },
+  "coverage": {
+    "title": "Abdeckungsprüfung",
+    "description": "Saisontage ohne Preis."
+  }
+}

@@ -32,6 +32,20 @@ tags:
     description: Autenticazione del pannello
   - name: establishments
     description: Stabilimenti
+  - name: team
+    description: Utenti e ruoli dello stabilimento
+  - name: seasons
+    description: Stagioni, periodi tariffari e chiusure
+  - name: maps
+    description: Mappe, zone, postazioni, decorazioni e pool
+  - name: catalog
+    description: Componenti, pack ed extra
+  - name: pricing
+    description: Listini, codici promozionali, convenzioni e strumenti dei prezzi
+  - name: policies
+    description: Policy di prenotazione
+  - name: setup
+    description: Configurazione guidata
   - name: realtime
     description: Eventi in tempo reale (SSE)
   - name: public
@@ -185,7 +199,8 @@ paths:
   /api/admin/v1/establishments:
     get:
       operationId: listEstablishments
-      tags: [establishments]
+      tags:
+        - establishments
       summary: Stabilimenti accessibili all'utente corrente
       security:
         - cookieAuth: []
@@ -206,10 +221,46 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-  /api/admin/v1/establishments/{id}:
+    post:
+      operationId: createEstablishment
+      tags:
+        - establishments
+      summary: Crea un nuovo stabilimento (solo proprietari)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EstablishmentCreate"
+      responses:
+        "201":
+          description: Stabilimento creato
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Establishment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}:
     get:
       operationId: getEstablishment
-      tags: [establishments]
+      tags:
+        - establishments
       summary: Dettaglio di uno stabilimento
       security:
         - cookieAuth: []
@@ -219,6 +270,9 @@ paths:
       responses:
         "200":
           description: Stabilimento
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
           content:
             application/json:
               schema:
@@ -229,6 +283,2930 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateEstablishment
+      tags:
+        - establishments
+      summary: Aggiorna, archivia o ripristina uno stabilimento
+      description: Configurazione (owner, manager). L'archiviazione è riservata ai proprietari.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EstablishmentUpdate"
+      responses:
+        "200":
+          description: Stabilimento aggiornato
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Establishment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/team:
+    get:
+      operationId: listTeamMembers
+      tags:
+        - team
+      summary: Utenti con accesso allo stabilimento
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di utenti
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMemberList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createTeamMember
+      tags:
+        - team
+      summary: Crea o invita un utente con un ruolo (solo owner)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamMemberCreate"
+      responses:
+        "201":
+          description: Utente aggiunto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMemberCreated"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/team/{userId}:
+    patch:
+      operationId: updateTeamMember
+      tags:
+        - team
+      summary: Cambia ruolo o disattiva un utente (solo owner)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TeamUserID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamMemberUpdate"
+      responses:
+        "200":
+          description: Utente aggiornato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMember"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      operationId: removeTeamMember
+      tags:
+        - team
+      summary: Revoca l'accesso dell'utente allo stabilimento (solo owner)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TeamUserID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Accesso revocato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/seasons:
+    get:
+      operationId: listSeasons
+      tags:
+        - seasons
+      summary: Elenco stagioni
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di stagioni
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createSeason
+      tags:
+        - seasons
+      summary: Crea stagione
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonInput"
+      responses:
+        "201":
+          description: Stagione creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Season"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}:
+    get:
+      operationId: getSeason
+      tags:
+        - seasons
+      summary: Dettaglio stagione
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonID"
+      responses:
+        "200":
+          description: Stagione
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Season"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateSeason
+      tags:
+        - seasons
+      summary: Sostituisce stagione
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonInput"
+      responses:
+        "200":
+          description: Stagione aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Season"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteSeason
+      tags:
+        - seasons
+      summary: Elimina stagione
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/copy:
+    post:
+      operationId: copySeason
+      tags:
+        - seasons
+      summary: Copia stagione sull'anno indicato (periodi, regole, prezzi fissi, policy)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonCopyRequest"
+      responses:
+        "201":
+          description: Stagione copiata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonCopyResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/rate-periods:
+    get:
+      operationId: listRatePeriods
+      tags:
+        - seasons
+      summary: Elenco periodi tariffari
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: season_id
+          in: query
+          required: false
+          description: Filtra per stagione.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di periodi tariffari
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatePeriodList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createRatePeriod
+      tags:
+        - seasons
+      summary: Crea periodo tariffario
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatePeriodInput"
+      responses:
+        "201":
+          description: Periodo tariffario creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatePeriod"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId}:
+    get:
+      operationId: getRatePeriod
+      tags:
+        - seasons
+      summary: Dettaglio periodo tariffario
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RatePeriodID"
+      responses:
+        "200":
+          description: Periodo tariffario
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatePeriod"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateRatePeriod
+      tags:
+        - seasons
+      summary: Sostituisce periodo tariffario
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RatePeriodID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatePeriodInput"
+      responses:
+        "200":
+          description: Periodo tariffario aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatePeriod"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteRatePeriod
+      tags:
+        - seasons
+      summary: Elimina periodo tariffario
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RatePeriodID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/closure-days:
+    get:
+      operationId: listClosureDays
+      tags:
+        - seasons
+      summary: Elenco giorni di chiusura
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: false
+          description: Data iniziale inclusa (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+            x-go-type: string
+        - name: to
+          in: query
+          required: false
+          description: Data finale inclusa (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di giorni di chiusura
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClosureDayList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createClosureDay
+      tags:
+        - seasons
+      summary: Crea giorno di chiusura
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClosureDayInput"
+      responses:
+        "201":
+          description: Giorno di chiusura creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClosureDay"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/closure-days/{closureDayId}:
+    get:
+      operationId: getClosureDay
+      tags:
+        - seasons
+      summary: Dettaglio giorno di chiusura
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ClosureDayID"
+      responses:
+        "200":
+          description: Giorno di chiusura
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClosureDay"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateClosureDay
+      tags:
+        - seasons
+      summary: Sostituisce giorno di chiusura
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ClosureDayID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClosureDayInput"
+      responses:
+        "200":
+          description: Giorno di chiusura aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClosureDay"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteClosureDay
+      tags:
+        - seasons
+      summary: Elimina giorno di chiusura
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ClosureDayID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/zones:
+    get:
+      operationId: listZones
+      tags:
+        - maps
+      summary: Elenco zone
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: map_id
+          in: query
+          required: false
+          description: Filtra per mappa.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di zone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ZoneList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createZone
+      tags:
+        - maps
+      summary: Crea zona
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ZoneInput"
+      responses:
+        "201":
+          description: Zona creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Zone"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/zones/{zoneId}:
+    get:
+      operationId: getZone
+      tags:
+        - maps
+      summary: Dettaglio zona
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ZoneID"
+      responses:
+        "200":
+          description: Zona
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Zone"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateZone
+      tags:
+        - maps
+      summary: Sostituisce zona
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ZoneID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ZoneInput"
+      responses:
+        "200":
+          description: Zona aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Zone"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteZone
+      tags:
+        - maps
+      summary: Elimina zona
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ZoneID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/pools:
+    get:
+      operationId: listPools
+      tags:
+        - maps
+      summary: Elenco pool
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: zone_id
+          in: query
+          required: false
+          description: Filtra per zona.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di pool
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PoolList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createPool
+      tags:
+        - maps
+      summary: Crea pool
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PoolInput"
+      responses:
+        "201":
+          description: Pool creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pool"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/pools/{poolId}:
+    get:
+      operationId: getPool
+      tags:
+        - maps
+      summary: Dettaglio pool
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PoolID"
+      responses:
+        "200":
+          description: Pool
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pool"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updatePool
+      tags:
+        - maps
+      summary: Sostituisce pool
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PoolID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PoolInput"
+      responses:
+        "200":
+          description: Pool aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pool"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deletePool
+      tags:
+        - maps
+      summary: Elimina pool
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PoolID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/components:
+    get:
+      operationId: listComponents
+      tags:
+        - catalog
+      summary: Elenco componenti
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di componenti
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComponentList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createComponent
+      tags:
+        - catalog
+      summary: Crea componente
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComponentInput"
+      responses:
+        "201":
+          description: Componente creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/components/{componentId}:
+    get:
+      operationId: getComponent
+      tags:
+        - catalog
+      summary: Dettaglio componente
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ComponentID"
+      responses:
+        "200":
+          description: Componente
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateComponent
+      tags:
+        - catalog
+      summary: Sostituisce componente
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ComponentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComponentInput"
+      responses:
+        "200":
+          description: Componente aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Component"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteComponent
+      tags:
+        - catalog
+      summary: Elimina componente
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ComponentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/packs:
+    get:
+      operationId: listPacks
+      tags:
+        - catalog
+      summary: Elenco pack
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: active
+          in: query
+          required: false
+          description: Filtra per stato.
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di pack
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createPack
+      tags:
+        - catalog
+      summary: Crea pack
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PackInput"
+      responses:
+        "201":
+          description: Pack creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pack"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/packs/{packId}:
+    get:
+      operationId: getPack
+      tags:
+        - catalog
+      summary: Dettaglio pack
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PackID"
+      responses:
+        "200":
+          description: Pack
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pack"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updatePack
+      tags:
+        - catalog
+      summary: Sostituisce pack
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PackID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PackInput"
+      responses:
+        "200":
+          description: Pack aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pack"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deletePack
+      tags:
+        - catalog
+      summary: Elimina pack
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PackID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/extras:
+    get:
+      operationId: listExtras
+      tags:
+        - catalog
+      summary: Elenco extra
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: active
+          in: query
+          required: false
+          description: Filtra per stato.
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di extra
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtraList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createExtra
+      tags:
+        - catalog
+      summary: Crea extra
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtraInput"
+      responses:
+        "201":
+          description: Extra creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Extra"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/extras/{extraId}:
+    get:
+      operationId: getExtra
+      tags:
+        - catalog
+      summary: Dettaglio extra
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ExtraID"
+      responses:
+        "200":
+          description: Extra
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Extra"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateExtra
+      tags:
+        - catalog
+      summary: Sostituisce extra
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ExtraID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtraInput"
+      responses:
+        "200":
+          description: Extra aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Extra"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteExtra
+      tags:
+        - catalog
+      summary: Elimina extra
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ExtraID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/price-rules:
+    get:
+      operationId: listPriceRules
+      tags:
+        - pricing
+      summary: Elenco regole di prezzo
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: season_id
+          in: query
+          required: false
+          description: Filtra per stagione.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: stage
+          in: query
+          required: false
+          description: Filtra per stage.
+          schema:
+            $ref: "#/components/schemas/PriceStage"
+        - name: target_type
+          in: query
+          required: false
+          description: Filtra per tipo di target.
+          schema:
+            $ref: "#/components/schemas/PriceTargetType"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di regole di prezzo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceRuleList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createPriceRule
+      tags:
+        - pricing
+      summary: Crea regola di prezzo
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PriceRuleInput"
+      responses:
+        "201":
+          description: Regola di prezzo creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceRule"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/price-rules/{priceRuleId}:
+    get:
+      operationId: getPriceRule
+      tags:
+        - pricing
+      summary: Dettaglio regola di prezzo
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PriceRuleID"
+      responses:
+        "200":
+          description: Regola di prezzo
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceRule"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updatePriceRule
+      tags:
+        - pricing
+      summary: Sostituisce regola di prezzo
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PriceRuleID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PriceRuleInput"
+      responses:
+        "200":
+          description: Regola di prezzo aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceRule"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deletePriceRule
+      tags:
+        - pricing
+      summary: Elimina regola di prezzo
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PriceRuleID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/fixed-prices:
+    get:
+      operationId: listFixedPrices
+      tags:
+        - pricing
+      summary: Elenco prezzi a durata fissa
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: season_id
+          in: query
+          required: false
+          description: Filtra per stagione.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: pack_id
+          in: query
+          required: false
+          description: Filtra per pack.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di prezzi a durata fissa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FixedPriceList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createFixedPrice
+      tags:
+        - pricing
+      summary: Crea prezzo a durata fissa
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixedPriceInput"
+      responses:
+        "201":
+          description: Prezzo a durata fissa creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FixedPrice"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/fixed-prices/{fixedPriceId}:
+    get:
+      operationId: getFixedPrice
+      tags:
+        - pricing
+      summary: Dettaglio prezzo a durata fissa
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/FixedPriceID"
+      responses:
+        "200":
+          description: Prezzo a durata fissa
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FixedPrice"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateFixedPrice
+      tags:
+        - pricing
+      summary: Sostituisce prezzo a durata fissa
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/FixedPriceID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixedPriceInput"
+      responses:
+        "200":
+          description: Prezzo a durata fissa aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FixedPrice"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteFixedPrice
+      tags:
+        - pricing
+      summary: Elimina prezzo a durata fissa
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/FixedPriceID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/promo-codes:
+    get:
+      operationId: listPromoCodes
+      tags:
+        - pricing
+      summary: Elenco codici promozionali
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: active
+          in: query
+          required: false
+          description: Filtra per stato.
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di codici promozionali
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoCodeList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createPromoCode
+      tags:
+        - pricing
+      summary: Crea codice promozionale
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromoCodeInput"
+      responses:
+        "201":
+          description: Codice promozionale creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoCode"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/promo-codes/{promoCodeId}:
+    get:
+      operationId: getPromoCode
+      tags:
+        - pricing
+      summary: Dettaglio codice promozionale
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PromoCodeID"
+      responses:
+        "200":
+          description: Codice promozionale
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoCode"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updatePromoCode
+      tags:
+        - pricing
+      summary: Sostituisce codice promozionale
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PromoCodeID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromoCodeInput"
+      responses:
+        "200":
+          description: Codice promozionale aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoCode"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deletePromoCode
+      tags:
+        - pricing
+      summary: Elimina codice promozionale
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PromoCodeID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/agreements:
+    get:
+      operationId: listAgreements
+      tags:
+        - pricing
+      summary: Elenco convenzioni
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: active
+          in: query
+          required: false
+          description: Filtra per stato.
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di convenzioni
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createAgreement
+      tags:
+        - pricing
+      summary: Crea convenzione
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgreementInput"
+      responses:
+        "201":
+          description: Convenzione creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agreement"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId}:
+    get:
+      operationId: getAgreement
+      tags:
+        - pricing
+      summary: Dettaglio convenzione
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/AgreementID"
+      responses:
+        "200":
+          description: Convenzione
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agreement"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateAgreement
+      tags:
+        - pricing
+      summary: Sostituisce convenzione
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/AgreementID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgreementInput"
+      responses:
+        "200":
+          description: Convenzione aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agreement"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deleteAgreement
+      tags:
+        - pricing
+      summary: Elimina convenzione
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/AgreementID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/policies:
+    get:
+      operationId: listPolicies
+      tags:
+        - policies
+      summary: Elenco policy
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: season_id
+          in: query
+          required: false
+          description: Filtra per stagione.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingPolicyList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createPolicy
+      tags:
+        - policies
+      summary: Crea policy
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingPolicyInput"
+      responses:
+        "201":
+          description: Policy creato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingPolicy"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/policies/{policyId}:
+    get:
+      operationId: getPolicy
+      tags:
+        - policies
+      summary: Dettaglio policy
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PolicyID"
+      responses:
+        "200":
+          description: Policy
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingPolicy"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updatePolicy
+      tags:
+        - policies
+      summary: Sostituisce policy
+      description: >-
+        Sostituzione completa (i campi facoltativi assenti vengono azzerati). If-Match facoltativo ma
+        consigliato.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PolicyID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingPolicyInput"
+      responses:
+        "200":
+          description: Policy aggiornato/a
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingPolicy"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+    delete:
+      operationId: deletePolicy
+      tags:
+        - policies
+      summary: Elimina policy
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PolicyID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/maps:
+    get:
+      operationId: listMaps
+      tags:
+        - maps
+      summary: Elenco mappe
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di mappe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createMap
+      tags:
+        - maps
+      summary: Crea una mappa vuota
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MapInput"
+      responses:
+        "201":
+          description: Mappa creata
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapDocument"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/maps/{mapId}:
+    get:
+      operationId: getMap
+      tags:
+        - maps
+      summary: Documento completo della mappa (mappa, postazioni, decorazioni)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/MapID"
+      responses:
+        "200":
+          description: Documento della mappa
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapDocument"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: saveMap
+      tags:
+        - maps
+      summary: Salvataggio transazionale della mappa con controllo di versione
+      description: >-
+        Richiede If-Match con la versione letta; in caso di conflitto risponde 412 version_conflict con
+        current_version.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/MapID"
+        - $ref: "#/components/parameters/IfMatchRequired"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MapSaveRequest"
+      responses:
+        "200":
+          description: Mappa salvata
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapDocument"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
+    delete:
+      operationId: deleteMap
+      tags:
+        - maps
+      summary: Elimina una mappa (rifiutato se ha postazioni con allocazioni future)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/MapID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminata
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/generate-rows:
+    post:
+      operationId: generateMapRows
+      tags:
+        - maps
+      summary: "Generatore di file: anteprima o applicazione"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/MapID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RowGeneratorRequest"
+      responses:
+        "200":
+          description: Postazioni generate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RowGeneratorResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
+  /api/admin/v1/establishments/{establishmentId}/pricing/simulate:
+    post:
+      operationId: simulatePrice
+      tags:
+        - pricing
+      summary: "Simulatore: quotazione con dettaglio passo per passo e policy"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulateRequest"
+      responses:
+        "200":
+          description: Risultato della simulazione
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulateResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+  /api/admin/v1/establishments/{establishmentId}/pricing/matrix:
+    get:
+      operationId: getPriceMatrix
+      tags:
+        - pricing
+      summary: Matrice di listino pack × categoria × periodo
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: season_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: pack_ids
+          in: query
+          required: false
+          style: form
+          explode: true
+          description: Vuoto = tutti i pack attivi.
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+              x-go-type: string
+        - name: formula
+          in: query
+          required: false
+          description: day (default) o half_day.
+          schema:
+            $ref: "#/components/schemas/Formula"
+        - name: channel
+          in: query
+          required: false
+          description: Default desk.
+          schema:
+            $ref: "#/components/schemas/Channel"
+        - name: slots
+          in: query
+          required: false
+          description: Default FULL.
+          schema:
+            $ref: "#/components/schemas/Slots"
+      responses:
+        "200":
+          description: Matrice di listino
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceMatrix"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/admin/v1/establishments/{establishmentId}/pricing/coverage:
+    get:
+      operationId: getPriceCoverage
+      tags:
+        - pricing
+      summary: "Verifica di copertura: giorni senza prezzo per pack attivo e categoria"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: season_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: pack_ids
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+              x-go-type: string
+        - name: channels
+          in: query
+          required: false
+          style: form
+          explode: true
+          description: Default desk e online.
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Channel"
+        - name: slots
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Slots"
+      responses:
+        "200":
+          description: Esito della verifica
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoverageReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/admin/v1/establishments/{establishmentId}/setup/templates:
+    get:
+      operationId: listSetupTemplates
+      tags:
+        - setup
+      summary: Modelli della configurazione guidata
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Modelli
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupTemplateList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/admin/v1/establishments/{establishmentId}/setup/status:
+    get:
+      operationId: getSetupStatus
+      tags:
+        - setup
+      summary: Avanzamento della configurazione guidata
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Stato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/admin/v1/establishments/{establishmentId}/setup/apply-template:
+    post:
+      operationId: applySetupTemplate
+      tags:
+        - setup
+      summary: Applica un modello (stagione, mappa, zone, catalogo)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplyTemplateRequest"
+      responses:
+        "201":
+          description: Modello applicato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplyTemplateResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/v1/establishments/{establishmentId}/setup/quick-pricelist:
+    post:
+      operationId: createQuickPricelist
+      tags:
+        - setup
+      summary: "Listino rapido: genera le regole base da prezzo per categoria e periodo"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuickPricelistRequest"
+      responses:
+        "201":
+          description: Regole generate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuickPricelistResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 
   /api/admin/v1/stream:
     get:
@@ -341,7 +3319,7 @@ components:
       schema:
         type: string
     EstablishmentID:
-      name: id
+      name: establishmentId
       in: path
       required: true
       schema:
@@ -355,6 +3333,143 @@ components:
       schema:
         type: string
         pattern: "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: "ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict."
+      schema:
+        type: string
+        maxLength: 64
+    IfMatchRequired:
+      name: If-Match
+      in: header
+      required: true
+      description: ETag (versione) della mappa letta in precedenza; obbligatorio.
+      schema:
+        type: string
+        maxLength: 64
+    MapID:
+      name: mapId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    TeamUserID:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    SeasonID:
+      name: seasonId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    RatePeriodID:
+      name: ratePeriodId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    ClosureDayID:
+      name: closureDayId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    ZoneID:
+      name: zoneId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PoolID:
+      name: poolId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    ComponentID:
+      name: componentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PackID:
+      name: packId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    ExtraID:
+      name: extraId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PriceRuleID:
+      name: priceRuleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    FixedPriceID:
+      name: fixedPriceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PromoCodeID:
+      name: promoCodeId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    AgreementID:
+      name: agreementId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PolicyID:
+      name: policyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
 
   responses:
     BadRequest:
@@ -399,6 +3514,37 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
 
+    PreconditionFailed:
+      description: Versione non aggiornata (version_conflict, con current_version)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    PreconditionRequired:
+      description: Header If-Match mancante (precondition_required)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    UnprocessableEntity:
+      description: Richiesta valida ma non elaborabile (no_price, policy_violation)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotImplemented:
+      description: Operazione non ancora disponibile (not_implemented)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+
+  headers:
+    ETag:
+      description: Versione della risorsa (`"<version>"`), da reinviare in If-Match.
+      schema:
+        type: string
+
   schemas:
     ProblemType:
       type: string
@@ -428,6 +3574,10 @@ components:
         - no_price
         - policy_violation
         - hold_expired
+        - version_conflict
+        - precondition_required
+        - spot_has_future_allocations
+        - not_implemented
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -452,6 +3602,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FieldError"
+        current_version:
+          type: integer
+          format: int64
+          description: Versione corrente della risorsa (solo per `version_conflict`).
+        spot_ids:
+          type: array
+          description: Postazioni con allocazioni future (solo per `spot_has_future_allocations`).
+          items:
+            type: string
+        violations:
+          type: array
+          description: Vincoli violati (solo per `policy_violation`).
+          items:
+            $ref: "#/components/schemas/PolicyViolation"
     FieldError:
       type: object
       required: [field, message]
@@ -675,6 +3839,8 @@ components:
         - booking_enabled
         - allowed_embed_origins
         - theme
+        - settings
+        - version
         - created_at
         - updated_at
       properties:
@@ -718,6 +3884,10 @@ components:
             type: string
         theme:
           $ref: "#/components/schemas/Theme"
+        settings:
+          $ref: "#/components/schemas/EstablishmentSettings"
+        version:
+          $ref: "#/components/schemas/Version"
         archived_at:
           type: string
           format: date-time
@@ -797,3 +3967,3089 @@ components:
           items:
             type: string
             format: date
+    I18nText:
+      type: object
+      description: "Testo localizzato lingua → testo (es. {\"it\": \"Prima fila\"}); si ricade sulla lingua predefinita."
+      additionalProperties:
+        type: string
+        maxLength: 2000
+    Money:
+      type: integer
+      format: int64
+      description: Importo in centesimi di euro (IVA inclusa).
+    Date:
+      type: string
+      format: date
+      description: Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+      x-go-type: calendar.Date
+      x-go-type-import:
+        path: github.com/coste360/arenile/internal/calendar
+    MonthDay:
+      type: string
+      pattern: ^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$
+      description: Ricorrenza annuale `MM-DD`.
+    Decimal:
+      type: string
+      pattern: ^-?[0-9]{1,9}(\.[0-9]{1,6})?$
+      description: Numero decimale esatto come stringa (es. "1.2", "0.5", "10"). Mai float nel calcolo.
+    BasisPoints:
+      type: integer
+      format: int64
+      minimum: 0
+      maximum: 10000
+      description: Aliquota in punti base (2200 = 22%).
+    Version:
+      type: integer
+      format: int64
+      minimum: 1
+      description: Versione per la concorrenza ottimistica; coincide con l'ETag.
+    Slot:
+      type: string
+      enum:
+        - AM
+        - PM
+      description: "Fascia: mattina o pomeriggio."
+    Slots:
+      type: string
+      enum:
+        - AM
+        - PM
+        - FULL
+      description: "Fasce prenotate: mattina, pomeriggio o giorno intero."
+    Formula:
+      type: string
+      enum:
+        - half_day
+        - day
+        - multi_day
+        - week
+        - fortnight
+        - month
+        - season
+      description: Formula di durata.
+    FixedFormula:
+      type: string
+      enum:
+        - week
+        - fortnight
+        - month
+        - season
+      description: Formula a durata fissa.
+    Channel:
+      type: string
+      enum:
+        - desk
+        - online
+        - api
+      description: Canale di vendita.
+    SeasonStatus:
+      type: string
+      enum:
+        - draft
+        - active
+        - closed
+    AssignmentMode:
+      type: string
+      enum:
+        - seat
+        - zone
+        - quantity
+      description: Modalità di assegnazione della zona (spec 5.2).
+    SpotKind:
+      type: string
+      enum:
+        - umbrella
+        - gazebo
+        - tent
+        - palm
+        - custom
+    DecorationKind:
+      type: string
+      enum:
+        - walkway
+        - shower
+        - lifeguard
+        - bar
+        - entrance
+        - cabin_block
+        - text
+        - custom
+    SeaSide:
+      type: string
+      enum:
+        - top
+        - bottom
+        - left
+        - right
+    PricingUnit:
+      type: string
+      enum:
+        - per_booking
+        - per_day
+        - per_slot
+    ExtraAttachTo:
+      type: string
+      enum:
+        - line
+        - booking
+    PriceStage:
+      type: string
+      enum:
+        - base
+        - modifier
+        - discount
+    PriceTargetType:
+      type: string
+      enum:
+        - pack
+        - extra
+    PriceActionType:
+      type: string
+      enum:
+        - set
+        - add
+        - multiply
+        - percent_off
+        - amount_off
+        - free_days
+    AmountPer:
+      type: string
+      enum:
+        - booking
+        - line
+        - day
+    Rounding:
+      type: string
+      enum:
+        - none
+        - euro
+        - fifty_cents
+      description: Arrotondamento del totale finale.
+    SetupTemplateCode:
+      type: string
+      enum:
+        - classic_rows
+        - quantity_beach
+        - lido_with_pool
+        - empty
+      description: Modelli di spec 15.2.
+    TeamScope:
+      type: string
+      enum:
+        - establishment
+        - organization
+      description: Il ruolo vale per questo stabilimento o per tutta l'organizzazione.
+    DateRange:
+      type: object
+      description: Intervallo inclusivo.
+      required:
+        - from
+        - to
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+    IntRange:
+      type: object
+      description: Intervallo intero inclusivo; un estremo assente è aperto.
+      properties:
+        min:
+          type: integer
+        max:
+          type: integer
+    Shape:
+      type: object
+      required:
+        - type
+        - w
+        - h
+      properties:
+        type:
+          type: string
+          enum:
+            - circle
+            - rect
+        w:
+          type: number
+          format: double
+          minimum: 0
+        h:
+          type: number
+          format: double
+          minimum: 0
+    ComponentQuantities:
+      type: object
+      description: "Quantità per codice componente (es. {\"umbrella\": 1, \"sunbed\": 2})."
+      additionalProperties:
+        type: integer
+        minimum: 0
+    OnlineQuota:
+      type: object
+      required:
+        - type
+        - value
+      properties:
+        type:
+          type: string
+          enum:
+            - percent
+            - count
+        value:
+          type: integer
+          minimum: 0
+    CapacityOverride:
+      type: object
+      required:
+        - from
+        - to
+        - capacity
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        capacity:
+          type: integer
+          minimum: 0
+    MapBackground:
+      type: object
+      description: Sfondo opzionale della mappa (spec 11.2).
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - image
+            - geojson
+        url:
+          type: string
+          maxLength: 2048
+          description: URL dell'immagine (type=image).
+        geojson:
+          type: object
+          additionalProperties: true
+          description: Perimetro GeoJSON (type=geojson).
+        scale:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+        rotation:
+          type: number
+          format: double
+        offset_x:
+          type: number
+          format: double
+        offset_y:
+          type: number
+          format: double
+        opacity:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+    PricingSettings:
+      type: object
+      description: Impostazioni dei prezzi dello stabilimento (spec 8.1, 8.5).
+      required:
+        - half_day_factor
+        - rounding
+        - default_vat_rate_bp
+      properties:
+        half_day_factor:
+          $ref: "#/components/schemas/Decimal"
+        rounding:
+          $ref: "#/components/schemas/Rounding"
+        default_vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+        local_holidays:
+          type: array
+          items:
+            $ref: "#/components/schemas/Date"
+        recurring_local_holidays:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthDay"
+    EstablishmentSettings:
+      type: object
+      description: Impostazioni versionate. In scrittura sostituisce l'intero documento.
+      required:
+        - pricing
+        - default_policy
+      properties:
+        pricing:
+          $ref: "#/components/schemas/PricingSettings"
+        default_policy:
+          $ref: "#/components/schemas/PolicyRules"
+    EstablishmentCreate:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        organization_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Obbligatorio se l'utente è proprietario di più organizzazioni.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          pattern: ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$
+        timezone:
+          type: string
+          maxLength: 64
+          description: Default Europe/Rome.
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Default EUR.
+        default_locale:
+          type: string
+          maxLength: 8
+          description: Default it.
+        enabled_locales:
+          type: array
+          items:
+            type: string
+            maxLength: 8
+        contact_email:
+          type: string
+          maxLength: 254
+        contact_phone:
+          type: string
+          maxLength: 32
+        address:
+          $ref: "#/components/schemas/Address"
+    EstablishmentUpdate:
+      type: object
+      description: "Aggiornamento parziale: solo i campi presenti vengono modificati."
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          pattern: ^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$
+        timezone:
+          type: string
+          maxLength: 64
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+        default_locale:
+          type: string
+          maxLength: 8
+        enabled_locales:
+          type: array
+          items:
+            type: string
+            maxLength: 8
+        contact_email:
+          type: string
+          maxLength: 254
+        contact_phone:
+          type: string
+          maxLength: 32
+        address:
+          $ref: "#/components/schemas/Address"
+        geo:
+          $ref: "#/components/schemas/Geo"
+        concession_ref:
+          type: string
+          maxLength: 200
+          description: Stringa vuota per rimuovere.
+        booking_enabled:
+          type: boolean
+        allowed_embed_origins:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+        theme:
+          $ref: "#/components/schemas/Theme"
+        settings:
+          $ref: "#/components/schemas/EstablishmentSettings"
+        archived:
+          type: boolean
+          description: true archivia lo stabilimento, false lo ripristina.
+    TeamMembership:
+      type: object
+      required:
+        - id
+        - organization_id
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        organization_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente per i ruoli validi su tutta l'organizzazione.
+        role:
+          $ref: "#/components/schemas/Role"
+    TeamMember:
+      type: object
+      description: Utente con accesso allo stabilimento; role è il ruolo efficace qui.
+      required:
+        - user_id
+        - email
+        - name
+        - locale
+        - active
+        - totp_enabled
+        - role
+        - scope
+        - memberships
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        email:
+          type: string
+        name:
+          type: string
+        locale:
+          type: string
+        active:
+          type: boolean
+        totp_enabled:
+          type: boolean
+        last_login_at:
+          type: string
+          format: date-time
+        role:
+          $ref: "#/components/schemas/Role"
+        scope:
+          $ref: "#/components/schemas/TeamScope"
+        memberships:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMembership"
+    TeamMemberList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMember"
+        next_cursor:
+          type: string
+    TeamMemberCreate:
+      type: object
+      description: Crea l'utente (o riusa quello con la stessa email) e gli assegna il ruolo.
+      required:
+        - email
+        - name
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        locale:
+          type: string
+          maxLength: 8
+        role:
+          $ref: "#/components/schemas/Role"
+        scope:
+          $ref: "#/components/schemas/TeamScope"
+        password:
+          type: string
+          minLength: 12
+          maxLength: 1024
+          description: Password iniziale; se assente ne viene generata una e restituita una sola volta.
+    TeamMemberCreated:
+      type: object
+      required:
+        - member
+        - user_created
+      properties:
+        member:
+          $ref: "#/components/schemas/TeamMember"
+        user_created:
+          type: boolean
+          description: false se l'utente esisteva già ed è stato solo aggiunto.
+        initial_password:
+          type: string
+          description: Presente solo se generata dal server; mostrarla una volta.
+    TeamMemberUpdate:
+      type: object
+      properties:
+        role:
+          $ref: "#/components/schemas/Role"
+        scope:
+          $ref: "#/components/schemas/TeamScope"
+        active:
+          type: boolean
+          description: false disattiva l'utente.
+    SeasonInput:
+      type: object
+      required:
+        - year
+        - opens_on
+        - closes_on
+      properties:
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+        opens_on:
+          $ref: "#/components/schemas/Date"
+        closes_on:
+          $ref: "#/components/schemas/Date"
+        status:
+          $ref: "#/components/schemas/SeasonStatus"
+    Season:
+      type: object
+      description: Stagione di apertura annuale (spec 6.1).
+      required:
+        - id
+        - establishment_id
+        - year
+        - opens_on
+        - closes_on
+        - status
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+        opens_on:
+          $ref: "#/components/schemas/Date"
+        closes_on:
+          $ref: "#/components/schemas/Date"
+        status:
+          $ref: "#/components/schemas/SeasonStatus"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    SeasonList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Season"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    RatePeriodInput:
+      type: object
+      required:
+        - season_id
+        - code
+        - name
+        - ranges
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: "`low`, `mid`, `high`, `peak` o libero."
+        name:
+          $ref: "#/components/schemas/I18nText"
+        color:
+          type: string
+          pattern: ^#[0-9A-Fa-f]{6}$
+        ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/DateRange"
+          minItems: 1
+        sort_order:
+          type: integer
+    RatePeriod:
+      type: object
+      description: Periodo tariffario di una stagione; i periodi non si sovrappongono nella stessa stagione.
+      required:
+        - id
+        - season_id
+        - code
+        - name
+        - color
+        - ranges
+        - sort_order
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: "`low`, `mid`, `high`, `peak` o libero."
+        name:
+          $ref: "#/components/schemas/I18nText"
+        color:
+          type: string
+          pattern: ^#[0-9A-Fa-f]{6}$
+        ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/DateRange"
+          minItems: 1
+        sort_order:
+          type: integer
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    RatePeriodList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RatePeriod"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    ClosureDayInput:
+      type: object
+      required:
+        - date
+        - slots
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/Slot"
+          minItems: 1
+          maxItems: 2
+        reason:
+          type: string
+          maxLength: 500
+    ClosureDay:
+      type: object
+      description: Giorno di chiusura straordinaria (maltempo, eventi).
+      required:
+        - id
+        - date
+        - slots
+        - reason
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/Slot"
+          minItems: 1
+          maxItems: 2
+        reason:
+          type: string
+          maxLength: 500
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ClosureDayList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClosureDay"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    ZoneInput:
+      type: object
+      required:
+        - code
+        - name
+        - assignment_mode
+        - price_category
+      properties:
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente per le zone solo a quantità.
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        assignment_mode:
+          $ref: "#/components/schemas/AssignmentMode"
+        online_visible:
+          type: boolean
+        online_quota:
+          $ref: "#/components/schemas/OnlineQuota"
+        price_category:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: Chiave usata dalle regole di prezzo (es. row1).
+        auto_assign:
+          type: boolean
+          description: Assegnazione automatica alla conferma (solo modalità zone).
+        sort_order:
+          type: integer
+    Zone:
+      type: object
+      description: >-
+        Raggruppamento logico di postazioni. Le zone `zone` hanno un pool implicito gestito dal sistema (spec
+        7.5).
+      required:
+        - id
+        - code
+        - name
+        - assignment_mode
+        - online_visible
+        - price_category
+        - auto_assign
+        - sort_order
+        - spot_count
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente per le zone solo a quantità.
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        assignment_mode:
+          $ref: "#/components/schemas/AssignmentMode"
+        online_visible:
+          type: boolean
+        online_quota:
+          $ref: "#/components/schemas/OnlineQuota"
+        price_category:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: Chiave usata dalle regole di prezzo (es. row1).
+        auto_assign:
+          type: boolean
+          description: Assegnazione automatica alla conferma (solo modalità zone).
+        sort_order:
+          type: integer
+        spot_count:
+          type: integer
+          description: Postazioni attive della zona.
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Pool implicito (zone `zone`) o pool legato (zone `quantity`).
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ZoneList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Zone"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PoolInput:
+      type: object
+      required:
+        - component_code
+        - name
+        - capacity
+      properties:
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        component_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        capacity:
+          type: integer
+          minimum: 0
+        capacity_overrides:
+          type: array
+          items:
+            $ref: "#/components/schemas/CapacityOverride"
+    Pool:
+      type: object
+      description: Inventario a quantità senza posizione.
+      required:
+        - id
+        - component_code
+        - name
+        - capacity
+        - capacity_overrides
+        - system_managed
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        component_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        capacity:
+          type: integer
+          minimum: 0
+        capacity_overrides:
+          type: array
+          items:
+            $ref: "#/components/schemas/CapacityOverride"
+        system_managed:
+          type: boolean
+          description: "Pool implicito di una zona `zone`: non modificabile né eliminabile."
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PoolList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pool"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    ComponentInput:
+      type: object
+      required:
+        - code
+        - name
+        - tracked
+      properties:
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        tracked:
+          type: boolean
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Pool da cui consumare se tracked.
+    Component:
+      type: object
+      description: Componente fisico di inventario.
+      required:
+        - id
+        - code
+        - name
+        - tracked
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        tracked:
+          type: boolean
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Pool da cui consumare se tracked.
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ComponentList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Component"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PackInput:
+      type: object
+      required:
+        - code
+        - name
+        - composition
+        - allowed_formulas
+        - channels
+      properties:
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        image:
+          type: string
+          maxLength: 2048
+        composition:
+          $ref: "#/components/schemas/ComponentQuantities"
+        requires_spot_kind:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotKind"
+          description: Tipi di postazione compatibili; assente = tutti.
+        allowed_zone_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: Assente = tutte le zone.
+        allowed_formulas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Formula"
+          minItems: 1
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        max_per_booking:
+          type: integer
+          minimum: 1
+        requires_approval:
+          type: boolean
+        sort_order:
+          type: integer
+        active:
+          type: boolean
+        vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+    Pack:
+      type: object
+      description: Prodotto vendibile composto da componenti.
+      required:
+        - id
+        - code
+        - name
+        - description
+        - composition
+        - allowed_formulas
+        - channels
+        - max_per_booking
+        - requires_approval
+        - sort_order
+        - active
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        image:
+          type: string
+          maxLength: 2048
+        composition:
+          $ref: "#/components/schemas/ComponentQuantities"
+        requires_spot_kind:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotKind"
+          description: Tipi di postazione compatibili; assente = tutti.
+        allowed_zone_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: Assente = tutte le zone.
+        allowed_formulas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Formula"
+          minItems: 1
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        max_per_booking:
+          type: integer
+          minimum: 1
+        requires_approval:
+          type: boolean
+        sort_order:
+          type: integer
+        active:
+          type: boolean
+        vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PackList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pack"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    ExtraInput:
+      type: object
+      required:
+        - code
+        - name
+        - pricing_unit
+        - attach_to
+        - channels
+      properties:
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        component_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: Componente tracciato consumato, se presente.
+        pricing_unit:
+          $ref: "#/components/schemas/PricingUnit"
+        max_quantity:
+          type: integer
+          minimum: 1
+        attach_to:
+          $ref: "#/components/schemas/ExtraAttachTo"
+        allowed_pack_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        sort_order:
+          type: integer
+        active:
+          type: boolean
+        vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+    Extra:
+      type: object
+      description: Aggiunta opzionale a un pack o alla prenotazione.
+      required:
+        - id
+        - code
+        - name
+        - description
+        - pricing_unit
+        - max_quantity
+        - attach_to
+        - channels
+        - sort_order
+        - active
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        component_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: Componente tracciato consumato, se presente.
+        pricing_unit:
+          $ref: "#/components/schemas/PricingUnit"
+        max_quantity:
+          type: integer
+          minimum: 1
+        attach_to:
+          $ref: "#/components/schemas/ExtraAttachTo"
+        allowed_pack_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        sort_order:
+          type: integer
+        active:
+          type: boolean
+        vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ExtraList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Extra"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PriceConditions:
+      type: object
+      description: Condizioni di una regola (spec 8.2); tutte opzionali, vale l'AND.
+      properties:
+        rate_periods:
+          type: array
+          items:
+            type: string
+        date_ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/DateRange"
+        weekdays:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: Giorni ISO (1 = lunedì … 7 = domenica).
+        holidays:
+          type: boolean
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/Slot"
+        formulas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Formula"
+        price_categories:
+          type: array
+          items:
+            type: string
+        zone_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        spot_attributes:
+          type: array
+          items:
+            type: string
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        min_days:
+          type: integer
+          minimum: 1
+        max_days:
+          type: integer
+          minimum: 1
+        lead_time_days:
+          $ref: "#/components/schemas/IntRange"
+        occupancy_percent:
+          $ref: "#/components/schemas/IntRange"
+        customer_tags:
+          type: array
+          items:
+            type: string
+        agreement_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+    PriceAction:
+      type: object
+      description: Azione di prezzo (spec 8.3).
+      required:
+        - type
+      properties:
+        type:
+          $ref: "#/components/schemas/PriceActionType"
+        amount:
+          $ref: "#/components/schemas/Money"
+        factor:
+          $ref: "#/components/schemas/Decimal"
+        percent:
+          $ref: "#/components/schemas/Decimal"
+        per:
+          $ref: "#/components/schemas/AmountPer"
+        every:
+          type: integer
+          minimum: 1
+        free:
+          type: integer
+          minimum: 1
+    PriceRuleInput:
+      type: object
+      required:
+        - season_id
+        - name
+        - target_type
+        - conditions
+        - action
+        - stage
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        target_type:
+          $ref: "#/components/schemas/PriceTargetType"
+        target_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: Assente = tutti i target del tipo.
+        conditions:
+          $ref: "#/components/schemas/PriceConditions"
+        action:
+          $ref: "#/components/schemas/PriceAction"
+        priority:
+          type: integer
+        stage:
+          $ref: "#/components/schemas/PriceStage"
+        stackable:
+          type: boolean
+        active:
+          type: boolean
+    PriceRule:
+      type: object
+      description: Regola di prezzo (spec 6.4, 8).
+      required:
+        - id
+        - season_id
+        - name
+        - target_type
+        - conditions
+        - action
+        - priority
+        - stage
+        - stackable
+        - active
+        - seq
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        target_type:
+          $ref: "#/components/schemas/PriceTargetType"
+        target_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: Assente = tutti i target del tipo.
+        conditions:
+          $ref: "#/components/schemas/PriceConditions"
+        action:
+          $ref: "#/components/schemas/PriceAction"
+        priority:
+          type: integer
+        stage:
+          $ref: "#/components/schemas/PriceStage"
+        stackable:
+          type: boolean
+        active:
+          type: boolean
+        seq:
+          type: integer
+          format: int64
+          description: Ordine di recenza (spareggio).
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PriceRuleList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PriceRule"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    FixedPriceInput:
+      type: object
+      required:
+        - season_id
+        - pack_id
+        - formula
+        - price_category
+        - amount
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        formula:
+          $ref: "#/components/schemas/FixedFormula"
+        price_category:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        rate_period_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: Assente = valido in ogni periodo.
+        amount:
+          $ref: "#/components/schemas/Money"
+    FixedPrice:
+      type: object
+      description: Prezzo a pacchetto per settimana, quindicina, mese o stagione.
+      required:
+        - id
+        - season_id
+        - pack_id
+        - formula
+        - price_category
+        - amount
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        formula:
+          $ref: "#/components/schemas/FixedFormula"
+        price_category:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        rate_period_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+          description: Assente = valido in ogni periodo.
+        amount:
+          $ref: "#/components/schemas/Money"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    FixedPriceList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FixedPrice"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PromoCodeInput:
+      type: object
+      required:
+        - code
+        - action
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9_-]{1,39}$
+        description:
+          type: string
+          maxLength: 500
+        action:
+          $ref: "#/components/schemas/PriceAction"
+        conditions:
+          $ref: "#/components/schemas/PriceConditions"
+        valid_from:
+          $ref: "#/components/schemas/Date"
+        valid_to:
+          $ref: "#/components/schemas/Date"
+        max_uses:
+          type: integer
+          minimum: 1
+        max_uses_per_customer:
+          type: integer
+          minimum: 1
+        stackable:
+          type: boolean
+        active:
+          type: boolean
+    PromoCode:
+      type: object
+      description: Codice promozionale (univoco per stabilimento senza distinzione di maiuscole).
+      required:
+        - id
+        - code
+        - description
+        - action
+        - conditions
+        - stackable
+        - active
+        - uses
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9_-]{1,39}$
+        description:
+          type: string
+          maxLength: 500
+        action:
+          $ref: "#/components/schemas/PriceAction"
+        conditions:
+          $ref: "#/components/schemas/PriceConditions"
+        valid_from:
+          $ref: "#/components/schemas/Date"
+        valid_to:
+          $ref: "#/components/schemas/Date"
+        max_uses:
+          type: integer
+          minimum: 1
+        max_uses_per_customer:
+          type: integer
+          minimum: 1
+        stackable:
+          type: boolean
+        active:
+          type: boolean
+        uses:
+          type: integer
+          minimum: 0
+          description: Utilizzi registrati (solo lettura).
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PromoCodeList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromoCode"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    AgreementInput:
+      type: object
+      required:
+        - name
+        - action
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9_-]{1,39}$
+          description: Assente = solo selezione dal pannello.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        partner_name:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+          maxLength: 2000
+        action:
+          $ref: "#/components/schemas/PriceAction"
+        conditions:
+          $ref: "#/components/schemas/PriceConditions"
+        valid_from:
+          $ref: "#/components/schemas/Date"
+        valid_to:
+          $ref: "#/components/schemas/Date"
+        stackable:
+          type: boolean
+        active:
+          type: boolean
+    Agreement:
+      type: object
+      description: "Convenzione: come un codice promozionale, ma assegnata a un cliente o a un partner (hotel)."
+      required:
+        - id
+        - name
+        - partner_name
+        - notes
+        - action
+        - conditions
+        - stackable
+        - active
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          pattern: ^[A-Za-z0-9][A-Za-z0-9_-]{1,39}$
+          description: Assente = solo selezione dal pannello.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        partner_name:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+          maxLength: 2000
+        action:
+          $ref: "#/components/schemas/PriceAction"
+        conditions:
+          $ref: "#/components/schemas/PriceConditions"
+        valid_from:
+          $ref: "#/components/schemas/Date"
+        valid_to:
+          $ref: "#/components/schemas/Date"
+        stackable:
+          type: boolean
+        active:
+          type: boolean
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AgreementList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Agreement"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    PolicyScope:
+      type: object
+      description: Ambito della policy; dimensioni vuote = tutto.
+      properties:
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        zones:
+          type: array
+          items:
+            type: string
+          description: ID o codici di zona.
+        packs:
+          type: array
+          items:
+            type: string
+          description: ID o codici di pack.
+        rate_periods:
+          type: array
+          items:
+            type: string
+          description: Codici dei periodi tariffari.
+    PolicyMinLeadTime:
+      type: object
+      properties:
+        days:
+          type: integer
+          minimum: 0
+        cutoff_time:
+          type: string
+          pattern: ^([01][0-9]|2[0-3]):[0-5][0-9]$
+    PolicySameDayBooking:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        until:
+          type: string
+          pattern: ^([01][0-9]|2[0-3]):[0-5][0-9]$
+        only_slot:
+          type: string
+          enum:
+            - AM
+            - PM
+            - PM_after
+    PolicyDuration:
+      type: object
+      properties:
+        allowed_formulas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Formula"
+        min_days:
+          type: integer
+          minimum: 1
+        max_days:
+          type: integer
+          minimum: 1
+        fixed_start_weekday:
+          type: integer
+          minimum: 0
+          maximum: 7
+          description: ISO 1..7; 0 = qualsiasi.
+    PolicyDeposit:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - percent
+            - amount
+        value:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Percentuale intera o importo in centesimi.
+    PolicyPayment:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+            - full
+            - deposit
+            - none
+        deposit:
+          $ref: "#/components/schemas/PolicyDeposit"
+        balance_due:
+          type: string
+          pattern: ^(on_arrival|days_before:[0-9]{1,3})$
+    PolicyCancellationTier:
+      type: object
+      required:
+        - until_days_before
+        - refund_percent
+      properties:
+        until_days_before:
+          type: integer
+          minimum: 0
+        refund_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        as:
+          type: string
+          enum:
+            - refund
+            - credit
+    PolicyModification:
+      type: object
+      properties:
+        allowed_until_days_before:
+          type: integer
+          minimum: 0
+        fee:
+          $ref: "#/components/schemas/Money"
+    PolicyWeather:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        as:
+          type: string
+          enum:
+            - refund
+            - credit
+    PolicySeasonReleaseCredit:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+    PolicyRules:
+      type: object
+      description: Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default.
+      properties:
+        min_lead_time:
+          $ref: "#/components/schemas/PolicyMinLeadTime"
+        max_lead_time_days:
+          type: integer
+          minimum: 0
+        same_day_booking:
+          $ref: "#/components/schemas/PolicySameDayBooking"
+        duration:
+          $ref: "#/components/schemas/PolicyDuration"
+        payment:
+          $ref: "#/components/schemas/PolicyPayment"
+        cancellation:
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyCancellationTier"
+        modification:
+          $ref: "#/components/schemas/PolicyModification"
+        weather_policy:
+          $ref: "#/components/schemas/PolicyWeather"
+        approval_required:
+          type: boolean
+        max_spots_per_booking:
+          type: integer
+          minimum: 1
+        allow_spot_change_during_stay:
+          type: boolean
+        customer_can_release_season_days:
+          type: boolean
+        season_release_credit:
+          $ref: "#/components/schemas/PolicySeasonReleaseCredit"
+    BookingPolicyInput:
+      type: object
+      required:
+        - season_id
+        - name
+        - scope
+        - rules
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        scope:
+          $ref: "#/components/schemas/PolicyScope"
+        rules:
+          $ref: "#/components/schemas/PolicyRules"
+        priority:
+          type: integer
+        active:
+          type: boolean
+    BookingPolicy:
+      type: object
+      description: Policy di prenotazione con ambito e priorità (spec 9).
+      required:
+        - id
+        - season_id
+        - name
+        - scope
+        - rules
+        - priority
+        - active
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        scope:
+          $ref: "#/components/schemas/PolicyScope"
+        rules:
+          $ref: "#/components/schemas/PolicyRules"
+        priority:
+          type: integer
+        active:
+          type: boolean
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    BookingPolicyList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingPolicy"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    SeasonCopyRequest:
+      type: object
+      description: "Copia di stagione (spec 8.7): date spostate mantenendo il giorno della settimana dove ha senso."
+      required:
+        - target_year
+      properties:
+        target_year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+        opens_on:
+          $ref: "#/components/schemas/Date"
+        closes_on:
+          $ref: "#/components/schemas/Date"
+        include_rate_periods:
+          type: boolean
+          description: Default true.
+        include_price_rules:
+          type: boolean
+          description: Default true.
+        include_fixed_prices:
+          type: boolean
+          description: Default true.
+        include_policies:
+          type: boolean
+          description: Default true.
+    SeasonCopyResult:
+      type: object
+      required:
+        - season
+        - rate_periods
+        - price_rules
+        - fixed_prices
+        - policies
+        - warnings
+      properties:
+        season:
+          $ref: "#/components/schemas/Season"
+        rate_periods:
+          type: integer
+        price_rules:
+          type: integer
+        fixed_prices:
+          type: integer
+        policies:
+          type: integer
+        warnings:
+          type: array
+          items:
+            type: string
+    MapInput:
+      type: object
+      required:
+        - name
+        - width
+        - height
+        - grid_size
+        - sea_side
+      properties:
+        name:
+          $ref: "#/components/schemas/I18nText"
+        width:
+          type: integer
+          minimum: 1
+          maximum: 100000
+        height:
+          type: integer
+          minimum: 1
+          maximum: 100000
+        grid_size:
+          type: integer
+          minimum: 1
+        background:
+          $ref: "#/components/schemas/MapBackground"
+        sea_side:
+          $ref: "#/components/schemas/SeaSide"
+        sort_order:
+          type: integer
+    Map:
+      type: object
+      required:
+        - id
+        - name
+        - width
+        - height
+        - grid_size
+        - sea_side
+        - sort_order
+        - spot_count
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        width:
+          type: integer
+        height:
+          type: integer
+        grid_size:
+          type: integer
+        background:
+          $ref: "#/components/schemas/MapBackground"
+        sea_side:
+          $ref: "#/components/schemas/SeaSide"
+        sort_order:
+          type: integer
+        spot_count:
+          type: integer
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    MapList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Map"
+        next_cursor:
+          type: string
+    Spot:
+      type: object
+      description: Postazione prenotabile.
+      required:
+        - id
+        - map_id
+        - zone_id
+        - label
+        - row_label
+        - number
+        - kind
+        - x
+        - "y"
+        - rotation
+        - shape
+        - capacity
+        - max_extra
+        - attributes
+        - active
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        label:
+          type: string
+          minLength: 1
+          maxLength: 16
+        row_label:
+          type: string
+          maxLength: 8
+        number:
+          type: integer
+          minimum: 0
+        kind:
+          $ref: "#/components/schemas/SpotKind"
+        x:
+          type: number
+          format: double
+        "y":
+          type: number
+          format: double
+        rotation:
+          type: number
+          format: double
+        shape:
+          $ref: "#/components/schemas/Shape"
+        capacity:
+          $ref: "#/components/schemas/ComponentQuantities"
+        max_extra:
+          $ref: "#/components/schemas/ComponentQuantities"
+        price_category_override:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        attributes:
+          type: array
+          items:
+            type: string
+            maxLength: 32
+        active:
+          type: boolean
+    SpotInput:
+      type: object
+      required:
+        - zone_id
+        - label
+        - kind
+        - x
+        - "y"
+        - shape
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: ID di una postazione esistente da aggiornare; assente = nuova postazione.
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        label:
+          type: string
+          minLength: 1
+          maxLength: 16
+        row_label:
+          type: string
+          maxLength: 8
+        number:
+          type: integer
+          minimum: 0
+        kind:
+          $ref: "#/components/schemas/SpotKind"
+        x:
+          type: number
+          format: double
+        "y":
+          type: number
+          format: double
+        rotation:
+          type: number
+          format: double
+        shape:
+          $ref: "#/components/schemas/Shape"
+        capacity:
+          $ref: "#/components/schemas/ComponentQuantities"
+        max_extra:
+          $ref: "#/components/schemas/ComponentQuantities"
+        price_category_override:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        attributes:
+          type: array
+          items:
+            type: string
+            maxLength: 32
+        active:
+          type: boolean
+    Decoration:
+      type: object
+      description: Elemento decorativo non prenotabile.
+      required:
+        - id
+        - map_id
+        - kind
+        - x
+        - "y"
+        - rotation
+        - shape
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        kind:
+          $ref: "#/components/schemas/DecorationKind"
+        x:
+          type: number
+          format: double
+        "y":
+          type: number
+          format: double
+        rotation:
+          type: number
+          format: double
+        shape:
+          $ref: "#/components/schemas/Shape"
+        label:
+          $ref: "#/components/schemas/I18nText"
+    DecorationInput:
+      type: object
+      required:
+        - kind
+        - x
+        - "y"
+        - shape
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente = nuovo elemento.
+        kind:
+          $ref: "#/components/schemas/DecorationKind"
+        x:
+          type: number
+          format: double
+        "y":
+          type: number
+          format: double
+        rotation:
+          type: number
+          format: double
+        shape:
+          $ref: "#/components/schemas/Shape"
+        label:
+          $ref: "#/components/schemas/I18nText"
+    MapDocument:
+      type: object
+      description: Documento completo della mappa; la versione è anche nell'header ETag.
+      required:
+        - map
+        - spots
+        - decorations
+      properties:
+        map:
+          $ref: "#/components/schemas/Map"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/Spot"
+        decorations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Decoration"
+    MapSaveRequest:
+      type: object
+      description: >-
+        Salvataggio transazionale dell'intero documento: postazioni e decorazioni assenti vengono eliminate
+        (rifiutato con spot_has_future_allocations se una postazione eliminata ha allocazioni future: va
+        disattivata).
+      required:
+        - map
+        - spots
+        - decorations
+      properties:
+        map:
+          $ref: "#/components/schemas/MapInput"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotInput"
+        decorations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DecorationInput"
+    RowGeneratorRequest:
+      type: object
+      description: Generatore di file (spec 11.2).
+      required:
+        - zone_id
+        - rows
+        - spots_per_row
+        - spacing_x
+        - spacing_y
+      properties:
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Zona assegnata alle postazioni generate.
+        rows:
+          type: integer
+          minimum: 1
+          maximum: 52
+        spots_per_row:
+          type: integer
+          minimum: 1
+          maximum: 200
+        origin_x:
+          type: number
+          format: double
+          description: Coordinata x della prima postazione.
+        origin_y:
+          type: number
+          format: double
+        spacing_x:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+          description: Distanza tra postazioni della stessa fila.
+        spacing_y:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+          description: Distanza tra file.
+        row_label_style:
+          type: string
+          enum:
+            - letters
+            - numbers
+        first_row_label:
+          type: string
+          maxLength: 4
+          description: Etichetta della prima fila (default A o 1).
+        number_start:
+          type: integer
+          minimum: 0
+          description: Default 1.
+        numbering:
+          type: string
+          enum:
+            - per_row
+            - continuous
+          description: Numerazione che riparte a ogni fila o continua.
+        direction:
+          type: string
+          enum:
+            - ltr
+            - rtl
+        label_format:
+          type: string
+          maxLength: 32
+          description: Default "{row}{number}".
+        kind:
+          $ref: "#/components/schemas/SpotKind"
+        shape:
+          $ref: "#/components/schemas/Shape"
+        rotation:
+          type: number
+          format: double
+        capacity:
+          $ref: "#/components/schemas/ComponentQuantities"
+        apply:
+          type: boolean
+          description: false = anteprima; true = aggiunge le postazioni alla mappa (richiede If-Match).
+    RowGeneratorResult:
+      type: object
+      required:
+        - spots
+        - conflicting_labels
+        - applied
+      properties:
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotInput"
+        conflicting_labels:
+          type: array
+          items:
+            type: string
+          description: Etichette già presenti sulla mappa.
+        applied:
+          type: boolean
+        document:
+          $ref: "#/components/schemas/MapDocument"
+    SimulateExtra:
+      type: object
+      required:
+        - extra_id
+        - quantity
+      properties:
+        extra_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+    SimulateLine:
+      type: object
+      required:
+        - pack_id
+      properties:
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+    SimulateRequest:
+      type: object
+      description: >-
+        Stesso input della quotazione, con canale selezionabile (spec 8.7). today default = oggi nel fuso dello
+        stabilimento.
+      required:
+        - channel
+        - starts_on
+        - ends_on
+        - slots
+        - formula
+        - lines
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Default: stagione che contiene starts_on."
+        channel:
+          $ref: "#/components/schemas/Channel"
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        today:
+          $ref: "#/components/schemas/Date"
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimulateLine"
+          minItems: 1
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+        customer_tags:
+          type: array
+          items:
+            type: string
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        promo_code:
+          type: string
+          maxLength: 40
+    AppliedRule:
+      type: object
+      required:
+        - rule
+        - stage
+        - effect
+      properties:
+        rule:
+          type: string
+        stage:
+          $ref: "#/components/schemas/PriceStage"
+        effect:
+          type: string
+    DayBreakdown:
+      type: object
+      required:
+        - date
+        - slots
+        - base
+        - applied
+        - total
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        base:
+          $ref: "#/components/schemas/Money"
+        applied:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppliedRule"
+        total:
+          $ref: "#/components/schemas/Money"
+    ExtraBreakdown:
+      type: object
+      required:
+        - code
+        - qty
+        - total
+      properties:
+        code:
+          type: string
+        qty:
+          type: integer
+        total:
+          $ref: "#/components/schemas/Money"
+    FixedBreakdown:
+      type: object
+      required:
+        - formula
+        - amount
+      properties:
+        formula:
+          $ref: "#/components/schemas/FixedFormula"
+        rate_period:
+          type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+    LineBreakdown:
+      type: object
+      required:
+        - pack
+        - zone
+        - days
+        - extras
+        - total
+      properties:
+        pack:
+          type: string
+        zone:
+          type: string
+        spot:
+          type: string
+        fixed:
+          $ref: "#/components/schemas/FixedBreakdown"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayBreakdown"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExtraBreakdown"
+        total:
+          $ref: "#/components/schemas/Money"
+    DiscountBreakdown:
+      type: object
+      required:
+        - source
+        - amount
+      properties:
+        source:
+          type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+    VatBreakdown:
+      type: object
+      required:
+        - rate
+        - taxable
+        - tax
+      properties:
+        rate:
+          $ref: "#/components/schemas/Decimal"
+        taxable:
+          $ref: "#/components/schemas/Money"
+        tax:
+          $ref: "#/components/schemas/Money"
+    PriceBreakdown:
+      type: object
+      description: Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo.
+      required:
+        - engine_version
+        - currency
+        - lines
+        - discounts
+        - rounding
+        - total
+        - vat
+      properties:
+        engine_version:
+          type: integer
+        currency:
+          type: string
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineBreakdown"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExtraBreakdown"
+        discounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscountBreakdown"
+        rounding:
+          $ref: "#/components/schemas/Money"
+        total:
+          $ref: "#/components/schemas/Money"
+        vat:
+          type: array
+          items:
+            $ref: "#/components/schemas/VatBreakdown"
+    PolicyViolation:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Codice stabile (es. lead_time_too_short).
+        params:
+          type: object
+          additionalProperties:
+            type: string
+    PolicyEvaluation:
+      type: object
+      required:
+        - rules
+        - violations
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente se vale solo la policy di default.
+        rules:
+          $ref: "#/components/schemas/PolicyRules"
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyViolation"
+    SimulateResult:
+      type: object
+      required:
+        - breakdown
+        - deposit_due
+        - policy
+      properties:
+        breakdown:
+          $ref: "#/components/schemas/PriceBreakdown"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+        policy:
+          $ref: "#/components/schemas/PolicyEvaluation"
+    PriceMatrixCell:
+      type: object
+      required:
+        - pack_id
+        - price_category
+        - rate_period
+        - zone_id
+        - date
+        - priced
+        - price
+      properties:
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        price_category:
+          type: string
+        rate_period:
+          type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        date:
+          $ref: "#/components/schemas/Date"
+        priced:
+          type: boolean
+        price:
+          $ref: "#/components/schemas/Money"
+    PriceMatrix:
+      type: object
+      description: Matrice pack × categoria × periodo generata dal motore (spec 8.7).
+      required:
+        - season_id
+        - formula
+        - channel
+        - slots
+        - pack_ids
+        - categories
+        - rate_periods
+        - cells
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        formula:
+          $ref: "#/components/schemas/Formula"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        pack_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        categories:
+          type: array
+          items:
+            type: string
+        rate_periods:
+          type: array
+          items:
+            type: string
+        cells:
+          type: array
+          items:
+            $ref: "#/components/schemas/PriceMatrixCell"
+    CoverageGap:
+      type: object
+      required:
+        - pack_id
+        - price_category
+        - channel
+        - from
+        - to
+      properties:
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        price_category:
+          type: string
+        channel:
+          $ref: "#/components/schemas/Channel"
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+    CoverageReport:
+      type: object
+      required:
+        - season_id
+        - from
+        - to
+        - complete
+        - gaps
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        complete:
+          type: boolean
+        gaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/CoverageGap"
+    SetupTemplateZone:
+      type: object
+      required:
+        - code
+        - name
+        - assignment_mode
+        - price_category
+      properties:
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        assignment_mode:
+          $ref: "#/components/schemas/AssignmentMode"
+        price_category:
+          type: string
+    SetupTemplatePack:
+      type: object
+      required:
+        - code
+        - name
+        - composition
+      properties:
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        composition:
+          $ref: "#/components/schemas/ComponentQuantities"
+    SetupTemplate:
+      type: object
+      required:
+        - code
+        - name
+        - description
+        - rows
+        - spots_per_row
+        - zones
+        - packs
+        - rate_periods
+      properties:
+        code:
+          $ref: "#/components/schemas/SetupTemplateCode"
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        rows:
+          type: integer
+          description: File proposte (0 se nessuna mappa a file).
+        spots_per_row:
+          type: integer
+        zones:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetupTemplateZone"
+        packs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetupTemplatePack"
+        rate_periods:
+          type: array
+          items:
+            type: string
+          description: Codici dei periodi proposti.
+    SetupTemplateList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetupTemplate"
+    ApplyTemplateRequest:
+      type: object
+      required:
+        - template
+      properties:
+        template:
+          $ref: "#/components/schemas/SetupTemplateCode"
+        season_year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+        opens_on:
+          $ref: "#/components/schemas/Date"
+        closes_on:
+          $ref: "#/components/schemas/Date"
+        rows:
+          type: integer
+          minimum: 0
+          maximum: 52
+        spots_per_row:
+          type: integer
+          minimum: 0
+          maximum: 200
+        map_name:
+          $ref: "#/components/schemas/I18nText"
+    ApplyTemplateResult:
+      type: object
+      required:
+        - template
+        - zone_ids
+        - pool_ids
+        - component_ids
+        - pack_ids
+        - extra_ids
+        - rate_period_ids
+        - spots_created
+      properties:
+        template:
+          $ref: "#/components/schemas/SetupTemplateCode"
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        pool_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        component_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        pack_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        extra_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        rate_period_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        spots_created:
+          type: integer
+    QuickPrice:
+      type: object
+      required:
+        - price_category
+        - rate_period_code
+        - amount
+      properties:
+        price_category:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        rate_period_code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,31}$
+        amount:
+          $ref: "#/components/schemas/Money"
+    QuickPricelistRequest:
+      type: object
+      description: "Listino rapido: prezzo giornaliero per categoria e periodo → regole base (spec 15.2)."
+      required:
+        - season_id
+        - prices
+      properties:
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: Vuoto = tutti i pack attivi.
+        prices:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuickPrice"
+          minItems: 1
+        replace_existing:
+          type: boolean
+          description: true sostituisce le regole base generate in precedenza dal listino rapido.
+    QuickPricelistResult:
+      type: object
+      required:
+        - rules
+        - replaced
+      properties:
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/PriceRule"
+        replaced:
+          type: integer
+    SetupStatus:
+      type: object
+      description: Avanzamento della configurazione guidata.
+      required:
+        - has_season
+        - has_rate_periods
+        - has_map
+        - spot_count
+        - has_catalog
+        - has_prices
+        - booking_enabled
+      properties:
+        has_season:
+          type: boolean
+        has_rate_periods:
+          type: boolean
+        has_map:
+          type: boolean
+        spot_count:
+          type: integer
+        has_catalog:
+          type: boolean
+        has_prices:
+          type: boolean
+        booking_enabled:
+          type: boolean

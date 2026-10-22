@@ -140,26 +140,29 @@ type Theme struct {
 type Establishment struct {
 	bun.BaseModel `bun:"table:establishments,alias:e"`
 
-	ID                  string     `bun:"id,pk"`
-	OrganizationID      string     `bun:"organization_id,notnull"`
-	Slug                string     `bun:"slug,notnull"`
-	Name                string     `bun:"name,notnull"`
-	Timezone            string     `bun:"timezone,notnull"`
-	Currency            string     `bun:"currency,notnull"`
-	DefaultLocale       string     `bun:"default_locale,notnull"`
-	EnabledLocales      []string   `bun:"enabled_locales,type:json,notnull"`
-	ContactEmail        string     `bun:"contact_email,notnull"`
-	ContactPhone        string     `bun:"contact_phone,notnull"`
-	Address             Address    `bun:"address,type:json,notnull"`
-	Geo                 *Geo       `bun:"geo,type:json"`
-	ConcessionRef       *string    `bun:"concession_ref"`
-	BookingEnabled      bool       `bun:"booking_enabled,notnull"`
-	AllowedEmbedOrigins []string   `bun:"allowed_embed_origins,type:json,notnull"`
-	Theme               Theme      `bun:"theme,type:json,notnull"`
-	Settings            JSON       `bun:"settings,notnull"`
-	ArchivedAt          *time.Time `bun:"archived_at"`
-	CreatedAt           time.Time  `bun:"created_at,notnull"`
-	UpdatedAt           time.Time  `bun:"updated_at,notnull"`
+	ID                  string   `bun:"id,pk"`
+	OrganizationID      string   `bun:"organization_id,notnull"`
+	Slug                string   `bun:"slug,notnull"`
+	Name                string   `bun:"name,notnull"`
+	Timezone            string   `bun:"timezone,notnull"`
+	Currency            string   `bun:"currency,notnull"`
+	DefaultLocale       string   `bun:"default_locale,notnull"`
+	EnabledLocales      []string `bun:"enabled_locales,type:json,notnull"`
+	ContactEmail        string   `bun:"contact_email,notnull"`
+	ContactPhone        string   `bun:"contact_phone,notnull"`
+	Address             Address  `bun:"address,type:json,notnull"`
+	Geo                 *Geo     `bun:"geo,type:json"`
+	ConcessionRef       *string  `bun:"concession_ref"`
+	BookingEnabled      bool     `bun:"booking_enabled,notnull"`
+	AllowedEmbedOrigins []string `bun:"allowed_embed_origins,type:json,notnull"`
+	Theme               Theme    `bun:"theme,type:json,notnull"`
+	Settings            JSON     `bun:"settings,notnull"`
+	// Version is the optimistic concurrency version (ETag) of the establishment
+	// configuration; bump it on every update.
+	Version    int64      `bun:"version,notnull"`
+	ArchivedAt *time.Time `bun:"archived_at"`
+	CreatedAt  time.Time  `bun:"created_at,notnull"`
+	UpdatedAt  time.Time  `bun:"updated_at,notnull"`
 }
 
 // User is a staff account of the admin panel.
