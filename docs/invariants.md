@@ -156,12 +156,12 @@ Verificata da: `TestCashSession_CloseComputesDifference`. Stato: planned.
 **INV-26 — Isolamento per stabilimento.**
 Nessuna query operativa viene eseguita senza `establishment_id` preso dal contesto autenticato; un
 utente o una chiave API di uno stabilimento non legge né modifica dati di un altro.
-Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`). Stato: partial (implementato per stabilimenti, utenti e chiavi API di M0; ogni nuova tabella operativa aggiunge il proprio caso).
+Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Stato: partial (coperti stabilimenti, utenti, chiavi API, stagioni, mappe, zone, pool, catalogo, listini e policy; le tabelle di M3 aggiungeranno il proprio caso).
 
 **INV-27 — Permessi verificati nel dominio.**
 Ogni operazione di amministrazione verifica il permesso del ruolo (spec 16.1) nel servizio di dominio,
 indipendentemente dall'handler HTTP.
-Verificata da: `TestCan_Matrix`, `TestPrincipal_CanCombinesGrants` (`internal/domain/auth`, tabella ruoli × permessi). Stato: partial (matrice implementata; il controllo nel servizio di dominio esiste per gli stabilimenti, `establishment.Service`, e va esteso a ogni nuova operazione).
+Verificata da: `TestCan_Matrix`, `TestPrincipal_CanCombinesGrants` (`internal/domain/auth`, tabella ruoli × permessi). Per M1/M2 anche `TestPermissions_Spec16` (`internal/domain/pricingconfig`), `TestCatalogIntegration_Permissions`, `TestTeamService_Permissions`, `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestApply_Permissions` (tag `integration`). Stato: partial (controllo nel dominio per stabilimenti, stagioni, utenti, mappe, catalogo, listini, policy e configurazione guidata; va esteso alle operazioni di M3).
 
 **INV-28 — API pubblica senza dati dei clienti.**
 Le risposte di disponibilità, calendario, mappa e catalogo non contengono dati personali; i dati di una
@@ -198,3 +198,32 @@ Verificata da: `TestDivRoundHalfEven_Table`, `TestMulRat_Table`, `TestMulRat_Mat
 **INV-34 — Date di calendario canoniche.**
 `calendar.Date` si serializza sempre come `YYYY-MM-DD` (JSON e SQL) e un `Range` è inclusivo agli estremi.
 Verificata da: `TestDate_JSONRoundTrip`, `TestDate_SQLRoundTrip`, `TestRange_Inclusive` (`internal/calendar`). Stato: implemented.
+
+## Configurazione (spec 6, 8, 9, 11, 15)
+
+**INV-35 — Periodi tariffari senza sovrapposizioni.**
+I periodi tariffari di una stagione sono contenuti nelle date della stagione e non si sovrappongono, anche
+con scritture concorrenti.
+Verificata da: `TestConcurrency_RatePeriodsNeverOverlap`, `TestSeasonService_RatePeriods` (`internal/domain/season`, tag `integration`), `TestValidateRatePeriod_Scenarios`. Stato: implemented.
+
+**INV-36 — Sempre almeno un owner attivo.**
+L'ultimo owner attivo di un'organizzazione non può essere declassato, disattivato o rimosso.
+Verificata da: `TestConcurrency_LastOwnerNeverRemoved`, `TestTeamService_RolesDeactivationAndLastOwner` (`internal/domain/team`, tag `integration`), `TestCheckLastOwner_Scenarios`. Stato: implemented.
+
+**INV-37 — Salvataggio della mappa con versione ottimistica.**
+Un salvataggio del documento mappa riesce solo se la versione in `If-Match` è quella corrente; tra
+salvataggi concorrenti uno solo vince, gli altri ricevono 412 con `current_version`.
+Verificata da: `TestConcurrency_SaveMap`, `TestMappingIntegration_SaveDiffAndVersioning` (`internal/domain/mapping`, tag `integration`), `TestMapsHTTP_DocumentFlow` (`internal/http/admin`, tag `integration`). Stato: implemented.
+
+**INV-38 — Pool implicito allineato alle postazioni.**
+Ogni zona in modalità `zone` ha un solo pool di sistema con capacità pari alle sue postazioni attive.
+Verificata da: `TestMappingIntegration_ImplicitZonePool` (`internal/domain/mapping`, tag `integration`). Stato: implemented.
+
+**INV-39 — Modifiche di configurazione con audit ed evento atomici.**
+Ogni modifica di listino o mappa scrive l'audit log e l'evento `config.pricing_changed` o
+`config.map_changed` nella stessa transazione.
+Verificata da: `TestPriceRule_VersionSeqAuditOutbox` (`internal/domain/pricingconfig`), `TestMappingIntegration_SaveDiffAndVersioning` (`internal/domain/mapping`), tag `integration`. Stato: partial (verificato per regole di prezzo e mappe; per le altre entità di configurazione il codice segue lo stesso schema senza test dedicato).
+
+**INV-40 — Matrice e simulatore coerenti.**
+Ogni cella della matrice di listino ha lo stesso prezzo che il simulatore calcola con gli stessi input.
+Verificata da: `TestScenario_SimulateMatrixConsistency` (`internal/domain/pricingconfig`, tag `integration`). Stato: implemented.

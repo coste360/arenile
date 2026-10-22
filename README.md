@@ -11,7 +11,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fcoste360%2Farenile-2496ED?logo=docker&logoColor=white)](https://github.com/coste360/arenile/pkgs/container/arenile)
 [![SQLite | PostgreSQL](https://img.shields.io/badge/DB-SQLite%20%7C%20PostgreSQL-003B57?logo=sqlite&logoColor=white)](#architettura)
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
-[![Stato: M0 in sviluppo](https://img.shields.io/badge/stato-M0%20fondamenta-orange.svg)](#roadmap)
+[![Stato: M1-M2 completate, M3 in arrivo](https://img.shields.io/badge/stato-M1%E2%80%93M2%20inventario%20e%20prezzi-orange.svg)](#roadmap)
 
 [Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-a-codice-sorgente-disponibile) ·
 [Funzionalità](#funzionalità) ·
@@ -27,7 +27,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 ---
 
 > [!IMPORTANT]
-> **Stato del progetto: milestone M0 (fondamenta), in sviluppo attivo.**
+> **Stato del progetto: fondamenta (M0), inventario e mappa (M1), prezzi e policy (M2) completati sul ramo principale; prossima milestone M3 (prenotazioni e cassa). Nessuna versione ancora rilasciata.**
 > Arenile non è ancora pronto per la produzione. Le funzionalità descritte in questa pagina sono la roadmap della [specifica tecnica](docs/spec/README.md): la [tabella di stato](#stato-delle-funzionalità) indica con precisione cosa è disponibile, cosa è in sviluppo e cosa è pianificato. Se gestisci un lido e vuoi provarlo per la stagione, segui il repository (*Watch → Releases*) per essere avvisato al primo rilascio.
 
 **Arenile** è un **software gratuito per la gestione di stabilimenti balneari, con codice sorgente disponibile**, lidi, spiagge attrezzate e piscine. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
@@ -130,24 +130,24 @@ Panoramica delle aree funzionali previste dalla specifica. Lo stato di ciascuna 
 
 ## Stato delle funzionalità
 
-Legenda: **Disponibile** = rilasciato e utilizzabile · **In sviluppo** = lavori in corso nella milestone indicata · **Pianificato** = previsto dalla specifica, non ancora iniziato.
+Legenda: **Disponibile** = rilasciato e utilizzabile · **Completato** = implementato e coperto da test sul ramo principale, non ancora rilasciato · **In sviluppo** = lavori in corso nella milestone indicata · **Pianificato** = previsto dalla specifica, non ancora iniziato.
 
-Ad oggi **nessuna versione è stata rilasciata**: il progetto sta costruendo le fondamenta (M0) e, in parallelo, le librerie pure del motore prezzi e delle policy (M2).
+Ad oggi **nessuna versione è stata rilasciata**. Sul ramo principale sono completate le fondamenta (M0), l'inventario con l'editor della mappa e la configurazione guidata (M1) e la configurazione di prezzi e policy (M2): un gestore può creare uno stabilimento, configurare un lido di 8 file da 15 posti partendo da un modello, generare il listino e verificarne la copertura. Prenotazioni e cassa arrivano con M3.
 
 | Area | Funzionalità | Milestone | Stato |
 |---|---|:-:|---|
 | Progetto | Specifica tecnica completa, licenza, governance, template issue/PR | M0 | Disponibile |
-| Fondamenta | Struttura del repository, Makefile, CI, Dockerfile, docker compose | M0 | In sviluppo |
-| Fondamenta | Configurazione da variabili d'ambiente, CLI (`serve`, `migrate`, `admin`, `seed`, `backup`, `restore`, `version`) | M0 | In sviluppo |
-| Fondamenta | Migrazioni SQLite e PostgreSQL, autenticazione e ruoli, audit log, outbox eventi, job runner | M0 | In sviluppo |
-| Fondamenta | Contratto OpenAPI iniziale, SPA pannello e booking di base incorporate nel binario | M0 | In sviluppo |
-| Agenti AI | `AGENTS.md`, `CLAUDE.md`, `.claude/` (regole, skill, subagent), devcontainer | M0 | In sviluppo |
-| Prezzi | Motore prezzi come libreria pura (regole, condizioni, azioni, IVA, arrotondamento) | M0/M2 | In sviluppo |
-| Policy | Motore delle policy come libreria pura (anticipo, durate, acconti, cancellazioni) | M0/M2 | In sviluppo |
-| Inventario | Stabilimento, stagioni, periodi tariffari, chiusure | M1 | Pianificato |
-| Mappa | Editor della mappa, generatore di file, zone, postazioni, pool | M1 | Pianificato |
-| Catalogo | Componenti, pack, extra; configurazione guidata con modelli | M1 | Pianificato |
-| Prezzi | Simulatore, matrice di listino, verifica di copertura, codici promo, convenzioni | M2 | Pianificato |
+| Fondamenta | Struttura del repository, Makefile, CI, Dockerfile, docker compose | M0 | Completato |
+| Fondamenta | Configurazione da variabili d'ambiente, CLI (`serve`, `migrate`, `admin`, `seed`, `backup`, `restore`, `version`) | M0 | Completato |
+| Fondamenta | Migrazioni SQLite e PostgreSQL, autenticazione e ruoli, audit log, outbox eventi, job runner | M0 | Completato |
+| Fondamenta | Contratto OpenAPI iniziale, SPA pannello e booking di base incorporate nel binario | M0 | Completato |
+| Agenti AI | `AGENTS.md`, `CLAUDE.md`, `.claude/` (regole, skill, subagent), devcontainer | M0 | Completato |
+| Prezzi | Motore prezzi come libreria pura (regole, condizioni, azioni, IVA, arrotondamento) | M0/M2 | Completato |
+| Policy | Motore delle policy come libreria pura (anticipo, durate, acconti, cancellazioni) | M0/M2 | Completato |
+| Inventario | Più stabilimenti dal pannello (creazione e selettore), impostazioni e tema, stagioni, periodi tariffari, chiusure, utenti e ruoli | M1 | Completato |
+| Mappa | Editor della mappa (annulla/ripeti, allineamento, rinumerazione, conflitti di versione), generatore di file, zone, postazioni, decorazioni, pool | M1 | Completato |
+| Catalogo | Componenti, pack, extra; configurazione guidata con 4 modelli e listino rapido | M1 | Completato |
+| Prezzi | Regole di prezzo, prezzi a durata fissa, codici promo, convenzioni, policy di prenotazione, simulatore, matrice di listino (esportazione CSV), verifica di copertura, copia di stagione | M2 | Completato |
 | Prenotazioni | Motore di disponibilità con allocazioni, hold, pool e quote | M3 | Pianificato |
 | Pannello | Vista operativa della mappa, calendario planning, clienti, abbonamenti e rilasci | M3 | Pianificato |
 | Cassa | Pagamenti manuali, cassa con apertura/chiusura, esportazione corrispettivi | M3 | Pianificato |
@@ -232,7 +232,7 @@ docker compose exec -e ARENILE_ADMIN_PASSWORD='scegli-una-password-lunga' arenil
   /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
 ```
 
-**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/`. In M0 il pannello offre l'accesso (con verifica in due passaggi TOTP facoltativa) e l'elenco degli stabilimenti; mappa, listini, prenotazioni e configurazione guidata arrivano con le milestone successive (vedi [Roadmap](#roadmap)).
+**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/`. Oggi il pannello offre l'accesso (con verifica in due passaggi TOTP facoltativa), la creazione e la scelta degli stabilimenti, la configurazione guidata, l'editor della mappa, il catalogo, i listini, le policy e il simulatore prezzi; prenotazioni, cassa e pagina pubblica completa arrivano con le milestone successive (vedi [Roadmap](#roadmap)).
 
 Per provare con dati dimostrativi: `docker compose exec arenile /arenile seed demo`.
 
@@ -452,10 +452,10 @@ arenile/
 
 Il dettaglio con i criteri di accettazione è nella sezione 28 della [specifica](docs/spec/28-roadmap-e-criteri-di-accettazione.md).
 
-- [ ] **M0 — Fondamenta** *(in corso)*: repository, CI, Docker, OpenAPI iniziale, configurazione, migrazioni per SQLite e PostgreSQL, CLI, autenticazione e ruoli, audit log, outbox, job runner, supporto agli agenti AI. *Accettazione:* `docker compose up` avvia un'istanza vuota e `arenile admin create` permette il login.
-- [ ] **M1 — Inventario e mappa**: stagioni e periodi, editor della mappa con generatore di file, catalogo pack ed extra, configurazione guidata. *Accettazione:* un lido di 8 file da 15 posti configurato in meno di 15 minuti.
-- [ ] **M2 — Prezzi e policy**: motore prezzi completo, prezzi a durata fissa, promo e convenzioni, simulatore e matrice di listino, policy. *Accettazione:* almeno 150 casi di test del motore prezzi.
-- [ ] **M3 — Prenotazioni dal pannello e cassa**: motore di disponibilità, vista operativa, planning, clienti, abbonamenti e rilasci, cassa, corrispettivi, SSE. *Accettazione:* test di concorrenza superati, giornata simulata da 300 operazioni senza incoerenze.
+- [x] **M0 — Fondamenta**: repository, CI, Docker, OpenAPI iniziale, configurazione, migrazioni per SQLite e PostgreSQL, CLI, autenticazione e ruoli, audit log, outbox, job runner, supporto agli agenti AI. *Accettazione:* `docker compose up` avvia un'istanza vuota e `arenile admin create` permette il login.
+- [x] **M1 — Inventario e mappa** *(completata, accettazione coperta da un test end-to-end Playwright)*: stagioni e periodi, editor della mappa con generatore di file, catalogo pack ed extra, configurazione guidata. *Accettazione:* un lido di 8 file da 15 posti configurato in meno di 15 minuti.
+- [x] **M2 — Prezzi e policy** *(completata: oltre 400 casi di test del motore prezzi)*: motore prezzi completo, prezzi a durata fissa, promo e convenzioni, simulatore e matrice di listino, policy. *Accettazione:* almeno 150 casi di test del motore prezzi.
+- [ ] **M3 — Prenotazioni dal pannello e cassa** *(prossima)*: motore di disponibilità, vista operativa, planning, clienti, abbonamenti e rilasci, cassa, corrispettivi, SSE. *Accettazione:* test di concorrenza superati, giornata simulata da 300 operazioni senza incoerenze.
 - [ ] **M4 — Pagina pubblica e pagamenti online (MVP pubblico)**: booking online, `embed.js`, tema, Stripe, link magico, email, QR e `.ics`. *Accettazione:* prenotazione completa da smartphone in un iframe su dominio esterno in meno di 2 minuti.
 - [ ] **M5 — Completamento della stagione**: rinnovi, lista d'attesa, crediti, report, PWA offline, webhook, chiavi API, traduzioni.
 - **Dopo l'MVP**: Satispay e altri provider, driver per registratori telematici, WhatsApp e SMS, app per lo staff in spiaggia, bar e ristorante con addebito sulla postazione.
@@ -604,4 +604,4 @@ Se Arenile ti è utile, lascia una stella al repository e parlane con altri gest
 
 ## In English
 
-**Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. The project is currently at milestone M0 (foundations) and under active development by [Coste360 SRL](https://coste360.it); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release (the license text and use clause are still pending legal review). Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md).
+**Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. Milestones M0 (foundations), M1 (inventory, map editor, guided setup) and M2 (pricing and booking policies) are complete on the main branch, with no release yet; the project is under active development by [Coste360 SRL](https://coste360.it); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release (the license text and use clause are still pending legal review). Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md).

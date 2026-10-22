@@ -6,11 +6,21 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-Milestone **M0 — Fondamenta** (in sviluppo).
+Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi e policy** (completate, non rilasciate).
 
 ### Added
 
-- M1/M2 (in sviluppo): contratto API di amministrazione per stabilimenti, utenti, stagioni, periodi tariffari, chiusure, mappe (documento versionato con `ETag`/`If-Match`, generatore di file), zone, pool, componenti, pack, extra, regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni, policy, simulatore, matrice di listino, verifica di copertura, copia di stagione e configurazione guidata; migrazione `00002_inventory_catalog_pricing` per SQLite e PostgreSQL; nuovi tipi di errore `version_conflict`, `precondition_required`, `spot_has_future_allocations`, `not_implemented`; pannello con rotte per stabilimento (`/admin/e/{id}/...`), selettore dello stabilimento e menu Configurazione.
+- M1 — stabilimenti: creazione di nuovi stabilimenti dal pannello (solo owner dell'organizzazione) con selettore, impostazioni con `If-Match` (fuso, lingue, origini embed, tema, impostazioni prezzi, festività locali, policy predefinita), archiviazione e ripristino.
+- M1 — stagioni, periodi tariffari (senza sovrapposizioni, serializzati sulla stagione) e giorni di chiusura per fascia AM/PM; copia delle date di stagione.
+- M1 — utenti e ruoli (solo owner): aggiunta con password iniziale o temporanea, cambio ruolo e ambito, disattivazione con chiusura delle sessioni; l'ultimo owner attivo non può essere rimosso.
+- M1 — mappe: documento versionato salvato in una transazione con `ETag`/`If-Match` (412 con `current_version`, 428 senza header), zone (posto, zona, quantità), pool con capacità per periodo, pool implicito per le zone a zona sincronizzato con le postazioni attive, generatore di file con anteprima, eliminazione rifiutata per postazioni con allocazioni future (verifica predisposta, sempre "nessuna" fino a M3).
+- M1 — catalogo: componenti, pack ed extra con archiviazione quando referenziati.
+- M1 — configurazione guidata: modelli `classic_rows` (8 × 15), `quantity_beach`, `lido_with_pool`, `empty`, listino rapido per categoria × periodo, stato della configurazione; `seed demo` completo e idempotente (owner dimostrativo, listino, prezzi fissi, policy, codice promo e convenzione).
+- M2 — persistenza e API di regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni e policy di prenotazione collegati ai motori puri; simulatore, matrice di listino, verifica di copertura e copia di stagione del listino.
+- Pannello: impostazioni dello stabilimento con anteprima del tema, stagioni con timeline dei periodi, chiusure, zone, pool, catalogo, utenti, procedura guidata in 6 passi, editor della mappa SVG (selezione multipla, trascinamento, tastiera, annulla/ripeti, allinea/distribuisci, rinumerazione, dialogo di conflitto), regole di prezzo con riepilogo in linguaggio naturale, griglia dei prezzi fissi, matrice con esportazione CSV, calendario della copertura, simulatore con dettaglio per regola, policy con esempi della spec 9.
+- Eventi `config.map_changed` e `config.pricing_changed` scritti nell'outbox nella stessa transazione delle modifiche, con payload versione 1.
+- Test end-to-end Playwright del percorso di accettazione M1/M2: login, nuovo stabilimento dal selettore, modello classico, listino rapido, spostamento e salvataggio di una postazione, simulatore.
+- M1/M2: contratto API di amministrazione per stabilimenti, utenti, stagioni, periodi tariffari, chiusure, mappe (documento versionato con `ETag`/`If-Match`, generatore di file), zone, pool, componenti, pack, extra, regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni, policy, simulatore, matrice di listino, verifica di copertura, copia di stagione e configurazione guidata; migrazione `00002_inventory_catalog_pricing` per SQLite e PostgreSQL; nuovi tipi di errore `version_conflict`, `precondition_required`, `spot_has_future_allocations`, `not_implemented`; pannello con rotte per stabilimento (`/admin/e/{id}/...`), selettore dello stabilimento e menu Configurazione.
 
 - Specifica tecnica e funzionale completa in `docs/spec/` (un file per sezione).
 - Struttura del repository: monobinario Go (`cmd/arenile`), SPA pannello e booking in `web/` (npm workspaces), contratto API in `api/openapi.yaml`.
@@ -39,6 +49,8 @@ Milestone **M0 — Fondamenta** (in sviluppo).
 
 ### Fixed
 
+- Un `PUT` della mappa senza header `If-Match` risponde 428 `precondition_required` invece di 400.
+- Il simulatore prezzi mostra il nome delle regole applicate invece del loro identificativo.
 - La consegna dei webhook rivendica ogni tentativo con un lease: più istanze sullo stesso database non inviano due volte lo stesso webhook.
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).

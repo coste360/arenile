@@ -54,9 +54,14 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/http/middleware` | Logging slog, recover, request ID, sessione e chiavi API, CSRF double-submit, rate limit, risoluzione dello stabilimento, header di sicurezza | `domain/auth` |
 | `internal/http/sse` | `GET /api/admin/v1/stream`: broker in memoria, messaggi leggeri `{type, spot_ids, dates}` | `domain/event` |
 | `internal/http/static` | `embed.FS` di `static/admin` e `static/booking` (copiati da `web/*/dist` in build); pagina segnaposto se manca `index.html`. Serve `/admin/`, `/b/{slug}`, `/embed.js` | stdlib |
-| `internal/domain/establishment` | Organizzazioni, stabilimenti, stagioni, periodi tariffari, chiusure | `store` (interfacce) |
-| `internal/domain/mapping` | Mappe, zone, postazioni, decorazioni, pool | |
-| `internal/domain/catalog` | Componenti, pack, extra | |
+| `internal/reqctx` | Metadati della richiesta nel `context` (request ID, IP del client, schema, metodo di autenticazione): li scrive il middleware, li leggono handler e servizi per l'audit. Nessuna dipendenza da `net/http` | stdlib |
+| `internal/domain/establishment` | Organizzazioni e stabilimenti: creazione (solo owner dell'organizzazione), impostazioni con `If-Match`, tema, archiviazione | `store`, `audit`, `event` |
+| `internal/domain/season` | Stagioni, periodi tariffari (senza sovrapposizioni, lock sulla riga della stagione), giorni di chiusura, copia delle date di stagione | `store`, `audit`, `event` |
+| `internal/domain/team` | Utenti e membership dello stabilimento (solo owner), password temporanea, disattivazione; protezione dell'ultimo owner | `auth`, `store`, `audit` |
+| `internal/domain/mapping` | Documento mappa versionato (postazioni, decorazioni), zone, pool e pool implicito delle zone `zone`, generatore di file puro (`generator.go`), verifica delle allocazioni future (`AllocationChecker`, `NoAllocations` fino a M3) | `store`, `audit`, `event` |
+| `internal/domain/catalog` | Componenti, pack, extra; `LoadPricingCatalog` costruisce il `pricing.Catalog` | `store`, `pricing` |
+| `internal/domain/pricingconfig` | Persistenza di regole di prezzo, prezzi fissi, promo, convenzioni e policy; `LoadPriceList` per i motori; simulatore, matrice, copertura, copia del listino | `pricing`, `policy`, `store` |
+| `internal/domain/setup` | Configurazione guidata: modelli, applicazione in una transazione, listino rapido, stato, `seed demo` | `mapping`, `pricingconfig`, `store` |
 | `internal/domain/availability` | Allocazioni, hold, pool, quote online, rilasci, assegnazione automatica | `store`, `clock` |
 | `internal/domain/pricing` | Motore prezzi **puro** `Quote(input, catalogo, regole) → PriceBreakdown` (ADR 0004) | `money`, `calendar` |
 | `internal/domain/policy` | Risoluzione della policy applicabile e validazione dei vincoli | `calendar`, `clock` |
@@ -79,7 +84,7 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `web/admin`, `web/booking`, `web/shared` | SPA del pannello, pagina pubblica (budget 150 KB gzip), pacchetto condiviso con client generato in `web/shared/api/generated/` | — |
 
 Regole di dipendenza:
-- `internal/domain/*` non importa `net/http`, `internal/http/*` né driver SQL.
+- `internal/domain/*` non importa `net/http`, `internal/http/*` né driver SQL (usa `bun.IDB` per partecipare alle transazioni; l'IP per l'audit arriva da `internal/reqctx`).
 - `internal/http/*` non contiene SQL né logica di business.
 - `pkg/ext` non importa nulla di `internal/`.
 - `internal/domain/pricing` non importa `store`, `clock` né `time.Now`.
