@@ -2,8 +2,8 @@
 
 # Arenile
 
-**Il gestionale open source e gratuito per stabilimenti balneari.**
-Mappa ombrelloni interattiva, prenotazioni online senza commissioni, listini prezzi, cassa e abbonamenti stagionali: tutto in un unico binario self-hosted.
+**Il gestionale balneare open source e gratuito per stabilimenti balneari e lidi.**
+Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senza commissioni, listini prezzi, cassa e abbonamenti stagionali: tutto in un unico binario self-hosted.
 
 [![Licenza: AGPL-3.0](https://img.shields.io/badge/licenza-AGPL--3.0-blue.svg)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.27-00ADD8?logo=go&logoColor=white)](https://go.dev)
@@ -13,7 +13,7 @@ Mappa ombrelloni interattiva, prenotazioni online senza commissioni, listini pre
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
 [![Stato: M0 in sviluppo](https://img.shields.io/badge/stato-M0%20fondamenta-orange.svg)](#roadmap)
 
-[Perché Arenile](#perché-arenile) ·
+[Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-open-source) ·
 [Funzionalità](#funzionalità) ·
 [Installazione](#installazione-in-5-minuti) ·
 [Widget](#incorporare-il-widget-nel-tuo-sito) ·
@@ -32,13 +32,15 @@ Mappa ombrelloni interattiva, prenotazioni online senza commissioni, listini pre
 
 **Arenile** è un **software gratuito e open source per la gestione di stabilimenti balneari**, lidi, spiagge attrezzate e piscine. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
 
-Un solo programma comprende il **pannello del gestore** (mappa operativa della spiaggia, prenotazioni, cassa, clienti, abbonamenti, report) e la **pagina di prenotazione online di ombrelloni e lettini**, incorporabile in qualsiasi sito web con un `iframe` o con uno script di una riga.
+A regime un solo programma comprenderà il **pannello del gestore** (mappa operativa della spiaggia, prenotazioni, cassa, clienti, abbonamenti, report) e la **pagina di prenotazione online di ombrelloni e lettini**, incorporabile in qualsiasi sito web con un `iframe` o con uno script di una riga. Cosa è già disponibile oggi è indicato nella [tabella di stato](#stato-delle-funzionalità).
 
 È sviluppato da [Coste360 SRL](https://coste360.it), la piattaforma italiana per il monitoraggio delle coste e delle concessioni demaniali marittime.
 
 ---
 
-## Perché Arenile
+## Gestionale per stabilimenti balneari gratuito e open source
+
+Perché scegliere Arenile come software di gestione dello stabilimento balneare, al posto di un gestionale lido a canone o di un portale che trattiene una percentuale su ogni prenotazione:
 
 | | |
 |---|---|
@@ -169,7 +171,20 @@ Ad oggi **nessuna versione è stata rilasciata**: il progetto sta costruendo le 
 
 **Requisiti:** un server Linux (`amd64` o `arm64`) con Docker e Docker Compose, un dominio che punti al server. Bastano 1 vCPU e 512 MB di RAM per un lido.
 
-**1. Crea il file `docker-compose.yml`**
+**Prova in locale in un minuto** (compila l'immagine dai sorgenti, nessuna configurazione):
+
+```bash
+git clone https://github.com/coste360/arenile.git && cd arenile
+ARENILE_BOOTSTRAP_OWNER_EMAIL=titolare@lido.test ARENILE_BOOTSTRAP_OWNER_NAME="Mario Rossi" \
+ARENILE_BOOTSTRAP_OWNER_ORG="Lido Prova" ARENILE_ADMIN_PASSWORD=password-di-prova \
+  docker compose up --build        # oppure: make up
+```
+
+Poi apri `http://localhost:8080/admin/` e accedi con le credenziali indicate. Il file `compose.yaml` nella radice usa la modalità sviluppo: non usarlo in produzione.
+
+**Installazione su un server**
+
+**1. Crea il file `docker-compose.yml`** (oppure usa direttamente [`deploy/docker-compose.yml`](deploy/docker-compose.yml), che compila l'immagine dai sorgenti se non è ancora pubblicata)
 
 ```yaml
 services:
@@ -184,6 +199,11 @@ services:
       ARENILE_BASE_URL: "https://prenota.mio-lido.it"
       ARENILE_SECRET_KEY: "${ARENILE_SECRET_KEY}"
       ARENILE_SMTP_URL: "${ARENILE_SMTP_URL}"
+      # Primo utente owner, creato all'avvio solo se il database non ha utenti
+      ARENILE_BOOTSTRAP_OWNER_EMAIL: "${ARENILE_BOOTSTRAP_OWNER_EMAIL}"
+      ARENILE_BOOTSTRAP_OWNER_NAME: "${ARENILE_BOOTSTRAP_OWNER_NAME}"
+      ARENILE_BOOTSTRAP_OWNER_ORG: "${ARENILE_BOOTSTRAP_OWNER_ORG}"
+      ARENILE_ADMIN_PASSWORD: "${ARENILE_ADMIN_PASSWORD}"
 volumes:
   arenile-data:
 ```
@@ -193,23 +213,30 @@ volumes:
 ```bash
 echo "ARENILE_SECRET_KEY=$(openssl rand -base64 32)" > .env
 echo "ARENILE_SMTP_URL=" >> .env          # facoltativo: smtp://utente:password@host:587
+cat >> .env <<'FINE'
+ARENILE_BOOTSTRAP_OWNER_EMAIL=titolare@mio-lido.it
+ARENILE_BOOTSTRAP_OWNER_NAME=Mario Rossi
+ARENILE_BOOTSTRAP_OWNER_ORG=Lido Esempio
+ARENILE_ADMIN_PASSWORD=scegli-una-password-lunga
+FINE
 docker compose up -d
 ```
 
 > [!WARNING]
 > Conserva `ARENILE_SECRET_KEY` insieme ai backup: cifra le chiavi Stripe e gli altri segreti. Senza di essa i segreti salvati non sono recuperabili.
 
-**3. Crea il primo utente (titolare)**
+**3. Primo utente (titolare).** Con le variabili `ARENILE_BOOTSTRAP_OWNER_*` del passo 2 l'owner viene creato al primo avvio (solo se il database non ha ancora utenti; dopo il primo accesso puoi togliere `ARENILE_ADMIN_PASSWORD` da `.env`). In alternativa crealo a mano: l'immagine è distroless e non ha una shell, ma `exec` lancia direttamente il binario.
 
 ```bash
-docker compose exec arenile /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
+docker compose exec -e ARENILE_ADMIN_PASSWORD='scegli-una-password-lunga' arenile \
+  /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
 ```
 
-**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/` e segui la configurazione guidata.
+**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/`. In M0 il pannello offre l'accesso (con verifica in due passaggi TOTP facoltativa) e l'elenco degli stabilimenti; mappa, listini, prenotazioni e configurazione guidata arrivano con le milestone successive (vedi [Roadmap](#roadmap)).
 
 Per provare con dati dimostrativi: `docker compose exec arenile /arenile seed demo`.
 
-Per HTTPS puoi mettere Arenile dietro un reverse proxy (Caddy, Traefik, Nginx) oppure far gestire i certificati al binario con `ARENILE_TLS_AUTOCERT_DOMAINS`. Guide dettagliate per VPS, Raspberry Pi, Coolify, CapRover, backup e aggiornamenti in [docs/guida/installazione.md](docs/guida/installazione.md).
+Per HTTPS puoi mettere Arenile dietro un reverse proxy (Caddy, Traefik, Nginx) oppure far gestire i certificati al binario con `ARENILE_TLS_AUTOCERT_DOMAINS`: in questo caso Arenile ascolta direttamente sulle porte 80 e 443, che vanno pubblicate nel compose (`"80:80"` e `"443:443"`, righe già presenti e commentate in `deploy/docker-compose.yml`). Guide dettagliate per VPS, Raspberry Pi, Coolify, CapRover, backup e aggiornamenti in [docs/guida/installazione.md](docs/guida/installazione.md).
 
 ### Comandi del binario
 
@@ -255,8 +282,10 @@ Tutta la configurazione avviene tramite variabili d'ambiente, compatibili con Do
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | Rende obbligatoria l'autenticazione a due fattori per i titolari |
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (equivale a `arenile serve --dev`); mai in produzione |
+| `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `ARENILE_BOOTSTRAP_OWNER_NAME`, `ARENILE_BOOTSTRAP_OWNER_ORG` | vuoto | Primo utente owner creato all'avvio solo se il database non ha utenti (servono tutte e tre più `ARENILE_ADMIN_PASSWORD`) |
+| `ARENILE_ADMIN_PASSWORD` | vuoto | Password del primo owner, o per `arenile admin create` senza prompt |
 
-**SQLite o PostgreSQL?** SQLite (modalità WAL, file `/data/arenile.db`) è il default ed è ideale per uno o pochi stabilimenti. PostgreSQL è consigliato per installazioni con molti stabilimenti o più istanze: basta impostare `DATABASE_URL`. Una variante `docker-compose.postgres.yml` è in `deploy/`.
+**SQLite o PostgreSQL?** SQLite (modalità WAL, file `/data/arenile.db`) è il default ed è ideale per uno o pochi stabilimenti. PostgreSQL è consigliato per installazioni con molti stabilimenti o più istanze: basta impostare `DATABASE_URL`. Una variante `docker-compose.postgres.yml` è in `deploy/`: la password di PostgreSQL viene inserita in `DATABASE_URL` senza codifica, quindi usa solo caratteri URL-safe (ad esempio `openssl rand -hex 24`); in un `DATABASE_URL` scritto a mano i caratteri speciali vanno codificati (`@` diventa `%40`).
 
 Endpoint operativi: `/healthz` (processo vivo), `/readyz` (database raggiungibile e migrazioni allineate).
 
@@ -375,7 +404,8 @@ Il `Makefile` è l'**unica interfaccia** per build, test e verifiche, per le per
 | `make lint` | `golangci-lint`, ESLint, Prettier in verifica, `tsc --noEmit` |
 | `make test` | Test unitari Go e Vitest (senza Docker né rete) |
 | `make test-db` | Test di integrazione (`-tags=integration`) su SQLite e PostgreSQL in container |
-| `make test-race` | Test di concorrenza con `-race` su disponibilità e pagamenti |
+| `make test-race` | Test `TestConcurrency_*` con `-race` (idempotenza, outbox, webhook; poi disponibilità e pagamenti) |
+| `make up` | Istanza locale vuota con `docker compose up --build` (`compose.yaml`) |
 | `make e2e` | Playwright con server di prova e dati demo |
 | `make check` | `gen` + verifica che il codice generato sia aggiornato + `lint` + `test` (< 2 minuti) |
 | `make check-full` | `check` + `test-db` + `test-race` + `e2e` (prima di aprire una pull request) |
@@ -479,6 +509,12 @@ Il nome **Arenile** e il relativo logo sono marchi di Coste360 SRL: i fork devon
 ## Domande frequenti
 
 <details>
+<summary><strong>Esiste un gestionale lido gratuito?</strong></summary>
+
+Sì, Arenile è un gestionale lido gratuito e open source: un software per la gestione di stabilimenti balneari che installi sul tuo server senza canoni né licenze a pagamento. Comprende (o comprenderà, secondo la [roadmap](#roadmap)) mappa ombrelloni, prenotazione ombrelloni online, listini, cassa e abbonamenti stagionali.
+</details>
+
+<details>
 <summary><strong>Arenile è davvero gratuito?</strong></summary>
 
 Sì. Arenile è un gestionale per stabilimenti balneari gratuito e open source, con licenza AGPL-3.0. Non ci sono canoni, versioni a pagamento o limiti sul numero di ombrelloni, prenotazioni o utenti. L'unico costo è l'hosting (un VPS da pochi euro al mese o un computer che hai già).
@@ -487,7 +523,7 @@ Sì. Arenile è un gestionale per stabilimenti balneari gratuito e open source, 
 <details>
 <summary><strong>Ci sono commissioni sulle prenotazioni online?</strong></summary>
 
-No, Arenile non applica commissioni sulle prenotazioni. A differenza dei portali di prenotazione a commissione, i pagamenti online passano dal tuo account Stripe e l'incasso arriva direttamente a te: paghi solo le commissioni del circuito di pagamento, nessuna percentuale alla piattaforma. Puoi anche non attivare i pagamenti online e incassare tutto alla cassa.
+No: con Arenile le prenotazioni sono senza commissioni. A differenza dei portali di prenotazione a commissione, i pagamenti online passano dal tuo account Stripe e l'incasso arriva direttamente a te: paghi solo le commissioni del circuito di pagamento, nessuna percentuale alla piattaforma. Puoi anche non attivare i pagamenti online e incassare tutto alla cassa.
 </details>
 
 <details>
@@ -506,6 +542,12 @@ Arenile non sostituisce il registratore telematico: nell'MVP il documento commer
 <summary><strong>Funziona senza internet?</strong></summary>
 
 Il server può girare anche in rete locale (ad esempio un mini PC o un Raspberry Pi nel lido), ma le prenotazioni online richiedono che sia raggiungibile da internet. Il pannello è previsto come PWA: se la connessione cade puoi consultare la mappa del giorno e registrare check-in, note e incassi in contanti, che vengono sincronizzati al ritorno della rete. Le nuove prenotazioni richiedono invece la connessione, per garantire che non ci siano doppie vendite.
+</details>
+
+<details>
+<summary><strong>Che differenza c'è tra un gestionale balneare e un portale di prenotazione?</strong></summary>
+
+Un portale di prenotazione ombrelloni vende i tuoi posti sul proprio sito e trattiene una percentuale su ogni prenotazione. Un gestionale balneare come Arenile è il software con cui gestisci lo stabilimento (spiaggia, listini, cassa, clienti) e pubblichi la prenotazione ombrelloni online sul tuo sito: le prenotazioni sono senza commissioni e il rapporto con il cliente resta tuo.
 </details>
 
 <details>

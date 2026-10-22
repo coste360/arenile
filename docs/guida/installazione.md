@@ -72,13 +72,14 @@ Nessun altro servizio è necessario: niente Redis, niente code esterne, niente o
 
    Le migrazioni del database vengono applicate automaticamente all'avvio (`ARENILE_AUTO_MIGRATE=true`).
 
-4. Crea il primo utente con ruolo titolare (`owner`):
+4. Crea il primo utente con ruolo titolare (`owner`). Il modo più semplice è impostare in `.env`, prima del primo avvio, `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `ARENILE_BOOTSTRAP_OWNER_NAME`, `ARENILE_BOOTSTRAP_OWNER_ORG` e `ARENILE_ADMIN_PASSWORD` (almeno 10 caratteri): l'owner viene creato all'avvio solo se il database non ha ancora utenti, e dopo il primo accesso puoi rimuovere la password da `.env`. In alternativa, con il container avviato (l'immagine non ha una shell, ma `exec` lancia direttamente il binario):
 
    ```bash
-   docker compose exec arenile /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
+   docker compose exec -e ARENILE_ADMIN_PASSWORD='scegli-una-password-lunga' arenile \
+     /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
    ```
 
-5. Apri `https://prenota.mio-lido.it/admin/`, accedi e segui la configurazione guidata (dati dello stabilimento, modello di mappa, listino rapido, pagina pubblica, pagamenti).
+5. Apri `https://prenota.mio-lido.it/admin/` e accedi. Nella versione attuale (M0) il pannello offre l'accesso e l'elenco degli stabilimenti; la configurazione guidata (dati dello stabilimento, modello di mappa, listino rapido, pagina pubblica, pagamenti) arriva con la milestone M1.
 
 Per esplorare il programma con dati di esempio puoi caricare lo stabilimento dimostrativo: `docker compose exec arenile /arenile seed demo`. Fallo su un'istanza di prova, non su quella di produzione.
 
@@ -129,7 +130,7 @@ Il repository prevede template pronti in `deploy/coolify/` e `deploy/caprover/` 
 
 **Coolify**
 1. Crea una nuova risorsa *Docker Compose* e incolla il `docker-compose.yml` di questa guida (o il template di `deploy/coolify/`).
-2. Imposta nelle variabili d'ambiente `ARENILE_BASE_URL`, `ARENILE_SECRET_KEY` e, se serve, `ARENILE_SMTP_URL` e `ARENILE_MAIL_FROM`.
+2. Imposta nelle variabili d'ambiente `ARENILE_BASE_URL`, `ARENILE_SECRET_KEY`, le variabili del primo owner (`ARENILE_BOOTSTRAP_OWNER_EMAIL`, `_NAME`, `_ORG` e `ARENILE_ADMIN_PASSWORD`: il terminale di Coolify non funziona perché l'immagine non ha una shell) e, se serve, `ARENILE_SMTP_URL` e `ARENILE_MAIL_FROM`.
 3. Associa il dominio al servizio sulla porta `8080`: Coolify gestisce il certificato HTTPS.
 4. Configura l'healthcheck su `GET /healthz`.
 
@@ -137,7 +138,7 @@ Il repository prevede template pronti in `deploy/coolify/` e `deploy/caprover/` 
 1. Crea una nuova app con *persistent data* e mappa il percorso `/data` su un volume.
 2. Usa come immagine `ghcr.io/coste360/arenile:latest` (o il template di `deploy/caprover/`), porta del container `8080`.
 3. Imposta le variabili d'ambiente come sopra, abilita HTTPS e "Force HTTPS".
-4. Esegui `admin create` dalla console del container: `/arenile admin create --email ... --name ... --org ...`.
+4. Crea il primo owner con le variabili `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `_NAME`, `_ORG` e `ARENILE_ADMIN_PASSWORD` (la console del container non funziona: l'immagine non ha una shell), oppure via SSH sul server con `docker exec -e ARENILE_ADMIN_PASSWORD='...' <container> /arenile admin create --email ... --name ... --org ...`.
 
 In entrambi i casi imposta `ARENILE_TRUSTED_PROXIES` con la rete del proxy della piattaforma, così Arenile vede l'IP reale dei client (necessario per la limitazione delle richieste).
 
@@ -155,7 +156,7 @@ prenota.mio-lido.it {
 
 Imposta poi `ARENILE_TRUSTED_PROXIES=127.0.0.1/32` (o la rete Docker del proxy).
 
-**B. Certificati automatici nel binario.** Imposta `ARENILE_TLS_AUTOCERT_DOMAINS=prenota.mio-lido.it`: Arenile ottiene e rinnova i certificati in autonomia. Le porte 80 e 443 del server devono raggiungere il container e i certificati vengono salvati nel data dir.
+**B. Certificati automatici nel binario.** Imposta `ARENILE_TLS_AUTOCERT_DOMAINS=prenota.mio-lido.it`: Arenile ottiene e rinnova i certificati in autonomia. Le porte 80 e 443 del server devono raggiungere il container (nel compose pubblica `"80:80"` e `"443:443"`: le righe sono già presenti, commentate, in `deploy/docker-compose.yml`) e i certificati vengono salvati nel data dir.
 
 ## PostgreSQL
 
