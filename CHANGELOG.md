@@ -18,7 +18,9 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 - M1 — configurazione guidata: modelli `classic_rows` (8 × 15), `quantity_beach`, `lido_with_pool`, `empty`, listino rapido per categoria × periodo, stato della configurazione; `seed demo` completo e idempotente (owner dimostrativo, listino, prezzi fissi, policy, codice promo e convenzione).
 - M2 — persistenza e API di regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni e policy di prenotazione collegati ai motori puri; simulatore, matrice di listino, verifica di copertura e copia di stagione del listino.
 - Pannello: impostazioni dello stabilimento con anteprima del tema, stagioni con timeline dei periodi, chiusure, zone, pool, catalogo, utenti, procedura guidata in 6 passi, editor della mappa SVG (selezione multipla, trascinamento, tastiera, annulla/ripeti, allinea/distribuisci, rinumerazione, dialogo di conflitto), regole di prezzo con riepilogo in linguaggio naturale, griglia dei prezzi fissi, matrice con esportazione CSV, calendario della copertura, simulatore con dettaglio per regola, policy con esempi della spec 9.
-- Eventi `config.map_changed` e `config.pricing_changed` scritti nell'outbox nella stessa transazione delle modifiche, con payload versione 1.
+- Eventi `config.map_changed` e `config.pricing_changed` scritti nell'outbox nella stessa transazione delle modifiche, con un unico payload versione 1 (`entity`, `entity_id`, `change`, più `season_id`, `map_id`, `code`, `version` e, per la configurazione guidata, `reason`, `template`, `map_ids`, `zone_ids`, `counts`; spec 18.1).
+- `GET /setup/status` restituisce `price_categories`: le categorie di prezzo che il listino rapido deve coprire (zone e override delle postazioni); la griglia del passo 4 della procedura guidata le usa per le righe.
+- L'eliminazione di una zona, da sola o con la sua mappa, è rifiutata (409) quando regole di prezzo, codici promozionali o convenzioni (`conditions.zone_ids`), pack (`allowed_zone_ids`) o policy (`scope.zones`) la referenziano; l'errore elenca le entità da modificare prima.
 - Test end-to-end Playwright del percorso di accettazione M1/M2: login, nuovo stabilimento dal selettore, modello classico, listino rapido, spostamento e salvataggio di una postazione, simulatore.
 - M1/M2: contratto API di amministrazione per stabilimenti, utenti, stagioni, periodi tariffari, chiusure, mappe (documento versionato con `ETag`/`If-Match`, generatore di file), zone, pool, componenti, pack, extra, regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni, policy, simulatore, matrice di listino, verifica di copertura, copia di stagione e configurazione guidata; migrazione `00002_inventory_catalog_pricing` per SQLite e PostgreSQL; nuovi tipi di errore `version_conflict`, `precondition_required`, `spot_has_future_allocations`, `not_implemented`; pannello con rotte per stabilimento (`/admin/e/{id}/...`), selettore dello stabilimento e menu Configurazione.
 
@@ -39,6 +41,7 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 
 - `pkg/ext`: `PaymentProvider.ParseWebhook` riceve anche le credenziali decifrate dello stabilimento (`ParseWebhook(ctx, r, creds)`), diversamente dalla spec 13.1 ([ADR 0006](docs/adr/0006-deviazioni-m0-dalla-specifica.md)).
 - `make test-race` compila con il tag `integration` e fallisce se non trova test `TestConcurrency_*`.
+- L'editor della mappa usa un *roving tabindex*: la mappa è un solo punto di tabulazione (il primo elemento selezionato, altrimenti la prima postazione); Inizio/Fine e PagSu/PagGiù spostano fuoco e selezione tra gli elementi, le frecce lo fanno in sola lettura.
 
 ### Added (deviazioni e integrazioni alla specifica, ADR 0006)
 
@@ -50,6 +53,11 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 ### Fixed
 
 - Un `PUT` della mappa senza header `If-Match` risponde 428 `precondition_required` invece di 400.
+- `If-Match: *` è una precondizione soddisfatta da qualsiasi versione (RFC 9110): il salvataggio della mappa e l'applicazione del generatore la accettano invece di rispondere 428. La forma debole `W/"3"` resta accettata (proxy che comprimono le risposte, ADR 0008).
+- Salvataggio della mappa e modifica o eliminazione di una zona si serializzano sulle righe delle zone coinvolte: su PostgreSQL non è più possibile che un salvataggio che aggiunge postazioni a una zona e la modifica della stessa zona in `quantity` vadano entrambi a buon fine (`TestConcurrency_ZoneUpdateVsSaveMap`); la capacità del pool implicito è calcolata dopo il lock.
+- L'eliminazione di una mappa è rifiutata, come quella della zona, quando una zona a quantità della mappa ha pool creati a mano: prima i pool venivano cancellati in cascata senza audit, azzerando il `pool_id` dei componenti.
+- Il simulatore con `season_id` esplicito rifiuta date fuori dalla stagione (errore sul campo `starts_on`) invece di calcolare un prezzo fuorviante o un 422 `no_price`.
+- La verifica delle allocazioni future fallisce se il fuso orario dello stabilimento non è caricabile, invece di ripiegare su UTC (stessa regola delle policy).
 - Il simulatore prezzi mostra il nome delle regole applicate invece del loro identificativo.
 - La consegna dei webhook rivendica ogni tentativo con un lease: più istanze sullo stesso database non inviano due volte lo stesso webhook.
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
