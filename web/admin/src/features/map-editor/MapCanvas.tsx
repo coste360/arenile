@@ -86,8 +86,12 @@ function keyOf(target: EventTarget | null): string | null {
 
 /**
  * Editable SVG drawing of the map: sea band, sand, grid, decorations and
- * spots. Elements are focusable buttons; arrows move the selection by one
- * grid step (Shift: five steps, Alt: one unit), Delete removes it.
+ * spots. Elements are buttons with a roving tabindex: the canvas is one tab
+ * stop (the first selected element, else the first spot), Home/End and
+ * PageUp/PageDown move the focus and the selection between elements (arrows
+ * too when read-only), Tab leaves the canvas. When editable, arrows move the
+ * selection by one grid step (Shift: five steps, Alt: one unit) and Delete
+ * removes it.
  *
  * Performance with ~1000 elements: events are delegated to the <svg> (so the
  * memoised elements get stable props), and a drag only sets a `translate`
@@ -103,6 +107,9 @@ export function MapCanvas(props: MapCanvasProps) {
   // Nodes still translated after a drop: cleared once React has drawn the new positions.
   const translated = useRef<SVGGElement[]>([]);
   const gridId = useId();
+  // Roving tabindex: one focusable element in the canvas.
+  const order = [...doc.spots.map((s) => s.key), ...doc.decorations.map((d) => d.key)];
+  const activeKey = order.find((k) => selection.has(k)) ?? order[0];
   const vb = computeViewBox(doc.map);
   const sea = seaRect(doc.map);
   const grid = doc.map.grid_size > 0 ? doc.map.grid_size : 0;
@@ -227,12 +234,39 @@ export function MapCanvas(props: MapCanvasProps) {
     props.onMove(g.keys, g.delta, g.anchorKey);
   };
 
+  const focusElement = (key: string) => {
+    svgRef.current?.querySelector<SVGGElement>(`g[data-key="${key}"]`)?.focus();
+    props.onSelect(key, false);
+  };
+
   const onKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
     const key = keyOf(e.target);
     if (!key) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       props.onSelect(key, e.shiftKey || e.ctrlKey || e.metaKey);
+      return;
+    }
+    const at = order.indexOf(key);
+    const navigation: Record<string, number> = {
+      Home: 0,
+      End: order.length - 1,
+      PageUp: Math.max(0, at - 1),
+      PageDown: Math.min(order.length - 1, at + 1),
+      ...(readOnly
+        ? {
+            ArrowLeft: Math.max(0, at - 1),
+            ArrowUp: Math.max(0, at - 1),
+            ArrowRight: Math.min(order.length - 1, at + 1),
+            ArrowDown: Math.min(order.length - 1, at + 1),
+          }
+        : {}),
+    };
+    const to = navigation[e.key];
+    if (to !== undefined) {
+      e.preventDefault();
+      const next = order[to];
+      if (next && next !== key) focusElement(next);
       return;
     }
     if (readOnly) return;
@@ -315,6 +349,7 @@ export function MapCanvas(props: MapCanvasProps) {
         <DecorationEl
           key={d.key}
           d={d}
+          focusable={d.key === activeKey}
           selected={selection.has(d.key)}
           label={props.decorationLabel(d)}
         />
@@ -323,6 +358,7 @@ export function MapCanvas(props: MapCanvasProps) {
         <SpotEl
           key={s.key}
           spot={s}
+          focusable={s.key === activeKey}
           selected={selection.has(s.key)}
           color={props.zoneColor(s.zone_id)}
           label={props.spotLabel(s)}
@@ -348,11 +384,13 @@ const focusClass =
 
 const SpotEl = memo(function SpotEl({
   spot,
+  focusable,
   selected,
   color,
   label,
 }: {
   spot: DraftSpot;
+  focusable: boolean;
   selected: boolean;
   color: string;
   label: string;
@@ -362,7 +400,7 @@ const SpotEl = memo(function SpotEl({
     // The outer group carries only the drag translate (set imperatively).
     <g
       role="button"
-      tabIndex={0}
+      tabIndex={focusable ? 0 : -1}
       aria-label={label}
       aria-pressed={selected}
       data-key={spot.key}
@@ -402,10 +440,12 @@ const SpotEl = memo(function SpotEl({
 
 const DecorationEl = memo(function DecorationEl({
   d,
+  focusable,
   selected,
   label,
 }: {
   d: DraftDecoration;
+  focusable: boolean;
   selected: boolean;
   label: string;
 }) {
@@ -414,7 +454,7 @@ const DecorationEl = memo(function DecorationEl({
   return (
     <g
       role="button"
-      tabIndex={0}
+      tabIndex={focusable ? 0 : -1}
       aria-label={t('canvas.decoration', { name: label })}
       aria-pressed={selected}
       data-key={d.key}

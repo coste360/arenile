@@ -157,6 +157,46 @@ describe('MapCanvas', () => {
     expect(props.onNudge).toHaveBeenNthCalledWith(3, { x: 0, y: -1 }, 'a');
   });
 
+  it('is one tab stop: a roving tabindex with Home/End and PageUp/PageDown navigation', () => {
+    const d = doc([spot('a', 100, 100), spot('b', 140, 100), spot('c', 300, 300)]);
+    const { props, svg, rerender } = setup(d, { selection: new Set(['b']) });
+    const a = screen.getByRole('button', { name: 'Postazione A' });
+    const b = screen.getByRole('button', { name: 'Postazione B' });
+    const c = screen.getByRole('button', { name: 'Postazione C' });
+    // Only the first selected element is reachable with Tab.
+    expect(svg.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+    expect(b).toHaveAttribute('tabindex', '0');
+    expect(a).toHaveAttribute('tabindex', '-1');
+
+    b.focus();
+    fireEvent.keyDown(b, { key: 'PageDown' });
+    expect(props.onSelect).toHaveBeenLastCalledWith('c', false);
+    expect(c).toHaveFocus();
+    fireEvent.keyDown(c, { key: 'Home' });
+    expect(props.onSelect).toHaveBeenLastCalledWith('a', false);
+    expect(a).toHaveFocus();
+    fireEvent.keyDown(a, { key: 'End' });
+    expect(c).toHaveFocus();
+    fireEvent.keyDown(c, { key: 'PageUp' });
+    expect(b).toHaveFocus();
+    // Arrows nudge when editable (never navigate).
+    expect(props.onNudge).not.toHaveBeenCalled();
+    fireEvent.keyDown(b, { key: 'ArrowRight' });
+    expect(props.onNudge).toHaveBeenCalledTimes(1);
+
+    // Without a selection the first spot is the tab stop; read-only arrows navigate.
+    rerender(
+      <I18nextProvider i18n={createAdminTestI18n()}>
+        <MapCanvas {...props} selection={new Set()} readOnly />
+      </I18nextProvider>,
+    );
+    expect(a).toHaveAttribute('tabindex', '0');
+    expect(b).toHaveAttribute('tabindex', '-1');
+    fireEvent.keyDown(a, { key: 'ArrowRight' });
+    expect(b).toHaveFocus();
+    expect(props.onNudge).toHaveBeenCalledTimes(1);
+  });
+
   it('renders 1000 spots and keeps unchanged ones when one moves', () => {
     const spots = Array.from({ length: 1000 }, (_, i) =>
       spot(`s${i}`, 20 + (i % 50) * 30, 20 + Math.floor(i / 50) * 30),
