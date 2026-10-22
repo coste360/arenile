@@ -6,3 +6,7 @@ export { SpotList, groupByRow, type SpotListProps } from './SpotList';
 export { sampleGeometry, sampleStatuses } from './sample';
 export * from './editing';
 export { ShapeElement, shapeSize, type ShapeElementProps } from './shapes';
+export { MapLegend, type MapLegendProps } from './MapLegend';
+export { MapZoomControls, type MapZoomControlsProps } from './MapZoomControls';
+export { MapGlyph, type MapGlyphProps } from './MapGlyph';
+export { DECORATION_KIND_ICONS, SPOT_KIND_ICONS, decorationKindIcon, spotKindIcon } from './icons';

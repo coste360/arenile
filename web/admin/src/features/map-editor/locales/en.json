@@ -13,7 +13,11 @@
     "openAria": "Open map {{name}}",
     "deleteAria": "Delete map {{name}}",
     "deleteConfirm_one": "Map {{name}} and its {{count}} spot will be deleted, together with the map's zones.",
-    "deleteConfirm_other": "Map {{name}} and its {{count}} spots will be deleted, together with the map's zones."
+    "deleteConfirm_other": "Map {{name}} and its {{count}} spots will be deleted, together with the map's zones.",
+    "searchPlaceholder": "Search maps…",
+    "deleteTitle": "Delete the map {{name}}?",
+    "emptyTitle": "No maps",
+    "delete": "Delete"
   },
   "editor": {
     "title": "Map editor",
@@ -29,7 +33,12 @@
     "reload": "Reload the saved version",
     "overwrite": "Overwrite with mine",
     "allocated_one": "You cannot delete {{count}} spot: it has future bookings.",
-    "allocated_other": "You cannot delete {{count}} spots: they have future bookings."
+    "allocated_other": "You cannot delete {{count}} spots: they have future bookings.",
+    "readOnly": "Your role can only view this page: changes are reserved to owners and managers.",
+    "issuesTitle": "Fix before saving",
+    "saveErrorTitle": "Save failed",
+    "allocatedTitle": "Spots with future bookings",
+    "noZonesTitle": "No zone available"
   },
   "canvas": {
     "label_one": "Map with {{count}} spot",
@@ -110,7 +119,10 @@
     "previewCount_other": "{{count}} spots, from {{first}} to {{last}}.",
     "conflicts": "Labels already on the map: {{labels}}. Change the first row or the format.",
     "add_one": "Add {{count}} spot",
-    "add_other": "Add {{count}} spots"
+    "add_other": "Add {{count}} spots",
+    "layout": "Layout",
+    "labels": "Labels",
+    "previewTitle": "Preview"
   },
   "panel": {
     "title": "Properties",
@@ -124,7 +136,13 @@
     "noComponents": "No components in the catalog: add them in Configuration → Catalog to set the capacity.",
     "quantities": "Capacity and maximum extras per component",
     "component": "Component",
-    "attributesHint": "Comma separated, for example: shade, near_bar."
+    "attributesHint": "Comma separated, for example: shade, near_bar.",
+    "identity": "Identification",
+    "geometry": "Position and size",
+    "booking": "Booking",
+    "arrange": "Arrange",
+    "shortcuts": "Keyboard shortcuts",
+    "zones": "Zones"
   },
   "tools": {
     "label": "Editor tools",
@@ -149,7 +167,8 @@
     "delete_one": "Delete",
     "delete_other": "Delete {{count}} elements",
     "duplicate": "Duplicate",
-    "renumber": "Renumber row"
+    "renumber": "Renumber row",
+    "togglePanel": "Show or hide properties"
   },
   "issues": {
     "missing_zone_one": "{{count}} spot without a zone.",
@@ -160,7 +179,8 @@
     "duplicate_label_other": "Label {{label}} is used by {{count}} spots."
   },
   "settings": {
-    "apply": "Apply"
+    "apply": "Apply",
+    "description": "Name, size in map units, grid step and sea side."
   },
   "validation": {
     "number": "Enter a valid number.",

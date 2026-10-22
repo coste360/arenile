@@ -1,8 +1,8 @@
 import {
-  DECORATION_COLOR,
-  SAND_COLOR,
-  SEA_COLOR,
+  MapGlyph,
+  MapZoomControls,
   ShapeElement,
+  decorationKindIcon,
   computeViewBox,
   rectFromPoints,
   seaRect,
@@ -10,8 +10,18 @@ import {
   snapDelta,
   type Point,
 } from '@arenile/shared/map';
-import { memo, useId, useLayoutEffect, useRef, type KeyboardEvent, type PointerEvent } from 'react';
+import { readableTextColor } from '@arenile/shared/theme';
+import {
+  memo,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@arenile/shared/ui';
 import { findElement, selectInRect } from './model/editor';
 import type { DraftDecoration, DraftDocument, DraftSpot, Selection } from './model/types';
 
@@ -63,6 +73,10 @@ interface BandState {
   additive: boolean;
 }
 
+/** Zoom range of the editor canvas (1 = whole map visible). */
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+
 /** Distance in map units the pointer must travel before a press becomes a drag. */
 const DRAG_THRESHOLD_UNITS = 2;
 
@@ -107,6 +121,9 @@ export function MapCanvas(props: MapCanvasProps) {
   // Nodes still translated after a drop: cleared once React has drawn the new positions.
   const translated = useRef<SVGGElement[]>([]);
   const gridId = useId();
+  const [zoom, setZoom] = useState(1);
+  const setClampedZoom = (z: number) =>
+    setZoom(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(z * 4) / 4)));
   // Roving tabindex: one focusable element in the canvas.
   const order = [...doc.spots.map((s) => s.key), ...doc.decorations.map((d) => d.key)];
   const activeKey = order.find((k) => selection.has(k)) ?? order[0];
@@ -292,95 +309,112 @@ export function MapCanvas(props: MapCanvasProps) {
   };
 
   return (
-    <svg
-      ref={svgRef}
-      role="group"
-      aria-label={t('canvas.label', { count: doc.spots.length })}
-      aria-roledescription={t('canvas.roleDescription')}
-      viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
-      preserveAspectRatio="xMidYMid meet"
-      className="h-[65vh] w-full touch-none select-none rounded-md border border-slate-200 bg-white"
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={(e) => finish(e, false)}
-      onPointerCancel={(e) => finish(e, true)}
-      onKeyDown={onKeyDown}
-    >
-      {grid > 0 && (
-        <defs>
-          <pattern id={gridId} width={grid} height={grid} patternUnits="userSpaceOnUse">
-            <path
-              d={`M ${grid} 0 L 0 0 0 ${grid}`}
-              fill="none"
-              stroke="#d6c9a8"
-              strokeWidth={0.5}
+    <div className="relative overflow-hidden rounded-lg border bg-muted/30">
+      {/* Zoom enlarges the drawing inside a scrolling viewport: scrolling pans. */}
+      <div className="h-[65vh] overflow-auto overscroll-contain">
+        <svg
+          ref={svgRef}
+          role="group"
+          aria-label={t('canvas.label', { count: doc.spots.length })}
+          aria-roledescription={t('canvas.roleDescription')}
+          viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
+          preserveAspectRatio="xMidYMid meet"
+          className="block touch-none select-none"
+          // Dynamic geometry: the zoom factor scales the drawing.
+          style={{ width: `${zoom * 100}%`, height: `${zoom * 100}%` }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={(e) => finish(e, false)}
+          onPointerCancel={(e) => finish(e, true)}
+          onKeyDown={onKeyDown}
+        >
+          {grid > 0 && (
+            <defs>
+              <pattern id={gridId} width={grid} height={grid} patternUnits="userSpaceOnUse">
+                <path
+                  d={`M ${grid} 0 L 0 0 0 ${grid}`}
+                  fill="none"
+                  className="stroke-map-decoration-stroke"
+                  strokeOpacity={0.45}
+                  strokeWidth={0.5}
+                />
+              </pattern>
+            </defs>
+          )}
+          <rect
+            data-background="sea"
+            x={sea.x}
+            y={sea.y}
+            width={sea.width}
+            height={sea.height}
+            className="fill-map-sea"
+          />
+          <rect
+            data-background="sand"
+            x={0}
+            y={0}
+            width={doc.map.width}
+            height={doc.map.height}
+            className="fill-map-sand"
+          />
+          {grid > 0 && (
+            <rect
+              data-background="grid"
+              x={0}
+              y={0}
+              width={doc.map.width}
+              height={doc.map.height}
+              fill={`url(#${gridId})`}
+              pointerEvents="none"
             />
-          </pattern>
-        </defs>
-      )}
-      <rect
-        data-background="sea"
-        x={sea.x}
-        y={sea.y}
-        width={sea.width}
-        height={sea.height}
-        fill={SEA_COLOR}
+          )}
+          {doc.decorations.map((d) => (
+            <DecorationEl
+              key={d.key}
+              d={d}
+              focusable={d.key === activeKey}
+              selected={selection.has(d.key)}
+              label={props.decorationLabel(d)}
+            />
+          ))}
+          {doc.spots.map((s) => (
+            <SpotEl
+              key={s.key}
+              spot={s}
+              focusable={s.key === activeKey}
+              selected={selection.has(s.key)}
+              color={props.zoneColor(s.zone_id)}
+              label={props.spotLabel(s)}
+            />
+          ))}
+          <rect
+            ref={bandRef}
+            data-testid="rubber-band"
+            visibility="hidden"
+            className="fill-primary/10 stroke-primary"
+            strokeWidth={1}
+            strokeDasharray="4 3"
+            vectorEffect="non-scaling-stroke"
+            pointerEvents="none"
+          />
+        </svg>
+      </div>
+      <MapZoomControls
+        className="absolute right-3 bottom-3"
+        scale={zoom}
+        min={MIN_ZOOM}
+        max={MAX_ZOOM}
+        onZoomIn={() => setClampedZoom(zoom + 0.5)}
+        onZoomOut={() => setClampedZoom(zoom - 0.5)}
+        onFit={() => setZoom(1)}
+        onScaleChange={setClampedZoom}
       />
-      <rect
-        data-background="sand"
-        x={0}
-        y={0}
-        width={doc.map.width}
-        height={doc.map.height}
-        fill={SAND_COLOR}
-      />
-      {grid > 0 && (
-        <rect
-          data-background="grid"
-          x={0}
-          y={0}
-          width={doc.map.width}
-          height={doc.map.height}
-          fill={`url(#${gridId})`}
-          pointerEvents="none"
-        />
-      )}
-      {doc.decorations.map((d) => (
-        <DecorationEl
-          key={d.key}
-          d={d}
-          focusable={d.key === activeKey}
-          selected={selection.has(d.key)}
-          label={props.decorationLabel(d)}
-        />
-      ))}
-      {doc.spots.map((s) => (
-        <SpotEl
-          key={s.key}
-          spot={s}
-          focusable={s.key === activeKey}
-          selected={selection.has(s.key)}
-          color={props.zoneColor(s.zone_id)}
-          label={props.spotLabel(s)}
-        />
-      ))}
-      <rect
-        ref={bandRef}
-        data-testid="rubber-band"
-        visibility="hidden"
-        fill="rgba(14, 107, 168, 0.12)"
-        stroke="#0e6ba8"
-        strokeWidth={1}
-        strokeDasharray="4 3"
-        vectorEffect="non-scaling-stroke"
-        pointerEvents="none"
-      />
-    </svg>
+    </div>
   );
 }
 
 const focusClass =
-  'cursor-move outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900';
+  'cursor-move outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 
 const SpotEl = memo(function SpotEl({
   spot,
@@ -417,7 +451,7 @@ const SpotEl = memo(function SpotEl({
           y={spot.y}
           fill={color}
           opacity={spot.active ? 1 : 0.35}
-          stroke={selected ? '#0f172a' : '#ffffff'}
+          className={selected ? 'stroke-map-spot-selected' : 'stroke-background'}
           strokeWidth={selected ? Math.max(2, size * 0.1) : Math.max(1, size * 0.04)}
           strokeDasharray={spot.active ? undefined : `${size * 0.12} ${size * 0.08}`}
         />
@@ -429,8 +463,10 @@ const SpotEl = memo(function SpotEl({
         dominantBaseline="central"
         fontSize={Math.max(6, size * 0.34)}
         fontWeight={600}
-        fill="#0f172a"
+        fill={readableTextColor(color)}
+        opacity={spot.active ? 1 : 0.6}
         pointerEvents="none"
+        aria-hidden="true"
       >
         {spot.label}
       </text>
@@ -451,6 +487,8 @@ const DecorationEl = memo(function DecorationEl({
 }) {
   const { t } = useTranslation('mapEditor');
   const size = shapeSize(d.shape);
+  // Room for a glyph above the label on square-ish shapes.
+  const glyph = d.kind !== 'text' && size >= 28 ? size * 0.42 : 0;
   return (
     <g
       role="button"
@@ -468,19 +506,32 @@ const DecorationEl = memo(function DecorationEl({
           shape={d.shape}
           x={d.x}
           y={d.y}
-          fill={DECORATION_COLOR}
-          stroke={selected ? '#0f172a' : '#b8a77f'}
+          className={cn(
+            'fill-map-decoration',
+            selected ? 'stroke-map-spot-selected' : 'stroke-map-decoration-stroke',
+          )}
+          strokeDasharray={d.kind === 'text' && !selected ? '4 3' : undefined}
           strokeWidth={selected ? Math.max(2, size * 0.08) : 1}
         />
+        {glyph > 0 && (
+          <MapGlyph
+            icon={decorationKindIcon(d.kind)}
+            x={d.x}
+            y={d.y - size * 0.14}
+            size={glyph}
+            className="text-map-decoration-label opacity-80"
+          />
+        )}
       </g>
       <text
         x={d.x}
-        y={d.y}
+        y={glyph > 0 ? d.y + size * 0.26 : d.y}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={Math.max(6, Math.min(size * 0.3, 14))}
-        fill="#57534e"
+        fontSize={Math.max(6, Math.min(size * (glyph > 0 ? 0.18 : 0.3), 14))}
+        className="fill-map-decoration-label"
         pointerEvents="none"
+        aria-hidden="true"
       >
         {label}
       </text>

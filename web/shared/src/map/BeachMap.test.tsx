@@ -130,7 +130,7 @@ describe('BeachMap', () => {
     const { container } = renderWithI18n(
       <BeachMap geometry={geometry} statuses={{ s1: 'season' }} />,
     );
-    const legend = container.querySelector('.ar-map-legend') as HTMLElement;
+    const legend = container.querySelector('[data-slot="map-legend"]') as HTMLElement;
     expect(within(legend).getByText('Legenda')).toBeInTheDocument();
     expect(within(legend).getByText('Abbonato')).toBeInTheDocument();
     expect(within(legend).getByText('Libero')).toBeInTheDocument();

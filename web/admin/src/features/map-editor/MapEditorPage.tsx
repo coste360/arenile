@@ -1,6 +1,31 @@
 import { ApiProblem } from '@arenile/shared/api';
 import type { AlignMode, Point } from '@arenile/shared/map';
-import { Button, Card } from '@arenile/shared/ui';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Badge,
+  Button,
+  ButtonGroup,
+  ScrollArea,
+  Separator,
+  Spinner,
+} from '@arenile/shared/ui';
+import { PageHeader } from '@arenile/shared/ui/patterns';
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  CircleAlertIcon,
+  InfoIcon,
+  KeyboardIcon,
+  PanelRightIcon,
+  Redo2Icon,
+  Rows3Icon,
+  SaveIcon,
+  Settings2Icon,
+  TriangleAlertIcon,
+  Undo2Icon,
+} from 'lucide-react';
 import { Link, useParams } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,8 +34,6 @@ import {
   zones as zonesResource,
 } from '../configuration/api/resources';
 import { useConfigContext } from '../configuration/api/useConfigContext';
-import { ConfigPage, QueryState } from '../configuration/components/ConfigPage';
-import { FormDialog } from '../configuration/components/dialogs';
 import { localize } from '../configuration/lib/i18nText';
 import { problemMessageKey } from '../../lib/problem';
 import { MapSaveProblem, useMapDocument, useSaveMap } from './api';
@@ -58,6 +81,7 @@ import {
 import { ZONE_PALETTE } from './model/zoneColors';
 import { Palette } from './Palette';
 import { SelectionPanel, type ComponentOption } from './SelectionPanel';
+import { FormDialog, QueryState, ReadOnlyNotice, ToolButton } from './ui';
 
 type SaveState =
   | { kind: 'idle' }
@@ -91,26 +115,30 @@ export function MapEditorPage() {
     [componentList.data, ctx.uiLocale, ctx.defaultLocale],
   );
 
+  const readOnly = !ctx.isLoading && !ctx.canConfigure;
   return (
-    <ConfigPage
-      title={
-        docQuery.data
-          ? t('editor.titleNamed', {
-              name: localize(docQuery.data.map.name, ctx.uiLocale, ctx.defaultLocale),
-            })
-          : t('editor.title')
-      }
-      description={t('editor.description')}
-      readOnly={!ctx.isLoading && !ctx.canConfigure}
-      actions={
-        <Button asChild variant="outline">
-          <Link to="/e/$establishmentId/maps" params={{ establishmentId: ctx.establishmentId }}>
-            {t('editor.backToList')}
-          </Link>
-        </Button>
-      }
-    >
+    <section aria-labelledby="page-title" className="space-y-4">
+      <PageHeader
+        eyebrow={
+          <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
+            <Link to="/e/$establishmentId/maps" params={{ establishmentId: ctx.establishmentId }}>
+              <ArrowLeftIcon aria-hidden="true" />
+              {t('editor.backToList')}
+            </Link>
+          </Button>
+        }
+        title={
+          docQuery.data
+            ? t('editor.titleNamed', {
+                name: localize(docQuery.data.map.name, ctx.uiLocale, ctx.defaultLocale),
+              })
+            : t('editor.title')
+        }
+        description={t('editor.description')}
+      />
+      {readOnly && <ReadOnlyNotice />}
       <QueryState
+        skeleton="editor"
         isLoading={docQuery.isPending || zoneList.isPending}
         error={docQuery.error ?? zoneList.error}
         onRetry={() => void docQuery.refetch()}
@@ -131,7 +159,7 @@ export function MapEditorPage() {
           onReload={() => void fetchLatest().then(() => setGeneration((g) => g + 1))}
         />
       )}
-    </ConfigPage>
+    </section>
   );
 }
 
@@ -160,12 +188,15 @@ interface EditorProps {
 function isEditableTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   if (!el || typeof el.closest !== 'function') return false;
-  return !!el.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]');
+  return !!el.closest(
+    'input, textarea, select, [contenteditable="true"], [role="dialog"], [role="alertdialog"], [role="listbox"]',
+  );
 }
 
 function Editor(props: EditorProps) {
   const { serverDoc, establishmentId, mapId, readOnly, defaultLocale, uiLocale } = props;
   const { t } = useTranslation('mapEditor');
+  const [panelOpen, setPanelOpen] = useState(true);
   const save = useSaveMap(establishmentId, mapId);
   const [history, setHistory] = useState<History>(() => initHistory(draftFromApi(serverDoc)));
   const [version, setVersion] = useState(serverDoc.map.version);
@@ -402,116 +433,55 @@ function Editor(props: EditorProps) {
     [t, zoneName],
   );
 
-  return (
-    <div className="space-y-4">
-      <div
-        className="flex flex-wrap items-center gap-2"
-        role="toolbar"
-        aria-label={t('tools.label')}
-      >
-        <Button
-          onClick={() => void onSave()}
-          aria-keyshortcuts="Control+S Meta+S"
-          disabled={readOnly || !dirty || save.isPending || issues.length > 0}
-        >
-          {save.isPending ? t('common.actions.saving', { ns: 'translation' }) : t('tools.save')}
-        </Button>
-        <Button
-          variant="outline"
-          aria-keyshortcuts="Control+Z Meta+Z"
-          onClick={() => setHistory(undo)}
-          disabled={history.past.length === 0}
-        >
-          {t('tools.undo')}
-        </Button>
-        <Button
-          variant="outline"
-          aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z"
-          onClick={() => setHistory(redo)}
-          disabled={history.future.length === 0}
-        >
-          {t('tools.redo')}
-        </Button>
-        {!readOnly && (
-          <>
-            <Button
-              variant="secondary"
-              disabled={!firstZone}
-              onClick={() => setDialog('generator')}
-            >
-              {t('tools.generator')}
-            </Button>
-            <Button variant="outline" onClick={() => setDialog('settings')}>
-              {t('tools.settings')}
-            </Button>
-          </>
-        )}
-        <span className="ml-auto text-sm text-slate-600" aria-live="polite">
-          {t('editor.count', { count: doc.spots.length })}
-          {dirty ? ` · ${t('editor.unsaved')}` : ''}
-          {saveState.kind === 'saved' ? ` · ${t('editor.saved')}` : ''}
-        </span>
-      </div>
-      {!readOnly && (
-        <Palette
-          canAddSpots={!!firstZone}
-          onAddSpot={addSpotOfKind}
-          onAddDecoration={addDecorationOfKind}
-        />
-      )}
-      {!firstZone && !readOnly && (
-        <p role="note" className="text-sm text-amber-800">
-          {t('editor.noZones')}
-        </p>
-      )}
-      {issues.length > 0 && (
-        <ul role="alert" className="list-inside list-disc text-sm text-red-700">
-          {issues.map((i) => (
-            <li key={`${i.type}:${i.keys.join(',')}`}>
-              {t(`issues.${i.type}`, { count: i.keys.length, label: i.label ?? '' })}
-            </li>
+  const usedZones = zoneOptions.filter((z) => doc.spots.some((s) => s.zone_id === z.id));
+
+  const canvas = (
+    <div className="space-y-2">
+      <MapCanvas
+        doc={doc}
+        selection={selection}
+        readOnly={readOnly}
+        zoneColor={zoneColor}
+        spotLabel={spotLabel}
+        decorationLabel={(d) =>
+          localize(d.label, uiLocale, defaultLocale) || t(`decorations.${d.kind}`)
+        }
+        onSelect={onSelect}
+        onSelectKeys={setSelection}
+        onClearSelection={() => setSelection(new Set())}
+        onMove={onMove}
+        onNudge={(delta, key) => commit(moveElements(doc, targetOf(key), delta))}
+        onDelete={(key) => removeSelection(targetOf(key))}
+      />
+      {usedZones.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-xs font-medium text-muted-foreground">{t('panel.zones')}</span>
+          {usedZones.map((z) => (
+            <Badge key={z.id} variant="outline" className="gap-1.5 font-normal">
+              <svg viewBox="0 0 10 10" aria-hidden="true" className="size-2.5">
+                <circle cx={5} cy={5} r={5} fill={zoneColor(z.id)} />
+              </svg>
+              {z.name}
+            </Badge>
           ))}
-        </ul>
-      )}
-      {saveState.kind === 'allocated' && (
-        <div
-          role="alert"
-          className="space-y-1 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
-        >
-          <p>{t('editor.allocated', { count: saveState.labels.length })}</p>
-          <p className="font-medium">{saveState.labels.join(', ')}</p>
-          <p>{t('panel.deactivateHint')}</p>
         </div>
       )}
-      {saveState.kind === 'error' && (
-        <ul
-          role="alert"
-          className="list-inside list-disc rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
-        >
-          {saveState.messages.map((m) => (
-            <li key={m}>{m}</li>
-          ))}
-        </ul>
-      )}
-      <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-        <MapCanvas
-          doc={doc}
-          selection={selection}
-          readOnly={readOnly}
-          zoneColor={zoneColor}
-          spotLabel={spotLabel}
-          decorationLabel={(d) =>
-            localize(d.label, uiLocale, defaultLocale) || t(`decorations.${d.kind}`)
-          }
-          onSelect={onSelect}
-          onSelectKeys={setSelection}
-          onClearSelection={() => setSelection(new Set())}
-          onMove={onMove}
-          onNudge={(delta, key) => commit(moveElements(doc, targetOf(key), delta))}
-          onDelete={(key) => removeSelection(targetOf(key))}
-        />
-        <Card className="h-fit p-4">
-          <h2 className="mb-3 text-base font-semibold">{t('panel.title')}</h2>
+    </div>
+  );
+
+  const panel = (
+    <aside
+      id="map-panel"
+      aria-labelledby="map-panel-title"
+      className="flex h-full flex-col overflow-hidden rounded-lg border bg-card"
+    >
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <h2 id="map-panel-title" className="text-sm font-semibold">
+          {t('panel.title')}
+        </h2>
+      </div>
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="p-4">
           <SelectionPanel
             selected={selected}
             zones={zoneOptions}
@@ -527,8 +497,159 @@ function Editor(props: EditorProps) {
             onRenumber={() => setDialog('renumber')}
             onDelete={() => removeSelection()}
           />
-          <p className="mt-4 text-xs text-slate-600">{t('panel.keyboardHint')}</p>
-        </Card>
+        </div>
+      </ScrollArea>
+      <div className="border-t bg-muted/40 px-4 py-3">
+        <p className="flex gap-2 text-xs text-muted-foreground">
+          <KeyboardIcon aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+          <span>
+            <span className="sr-only">{t('panel.shortcuts')}: </span>
+            {t('panel.keyboardHint')}
+          </span>
+        </p>
+      </div>
+    </aside>
+  );
+
+  return (
+    <div className="space-y-3">
+      <div
+        className="flex flex-wrap items-center gap-1.5 rounded-lg border bg-card p-1.5 shadow-xs"
+        role="toolbar"
+        aria-label={t('tools.label')}
+      >
+        <ButtonGroup>
+          <ToolButton
+            icon={Undo2Icon}
+            label={t('tools.undo')}
+            shortcut={['Mod', 'Z']}
+            aria-keyshortcuts="Control+Z Meta+Z"
+            onClick={() => setHistory(undo)}
+            disabled={history.past.length === 0}
+          />
+          <ToolButton
+            icon={Redo2Icon}
+            label={t('tools.redo')}
+            shortcut={['Mod', 'Shift', 'Z']}
+            aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z"
+            onClick={() => setHistory(redo)}
+            disabled={history.future.length === 0}
+          />
+        </ButtonGroup>
+        {!readOnly && (
+          <>
+            <Separator orientation="vertical" className="mx-1 h-6!" />
+            <Palette
+              canAddSpots={!!firstZone}
+              onAddSpot={addSpotOfKind}
+              onAddDecoration={addDecorationOfKind}
+            />
+            <Separator orientation="vertical" className="mx-1 h-6!" />
+            <ToolButton
+              icon={Rows3Icon}
+              label={t('generator.description')}
+              text={t('tools.generator')}
+              disabled={!firstZone}
+              onClick={() => setDialog('generator')}
+            />
+            <ToolButton
+              icon={Settings2Icon}
+              label={t('tools.settings')}
+              onClick={() => setDialog('settings')}
+            />
+          </>
+        )}
+        <div className="ml-auto flex items-center gap-2 pl-2">
+          <ToolButton
+            icon={PanelRightIcon}
+            label={t('tools.togglePanel')}
+            aria-pressed={panelOpen}
+            aria-controls={panelOpen ? 'map-panel' : undefined}
+            onClick={() => setPanelOpen((o) => !o)}
+          />
+          {dirty ? (
+            <span aria-hidden="true" className="size-2 rounded-full bg-highlight" />
+          ) : saveState.kind === 'saved' ? (
+            <CheckIcon aria-hidden="true" className="size-4 text-success" />
+          ) : null}
+          <span className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
+            {t('editor.count', { count: doc.spots.length })}
+            {dirty ? ` · ${t('editor.unsaved')}` : ''}
+            {saveState.kind === 'saved' ? ` · ${t('editor.saved')}` : ''}
+          </span>
+          <ToolButton
+            variant="default"
+            icon={save.isPending ? Spinner : SaveIcon}
+            label={t('tools.save')}
+            text={
+              save.isPending ? t('common.actions.saving', { ns: 'translation' }) : t('tools.save')
+            }
+            shortcut={['Mod', 'S']}
+            aria-keyshortcuts="Control+S Meta+S"
+            onClick={() => void onSave()}
+            disabled={readOnly || !dirty || save.isPending || issues.length > 0}
+          />
+        </div>
+      </div>
+      {!firstZone && !readOnly && (
+        <Alert role="note">
+          <InfoIcon aria-hidden="true" />
+          <AlertTitle>{t('editor.noZonesTitle')}</AlertTitle>
+          <AlertDescription>{t('editor.noZones')}</AlertDescription>
+        </Alert>
+      )}
+      {issues.length > 0 && (
+        <Alert variant="destructive">
+          <TriangleAlertIcon aria-hidden="true" />
+          <AlertTitle>{t('editor.issuesTitle')}</AlertTitle>
+          <AlertDescription>
+            <ul className="list-inside list-disc">
+              {issues.map((i) => (
+                <li key={`${i.type}:${i.keys.join(',')}`}>
+                  {t(`issues.${i.type}`, { count: i.keys.length, label: i.label ?? '' })}
+                </li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+      {saveState.kind === 'allocated' && (
+        <Alert variant="destructive">
+          <CircleAlertIcon aria-hidden="true" />
+          <AlertTitle>{t('editor.allocatedTitle')}</AlertTitle>
+          <AlertDescription className="space-y-2">
+            <p>{t('editor.allocated', { count: saveState.labels.length })}</p>
+            <div className="flex flex-wrap gap-1">
+              {saveState.labels.map((l) => (
+                <Badge key={l} variant="outline" className="font-mono">
+                  {l}
+                </Badge>
+              ))}
+            </div>
+            <p>{t('panel.deactivateHint')}</p>
+          </AlertDescription>
+        </Alert>
+      )}
+      {saveState.kind === 'error' && (
+        <Alert variant="destructive">
+          <CircleAlertIcon aria-hidden="true" />
+          <AlertTitle>{t('editor.saveErrorTitle')}</AlertTitle>
+          <AlertDescription>
+            <ul className="list-inside list-disc">
+              {saveState.messages.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+      <div
+        className={
+          panelOpen ? 'grid gap-3 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start' : 'grid gap-3'
+        }
+      >
+        {canvas}
+        {panelOpen && <div className="lg:sticky lg:top-4 lg:h-[65vh]">{panel}</div>}
       </div>
       <FormDialog
         open={dialog === 'generator'}

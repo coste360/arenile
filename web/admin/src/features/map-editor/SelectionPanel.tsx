@@ -1,9 +1,48 @@
-import { Button, Input, Label } from '@arenile/shared/ui';
-import type { AlignMode } from '@arenile/shared/map';
+import { DECORATION_KIND_ICONS, SPOT_KIND_ICONS, type AlignMode } from '@arenile/shared/map';
+import {
+  ButtonGroup,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  Field,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@arenile/shared/ui';
+import {
+  AlignCenterHorizontalIcon,
+  AlignCenterVerticalIcon,
+  AlignEndHorizontalIcon,
+  AlignEndVerticalIcon,
+  AlignHorizontalDistributeCenterIcon,
+  AlignStartHorizontalIcon,
+  AlignStartVerticalIcon,
+  AlignVerticalDistributeCenterIcon,
+  CopyIcon,
+  ListOrderedIcon,
+  MousePointerClickIcon,
+  RotateCcwIcon,
+  RotateCwIcon,
+  Trash2Icon,
+  type LucideIcon,
+} from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Select } from '../configuration/components/fields';
 import type { ZoneOption } from './dialogs';
+import { ToolButton } from './ui';
 import {
   DECORATION_KINDS,
   SPOT_KINDS,
@@ -53,6 +92,15 @@ function withQuantity(q: Record<string, number>, code: string, n: number | null)
   return out;
 }
 
+const ALIGN_ICONS: Record<AlignMode, LucideIcon> = {
+  left: AlignStartVerticalIcon,
+  'center-x': AlignCenterVerticalIcon,
+  right: AlignEndVerticalIcon,
+  top: AlignStartHorizontalIcon,
+  'center-y': AlignCenterHorizontalIcon,
+  bottom: AlignEndHorizontalIcon,
+};
+
 /** Capacity and maximum extra quantities per catalog component (single spot). */
 function QuantitiesEditor({
   spot,
@@ -74,49 +122,47 @@ function QuantitiesEditor({
       .map((code) => ({ code, name: code })),
   ];
   if (codes.length === 0) {
-    return <p className="text-xs text-slate-600">{t('panel.noComponents')}</p>;
+    return <FieldDescription>{t('panel.noComponents')}</FieldDescription>;
   }
   return (
-    <table className="w-full text-sm">
-      <caption className="sr-only">{t('panel.quantities')}</caption>
-      <thead>
-        <tr className="text-left text-xs text-slate-600">
-          <th scope="col" className="font-medium">
-            {t('panel.component')}
-          </th>
-          <th scope="col" className="w-16 font-medium">
-            {t('fields.capacity')}
-          </th>
-          <th scope="col" className="w-16 font-medium">
-            {t('fields.max_extra')}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {codes.map((c) => (
-          <tr key={c.code}>
-            <th scope="row" className="pr-2 text-left font-normal">
-              {c.name}
-            </th>
-            {(['capacity', 'max_extra'] as const).map((field) => (
-              <td key={field} className="py-0.5">
-                <CommitInput
-                  id={`spot-${field}-${c.code}`}
-                  ariaLabel={`${t(`fields.${field}`)}: ${c.name}`}
-                  inputMode="numeric"
-                  value={spot[field][c.code] != null ? String(spot[field][c.code]) : ''}
-                  disabled={readOnly}
-                  onCommit={(v) => {
-                    const n = quantity(v);
-                    if (n !== undefined) onPatch({ [field]: withQuantity(spot[field], c.code, n) });
-                  }}
-                />
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="overflow-hidden rounded-md border">
+      <Table>
+        <caption className="sr-only">{t('panel.quantities')}</caption>
+        <TableHeader className="bg-muted/50">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="h-8 text-xs">{t('panel.component')}</TableHead>
+            <TableHead className="h-8 w-20 text-xs">{t('fields.capacity')}</TableHead>
+            <TableHead className="h-8 w-20 text-xs">{t('fields.max_extra')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {codes.map((c) => (
+            <TableRow key={c.code} className="hover:bg-transparent">
+              <TableHead scope="row" className="h-auto py-1 font-normal text-foreground">
+                {c.name}
+              </TableHead>
+              {(['capacity', 'max_extra'] as const).map((field) => (
+                <TableCell key={field} className="py-1">
+                  <CommitInput
+                    id={`spot-${field}-${c.code}`}
+                    ariaLabel={`${t(`fields.${field}`)}: ${c.name}`}
+                    inputMode="numeric"
+                    className="h-8"
+                    value={spot[field][c.code] != null ? String(spot[field][c.code]) : ''}
+                    disabled={readOnly}
+                    onCommit={(v) => {
+                      const n = quantity(v);
+                      if (n !== undefined)
+                        onPatch({ [field]: withQuantity(spot[field], c.code, n) });
+                    }}
+                  />
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
@@ -128,6 +174,7 @@ function CommitInput({
   disabled,
   inputMode,
   ariaLabel,
+  className,
 }: {
   id: string;
   value: string;
@@ -135,6 +182,7 @@ function CommitInput({
   disabled?: boolean;
   inputMode?: 'numeric' | 'decimal';
   ariaLabel?: string;
+  className?: string;
 }) {
   // null = not editing: show the current value (follows undo/redo and selection changes).
   const [draft, setDraft] = useState<string | null>(null);
@@ -150,6 +198,7 @@ function CommitInput({
       disabled={disabled}
       inputMode={inputMode}
       aria-label={ariaLabel}
+      className={className ?? 'h-8'}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => {
@@ -164,12 +213,43 @@ function CommitInput({
 
 function Row({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
-    <div className="space-y-1">
-      <Label htmlFor={id} className="text-xs text-slate-600">
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor={id} className="text-xs text-muted-foreground">
         {label}
-      </Label>
+      </FieldLabel>
       {children}
-    </div>
+    </Field>
+  );
+}
+
+function ChoiceSelect({
+  id,
+  value,
+  placeholder,
+  disabled,
+  onChange,
+  options,
+}: {
+  id: string;
+  value: string;
+  placeholder?: string;
+  disabled?: boolean;
+  onChange: (v: string) => void;
+  options: { value: string; label: ReactNode; disabled?: boolean }[];
+}) {
+  return (
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger id={id} size="sm" className="w-full">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value} disabled={o.disabled}>
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -178,23 +258,42 @@ const num = (v: string) => {
   return Number.isFinite(n) ? n : null;
 };
 
+function withIcon(Icon: LucideIcon, label: string) {
+  return (
+    <>
+      <Icon aria-hidden="true" />
+      {label}
+    </>
+  );
+}
+
 /** Properties of the selected spot(s) or decoration, and bulk tools. */
 export function SelectionPanel(p: SelectionPanelProps) {
   const { t } = useTranslation('mapEditor');
   const { selected, readOnly } = p;
   if (selected.length === 0) {
-    return <p className="text-sm text-slate-600">{t('panel.empty')}</p>;
+    return (
+      <div className="flex flex-col items-center gap-3 px-2 py-8 text-center">
+        <span className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <MousePointerClickIcon aria-hidden="true" className="size-5" />
+        </span>
+        <p className="text-sm text-muted-foreground">{t('panel.empty')}</p>
+      </div>
+    );
   }
   const spots = selected.filter(isSpot);
   const single = selected.length === 1 ? selected[0] : undefined;
+  const sameZone = spots.every((s) => s.zone_id === spots[0]?.zone_id);
+  const sameKind = spots.every((s) => s.kind === spots[0]?.kind);
 
   return (
-    <div className="space-y-4">
+    <FieldGroup className="gap-5">
       <p className="text-sm font-medium" aria-live="polite">
         {t('panel.selected', { count: selected.length })}
       </p>
       {single && isSpot(single) && (
-        <div className="space-y-3">
+        <FieldSet className="gap-3">
+          <FieldLegend variant="label">{t('panel.identity')}</FieldLegend>
           <Row id="spot-label" label={t('fields.label')}>
             <CommitInput
               id="spot-label"
@@ -203,7 +302,7 @@ export function SelectionPanel(p: SelectionPanelProps) {
               onCommit={(label) => p.onSpotPatch({ label: label.trim() })}
             />
           </Row>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <Row id="spot-row" label={t('fields.row_label')}>
               <CommitInput
                 id="spot-row"
@@ -224,6 +323,38 @@ export function SelectionPanel(p: SelectionPanelProps) {
                 }}
               />
             </Row>
+          </div>
+          <Row id="spot-category" label={t('fields.price_category_override')}>
+            <CommitInput
+              id="spot-category"
+              value={single.price_category_override}
+              disabled={readOnly}
+              onCommit={(v) => p.onSpotPatch({ price_category_override: v.trim().toLowerCase() })}
+            />
+          </Row>
+          <Row id="spot-attributes" label={t('fields.attributes')}>
+            <CommitInput
+              id="spot-attributes"
+              value={single.attributes.join(', ')}
+              disabled={readOnly}
+              onCommit={(v) =>
+                p.onSpotPatch({
+                  attributes: [
+                    ...new Set(
+                      v
+                        .split(',')
+                        .map((a) => a.trim().toLowerCase())
+                        .filter(Boolean),
+                    ),
+                  ],
+                })
+              }
+            />
+            <FieldDescription className="text-xs">{t('panel.attributesHint')}</FieldDescription>
+          </Row>
+          <FieldSeparator />
+          <FieldLegend variant="label">{t('panel.geometry')}</FieldLegend>
+          <div className="grid grid-cols-3 gap-3">
             <Row id="spot-x" label="X">
               <CommitInput
                 id="spot-x"
@@ -268,109 +399,71 @@ export function SelectionPanel(p: SelectionPanelProps) {
                 }}
               />
             </Row>
-            <Row id="spot-category" label={t('fields.price_category_override')}>
-              <CommitInput
-                id="spot-category"
-                value={single.price_category_override}
-                disabled={readOnly}
-                onCommit={(v) => p.onSpotPatch({ price_category_override: v.trim().toLowerCase() })}
-              />
-            </Row>
           </div>
-          <Row id="spot-attributes" label={t('fields.attributes')}>
-            <CommitInput
-              id="spot-attributes"
-              value={single.attributes.join(', ')}
-              disabled={readOnly}
-              onCommit={(v) =>
-                p.onSpotPatch({
-                  attributes: [
-                    ...new Set(
-                      v
-                        .split(',')
-                        .map((a) => a.trim().toLowerCase())
-                        .filter(Boolean),
-                    ),
-                  ],
-                })
-              }
-            />
-          </Row>
-          <p className="text-xs text-slate-600">{t('panel.attributesHint')}</p>
-          <QuantitiesEditor
-            spot={single}
-            components={p.components}
-            readOnly={readOnly}
-            onPatch={p.onSpotPatch}
-          />
-        </div>
+        </FieldSet>
       )}
       {spots.length > 0 && (
-        <div className="space-y-3">
+        <FieldSet className="gap-3">
+          {single && <FieldSeparator />}
+          <FieldLegend variant="label">{t('panel.booking')}</FieldLegend>
           <Row id="spot-zone" label={t('fields.zone')}>
-            <Select
+            <ChoiceSelect
               id="spot-zone"
               disabled={readOnly}
-              value={
-                spots.every((s) => s.zone_id === spots[0]?.zone_id) ? (spots[0]?.zone_id ?? '') : ''
-              }
-              onChange={(e) => e.target.value && p.onSpotPatch({ zone_id: e.target.value })}
-            >
-              <option value="">{t('panel.mixed')}</option>
-              {p.zones.map((z) => (
-                <option key={z.id} value={z.id} disabled={z.disabled}>
-                  {z.name}
-                </option>
-              ))}
-            </Select>
+              value={sameZone ? (spots[0]?.zone_id ?? '') : ''}
+              placeholder={t('panel.mixed')}
+              onChange={(v) => v && p.onSpotPatch({ zone_id: v })}
+              options={p.zones.map((z) => ({ value: z.id, label: z.name, disabled: z.disabled }))}
+            />
           </Row>
           <Row id="spot-kind" label={t('fields.kind')}>
-            <Select
+            <ChoiceSelect
               id="spot-kind"
               disabled={readOnly}
-              value={spots.every((s) => s.kind === spots[0]?.kind) ? (spots[0]?.kind ?? '') : ''}
-              onChange={(e) =>
-                e.target.value && p.onSpotPatch({ kind: e.target.value as SpotKind })
-              }
-            >
-              <option value="">{t('panel.mixed')}</option>
-              {SPOT_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {t(`kinds.${k}`)}
-                </option>
-              ))}
-            </Select>
+              value={sameKind ? (spots[0]?.kind ?? '') : ''}
+              placeholder={t('panel.mixed')}
+              onChange={(v) => v && p.onSpotPatch({ kind: v as SpotKind })}
+              options={SPOT_KINDS.map((k) => ({
+                value: k,
+                label: withIcon(SPOT_KIND_ICONS[k], t(`kinds.${k}`)),
+              }))}
+            />
           </Row>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-[var(--ar-primary)]"
+          <Field orientation="horizontal" className="items-start">
+            <Switch
+              id="spot-active"
               disabled={readOnly}
               checked={spots.every((s) => s.active)}
-              onChange={(e) => p.onSpotPatch({ active: e.target.checked })}
+              onCheckedChange={(v) => p.onSpotPatch({ active: v })}
             />
-            {t('fields.active')}
-          </label>
-          <p className="text-xs text-slate-600">{t('panel.deactivateHint')}</p>
-        </div>
+            <div className="space-y-1">
+              <FieldLabel htmlFor="spot-active">{t('fields.active')}</FieldLabel>
+              <FieldDescription className="text-xs">{t('panel.deactivateHint')}</FieldDescription>
+            </div>
+          </Field>
+          {single && isSpot(single) && (
+            <QuantitiesEditor
+              spot={single}
+              components={p.components}
+              readOnly={readOnly}
+              onPatch={p.onSpotPatch}
+            />
+          )}
+        </FieldSet>
       )}
       {single && !isSpot(single) && (
-        <div className="space-y-3">
+        <FieldSet className="gap-3">
           <Row id="deco-kind" label={t('fields.decorationKind')}>
-            <Select
+            <ChoiceSelect
               id="deco-kind"
               disabled={readOnly}
               value={single.kind}
-              onChange={(e) =>
-                p.onDecorationPatch(single.key, { kind: e.target.value as DecorationKind })
-              }
-            >
-              {DECORATION_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {t(`decorations.${k}`)}
-                </option>
-              ))}
-            </Select>
+              onChange={(v) => p.onDecorationPatch(single.key, { kind: v as DecorationKind })}
+              options={DECORATION_KINDS.map((k) => ({
+                value: k,
+                label: withIcon(DECORATION_KIND_ICONS[k], t(`decorations.${k}`)),
+              }))}
+            />
           </Row>
           <Row id="deco-label" label={t('fields.decorationLabel')}>
             <CommitInput
@@ -384,7 +477,7 @@ export function SelectionPanel(p: SelectionPanelProps) {
               }
             />
           </Row>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <Row id="deco-w" label={t('fields.width')}>
               <CommitInput
                 id="deco-w"
@@ -414,50 +507,83 @@ export function SelectionPanel(p: SelectionPanelProps) {
               />
             </Row>
           </div>
-        </div>
+        </FieldSet>
       )}
       {!readOnly && (
-        <div className="space-y-2 border-t border-slate-200 pt-3">
-          <div className="flex flex-wrap gap-1">
-            <Button size="sm" variant="outline" onClick={() => p.onRotate(-15)}>
-              {t('tools.rotateLeft')}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => p.onRotate(15)}>
-              {t('tools.rotateRight')}
-            </Button>
-            <Button size="sm" variant="outline" onClick={p.onDuplicate}>
-              {t('tools.duplicate')}
-            </Button>
+        <FieldSet className="gap-3">
+          <FieldSeparator />
+          <FieldLegend variant="label">{t('panel.arrange')}</FieldLegend>
+          <div className="flex flex-wrap gap-2">
+            <ButtonGroup>
+              <ToolButton
+                variant="outline"
+                icon={RotateCcwIcon}
+                label={t('tools.rotateLeft')}
+                onClick={() => p.onRotate(-15)}
+              />
+              <ToolButton
+                variant="outline"
+                icon={RotateCwIcon}
+                label={t('tools.rotateRight')}
+                onClick={() => p.onRotate(15)}
+              />
+            </ButtonGroup>
+            <ToolButton
+              variant="outline"
+              icon={CopyIcon}
+              label={t('tools.duplicate')}
+              shortcut={['Mod', 'D']}
+              onClick={p.onDuplicate}
+            />
             {spots.length > 0 && (
-              <Button size="sm" variant="outline" onClick={p.onRenumber}>
-                {t('tools.renumber')}
-              </Button>
+              <ToolButton
+                variant="outline"
+                icon={ListOrderedIcon}
+                label={t('tools.renumber')}
+                text={t('tools.renumber')}
+                onClick={p.onRenumber}
+              />
             )}
           </div>
           {selected.length > 1 && (
-            <div className="flex flex-wrap gap-1" role="group" aria-label={t('tools.align')}>
+            <ButtonGroup aria-label={t('tools.align')}>
               {(['left', 'center-x', 'right', 'top', 'center-y', 'bottom'] as const).map((m) => (
-                <Button key={m} size="sm" variant="outline" onClick={() => p.onAlign(m)}>
-                  {t(`tools.alignModes.${m}`)}
-                </Button>
+                <ToolButton
+                  key={m}
+                  variant="outline"
+                  icon={ALIGN_ICONS[m]}
+                  label={t(`tools.alignModes.${m}`)}
+                  onClick={() => p.onAlign(m)}
+                />
               ))}
-            </div>
+            </ButtonGroup>
           )}
           {selected.length > 2 && (
-            <div className="flex flex-wrap gap-1">
-              <Button size="sm" variant="outline" onClick={() => p.onDistribute('x')}>
-                {t('tools.distributeX')}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => p.onDistribute('y')}>
-                {t('tools.distributeY')}
-              </Button>
-            </div>
+            <ButtonGroup>
+              <ToolButton
+                variant="outline"
+                icon={AlignHorizontalDistributeCenterIcon}
+                label={t('tools.distributeX')}
+                onClick={() => p.onDistribute('x')}
+              />
+              <ToolButton
+                variant="outline"
+                icon={AlignVerticalDistributeCenterIcon}
+                label={t('tools.distributeY')}
+                onClick={() => p.onDistribute('y')}
+              />
+            </ButtonGroup>
           )}
-          <Button size="sm" variant="destructive" onClick={p.onDelete}>
-            {t('tools.delete', { count: selected.length })}
-          </Button>
-        </div>
+          <ToolButton
+            variant="destructive"
+            icon={Trash2Icon}
+            label={t('tools.delete', { count: selected.length })}
+            text={t('tools.delete', { count: selected.length })}
+            className="w-fit"
+            onClick={p.onDelete}
+          />
+        </FieldSet>
       )}
-    </div>
+    </FieldGroup>
   );
 }

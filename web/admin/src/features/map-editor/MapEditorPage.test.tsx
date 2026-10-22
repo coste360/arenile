@@ -304,7 +304,7 @@ describe('MapEditorPage', () => {
     fireEvent.keyDown(a1, { key: 'ArrowUp' });
     await user.click(screen.getByRole('button', { name: 'Salva mappa' }));
 
-    const dialog = await screen.findByRole('dialog', {
+    const dialog = await screen.findByRole('alertdialog', {
       name: 'Mappa modificata da un altro utente',
     });
     const yours = within(dialog).getByRole('region', { name: 'Le tue modifiche' });
@@ -326,7 +326,7 @@ describe('MapEditorPage', () => {
       ['s2', 200],
     ]);
     expect(await screen.findByText('2 postazioni · salvata')).toBeInTheDocument();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('reloads the server version from the conflict dialog', async () => {
@@ -348,7 +348,7 @@ describe('MapEditorPage', () => {
     version = 4;
     fireEvent.keyDown(a2, { key: 'ArrowUp' });
     await user.click(screen.getByRole('button', { name: 'Salva mappa' }));
-    const dialog = await screen.findByRole('dialog');
+    const dialog = await screen.findByRole('alertdialog');
     await within(dialog).findByText('1 eliminata:');
     await user.click(within(dialog).getByRole('button', { name: 'Ricarica la versione salvata' }));
     await waitFor(() =>

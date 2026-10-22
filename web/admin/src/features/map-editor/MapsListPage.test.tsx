@@ -41,8 +41,9 @@ describe('MapsListPage', () => {
   it('lists maps in order with size and spot count', async () => {
     renderApp(`/admin/e/${EST_ID}/maps`, routes('manager'));
     const table = await screen.findByRole('table', { name: 'Mappe' });
+    await within(table).findByRole('link', { name: 'Spiaggia' });
     const rows = within(table).getAllByRole('row').slice(1);
-    expect(rows.map((r) => within(r).getAllByRole('rowheader')[0]?.textContent)).toEqual([
+    expect(rows.map((r) => within(r).getAllByRole('cell')[0]?.textContent)).toEqual([
       'Spiaggia',
       'Nord',
     ]);
@@ -67,7 +68,7 @@ describe('MapsListPage', () => {
     await screen.findByRole('table', { name: 'Mappe' });
     await user.click(screen.getByRole('button', { name: 'Nuova mappa' }));
     const dialog = await screen.findByRole('dialog');
-    await user.type(dialog.querySelector('#map-name-it') as HTMLInputElement, 'Sud');
+    await user.type(within(dialog).getByLabelText('Nome'), 'Sud');
     await user.click(within(dialog).getByRole('button', { name: "Crea e apri l'editor" }));
     await waitFor(() => expect(history.location.pathname).toBe(`/admin/e/${EST_ID}/maps/m3`));
     expect(body).toMatchObject({
@@ -114,14 +115,14 @@ describe('MapsListPage', () => {
       }),
     );
     await user.click(await screen.findByRole('button', { name: 'Elimina la mappa Nord' }));
-    const dialog = await screen.findByRole('dialog');
+    const dialog = await screen.findByRole('alertdialog');
     expect(within(dialog).getByText(/e le sue 3 postazioni verranno eliminate/)).toBeVisible();
     await user.click(within(dialog).getByRole('button', { name: 'Elimina' }));
     expect(await within(dialog).findByRole('alert')).toHaveTextContent(
       'La mappa ha postazioni con prenotazioni future.',
     );
     await user.click(within(dialog).getByRole('button', { name: 'Elimina' }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     const req = callsTo(fetchMock, 'DELETE', `${API}/maps/m2`)[1] as Request;
     expect(req.headers.get('If-Match')).toBe('"2"');
   });

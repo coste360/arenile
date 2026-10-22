@@ -13,7 +13,11 @@
     "openAria": "Plan {{name}} öffnen",
     "deleteAria": "Plan {{name}} löschen",
     "deleteConfirm_one": "Plan {{name}} und sein {{count}} Platz werden zusammen mit den Zonen des Plans gelöscht.",
-    "deleteConfirm_other": "Plan {{name}} und seine {{count}} Plätze werden zusammen mit den Zonen des Plans gelöscht."
+    "deleteConfirm_other": "Plan {{name}} und seine {{count}} Plätze werden zusammen mit den Zonen des Plans gelöscht.",
+    "searchPlaceholder": "Karte suchen…",
+    "deleteTitle": "Karte {{name}} löschen?",
+    "emptyTitle": "Keine Karten",
+    "delete": "Löschen"
   },
   "editor": {
     "title": "Plan-Editor",
@@ -29,7 +33,12 @@
     "reload": "Gespeicherte Version laden",
     "overwrite": "Mit meiner überschreiben",
     "allocated_one": "{{count}} Platz kann nicht gelöscht werden: Er hat zukünftige Buchungen.",
-    "allocated_other": "{{count}} Plätze können nicht gelöscht werden: Sie haben zukünftige Buchungen."
+    "allocated_other": "{{count}} Plätze können nicht gelöscht werden: Sie haben zukünftige Buchungen.",
+    "readOnly": "Ihre Rolle erlaubt nur das Ansehen: Änderungen sind Inhabern und Managern vorbehalten.",
+    "issuesTitle": "Vor dem Speichern beheben",
+    "saveErrorTitle": "Speichern fehlgeschlagen",
+    "allocatedTitle": "Plätze mit zukünftigen Buchungen",
+    "noZonesTitle": "Keine Zone verfügbar"
   },
   "canvas": {
     "label_one": "Plan mit {{count}} Platz",
@@ -110,7 +119,10 @@
     "previewCount_other": "{{count}} Plätze, von {{first}} bis {{last}}.",
     "conflicts": "Bereits vorhandene Bezeichnungen: {{labels}}. Erste Reihe oder Format ändern.",
     "add_one": "{{count}} Platz hinzufügen",
-    "add_other": "{{count}} Plätze hinzufügen"
+    "add_other": "{{count}} Plätze hinzufügen",
+    "layout": "Anordnung",
+    "labels": "Bezeichnungen",
+    "previewTitle": "Vorschau"
   },
   "panel": {
     "title": "Eigenschaften",
@@ -124,7 +136,13 @@
     "noComponents": "Keine Komponenten im Katalog: Füge sie unter Konfiguration → Katalog hinzu, um die Kapazität festzulegen.",
     "quantities": "Kapazität und maximale Extras pro Komponente",
     "component": "Komponente",
-    "attributesHint": "Durch Komma getrennt, z. B.: schatten, nahe_bar."
+    "attributesHint": "Durch Komma getrennt, z. B.: schatten, nahe_bar.",
+    "identity": "Kennzeichnung",
+    "geometry": "Position und Größe",
+    "booking": "Buchung",
+    "arrange": "Anordnen",
+    "shortcuts": "Tastenkürzel",
+    "zones": "Zonen"
   },
   "tools": {
     "label": "Editor-Werkzeuge",
@@ -149,7 +167,8 @@
     "delete_one": "Löschen",
     "delete_other": "{{count}} Elemente löschen",
     "duplicate": "Duplizieren",
-    "renumber": "Reihe neu nummerieren"
+    "renumber": "Reihe neu nummerieren",
+    "togglePanel": "Eigenschaften ein- oder ausblenden"
   },
   "issues": {
     "missing_zone_one": "{{count}} Platz ohne Zone.",
@@ -160,7 +179,8 @@
     "duplicate_label_other": "Bezeichnung {{label}} wird von {{count}} Plätzen verwendet."
   },
   "settings": {
-    "apply": "Übernehmen"
+    "apply": "Übernehmen",
+    "description": "Name, Größe in Karteneinheiten, Rasterabstand und Meerseite."
   },
   "validation": {
     "number": "Geben Sie eine gültige Zahl ein.",

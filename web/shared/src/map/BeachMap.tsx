@@ -1,19 +1,13 @@
 import { useGesture } from '@use-gesture/react';
-import {
-  memo,
-  useCallback,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react';
+import { memo, useCallback, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { readableTextColor } from '../theme/contrast';
-import { DECORATION_COLOR, DEFAULT_STATUS_COLORS, SAND_COLOR, SEA_COLOR } from './colors';
+import { cn } from '../lib/utils';
+import { STATUS_CLASSES } from './colors';
 import {
   IDENTITY,
+  MAX_SCALE,
+  MIN_SCALE,
   computeViewBox,
   seaRect,
   transformAttr,
@@ -21,6 +15,10 @@ import {
   type Transform,
   type ViewBox,
 } from './geometry';
+import { decorationKindIcon } from './icons';
+import { MapGlyph } from './MapGlyph';
+import { MapLegend } from './MapLegend';
+import { MapZoomControls } from './MapZoomControls';
 import { ShapeElement } from './shapes';
 import type { MapDecoration, MapGeometry, MapSpot, SpotStatus } from './types';
 
@@ -36,7 +34,7 @@ export interface BeachMapProps {
   onSpotActivate?: (spot: MapSpot) => void;
   /** Optional extra text per spot (e.g. a price), appended to the aria-label. */
   spotDescription?: (spot: MapSpot) => string | undefined;
-  /** Colour overrides, e.g. from the panel theme. */
+  /** Colour overrides (hex), e.g. from the panel theme; default: the --status-* theme tokens. */
   statusColors?: Partial<Record<SpotStatus, string>>;
   /** Statuses listed in the legend; defaults to those present on the map. */
   legendStatuses?: readonly SpotStatus[];
@@ -82,7 +80,8 @@ function pixelRatio(svg: SVGSVGElement | null, vb: ViewBox): number {
 interface SpotProps {
   spot: MapSpot;
   status: SpotStatus;
-  color: string;
+  /** Hex override; undefined = theme token classes. */
+  color: string | undefined;
   selected: boolean;
   ariaLabel: string;
   onActivate?: (spot: MapSpot) => void;
@@ -116,8 +115,10 @@ const Spot = memo(function Spot({
       aria-disabled={disabled || undefined}
       data-spot-id={spot.id}
       data-status={status}
-      className="ar-map-spot"
-      style={{ cursor: disabled ? 'default' : 'pointer', outline: 'none' }}
+      className={cn(
+        'outline-none focus-visible:[&>:first-child]:stroke-ring focus-visible:[&>:first-child]:[stroke-width:4px]',
+        disabled ? 'cursor-default' : 'cursor-pointer',
+      )}
       transform={spot.rotation ? `rotate(${spot.rotation} ${spot.x} ${spot.y})` : undefined}
       onClick={activate}
       onKeyDown={onKeyDown}
@@ -127,7 +128,10 @@ const Spot = memo(function Spot({
         x={spot.x}
         y={spot.y}
         fill={color}
-        stroke={selected ? '#111827' : 'rgba(17,24,39,0.35)'}
+        className={cn(
+          !color && STATUS_CLASSES[status].fill,
+          selected ? 'stroke-map-spot-selected' : 'stroke-map-spot-stroke',
+        )}
         strokeWidth={selected ? size * 0.12 : size * 0.04}
       />
       <text
@@ -137,7 +141,8 @@ const Spot = memo(function Spot({
         dominantBaseline="central"
         fontSize={size * 0.38}
         fontWeight={600}
-        fill={readableTextColor(color)}
+        fill={color ? readableTextColor(color) : undefined}
+        className={color ? undefined : STATUS_CLASSES[status].labelFill}
         pointerEvents="none"
         aria-hidden="true"
       >
@@ -150,6 +155,8 @@ const Spot = memo(function Spot({
 function Decoration({ decoration, label }: { decoration: MapDecoration; label: string }) {
   const { shape, x, y } = decoration;
   const size = shape.type === 'circle' ? shape.w : Math.min(shape.w, shape.h);
+  // Room for a glyph above the label on square-ish shapes.
+  const glyph = decoration.kind !== 'text' && size >= 28 ? size * 0.42 : 0;
   return (
     <g
       transform={decoration.rotation ? `rotate(${decoration.rotation} ${x} ${y})` : undefined}
@@ -161,57 +168,31 @@ function Decoration({ decoration, label }: { decoration: MapDecoration; label: s
           shape={shape}
           x={x}
           y={y}
-          fill={DECORATION_COLOR}
-          stroke="#b9a988"
+          className="fill-map-decoration stroke-map-decoration-stroke"
           strokeWidth={size * 0.03}
+        />
+      )}
+      {glyph > 0 && (
+        <MapGlyph
+          icon={decorationKindIcon(decoration.kind)}
+          x={x}
+          y={label ? y - size * 0.14 : y}
+          size={glyph}
+          className="text-map-decoration-label opacity-80"
         />
       )}
       <text
         x={x}
-        y={y}
+        y={glyph > 0 ? y + size * 0.26 : y}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={Math.max(6, size * 0.28)}
-        fill="#5b4a2a"
+        fontSize={Math.max(6, size * (glyph > 0 ? 0.18 : 0.28))}
+        className="fill-map-decoration-label"
         pointerEvents="none"
       >
         {label}
       </text>
     </g>
-  );
-}
-
-function ControlButton({
-  onClick,
-  label,
-  children,
-}: {
-  onClick: () => void;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="ar-map-control"
-      style={{
-        minWidth: 36,
-        height: 36,
-        padding: '0 10px',
-        borderRadius: 8,
-        border: '1px solid rgba(17,24,39,0.2)',
-        background: '#ffffff',
-        color: '#111827',
-        font: 'inherit',
-        fontSize: 14,
-        cursor: 'pointer',
-      }}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -242,7 +223,6 @@ export function BeachMap({
 
   const vb = useMemo(() => computeViewBox(geometry), [geometry]);
   const sea = useMemo(() => seaRect(geometry), [geometry]);
-  const colors = useMemo(() => ({ ...DEFAULT_STATUS_COLORS, ...statusColors }), [statusColors]);
   const selected = useMemo(() => new Set(selectedIds ?? []), [selectedIds]);
 
   const statusOf = useCallback(
@@ -293,7 +273,7 @@ export function BeachMap({
   const accessibleTitle = title ?? geometry.name ?? t('map.title');
 
   return (
-    <div className={className} data-testid="beach-map" style={{ position: 'relative' }}>
+    <div className={cn('relative', className)} data-testid="beach-map">
       <svg
         ref={svgRef}
         viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
@@ -301,28 +281,34 @@ export function BeachMap({
         role="group"
         aria-labelledby={titleId}
         aria-describedby={showLegend ? legendId : undefined}
-        style={{
-          display: 'block',
-          width: '100%',
-          height,
-          touchAction: 'none',
-          userSelect: 'none',
-          background: SAND_COLOR,
-          borderRadius: 'var(--ar-radius, 0.5rem)',
-        }}
+        className="block w-full touch-none rounded-lg bg-map-sand select-none"
+        // Height is a caller-provided CSS length (dynamic geometry).
+        style={{ height }}
       >
         <title id={titleId}>{accessibleTitle}</title>
         <g transform={transformAttr(view)} data-testid="beach-map-viewport">
-          <rect x={0} y={0} width={geometry.width} height={geometry.height} fill={SAND_COLOR} />
+          <rect
+            x={0}
+            y={0}
+            width={geometry.width}
+            height={geometry.height}
+            className="fill-map-sand"
+          />
           <g aria-hidden="true" data-sea-side={geometry.sea_side}>
-            <rect x={sea.x} y={sea.y} width={sea.width} height={sea.height} fill={SEA_COLOR} />
+            <rect
+              x={sea.x}
+              y={sea.y}
+              width={sea.width}
+              height={sea.height}
+              className="fill-map-sea"
+            />
             <text
               x={sea.x + sea.width / 2}
               y={sea.y + sea.height / 2}
               textAnchor="middle"
               dominantBaseline="central"
               fontSize={Math.min(sea.width, sea.height) * 0.4}
-              fill="#0c4a6e"
+              className="fill-map-sea-label"
               letterSpacing="0.2em"
               transform={
                 seaLabelVertical
@@ -355,7 +341,7 @@ export function BeachMap({
                 key={spot.id}
                 spot={spot}
                 status={status}
-                color={colors[status]}
+                color={statusColors?.[status]}
                 selected={selected.has(spot.id)}
                 ariaLabel={extra ? `${aria}, ${extra}` : aria}
                 onActivate={onSpotActivate}
@@ -364,62 +350,18 @@ export function BeachMap({
           })}
         </g>
       </svg>
-      <div
-        style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 }}
-        className="ar-map-controls"
-      >
-        <ControlButton
-          label={t('map.zoomIn')}
-          onClick={() => setView((v) => zoomAt(v, center, 1.25))}
-        >
-          +
-        </ControlButton>
-        <ControlButton
-          label={t('map.zoomOut')}
-          onClick={() => setView((v) => zoomAt(v, center, 0.8))}
-        >
-          −
-        </ControlButton>
-        <ControlButton label={t('map.fitView')} onClick={() => setView(IDENTITY)}>
-          {t('map.fitView')}
-        </ControlButton>
-      </div>
+      <MapZoomControls
+        className="absolute top-2 right-2"
+        scale={view.scale}
+        min={MIN_SCALE}
+        max={MAX_SCALE}
+        onZoomIn={() => setView((v) => zoomAt(v, center, 1.25))}
+        onZoomOut={() => setView((v) => zoomAt(v, center, 0.8))}
+        onFit={() => setView(IDENTITY)}
+        onScaleChange={(scale) => setView((v) => zoomAt(v, center, scale / v.scale))}
+      />
       {showLegend && (
-        <div id={legendId} className="ar-map-legend" style={{ marginTop: 8 }}>
-          <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14 }}>{t('map.legend')}</p>
-          <ul
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '4px 16px',
-              listStyle: 'none',
-              margin: 0,
-              padding: 0,
-              fontSize: 13,
-            }}
-          >
-            {legend.map((s) => (
-              <li
-                key={s}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                data-legend-status={s}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    display: 'inline-block',
-                    width: 12,
-                    height: 12,
-                    borderRadius: 3,
-                    background: colors[s],
-                    border: '1px solid rgba(17,24,39,0.3)',
-                  }}
-                />
-                {t(`map.status.${s}`)}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <MapLegend id={legendId} statuses={legend} statusColors={statusColors} className="mt-2" />
       )}
     </div>
   );

@@ -13,7 +13,11 @@
     "openAria": "Apri la mappa {{name}}",
     "deleteAria": "Elimina la mappa {{name}}",
     "deleteConfirm_one": "La mappa {{name}} e la sua {{count}} postazione verranno eliminate, insieme alle zone della mappa.",
-    "deleteConfirm_other": "La mappa {{name}} e le sue {{count}} postazioni verranno eliminate, insieme alle zone della mappa."
+    "deleteConfirm_other": "La mappa {{name}} e le sue {{count}} postazioni verranno eliminate, insieme alle zone della mappa.",
+    "searchPlaceholder": "Cerca una mappa…",
+    "deleteTitle": "Eliminare la mappa {{name}}?",
+    "emptyTitle": "Nessuna mappa",
+    "delete": "Elimina"
   },
   "editor": {
     "title": "Editor della mappa",
@@ -29,7 +33,12 @@
     "reload": "Ricarica la versione salvata",
     "overwrite": "Sovrascrivi con la mia",
     "allocated_one": "Non puoi eliminare {{count}} postazione: ha prenotazioni future.",
-    "allocated_other": "Non puoi eliminare {{count}} postazioni: hanno prenotazioni future."
+    "allocated_other": "Non puoi eliminare {{count}} postazioni: hanno prenotazioni future.",
+    "readOnly": "Il tuo ruolo consente solo la consultazione: le modifiche sono riservate a proprietari e gestori.",
+    "issuesTitle": "Da correggere prima di salvare",
+    "saveErrorTitle": "Salvataggio non riuscito",
+    "allocatedTitle": "Postazioni con prenotazioni future",
+    "noZonesTitle": "Nessuna zona disponibile"
   },
   "canvas": {
     "label_one": "Mappa con {{count}} postazione",
@@ -110,7 +119,10 @@
     "previewCount_other": "{{count}} postazioni, da {{first}} a {{last}}.",
     "conflicts": "Etichette già presenti sulla mappa: {{labels}}. Cambia prima fila o formato.",
     "add_one": "Aggiungi {{count}} postazione",
-    "add_other": "Aggiungi {{count}} postazioni"
+    "add_other": "Aggiungi {{count}} postazioni",
+    "layout": "Disposizione",
+    "labels": "Etichette",
+    "previewTitle": "Anteprima"
   },
   "panel": {
     "title": "Proprietà",
@@ -124,7 +136,13 @@
     "noComponents": "Nessun componente nel catalogo: aggiungili in Configurazione → Catalogo per indicare la capienza.",
     "quantities": "Capienza e massimo di extra per componente",
     "component": "Componente",
-    "attributesHint": "Separati da virgola, ad esempio: ombra, vicino_bar."
+    "attributesHint": "Separati da virgola, ad esempio: ombra, vicino_bar.",
+    "identity": "Identificazione",
+    "geometry": "Posizione e dimensione",
+    "booking": "Prenotazione",
+    "arrange": "Disponi",
+    "shortcuts": "Scorciatoie da tastiera",
+    "zones": "Zone"
   },
   "tools": {
     "label": "Strumenti dell'editor",
@@ -149,7 +167,8 @@
     "delete_one": "Elimina",
     "delete_other": "Elimina {{count}} elementi",
     "duplicate": "Duplica",
-    "renumber": "Rinumera fila"
+    "renumber": "Rinumera fila",
+    "togglePanel": "Mostra o nascondi le proprietà"
   },
   "issues": {
     "missing_zone_one": "{{count}} postazione senza zona.",
@@ -160,7 +179,8 @@
     "duplicate_label_other": "L'etichetta {{label}} è usata da {{count}} postazioni."
   },
   "settings": {
-    "apply": "Applica"
+    "apply": "Applica",
+    "description": "Nome, dimensioni in unità della mappa, passo della griglia e lato del mare."
   },
   "validation": {
     "number": "Inserisci un numero valido.",

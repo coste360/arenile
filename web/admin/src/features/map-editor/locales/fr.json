@@ -13,7 +13,11 @@
     "openAria": "Ouvrir le plan {{name}}",
     "deleteAria": "Supprimer le plan {{name}}",
     "deleteConfirm_one": "Le plan {{name}} et son {{count}} emplacement seront supprimés, avec les zones du plan.",
-    "deleteConfirm_other": "Le plan {{name}} et ses {{count}} emplacements seront supprimés, avec les zones du plan."
+    "deleteConfirm_other": "Le plan {{name}} et ses {{count}} emplacements seront supprimés, avec les zones du plan.",
+    "searchPlaceholder": "Rechercher une carte…",
+    "deleteTitle": "Supprimer la carte {{name}} ?",
+    "emptyTitle": "Aucune carte",
+    "delete": "Supprimer"
   },
   "editor": {
     "title": "Éditeur de plan",
@@ -29,7 +33,12 @@
     "reload": "Recharger la version enregistrée",
     "overwrite": "Écraser avec la mienne",
     "allocated_one": "Impossible de supprimer {{count}} emplacement : il a des réservations futures.",
-    "allocated_other": "Impossible de supprimer {{count}} emplacements : ils ont des réservations futures."
+    "allocated_other": "Impossible de supprimer {{count}} emplacements : ils ont des réservations futures.",
+    "readOnly": "Votre rôle permet seulement la consultation : les modifications sont réservées aux propriétaires et aux gérants.",
+    "issuesTitle": "À corriger avant d’enregistrer",
+    "saveErrorTitle": "Échec de l’enregistrement",
+    "allocatedTitle": "Emplacements avec réservations futures",
+    "noZonesTitle": "Aucune zone disponible"
   },
   "canvas": {
     "label_one": "Plan avec {{count}} emplacement",
@@ -110,7 +119,10 @@
     "previewCount_other": "{{count}} emplacements, de {{first}} à {{last}}.",
     "conflicts": "Libellés déjà présents : {{labels}}. Modifiez la première rangée ou le format.",
     "add_one": "Ajouter {{count}} emplacement",
-    "add_other": "Ajouter {{count}} emplacements"
+    "add_other": "Ajouter {{count}} emplacements",
+    "layout": "Disposition",
+    "labels": "Étiquettes",
+    "previewTitle": "Aperçu"
   },
   "panel": {
     "title": "Propriétés",
@@ -124,7 +136,13 @@
     "noComponents": "Aucun composant dans le catalogue : ajoutez-les dans Configuration → Catalogue pour indiquer la capacité.",
     "quantities": "Capacité et extras maximum par composant",
     "component": "Composant",
-    "attributesHint": "Séparés par des virgules, par exemple : ombre, pres_bar."
+    "attributesHint": "Séparés par des virgules, par exemple : ombre, pres_bar.",
+    "identity": "Identification",
+    "geometry": "Position et taille",
+    "booking": "Réservation",
+    "arrange": "Disposer",
+    "shortcuts": "Raccourcis clavier",
+    "zones": "Zones"
   },
   "tools": {
     "label": "Outils de l'éditeur",
@@ -149,7 +167,8 @@
     "delete_one": "Supprimer",
     "delete_other": "Supprimer {{count}} éléments",
     "duplicate": "Dupliquer",
-    "renumber": "Renuméroter la rangée"
+    "renumber": "Renuméroter la rangée",
+    "togglePanel": "Afficher ou masquer les propriétés"
   },
   "issues": {
     "missing_zone_one": "{{count}} emplacement sans zone.",
@@ -160,7 +179,8 @@
     "duplicate_label_other": "Le libellé {{label}} est utilisé par {{count}} emplacements."
   },
   "settings": {
-    "apply": "Appliquer"
+    "apply": "Appliquer",
+    "description": "Nom, dimensions en unités de carte, pas de la grille et côté de la mer."
   },
   "validation": {
     "number": "Saisissez un nombre valide.",

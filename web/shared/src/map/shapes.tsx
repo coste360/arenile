@@ -5,7 +5,9 @@ export interface ShapeElementProps {
   /** Centre in logical map units. */
   x: number;
   y: number;
-  fill: string;
+  /** Literal fill (attribute); omit when `className` sets a fill-* class. */
+  fill?: string;
+  className?: string;
   stroke?: string;
   strokeWidth?: number;
   strokeDasharray?: string;
@@ -22,6 +24,7 @@ export function ShapeElement({
   strokeWidth,
   strokeDasharray,
   opacity,
+  className,
 }: ShapeElementProps) {
   if (shape.type === 'circle') {
     return (
@@ -29,6 +32,7 @@ export function ShapeElement({
         cx={x}
         cy={y}
         r={shape.w / 2}
+        className={className}
         fill={fill}
         stroke={stroke}
         strokeWidth={strokeWidth}
@@ -44,6 +48,7 @@ export function ShapeElement({
       width={shape.w}
       height={shape.h}
       rx={Math.min(shape.w, shape.h) * 0.15}
+      className={className}
       fill={fill}
       stroke={stroke}
       strokeWidth={strokeWidth}

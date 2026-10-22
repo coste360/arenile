@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../lib/utils';
+import { Button } from '../ui/button';
+import { STATUS_CLASSES } from './colors';
 import type { MapSpot, SpotStatus } from './types';
 
 export interface SpotListProps {
@@ -51,27 +54,44 @@ export function SpotList({
   const rows = useMemo(() => groupByRow(spots), [spots]);
   const selected = new Set(selectedIds ?? []);
   return (
-    <section className={className} aria-label={t('map.listTitle')}>
+    <section className={cn('space-y-4', className)} aria-label={t('map.listTitle')}>
       {rows.map(([row, list]) => (
-        <div key={row ?? '__none'}>
-          <h3>{row ? t('map.row', { row }) : t('map.noRow')}</h3>
-          <ul>
+        <div key={row ?? '__none'} className="space-y-2">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {row ? t('map.row', { row }) : t('map.noRow')}
+          </h3>
+          <ul className="flex flex-wrap gap-1.5">
             {list.map((spot) => {
               const status: SpotStatus =
                 spot.active === false ? 'unavailable' : (statuses?.[spot.id] ?? defaultStatus);
               const extra = spotDescription?.(spot);
               const disabled = status !== 'free' || !onSpotActivate;
+              const pressed = selected.has(spot.id);
+              const name = `${spot.label} – ${t(`map.status.${status}`)}${extra ? ` – ${extra}` : ''}`;
               return (
                 <li key={spot.id}>
-                  <button
-                    type="button"
+                  <Button
+                    variant={pressed ? 'default' : 'outline'}
+                    size="sm"
                     disabled={disabled}
-                    aria-pressed={selected.has(spot.id)}
+                    aria-pressed={pressed}
+                    aria-label={name}
                     onClick={() => onSpotActivate?.(spot)}
+                    className="font-normal"
                   >
-                    {spot.label} – {t(`map.status.${status}`)}
-                    {extra ? ` – ${extra}` : ''}
-                  </button>
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'size-2.5 shrink-0 rounded-full ring-1 ring-foreground/20',
+                        STATUS_CLASSES[status].bg,
+                      )}
+                    />
+                    <span className="font-medium">{spot.label}</span>
+                    <span className="text-xs opacity-80">
+                      {t(`map.status.${status}`)}
+                      {extra ? ` – ${extra}` : ''}
+                    </span>
+                  </Button>
                 </li>
               );
             })}
