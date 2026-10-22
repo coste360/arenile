@@ -14,16 +14,15 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '@arenile/shared/ui/input-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@arenile/shared/ui/select';
 import { Switch } from '@arenile/shared/ui/switch';
 import { cn } from '@arenile/shared/lib/utils';
-import { DatePicker, DateRangePicker, I18nTextInput } from '@arenile/shared/ui/patterns';
+import {
+  DatePicker,
+  DateRangePicker,
+  I18nTextInput,
+  OptionSelect,
+  type Option,
+} from '@arenile/shared/ui/patterns';
 import type { ComponentProps, ReactNode } from 'react';
 import {
   useController,
@@ -96,14 +95,7 @@ export function SuffixInput({
 
 // ---- Select ---------------------------------------------------------------------------
 
-/** Radix Select item values cannot be empty: "" is mapped to this sentinel. */
-const NONE = '__none__';
-
-export interface SelectOption {
-  value: string;
-  label: ReactNode;
-  icon?: ReactNode;
-}
+export type SelectOption = Option;
 
 export interface SelectFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -131,40 +123,23 @@ export function SelectField<T extends FieldValues>({
   className,
   onValueChange,
 }: SelectFieldProps<T>) {
-  const {
-    field: { ref, ...field },
-    fieldState,
-  } = useController({ control, name });
+  const { field, fieldState } = useController({ control, name });
   const value = String(field.value ?? '');
   return (
     <Field id={id} label={label} error={fieldState.error} hint={hint} className={className}>
-      <Select
-        value={value === '' ? NONE : value}
-        onValueChange={(v) => {
-          const next = v === NONE ? '' : v;
+      <OptionSelect
+        value={value}
+        onChange={(next) => {
           field.onChange(next);
           onValueChange?.(next);
         }}
+        options={options}
+        placeholder={placeholder}
         disabled={disabled}
         name={field.name}
-      >
-        <SelectTrigger
-          ref={ref}
-          onBlur={field.onBlur}
-          className="w-full"
-          {...fieldAria(id, fieldState.error, !!hint)}
-        >
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((o) => (
-            <SelectItem key={o.value || NONE} value={o.value === '' ? NONE : o.value}>
-              {o.icon}
-              {o.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        onBlur={field.onBlur}
+        {...fieldAria(id, fieldState.error, !!hint)}
+      />
     </Field>
   );
 }

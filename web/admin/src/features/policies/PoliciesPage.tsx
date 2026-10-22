@@ -25,11 +25,19 @@ import {
   TabsTrigger,
 } from '@arenile/shared/ui';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
+  DeleteButton,
+  EditButton,
   EmptyState,
+  FormSheet,
+  MultiSelect,
+  type Option,
+  QueryState,
+  RowActions,
+  SheetForm,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -47,21 +55,13 @@ import { useConfigContext } from '../configuration/api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
 import { useEstablishmentSection } from '../configuration/api/useEstablishmentSection';
 import {
-  DeleteButton,
-  EditButton,
   EditorSection,
-  EditorSheet,
   FormErrorAlert,
-  MultiSelect,
   MultiToggle,
   PricingLayout,
-  QueryState,
-  RowActions,
   SeasonSelect,
-  SheetForm,
   SwitchRow,
   TextRow,
-  type Option,
 } from '../pricing/kit';
 import { useSelectedSeason } from '../pricing/season';
 import { usePricingData } from '../pricing/usePricingData';
@@ -255,7 +255,9 @@ export function PoliciesPage() {
         </TabsContent>
       </Tabs>
       {sel.season && (
-        <EditorSheet
+        <FormSheet
+          size="lg"
+          padded={false}
           open={editor.open}
           onOpenChange={editor.setOpen}
           title={editor.item ? t('editTitle', { name: editor.item.name }) : t('add')}
@@ -279,7 +281,7 @@ export function PoliciesPage() {
             }}
             onDone={editor.close}
           />
-        </EditorSheet>
+        </FormSheet>
       )}
     </PricingLayout>
   );

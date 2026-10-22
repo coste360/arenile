@@ -14,7 +14,7 @@ import {
 import { ExternalLinkIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { problemMessageKey } from '../lib/problem';
+import { problemMessageKey } from '@arenile/shared/api';
 
 function Rows({ items }: { items: Establishment[] }) {
   const { t } = useTranslation();

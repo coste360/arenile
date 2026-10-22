@@ -12,7 +12,12 @@ import {
   FormMessage,
   Separator,
 } from '@arenile/shared/ui';
-import { DateRangePicker } from '@arenile/shared/ui/patterns';
+import {
+  DateRangePicker,
+  MultiSelect,
+  type Option,
+  OptionSelect,
+} from '@arenile/shared/ui/patterns';
 import { CalendarPlusIcon, XIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import {
@@ -29,13 +34,10 @@ import { errorAt } from '../configuration/lib/aria';
 import {
   EditorSection,
   EuroTextInput,
-  MultiSelect,
   MultiToggle,
-  OptionSelect,
   PercentTextInput,
   SingleToggle,
   TextRow,
-  type Option,
 } from './kit';
 import {
   CHANNELS,

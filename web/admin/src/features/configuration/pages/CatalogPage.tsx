@@ -5,11 +5,16 @@ import { FieldDescription, FieldLegend, FieldSeparator, FieldSet } from '@arenil
 import { Input } from '@arenile/shared/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   EmptyState,
+  FormActions,
+  FormDialog,
+  FormSheet,
+  QueryState,
+  RowActions,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -37,8 +42,7 @@ import {
 import { useConfigContext, type ConfigContext } from '../api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../api/useCrud';
 import { ComponentIcon } from '../components/ComponentIcon';
-import { ConfigPage, QueryState } from '../components/ConfigPage';
-import { FormActions, FormDialog, FormSheet, RowActions } from '../components/dialogs';
+import { ConfigPage } from '../components/ConfigPage';
 import {
   BooleanField,
   Field,

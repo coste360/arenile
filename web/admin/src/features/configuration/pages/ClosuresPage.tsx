@@ -14,11 +14,15 @@ import {
 } from '@arenile/shared/ui/select';
 import { dateFnsLocale, dateToIso, formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   EmptyState,
+  FormActions,
+  FormDialog,
+  QueryState,
+  RowActions,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarOffIcon, PlusIcon } from 'lucide-react';
@@ -35,8 +39,7 @@ import { toast } from 'sonner';
 import { closureDays, type ClosureDay } from '../api/resources';
 import { useConfigContext } from '../api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../api/useCrud';
-import { ConfigPage, QueryState } from '../components/ConfigPage';
-import { FormActions, FormDialog, RowActions } from '../components/dialogs';
+import { ConfigPage } from '../components/ConfigPage';
 import { DateField, Field, FieldError, MultiCheck } from '../components/fields';
 import { FormAlert } from '../components/FormAlert';
 import { fieldAria } from '../lib/aria';

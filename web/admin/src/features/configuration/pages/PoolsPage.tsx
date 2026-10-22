@@ -3,11 +3,15 @@ import { FieldDescription, FieldLegend, FieldSet } from '@arenile/shared/ui/fiel
 import { Input } from '@arenile/shared/ui/input';
 import { formatIsoDate } from '@arenile/shared/lib/dates';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   EmptyState,
+  FormActions,
+  FormDialog,
+  QueryState,
+  RowActions,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BoxesIcon, LockIcon, PlusIcon, XIcon } from 'lucide-react';
@@ -24,8 +28,7 @@ import {
 import { useConfigContext } from '../api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../api/useCrud';
 import { ComponentIcon } from '../components/ComponentIcon';
-import { ConfigPage, QueryState } from '../components/ConfigPage';
-import { FormActions, FormDialog, RowActions } from '../components/dialogs';
+import { ConfigPage } from '../components/ConfigPage';
 import {
   DateRangeField,
   Field,

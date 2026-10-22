@@ -9,7 +9,7 @@ import {
 } from '@arenile/shared/ui/card';
 import { Progress } from '@arenile/shared/ui/progress';
 import { cn } from '@arenile/shared/lib/utils';
-import { EmptyState } from '@arenile/shared/ui/patterns';
+import { EmptyState, QueryState } from '@arenile/shared/ui/patterns';
 import { Link } from '@tanstack/react-router';
 import {
   ArrowLeftIcon,
@@ -33,7 +33,7 @@ import {
 import { useEffect, useReducer, useState, type ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConfigContext, type ConfigContext } from '../configuration/api/useConfigContext';
-import { ConfigPage, QueryState } from '../configuration/components/ConfigPage';
+import { ConfigPage } from '../configuration/components/ConfigPage';
 import { useSetupStatus, type SetupStatus } from './api';
 import {
   STEPS,

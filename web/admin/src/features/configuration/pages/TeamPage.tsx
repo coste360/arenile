@@ -12,11 +12,15 @@ import {
   SelectValue,
 } from '@arenile/shared/ui/select';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
+  DeleteButton,
   EmptyState,
+  FormActions,
+  FormDialog,
+  QueryState,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -43,9 +47,8 @@ import {
 } from '../api/team';
 import { useConfigContext } from '../api/useConfigContext';
 import { useEditor } from '../api/useCrud';
-import { ConfigPage, QueryState } from '../components/ConfigPage';
-import { ConfirmDelete, FormActions, FormDialog } from '../components/dialogs';
-import { useProblemText } from '../lib/problemText';
+import { ConfigPage } from '../components/ConfigPage';
+import { useProblemText } from '@arenile/shared/api';
 import { Field, SelectField } from '../components/fields';
 import { FormAlert } from '../components/FormAlert';
 import { fieldAria } from '../lib/aria';
@@ -211,7 +214,7 @@ export function TeamPage() {
             >
               {m.active ? t('team.deactivate') : t('team.reactivate')}
             </Button>
-            <ConfirmDelete
+            <DeleteButton
               label={t('team.removeAria', { name: m.name })}
               message={t('team.removeConfirm', { name: m.name })}
               onConfirm={() => remove.mutateAsync(m.user_id)}

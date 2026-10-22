@@ -1,19 +1,9 @@
-import { ApiProblem } from '@arenile/shared/api';
 import {
   Alert,
   AlertDescription,
-  AlertTitle,
   Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   Kbd,
   KbdGroup,
-  Skeleton,
-  Spinner,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -21,56 +11,7 @@ import {
 import { CircleAlertIcon, EyeIcon, type LucideIcon } from 'lucide-react';
 import type { ComponentProps, ComponentType, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { problemMessageKey } from '../../lib/problem';
 import type { FormAlertState } from '../configuration/lib/formErrors';
-
-/** Loading skeleton / error with retry for a query. */
-export function QueryState({
-  isLoading,
-  error,
-  onRetry,
-  skeleton = 'list',
-}: {
-  isLoading: boolean;
-  error: unknown;
-  onRetry?: () => void;
-  skeleton?: 'list' | 'editor';
-}) {
-  const { t } = useTranslation();
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <CircleAlertIcon aria-hidden="true" />
-        <AlertTitle>
-          {t(problemMessageKey(error instanceof ApiProblem ? error : undefined))}
-        </AlertTitle>
-        {onRetry && (
-          <AlertDescription>
-            <Button size="sm" variant="outline" onClick={onRetry} className="mt-1">
-              {t('common.retry')}
-            </Button>
-          </AlertDescription>
-        )}
-      </Alert>
-    );
-  }
-  if (!isLoading) return null;
-  return (
-    <div role="status" aria-label={t('common.loading')} className="space-y-3">
-      {skeleton === 'editor' ? (
-        <>
-          <Skeleton className="h-11 w-full" />
-          <Skeleton className="h-[60vh] w-full" />
-        </>
-      ) : (
-        <>
-          <Skeleton className="h-9 w-64" />
-          <Skeleton className="h-40 w-full" />
-        </>
-      )}
-    </div>
-  );
-}
 
 /** Banner for roles that can only view the maps. */
 export function ReadOnlyNotice() {
@@ -158,66 +99,5 @@ export function ToolButton({
         {shortcut && <Shortcut keys={shortcut} />}
       </TooltipContent>
     </Tooltip>
-  );
-}
-
-/** Modal dialog hosting a form (shadcn Dialog). */
-export function FormDialog({
-  open,
-  onOpenChange,
-  title,
-  description,
-  wide,
-  children,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  description?: string;
-  wide?: boolean;
-  children: ReactNode;
-}) {
-  const { t } = useTranslation();
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        closeLabel={t('common.close')}
-        className={wide ? 'max-h-[90vh] overflow-y-auto sm:max-w-3xl' : 'sm:max-w-lg'}
-      >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description ? (
-            <DialogDescription>{description}</DialogDescription>
-          ) : (
-            <DialogDescription className="sr-only">{title}</DialogDescription>
-          )}
-        </DialogHeader>
-        {children}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/** Cancel + submit footer of a dialog form. */
-export function FormActions({
-  onCancel,
-  pending,
-  submitLabel,
-}: {
-  onCancel: () => void;
-  pending?: boolean;
-  submitLabel?: string;
-}) {
-  const { t } = useTranslation();
-  return (
-    <DialogFooter>
-      <Button variant="outline" onClick={onCancel}>
-        {t('common.actions.cancel')}
-      </Button>
-      <Button type="submit" disabled={pending}>
-        {pending && <Spinner />}
-        {submitLabel ?? t('common.actions.save')}
-      </Button>
-    </DialogFooter>
   );
 }

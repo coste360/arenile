@@ -30,7 +30,14 @@ import {
   TableRow,
   type ChartConfig,
 } from '@arenile/shared/ui';
-import { DatePicker, EmptyState, StatusBadge } from '@arenile/shared/ui/patterns';
+import {
+  DatePicker,
+  EmptyState,
+  type Option,
+  OptionSelect,
+  QueryState,
+  StatusBadge,
+} from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CalculatorIcon,
@@ -47,15 +54,7 @@ import { useConfigContext } from '../configuration/api/useConfigContext';
 import { problemToFormState, type FormAlertState } from '../configuration/lib/formErrors';
 import { formatCents } from '@arenile/shared/lib/money';
 import { agreements, priceRules, promoCodes, useSimulate, type SimulateResult } from './api';
-import {
-  FormErrorAlert,
-  OptionSelect,
-  PricingLayout,
-  QueryState,
-  SeasonSelect,
-  TextRow,
-  type Option,
-} from './kit';
+import { FormErrorAlert, PricingLayout, SeasonSelect, TextRow } from './kit';
 import { formatEffect, STAGE_TONE } from './ruleNames';
 import { useSelectedSeason } from './season';
 import { CHANNELS, FORMULAS } from './rules.schema';

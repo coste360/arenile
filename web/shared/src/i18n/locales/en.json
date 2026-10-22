@@ -264,6 +264,13 @@
     "money": {
       "euro": "euro",
       "percent": "percent"
+    },
+    "deleted": "Deleted.",
+    "multi": {
+      "all": "All",
+      "more": "+{{count}}",
+      "search": "Search…",
+      "clear": "Clear selection"
     }
   }
 }

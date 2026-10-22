@@ -1,4 +1,5 @@
 import { Button } from '@arenile/shared/ui/button';
+import { QueryState } from '@arenile/shared/ui/patterns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
 import { Link } from '@tanstack/react-router';
 import {
@@ -12,7 +13,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConfigContext } from '../api/useConfigContext';
-import { ConfigPage, QueryState } from '../components/ConfigPage';
+import { ConfigPage } from '../components/ConfigPage';
 import {
   GeneralSection,
   PricingSettingsSection,

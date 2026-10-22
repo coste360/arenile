@@ -10,8 +10,9 @@ import {
   ScrollArea,
   Separator,
   Spinner,
+  Skeleton,
 } from '@arenile/shared/ui';
-import { PageHeader } from '@arenile/shared/ui/patterns';
+import { FormDialog, PageHeader, QueryState } from '@arenile/shared/ui/patterns';
 import {
   ArrowLeftIcon,
   CheckIcon,
@@ -35,7 +36,7 @@ import {
 } from '../configuration/api/resources';
 import { useConfigContext } from '../configuration/api/useConfigContext';
 import { localize } from '../configuration/lib/i18nText';
-import { problemMessageKey } from '../../lib/problem';
+import { problemMessageKey } from '@arenile/shared/api';
 import { MapSaveProblem, useMapDocument, useSaveMap } from './api';
 import { ConflictDialog, type ConflictInfo } from './ConflictDialog';
 import { MapSettingsForm, RenumberRowForm, RowGeneratorForm, type ZoneOption } from './dialogs';
@@ -81,7 +82,7 @@ import {
 import { ZONE_PALETTE } from './model/zoneColors';
 import { Palette } from './Palette';
 import { SelectionPanel, type ComponentOption } from './SelectionPanel';
-import { FormDialog, QueryState, ReadOnlyNotice, ToolButton } from './ui';
+import { ReadOnlyNotice, ToolButton } from './ui';
 
 type SaveState =
   | { kind: 'idle' }
@@ -138,7 +139,12 @@ export function MapEditorPage() {
       />
       {readOnly && <ReadOnlyNotice />}
       <QueryState
-        skeleton="editor"
+        skeleton={
+          <>
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-[60vh] w-full" />
+          </>
+        }
         isLoading={docQuery.isPending || zoneList.isPending}
         error={docQuery.error ?? zoneList.error}
         onRetry={() => void docQuery.refetch()}

@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
 import { AlertCircleIcon, RotateCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { problemMessageKey } from '../lib/problem';
+import { problemMessageKey } from '@arenile/shared/api';
 
 export function RouteError({ error, reset }: { error: unknown; reset: () => void }) {
   const { t } = useTranslation();

@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@arenile/shared/ui';
+import { MultiSelect, OptionSelect, type Option } from '@arenile/shared/ui/patterns';
 import {
   ArrowDownIcon,
   ArrowDownWideNarrowIcon,
@@ -32,7 +33,7 @@ import {
 import { useId, type ComponentProps, type ReactNode } from 'react';
 import { useFieldArray, useWatch, type Control, type Path } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { EuroTextInput, MultiSelect, OptionSelect, TextRow, type Option } from '../pricing/kit';
+import { EuroTextInput, TextRow } from '../pricing/kit';
 import { nextTier, sortTiers, type RulesValues } from './policy.schema';
 
 const FORMULAS = ['half_day', 'day', 'multi_day', 'week', 'fortnight', 'month', 'season'] as const;

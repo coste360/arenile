@@ -12,11 +12,19 @@ import {
   FormMessage,
 } from '@arenile/shared/ui';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
+  DeleteButton,
+  EditButton,
   EmptyState,
+  FormSheet,
+  MultiSelect,
+  OptionSelect,
+  QueryState,
+  RowActions,
+  SheetForm,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ListOrderedIcon, PlusIcon, SparklesIcon } from 'lucide-react';
@@ -27,20 +35,7 @@ import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
 import { priceRules, type PriceRule } from './api';
 import { ActionFields, ConditionFields } from './components';
 import { describeRule, type SummaryNames } from './format';
-import {
-  DeleteButton,
-  EditButton,
-  EditorSection,
-  EditorSheet,
-  FormErrorAlert,
-  MultiSelect,
-  OptionSelect,
-  QueryState,
-  RowActions,
-  SheetForm,
-  SwitchRow,
-  TextRow,
-} from './kit';
+import { EditorSection, FormErrorAlert, SwitchRow, TextRow } from './kit';
 import { STAGE_TONE, sortRules, useSummaryNames } from './ruleNames';
 import {
   ACTIONS_BY_STAGE,
@@ -195,13 +190,15 @@ export function RulesTab(p: PricingTabProps) {
             </section>
           );
         })}
-      <EditorSheet
+      <FormSheet
+        size="lg"
+        padded={false}
         open={editor.open}
         onOpenChange={editor.setOpen}
         title={editor.item ? t('rules.editTitle', { name: editor.item.name }) : t('rules.add')}
       >
         <RuleForm key={editor.key} {...p} item={editor.item} onDone={editor.close} />
-      </EditorSheet>
+      </FormSheet>
     </div>
   );
 }

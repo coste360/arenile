@@ -12,11 +12,15 @@ import {
 import { Input } from '@arenile/shared/ui/input';
 import { RadioGroup, RadioGroupItem } from '@arenile/shared/ui/radio-group';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   EmptyState,
+  FormActions,
+  FormDialog,
+  QueryState,
+  RowActions,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LayersIcon, MapIcon, PlusIcon } from 'lucide-react';
@@ -25,8 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { maps, zones, type BeachMap, type Zone } from '../api/resources';
 import { useConfigContext } from '../api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../api/useCrud';
-import { ConfigPage, QueryState } from '../components/ConfigPage';
-import { FormActions, FormDialog, RowActions } from '../components/dialogs';
+import { ConfigPage } from '../components/ConfigPage';
 import { BooleanField, Field, I18nTextField, SelectField } from '../components/fields';
 import { FormAlert } from '../components/FormAlert';
 import { fieldAria } from '../lib/aria';

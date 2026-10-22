@@ -26,7 +26,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from '@arenile/shared/ui';
-import { EmptyState } from '@arenile/shared/ui/patterns';
+import { DeleteButton, EmptyState, OptionSelect, QueryState } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PackageIcon, PlusIcon, TagsIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -35,14 +35,7 @@ import { useTranslation } from 'react-i18next';
 import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
 import { formatCents } from '@arenile/shared/lib/money';
 import { fixedPrices, type FixedPrice } from './api';
-import {
-  DeleteButton,
-  EuroTextInput,
-  FormErrorAlert,
-  OptionSelect,
-  QueryState,
-  TextRow,
-} from './kit';
+import { EuroTextInput, FormErrorAlert, TextRow } from './kit';
 import type { PricingTabProps } from './RulesTab';
 import {
   FIXED_FORMULAS,

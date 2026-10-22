@@ -1,6 +1,7 @@
-import { ApiProblem } from '@arenile/shared/api';
+import { useTranslation } from 'react-i18next';
+import { ApiProblem } from './client';
 
-/** i18n key for a generic problem shown outside of specific forms. */
+/** i18n key (shared `common.errors.*`) of a failed request shown outside a specific form. */
 export function problemMessageKey(error: unknown): string {
   if (!(error instanceof ApiProblem)) return 'common.errors.generic';
   if (error.isNetworkError) return 'common.errors.network';
@@ -27,4 +28,23 @@ export function problemMessageKey(error: unknown): string {
     default:
       return 'common.errors.generic';
   }
+}
+
+/** True for a stale `If-Match` (the resource changed since it was loaded). */
+export function isVersionConflict(error: unknown): boolean {
+  return error instanceof ApiProblem && (error.type === 'version_conflict' || error.status === 412);
+}
+
+/**
+ * Human message of a failed request: the translated version-conflict notice,
+ * else the server `detail` when present, else the translated generic message.
+ */
+export function useProblemText() {
+  const { t } = useTranslation();
+  return (error: unknown) =>
+    isVersionConflict(error)
+      ? t('common.errors.versionConflict')
+      : error instanceof ApiProblem && error.detail
+        ? error.detail
+        : t(problemMessageKey(error));
 }

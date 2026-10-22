@@ -11,7 +11,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@arenile/shared/ui/alert-dialog';
+import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
 import { Spinner } from '@arenile/shared/ui/spinner';
+import { CircleAlertIcon } from 'lucide-react';
 
 export interface ConfirmDialogProps {
   title: ReactNode;
@@ -30,6 +32,11 @@ export interface ConfirmDialogProps {
   trigger?: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Text of a rejected `onConfirm`, shown inside the dialog (which stays open
+   * so the action can be retried). Without it the caller reports the error.
+   */
+  errorText?: (error: unknown) => string;
 }
 
 /** Confirmation for destructive or important actions (shadcn AlertDialog). */
@@ -43,13 +50,16 @@ export function ConfirmDialog({
   trigger,
   open: openProp,
   onOpenChange,
+  errorText,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
   const [openState, setOpenState] = useState(false);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const open = openProp ?? openState;
   const setOpen = (v: boolean) => {
     if (openProp === undefined) setOpenState(v);
+    if (v) setError(null);
     onOpenChange?.(v);
   };
 
@@ -61,11 +71,13 @@ export function ConfirmDialog({
       return;
     }
     setPending(true);
+    setError(null);
     try {
       await result;
       setOpen(false);
-    } catch {
-      // The caller shows the error (toast or inline); keep the dialog open.
+    } catch (err) {
+      // Keep the dialog open: show the error here when asked, else the caller reports it.
+      if (errorText) setError(errorText(err));
     } finally {
       setPending(false);
     }
@@ -79,6 +91,12 @@ export function ConfirmDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
+        {error && (
+          <Alert variant="destructive">
+            <CircleAlertIcon aria-hidden="true" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>
             {cancelLabel ?? t('ui.confirm.cancel')}

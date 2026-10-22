@@ -19,12 +19,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tab
 import { cn } from '@arenile/shared/lib/utils';
 import { dateFnsLocale, formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   DatePicker,
   EmptyState,
+  FormActions,
+  FormDialog,
+  QueryState,
+  RowActions,
   StatusBadge,
-  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useSearch } from '@tanstack/react-router';
@@ -44,8 +48,7 @@ import { ratePeriods, seasons, type RatePeriod, type Season } from '../api/resou
 import { useConfigContext } from '../api/useConfigContext';
 import { useCrudSubmit, useEditor } from '../api/useCrud';
 import { useEstablishmentSection } from '../api/useEstablishmentSection';
-import { ConfigPage, QueryState } from '../components/ConfigPage';
-import { FormActions, FormDialog, RowActions } from '../components/dialogs';
+import { ConfigPage } from '../components/ConfigPage';
 import {
   DateRangeField,
   Field,

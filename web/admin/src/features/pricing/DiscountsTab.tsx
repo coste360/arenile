@@ -16,11 +16,17 @@ import {
   Textarea,
 } from '@arenile/shared/ui';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   DatePicker,
+  DeleteButton,
+  EditButton,
   EmptyState,
-  type ColumnDef,
+  FormSheet,
+  QueryState,
+  RowActions,
+  SheetForm,
 } from '@arenile/shared/ui/patterns';
 import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,18 +37,7 @@ import { useCrudSubmit, useEditor } from '../configuration/api/useCrud';
 import { agreements, promoCodes, type Agreement, type PromoCode } from './api';
 import { ActionFields, ConditionFields } from './components';
 import { describeAction } from './format';
-import {
-  DeleteButton,
-  EditButton,
-  EditorSection,
-  EditorSheet,
-  FormErrorAlert,
-  QueryState,
-  RowActions,
-  SheetForm,
-  SwitchRow,
-  TextRow,
-} from './kit';
+import { EditorSection, FormErrorAlert, SwitchRow, TextRow } from './kit';
 import type { PricingTabProps } from './RulesTab';
 import {
   ACTIONS_BY_STAGE,
@@ -187,13 +182,15 @@ function PromoSection(p: PricingTabProps) {
           />
         )}
       </CardContent>
-      <EditorSheet
+      <FormSheet
+        size="lg"
+        padded={false}
         open={editor.open}
         onOpenChange={editor.setOpen}
         title={editor.item ? t('promo.editTitle', { name: editor.item.code }) : t('promo.add')}
       >
         <PromoForm key={editor.key} {...p} item={editor.item} onDone={editor.close} />
-      </EditorSheet>
+      </FormSheet>
     </Card>
   );
 }
@@ -424,7 +421,9 @@ function AgreementSection(p: PricingTabProps) {
           />
         )}
       </CardContent>
-      <EditorSheet
+      <FormSheet
+        size="lg"
+        padded={false}
         open={editor.open}
         onOpenChange={editor.setOpen}
         title={
@@ -432,7 +431,7 @@ function AgreementSection(p: PricingTabProps) {
         }
       >
         <AgreementForm key={editor.key} {...p} item={editor.item} onDone={editor.close} />
-      </EditorSheet>
+      </FormSheet>
     </Card>
   );
 }

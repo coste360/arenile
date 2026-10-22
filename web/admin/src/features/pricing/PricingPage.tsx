@@ -1,12 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui';
-import { EmptyState } from '@arenile/shared/ui/patterns';
+import { EmptyState, QueryState } from '@arenile/shared/ui/patterns';
 import { CalendarXIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConfigContext } from '../configuration/api/useConfigContext';
 import { DiscountsTab } from './DiscountsTab';
 import { FixedPricesTab } from './FixedPricesTab';
-import { PricingLayout, QueryState, SeasonSelect } from './kit';
+import { PricingLayout, SeasonSelect } from './kit';
 import { RulesTab } from './RulesTab';
 import { useSelectedSeason } from './season';
 import { SeasonCopyDialog } from './SeasonCopyDialog';

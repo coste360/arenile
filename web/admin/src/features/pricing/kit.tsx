@@ -1,4 +1,3 @@
-import { ApiProblem } from '@arenile/shared/api';
 import {
   basisPointsToPercentText,
   formatScaled,
@@ -8,16 +7,7 @@ import {
 import {
   Alert,
   AlertDescription,
-  AlertTitle,
-  Badge,
   Button,
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
   FormControl,
   FormDescription,
   FormField,
@@ -26,32 +16,21 @@ import {
   FormMessage,
   Input,
   Label,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  Skeleton,
-  Spinner,
   Switch,
   ToggleGroup,
   ToggleGroupItem,
   cn,
 } from '@arenile/shared/ui';
 import {
-  ConfirmDialog,
   MoneyInput,
   PageHeader,
   PercentInput,
+  type Option,
   type ScaledInputProps,
 } from '@arenile/shared/ui/patterns';
 import { Link } from '@tanstack/react-router';
@@ -59,27 +38,20 @@ import {
   AlertCircleIcon,
   CalculatorIcon,
   CalendarCheckIcon,
-  CheckIcon,
-  ChevronsUpDownIcon,
   EyeIcon,
   ListOrderedIcon,
-  PencilIcon,
-  RotateCwIcon,
   Table2Icon,
-  Trash2Icon,
-  XIcon,
 } from 'lucide-react';
-import { useId, useState, type ComponentProps, type FormEvent, type ReactNode } from 'react';
+import { useId, type ComponentProps, type ReactNode } from 'react';
 import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { problemMessageKey } from '../../lib/problem';
 import type { Season } from '../configuration/api/resources';
 import type { FormAlertState } from '../configuration/lib/formErrors';
 
 /**
- * Building blocks shared by the pricing and policy pages, composed from the
- * shadcn kit (@arenile/shared/ui). No custom CSS: variants + utilities only.
+ * Building blocks specific to the pricing and policy pages (layout, season
+ * selector, toggles, text-bound money inputs, form rows). Generic pieces
+ * (QueryState, RowActions, selects, dialogs) live in @arenile/shared/ui/patterns.
  */
 
 // ---------------------------------------------------------------------------
@@ -208,49 +180,6 @@ export function SeasonSelect({
 // Query / form states
 // ---------------------------------------------------------------------------
 
-/** Loading skeleton or error alert (with retry) for a query. */
-export function QueryState({
-  isLoading,
-  error,
-  onRetry,
-  rows = 3,
-}: {
-  isLoading: boolean;
-  error: unknown;
-  onRetry?: () => void;
-  rows?: number;
-}) {
-  const { t } = useTranslation();
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircleIcon aria-hidden="true" />
-        <AlertTitle>{t('common.errors.title')}</AlertTitle>
-        <AlertDescription className="flex flex-wrap items-center gap-3">
-          <span>{t(problemMessageKey(error instanceof ApiProblem ? error : undefined))}</span>
-          {onRetry && (
-            <Button size="sm" variant="outline" onClick={onRetry}>
-              <RotateCwIcon aria-hidden="true" />
-              {t('common.retry')}
-            </Button>
-          )}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  if (isLoading) {
-    return (
-      <div role="status" className="space-y-2">
-        <span className="sr-only">{t('common.loading')}</span>
-        {Array.from({ length: rows }, (_, i) => (
-          <Skeleton key={i} className="h-10 w-full" />
-        ))}
-      </div>
-    );
-  }
-  return null;
-}
-
 /** Non-field errors of a form; for a stale version it offers to reload. */
 export function FormErrorAlert({
   state,
@@ -288,136 +217,6 @@ export function FormErrorAlert({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Row actions
-// ---------------------------------------------------------------------------
-
-export function EditButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick}>
-      <PencilIcon aria-hidden="true" />
-    </Button>
-  );
-}
-
-/** Delete with confirmation; a failed delete keeps the dialog open and shows a toast. */
-export function DeleteButton({
-  label,
-  message,
-  onConfirm,
-  withText,
-}: {
-  label: string;
-  message: string;
-  onConfirm: () => Promise<unknown>;
-  /** Show "Elimina" next to the icon (e.g. in a form footer). */
-  withText?: boolean;
-}) {
-  const { t } = useTranslation();
-  return (
-    <ConfirmDialog
-      title={t('common.actions.confirmDelete')}
-      description={message}
-      confirmLabel={t('common.actions.delete')}
-      destructive
-      onConfirm={async () => {
-        try {
-          await onConfirm();
-        } catch (err) {
-          const detail = err instanceof ApiProblem && err.detail ? err.detail : undefined;
-          toast.error(detail ?? t(problemMessageKey(err)));
-          throw err;
-        }
-      }}
-      trigger={
-        <Button
-          variant="ghost"
-          size={withText ? 'sm' : 'icon-sm'}
-          aria-label={label}
-          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2Icon aria-hidden="true" />
-          {withText && t('common.actions.delete')}
-        </Button>
-      }
-    />
-  );
-}
-
-export function RowActions({ children }: { children: ReactNode }) {
-  return <div className="flex justify-end gap-0.5">{children}</div>;
-}
-
-// ---------------------------------------------------------------------------
-// Editor sheet
-// ---------------------------------------------------------------------------
-
-/** Large right-side sheet hosting an editor form (rules, codes, agreements, policies). */
-export function EditorSheet({
-  open,
-  onOpenChange,
-  title,
-  description,
-  children,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) {
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full gap-0 sm:max-w-3xl">
-        <SheetHeader className="border-b">
-          <SheetTitle>{title}</SheetTitle>
-          <SheetDescription className={description ? undefined : 'sr-only'}>
-            {description ?? title}
-          </SheetDescription>
-        </SheetHeader>
-        {children}
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-/** Form inside an EditorSheet: scrolling body, sticky footer with cancel / save. */
-export function SheetForm({
-  onSubmit,
-  onCancel,
-  pending,
-  submitLabel,
-  footerStart,
-  children,
-}: {
-  onSubmit: (e?: FormEvent) => void;
-  onCancel: () => void;
-  pending: boolean;
-  submitLabel?: string;
-  /** Left side of the footer (e.g. a delete button). */
-  footerStart?: ReactNode;
-  children: ReactNode;
-}) {
-  const { t } = useTranslation();
-  return (
-    <form noValidate onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-      <div className="flex-1 space-y-8 overflow-y-auto p-4 sm:p-6">{children}</div>
-      <SheetFooter className="flex-row items-center justify-between border-t bg-muted/30">
-        <div>{footerStart}</div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancel}>
-            {t('common.actions.cancel')}
-          </Button>
-          <Button type="submit" disabled={pending}>
-            {pending && <Spinner />}
-            {submitLabel ?? t('common.actions.save')}
-          </Button>
-        </div>
-      </SheetFooter>
-    </form>
-  );
-}
-
 /** Titled block inside an editor form. */
 export function EditorSection({
   title,
@@ -444,157 +243,6 @@ export function EditorSection({
 // ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
-
-/** Radix Select cannot hold "": empty values travel as this sentinel. */
-const NONE = '__none__';
-
-export type Option = { value: string; label: string };
-
-/** shadcn Select over a string value; an option with value "" is allowed. */
-export function OptionSelect({
-  value,
-  onChange,
-  options,
-  placeholder,
-  className,
-  disabled,
-  ...aria
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: readonly Option[];
-  placeholder?: string;
-  className?: string;
-  disabled?: boolean;
-  id?: string;
-  'aria-label'?: string;
-  'aria-describedby'?: string;
-  'aria-invalid'?: boolean;
-}) {
-  return (
-    <Select
-      value={value === '' ? NONE : value}
-      onValueChange={(v) => onChange(v === NONE ? '' : v)}
-      disabled={disabled}
-    >
-      <SelectTrigger className={cn('w-full', className)} {...aria}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value || NONE} value={o.value === '' ? NONE : o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-/**
- * Multi-select on Popover + Command (search, check marks, clear). The trigger
- * shows the chosen items as badges; nothing chosen = `placeholder` ("Tutti").
- */
-export function MultiSelect({
-  value,
-  onChange,
-  options,
-  placeholder,
-  disabled,
-  className,
-  ...aria
-}: {
-  value: string[];
-  onChange: (v: string[]) => void;
-  options: readonly Option[];
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-  id?: string;
-  'aria-describedby'?: string;
-  'aria-invalid'?: boolean;
-}) {
-  const { t } = useTranslation('pricing');
-  const [open, setOpen] = useState(false);
-  const selected = options.filter((o) => value.includes(o.value));
-  const toggle = (v: string) => {
-    const next = value.includes(v) ? value.filter((x) => x !== v) : [...value, v];
-    // Keep the options' order, independent of click order.
-    onChange(options.map((o) => o.value).filter((o) => next.includes(o)));
-  };
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          disabled={disabled}
-          className={cn('h-auto min-h-9 w-full justify-between px-3 py-1.5 font-normal', className)}
-          {...aria}
-        >
-          <span className="flex min-w-0 flex-wrap gap-1">
-            {selected.length === 0 && (
-              <span className="text-muted-foreground">{placeholder ?? t('multi.all')}</span>
-            )}
-            {selected.slice(0, 4).map((o) => (
-              <Badge key={o.value} variant="secondary">
-                {o.label}
-              </Badge>
-            ))}
-            {selected.length > 4 && (
-              <Badge variant="outline">{t('multi.more', { count: selected.length - 4 })}</Badge>
-            )}
-          </span>
-          <ChevronsUpDownIcon aria-hidden="true" className="text-muted-foreground" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-56 p-0" align="start">
-        <Command>
-          {options.length > 6 && <CommandInput placeholder={t('multi.search')} />}
-          <CommandList>
-            <CommandEmpty>{t('ui.noResults', { ns: 'translation' })}</CommandEmpty>
-            <CommandGroup>
-              {options.map((o) => {
-                const on = value.includes(o.value);
-                return (
-                  <CommandItem
-                    key={o.value}
-                    value={`${o.label} ${o.value}`}
-                    onSelect={() => toggle(o.value)}
-                    aria-selected={on}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        'flex size-4 items-center justify-center rounded-sm border',
-                        on ? 'border-primary bg-primary text-primary-foreground' : 'opacity-60',
-                      )}
-                    >
-                      {on && <CheckIcon className="size-3" />}
-                    </span>
-                    {o.label}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-            {value.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup>
-                  <CommandItem onSelect={() => onChange([])} className="justify-center">
-                    <XIcon aria-hidden="true" />
-                    {t('multi.clear')}
-                  </CommandItem>
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 /** Few fixed choices (weekdays, slots, channels) as a multiple ToggleGroup. */
 export function MultiToggle({

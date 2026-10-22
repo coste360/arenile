@@ -23,7 +23,7 @@ import {
   Separator,
   Spinner,
 } from '@arenile/shared/ui';
-import { FieldRow, I18nTextInput } from '@arenile/shared/ui/patterns';
+import { FieldRow, FormActions, I18nTextInput } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleAlertIcon, EyeIcon, PlusIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
@@ -54,7 +54,7 @@ import {
   type DraftSpot,
   type RowGeneratorResult,
 } from './model/types';
-import { FormActions, FormAlert } from './ui';
+import { FormAlert } from './ui';
 
 export interface ZoneOption {
   id: string;

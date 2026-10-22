@@ -12,10 +12,12 @@ import {
   CardTitle,
 } from '@arenile/shared/ui';
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   EmptyState,
-  type ColumnDef,
+  FormSheet,
+  QueryState,
 } from '@arenile/shared/ui/patterns';
 import { CalendarXIcon, CircleCheckIcon, LockIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -24,7 +26,7 @@ import { useConfigContext } from '../configuration/api/useConfigContext';
 import { useEditor } from '../configuration/api/useCrud';
 import { useCoverage, type CoverageReport, type Slots } from './api';
 import { calendarMonths, gapCountsByDay, heatLevel } from './coverage';
-import { EditorSheet, PricingLayout, QueryState, SeasonSelect, SingleToggle } from './kit';
+import { PricingLayout, SeasonSelect, SingleToggle } from './kit';
 import type { RuleValues } from './rules.schema';
 import { RuleForm } from './RulesTab';
 import { useSelectedSeason } from './season';
@@ -205,7 +207,13 @@ export function CoveragePage() {
           </>
         ))}
       {sel.season && (
-        <EditorSheet open={creating.open} onOpenChange={creating.setOpen} title={t('rules.add')}>
+        <FormSheet
+          size="lg"
+          padded={false}
+          open={creating.open}
+          onOpenChange={creating.setOpen}
+          title={t('rules.add')}
+        >
           <RuleForm
             key={creating.key}
             establishmentId={ctx.establishmentId}
@@ -223,7 +231,7 @@ export function CoveragePage() {
               void report.refetch();
             }}
           />
-        </EditorSheet>
+        </FormSheet>
       )}
     </PricingLayout>
   );

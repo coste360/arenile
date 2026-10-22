@@ -1,24 +1,13 @@
+import { Badge, Button } from '@arenile/shared/ui';
 import {
-  Alert,
-  AlertDescription,
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  Badge,
-  Button,
-  Spinner,
-} from '@arenile/shared/ui';
-import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
+  DeleteButton,
   EmptyState,
+  FormDialog,
   PageHeader,
-  type ColumnDef,
+  QueryState,
 } from '@arenile/shared/ui/patterns';
 import { Link, useNavigate } from '@tanstack/react-router';
 import {
@@ -26,18 +15,14 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpIcon,
-  CircleAlertIcon,
   EyeIcon,
   MapIcon,
   PencilRulerIcon,
   PlusIcon,
-  Trash2Icon,
   type LucideIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { problemMessageKey } from '../../lib/problem';
-import { ApiProblem } from '@arenile/shared/api';
 import { maps } from '../configuration/api/resources';
 import { useConfigContext } from '../configuration/api/useConfigContext';
 import { useEditor } from '../configuration/api/useCrud';
@@ -46,7 +31,7 @@ import { problemToFormState } from '../configuration/lib/formErrors';
 import { localize } from '../configuration/lib/i18nText';
 import { MapSettingsForm } from './dialogs';
 import type { ApiMap, SeaSide } from './model/types';
-import { FormDialog, QueryState, ReadOnlyNotice } from './ui';
+import { ReadOnlyNotice } from './ui';
 
 const SEA_ICONS: Record<SeaSide, LucideIcon> = {
   top: ArrowUpIcon,
@@ -55,84 +40,6 @@ const SEA_ICONS: Record<SeaSide, LucideIcon> = {
   right: ArrowRightIcon,
 };
 
-/** Delete with confirmation; a server refusal stays visible inside the dialog. */
-function DeleteMapButton({
-  label,
-  title,
-  message,
-  onConfirm,
-}: {
-  label: string;
-  title: string;
-  message: string;
-  onConfirm: () => Promise<unknown>;
-}) {
-  const { t } = useTranslation('mapEditor');
-  const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const confirm = async () => {
-    setPending(true);
-    setError(null);
-    try {
-      await onConfirm();
-      setOpen(false);
-    } catch (err) {
-      setError(
-        err instanceof ApiProblem && err.detail
-          ? err.detail
-          : t(problemMessageKey(err), { ns: 'translation' }),
-      );
-    } finally {
-      setPending(false);
-    }
-  };
-  return (
-    <AlertDialog
-      open={open}
-      onOpenChange={(o) => {
-        if (pending) return;
-        setOpen(o);
-        if (o) setError(null);
-      }}
-    >
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={label}
-          title={label}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          <Trash2Icon aria-hidden="true" />
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{message}</AlertDialogDescription>
-        </AlertDialogHeader>
-        {error && (
-          <Alert variant="destructive">
-            <CircleAlertIcon aria-hidden="true" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>
-            {t('common.actions.cancel', { ns: 'translation' })}
-          </AlertDialogCancel>
-          <Button variant="destructive" disabled={pending} onClick={() => void confirm()}>
-            {pending && <Spinner />}
-            {t('maps.delete')}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
-
-/** Configurazione → Mappe: list, create, delete and open the editor. */
 export function MapsListPage() {
   const { t } = useTranslation('mapEditor');
   const ctx = useConfigContext();
@@ -238,9 +145,8 @@ export function MapsListPage() {
                 </Link>
               </Button>
               {!readOnly && (
-                <DeleteMapButton
+                <DeleteButton
                   label={t('maps.deleteAria', { name: name(m) })}
-                  title={t('maps.deleteTitle', { name: name(m) })}
                   message={t('maps.deleteConfirm', { name: name(m), count: m.spot_count })}
                   onConfirm={() => removeMap({ id: m.id, version: m.version })}
                 />
