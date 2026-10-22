@@ -17,7 +17,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/http/api"
-	"github.com/coste360/arenile/internal/http/httpctx"
+	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -130,7 +130,7 @@ func New(r *http.Request, t api.ProblemType, opts ...Option) api.Problem {
 	if r != nil {
 		inst := r.URL.Path
 		p.Instance = &inst
-		if id := httpctx.From(r.Context()).RequestID; id != "" {
+		if id := reqctx.From(r.Context()).RequestID; id != "" {
 			p.RequestId = &id
 		}
 	}
@@ -231,7 +231,7 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 	default:
 		if log != nil {
 			log.ErrorContext(r.Context(), "request failed", slog.String("error", err.Error()),
-				slog.String("request_id", httpctx.From(r.Context()).RequestID))
+				slog.String("request_id", reqctx.From(r.Context()).RequestID))
 		}
 		Write(w, r, InternalError)
 	}

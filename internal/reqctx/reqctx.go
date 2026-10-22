@@ -1,6 +1,6 @@
-// Package httpctx carries per-request metadata (request id, client IP,
+// Package reqctx carries per-request metadata (request id, client IP,
 // scheme, authentication method) through the request context.
-package httpctx
+package reqctx
 
 import "context"
 

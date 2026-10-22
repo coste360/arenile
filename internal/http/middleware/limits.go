@@ -15,8 +15,8 @@ import (
 
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/auth"
-	"github.com/coste360/arenile/internal/http/httpctx"
 	"github.com/coste360/arenile/internal/http/problem"
+	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -25,7 +25,7 @@ import (
 func PublicRateLimit(reads, creations *auth.RateLimiter) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ip := httpctx.From(r.Context()).ClientIP
+			ip := reqctx.From(r.Context()).ClientIP
 			l := reads
 			if isUnsafe(r.Method) {
 				l = creations
@@ -164,7 +164,7 @@ func idempotencyScope(r *http.Request) string {
 	if p, ok := auth.PrincipalFrom(r.Context()); ok {
 		return p.ID()
 	}
-	return "anon:" + httpctx.From(r.Context()).ClientIP
+	return "anon:" + reqctx.From(r.Context()).ClientIP
 }
 
 type captureWriter struct {

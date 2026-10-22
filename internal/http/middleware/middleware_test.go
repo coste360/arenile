@@ -11,7 +11,7 @@ import (
 
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/auth"
-	"github.com/coste360/arenile/internal/http/httpctx"
+	"github.com/coste360/arenile/internal/reqctx"
 )
 
 func TestRequestContext_RealIPAndScheme(t *testing.T) {
@@ -36,9 +36,9 @@ func TestRequestContext_RealIPAndScheme(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var got *httpctx.Info
+			var got *reqctx.Info
 			h := RequestContext(trusted)(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
-				got = httpctx.From(r.Context())
+				got = reqctx.From(r.Context())
 			}))
 			r := httptest.NewRequest(http.MethodGet, "/", nil)
 			r.RemoteAddr = tt.remote
@@ -149,10 +149,10 @@ func TestRequireJSON_Rejects(t *testing.T) {
 
 func TestCSRF_DoubleSubmit(t *testing.T) {
 	ok := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(204) })
-	withAuth := func(method httpctx.AuthMethod) Middleware {
+	withAuth := func(method reqctx.AuthMethod) Middleware {
 		return func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				httpctx.From(r.Context()).AuthMethod = method
+				reqctx.From(r.Context()).AuthMethod = method
 				next.ServeHTTP(w, r)
 			})
 		}
@@ -161,18 +161,18 @@ func TestCSRF_DoubleSubmit(t *testing.T) {
 	tests := []struct {
 		name   string
 		method string
-		auth   httpctx.AuthMethod
+		auth   reqctx.AuthMethod
 		cookie string
 		header string
 		want   int
 	}{
-		{"cookie auth, matching token", http.MethodPost, httpctx.AuthCookie, token, token, 204},
-		{"cookie auth, missing header", http.MethodPost, httpctx.AuthCookie, token, "", 403},
-		{"cookie auth, wrong header", http.MethodPost, httpctx.AuthCookie, token, NewCSRFToken(), 403},
-		{"cookie auth, missing cookie", http.MethodPost, httpctx.AuthCookie, "", token, 403},
-		{"cookie auth, safe method", http.MethodGet, httpctx.AuthCookie, "", "", 204},
-		{"bearer exempt", http.MethodPost, httpctx.AuthBearer, "", "", 204},
-		{"anonymous (login)", http.MethodPost, httpctx.AuthNone, "", "", 204},
+		{"cookie auth, matching token", http.MethodPost, reqctx.AuthCookie, token, token, 204},
+		{"cookie auth, missing header", http.MethodPost, reqctx.AuthCookie, token, "", 403},
+		{"cookie auth, wrong header", http.MethodPost, reqctx.AuthCookie, token, NewCSRFToken(), 403},
+		{"cookie auth, missing cookie", http.MethodPost, reqctx.AuthCookie, "", token, 403},
+		{"cookie auth, safe method", http.MethodGet, reqctx.AuthCookie, "", "", 204},
+		{"bearer exempt", http.MethodPost, reqctx.AuthBearer, "", "", 204},
+		{"anonymous (login)", http.MethodPost, reqctx.AuthNone, "", "", 204},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

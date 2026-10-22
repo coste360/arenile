@@ -6,6 +6,7 @@ package httpserver
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/netip"
@@ -149,10 +150,8 @@ func New(d Deps) http.Handler {
 		ops:    &ops{readiness: d.Readiness, version: d.Version},
 	}
 	api.HandlerWithOptions(srv, api.ChiServerOptions{
-		BaseRouter: r,
-		ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
-			problem.Write(w, r, problem.BadRequest, problem.Detail(err.Error()))
-		},
+		BaseRouter:       r,
+		ErrorHandlerFunc: bindErrorHandler,
 	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/admin/", http.StatusFound) })
@@ -253,4 +252,16 @@ func originOf(u string) string {
 		rest = rest[:i]
 	}
 	return scheme + "://" + rest
+}
+
+// bindErrorHandler maps request binding errors of the generated wrapper to
+// problem responses. A missing required If-Match header is 428 precondition_required,
+// every other binding error is 400.
+func bindErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
+	var reqHeader *api.RequiredHeaderError
+	if errors.As(err, &reqHeader) && strings.EqualFold(reqHeader.ParamName, "If-Match") {
+		problem.Write(w, r, problem.PreconditionRequired)
+		return
+	}
+	problem.Write(w, r, problem.BadRequest, problem.Detail(err.Error()))
 }

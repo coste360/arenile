@@ -13,7 +13,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
-	"github.com/coste360/arenile/internal/http/httpctx"
+	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -44,7 +44,7 @@ func TestError_Mapping(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, "/api/admin/v1/x", nil)
-			r = r.WithContext(httpctx.With(r.Context(), &httpctx.Info{RequestID: "req-1"}))
+			r = r.WithContext(reqctx.With(r.Context(), &reqctx.Info{RequestID: "req-1"}))
 			w := httptest.NewRecorder()
 			Error(w, r, nil, tt.err)
 			if w.Code != tt.status {

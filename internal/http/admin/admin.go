@@ -20,10 +20,10 @@ import (
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
 	"github.com/coste360/arenile/internal/http/api"
-	"github.com/coste360/arenile/internal/http/httpctx"
 	"github.com/coste360/arenile/internal/http/middleware"
 	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/internal/http/sse"
+	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -53,7 +53,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &req) {
 		return
 	}
-	info := httpctx.From(r.Context())
+	info := reqctx.From(r.Context())
 	in := auth.LoginInput{
 		Email:     string(req.Email),
 		Password:  req.Password,
@@ -84,7 +84,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 
 // Logout implements POST /api/admin/v1/auth/logout.
 func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request, _ api.LogoutParams) {
-	info := httpctx.From(r.Context())
+	info := reqctx.From(r.Context())
 	p, _ := auth.PrincipalFrom(r.Context())
 	if err := h.Auth.Logout(r.Context(), info.SessionToken, p.Actor(info.ClientIP)); err != nil {
 		problem.Error(w, r, h.Log, err)
@@ -108,7 +108,7 @@ func (h *Handlers) GetMe(w http.ResponseWriter, r *http.Request) {
 // EnrollTotp implements POST /api/admin/v1/auth/totp/enroll.
 func (h *Handlers) EnrollTotp(w http.ResponseWriter, r *http.Request, _ api.EnrollTotpParams) {
 	p, _ := auth.PrincipalFrom(r.Context())
-	enr, err := h.Auth.BeginTOTPEnrolment(r.Context(), p, httpctx.From(r.Context()).ClientIP)
+	enr, err := h.Auth.BeginTOTPEnrolment(r.Context(), p, reqctx.From(r.Context()).ClientIP)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
@@ -127,7 +127,7 @@ func (h *Handlers) ConfirmTotp(w http.ResponseWriter, r *http.Request, _ api.Con
 		return
 	}
 	p, _ := auth.PrincipalFrom(r.Context())
-	if err := h.Auth.ConfirmTOTP(r.Context(), p, req.Code, httpctx.From(r.Context()).ClientIP); err != nil {
+	if err := h.Auth.ConfirmTOTP(r.Context(), p, req.Code, reqctx.From(r.Context()).ClientIP); err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
 	}

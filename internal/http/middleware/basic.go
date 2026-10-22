@@ -18,8 +18,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/coste360/arenile/internal/http/httpctx"
 	"github.com/coste360/arenile/internal/http/problem"
+	"github.com/coste360/arenile/internal/reqctx"
 )
 
 // Middleware is a net/http middleware.
@@ -53,7 +53,7 @@ func RequestContext(trusted []netip.Prefix) Middleware {
 				id = uuid.Must(uuid.NewV7()).String()
 			}
 			remote := remoteAddr(r.RemoteAddr)
-			info := &httpctx.Info{RequestID: id, ClientIP: remote.String(), HTTPS: r.TLS != nil}
+			info := &reqctx.Info{RequestID: id, ClientIP: remote.String(), HTTPS: r.TLS != nil}
 			if remote.IsValid() && isTrusted(remote, trusted) {
 				info.ClientIP = clientFromXFF(r.Header.Values("X-Forwarded-For"), trusted, remote).String()
 				if p := strings.ToLower(strings.TrimSpace(firstCSV(r.Header.Get("X-Forwarded-Proto")))); p == "https" {
@@ -64,7 +64,7 @@ func RequestContext(trusted []netip.Prefix) Middleware {
 				info.ClientIP = "unknown"
 			}
 			w.Header().Set("X-Request-ID", id)
-			next.ServeHTTP(w, r.WithContext(httpctx.With(r.Context(), info)))
+			next.ServeHTTP(w, r.WithContext(reqctx.With(r.Context(), info)))
 		})
 	}
 }
@@ -212,7 +212,7 @@ func AccessLog(log *slog.Logger) Middleware {
 				slog.Int("status", status),
 				slog.Int64("bytes", rec.bytes),
 				slog.Duration("duration", time.Since(start)),
-				slog.String("request_id", httpctx.From(r.Context()).RequestID),
+				slog.String("request_id", reqctx.From(r.Context()).RequestID),
 			)
 		})
 	}
@@ -231,7 +231,7 @@ func Recoverer(log *slog.Logger) Middleware {
 					panic(rec)
 				}
 				log.ErrorContext(r.Context(), "panic in handler", slog.Any("panic", rec),
-					slog.String("request_id", httpctx.From(r.Context()).RequestID), slog.String("stack", string(debug.Stack())))
+					slog.String("request_id", reqctx.From(r.Context()).RequestID), slog.String("stack", string(debug.Stack())))
 				problem.Write(w, r, problem.InternalError)
 			}()
 			next.ServeHTTP(w, r)

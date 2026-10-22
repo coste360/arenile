@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/domain/auth"
-	"github.com/coste360/arenile/internal/http/httpctx"
 	"github.com/coste360/arenile/internal/http/problem"
+	"github.com/coste360/arenile/internal/reqctx"
 )
 
 // Cookie names.
@@ -30,7 +30,7 @@ type Authenticator interface {
 	AuthenticateAPIKey(ctx context.Context, key string) (*auth.Principal, error)
 }
 
-func infoHTTPS(r *http.Request) bool { return httpctx.From(r.Context()).HTTPS }
+func infoHTTPS(r *http.Request) bool { return reqctx.From(r.Context()).HTTPS }
 
 // Authenticate puts the principal (from a Bearer API key or the session
 // cookie) in the context. An invalid Bearer key is rejected; an invalid or
@@ -38,7 +38,7 @@ func infoHTTPS(r *http.Request) bool { return httpctx.From(r.Context()).HTTPS }
 func Authenticate(a Authenticator, log *slog.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			info := httpctx.From(r.Context())
+			info := reqctx.From(r.Context())
 			ctx := r.Context()
 			if h := r.Header.Get("Authorization"); h != "" {
 				scheme, key, ok := strings.Cut(h, " ")
@@ -55,7 +55,7 @@ func Authenticate(a Authenticator, log *slog.Logger) Middleware {
 					problem.Write(w, r, problem.Unauthorized)
 					return
 				}
-				info.AuthMethod = httpctx.AuthBearer
+				info.AuthMethod = reqctx.AuthBearer
 				next.ServeHTTP(w, r.WithContext(auth.WithPrincipal(ctx, p)))
 				return
 			}
@@ -63,7 +63,7 @@ func Authenticate(a Authenticator, log *slog.Logger) Middleware {
 				p, err := a.AuthenticateSession(ctx, c.Value)
 				switch {
 				case err == nil:
-					info.AuthMethod = httpctx.AuthCookie
+					info.AuthMethod = reqctx.AuthCookie
 					info.SessionToken = c.Value
 					ctx = auth.WithPrincipal(ctx, p)
 				case !errors.Is(err, auth.ErrUnauthenticated):
@@ -128,7 +128,7 @@ func CSRF(secure bool, cookieMaxAge time.Duration) Middleware {
 			if !hasCookie {
 				SetCSRFCookie(w, NewCSRFToken(), secure, cookieMaxAge)
 			}
-			if isUnsafe(r.Method) && httpctx.From(r.Context()).AuthMethod == httpctx.AuthCookie {
+			if isUnsafe(r.Method) && reqctx.From(r.Context()).AuthMethod == reqctx.AuthCookie {
 				header := r.Header.Get(CSRFHeader)
 				if !hasCookie || header == "" || subtle.ConstantTimeCompare([]byte(header), []byte(cookie.Value)) != 1 {
 					problem.Write(w, r, problem.CSRFFailed)
