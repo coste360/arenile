@@ -1,4 +1,78 @@
 {
   "title": "Dispositivi",
-  "description": "Collega telefoni, tablet e l'app desktop con un QR code: ogni dispositivo ha un accesso personale che puoi revocare in qualsiasi momento."
+  "description": "Collega telefoni, tablet e l'app desktop con un QR code: ogni dispositivo ha un accesso personale che puoi revocare in qualsiasi momento.",
+  "actions": "Azioni",
+  "current": "Questo dispositivo",
+  "neverUsed": "Mai usato",
+  "showRevoked": "Mostra revocati",
+  "fields": {
+    "device": "Dispositivo",
+    "user": "Utente",
+    "lastUsed": "Ultimo utilizzo",
+    "status": "Stato"
+  },
+  "status": {
+    "active": "Attivo",
+    "revoked": "Revocato",
+    "fiscalBridge": "Ponte fiscale"
+  },
+  "platforms": {
+    "ios": "iPhone / iPad",
+    "android": "Android",
+    "windows": "Windows",
+    "macos": "macOS",
+    "linux": "Linux",
+    "other": "Altro"
+  },
+  "roles": {
+    "owner": "Proprietario",
+    "manager": "Gestore",
+    "cashier": "Cassiere",
+    "beach_staff": "Personale di spiaggia",
+    "viewer": "Sola lettura"
+  },
+  "empty": {
+    "title": "Nessun dispositivo abbinato",
+    "description": "Abbina il tuo telefono o l'app desktop con il pulsante “Abbina un dispositivo”.",
+    "descriptionOwner": "Abbina i telefoni dello staff o l'app desktop della cassa con il pulsante “Abbina un dispositivo”."
+  },
+  "lan": {
+    "title": "Attiva la modalità rete locale",
+    "description": "L'app desktop in modalità locale non è raggiungibile da altri dispositivi. Attiva la modalità rete locale dal menu dell'app (icona nella barra di sistema), poi torna qui per abbinare telefoni e altri PC."
+  },
+  "pair": {
+    "open": "Abbina un dispositivo",
+    "title": "Abbina un dispositivo",
+    "description": "Inquadra il QR code con l'app Arenile (telefono o app desktop in modalità remota). Il codice vale una sola volta e scade dopo 5 minuti.",
+    "user": "Dispositivo di",
+    "userSelf": "Me stesso",
+    "userHint": "Il dispositivo avrà i permessi del ruolo di questo utente, solo in questo stabilimento.",
+    "generate": "Genera il QR code",
+    "regenerate": "Genera un nuovo codice",
+    "generating": "Generazione del codice in corso",
+    "qrAlt": "QR code di abbinamento",
+    "qrUnavailable": "QR code non disponibile: inserisci il codice a mano.",
+    "codeLabel": "Codice di abbinamento",
+    "copy": "Copia il codice",
+    "copied": "Codice copiato",
+    "address": "Indirizzo: {{url}}",
+    "expiresIn": "Scade tra",
+    "expiredTitle": "Codice scaduto",
+    "expiredDescription": "Per sicurezza il codice vale 5 minuti. Generane uno nuovo.",
+    "step1": "Apri l'app Arenile sul dispositivo.",
+    "step2": "Scegli “Collega a un'istanza” e inquadra il QR code.",
+    "step3": "In alternativa inserisci l'indirizzo e il codice qui sopra.",
+    "pairedTitle": "Dispositivo abbinato",
+    "pairedDescription": "{{name}} ora può accedere a questo stabilimento.",
+    "pairedToast": "{{name}} abbinato",
+    "done": "Fatto"
+  },
+  "revoke": {
+    "action": "Revoca",
+    "aria": "Revoca {{name}}",
+    "title": "Revocare {{name}}?",
+    "message": "Il dispositivo perde subito l'accesso. Per usarlo di nuovo andrà abbinato con un nuovo codice.",
+    "messageBridge": "Il dispositivo perde subito l'accesso e smette di fare da ponte fiscale: i documenti fiscali restano in attesa finché non registri un altro ponte.",
+    "done": "{{name}} revocato"
+  }
 }

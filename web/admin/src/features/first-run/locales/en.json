@@ -1,0 +1,37 @@
+{
+  "title": "Welcome to Arenile",
+  "description": "Create the owner user to get started: then we will guide you through the establishment setup.",
+  "fields": {
+    "organization": "Company or establishment",
+    "organizationHint": "The name on your receipts, for example “Lido Azzurro srl”.",
+    "name": "Full name",
+    "email": "Email",
+    "emailHint": "You will use it to sign in. Arenile desktop sends no email and does not connect to the internet.",
+    "password": "Password",
+    "passwordHint": "At least 10 characters. Keep it safe: you also need it on the other devices of the beach.",
+    "passwordConfirm": "Repeat the password"
+  },
+  "submit": "Create the user and continue",
+  "submitting": "Creating…",
+  "privacy": "Your data stays on this computer, in the Arenile data folder.",
+  "validation": {
+    "organizationRequired": "Enter the name of the company or establishment.",
+    "nameRequired": "Enter your name.",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordTooShort": "The password must be at least 10 characters long.",
+    "passwordMismatch": "The two passwords do not match.",
+    "tooLong": "Text too long."
+  },
+  "errors": {
+    "noToken": "Open this page from the Arenile menu in the system tray (Open panel): the link carries a security code.",
+    "tokenInvalid": "The setup link is no longer valid. Close this tab and choose “Open panel” from the Arenile menu in the system tray.",
+    "completed": "The initial setup is already complete: sign in with the user you created.",
+    "network": "Arenile is not responding: check that the app is open and try again.",
+    "generic": "The user could not be created. Please try again."
+  },
+  "done": {
+    "title": "Initial setup complete",
+    "description": "The owner user already exists.",
+    "login": "Go to sign in"
+  }
+}

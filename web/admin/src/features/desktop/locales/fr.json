@@ -1,10 +1,93 @@
 {
-  "firstRun": {
-    "title": "Bienvenue dans Arenile",
-    "description": "Créez l'utilisateur propriétaire pour commencer : nous vous guiderons ensuite dans la configuration de l'établissement."
-  },
   "settings": {
     "title": "Application de bureau",
-    "description": "Sauvegardes automatiques, restauration, démarrage à l'allumage et mode réseau local pour les autres appareils de la plage."
+    "description": "Sauvegardes automatiques, restauration, démarrage automatique et mode réseau local pour les autres appareils de la plage.",
+    "save": "Enregistrer les paramètres",
+    "saved": "Paramètres enregistrés",
+    "saveFailed": "Paramètres non enregistrés"
+  },
+  "backup": {
+    "title": "Sauvegarde",
+    "description": "Copies complètes de l'archive, restaurables ici ou sur une instance en ligne avec arenile restore.",
+    "dir": "Dossier des sauvegardes",
+    "dirHint": "Chemin complet du dossier, même sur une clé USB (par exemple E:\\Sauvegarde Arenile ou /Volumes/USB/Arenile).",
+    "retention": "Sauvegardes automatiques à conserver",
+    "retentionHint": "Les plus anciennes sont supprimées ; les sauvegardes manuelles sont toujours conservées.",
+    "daily": "Sauvegarde automatique quotidienne",
+    "onExit": "Sauvegarde à la fermeture de l'application"
+  },
+  "system": {
+    "title": "Démarrage et mises à jour",
+    "description": "Arenile ne se connecte à internet que si vous l'activez.",
+    "autostart": "Lancer Arenile au démarrage de l'ordinateur",
+    "autostartHint": "Uniquement pour l'utilisateur actuel du système.",
+    "updateCheck": "Rechercher une nouvelle version",
+    "updateCheckHint": "Une fois par jour, il lit le numéro de la dernière version sur le site Coste360, sans envoyer de données de la plage."
+  },
+  "lan": {
+    "title": "Mode réseau local",
+    "description": "Les autres ordinateurs, tablettes et téléphones du personnel travaillent sur la même archive via le Wi-Fi de la plage, avec une connexion chiffrée. Les connexions extérieures au réseau sont refusées.",
+    "enabled": "Activer le mode réseau local",
+    "port": "Port",
+    "portHint": "8443 par défaut. Ne le changez que s'il est déjà utilisé par un autre programme.",
+    "activeTitle": "Accessible depuis le réseau de la plage",
+    "address": "Adresse : {{url}}",
+    "fingerprint": "Empreinte du certificat : {{fingerprint}}"
+  },
+  "backups": {
+    "title": "Sauvegardes disponibles",
+    "directory": "Dossier : {{dir}}",
+    "now": "Sauvegarder maintenant",
+    "done": "Sauvegarde terminée : {{name}}",
+    "date": "Date",
+    "reason": "Type",
+    "size": "Taille",
+    "actions": "Actions",
+    "reasons": {
+      "manual": "Manuelle",
+      "daily": "Quotidienne",
+      "exit": "À la fermeture",
+      "pre_restore": "Avant la restauration"
+    },
+    "empty": {
+      "title": "Aucune sauvegarde",
+      "description": "La première sauvegarde automatique est créée quelques minutes après le démarrage. Vous pouvez en faire une tout de suite avec « Sauvegarder maintenant »."
+    }
+  },
+  "restore": {
+    "action": "Restaurer",
+    "aria": "Restaurer la sauvegarde {{name}}",
+    "title": "Restaurer cette sauvegarde ?",
+    "message": "Les données reviendront à leur état du {{date}}. L'archive actuelle est d'abord enregistrée comme sauvegarde « Avant la restauration » : l'opération est réversible. Arenile redémarre pendant quelques secondes.",
+    "confirm": "Restaurer et redémarrer",
+    "inProgressTitle": "Restauration en cours",
+    "inProgress": "Arenile redémarre avec la sauvegarde choisie : la page se rechargera toute seule."
+  },
+  "validation": {
+    "backupDir": "Indiquez le dossier des sauvegardes.",
+    "retention": "Saisissez un nombre de 1 à 365.",
+    "port": "Saisissez un port de 1024 à 65535."
+  },
+  "online": {
+    "publicPage": {
+      "title": "Page publique",
+      "notice": "Pas de page publique",
+      "why": "L'application de bureau fonctionne sur cet ordinateur sans internet : les clients ne peuvent pas l'atteindre, la page publique et le widget de réservation n'auraient donc pas de sens."
+    },
+    "payments": {
+      "title": "Paiements en ligne",
+      "notice": "Encaissements en caisse uniquement",
+      "why": "Espèces, terminal de paiement, virement et autres moyens s'enregistrent depuis la caisse et la réservation. Les paiements par carte en ligne nécessitent une instance accessible depuis internet."
+    },
+    "move": {
+      "title": "Passer à une instance en ligne",
+      "description": "La sauvegarde de l'application de bureau est la même archive que l'édition serveur : elle se déplace sans conversion.",
+      "step1": "Faites une sauvegarde.",
+      "step1Link": "Ouvrir les sauvegardes",
+      "step2": "Installez Arenile sur un VPS, un hébergement ou un serveur avec Docker (guide « Choisir comment installer Arenile »).",
+      "step3": "Sur le serveur, Arenile arrêté, restaurez le fichier de sauvegarde :",
+      "step4": "Démarrez Arenile sur le serveur et activez-y la page publique et les paiements en ligne.",
+      "noSync": "L'application de bureau et l'instance en ligne ne se synchronisent pas : après le passage, travaillez uniquement sur l'instance en ligne (vous pouvez connecter cette application en mode distant)."
+    }
   }
 }

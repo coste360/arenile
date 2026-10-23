@@ -5,6 +5,8 @@ import configurationIt from '../features/configuration/locales/it.json';
 import customersIt from '../features/customers/locales/it.json';
 import desktopIt from '../features/desktop/locales/it.json';
 import devicesIt from '../features/devices/locales/it.json';
+import devicesLanIt from '../features/devices/lan/locales/it.json';
+import firstRunIt from '../features/first-run/locales/it.json';
 import mapEditorIt from '../features/map-editor/locales/it.json';
 import onlineIt from '../features/online/locales/it.json';
 import operationsIt from '../features/operations/locales/it.json';
@@ -150,12 +152,30 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
     },
   },
   {
+    ns: 'devicesLan',
+    it: devicesLanIt,
+    load: {
+      en: () => import('../features/devices/lan/locales/en.json'),
+      de: () => import('../features/devices/lan/locales/de.json'),
+      fr: () => import('../features/devices/lan/locales/fr.json'),
+    },
+  },
+  {
     ns: 'desktop',
     it: desktopIt,
     load: {
       en: () => import('../features/desktop/locales/en.json'),
       de: () => import('../features/desktop/locales/de.json'),
       fr: () => import('../features/desktop/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'firstRun',
+    it: firstRunIt,
+    load: {
+      en: () => import('../features/first-run/locales/en.json'),
+      de: () => import('../features/first-run/locales/de.json'),
+      fr: () => import('../features/first-run/locales/fr.json'),
     },
   },
 ];

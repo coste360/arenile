@@ -1,10 +1,93 @@
 {
-  "firstRun": {
-    "title": "Willkommen bei Arenile",
-    "description": "Lege den Inhaber an, um zu beginnen: Danach führen wir dich durch die Einrichtung des Betriebs."
-  },
   "settings": {
     "title": "Desktop-App",
-    "description": "Automatische Sicherungen, Wiederherstellung, Autostart und lokaler Netzwerkmodus für die anderen Geräte des Strandbads."
+    "description": "Automatische Sicherungen, Wiederherstellung, Autostart und lokaler Netzwerkmodus für die anderen Geräte des Strandbads.",
+    "save": "Einstellungen speichern",
+    "saved": "Einstellungen gespeichert",
+    "saveFailed": "Einstellungen nicht gespeichert"
+  },
+  "backup": {
+    "title": "Sicherung",
+    "description": "Vollständige Kopien des Archivs, hier oder auf einer Online-Instanz mit arenile restore wiederherstellbar.",
+    "dir": "Sicherungsordner",
+    "dirHint": "Vollständiger Pfad des Ordners, auch auf einem USB-Stick (zum Beispiel E:\\Arenile Sicherung oder /Volumes/USB/Arenile).",
+    "retention": "Aufzubewahrende automatische Sicherungen",
+    "retentionHint": "Die ältesten werden gelöscht; manuelle Sicherungen bleiben immer erhalten.",
+    "daily": "Tägliche automatische Sicherung",
+    "onExit": "Sicherung beim Schließen der App"
+  },
+  "system": {
+    "title": "Start und Updates",
+    "description": "Arenile verbindet sich nur mit dem Internet, wenn Sie es erlauben.",
+    "autostart": "Arenile beim Einschalten des Computers starten",
+    "autostartHint": "Nur für den aktuellen Benutzer des Betriebssystems.",
+    "updateCheck": "Nach einer neuen Version suchen",
+    "updateCheckHint": "Einmal täglich wird die Nummer der neuesten Version von der Coste360-Website gelesen, ohne Daten des Strandbads zu senden."
+  },
+  "lan": {
+    "title": "Lokaler Netzwerkmodus",
+    "description": "Die anderen Computer, Tablets und Telefone des Personals arbeiten über das WLAN des Strandbads mit verschlüsselter Verbindung am selben Archiv. Verbindungen von außerhalb des Netzes werden abgelehnt.",
+    "enabled": "Lokalen Netzwerkmodus aktivieren",
+    "port": "Port",
+    "portHint": "Standard 8443. Nur ändern, wenn ein anderes Programm ihn bereits verwendet.",
+    "activeTitle": "Im Netz des Strandbads erreichbar",
+    "address": "Adresse: {{url}}",
+    "fingerprint": "Zertifikat-Fingerabdruck: {{fingerprint}}"
+  },
+  "backups": {
+    "title": "Verfügbare Sicherungen",
+    "directory": "Ordner: {{dir}}",
+    "now": "Jetzt sichern",
+    "done": "Sicherung abgeschlossen: {{name}}",
+    "date": "Datum",
+    "reason": "Art",
+    "size": "Größe",
+    "actions": "Aktionen",
+    "reasons": {
+      "manual": "Manuell",
+      "daily": "Täglich",
+      "exit": "Beim Schließen",
+      "pre_restore": "Vor der Wiederherstellung"
+    },
+    "empty": {
+      "title": "Keine Sicherungen",
+      "description": "Die erste automatische Sicherung entsteht wenige Minuten nach dem Start. Mit „Jetzt sichern“ können Sie sofort eine erstellen."
+    }
+  },
+  "restore": {
+    "action": "Wiederherstellen",
+    "aria": "Sicherung {{name}} wiederherstellen",
+    "title": "Diese Sicherung wiederherstellen?",
+    "message": "Die Daten kehren zum Stand vom {{date}} zurück. Das aktuelle Archiv wird vorher als Sicherung „Vor der Wiederherstellung“ gespeichert, der Vorgang ist also umkehrbar. Arenile startet für einige Sekunden neu.",
+    "confirm": "Wiederherstellen und neu starten",
+    "inProgressTitle": "Wiederherstellung läuft",
+    "inProgress": "Arenile startet mit der gewählten Sicherung neu: die Seite lädt sich von selbst neu."
+  },
+  "validation": {
+    "backupDir": "Geben Sie den Sicherungsordner an.",
+    "retention": "Geben Sie eine Zahl von 1 bis 365 ein.",
+    "port": "Geben Sie einen Port von 1024 bis 65535 ein."
+  },
+  "online": {
+    "publicPage": {
+      "title": "Öffentliche Seite",
+      "notice": "Keine öffentliche Seite",
+      "why": "Die Desktop-App läuft ohne Internet auf diesem Computer: Gäste können sie nicht erreichen, daher wären öffentliche Seite und Buchungs-Widget sinnlos."
+    },
+    "payments": {
+      "title": "Online-Zahlungen",
+      "notice": "Zahlungen nur an der Kasse",
+      "why": "Bargeld, Kartenterminal, Überweisung und andere Methoden werden an der Kasse und in der Buchung erfasst. Online-Kartenzahlungen brauchen eine aus dem Internet erreichbare Instanz."
+    },
+    "move": {
+      "title": "Wechsel zu einer Online-Instanz",
+      "description": "Die Sicherung der Desktop-App ist dasselbe Archiv wie bei der Server-Edition: der Umzug erfolgt ohne Umwandlung.",
+      "step1": "Erstellen Sie eine Sicherung.",
+      "step1Link": "Sicherungen öffnen",
+      "step2": "Installieren Sie Arenile auf einem VPS, einem Hosting oder einem Server mit Docker (Anleitung „Installationsart wählen“).",
+      "step3": "Stellen Sie auf dem Server bei gestopptem Arenile die Sicherungsdatei wieder her:",
+      "step4": "Starten Sie Arenile auf dem Server und aktivieren Sie dort die öffentliche Seite und die Online-Zahlungen.",
+      "noSync": "Desktop-App und Online-Instanz synchronisieren sich nicht: nach dem Wechsel nur noch mit der Online-Instanz arbeiten (diese App kann im Remote-Modus verbunden werden)."
+    }
   }
 }

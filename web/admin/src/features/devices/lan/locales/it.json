@@ -1,0 +1,47 @@
+{
+  "title": "Rete locale",
+  "description": "Usa Arenile da altri PC, tablet e telefoni collegati alla Wi-Fi del lido, sullo stesso archivio di questo PC.",
+  "copied": "Copiato negli appunti",
+  "pair": {
+    "open": "Abbina un dispositivo"
+  },
+  "off": {
+    "title": "La modalità rete locale è spenta",
+    "description": "Attivala nelle impostazioni dell'app desktop (o dal menu nella barra di sistema): gli altri dispositivi della Wi-Fi del lido potranno aprire il pannello. Le connessioni da fuori della rete locale restano rifiutate.",
+    "action": "Apri le impostazioni dell'app desktop"
+  },
+  "server": {
+    "title": "Questa pagina riguarda l'app desktop",
+    "description": "La modalità rete locale esiste solo nell'edizione desktop. Questa istanza è già raggiungibile al suo indirizzo: per collegare telefoni e PC usa la pagina Dispositivi.",
+    "action": "Vai a Dispositivi"
+  },
+  "address": {
+    "title": "Indirizzo del pannello",
+    "description": "Dagli altri dispositivi collegati alla stessa Wi-Fi apri questo indirizzo nel browser.",
+    "copy": "Copia indirizzo",
+    "qrAlt": "QR code dell'indirizzo {{address}}",
+    "qrHint": "Dal telefono o dal tablet puoi anche inquadrare il QR code con la fotocamera."
+  },
+  "fingerprint": {
+    "title": "Impronta del certificato",
+    "description": "Il collegamento è cifrato con un certificato creato da questo PC. Prima di accettarlo in un browser, controlla che l'impronta SHA-256 sia identica a questa.",
+    "copy": "Copia impronta",
+    "aria": "Impronta SHA-256 del certificato"
+  },
+  "browser": {
+    "title": "Primo accesso da un browser",
+    "description": "Il browser mostra un avviso la prima volta, perché il certificato non è rilasciato da un'autorità pubblica. È normale nella rete del lido.",
+    "step1": "Collega il dispositivo alla stessa Wi-Fi di questo PC.",
+    "step2": "Apri {{address}} nel browser.",
+    "step3": "All'avviso \"La connessione non è privata\" (o \"Questa connessione non è privata\") apri i dettagli del certificato.",
+    "step4": "Confronta l'impronta SHA-256 con quella riportata qui sopra: deve coincidere in ogni carattere.",
+    "step5": "Se coincide, scegli \"Avanzate\" e poi \"Procedi\" (Safari: \"Visita questo sito web\"). Se non coincide, non proseguire e avvisa il gestore.",
+    "hint": "Il certificato non cambia ai riavvii: l'avviso ricompare solo se il certificato viene rinnovato. Tieni un indirizzo IP fisso per questo PC nel router, così l'indirizzo del pannello resta lo stesso."
+  },
+  "apps": {
+    "title": "App mobile e app desktop in modalità remota",
+    "description": "Con \"Abbina un dispositivo\" il QR contiene l'indirizzo, l'impronta del certificato e un codice monouso.",
+    "security": "Le app verificano da sole l'impronta del certificato, quindi non mostrano avvisi: se qualcuno si sostituisse a questo PC, il collegamento verrebbe rifiutato.",
+    "guarantee": "Il server resta uno solo: prenotazioni e incassi dagli altri dispositivi finiscono nello stesso archivio, con le stesse garanzie contro le doppie prenotazioni."
+  }
+}

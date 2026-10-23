@@ -13,6 +13,7 @@ import { AppShell } from './components/AppShell';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { RouteError } from './components/RouteError';
 import { EstablishmentLayout, EstablishmentSectionRedirect } from './establishment';
+import { desktopGated } from './features/desktop/desktopGated';
 import { NAV_ITEMS } from './nav';
 import { LoginRoute } from './pages/LoginRoute';
 import { SettingsPage } from './pages/SettingsPage';
@@ -212,12 +213,20 @@ const policiesRoute = createRoute({
 const onlineSettingsRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'config/online',
-  component: lazyRouteComponent(() => import('./features/online'), 'OnlineSettingsPage'),
+  // Desktop edition: no public page, explained in place (spec 29.1).
+  component: desktopGated(
+    'publicPage',
+    lazyRouteComponent(() => import('./features/online'), 'OnlineSettingsPage'),
+  ),
 });
 const paymentSettingsRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'config/payments',
-  component: lazyRouteComponent(() => import('./features/online'), 'PaymentSettingsPage'),
+  // Desktop edition: manual payments only, explained in place (spec 29.1).
+  component: desktopGated(
+    'payments',
+    lazyRouteComponent(() => import('./features/online'), 'PaymentSettingsPage'),
+  ),
 });
 const emailSettingsRoute = createRoute({
   getParentRoute: () => establishmentRoute,
@@ -234,15 +243,34 @@ const devicesRoute = createRoute({
   path: 'config/devices',
   component: lazyRouteComponent(() => import('./features/devices'), 'DevicesPage'),
 });
+// LAN info page (address, certificate fingerprint, pairing): opened by
+// the tray item "Mostra QR rete locale" (internal/desktop/lan QRPagePath).
+const lanInfoRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/devices/lan',
+  component: lazyRouteComponent(() => import('./features/devices/lan'), 'LanInfoPage'),
+});
+/** /admin/rete-locale: establishment-less entry used by the desktop tray. */
+const lanShortcutRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: 'rete-locale',
+  component: () => <EstablishmentSectionRedirect section="config/devices/lan" />,
+});
 const desktopSettingsRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'config/desktop',
   component: lazyRouteComponent(() => import('./features/desktop'), 'DesktopSettingsPage'),
 });
+/** /admin/desktop: the tray menu link to the desktop settings and backups. */
+const desktopShortcutRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: 'desktop',
+  component: () => <EstablishmentSectionRedirect section="config/desktop" />,
+});
 const firstRunRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'first-run',
-  component: lazyRouteComponent(() => import('./features/desktop'), 'FirstRunPage'),
+  component: lazyRouteComponent(() => import('./features/first-run'), 'FirstRunPage'),
 });
 
 // ---- M3 operations ---------------------------------------------------------
@@ -339,7 +367,9 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     indexRoute,
     settingsRoute,
+    desktopShortcutRoute,
     ...legacySectionRoutes,
+    lanShortcutRoute,
     newEstablishmentRoute,
     establishmentRoute.addChildren([
       establishmentIndexRoute,
@@ -362,6 +392,7 @@ const routeTree = rootRoute.addChildren([
       paymentSettingsRoute,
       emailSettingsRoute,
       devicesRoute,
+      lanInfoRoute,
       desktopSettingsRoute,
       todayRoute,
       operationalMapRoute,
