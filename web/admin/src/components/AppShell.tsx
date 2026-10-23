@@ -9,6 +9,7 @@ import { AppBreadcrumb } from './AppBreadcrumb';
 import { AppSidebar } from './AppSidebar';
 import { CommandMenu } from './CommandMenu';
 import { OfflineIndicator } from './OfflineIndicator';
+import { OfflineShell } from '../offline/OfflineShell';
 
 /** Sidebar state persisted by shadcn's SidebarProvider in the `sidebar_state` cookie. */
 function sidebarDefaultOpen(): boolean {
@@ -40,6 +41,7 @@ export function AppShell() {
             <OfflineIndicator />
           </div>
         </header>
+        <OfflineShell />
         {me.data?.totp_enrolment_required && (
           <div className="px-4 pt-4 md:px-6">
             <Alert>

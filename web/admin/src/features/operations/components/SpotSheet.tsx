@@ -32,7 +32,10 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { todayIso } from '../../bookings/model';
 import { usePackName } from '../../bookings/usePackName';
-import { useCheckIn, useReleaseDay, useRevokeRelease } from '../api/operations';
+import { OfflineSpotActions } from '../../../offline/OfflineSpotActions';
+import { spotLabel } from '../../../offline/labels';
+import { useQueueableCheckIn } from '../../../offline/useQueueableCheckIn';
+import { useReleaseDay, useRevokeRelease } from '../api/operations';
 import type { OperationsPermissions } from '../lib/permissions';
 import { spotActions } from '../lib/actions';
 import {
@@ -83,7 +86,7 @@ export function SpotSheet({
   const { t } = useTranslation('operations');
   const problemText = useProblemText();
   const packName = usePackName(establishmentId);
-  const checkIn = useCheckIn(establishmentId);
+  const checkIn = useQueueableCheckIn(establishmentId);
   const release = useReleaseDay(establishmentId);
   const revoke = useRevokeRelease(establishmentId);
   const [error, setError] = useState<string | null>(null);
@@ -115,10 +118,14 @@ export function SpotSheet({
     if (!b) return;
     setError(null);
     checkIn.mutate(
-      { bookingId: b.booking_id, version: b.version },
+      { bookingId: b.booking_id, version: b.version, label: spotLabel(spot) },
       {
-        onSuccess: () => {
-          toast.success(t('sheet.checkedIn', { code: b.code }));
+        onSuccess: (res) => {
+          toast.success(
+            res.queued
+              ? t('offline:actions.queuedCheckIn', { code: b.code })
+              : t('sheet.checkedIn', { code: b.code }),
+          );
           onOpen(false);
         },
         onError: (e) => setError(problemText(e)),
@@ -291,6 +298,7 @@ export function SpotSheet({
               </Link>
             </Button>
           )}
+          <OfflineSpotActions establishmentId={establishmentId} spot={spot} />
           {!actions.newBooking && status === 'free' && !permissions.canWriteBookings && (
             <p className="text-sm text-muted-foreground">
               <CalendarPlusIcon aria-hidden="true" className="mr-1 inline size-4" />

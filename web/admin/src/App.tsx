@@ -8,6 +8,8 @@ import type { i18n as I18n } from 'i18next';
 import { useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { createQueryClient } from './lib/queryClient';
+import { OfflineProvider } from './offline/OfflineProvider';
+import type { OfflineRuntime } from './offline/runtime';
 import { createAppRouter } from './router';
 
 export interface AppProps {
@@ -15,9 +17,11 @@ export interface AppProps {
   i18n: I18n;
   queryClient?: QueryClient;
   history?: RouterHistory;
+  /** Offline runtime restored in main.tsx (spec 21.2); tests get a memory one. */
+  offline?: OfflineRuntime;
 }
 
-export function App({ api, i18n, queryClient, history }: AppProps) {
+export function App({ api, i18n, queryClient, history, offline }: AppProps) {
   const [qc] = useState(() => queryClient ?? createQueryClient());
   const [router] = useState(() => createAppRouter({ queryClient: qc, api }, history));
   return (
@@ -26,7 +30,9 @@ export function App({ api, i18n, queryClient, history }: AppProps) {
         <TooltipProvider delayDuration={300}>
           <ApiClientProvider client={api}>
             <QueryClientProvider client={qc}>
-              <RouterProvider router={router} />
+              <OfflineProvider runtime={offline}>
+                <RouterProvider router={router} />
+              </OfflineProvider>
             </QueryClientProvider>
           </ApiClientProvider>
           <Toaster richColors closeButton position="top-right" />

@@ -4,6 +4,7 @@ import cashIt from '../features/cash/locales/it.json';
 import configurationIt from '../features/configuration/locales/it.json';
 import customersIt from '../features/customers/locales/it.json';
 import integrationsIt from '../features/integrations/locales/it.json';
+import offlineIt from '../offline/locales/it.json';
 import mapEditorIt from '../features/map-editor/locales/it.json';
 import onlineIt from '../features/online/locales/it.json';
 import operationsIt from '../features/operations/locales/it.json';
@@ -157,6 +158,16 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/integrations/locales/en.json'),
       de: () => import('../features/integrations/locales/de.json'),
       fr: () => import('../features/integrations/locales/fr.json'),
+    },
+  },
+  // M5A: panel offline mode (spec 21.2): banner, queue, update prompt.
+  {
+    ns: 'offline',
+    it: offlineIt,
+    load: {
+      en: () => import('../offline/locales/en.json'),
+      de: () => import('../offline/locales/de.json'),
+      fr: () => import('../offline/locales/fr.json'),
     },
   },
 ];

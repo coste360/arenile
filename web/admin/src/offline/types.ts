@@ -1,3 +1,5 @@
+import type { OperationQueue, QueuedOperationBase } from '@arenile/shared/offline';
+
 /**
  * Offline mode of the panel (spec 21.2, M5A): contract shared by the
  * offline cache, the operation queue and the features that enqueue.
@@ -11,8 +13,11 @@
  * - Data for offline consultation lives in IndexedDB, written by the app
  *   (hand-written wrapper over the native API, no new dependency): the map
  *   documents and the bookings of today and tomorrow of the current
- *   establishment, refreshed while online. Cleared on logout and on
- *   establishment switch; entries older than 48 hours are dropped.
+ *   establishment, refreshed while online, plus the configuration needed to
+ *   render them and the signed-in user (to start the shell offline). Only
+ *   the current establishment is kept; cleared on logout and when another
+ *   user signs in; snapshots older than 48 hours are dropped (policy in
+ *   cache.ts).
  * - Only low-risk operations are queued offline: check-in, note, cash
  *   payment on an existing booking. Creating or moving bookings is never
  *   allowed offline (availability is guaranteed only by the server).
@@ -34,18 +39,18 @@ export const OFFLINE_OPERATION_KINDS: readonly OfflineOperationKind[] = [
   'cash_payment',
 ];
 
-interface OperationBase {
-  /** Local id (UUID). */
-  id: string;
+/**
+ * Fields common to every queued operation. id, idempotencyKey, createdAt,
+ * seq, status and error are managed by the queue (shared/src/offline/queue.ts).
+ */
+interface OperationBase extends QueuedOperationBase {
   establishmentId: string;
   bookingId: string;
-  /** Sent as Idempotency-Key on replay; generated once at enqueue time. */
-  idempotencyKey: string;
-  /** ISO instant of the enqueue (ordering and display). */
-  createdAt: string;
-  status: 'pending' | 'sending' | 'conflict' | 'failed';
-  /** Problem detail of the last failure (shown to the user). */
-  error?: string;
+  /**
+   * What the user sees in the queue list: spot label and booking code
+   * (never the customer's contact details).
+   */
+  label: string;
 }
 
 /** POST bookings/{id}/check-in (If-Match with the cached version when known). */
@@ -73,13 +78,5 @@ export type OfflineOperation = CheckInOperation | NoteOperation | CashPaymentOpe
 /** Connection state shown by the shell indicator. */
 export type ConnectionState = 'online' | 'offline' | 'syncing';
 
-/** Queue port used by the features (implemented in offline/queue.ts). */
-export interface OfflineQueue {
-  enqueue(
-    op: Omit<OfflineOperation, 'id' | 'idempotencyKey' | 'createdAt' | 'status'>,
-  ): Promise<OfflineOperation>;
-  list(establishmentId: string): Promise<OfflineOperation[]>;
-  /** Sends pending operations in order; resolves when the queue is drained or blocked. */
-  flush(): Promise<void>;
-  discard(id: string): Promise<void>;
-}
+/** Queue used by the features (created in runtime.ts on the shared queue). */
+export type OfflineQueue = OperationQueue<OfflineOperation>;

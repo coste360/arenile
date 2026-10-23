@@ -1,0 +1,76 @@
+{
+  "indicator": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "syncing": "Synchronisation",
+    "pending_one": "{{count}} en attente",
+    "pending_other": "{{count}} en attente",
+    "rejected_one": "{{count}} à vérifier",
+    "rejected_other": "{{count}} à vérifier",
+    "open": "Ouvrir les opérations hors ligne"
+  },
+  "banner": {
+    "offlineTitle": "Vous êtes hors ligne",
+    "savedAt": "Vous consultez les données enregistrées à {{time}}.",
+    "noData": "Aucune donnée de cet établissement n'est enregistrée sur cet appareil.",
+    "allowed": "Vous pouvez faire le check-in, ajouter des notes et enregistrer des encaissements en espèces : ils seront envoyés au retour de la connexion. Les nouvelles réservations et les déplacements ne sont pas disponibles.",
+    "rejectedTitle": "Opérations hors ligne à vérifier",
+    "rejected_one": "{{count}} opération enregistrée hors ligne n'a pas été acceptée par le serveur.",
+    "rejected_other": "{{count}} opérations enregistrées hors ligne n'ont pas été acceptées par le serveur.",
+    "paused": "Session expirée : reconnectez-vous pour envoyer les opérations en attente.",
+    "review": "Vérifier"
+  },
+  "queue": {
+    "title": "Opérations hors ligne",
+    "description": "Enregistrées sans connexion et envoyées dans l'ordre à son retour, chacune une seule fois.",
+    "empty": "Aucune opération en attente.",
+    "sendNow": "Envoyer maintenant",
+    "retry": "Réessayer",
+    "discard": "Écarter",
+    "discardTitle": "Écarter l'opération ?",
+    "discardDescription": "« {{kind}} » sur {{label}} ne sera pas envoyée au serveur.",
+    "queuedAt": "Enregistrée à {{time}}",
+    "kind": {
+      "check_in": "Check-in",
+      "note": "Note",
+      "cash_payment": "Encaissement en espèces de {{amount}}"
+    },
+    "status": {
+      "pending": "En attente",
+      "sending": "Envoi en cours",
+      "conflict": "Conflit",
+      "failed": "Refusée"
+    }
+  },
+  "onlineOnly": {
+    "title": "Indisponible hors ligne",
+    "body": "Créer ou déplacer des réservations nécessite la connexion : seul le serveur garantit que l'emplacement est libre."
+  },
+  "actions": {
+    "unavailable": "Hors ligne : les nouvelles réservations et les déplacements ne sont pas disponibles.",
+    "note": "Ajouter une note",
+    "cash": "Encaissement en espèces",
+    "noteTitle": "Note hors ligne",
+    "noteDescription": "La note sera ajoutée à {{label}} au retour de la connexion.",
+    "noteLabel": "Note",
+    "noteRequired": "Saisissez le texte de la note.",
+    "cashTitle": "Encaissement en espèces hors ligne",
+    "cashDescription": "Solde dû {{balance}}. L'encaissement sera enregistré au retour de la connexion et nécessite une session de caisse ouverte.",
+    "amount": "Montant",
+    "amountInvalid": "Saisissez un montant supérieur à zéro et ne dépassant pas le solde.",
+    "submit": "Mettre en attente",
+    "queuedNote": "Note en attente : elle sera envoyée au retour de la connexion.",
+    "queuedCash": "Encaissement de {{amount}} en attente : il sera envoyé au retour de la connexion.",
+    "queuedCheckIn": "Check-in de {{code}} en attente : il sera envoyé au retour de la connexion."
+  },
+  "sync": {
+    "sent_one": "{{count}} opération hors ligne envoyée.",
+    "sent_other": "{{count}} opérations hors ligne envoyées."
+  },
+  "update": {
+    "available": "Une nouvelle version du panneau est disponible.",
+    "reload": "Mettre à jour",
+    "later": "Plus tard",
+    "offlineReady": "Le panneau est prêt à fonctionner aussi hors ligne."
+  }
+}

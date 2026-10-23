@@ -15,7 +15,8 @@
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./styles/globals.css": "./src/styles/globals.css",
-    "./testing": "./src/testing/index.tsx"
+    "./testing": "./src/testing/index.tsx",
+    "./offline": "./src/offline/index.ts"
   },
   "scripts": {
     "gen": "openapi-typescript ../../api/openapi.yaml -o api/generated/schema.d.ts",

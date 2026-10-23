@@ -18,6 +18,7 @@ import { ThemeRadioItems } from '@arenile/shared/ui/patterns';
 import { useNavigate } from '@tanstack/react-router';
 import { ChevronsUpDownIcon, LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useOfflineLogout } from '../offline/useOfflineLogout';
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -29,17 +30,22 @@ export function NavUser() {
   const { t } = useTranslation();
   const me = useMe();
   const logout = useLogout();
+  const offline = useOfflineLogout();
   const navigate = useNavigate();
   const { isMobile } = useSidebar();
   const name = me.data?.user?.name || me.data?.api_key?.name || '';
   const email = me.data?.user?.email ?? '';
 
   const onLogout = () => {
-    logout.mutate(undefined, {
-      onSettled: () => {
-        void navigate({ to: '/login', search: { redirect: undefined } });
-      },
-    });
+    // Offline mode (spec 21.2/23): send the queue first, then wipe the device copy.
+    void offline.beforeLogout().finally(() =>
+      logout.mutate(undefined, {
+        onSettled: () => {
+          void offline.clearAll();
+          void navigate({ to: '/login', search: { redirect: undefined } });
+        },
+      }),
+    );
   };
 
   return (

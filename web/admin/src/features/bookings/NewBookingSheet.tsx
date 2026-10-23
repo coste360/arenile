@@ -27,6 +27,7 @@ import { newIdempotencyKey } from '../configuration/lib/validation';
 import type { Customer } from '../customers/api';
 import { CustomerPicker, DuplicateHint } from '../customers/CustomerPicker';
 import { useDebounced } from '../customers/lib';
+import { OnlineOnlyNotice } from '../../offline/OnlineOnlyNotice';
 import { useBookingQuote, useCreateBooking, useRecordPayment } from './api';
 import {
   newBookingSchema,
@@ -220,7 +221,11 @@ function NewBookingForm({
       });
     }
   };
-  const onSubmit = (e?: FormEvent) => form.handleSubmit(submitBooking)(e);
+  const onSubmit = (e?: FormEvent) => {
+    // Never offline: only the server guarantees availability (spec 21.2).
+    if (!navigator.onLine) return e?.preventDefault();
+    return form.handleSubmit(submitBooking)(e);
+  };
 
   const violations = quote.data?.policy.violations ?? [];
   const errors = form.formState.errors;
@@ -233,6 +238,7 @@ function NewBookingForm({
         pending={create.isPending || pay.isPending}
         submitLabel={t('new.submit')}
       >
+        <OnlineOnlyNotice />
         <ProblemAlert problem={failure} />
 
         <FormSection title={t('new.when')}>
