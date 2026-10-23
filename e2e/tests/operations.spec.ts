@@ -32,8 +32,9 @@ test("the operational map shows statuses and opens the spot sheet", async ({ pag
   await page.goto(`${base}/mappa?date=${DEMO_DAY}`);
 
   await expect(page.getByRole("heading", { name: "Mappa", level: 1 })).toBeVisible();
-  // Season passes on the first row, free spots further back.
-  await expect(spot(page, "A1")).toHaveAccessibleName(/Abbonato/);
+  // Season passes on the first row (the demo pass on A1 has an open balance,
+  // shown as "Da incassare" before the season colour, spec 11.3), free spots further back.
+  await expect(spot(page, "A1")).toHaveAccessibleName(/Da incassare/);
   await expect(spot(page, "F8")).toHaveAccessibleName(/Libero/);
   // The legend always lists every status.
   const legend = page.getByText("Legenda").locator("..");
