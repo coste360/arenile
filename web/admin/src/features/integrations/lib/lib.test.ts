@@ -7,6 +7,7 @@ import {
   apiKeySchema,
   endOfDayInstant,
   isAllowedWebhookUrl,
+  redactWebhookUrl,
   toApiKeyCreate,
   toApiKeyUpdate,
   toWebhookUpdate,
@@ -144,5 +145,19 @@ describe('canRedeliver', () => {
     ['disabled', 'failed', false],
   ] as const)('endpoint %s, delivery %s: %s', (ep, d, ok) => {
     expect(canRedeliver({ status: ep }, { status: d })).toBe(ok);
+  });
+});
+
+describe('redactWebhookUrl', () => {
+  it('hides the query string where a receiver token may live', () => {
+    expect(redactWebhookUrl('https://hooks.example.it/arenile')).toBe(
+      'https://hooks.example.it/arenile',
+    );
+    expect(redactWebhookUrl('https://hooks.example.it/arenile?token=s3cr3t&x=1')).toBe(
+      'https://hooks.example.it/arenile?…',
+    );
+    expect(redactWebhookUrl('https://hooks.example.it/arenile?')).toBe(
+      'https://hooks.example.it/arenile',
+    );
   });
 });

@@ -19,16 +19,20 @@ const (
 	MaxEventFilters    = 50
 )
 
-// localHosts may be reached over plain http (development receivers).
+// localHosts may be reached over plain http (development receivers) when
+// the egress policy allows private targets.
 var localHosts = []string{"localhost", "127.0.0.1", "::1"}
 
 // ValidateURL checks an endpoint URL and returns it trimmed ("" when
 // invalid, with the error added to ve): absolute https (http only towards
 // localhost, 127.0.0.1 and ::1), a host, no userinfo, no fragment, at most
-// MaxURLBytes. An IP literal host must also be allowed by the egress policy
-// (a private literal is refused at once instead of failing every delivery).
-// Host names are checked by the Deliverer at connect time, after DNS
-// resolution, because their addresses can change.
+// MaxURLBytes. The host must also be allowed by the egress policy: an IP
+// literal is checked directly and localhost, 127.0.0.1 and ::1 are refused
+// unless the policy allows private targets, so that an endpoint the
+// Deliverer would block at every attempt (and then disable) is refused at
+// once with the same message. Other host names are checked by the
+// Deliverer at connect time, after DNS resolution, because their addresses
+// can change.
 func ValidateURL(ve *configerr.ValidationError, raw string, policy event.EgressPolicy) string {
 	s := strings.TrimSpace(raw)
 	const field = "url"
@@ -61,11 +65,15 @@ func ValidateURL(ve *configerr.ValidationError, raw string, policy event.EgressP
 		ve.Add(field, "Usa https.")
 		return ""
 	}
+	const blocked = "Indirizzo non raggiungibile dai webhook: è privato, di loopback o riservato."
 	if a, err := netip.ParseAddr(host); err == nil {
 		if err := policy.Check(a); err != nil {
-			ve.Add(field, "Indirizzo non raggiungibile dai webhook: è privato, di loopback o riservato.")
+			ve.Add(field, blocked)
 			return ""
 		}
+	} else if slices.Contains(localHosts, host) && !policy.AllowPrivate {
+		ve.Add(field, blocked)
+		return ""
 	}
 	return s
 }
@@ -120,4 +128,17 @@ func validateDescription(ve *configerr.ValidationError, raw string) string {
 		return ""
 	}
 	return d
+}
+
+// RedactURL returns u without its query string, "?…" marking that one was
+// present: receivers often carry a token in the query, and tokens never
+// reach the audit log or the logs in clear (AGENTS.md). The full URL lives
+// only in the endpoint row. An unparsable value is returned as is up to
+// the first '?'.
+func RedactURL(u string) string {
+	raw, query, hasQuery := strings.Cut(u, "?")
+	if !hasQuery || query == "" {
+		return raw
+	}
+	return raw + "?…"
 }

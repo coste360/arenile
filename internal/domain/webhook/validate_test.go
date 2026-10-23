@@ -20,7 +20,9 @@ func TestValidateURL_Scenarios(t *testing.T) {
 	}{
 		{"https", " https://hooks.example.com/arenile?x=1 ", strict, "https://hooks.example.com/arenile?x=1"},
 		{"https with port", "https://hooks.example.com:8443/h", strict, "https://hooks.example.com:8443/h"},
-		{"http to localhost", "http://localhost:9000/h", strict, "http://localhost:9000/h"},
+		{"http to localhost on LAN", "http://localhost:9000/h", lan, "http://localhost:9000/h"},
+		{"http to localhost strict (the Deliverer would block every attempt)", "http://localhost:9000/h", strict, ""},
+		{"https to localhost strict", "https://localhost/h", strict, ""},
 		{"http to 127.0.0.1 on LAN", "http://127.0.0.1:9000/h", lan, "http://127.0.0.1:9000/h"},
 		{"http to [::1] on LAN", "http://[::1]:9000/h", lan, "http://[::1]:9000/h"},
 		{"http elsewhere", "http://hooks.example.com/h", strict, ""},
@@ -123,6 +125,24 @@ func TestEventTypes_MatchStore(t *testing.T) {
 			if !ep.Matches(typ) {
 				t.Fatalf("%s does not match filter %s", typ, f)
 			}
+		}
+	}
+}
+
+func TestRedactURL_HidesTheQuery(t *testing.T) {
+	tests := map[string]string{
+		"https://hooks.example.com/arenile":               "https://hooks.example.com/arenile",
+		"https://hooks.example.com/arenile?token=s3cr3t":  "https://hooks.example.com/arenile?…",
+		"https://hooks.example.com/a?x=1&token=s3cr3t#f":  "https://hooks.example.com/a?…",
+		"https://hooks.example.com/arenile?":              "https://hooks.example.com/arenile",
+		"http://localhost:9000/h?k=v":                     "http://localhost:9000/h?…",
+	}
+	for in, want := range tests {
+		if got := RedactURL(in); got != want {
+			t.Fatalf("RedactURL(%q) = %q, want %q", in, got, want)
+		}
+		if strings.Contains(RedactURL(in), "s3cr3t") {
+			t.Fatalf("token leaked: %q", RedactURL(in))
 		}
 	}
 }

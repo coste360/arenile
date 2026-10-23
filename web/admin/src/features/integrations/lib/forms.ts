@@ -137,3 +137,14 @@ export function toWebhookUpdate(
   if (v.active !== endpoint.active) patch.active = v.active;
   return patch;
 }
+
+/**
+ * URL of an endpoint as shown in lists: the query string, where receivers
+ * often carry a token, is replaced by "?…" (the server does the same in the
+ * audit log, webhook.RedactURL). The full URL stays in the edit form.
+ */
+export function redactWebhookUrl(url: string): string {
+  const i = url.indexOf('?');
+  if (i < 0 || i === url.length - 1) return i < 0 ? url : url.slice(0, i);
+  return `${url.slice(0, i)}?…`;
+}

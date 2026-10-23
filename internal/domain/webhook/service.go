@@ -272,7 +272,7 @@ func (s *Service) Create(ctx context.Context, p *auth.Principal, establishmentID
 			return err
 		}
 		return s.record(ctx, tx, p, es, in.IP, "webhook.created", id, map[string]any{
-			"url": u, "events": events, "active": in.Active, "description": desc,
+			"url": RedactURL(u), "events": events, "active": in.Active, "description": desc,
 		})
 	})
 	if err != nil {
@@ -301,7 +301,7 @@ func (s *Service) Update(ctx context.Context, p *auth.Principal, establishmentID
 		var cols []string
 		if in.URL != nil {
 			if u := ValidateURL(ve, *in.URL, s.d.Egress); u != "" && u != ep.URL {
-				diff["url"] = change(ep.URL, u)
+				diff["url"] = change(RedactURL(ep.URL), RedactURL(u))
 				ep.URL = u
 				cols = append(cols, "url")
 			}
@@ -364,7 +364,7 @@ func (s *Service) Delete(ctx context.Context, p *auth.Principal, establishmentID
 		if err := store.DeleteWebhookEndpoint(ctx, tx, es, id); err != nil {
 			return err
 		}
-		return s.record(ctx, tx, p, es, ip, "webhook.deleted", id, map[string]any{"url": ep.URL, "events": ep.Events})
+		return s.record(ctx, tx, p, es, ip, "webhook.deleted", id, map[string]any{"url": RedactURL(ep.URL), "events": ep.Events})
 	})
 }
 

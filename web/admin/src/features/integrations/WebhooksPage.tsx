@@ -73,6 +73,7 @@ import {
   webhookDefaults,
   webhookSchema,
   type WebhookValues,
+  redactWebhookUrl,
 } from './lib/forms';
 
 const ENDPOINT_TONE: Record<WebhookEndpointStatus, StatusTone> = {
@@ -142,8 +143,8 @@ export function WebhooksPage() {
       ),
       cell: ({ row }) => (
         <span className="flex max-w-xs min-w-0 flex-col">
-          <code className="truncate font-mono text-sm" title={row.original.url}>
-            {row.original.url}
+          <code className="truncate font-mono text-sm" title={redactWebhookUrl(row.original.url)}>
+            {redactWebhookUrl(row.original.url)}
           </code>
           {row.original.description && (
             <span className="truncate text-xs text-muted-foreground">
