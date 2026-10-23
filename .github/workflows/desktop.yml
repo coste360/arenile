@@ -112,8 +112,9 @@ jobs:
             archs: amd64
             artifact: desktop-macos-x86_64
     runs-on: macos-latest
-    # Two notarizations (app and dmg), each waited up to NOTARY_TIMEOUT (90m).
-    timeout-minutes: 200
+    # Two notarizations (app and dmg), each waited up to NOTARY_TIMEOUT (90m),
+    # plus build and stapling: keep margin, a killed job loses the signed dmg.
+    timeout-minutes: 230
     env:
       MACOS_ARCHS: ${{ matrix.archs }}
       APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}

@@ -211,6 +211,19 @@ jobs:
           echo "::warning::desktop packages missing or incomplete (desktop job: ${{ needs.desktop.result }}); check the bundle contents"
           echo "Desktop packages missing or incomplete: desktop job ended with **${{ needs.desktop.result }}**. Re-run desktop.yml with version ${{ github.ref_name }}." >> "$GITHUB_STEP_SUMMARY"
 
+      # A macOS dmg whose notarization was still pending at Apple is kept in the desktop
+      # artifact for a manual staple (docs/desktop-build.md) but never reaches the portal.
+      - name: Drop packages with notarization pending
+        working-directory: dist
+        run: |
+          shopt -s nullglob
+          pending=(*-notarization-pending* *.notarization.txt)
+          [ "${#pending[@]}" -eq 0 ] && exit 0
+          printf 'dropped: %s\n' "${pending[@]}"
+          rm -f -- "${pending[@]}"
+          echo "::warning::macOS packages with notarization pending left out of the bundle; staple them and re-run desktop.yml"
+          echo "macOS packages with notarization pending left out of the bundle: ${pending[*]}" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Checksums
         working-directory: dist
         run: sha256sum -- * > checksums.txt

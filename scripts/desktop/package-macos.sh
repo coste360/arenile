@@ -226,6 +226,7 @@ prefix="$DIST_DIR/${APP_NAME}_${VERSION_SAFE}_macos_${arch_label}"
 rm -f "$prefix".dmg "$prefix"-*.dmg "$prefix"*.dmg.sha256 "$prefix"*.notarization.txt
 dmg="$prefix$label.dmg"
 mv "$tmp_dmg" "$dmg"
+hdiutil verify "$dmg" >/dev/null
 sha256_sidecar "$dmg"
 
 if [ "${#pending[@]}" -gt 0 ]; then

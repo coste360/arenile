@@ -200,7 +200,8 @@ The first submissions of a new Apple team can take hours. When Apple has not ans
 signed dmg, named `-notarization-pending` (if the `.app` was still pending, the dmg is
 submitted without waiting), and a `<dmg>.notarization.txt` file with the submission ids.
 `desktop.yml` uploads both in the job artifact, writes the ids in the job summary and then
-fails the job, so that nobody publishes the package by mistake.
+fails the job, so that nobody publishes the package by mistake. In a release, the
+`portal-bundle` job leaves such files out of the bundle, with a warning.
 
 To finish by hand on a Mac, with the App Store Connect API key (`AuthKey_<KEY_ID>.p8`: keep it
 outside the repository, never print or commit it):
