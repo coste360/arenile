@@ -1,0 +1,311 @@
+name: Desktop packages
+
+# Builds the desktop edition (spec 29.1) on the native runner of each OS:
+# Windows installer (Inno Setup), macOS universal .app in a .dmg, Linux AppImage.
+#
+# - Pull requests touching the desktop code: unsigned packages, to keep the
+#   packaging green (artifacts kept 7 days, for testers only).
+# - Release (called by release.yml with the tag): signed packages when the
+#   signing secrets are configured, unsigned and labelled "-unsigned" otherwise.
+#   They feed the portal-bundle-<tag> artifact of the Coste360 download portal;
+#   NOTHING here is ever uploaded as a GitHub release asset.
+#
+# Signing secrets (all optional, see docs/desktop-build.md):
+#   macOS:   APPLE_CERTIFICATE_P12_BASE64, APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY,
+#            APPLE_API_KEY_ID, APPLE_API_ISSUER_ID, APPLE_API_KEY_P8_BASE64
+#   Windows: WINDOWS_CERTIFICATE_PFX_BASE64, WINDOWS_CERTIFICATE_PASSWORD   (PFX)
+#            or AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET,
+#            AZURE_TRUSTED_SIGNING_ENDPOINT, AZURE_TRUSTED_SIGNING_ACCOUNT,
+#            AZURE_TRUSTED_SIGNING_PROFILE                                    (Azure Artifact Signing, formerly Trusted Signing)
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Release tag (same tag as the server edition)
+        type: string
+        required: true
+      retention-days:
+        type: number
+        required: false
+        default: 1
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version label (default git describe)
+        type: string
+        required: false
+  pull_request:
+    paths:
+      - cmd/arenile-desktop/**
+      - internal/desktop/**
+      - packaging/desktop/**
+      - scripts/desktop/**
+      - .github/workflows/desktop.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.workflow }}-${{ github.ref }}-${{ inputs.version }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "22"
+  GOTOOLCHAIN: local
+  # Tray build: CGO on, native runner per OS (spec 29.1). The core stays CGO-free.
+  DESKTOP_TAGS: desktop
+  # VERSION empty on pull requests: the scripts fall back to `git describe`.
+  VERSION: ${{ inputs.version }}
+  SKIP_WEB_BUILD: "1"
+  RETENTION_DAYS: ${{ inputs.retention-days || 7 }}
+
+jobs:
+  web:
+    name: Frontend build (embedded SPAs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm --prefix web ci
+      - run: npm --prefix web run build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-web-dist
+          path: |
+            web/admin/dist
+            web/booking/dist
+          retention-days: 1
+          if-no-files-found: error
+
+  macos:
+    name: macOS (universal .dmg)
+    needs: web
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+      APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+      APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download the SPAs
+        uses: actions/download-artifact@v8
+        with:
+          name: desktop-web-dist
+          path: web
+
+      - name: Embed frontend
+        shell: bash
+        run: |
+          for app in admin booking; do
+            dest="internal/http/static/$app"
+            mkdir -p "$dest"
+            find "$dest" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+            cp -R "web/$app/dist/." "$dest/"
+          done
+
+      - name: Package (universal binary, .app, .dmg, signing and notarization when configured)
+        run: make desktop-package-macos
+
+      - name: Smoke test
+        run: |
+          app="dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop"
+          lipo -archs "$app" | grep -q x86_64
+          lipo -archs "$app" | grep -q arm64
+          "$app" -version
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-macos
+          path: |
+            dist/desktop/*.dmg
+            dist/desktop/*.dmg.sha256
+          retention-days: ${{ fromJSON(env.RETENTION_DAYS) }}
+          if-no-files-found: error
+
+  windows:
+    name: Windows (installer .exe)
+    needs: web
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    env:
+      WINDOWS_CERTIFICATE_PFX_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
+      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      # Non-secret switch for the Trusted Signing steps (secrets are not allowed in `if:`).
+      TRUSTED_SIGNING: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT != '' && secrets.WINDOWS_CERTIFICATE_PFX_BASE64 == '' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download the SPAs
+        uses: actions/download-artifact@v8
+        with:
+          name: desktop-web-dist
+          path: web
+
+      - name: Embed frontend
+        shell: bash
+        run: |
+          for app in admin booking; do
+            dest="internal/http/static/$app"
+            mkdir -p "$dest"
+            find "$dest" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+            cp -R "web/$app/dist/." "$dest/"
+          done
+
+      - name: Tools (MinGW gcc/windres for CGO and resources, Inno Setup 6)
+        run: |
+          gcc --version | head -n1
+          windres --version | head -n1
+          if [ ! -x "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" ]; then
+            choco install innosetup --no-progress -y
+          fi
+
+      - name: Mark external signing
+        if: env.TRUSTED_SIGNING == 'true'
+        run: echo "WINDOWS_SIGNING=external" >> "$GITHUB_ENV"
+
+      - name: Build arenile-desktop.exe
+        run: scripts/desktop/package-windows.sh binary
+
+      - name: Sign the executable (PFX)
+        run: scripts/desktop/package-windows.sh sign dist/desktop/bin/windows_amd64/arenile-desktop.exe
+
+      - name: Sign the executable (Azure Artifact Signing, ex Trusted Signing)
+        if: env.TRUSTED_SIGNING == 'true'
+        uses: azure/artifact-signing-action@v2.0.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_TRUSTED_SIGNING_PROFILE }}
+          files-folder: ${{ github.workspace }}\dist\desktop\bin\windows_amd64
+          files-folder-filter: exe
+          file-digest: SHA256
+          timestamp-digest: SHA256
+          description: Arenile
+          description-url: https://coste360.it
+
+      - name: Build the installer (Inno Setup; signs setup and uninstaller with the PFX)
+        run: scripts/desktop/package-windows.sh installer
+
+      - name: Sign the installer (Azure Artifact Signing)
+        if: env.TRUSTED_SIGNING == 'true'
+        uses: azure/artifact-signing-action@v2.0.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_TRUSTED_SIGNING_PROFILE }}
+          files-folder: ${{ github.workspace }}\dist\desktop
+          files-folder-filter: exe
+          file-digest: SHA256
+          timestamp-digest: SHA256
+          description: Arenile
+          description-url: https://coste360.it
+
+      - name: Checksums and smoke test
+        run: |
+          scripts/desktop/package-windows.sh checksums
+          dist/desktop/bin/windows_amd64/arenile-desktop.exe -version
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-windows
+          path: |
+            dist/desktop/*.exe
+            dist/desktop/*.exe.sha256
+          retention-days: ${{ fromJSON(env.RETENTION_DAYS) }}
+          if-no-files-found: error
+
+  linux:
+    name: Linux (AppImage x86_64)
+    needs: web
+    # The oldest supported LTS runner: a CGO binary needs a glibc at least as
+    # old as the distributions it must run on (AppImage best practice).
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download the SPAs
+        uses: actions/download-artifact@v8
+        with:
+          name: desktop-web-dist
+          path: web
+
+      - name: Embed frontend
+        shell: bash
+        run: |
+          for app in admin booking; do
+            dest="internal/http/static/$app"
+            mkdir -p "$dest"
+            find "$dest" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+            cp -R "web/$app/dist/." "$dest/"
+          done
+
+      - name: Native libraries of the tray build
+        run: |
+          pkgs="$(sed -e 's/#.*//' packaging/desktop/linux/apt-packages.txt | xargs)"
+          if [ -n "$pkgs" ]; then
+            sudo apt-get update -q
+            # shellcheck disable=SC2086
+            sudo apt-get install -y -q --no-install-recommends $pkgs
+          fi
+
+      - name: Package (AppImage)
+        run: make desktop-package-linux
+
+      - name: Smoke test
+        run: |
+          appimage="$(ls dist/desktop/*.AppImage)"
+          APPIMAGE_EXTRACT_AND_RUN=1 "$appimage" -version
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-linux
+          path: |
+            dist/desktop/*.AppImage
+            dist/desktop/*.AppImage.sha256
+          retention-days: ${{ fromJSON(env.RETENTION_DAYS) }}
+          if-no-files-found: error

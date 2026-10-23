@@ -161,11 +161,20 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
+  desktop:
+    # Desktop edition packages (spec 29.1), built on native runners and signed when the
+    # signing secrets exist (see docs/desktop-build.md). They only feed portal-bundle.
+    name: Desktop packages
+    uses: ./.github/workflows/desktop.yml
+    with:
+      version: ${{ github.ref_name }}
+    secrets: inherit
+
   portal-bundle:
     # Ready-made binaries are distributed through the Coste360 download portal (login required),
     # never as GitHub release assets: GitHub carries the source and the instructions only.
     name: Portal bundle
-    needs: binaries
+    needs: [binaries, desktop]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -175,9 +184,16 @@ jobs:
           path: dist
           merge-multiple: true
 
+      - name: Desktop packages (Windows installer, macOS dmg, Linux AppImage)
+        uses: actions/download-artifact@v8
+        with:
+          pattern: desktop-{windows,macos,linux}
+          path: dist
+          merge-multiple: true
+
       - name: Checksums
         working-directory: dist
-        run: sha256sum * > checksums.txt
+        run: sha256sum -- * > checksums.txt
 
       - uses: actions/upload-artifact@v7
         with:

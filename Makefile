@@ -337,6 +337,27 @@ build-desktop: web-build ## Launcher desktop in bin/arenile-desktop (DESKTOP_TAG
 		CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/arenile-desktop ./cmd/arenile-desktop; \
 	fi
 
+# Desktop packages (spec 29.1, docs/desktop-build.md): output in dist/desktop (git-ignored).
+# Signing is enabled by the environment variables documented in the scripts; without them the
+# packages are labelled -unsigned. CI sets SKIP_WEB_BUILD=1 after embedding the web artifact.
+DESKTOP_ENV := VERSION="$(VERSION)" DESKTOP_TAGS="$(DESKTOP_TAGS)"
+
+.PHONY: desktop-build
+desktop-build: ## Launcher desktop per questo sistema in dist/desktop/bin (SPA incluse)
+	$(DESKTOP_ENV) scripts/desktop/build.sh
+
+.PHONY: desktop-package-macos
+desktop-package-macos: ## Arenile.app universale e .dmg in dist/desktop (solo su macOS)
+	$(DESKTOP_ENV) scripts/desktop/package-macos.sh
+
+.PHONY: desktop-package-windows
+desktop-package-windows: ## Installer Windows (Inno Setup) in dist/desktop (Git Bash su Windows)
+	$(DESKTOP_ENV) scripts/desktop/package-windows.sh all
+
+.PHONY: desktop-package-linux
+desktop-package-linux: ## AppImage Linux in dist/desktop (solo su Linux)
+	$(DESKTOP_ENV) scripts/desktop/package-linux.sh
+
 .PHONY: docker
 docker: ## Costruisce l'immagine Docker locale ghcr.io/coste360/arenile:dev
 	docker build -f deploy/Dockerfile --build-arg VERSION=$(VERSION) -t $(IMAGE):dev .
