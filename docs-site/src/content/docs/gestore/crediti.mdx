@@ -1,0 +1,58 @@
+---
+title: Crediti dei clienti
+description: Credito maturato da cancellazioni, giorni rilasciati e gesti di cortesia, usato come metodo di pagamento; registro dei movimenti, scadenze e rettifiche.
+sidebar:
+  order: 24.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Clienti** → scheda del cliente → **Movimenti crediti**. **Chi:** riconoscere crediti e
+rettifiche richiede il permesso di emettere rimborsi; per usarli basta poter registrare pagamenti.
+
+Il **credito** è un importo che il cliente può spendere presso lo stabilimento come metodo di pagamento. Matura in
+automatico quando la [policy](/gestore/policy/) lo prevede (cancellazione, maltempo, giorni di abbonamento
+rilasciati e rivenduti) oppure lo riconosci a mano.
+
+<Screenshot name="admin-customer-credits" alt="Scheda cliente con credito disponibile, crediti in scadenza e registro dei movimenti" />
+
+## Saldo e movimenti
+
+- **Credito disponibile**: quanto il cliente può spendere oggi.
+- **In scadenza**: il credito che scade a breve, con la data.
+- La tabella elenca ogni movimento: **Cancellazione**, **Rilascio abbonamento**, **Maltempo**, **Credito
+  manuale**, **Cortesia**, **Utilizzo**, **Scadenza**, **Rettifica**, con la prenotazione collegata.
+
+Il saldo è sempre la somma dei movimenti e **non può mai diventare negativo**, nemmeno se due cassieri lo usano
+nello stesso momento. Il credito scaduto viene tolto in automatico.
+
+## Riconoscere un credito
+
+<Steps>
+
+1. **Riconosci credito**.
+2. Scegli il **Tipo**: **Cortesia**, **Credito manuale** o **Rettifica** (in quest'ultimo caso **Aggiungi** o
+   **Togli**).
+3. Inserisci l'**Importo**, facoltativamente la **Scadenza** (vuota = validità prevista dalla policy) e una
+   **Nota**.
+4. **Riconosci** (o **Togli dal saldo**).
+
+</Steps>
+
+## Usare il credito
+
+- Dalla scheda cliente: **Usa su una prenotazione**, scegli la prenotazione con saldo da pagare e l'importo (al
+  massimo il minore tra credito e saldo), poi **Usa il credito**.
+- Da una prenotazione: **Registra pagamento** con il metodo **Credito cliente**; il pannello mostra il credito
+  disponibile.
+- Il cliente può usarlo da solo dal link di gestione della prenotazione (**Usa … di credito per il saldo**) e
+  nell'accettazione di un [rinnovo](/gestore/rinnovi/).
+
+<Aside type="note" title="Il credito torna credito">
+Se rimborsi una prenotazione pagata in parte con il credito, quella parte torna sul saldo crediti del cliente,
+mai in denaro. La parte pagata con altri metodi segue la policy di rimborso.
+</Aside>
+
+Il credito compare nell'esportazione dei dati del cliente (GDPR); con l'anonimizzazione restano gli importi per la
+contabilità e spariscono le note.

@@ -1,0 +1,220 @@
+{
+  "title": "Verlängerungen",
+  "description": "Verlängerungskampagnen der Saisonabos: Angebote mit Vorkaufsrecht, Versand, Annahmen und bei Fristablauf freigegebene Plätze.",
+  "optional": "(optional)",
+  "countdown": {
+    "expired": "Abgelaufen",
+    "days": "{{days}} T {{hours}} Std.",
+    "hours": "{{hours}} Std. {{minutes}} Min.",
+    "minutes": "{{minutes}} Min."
+  },
+  "problem": {
+    "renewal_expired": "Das Vorkaufsrecht ist abgelaufen: Der Platz wurde freigegeben.",
+    "waitlist_offer_expired": "Das Angebot ist abgelaufen.",
+    "waitlist_disabled": "Die Warteliste ist deaktiviert.",
+    "credit_insufficient": "Guthaben nicht ausreichend: Der Saldo darf nicht negativ werden.",
+    "season_rollover_conflict": "Für dieses Jahr gibt es bereits eine Saison, die nicht durch diesen Saisonwechsel erstellt wurde."
+  },
+  "accept": {
+    "title": "Verlängerung annehmen",
+    "description": "{{spot}} · {{customer}} · {{amount}}",
+    "confirmNow": "Sofort bestätigen",
+    "confirmNowHelp": "Die Verlängerung wird jetzt bestätigt; der Restbetrag wird wie bei jeder Buchung an der Kasse erfasst.",
+    "awaitPaymentHelp": "Die Buchung wartet auf die Zahlung und wird bestätigt, sobald diese eingeht.",
+    "note": "Notiz",
+    "submit": "Annehmen",
+    "done": "Verlängerung von {{spot}} angenommen."
+  },
+  "decline": {
+    "title": "Verlängerung ablehnen",
+    "description": "{{spot}} · {{customer}}: Der Platz wird freigegeben.",
+    "reason": "Grund",
+    "submit": "Ablehnen und freigeben",
+    "done": "Verlängerung von {{spot}} abgelehnt: Platz freigegeben."
+  },
+  "deadline": {
+    "date": "Neue Frist",
+    "help": "Das Vorkaufsrecht endet um 23:59 Uhr am gewählten Tag (Ortszeit des Betriebs).",
+    "submit": "Frist speichern"
+  },
+  "create": {
+    "title": "Neue Kampagne",
+    "description": "Ein Angebot für jeden Abonnenten der Ausgangssaison, mit demselben Platz und dem Preis der neuen Preisliste.",
+    "source": "Ausgangssaison",
+    "target": "Neue Saison",
+    "pickSeason": "Saison wählen",
+    "sameSeason": "Wählen Sie zwei verschiedene Saisons.",
+    "deadline": "Frist des Vorkaufsrechts",
+    "deadlineHelp": "Bis zu diesem Datum bleibt der Platz für den Abonnenten reserviert.",
+    "name": "Name",
+    "namePlaceholder": "Verlängerungen {{year}}",
+    "notes": "Interne Notizen",
+    "preview": "Vorschau",
+    "previewHint": "Mit „Vorschau“ sehen Sie die Angebote und die ausgeschlossenen Abos, bevor Sie sie erstellen.",
+    "previewSummary_one": "{{count}} Angebot wird erstellt",
+    "previewSummary_other": "{{count}} Angebote werden erstellt",
+    "previewDetail": "Gesamtwert {{amount}}; ausgeschlossene Abos: {{skipped}}.",
+    "previewTable": "Vorschau der Angebote",
+    "skippedTable": "Ausgeschlossene Abos",
+    "skippedTitle_one": "{{count}} Abo ausgeschlossen",
+    "skippedTitle_other": "{{count}} Abos ausgeschlossen",
+    "submit": "Angebote erstellen",
+    "done_one": "Kampagne erstellt: {{count}} Angebot versandbereit.",
+    "done_other": "Kampagne erstellt: {{count}} Angebote versandbereit."
+  },
+  "skip": {
+    "spot_unavailable": "Platz in der neuen Saison nicht verfügbar",
+    "spot_inactive": "Platz deaktiviert",
+    "no_price": "Kein Preis in der neuen Preisliste",
+    "already_renewed": "Bereits verlängert",
+    "customer_anonymized": "Kunde anonymisiert",
+    "not_confirmed": "Abo nicht bestätigt"
+  },
+  "columns": {
+    "spot": "Platz",
+    "customer": "Kunde",
+    "period": "Zeitraum",
+    "previous": "Bisheriger Preis",
+    "amount": "Betrag",
+    "reason": "Grund",
+    "status": "Status",
+    "sent": "Versand",
+    "deadline": "Frist",
+    "response": "Antwort",
+    "actions": "Aktionen"
+  },
+  "status": {
+    "proposed": "Ausstehend",
+    "accepted": "Angenommen, zu zahlen",
+    "converted": "Verlängert",
+    "declined": "Abgelehnt",
+    "expired": "Abgelaufen"
+  },
+  "campaignStatus": {
+    "open": "Offen",
+    "closed": "Geschlossen"
+  },
+  "stats": {
+    "proposals": "Angebote",
+    "sent_one": "{{count}} versendet",
+    "sent_other": "{{count}} versendet",
+    "waiting": "Antwort ausstehend",
+    "renewed": "Angenommene Verlängerungen",
+    "converted_one": "{{count}} bestätigt",
+    "converted_other": "{{count}} bestätigt",
+    "released": "Freigegebene Plätze",
+    "releasedHint": "{{declined}} abgelehnt · {{expired}} abgelaufen"
+  },
+  "campaign": {
+    "pick": "Kampagne",
+    "seasons": "Saison {{source}} → {{target}}",
+    "status": "Status",
+    "deadline": "Frist des Vorkaufsrechts",
+    "total": "Wert der Angebote",
+    "converted": "Bestätigte Verlängerungen",
+    "changeDeadline": "Frist ändern",
+    "changeDeadlineHelp": "Gilt für die noch ausstehenden Angebote.",
+    "deadlineChanged": "Frist aktualisiert.",
+    "close": "Kampagne schließen",
+    "closeTitle": "Kampagne schließen?",
+    "closeDescription_one": "{{count}} noch offenes Angebot wird geschlossen und sein Platz freigegeben.",
+    "closeDescription_other": "{{count}} noch offene Angebote werden geschlossen und ihre Plätze freigegeben.",
+    "closed": "Kampagne geschlossen."
+  },
+  "filters": {
+    "search": "Kunde oder Platz suchen",
+    "status": "Status",
+    "allStatuses": "Alle Status",
+    "sent": "Versand",
+    "sentAll": "Versendet und nicht versendet",
+    "sentYes": "Versendet",
+    "sentNo": "Nicht versendet",
+    "zone": "Zone",
+    "allZones": "Alle Zonen"
+  },
+  "proposals": {
+    "title": "Verlängerungsangebote",
+    "loadMore": "Weitere Angebote laden",
+    "empty": "Keine Angebote mit diesen Filtern.",
+    "emptyHint": "Ändern Sie die Filter oder erstellen Sie eine neue Kampagne."
+  },
+  "empty": {
+    "title": "Keine Verlängerungskampagnen",
+    "description": "Bereiten Sie die neue Saison mit dem Saisonwechsel vor und bieten Sie dann den Abonnentenn die Verlängerung an.",
+    "rollover": "Saisonwechsel"
+  },
+  "row": {
+    "more": "Aktionen für {{spot}}, {{customer}}",
+    "send": "Angebot senden",
+    "remind": "Erinnerung senden",
+    "sent": "Angebot an {{customer}} gesendet.",
+    "accept": "Annehmen (an der Kasse)",
+    "decline": "Ablehnen und freigeben",
+    "openBooking": "Buchung öffnen",
+    "noEmail": "ohne E-Mail",
+    "previous": "bisher {{amount}}",
+    "sentCount_one": "Versendet",
+    "sentCount_other": "{{count}}-mal versendet",
+    "notSent": "Nicht versendet"
+  },
+  "bulk": {
+    "menu": "Sammelaktionen",
+    "selected_one": "{{count}} ausgewählt",
+    "selected_other": "{{count}} ausgewählt",
+    "selectAll": "Alle offenen Angebote auswählen",
+    "selectOne": "{{spot}}, {{customer}} auswählen",
+    "onSelection": "Für die ausgewählten Angebote",
+    "send": "Senden oder erinnern",
+    "accept": "Annehmen",
+    "extend": "Frist verlängern",
+    "decline": "Ablehnen und freigeben",
+    "release": "Sofort freigeben",
+    "clear": "Auswahl aufheben",
+    "sendUnsent": "An alle senden, die es noch nicht erhalten haben",
+    "remind": "Alle erinnern, die nicht geantwortet haben",
+    "releaseExpired": "Abgelaufene Vorkaufsrechte freigeben",
+    "extendTitle": "Frist verlängern",
+    "extendDescription_one": "{{count}} Angebot ausgewählt.",
+    "extendDescription_other": "{{count}} Angebote ausgewählt.",
+    "result": "Erledigt: {{succeeded}} erfolgreich, {{skipped}} übersprungen, {{failed}} fehlgeschlagen.",
+    "failedTitle_one": "{{count}} Angebot nicht aktualisiert",
+    "failedTitle_other": "{{count}} Angebote nicht aktualisiert",
+    "dismiss": "Schließen",
+    "confirm": {
+      "selection": {
+        "send": {
+          "title": "Angebote senden?",
+          "description_one": "Die E-Mail mit dem Verlängerungslink wird für {{count}} Angebot versendet (auch wenn bereits versendet).",
+          "description_other": "Die E-Mail mit dem Verlängerungslink wird für {{count}} Angebote versendet (auch wenn bereits versendet)."
+        },
+        "accept": {
+          "title": "Verlängerungen annehmen?",
+          "description_one": "{{count}} Verlängerung wird an der Kasse bestätigt.",
+          "description_other": "{{count}} Verlängerungen werden an der Kasse bestätigt."
+        },
+        "decline": {
+          "title": "Verlängerungen ablehnen?",
+          "description_one": "{{count}} Angebot wird abgelehnt und der Platz freigegeben.",
+          "description_other": "{{count}} Angebote werden abgelehnt und die Plätze freigegeben."
+        },
+        "release": {
+          "title": "Plätze sofort freigeben?",
+          "description_one": "Das Vorkaufsrecht von {{count}} Angebot endet jetzt, auch wenn es nicht abgelaufen ist.",
+          "description_other": "Das Vorkaufsrecht von {{count}} Angeboten endet jetzt, auch wenn es nicht abgelaufen ist."
+        }
+      },
+      "unsent": {
+        "title": "Noch nicht versendete Angebote senden?",
+        "description": "Jeder Abonnent mit E-Mail, der das Angebot noch nicht erhalten hat, erhält den Verlängerungslink."
+      },
+      "remind": {
+        "title": "Erinnerung senden?",
+        "description": "Alle Abonnenten, die noch nicht geantwortet haben, erhalten den Verlängerungslink erneut."
+      },
+      "releaseExpired": {
+        "title": "Abgelaufene Vorkaufsrechte freigeben?",
+        "description": "Die Plätze unbeantworteter Angebote mit abgelaufener Frist werden wieder buchbar."
+      }
+    }
+  }
+}

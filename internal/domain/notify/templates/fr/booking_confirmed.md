@@ -1,6 +1,6 @@
 ---
 subject: Réservation {{booking.code}} confirmée – {{establishment.name}}
-preheader: À bientôt, {{booking.period}}.
+preheader: Rendez-vous {{booking.period}}.
 ---
 # Votre réservation est confirmée
 

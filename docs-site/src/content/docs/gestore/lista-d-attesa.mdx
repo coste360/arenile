@@ -1,0 +1,77 @@
+---
+title: Lista d'attesa
+description: Richieste senza disponibilità in ordine di priorità, offerte automatiche quando un posto si libera, link personale per prenotare.
+sidebar:
+  order: 25.6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Lista d'attesa**. **Chi:** cassieri, gestori e proprietari; le impostazioni chi può
+configurare lo stabilimento.
+
+Quando non c'è posto per le date richieste, il cliente entra in **lista d'attesa**. Appena una postazione
+compatibile si libera (cancellazione, giorno rilasciato da un abbonato, prenotazione scaduta), Arenile la blocca
+per il primo in coda e gli manda un'email con il link per prenotarla.
+
+<Screenshot name="admin-waitlist" alt="Lista d'attesa: coda con posizione, periodo, richiesta, stato e offerta in corso con il tempo rimasto" />
+
+## Impostazioni
+
+**Impostazioni** apre le opzioni valide per tutto lo stabilimento:
+
+- **Lista d'attesa attiva**: spenta, non si accettano iscrizioni e non partono offerte.
+- **Iscrizione dalla pagina pubblica**: per ora solo tramite API (`POST /api/public/v1/{slug}/waitlist`, per
+  siti e integrazioni); la pagina di prenotazione non ha ancora il modulo di iscrizione, quindi l'interruttore non è
+  mostrato nel pannello.
+- **Offerte automatiche**: quando un posto si libera parte un'offerta al primo in coda; spente, le offerte partono
+  solo a mano.
+- **Durata predefinita delle offerte (minuti)**: per quanto il posto resta bloccato in attesa della risposta.
+
+## Iscrivere un cliente
+
+<Steps>
+
+1. **Nuova iscrizione**.
+2. Scegli il **Cliente**, il **Periodo**, la **Fascia** e il **Pacchetto**.
+3. Facoltativo: **Zona** (o **Qualsiasi zona**), **Quantità** e **Nota**.
+4. **Iscrivi**.
+
+</Steps>
+
+Chi si iscrive tramite l'API pubblica (un sito o un'integrazione che chiama `POST /api/public/v1/{slug}/waitlist`)
+riceve un'email con il **link personale** alla sua richiesta, dove può controllarla o uscire dalla lista. Ogni nuova
+email rinnova il link: vale solo l'ultimo ricevuto. Per lo stesso indirizzo, pacchetto e periodo vale una sola
+richiesta aperta: le ripetizioni non creano nulla e non inviano altre email.
+
+## La coda
+
+L'ordine è la colonna **#**: chi è più in alto riceve per primo l'offerta. Con le frecce **Più avanti** e **Più
+indietro** cambi la priorità; chi ha già un'offerta in corso non ha numero finché non risponde.
+
+Dal menu della riga:
+
+- **Offri un posto**: scegli la **Postazione** (o **La prima compatibile**) e la **Durata dell'offerta (minuti)**,
+  poi **Invia l'offerta**.
+- **Revoca l'offerta**: il posto torna libero e passa al successivo.
+- **Modifica la richiesta** o **Rimuovi dalla lista**.
+
+Cliccando sul nome si apre il dettaglio con lo storico delle **Offerte** (quando, quale postazione, perché, esito).
+
+## Cosa vede il cliente
+
+L'email dell'offerta porta alla pagina della richiesta: **Si è liberata la postazione … per te!** con la scadenza.
+
+- **Prenota ora** continua nella normale prenotazione online, già al passo dei dati e del pagamento. La conferma
+  arriva come sempre solo dal pagamento.
+- **Rinuncia** libera il posto, che va al successivo in coda; il cliente resta in lista (o ne esce, se lo sceglie).
+
+<Aside type="note" title="Un posto, una sola offerta">
+Il blocco del posto è garantito dal database: anche se più posti si liberano insieme, ogni posto liberato produce
+al massimo un'offerta. Un'offerta scaduta, rifiutata o revocata passa al successivo, mai di nuovo alla stessa
+persona per quel posto. Le iscrizioni dal pannello seguono le regole della cassa; quelle dal sito le regole e il
+pagamento online.
+</Aside>
+
+Se un cliente chiede la cancellazione dei dati (GDPR), le sue iscrizioni vengono rimosse.

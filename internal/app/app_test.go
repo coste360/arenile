@@ -82,6 +82,8 @@ func TestSmoke_ServeHealthAndReady(t *testing.T) {
 		"notify.deliver",
 		"device.cleanup_pairing_codes", "fiscalbridge.requeue_expired_leases",
 		"webhooks.retention",
+		"renewals.sync",
+		"credits.expire", "waitlist.expire",
 	}
 	if got := a.Jobs().Jobs(); !sameSet(got, wantJobs) {
 		t.Fatalf("registered jobs: got %v, want %v", got, wantJobs)

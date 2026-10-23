@@ -21,6 +21,8 @@ describe('event filters', () => {
       'booking',
       'allocation',
       'season',
+      'waitlist',
+      'credit',
       'payment',
       'customer',
       'cash_session',

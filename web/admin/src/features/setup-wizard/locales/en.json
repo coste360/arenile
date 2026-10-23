@@ -2,7 +2,7 @@
   "title": "Guided setup",
   "description": "Details, template, map rows, quick price list, public page and payments. Every step can be skipped and changed later.",
   "loading": "Loading…",
-  "forbidden": "The guided setup is reserved to owners and managers.",
+  "forbidden": "The guided setup is reserved for owners and managers.",
   "progress": "Setup progress",
   "progressText": "{{done}} of {{total}} steps completed or skipped",
   "stepsLabel": "Setup steps",
@@ -80,7 +80,7 @@
     "dates": "Opening and closing"
   },
   "pricelist": {
-    "intro": "Daily price per category (row) and period of the {{year}} season. Base rules are generated automatically; half day and long formulas are configured in Prices.",
+    "intro": "Daily price per category (row) and period of the {{year}} season. Base rules are generated automatically; half day and longer durations are configured in Prices.",
     "caption": "Daily prices in {{currency}}",
     "category": "Category",
     "cellAria": "Daily price {{category}}, period {{period}}",

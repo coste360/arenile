@@ -8,3 +8,5 @@ import { lazy } from 'react';
  * customer form) should follow the same pattern inside the Stepper.
  */
 export const ManagePage = lazy(() => import('./manage/ManagePage'));
+/** Personal waitlist link `/b/{slug}/m/w/{token}` (M5B, spec 10.5): its own chunk. */
+export const WaitlistOfferPage = lazy(() => import('./manage/waitlist/WaitlistOfferPage'));

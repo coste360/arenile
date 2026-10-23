@@ -4,15 +4,18 @@ package payment_test
 
 import (
 	"errors"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"pgregory.net/rapid"
 
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/payment"
@@ -495,32 +498,36 @@ func TestPaymentService_AtomicRollback(t *testing.T) {
 	})
 }
 
-// TestConcurrency_CreditRedemption_NeverNegative (INV-47): 100 counter sales
-// paid with the same customer credit of 50.00 run in parallel; exactly one
-// spends it, the balance never goes below zero and the redemption rows match
-// the payments. Without the customer lock two transactions could both read
-// the balance of 50 and both insert a -50 movement.
+// TestConcurrency_CreditRedemption_NeverNegative (INV-47 / INV-70): 100
+// counter sales paid with the same customer credit of 50.00 run in parallel
+// on the real credit ledger (credit.Service: balance row lock, conditional
+// balance update); exactly one spends it, the balance never goes below zero,
+// the stored balance equals the ledger sum and the redemption rows match
+// the payments.
 func TestConcurrency_CreditRedemption_NeverNegative(t *testing.T) {
 	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
-		e := newEnv(t, db)
-		if err := (credits{}).GrantCredit(e.ctx, e.db, e.esA, &store.CustomerCredit{
-			ID: store.NewID(), CustomerID: e.custA.ID, Amount: 5000, Source: store.CreditSourceManual, CreatedAt: t0,
-		}); err != nil {
-			t.Fatal(err)
-		}
+		e, cs := creditEnv(t, db)
+		grant(t, e, cs, 5000)
 		var wg sync.WaitGroup
 		var ok, refused atomic.Int32
 		for i := 0; i < 100; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				_, err := e.svc.RecordCounterSale(e.ctx, e.cashier, "", e.estA.ID, payment.CounterSaleInput{
-					Amount: 5000, Method: store.PaymentMethodCredit, Description: "Lettino", CustomerID: e.custA.ID,
-				})
+				var err error
+				for attempt := 0; attempt < 50; attempt++ {
+					_, err = e.svc.RecordCounterSale(e.ctx, e.cashier, "", e.estA.ID, payment.CounterSaleInput{
+						Amount: 5000, Method: store.PaymentMethodCredit, Description: "Lettino", CustomerID: e.custA.ID,
+					})
+					if err == nil || !retryable(err) {
+						break
+					}
+					time.Sleep(time.Duration(attempt+1) * time.Millisecond)
+				}
 				switch {
 				case err == nil:
 					ok.Add(1)
-				case errors.Is(err, configerr.ErrValidation):
+				case errors.Is(err, configerr.ErrValidation), errors.Is(err, credit.ErrInsufficient):
 					refused.Add(1)
 				default:
 					t.Error(err)
@@ -531,10 +538,7 @@ func TestConcurrency_CreditRedemption_NeverNegative(t *testing.T) {
 		if ok.Load() != 1 || refused.Load() != 99 {
 			t.Fatalf("ok %d refused %d", ok.Load(), refused.Load())
 		}
-		bal, err := (credits{}).CreditBalance(e.ctx, e.db, e.esA, e.custA.ID, day0)
-		if err != nil || bal != 0 {
-			t.Fatalf("balance %d %v", bal, err)
-		}
+		assertCreditLedger(t, e, 0)
 		if n := e.count(t, "customer_credits", "customer_id = ? AND source = ?", e.custA.ID, store.CreditSourceRedemption); n != 1 {
 			t.Fatalf("redemption rows %d", n)
 		}
@@ -542,4 +546,83 @@ func TestConcurrency_CreditRedemption_NeverNegative(t *testing.T) {
 			t.Fatalf("credit payments %d", n)
 		}
 	})
+}
+
+// TestConcurrency_PayWithCredit_RealLedger (INV-47 / INV-70 / INV-71): 100
+// parallel credit payments from the magic link (credit.ApplyFromLink, 10.00
+// each on ten bookings) against a balance of 50.00: exactly five succeed,
+// the bookings receive exactly 50.00 in total and the stored balance equals
+// the ledger sum (0).
+func TestConcurrency_PayWithCredit_RealLedger(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		e, cs := creditEnv(t, db)
+		grant(t, e, cs, 5000)
+		var bookings []*store.Booking
+		for range 10 {
+			bookings = append(bookings, e.booking(t, "confirmed", 1000, 0, snapshot22and10))
+		}
+		var wg sync.WaitGroup
+		var ok, refused atomic.Int32
+		for i := range 100 {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				var err error
+				for attempt := 0; attempt < 50; attempt++ {
+					_, err = cs.ApplyFromLink(e.ctx, e.estA.ID, bookings[i%10].ID, 1000, "")
+					if err == nil || !retryable(err) {
+						break
+					}
+					time.Sleep(time.Duration(attempt+1) * time.Millisecond)
+				}
+				switch {
+				case err == nil:
+					ok.Add(1)
+				case errors.Is(err, credit.ErrInsufficient), errors.Is(err, configerr.ErrValidation):
+					refused.Add(1)
+				default:
+					t.Error(err)
+				}
+			}()
+		}
+		wg.Wait()
+		if ok.Load() != 5 || refused.Load() != 95 {
+			t.Fatalf("ok %d refused %d", ok.Load(), refused.Load())
+		}
+		assertCreditLedger(t, e, 0)
+		var paid money.Cents
+		for _, b := range bookings {
+			paid += e.assertLedger(t, b.ID)
+		}
+		if paid != 5000 {
+			t.Fatalf("paid with credit %d", paid)
+		}
+		if n := e.count(t, "customer_credits", "customer_id = ? AND source = ?", e.custA.ID, store.CreditSourceRedemption); n != 5 {
+			t.Fatalf("redemption rows %d", n)
+		}
+	})
+}
+
+// assertCreditLedger checks balance = SUM(ledger) = want for custA.
+func assertCreditLedger(t testing.TB, e *env, want money.Cents) {
+	t.Helper()
+	var sum int64
+	if err := e.db.NewSelect().TableExpr("customer_credits").ColumnExpr("COALESCE(SUM(amount), 0)").
+		Where("customer_id = ?", e.custA.ID).Scan(e.ctx, &sum); err != nil {
+		t.Fatal(err)
+	}
+	if bal := balanceOf(t, e); int64(bal) != sum || bal != want {
+		t.Fatalf("balance %d, ledger %d, want %d", bal, sum, want)
+	}
+}
+
+// retryable reports a transient lock error of the file-backed SQLite
+// database (single writer) under heavy contention.
+func retryable(err error) bool {
+	for _, s := range []string{"database is locked", "SQLITE_BUSY", "deadlock detected", "could not serialize"} {
+		if strings.Contains(err.Error(), s) {
+			return true
+		}
+	}
+	return false
 }

@@ -242,7 +242,17 @@ func (s *Service) ManageCancel(ctx context.Context, slug, token string, expected
 			out.RefundStatus = RefundProviderPending
 		}
 	default:
-		out.RefundStatus = s.refundOnline(ctx, pe.Scope, d, rf.Amount)
+		// M5B: the credit-paid part was already given back as credit
+		// (booking service, res.Recorded); only the rest goes to the provider.
+		due := rf.Amount
+		if res.Recorded != nil && res.Recorded.Method == store.PaymentMethodCredit {
+			due -= res.Recorded.Amount
+		}
+		if due <= 0 {
+			out.RefundStatus = RefundCredited
+			break
+		}
+		out.RefundStatus = s.refundOnline(ctx, pe.Scope, d, due)
 	}
 	if res.Applied {
 		fresh, err := s.d.Bookings.DetailIn(ctx, s.d.DB, pe.Scope, d.Booking.ID)

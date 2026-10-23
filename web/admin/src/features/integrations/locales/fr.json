@@ -1,5 +1,5 @@
 {
-  "ownerOnly": "Seul le titulaire peut gérer les intégrations.",
+  "ownerOnly": "Seul le propriétaire peut gérer les intégrations.",
   "never": "Jamais",
   "actions": "Actions",
   "saved": "Modifications enregistrées",
@@ -21,7 +21,7 @@
     "establishment": {
       "configure": {
         "label": "Configuration",
-        "description": "Établissement, plans, tarifs et règles."
+        "description": "Établissement, plans, tarifs et politiques."
       }
     },
     "payments": {
@@ -171,6 +171,8 @@
     "booking": "Réservations",
     "allocation": "Emplacements",
     "season": "Abonnements",
+    "waitlist": "Liste d'attente",
+    "credit": "Avoirs",
     "payment": "Paiements",
     "customer": "Clients",
     "cash_session": "Caisse",
@@ -196,7 +198,22 @@
       },
       "season": {
         "day_released": "Jour libéré par l'abonné",
-        "renewal_offered": "Renouvellement proposé"
+        "renewal_offered": "Renouvellement proposé",
+        "renewal_accepted": "Renouvellement accepté",
+        "renewal_declined": "Renouvellement refusé",
+        "renewal_expired": "Renouvellement expiré",
+        "rolled_over": "Nouvelle saison créée"
+      },
+      "waitlist": {
+        "joined": "Inscription sur la liste d'attente",
+        "offered": "Place proposée",
+        "offer_expired": "Offre expirée",
+        "converted": "Réservation depuis la liste d'attente"
+      },
+      "credit": {
+        "issued": "Avoir accordé",
+        "consumed": "Avoir utilisé",
+        "expired": "Avoir expiré"
       },
       "payment": {
         "succeeded": "Paiement réussi",

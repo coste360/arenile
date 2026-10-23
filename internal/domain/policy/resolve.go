@@ -164,6 +164,7 @@ func Merge(base, override Rules) Rules {
 		setIf(&out.SeasonReleaseCredit.Enabled, o.SeasonReleaseCredit.Enabled)
 		setIf(&out.SeasonReleaseCredit.Percent, o.SeasonReleaseCredit.Percent)
 	}
+	setIf(&out.CreditValidityDays, o.CreditValidityDays)
 	return out
 }
 

@@ -41,13 +41,22 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      // The M4 acceptance is a smartphone scenario (spec 28).
-      testIgnore: /m4-acceptance\.spec\.ts/,
+      // The M4 acceptance is a smartphone scenario (spec 28); M5B has its own project.
+      testIgnore: /(m4-acceptance|m5b)\.spec\.ts/,
     },
     {
       name: 'mobile',
       use: { ...devices['Pixel 7'] },
       testMatch: /(booking|m4-acceptance)\.spec\.ts/,
+    },
+    // M5 part B (season rollover, renewals, waitlist, credits): after the
+    // other projects, because it creates the next season and switches the
+    // payments to Stripe.
+    {
+      name: 'm5b',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /m5b\.spec\.ts/,
+      dependencies: ['chromium', 'mobile'],
     },
     // iOS Safari is the main phone browser on Italian beaches (spec 13.2):
     // cross-site iframes, partitioned storage and top navigation from a

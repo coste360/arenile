@@ -1,6 +1,6 @@
 {
   "title": "Bienvenue dans Arenile",
-  "description": "Créez l'utilisateur titulaire pour commencer : ensuite nous vous guidons dans la configuration de l'établissement.",
+  "description": "Créez l'utilisateur propriétaire pour commencer : nous vous guiderons ensuite dans la configuration de l'établissement.",
   "fields": {
     "organization": "Société ou établissement",
     "organizationHint": "Le nom de vos reçus, par exemple « Lido Azzurro srl ».",
@@ -8,7 +8,7 @@
     "email": "E-mail",
     "emailHint": "Vous l'utiliserez pour vous connecter. Arenile desktop n'envoie pas d'e-mails et ne se connecte pas à internet.",
     "password": "Mot de passe",
-    "passwordHint": "Au moins 10 caractères. Conservez-le : il sert aussi sur les autres appareils de la plage.",
+    "passwordHint": "Au moins 10 caractères. Conservez-le : il sert aussi sur les autres appareils de l'établissement.",
     "passwordConfirm": "Répétez le mot de passe"
   },
   "submit": "Créer l'utilisateur et continuer",
@@ -31,7 +31,7 @@
   },
   "done": {
     "title": "Configuration initiale terminée",
-    "description": "L'utilisateur titulaire existe déjà.",
+    "description": "L'utilisateur propriétaire existe déjà.",
     "login": "Aller à la connexion"
   }
 }

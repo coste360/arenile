@@ -1086,12 +1086,34 @@ func (s *Service) Cancel(ctx context.Context, p *auth.Principal, establishmentID
 		if rf.Amount <= 0 || rf.As == SettleNone {
 			return o, nil
 		}
+		// M5B: the credit-paid part of a money refund goes back as credit.
+		creditPart, err := creditRefundPart(ctx, tx, es, b.ID, rf)
+		if err != nil {
+			return nil, err
+		}
+		if creditPart > 0 && p.Can(es, auth.PermRefundsIssue) {
+			rf.Amount -= creditPart
+			diff["refund_credit_part"] = int64(creditPart)
+			o.after = func(ctx context.Context, tx bun.IDB, b *store.Booking) error {
+				_, err := s.recordCreditRefund(ctx, tx, p, es, b.ID, creditPart, in.Weather)
+				return err
+			}
+			if rf.Amount <= 0 {
+				return o, nil
+			}
+		}
 		record := rf.As == SettleCredit || in.RefundMethod != ""
 		if !record || !p.Can(es, auth.PermRefundsIssue) {
 			diff["refund_due"] = int64(rf.Amount)
 			return o, nil
 		}
+		creditAfter := o.after
 		o.after = func(ctx context.Context, tx bun.IDB, b *store.Booking) error {
+			if creditAfter != nil {
+				if err := creditAfter(ctx, tx, b); err != nil {
+					return err
+				}
+			}
 			req := refundRequest(b.ID, rf, in)
 			pm, err := s.d.Payments.RecordRefund(ctx, tx, p, es, req)
 			if err != nil {

@@ -51,8 +51,10 @@ export function SectionCard({
 }: SectionCardProps) {
   return (
     <Card className={cn('min-w-0 gap-4', flush && !footer && 'overflow-hidden pb-0', className)}>
-      <CardHeader className="gap-1">
-        <div className="flex min-w-0 items-center gap-3">
+      {/* Flex that wraps instead of the two-column grid of CardHeader: wide
+          actions move under the title on a phone instead of overlapping it. */}
+      <CardHeader className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div className="flex min-w-0 flex-1 basis-48 items-center gap-3">
           {Icon && (
             <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
               <Icon aria-hidden="true" className="size-4" />
@@ -66,7 +68,9 @@ export function SectionCard({
           </div>
         </div>
         {actions && (
-          <CardAction className="flex flex-wrap items-center gap-2">{actions}</CardAction>
+          <CardAction className="flex max-w-full flex-wrap items-center gap-2">
+            {actions}
+          </CardAction>
         )}
       </CardHeader>
       {children !== undefined && (

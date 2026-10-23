@@ -35,8 +35,11 @@ func (h *Handlers) GetManagedBooking(w http.ResponseWriter, r *http.Request, slu
 		problem.Error(w, r, h.Log, err)
 		return
 	}
+	out := managedToAPI(m)
+	h.attachRenewal(r, slug, token, &out)
+	out = h.withCredit(r, out, m) // M5B: credit_available (credits.go)
 	w.Header().Set("ETag", admin.ETag(m.Booking.Booking.Version))
-	writeJSON(w, http.StatusOK, managedToAPI(m))
+	writeJSON(w, http.StatusOK, out)
 }
 
 // GetManagedBookingQr implements GET /api/public/v1/{slug}/manage/{token}/qr.

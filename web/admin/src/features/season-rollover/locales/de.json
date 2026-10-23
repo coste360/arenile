@@ -1,0 +1,84 @@
+{
+  "title": "Neue Saison",
+  "description": "Erstellen Sie die nächste Saison, indem Sie Zeiträume, Schließtage, Preise und Richtlinien kopieren; bieten Sie dann den Abo-Inhabern die Verlängerung an.",
+  "back": "Saisons und Zeiträume",
+  "entry": "Neue Saison aus dieser",
+  "noSeasons": "Erstellen Sie zuerst eine Ausgangssaison.",
+  "step": {
+    "season": "1. Ausgangssaison und Daten",
+    "seasonHelp": "Die neue Saison übernimmt die Konfiguration der gewählten, mit auf das neue Jahr verschobenen Daten.",
+    "copy": "2. Was kopiert wird",
+    "copyHelp": "Katalog, Pläne und Plätze hängen nicht von der Saison ab und bleiben unverändert.",
+    "preview": "3. Vorschau der Saison {{year}}",
+    "previewHelp": "Vom {{from}} bis {{to}}. Es wurde noch nichts erstellt."
+  },
+  "fields": {
+    "source": "Ausgangssaison",
+    "targetYear": "Jahr der neuen Saison",
+    "yearInvalid": "Geben Sie ein Jahr zwischen 2000 und 2100 ein.",
+    "opensOn": "Eröffnung",
+    "closesOn": "Schließung",
+    "datesInvalid": "Die Schließung muss nach der Eröffnung liegen."
+  },
+  "options": {
+    "include_rate_periods": {
+      "label": "Tarifzeiträume",
+      "help": "Neben-, Zwischen- und Hauptsaison mit denselben Daten im neuen Jahr."
+    },
+    "include_closure_days": {
+      "label": "Schließtage",
+      "help": "Die Schließtage der Saison, auf das neue Jahr verschoben."
+    },
+    "include_price_rules": {
+      "label": "Preisregeln",
+      "help": "Preisliste, Zuschläge und Rabatte der Saison."
+    },
+    "include_fixed_prices": {
+      "label": "Festpreise",
+      "help": "Pauschalpreise je Paket und Zeitraum."
+    },
+    "include_policies": {
+      "label": "Richtlinien",
+      "help": "Anzahlungen, Stornierungen und Guthaben der Saison."
+    }
+  },
+  "preview": "Vorschau berechnen",
+  "apply": "Saison {{year}} erstellen",
+  "openApplied": "Zum Ergebnis",
+  "alreadyApplied": "Die Saison {{year}} wurde bereits mit diesem Saisonwechsel erstellt.",
+  "warnings": "Zu prüfen",
+  "warning": {
+    "closure_outside_season": "Schließtag {{date}}: das verschobene Datum ({{target}}) liegt außerhalb der neuen Saison und wurde nicht kopiert.",
+    "closure_already_closed": "Schließtag {{date}}: die neue Saison ist am {{target}} bereits geschlossen.",
+    "closure_duplicate": "Schließtag {{date}}: der {{target}} ist bereits durch einen anderen kopierten Schließtag belegt."
+  },
+  "readOnly": "Nur Benutzer mit Konfigurationsrechten können die Saison erstellen.",
+  "counts": {
+    "rate_periods": "Tarifzeiträume",
+    "closure_days": "Schließtage",
+    "price_rules": "Preisregeln",
+    "fixed_prices": "Festpreise",
+    "policies": "Richtlinien",
+    "season_passes": "Zu verlängernde Abos",
+    "seasonPassesHint": "Bestätigte Abos der Ausgangssaison"
+  },
+  "confirm": {
+    "title": "Saison {{year}} erstellen?",
+    "description": "Die Saison {{year}} wird als Entwurf mit der kopierten Konfiguration erstellt. Eine Wiederholung erzeugt keine Duplikate.",
+    "submit": "Saison erstellen"
+  },
+  "done": {
+    "title": "Saison {{year}} erstellt",
+    "description": "Prüfen Sie Daten und Preise der neuen Saison und bieten Sie dann den Abo-Inhabern die Verlängerung an.",
+    "openSeason": "Saison öffnen",
+    "renewals_one": "{{count}} Abo-Inhaber die Verlängerung anbieten",
+    "renewals_other": "{{count}} Abo-Inhabern die Verlängerung anbieten"
+  },
+  "history": {
+    "title": "Bereits durchgeführte Saisonwechsel",
+    "seasons": "Saisons",
+    "copied": "Kopiert",
+    "summary": "{{periods}} Zeiträume, {{rules}} Regeln, {{prices}} Festpreise",
+    "when": "Durchgeführt am"
+  }
+}

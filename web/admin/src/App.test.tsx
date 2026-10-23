@@ -159,6 +159,8 @@ describe('admin app', () => {
       'Calendario',
       'Clienti',
       'Abbonamenti',
+      'Rinnovi',
+      "Lista d'attesa",
       'Cassa',
       'Report',
     ];

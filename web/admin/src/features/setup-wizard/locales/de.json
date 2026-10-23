@@ -1,6 +1,6 @@
 {
   "title": "Geführte Einrichtung",
-  "description": "Daten, Vorlage, Reihen auf der Karte, Schnellpreisliste, öffentliche Seite und Zahlungen. Jeder Schritt kann übersprungen und später geändert werden.",
+  "description": "Daten, Vorlage, Reihen auf dem Plan, Schnellpreisliste, öffentliche Seite und Zahlungen. Jeder Schritt kann übersprungen und später geändert werden.",
   "loading": "Wird geladen…",
   "forbidden": "Die geführte Einrichtung ist Inhabern und Managern vorbehalten.",
   "progress": "Fortschritt der Einrichtung",
@@ -15,7 +15,7 @@
   "steps": {
     "details": "Daten und Sprachen",
     "template": "Vorlage",
-    "rows": "Reihen auf der Karte",
+    "rows": "Reihen auf dem Plan",
     "pricelist": "Schnellpreisliste",
     "publicPage": "Öffentliche Seite",
     "payments": "Zahlungen"
@@ -45,7 +45,7 @@
       },
       "quantity_beach": {
         "name": "Ausgestatteter Strand nach Menge",
-        "description": "Ausstattung ohne festen Platz: verkauft wird die Anzahl von Schirmen und Liegen."
+        "description": "Ausstattung ohne festen Platz: Verkauft wird die Anzahl von Sonnenschirmen und Liegen."
       },
       "lido_with_pool": {
         "name": "Strandbad mit Pool",
@@ -59,37 +59,37 @@
     "current": "Aktuell"
   },
   "rows": {
-    "intro": "Gewählte Vorlage: {{template}}. Geben Sie die Anzahl der Reihen und Plätze pro Reihe an: Die Plätze werden mit automatischer Nummerierung auf der Karte angelegt.",
+    "intro": "Gewählte Vorlage: {{template}}. Geben Sie die Anzahl der Reihen und Plätze pro Reihe an: Die Plätze werden mit automatischer Nummerierung auf dem Plan angelegt.",
     "rows": "Reihen",
     "spotsPerRow": "Plätze pro Reihe",
     "total_one": "{{count}} Platz",
     "total_other": "{{count}} Plätze",
-    "noRows": "Diese Vorlage verwendet keine Karte mit Reihen: Es werden Zonen und Ausstattung nach Menge angelegt.",
+    "noRows": "Diese Vorlage verwendet keinen Plan mit Reihen: Es werden Zonen und Ausstattung nach Menge angelegt.",
     "season": "Erste Saison",
     "year": "Jahr",
     "opensOn": "Öffnung",
     "closesOn": "Schließung",
-    "apply": "Saison und Karte anlegen",
+    "apply": "Saison und Plan anlegen",
     "applying": "Wird angelegt…",
     "applied": "Einrichtung angelegt.",
     "appliedSummary": "Plätze: {{spots}} · Zonen: {{zones}} · Pakete: {{packs}} · Perioden: {{periods}}.",
-    "alreadyConfigured": "Dieser Betrieb hat bereits eine Saison oder eine Karte ({{spots}} Plätze): Sie können weitermachen oder sie im Editor bearbeiten.",
-    "openMap": "Karte öffnen",
-    "openMaps": "Zu den Karten",
+    "alreadyConfigured": "Dieser Betrieb hat bereits eine Saison oder einen Plan ({{spots}} Plätze): Sie können weitermachen oder sie im Editor bearbeiten.",
+    "openMap": "Plan öffnen",
+    "openMaps": "Zu den Plänen",
     "mapName": "Strand",
     "dates": "Öffnung und Schließung"
   },
   "pricelist": {
-    "intro": "Tagespreis je Kategorie (Reihe) und Periode der Saison {{year}}. Die Grundregeln werden automatisch erzeugt; Halbtag und lange Formeln richten Sie unter Preise ein.",
+    "intro": "Tagespreis je Kategorie (Reihe) und Periode der Saison {{year}}. Die Grundregeln werden automatisch erzeugt; Halbtag und längere Buchungsdauern richten Sie unter Preise ein.",
     "caption": "Tagespreise in {{currency}}",
     "category": "Kategorie",
     "cellAria": "Tagespreis {{category}}, Periode {{period}}",
-    "hint": "Beträge inkl. MwSt., z. B. {{example}}. Nicht benötigte Zellen leer lassen.",
+    "hint": "Beträge inkl. MwSt., z. B. {{example}}. Lassen Sie nicht benötigte Zellen leer.",
     "generate": "Preisregeln erzeugen",
     "generating": "Wird erzeugt…",
     "created_one": "{{count}} Preisregel erstellt (ersetzt: {{replaced}}).",
     "created_other": "{{count}} Preisregeln erstellt (ersetzt: {{replaced}}).",
-    "atLeastOne": "Mindestens einen Preis eingeben",
+    "atLeastOne": "Geben Sie mindestens einen Preis ein",
     "noSeason": "Eine Saison ist nötig: Schließen Sie den vorigen Schritt ab oder legen Sie sie unter Saisons und Perioden an.",
     "noZones": "Zonen mit Preiskategorie sind nötig: Wenden Sie eine Vorlage an oder legen Sie sie unter Zonen an.",
     "noPeriods": "Tarifperioden sind nötig: Legen Sie sie unter Saisons und Perioden an."
@@ -107,9 +107,9 @@
   },
   "finished": {
     "title": "Einrichtung abgeschlossen",
-    "text": "Alles Weitere können Sie über das Menü Einrichtung verfeinern.",
+    "text": "Alles Weitere können Sie über das Menü Konfiguration verfeinern.",
     "skipped": "Übersprungene Schritte: {{steps}}.",
-    "maps": "Karte bearbeiten",
+    "maps": "Plan bearbeiten",
     "pricing": "Preise prüfen",
     "settings": "Betriebseinstellungen",
     "restart": "Geführte Einrichtung erneut öffnen",

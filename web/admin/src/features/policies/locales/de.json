@@ -72,7 +72,7 @@
     "max_lead_time_days": "Maximaler Vorlauf (Tage)",
     "same_day": "Buchung am selben Tag",
     "same_day_until": "Am selben Tag bis",
-    "allowed_formulas": "Erlaubte Formeln",
+    "allowed_formulas": "Erlaubte Buchungsdauern",
     "min_days": "Mindesttage",
     "max_days": "Höchsttage",
     "fixed_start_weekday": "Vorgeschriebener Anreisetag",
@@ -117,8 +117,8 @@
     "gazebo_approval": "Pavillons mit Freigabe",
     "online_full": "Online: Vollzahlung",
     "desk_free": "Kasse: keine Einschränkungen",
-    "warnNoPeak": "Kein August-Zeitraum gefunden: Zeiträume manuell wählen.",
-    "warnNoGazebo": "Kein Pavillon-Paket gefunden: Pakete manuell wählen."
+    "warnNoPeak": "Kein August-Zeitraum gefunden: Wählen Sie die Zeiträume manuell.",
+    "warnNoGazebo": "Kein Pavillon-Paket gefunden: Wählen Sie die Pakete manuell."
   },
   "daysShort": "Tage",
   "tiersCaption": "Erstattungsstufen"

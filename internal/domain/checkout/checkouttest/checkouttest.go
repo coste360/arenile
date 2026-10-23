@@ -25,6 +25,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/checkout"
+	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/fiscal"
@@ -56,6 +57,11 @@ type Env struct {
 	Pay    *Payments
 	Notify *Notifier
 	Pool   *store.Pool
+	// M5B: the real customer, payment and credit services (the credit
+	// ledger is the Credits port of the payments, as internal/app wires it).
+	Customers *customer.Service
+	Payments  *payment.Service
+	Credits   *credit.Service
 }
 
 const Slug = "lido-delfino"
@@ -80,6 +86,8 @@ func New(t testing.TB, db *store.DB, opts ...Options) *Env {
 	reg := app.NewRegistry(c, ext.Extensions{})
 	inv := inventory.NewService(inventory.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob})
 	cust := customer.NewService(customer.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob})
+	ledger := credit.NewService(credit.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob})
+	cust.UseCreditLedger(ledger)
 	cs := cash.NewService(cash.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob})
 	fs := fiscal.NewService(fiscal.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob, Drivers: reg})
 	pays := payment.NewService(payment.Deps{
@@ -91,13 +99,17 @@ func New(t testing.TB, db *store.DB, opts ...Options) *Env {
 		Releases: pass.NewResale(pass.ResaleDeps{Clock: c, Credits: cust}),
 	})
 	pays.SetConfirmer(bk)
+	ledger.SetPayments(pays)
 	passes := pass.NewService(pass.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob, Bookings: bk, Inventory: inv, Credits: cust})
 	keys, err := crypto.NewKeyRing(make([]byte, crypto.KeySize))
 	if err != nil {
 		t.Fatal(err)
 	}
 	on := online.NewService(online.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob, Keys: keys, Providers: testProviders{}, BaseURL: "https://prenota.example.org"})
-	e := &Env{T: t, F: f, DB: db, Ctx: ctx, Online: on, Book: bk, Inv: inv, Pay: &Payments{}, Notify: &Notifier{db: db, clock: c}}
+	e := &Env{
+		T: t, F: f, DB: db, Ctx: ctx, Online: on, Book: bk, Inv: inv, Pay: &Payments{}, Notify: &Notifier{db: db, clock: c},
+		Customers: cust, Payments: pays, Credits: ledger,
+	}
 	e.ES, err = store.SystemEstablishmentScope(ctx, db, f.Est.ID)
 	if err != nil {
 		t.Fatal(err)

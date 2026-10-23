@@ -59,18 +59,18 @@
     "previewHint": "Dans l'aperçu vous pouvez essayer toutes les étapes : aucune réservation n'est créée.",
     "embed": {
       "title": "Code d'intégration",
-      "description": "Lien direct et code à coller dans le site de la plage.",
+      "description": "Lien direct et code à coller dans le site de l'établissement.",
       "pageUrl": "Lien de la page publique",
       "script": "Code recommandé (script : gère la hauteur, la langue et les dates)",
       "iframe": "Sinon : iframe",
       "originsList": "Sites autorisés : {{origins}}. Sur d'autres sites le navigateur bloque l'intégration.",
-      "originsNone": "Aucun site autorisé : la page fonctionne seulement en lien direct. Ajoutez votre site dans \"Réservations en ligne\".",
+      "originsNone": "Aucun site autorisé : la page fonctionne seulement en lien direct. Ajoutez votre site dans « Réservations en ligne ».",
       "events": "Le script relaie sur la page du site les événements arenile:booked (code de réservation uniquement), arenile:resize et arenile:navigate, utiles pour suivre les conversions. Paramètres facultatifs : data-lang, data-from, data-to, data-pack."
     }
   },
   "terms": {
     "title": "Conditions et politique de confidentialité",
-    "description": "Versions immuables : le paiement demande d'accepter la version courante et chaque réservation enregistre celle acceptée.",
+    "description": "Versions immuables : le parcours de réservation demande d'accepter la version courante et chaque réservation enregistre celle acceptée.",
     "new": "Nouvelle version",
     "empty": "Aucune version publiée",
     "emptyHint": "Publiez les conditions de réservation avant d'ouvrir les réservations en ligne.",
@@ -87,7 +87,7 @@
     "marketing": "Texte du consentement marketing",
     "marketingHint": "Facultatif, affiché à côté de la case de consentement séparée.",
     "makeCurrent": "Rendre courante",
-    "makeCurrentHint": "Dès le prochain paiement les clients accepteront cette version.",
+    "makeCurrentHint": "Dès la prochaine réservation en ligne, les clients accepteront cette version.",
     "publish": "Publier",
     "published": "Version {{version}} publiée"
   },
@@ -113,7 +113,7 @@
     "webhookConfigured": "Secret du webhook configuré",
     "webhookMissing": "Secret du webhook manquant",
     "verifiedAt": "Vérifiée le {{date}}",
-    "manualHint": "Les réservations en ligne se paient à la plage ou sont confirmées selon la politique en ligne.",
+    "manualHint": "Les réservations en ligne se paient sur place ou sont confirmées selon la politique en ligne.",
     "incomplete": "Pour encaisser en ligne il faut la clé secrète et le secret du webhook.",
     "test": "Vérifier les identifiants",
     "testOk": "Identifiants valides",
@@ -142,7 +142,7 @@
       "events": "Événements à envoyer",
       "step1": "Dans Stripe, ouvrez Développeurs → Webhooks et ajoutez un point de terminaison avec cette URL.",
       "step2": "Sélectionnez les événements listés ci-dessus et enregistrez.",
-      "step3": "Copiez le secret de signature (whsec_…) dans le champ ci-dessus et cliquez sur \"Vérifier les identifiants\"."
+      "step3": "Copiez le secret de signature (whsec_…) dans le champ ci-dessus et cliquez sur « Vérifier les identifiants »."
     },
     "validation": {
       "publishable": "La clé publiable commence par pk_test_ ou pk_live_",
@@ -172,7 +172,7 @@
       "replyTo": "Répondre à",
       "replyToHint": "Les réponses des clients arrivent ici.",
       "managerEmail": "E-mail du gérant",
-      "managerEmailHint": "Reçoit les notifications pour la plage.",
+      "managerEmailHint": "Reçoit les notifications pour l'établissement.",
       "customer": "Au client",
       "manager": "Au gérant"
     },
@@ -187,7 +187,7 @@
     "manager": {
       "new_online_booking": "Nouvelle réservation en ligne",
       "approval_requested": "Demande à approuver",
-      "payment_failed": "Paiement refusé",
+      "payment_failed": "Échec du paiement",
       "webhook_error": "Erreur du webhook de paiement"
     },
     "test": {
@@ -233,7 +233,7 @@
       "test": "E-mail de test",
       "manager_new_booking": "Nouvelle réservation en ligne",
       "manager_approval_requested": "Demande à approuver",
-      "manager_payment_failed": "Paiement refusé",
+      "manager_payment_failed": "Échec du paiement",
       "manager_delivery_failed": "E-mail non distribué"
     }
   }

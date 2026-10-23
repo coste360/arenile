@@ -1,0 +1,55 @@
+---
+title: Customer credits
+description: Credit accrued from cancellations, released days and goodwill gestures, used as a payment method; ledger of movements, expiry and adjustments.
+sidebar:
+  order: 24.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Customers** → customer page → **Credit movements**. **Who:** granting credit and
+adjustments needs the permission to issue refunds; using it only needs to be able to record payments.
+
+**Credit** is an amount the customer can spend at the establishment as a payment method. It accrues automatically
+when the [policy](/en/gestore/policy/) says so (cancellation, bad weather, released and resold pass days) or you
+grant it by hand.
+
+<Screenshot name="admin-customer-credits" alt="Customer page with available credit, expiring credit and ledger of movements" />
+
+## Balance and movements
+
+- **Available credit**: what the customer can spend today.
+- **Expiring**: the credit expiring soon, with the date.
+- The table lists every movement: **Cancellation**, **Pass release**, **Bad weather**, **Manual credit**,
+  **Goodwill**, **Use**, **Expiry**, **Adjustment**, with the linked booking.
+
+The balance is always the sum of the movements and **can never go negative**, not even when two cashiers use it at
+the same moment. Expired credit is removed automatically.
+
+## Granting credit
+
+<Steps>
+
+1. **Grant credit**.
+2. Choose the **Type**: **Goodwill**, **Manual credit** or **Adjustment** (in that case **Add** or **Remove**).
+3. Enter the **Amount**, optionally the **Expiry** (empty = validity set by the policy) and a **Note**.
+4. **Grant** (or **Remove from balance**).
+
+</Steps>
+
+## Using the credit
+
+- From the customer page: **Use on a booking**, choose the booking with a balance due and the amount (at most the
+  smaller of credit and balance), then **Use the credit**.
+- From a booking: **Record payment** with the **Customer credit** method; the panel shows the available credit.
+- Customers can use it themselves from the booking's manage link (**Use … of credit for the balance**) and when
+  accepting a [renewal](/en/gestore/rinnovi/).
+
+<Aside type="note" title="Credit goes back as credit">
+When you refund a booking paid partly with credit, that part goes back to the customer's credit balance, never as
+money. The part paid with other methods follows the refund policy.
+</Aside>
+
+Credit is included in the customer's data export (GDPR); with anonymisation the amounts stay for the accounts and
+the notes disappear.

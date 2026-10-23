@@ -17,6 +17,10 @@ import planningIt from '../features/planning/locales/it.json';
 import policiesIt from '../features/policies/locales/it.json';
 import pricingIt from '../features/pricing/locales/it.json';
 import reportsIt from '../features/reports/locales/it.json';
+import renewalsIt from '../features/renewals/locales/it.json';
+import waitlistIt from '../features/waitlist/locales/it.json';
+import creditsIt from '../features/credits/locales/it.json';
+import seasonRolloverIt from '../features/season-rollover/locales/it.json';
 import setupWizardIt from '../features/setup-wizard/locales/it.json';
 
 type Messages = Record<string, unknown>;
@@ -208,6 +212,43 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../offline/locales/en.json'),
       de: () => import('../offline/locales/de.json'),
       fr: () => import('../offline/locales/fr.json'),
+    },
+  },
+  // M5B: renewals, waitlist, customer credits, season rollover.
+  {
+    ns: 'renewals',
+    it: renewalsIt,
+    load: {
+      en: () => import('../features/renewals/locales/en.json'),
+      de: () => import('../features/renewals/locales/de.json'),
+      fr: () => import('../features/renewals/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'waitlist',
+    it: waitlistIt,
+    load: {
+      en: () => import('../features/waitlist/locales/en.json'),
+      de: () => import('../features/waitlist/locales/de.json'),
+      fr: () => import('../features/waitlist/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'credits',
+    it: creditsIt,
+    load: {
+      en: () => import('../features/credits/locales/en.json'),
+      de: () => import('../features/credits/locales/de.json'),
+      fr: () => import('../features/credits/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'seasonRollover',
+    it: seasonRolloverIt,
+    load: {
+      en: () => import('../features/season-rollover/locales/en.json'),
+      de: () => import('../features/season-rollover/locales/de.json'),
+      fr: () => import('../features/season-rollover/locales/fr.json'),
     },
   },
 ];

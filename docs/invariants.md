@@ -319,12 +319,15 @@ Verificata da: `TestSeedDemoOperations_VolumesVATAndIdempotency`, `TestSeedDemoO
 (`arenile seed demo` usa lo stesso adattatore `App.DemoOperations`; `TestCLI_Lifecycle` in `cmd/arenile` lo esegue).
 
 **INV-47 — Credito cliente mai negativo.**
-Per ogni cliente la somma dei movimenti non scaduti di `customer_credits` è `>= 0`, anche con redemption
-concorrenti su prenotazioni diverse o vendite libere: ogni redemption blocca la riga del cliente
-(`store.LockCustomer`, UPDATE no-op nella transazione del pagamento) prima di leggere il saldo, così due
-pagamenti non possono spendere due volte lo stesso credito (lo schema ha solo `CHECK amount <> 0`).
-Verificata da: `TestConcurrency_CreditRedemption_NeverNegative` (`internal/domain/payment`, tag `integration`,
-100 tentativi, SQLite e PostgreSQL). Stato: implemented.
+Per ogni cliente la somma dei movimenti di `customer_credits` è `>= 0`, anche con redemption concorrenti su
+prenotazioni diverse, dal link magico o da vendite libere. Dalla M5B la garanzia è quella di INV-70: ogni
+redemption passa dal servizio pagamenti al registro `credit.Service` (via `customer.UseCreditLedger`), che blocca la
+riga del cliente e quella di `customer_credit_balances` e applica l'UPDATE condizionale del saldo; il
+`CHECK (balance >= 0)` è l'ultima difesa. Verificata da: `TestConcurrency_CreditRedemption_NeverNegative` (100
+vendite libere parallele con lo stesso credito sul registro reale: una sola riesce) e
+`TestConcurrency_PayWithCredit_RealLedger` (100 pagamenti dal link magico su dieci prenotazioni: esattamente cinque,
+saldo = somma del registro = 0), entrambi in `internal/domain/payment`, tag `integration`, SQLite e PostgreSQL.
+Stato: implemented.
 
 ## Pagina pubblica e pagamenti online (spec 7.5, 7.6, 12, 13, 19 — M4)
 
@@ -525,3 +528,106 @@ Verificata da: `TestReorientLayout_PropertyRoundTripIsIdentity`, `TestReorientLa
 `TestReorientLayout_AllSideCombinations`, `TestReorientLayout_TilesKeepTheTileGrid` (`internal/domain/mapping`),
 `TestMappingIntegration_ReorientMap`, `TestMapsHTTP_Reorient`, `TestSeedDemo_UpgradesSeaToTop` (tag `integration`,
 SQLite e PostgreSQL) e `e2e/tests/map-sea.spec.ts`. Stato: implemented.
+
+**INV-67 — Passaggio di stagione atomico e idempotente.**
+L'applicazione di `POST /seasons/{id}/rollover` crea in una sola transazione la stagione dell'anno indicato (bozza),
+periodi tariffari, regole, prezzi fissi, policy e chiusure spostate sull'anno (stesso giorno della settimana, festività
+fisse sulla loro data, duplicati e date fuori stagione scartati con un avviso), la riga `season_rollovers`, l'audit
+`season.rolled_over` e l'evento `season.rolled_over`: o tutto o niente. L'anteprima esegue le stesse scritture in una
+transazione sempre annullata, quindi riporta esattamente ciò che l'applicazione copierebbe senza lasciare tracce. La
+chiave unica `(establishment_id, source_season_id, target_year)` e il lock sulla stagione di origine rendono
+l'applicazione idempotente anche in concorrenza: una seconda applicazione (o 99 concorrenti) restituisce il risultato
+registrato (`already_applied`, HTTP 200); una stagione di quell'anno non creata da questo passaggio è `409
+season_rollover_conflict`.
+Verificata da: `TestRollover_PreviewApplyIdempotent`, `TestRollover_Refusals`, `TestConcurrency_RolloverApply`
+(`internal/domain/rollover`, 100 applicazioni parallele), `TestAcceptance_SeasonCycle` (`internal/acceptance`), tutti
+con tag `integration` su SQLite e PostgreSQL, e le tabelle pure `TestTargetDates_Scenarios`,
+`TestPlanClosureDays_Scenarios`. Stato: implemented.
+
+**INV-68 — Diritto di prelazione garantito dal database.**
+Una proposta di rinnovo aperta (`proposed`/`accepted`) possiede una prenotazione `held` della nuova stagione sulla
+stessa postazione, creata dal servizio prenotazioni, con hold fino alla scadenza della prelazione (creata con l'hold
+massimo del pannello e prorogata alla scadenza nella stessa transazione): prima della scadenza nessun altro canale può
+vendere quella postazione, perché la decide la chiave unica di `spot_allocations`, mai un controllo applicativo.
+L'accettazione trasforma le allocazioni `hold` in allocazioni `season` (mai una seconda riga); rifiuto, scadenza,
+rilascio forzato e chiusura della campagna liberano la postazione solo tramite il servizio prenotazioni (annullata o
+scaduta, `allocation.released`). Al più una proposta aperta per abbonamento di origine (indice unico parziale) e una
+campagna per coppia di stagioni. La prelazione segue l'abbonamento di origine: se quello viene annullato dopo la
+creazione della campagna, il pannello e il link rifiutano l'accettazione (`ErrSourceCancelled`, 409) e il sink
+`renewal` (evento `booking.cancelled`) o il job `renewals.sync` fanno scadere la proposta e liberano la postazione
+anche prima della scadenza (`source_pass_cancelled`); il job blocca anche la riga dell'abbonamento di origine.
+Verificata da: `TestConcurrency_RenewalAcceptVsPublicSale` (99 vendite parallele contro l'accettazione: nessuna
+vendita; 99 vendite contro il rifiuto: al più una), `TestConcurrency_RenewalProposalAccept` (100 accettazioni
+parallele da banco e link: una sola conversione), `TestRenewal_RevokedPassReleasesPreemption`,
+`TestRenewal_CampaignLifecycle`, `TestRenewal_SkipsAndBulk` (`internal/domain/renewal`) e
+`TestAcceptance_SeasonCycle`, con tag `integration` su SQLite e PostgreSQL. Stato: implemented.
+
+**INV-69 — Rinnovo confermato solo dal webhook o dal driver manuale, ogni passaggio tracciato.**
+L'accettazione online di un rinnovo dal link magico porta la prenotazione in `pending_payment` e avvia il pagamento
+(acconto o saldo) con il gateway di M4; la conferma arriva solo dal webhook del provider (o dal driver manuale:
+accettazione dal pannello con `confirm`, rinnovo a costo zero), mai dal ritorno del browser. Il job `renewals.sync`
+allinea la proposta alla prenotazione (`converted` se confermata, `expired` se scaduta o annullata, rilascio alla
+scadenza). Ogni passaggio di una proposta scrive audit ed evento outbox (`season.renewal_offered`,
+`season.renewal_accepted`, `season.renewal_declined`, `season.renewal_expired`) nella stessa transazione del
+cambiamento della prenotazione; i payload portano solo id, stati e canale, e il motivo del rifiuto (testo libero) resta
+sulla proposta, mai nel registro attività.
+Verificata da: `TestRenewal_CampaignLifecycle` (nessuna conversione prima del webhook, conteggi outbox e audit, motivo
+assente dall'audit) e `TestAcceptance_SeasonCycle` (webhook Stripe firmato), con tag `integration`, e le tabelle pure
+`TestPublicActions_Scenarios`, `TestAmountDue_Scenarios`. Stato: implemented.
+
+**INV-70 — Saldo crediti = somma del registro, mai negativo, nemmeno in concorrenza.**
+Ogni movimento di `customer_credits` passa da `credit.Service` (anche quelli di pagamenti e abbonamenti: il servizio
+clienti delega `GrantCredit` / `CreditBalance` al registro): nella stessa transazione blocca la riga di
+`customer_credit_balances`, materializza le scadenze prima di un addebito, inserisce la riga e aggiorna il saldo con un
+UPDATE condizionale (`balance + importo >= 0`), con audit ed evento `credit.issued` / `credit.consumed` /
+`credit.expired`. Zero righe aggiornate = `422 credit_insufficient` e nessuna scrittura; il `CHECK (balance >= 0)` del
+database è l'ultima difesa. Uno storno di un credito già speso (`pass.UnmarkResold`, fonti `cancellation`,
+`season_release`, `weather` negative) è limitato a quanto resta, senza bloccare l'annullamento che lo causa. La
+scadenza è materializzata con una riga `expiry` per credito (`reference_credit_id`, unica), consumo FIFO per data di
+scadenza, dove il giorno di un addebito è il giorno di calendario dello stabilimento (mai il giorno UTC);
+`available` = saldo meno le scadenze non ancora materializzate. Il job orario `credits.expire` è idempotente, percorre
+tutti i clienti candidati a pagine (keyset) considerando solo chi ha saldo positivo (un credito interamente usato non
+torna a ogni esecuzione) e un cliente che fallisce viene registrato e saltato senza bloccare gli altri. La migrazione
+00008 porta a zero con una riga `adjustment` i registri legacy con somma negativa, così `balance = SUM(registro)` vale
+dal primo avvio; i crediti legacy già scaduti restano nel saldo finché il job o il primo addebito li materializzano.
+Verificata da: `TestConcurrency_CreditSpend` (100 addebiti paralleli su un saldo da 5: esattamente 5 riusciti),
+`TestCreditLedger_GrantSpendExpire`, `TestCreditLedger_NeverNegative`, `TestCreditLedger_ReversalCappedAtBalance`,
+`TestCreditLedger_PolicyValidity`, `TestCreditLedger_ExpireAllSkipsConsumedGrants` (`internal/domain/credit`, tag
+`integration`, SQLite e PostgreSQL), `TestMigration00008_CreditBackfillAndDown` (`internal/store`) e le proprietà
+`TestAllocate_BalanceInvariant`, `TestAllocate_ExpiredLotNeverConsumed` (rapid). Stato: implemented.
+
+**INV-71 — Il credito torna credito; nel pubblico solo con identità verificata.**
+Il pagamento con metodo `credit` è registrato dal servizio pagamenti (driver manuale, documento fiscale, `paid_amount`,
+audit ed evento nella stessa transazione del movimento `redemption`); dalla pagina pubblica è possibile solo dal link
+magico della prenotazione (`/manage/{token}/credits`, `/manage/{token}/apply-credit`, `credit_available`) o
+dall'accettazione di un rinnovo (`renewal.CreditApplier`), mai dal checkout anonimo. Un rimborso in denaro di una
+prenotazione pagata in parte con credito segue una sola regola (`payment.CreditRefundSplit`, "prima il denaro"):
+gli altri metodi coprono il rimborso finché bastano (quanto pagato con contanti, carta o online, al netto dei rimborsi
+fatti e di quelli in corso presso il provider) e solo l'eccedenza, fino alla parte pagata con credito, torna come
+credito (fonte `cancellation`/`weather`, scadenza da `credit_validity_days` della policy della prenotazione), sia
+all'annullamento (pannello e link) sia con `POST .../refunds`; un rimborso mirato a un pagamento con credito torna
+interamente come credito `cancellation`. Il credito speso su una prenotazione che scade, viene rifiutata o annullata
+prima della conferma (hold scaduto, rinnovo rifiutato o scaduto) torna come credito nella stessa transazione, prima
+del rimborso online della parte in denaro (INV-51).
+Verificata da: `TestRefund_CreditPaidPartGoesBackAsCredit`, `TestPayWithCredit_ManageLinkPartial`,
+`TestApplyCreditToBooking_HeldConfirmsAtDeposit` (`internal/domain/payment`),
+`TestBookingCancel_CreditPaidPartReturnsAsCredit`, `TestBooking_ExpiredHeldCreditReturnsCredit`
+(`internal/domain/booking`), `TestRenewal_DeclinedAfterCreditReturnsCredit` (`internal/domain/renewal`),
+`TestPublicHTTP_CreditsAndWaitlist` (`internal/http/public`), tag `integration`, SQLite e PostgreSQL. Stato:
+implemented.
+
+**INV-72 — Lista d'attesa: un posto liberato, una sola offerta, protetta dal database.**
+Il sink `waitlist` reagisce agli eventi di rilascio (`booking.cancelled`, `booking.expired`, `hold.released`,
+`season.day_released`, `allocation.released`) e offre l'inventario libero alle iscrizioni compatibili in ordine
+(`priority`, poi data di iscrizione): ogni offerta è un hold (`holds` + allocazioni, chiave unica di
+`spot_allocations` e contatori dei pool, quota online del canale dell'iscrizione) creato nella stessa transazione del
+passaggio `waiting -> offered` (condizionale sulla versione), della riga `waitlist_offers` (una sola offerta attiva per
+iscrizione e per hold, indici unici), dell'audit e dell'evento `waitlist.offered`. Offerte scadute, rifiutate o
+revocate rilasciano l'hold e passano il posto all'iscrizione successiva (mai di nuovo alla stessa per quel rilascio).
+L'accettazione converte l'hold in una prenotazione `held` del cliente con sessione di checkout di M4: la conferma resta
+al webhook o al driver manuale (INV-19). Il link personale è un token da 256 bit salvato come hash e cifrato nella coda
+email; l'anonimizzazione del cliente rimuove le sue iscrizioni e cancella note e link.
+Verificata da: `TestConcurrency_WaitlistOffer` (100 consegne concorrenti dello stesso rilascio: una sola offerta, un
+solo hold), `TestWaitlist_CancellationOffersToFirstEntryAndAcceptGoesToCheckout`,
+`TestWaitlist_ExpiredOfferMovesToNextEntry`, `TestWaitlist_PanelOperations`, `TestWaitlist_PublicJoinAndAnonymisation`
+(`internal/domain/waitlist`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.

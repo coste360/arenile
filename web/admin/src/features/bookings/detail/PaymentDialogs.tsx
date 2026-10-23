@@ -16,6 +16,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { newIdempotencyKey } from '../../configuration/lib/validation';
+import { CreditAvailableHint } from '../../credits';
 import { useRecordPayment, useRecordRefund, type BookingDetail } from '../api';
 import {
   paymentSchema,
@@ -88,6 +89,8 @@ function PaymentForm({
       note: '',
     },
   });
+  const method = useWatch({ control: form.control, name: 'method' });
+  const amount = useWatch({ control: form.control, name: 'amount' });
   const onSubmit = form.handleSubmit(async (v) => {
     setFailure(null);
     try {
@@ -126,6 +129,13 @@ function PaymentForm({
             )}
           </FieldRow>
         </div>
+        {method === 'credit' && (
+          <CreditAvailableHint
+            establishmentId={establishmentId}
+            customerId={booking.customer.id}
+            amount={amount}
+          />
+        )}
         <FieldRow control={form.control} name="note" label={t('fields.note')} optional>
           {(field) => <Input {...field} />}
         </FieldRow>

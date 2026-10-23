@@ -73,7 +73,7 @@
       "to_collect": "Balance due",
       "present": "Checked in",
       "blocked": "Blocked",
-      "renewal_hold": "Renewal reserved",
+      "renewal_hold": "Held for renewal",
       "unavailable": "Unavailable"
     },
     "decoration": {
@@ -124,6 +124,8 @@
     "calendar": "Calendar",
     "customers": "Customers",
     "seasonPasses": "Season passes",
+    "renewals": "Renewals",
+    "waitlist": "Waitlist",
     "cash": "Cash desk",
     "reports": "Reports",
     "settings": "Settings",
@@ -149,7 +151,8 @@
       "devicesLan": "Local network",
       "desktop": "Desktop app",
       "apiKeys": "API keys",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "seasonRollover": "New season"
     },
     "operations": "Operations",
     "configGroup": "Configuration",
@@ -161,12 +164,14 @@
   "admin": {
     "placeholder": {
       "title": "Section in progress",
-      "today": "Today's operational map, arrivals, balances due and rows to assign.",
+      "today": "Today's operational map, arrivals, balances due and bookings to assign.",
       "map": "Operational map view for any date, coloured by status.",
       "bookings": "Filterable booking list, details and creation.",
       "calendar": "Spots × days planning grid for long stays.",
       "customers": "Customer records, history, credits and season passes.",
       "seasonPasses": "Season passes, daily releases and renewals.",
+      "renewals": "Season pass renewal campaigns with right of pre-emption.",
+      "waitlist": "Requests with no availability and automatic offers when a spot frees up.",
       "cash": "Cash session, payments and closures.",
       "reports": "Occupancy, revenue, channels and exports.",
       "settings": "Seasons, maps, zones, catalogue, prices, policies, public page and payments."

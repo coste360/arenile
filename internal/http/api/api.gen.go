@@ -623,7 +623,10 @@ func (e CorrispettiviReportGroupBy) Valid() bool {
 
 // Defines values for CustomerCreditSource.
 const (
+	CustomerCreditSourceAdjustment    CustomerCreditSource = "adjustment"
 	CustomerCreditSourceCancellation  CustomerCreditSource = "cancellation"
+	CustomerCreditSourceExpiry        CustomerCreditSource = "expiry"
+	CustomerCreditSourceGoodwill      CustomerCreditSource = "goodwill"
 	CustomerCreditSourceManual        CustomerCreditSource = "manual"
 	CustomerCreditSourceRedemption    CustomerCreditSource = "redemption"
 	CustomerCreditSourceSeasonRelease CustomerCreditSource = "season_release"
@@ -633,7 +636,13 @@ const (
 // Valid indicates whether the value is a known member of the CustomerCreditSource enum.
 func (e CustomerCreditSource) Valid() bool {
 	switch e {
+	case CustomerCreditSourceAdjustment:
+		return true
 	case CustomerCreditSourceCancellation:
+		return true
+	case CustomerCreditSourceExpiry:
+		return true
+	case CustomerCreditSourceGoodwill:
 		return true
 	case CustomerCreditSourceManual:
 		return true
@@ -642,6 +651,27 @@ func (e CustomerCreditSource) Valid() bool {
 	case CustomerCreditSourceSeasonRelease:
 		return true
 	case CustomerCreditSourceWeather:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CustomerCreditCreateSource.
+const (
+	CustomerCreditCreateSourceAdjustment CustomerCreditCreateSource = "adjustment"
+	CustomerCreditCreateSourceGoodwill   CustomerCreditCreateSource = "goodwill"
+	CustomerCreditCreateSourceManual     CustomerCreditCreateSource = "manual"
+)
+
+// Valid indicates whether the value is a known member of the CustomerCreditCreateSource enum.
+func (e CustomerCreditCreateSource) Valid() bool {
+	switch e {
+	case CustomerCreditCreateSourceAdjustment:
+		return true
+	case CustomerCreditCreateSourceGoodwill:
+		return true
+	case CustomerCreditCreateSourceManual:
 		return true
 	default:
 		return false
@@ -1670,6 +1700,7 @@ const (
 	ProblemTypeCashSessionClosed          ProblemType = "cash_session_closed"
 	ProblemTypeCheckoutNotFound           ProblemType = "checkout_not_found"
 	ProblemTypeConflict                   ProblemType = "conflict"
+	ProblemTypeCreditInsufficient         ProblemType = "credit_insufficient"
 	ProblemTypeCsrfFailed                 ProblemType = "csrf_failed"
 	ProblemTypeForbidden                  ProblemType = "forbidden"
 	ProblemTypeHoldExpired                ProblemType = "hold_expired"
@@ -1692,6 +1723,8 @@ const (
 	ProblemTypePreconditionRequired       ProblemType = "precondition_required"
 	ProblemTypeQuotaExceeded              ProblemType = "quota_exceeded"
 	ProblemTypeRateLimited                ProblemType = "rate_limited"
+	ProblemTypeRenewalExpired             ProblemType = "renewal_expired"
+	ProblemTypeSeasonRolloverConflict     ProblemType = "season_rollover_conflict"
 	ProblemTypeSetupCompleted             ProblemType = "setup_completed"
 	ProblemTypeSetupTokenInvalid          ProblemType = "setup_token_invalid"
 	ProblemTypeSpotHasFutureAllocations   ProblemType = "spot_has_future_allocations"
@@ -1703,6 +1736,8 @@ const (
 	ProblemTypeUnsupportedMediaType       ProblemType = "unsupported_media_type"
 	ProblemTypeValidationFailed           ProblemType = "validation_failed"
 	ProblemTypeVersionConflict            ProblemType = "version_conflict"
+	ProblemTypeWaitlistDisabled           ProblemType = "waitlist_disabled"
+	ProblemTypeWaitlistOfferExpired       ProblemType = "waitlist_offer_expired"
 	ProblemTypeWebhookSignatureInvalid    ProblemType = "webhook_signature_invalid"
 )
 
@@ -1720,6 +1755,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeCheckoutNotFound:
 		return true
 	case ProblemTypeConflict:
+		return true
+	case ProblemTypeCreditInsufficient:
 		return true
 	case ProblemTypeCsrfFailed:
 		return true
@@ -1765,6 +1802,10 @@ func (e ProblemType) Valid() bool {
 		return true
 	case ProblemTypeRateLimited:
 		return true
+	case ProblemTypeRenewalExpired:
+		return true
+	case ProblemTypeSeasonRolloverConflict:
+		return true
 	case ProblemTypeSetupCompleted:
 		return true
 	case ProblemTypeSetupTokenInvalid:
@@ -1786,6 +1827,10 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeValidationFailed:
 		return true
 	case ProblemTypeVersionConflict:
+		return true
+	case ProblemTypeWaitlistDisabled:
+		return true
+	case ProblemTypeWaitlistOfferExpired:
 		return true
 	case ProblemTypeWebhookSignatureInvalid:
 		return true
@@ -1902,6 +1947,24 @@ func (e PublicQuoteItemKind) Valid() bool {
 	case PublicQuoteItemKindLine:
 		return true
 	case PublicQuoteItemKindRounding:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicRenewalAcceptRequestPayment.
+const (
+	PublicRenewalAcceptRequestPaymentDeposit PublicRenewalAcceptRequestPayment = "deposit"
+	PublicRenewalAcceptRequestPaymentFull    PublicRenewalAcceptRequestPayment = "full"
+)
+
+// Valid indicates whether the value is a known member of the PublicRenewalAcceptRequestPayment enum.
+func (e PublicRenewalAcceptRequestPayment) Valid() bool {
+	switch e {
+	case PublicRenewalAcceptRequestPaymentDeposit:
+		return true
+	case PublicRenewalAcceptRequestPaymentFull:
 		return true
 	default:
 		return false
@@ -2037,6 +2100,129 @@ func (e RefundPreviewAs) Valid() bool {
 	case RefundPreviewAsNone:
 		return true
 	case RefundPreviewAsRefund:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RenewalBulkAction.
+const (
+	RenewalBulkActionAccept         RenewalBulkAction = "accept"
+	RenewalBulkActionDecline        RenewalBulkAction = "decline"
+	RenewalBulkActionExtendDeadline RenewalBulkAction = "extend_deadline"
+	RenewalBulkActionRelease        RenewalBulkAction = "release"
+	RenewalBulkActionSend           RenewalBulkAction = "send"
+)
+
+// Valid indicates whether the value is a known member of the RenewalBulkAction enum.
+func (e RenewalBulkAction) Valid() bool {
+	switch e {
+	case RenewalBulkActionAccept:
+		return true
+	case RenewalBulkActionDecline:
+		return true
+	case RenewalBulkActionExtendDeadline:
+		return true
+	case RenewalBulkActionRelease:
+		return true
+	case RenewalBulkActionSend:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RenewalCampaignStatus.
+const (
+	RenewalCampaignStatusClosed RenewalCampaignStatus = "closed"
+	RenewalCampaignStatusOpen   RenewalCampaignStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the RenewalCampaignStatus enum.
+func (e RenewalCampaignStatus) Valid() bool {
+	switch e {
+	case RenewalCampaignStatusClosed:
+		return true
+	case RenewalCampaignStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RenewalProposalResponseChannel.
+const (
+	RenewalProposalResponseChannelDesk   RenewalProposalResponseChannel = "desk"
+	RenewalProposalResponseChannelOnline RenewalProposalResponseChannel = "online"
+	RenewalProposalResponseChannelSystem RenewalProposalResponseChannel = "system"
+)
+
+// Valid indicates whether the value is a known member of the RenewalProposalResponseChannel enum.
+func (e RenewalProposalResponseChannel) Valid() bool {
+	switch e {
+	case RenewalProposalResponseChannelDesk:
+		return true
+	case RenewalProposalResponseChannelOnline:
+		return true
+	case RenewalProposalResponseChannelSystem:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RenewalProposalStatus.
+const (
+	RenewalProposalStatusAccepted  RenewalProposalStatus = "accepted"
+	RenewalProposalStatusConverted RenewalProposalStatus = "converted"
+	RenewalProposalStatusDeclined  RenewalProposalStatus = "declined"
+	RenewalProposalStatusExpired   RenewalProposalStatus = "expired"
+	RenewalProposalStatusProposed  RenewalProposalStatus = "proposed"
+)
+
+// Valid indicates whether the value is a known member of the RenewalProposalStatus enum.
+func (e RenewalProposalStatus) Valid() bool {
+	switch e {
+	case RenewalProposalStatusAccepted:
+		return true
+	case RenewalProposalStatusConverted:
+		return true
+	case RenewalProposalStatusDeclined:
+		return true
+	case RenewalProposalStatusExpired:
+		return true
+	case RenewalProposalStatusProposed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RenewalSkipReason.
+const (
+	RenewalSkipReasonAlreadyRenewed     RenewalSkipReason = "already_renewed"
+	RenewalSkipReasonCustomerAnonymized RenewalSkipReason = "customer_anonymized"
+	RenewalSkipReasonNoPrice            RenewalSkipReason = "no_price"
+	RenewalSkipReasonNotConfirmed       RenewalSkipReason = "not_confirmed"
+	RenewalSkipReasonSpotInactive       RenewalSkipReason = "spot_inactive"
+	RenewalSkipReasonSpotUnavailable    RenewalSkipReason = "spot_unavailable"
+)
+
+// Valid indicates whether the value is a known member of the RenewalSkipReason enum.
+func (e RenewalSkipReason) Valid() bool {
+	switch e {
+	case RenewalSkipReasonAlreadyRenewed:
+		return true
+	case RenewalSkipReasonCustomerAnonymized:
+		return true
+	case RenewalSkipReasonNoPrice:
+		return true
+	case RenewalSkipReasonNotConfirmed:
+		return true
+	case RenewalSkipReasonSpotInactive:
+		return true
+	case RenewalSkipReasonSpotUnavailable:
 		return true
 	default:
 		return false
@@ -2277,6 +2463,30 @@ func (e SeasonReleaseStatus) Valid() bool {
 	case SeasonReleaseStatusResold:
 		return true
 	case SeasonReleaseStatusRevoked:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SeasonRolloverWarningCode.
+const (
+	ClosureAlreadyClosed SeasonRolloverWarningCode = "closure_already_closed"
+	ClosureDuplicate     SeasonRolloverWarningCode = "closure_duplicate"
+	ClosureOutsideSeason SeasonRolloverWarningCode = "closure_outside_season"
+	SeasonCopy           SeasonRolloverWarningCode = "season_copy"
+)
+
+// Valid indicates whether the value is a known member of the SeasonRolloverWarningCode enum.
+func (e SeasonRolloverWarningCode) Valid() bool {
+	switch e {
+	case ClosureAlreadyClosed:
+		return true
+	case ClosureDuplicate:
+		return true
+	case ClosureOutsideSeason:
+		return true
+	case SeasonCopy:
 		return true
 	default:
 		return false
@@ -2556,6 +2766,84 @@ func (e TopCustomersSort) Valid() bool {
 	}
 }
 
+// Defines values for WaitlistEntryStatus.
+const (
+	WaitlistEntryStatusConverted WaitlistEntryStatus = "converted"
+	WaitlistEntryStatusExpired   WaitlistEntryStatus = "expired"
+	WaitlistEntryStatusOffered   WaitlistEntryStatus = "offered"
+	WaitlistEntryStatusRemoved   WaitlistEntryStatus = "removed"
+	WaitlistEntryStatusWaiting   WaitlistEntryStatus = "waiting"
+)
+
+// Valid indicates whether the value is a known member of the WaitlistEntryStatus enum.
+func (e WaitlistEntryStatus) Valid() bool {
+	switch e {
+	case WaitlistEntryStatusConverted:
+		return true
+	case WaitlistEntryStatusExpired:
+		return true
+	case WaitlistEntryStatusOffered:
+		return true
+	case WaitlistEntryStatusRemoved:
+		return true
+	case WaitlistEntryStatusWaiting:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WaitlistOfferCause.
+const (
+	WaitlistOfferCauseCancellation WaitlistOfferCause = "cancellation"
+	WaitlistOfferCauseExpiry       WaitlistOfferCause = "expiry"
+	WaitlistOfferCauseManual       WaitlistOfferCause = "manual"
+	WaitlistOfferCauseRelease      WaitlistOfferCause = "release"
+)
+
+// Valid indicates whether the value is a known member of the WaitlistOfferCause enum.
+func (e WaitlistOfferCause) Valid() bool {
+	switch e {
+	case WaitlistOfferCauseCancellation:
+		return true
+	case WaitlistOfferCauseExpiry:
+		return true
+	case WaitlistOfferCauseManual:
+		return true
+	case WaitlistOfferCauseRelease:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WaitlistOfferStatus.
+const (
+	WaitlistOfferStatusAccepted WaitlistOfferStatus = "accepted"
+	WaitlistOfferStatusDeclined WaitlistOfferStatus = "declined"
+	WaitlistOfferStatusExpired  WaitlistOfferStatus = "expired"
+	WaitlistOfferStatusPending  WaitlistOfferStatus = "pending"
+	WaitlistOfferStatusRevoked  WaitlistOfferStatus = "revoked"
+)
+
+// Valid indicates whether the value is a known member of the WaitlistOfferStatus enum.
+func (e WaitlistOfferStatus) Valid() bool {
+	switch e {
+	case WaitlistOfferStatusAccepted:
+		return true
+	case WaitlistOfferStatusDeclined:
+		return true
+	case WaitlistOfferStatusExpired:
+		return true
+	case WaitlistOfferStatusPending:
+		return true
+	case WaitlistOfferStatusRevoked:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WebhookDeliveryStatus.
 const (
 	WebhookDeliveryStatusDelivered WebhookDeliveryStatus = "delivered"
@@ -2613,13 +2901,24 @@ const (
 	WebhookEventTypeCashSessionClosed        WebhookEventType = "cash_session.closed"
 	WebhookEventTypeConfigMapChanged         WebhookEventType = "config.map_changed"
 	WebhookEventTypeConfigPricingChanged     WebhookEventType = "config.pricing_changed"
+	WebhookEventTypeCreditConsumed           WebhookEventType = "credit.consumed"
+	WebhookEventTypeCreditExpired            WebhookEventType = "credit.expired"
+	WebhookEventTypeCreditIssued             WebhookEventType = "credit.issued"
 	WebhookEventTypeCustomerAnonymized       WebhookEventType = "customer.anonymized"
 	WebhookEventTypeCustomerCreated          WebhookEventType = "customer.created"
 	WebhookEventTypePaymentFailed            WebhookEventType = "payment.failed"
 	WebhookEventTypePaymentRefunded          WebhookEventType = "payment.refunded"
 	WebhookEventTypePaymentSucceeded         WebhookEventType = "payment.succeeded"
 	WebhookEventTypeSeasonDayReleased        WebhookEventType = "season.day_released"
+	WebhookEventTypeSeasonRenewalAccepted    WebhookEventType = "season.renewal_accepted"
+	WebhookEventTypeSeasonRenewalDeclined    WebhookEventType = "season.renewal_declined"
+	WebhookEventTypeSeasonRenewalExpired     WebhookEventType = "season.renewal_expired"
 	WebhookEventTypeSeasonRenewalOffered     WebhookEventType = "season.renewal_offered"
+	WebhookEventTypeSeasonRolledOver         WebhookEventType = "season.rolled_over"
+	WebhookEventTypeWaitlistConverted        WebhookEventType = "waitlist.converted"
+	WebhookEventTypeWaitlistJoined           WebhookEventType = "waitlist.joined"
+	WebhookEventTypeWaitlistOfferExpired     WebhookEventType = "waitlist.offer_expired"
+	WebhookEventTypeWaitlistOffered          WebhookEventType = "waitlist.offered"
 	WebhookEventTypeWebhookTest              WebhookEventType = "webhook.test"
 )
 
@@ -2652,6 +2951,12 @@ func (e WebhookEventType) Valid() bool {
 		return true
 	case WebhookEventTypeConfigPricingChanged:
 		return true
+	case WebhookEventTypeCreditConsumed:
+		return true
+	case WebhookEventTypeCreditExpired:
+		return true
+	case WebhookEventTypeCreditIssued:
+		return true
 	case WebhookEventTypeCustomerAnonymized:
 		return true
 	case WebhookEventTypeCustomerCreated:
@@ -2664,7 +2969,23 @@ func (e WebhookEventType) Valid() bool {
 		return true
 	case WebhookEventTypeSeasonDayReleased:
 		return true
+	case WebhookEventTypeSeasonRenewalAccepted:
+		return true
+	case WebhookEventTypeSeasonRenewalDeclined:
+		return true
+	case WebhookEventTypeSeasonRenewalExpired:
+		return true
 	case WebhookEventTypeSeasonRenewalOffered:
+		return true
+	case WebhookEventTypeSeasonRolledOver:
+		return true
+	case WebhookEventTypeWaitlistConverted:
+		return true
+	case WebhookEventTypeWaitlistJoined:
+		return true
+	case WebhookEventTypeWaitlistOfferExpired:
+		return true
+	case WebhookEventTypeWaitlistOffered:
 		return true
 	case WebhookEventTypeWebhookTest:
 		return true
@@ -3935,14 +4256,58 @@ type CustomerCredit struct {
 	CreatedAt time.Time `json:"created_at"`
 
 	// ExpiresOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
-	ExpiresOn *Date                `json:"expires_on,omitempty"`
-	Id        string               `json:"id"`
-	Note      *string              `json:"note,omitempty"`
-	Source    CustomerCreditSource `json:"source"`
+	ExpiresOn *Date   `json:"expires_on,omitempty"`
+	Id        string  `json:"id"`
+	Note      *string `json:"note,omitempty"`
+
+	// ReferenceCreditId expiry: il credito scaduto a cui si riferisce.
+	ReferenceCreditId *string `json:"reference_credit_id,omitempty"`
+
+	// Source Origine: cancellation, season_release, weather, manual, goodwill (crediti; goodwill sempre > 0, le altre negative solo come storno); redemption (uso come metodo di pagamento `credit`) ed expiry (scadenza) hanno amount < 0; adjustment è una rettifica del gestore con segno libero.
+	Source CustomerCreditSource `json:"source"`
 }
 
-// CustomerCreditSource defines model for CustomerCredit.Source.
+// CustomerCreditSource Origine: cancellation, season_release, weather, manual, goodwill (crediti; goodwill sempre > 0, le altre negative solo come storno); redemption (uso come metodo di pagamento `credit`) ed expiry (scadenza) hanno amount < 0; adjustment è una rettifica del gestore con segno libero.
 type CustomerCreditSource string
+
+// CustomerCreditCreate defines model for CustomerCreditCreate.
+type CustomerCreditCreate struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount    Money   `json:"amount"`
+	BookingId *string `json:"booking_id,omitempty"`
+
+	// ExpiresOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ExpiresOn *Date   `json:"expires_on,omitempty"`
+	Note      *string `json:"note,omitempty"`
+
+	// Source goodwill: credito di cortesia; manual: altro credito; adjustment: rettifica (anche negativa).
+	Source CustomerCreditCreateSource `json:"source"`
+}
+
+// CustomerCreditCreateSource goodwill: credito di cortesia; manual: altro credito; adjustment: rettifica (anche negativa).
+type CustomerCreditCreateSource string
+
+// CustomerCreditExpiring defines model for CustomerCreditExpiring.
+type CustomerCreditExpiring struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount Money `json:"amount"`
+
+	// ExpiresOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ExpiresOn Date `json:"expires_on"`
+}
+
+// CustomerCreditLedger defines model for CustomerCreditLedger.
+type CustomerCreditLedger struct {
+	// Available Importo in centesimi di euro (IVA inclusa).
+	Available Money `json:"available"`
+
+	// Balance Importo in centesimi di euro (IVA inclusa).
+	Balance    Money                    `json:"balance"`
+	CustomerId string                   `json:"customer_id"`
+	Expiring   []CustomerCreditExpiring `json:"expiring"`
+	Items      []CustomerCredit         `json:"items"`
+	NextCursor *string                  `json:"next_cursor,omitempty"`
+}
 
 // CustomerDetail defines model for CustomerDetail.
 type CustomerDetail struct {
@@ -4836,16 +5201,20 @@ type ManageActions struct {
 
 // ManageBooking defines model for ManageBooking.
 type ManageBooking struct {
-	Allowed             ManageActions    `json:"allowed"`
-	BookingId           string           `json:"booking_id"`
-	CancellationPreview *RefundPreview   `json:"cancellation_preview,omitempty"`
-	Code                string           `json:"code"`
-	Customer            ManageCustomer   `json:"customer"`
-	IsSeasonPass        bool             `json:"is_season_pass"`
-	LinkExpiresAt       time.Time        `json:"link_expires_at"`
-	QrPayload           string           `json:"qr_payload"`
-	QrSvg               *string          `json:"qr_svg,omitempty"`
-	Releases            *[]ManageRelease `json:"releases,omitempty"`
+	Allowed             ManageActions  `json:"allowed"`
+	BookingId           string         `json:"booking_id"`
+	CancellationPreview *RefundPreview `json:"cancellation_preview,omitempty"`
+	Code                string         `json:"code"`
+
+	// CreditAvailable Importo in centesimi di euro (IVA inclusa).
+	CreditAvailable *Money                 `json:"credit_available,omitempty"`
+	Customer        ManageCustomer         `json:"customer"`
+	IsSeasonPass    bool                   `json:"is_season_pass"`
+	LinkExpiresAt   time.Time              `json:"link_expires_at"`
+	QrPayload       string                 `json:"qr_payload"`
+	QrSvg           *string                `json:"qr_svg,omitempty"`
+	Releases        *[]ManageRelease       `json:"releases,omitempty"`
+	Renewal         *PublicRenewalProposal `json:"renewal,omitempty"`
 
 	// Status Stato della prenotazione (spec 10.2).
 	Status  BookingStatus        `json:"status"`
@@ -5781,9 +6150,12 @@ type PolicyPaymentMode string
 
 // PolicyRules Vincoli di prenotazione (spec 9); i campi assenti ereditano dalla policy di default.
 type PolicyRules struct {
-	AllowSpotChangeDuringStay    *bool                      `json:"allow_spot_change_during_stay,omitempty"`
-	ApprovalRequired             *bool                      `json:"approval_required,omitempty"`
-	Cancellation                 *[]PolicyCancellationTier  `json:"cancellation,omitempty"`
+	AllowSpotChangeDuringStay *bool                     `json:"allow_spot_change_during_stay,omitempty"`
+	ApprovalRequired          *bool                     `json:"approval_required,omitempty"`
+	Cancellation              *[]PolicyCancellationTier `json:"cancellation,omitempty"`
+
+	// CreditValidityDays Validità in giorni dei crediti emessi da questa policy (cancellazione, meteo, rilascio): expires_on = giorno di emissione + giorni. Assente o 0 = nessuna scadenza (spec 9, 13.4).
+	CreditValidityDays           *int                       `json:"credit_validity_days,omitempty"`
 	CustomerCanReleaseSeasonDays *bool                      `json:"customer_can_release_season_days,omitempty"`
 	Duration                     *PolicyDuration            `json:"duration,omitempty"`
 	MaxLeadTimeDays              *int                       `json:"max_lead_time_days,omitempty"`
@@ -6220,6 +6592,12 @@ type PromoStatusStatus string
 // ProviderMode defines model for ProviderMode.
 type ProviderMode string
 
+// PublicApplyCreditRequest defines model for PublicApplyCreditRequest.
+type PublicApplyCreditRequest struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount *Money `json:"amount,omitempty"`
+}
+
 // PublicAvailability defines model for PublicAvailability.
 type PublicAvailability struct {
 	ClosedDates *[]Date `json:"closed_dates,omitempty"`
@@ -6365,6 +6743,13 @@ type PublicConfirmation struct {
 
 	// QrSvg QR in SVG in linea (evita una seconda richiesta).
 	QrSvg *string `json:"qr_svg,omitempty"`
+}
+
+// PublicCreditBalance defines model for PublicCreditBalance.
+type PublicCreditBalance struct {
+	// Available Importo in centesimi di euro (IVA inclusa).
+	Available Money                    `json:"available"`
+	Expiring  []CustomerCreditExpiring `json:"expiring"`
 }
 
 // PublicEstablishment defines model for PublicEstablishment.
@@ -6605,6 +6990,79 @@ type PublicRatePeriod struct {
 	StartsOn Date `json:"starts_on"`
 }
 
+// PublicRenewalAcceptRequest defines model for PublicRenewalAcceptRequest.
+type PublicRenewalAcceptRequest struct {
+	AcceptTermsVersion string `json:"accept_terms_version"`
+
+	// Payment deposit: acconto da policy della nuova stagione (se previsto); full: intero importo.
+	Payment PublicRenewalAcceptRequestPayment `json:"payment"`
+
+	// UseCredit Applica prima il saldo crediti disponibile.
+	UseCredit *bool `json:"use_credit,omitempty"`
+}
+
+// PublicRenewalAcceptRequestPayment deposit: acconto da policy della nuova stagione (se previsto); full: intero importo.
+type PublicRenewalAcceptRequestPayment string
+
+// PublicRenewalAcceptResult defines model for PublicRenewalAcceptResult.
+type PublicRenewalAcceptResult struct {
+	// CreditApplied Importo in centesimi di euro (IVA inclusa).
+	CreditApplied *Money                `json:"credit_applied,omitempty"`
+	Pay           PayResult             `json:"pay"`
+	Proposal      PublicRenewalProposal `json:"proposal"`
+}
+
+// PublicRenewalDeclineRequest defines model for PublicRenewalDeclineRequest.
+type PublicRenewalDeclineRequest struct {
+	Reason *string `json:"reason,omitempty"`
+}
+
+// PublicRenewalProposal defines model for PublicRenewalProposal.
+type PublicRenewalProposal struct {
+	Allowed struct {
+		Accept     bool `json:"accept"`
+		Decline    bool `json:"decline"`
+		PayDeposit bool `json:"pay_deposit"`
+		PayFull    bool `json:"pay_full"`
+		UseCredit  bool `json:"use_credit"`
+	} `json:"allowed"`
+
+	// CreditAvailable Importo in centesimi di euro (IVA inclusa).
+	CreditAvailable *Money    `json:"credit_available,omitempty"`
+	DeadlineAt      time.Time `json:"deadline_at"`
+
+	// DepositDue Importo in centesimi di euro (IVA inclusa).
+	DepositDue Money `json:"deposit_due"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn   Date    `json:"ends_on"`
+	PackName *string `json:"pack_name,omitempty"`
+
+	// PaidAmount Importo in centesimi di euro (IVA inclusa).
+	PaidAmount Money `json:"paid_amount"`
+
+	// PreviousAmount Importo in centesimi di euro (IVA inclusa).
+	PreviousAmount Money `json:"previous_amount"`
+	SeasonYear     int   `json:"season_year"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots     Slots  `json:"slots"`
+	SpotLabel string `json:"spot_label"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date `json:"starts_on"`
+
+	// Status proposed: prenotazione held in prelazione; accepted: accettata, in attesa di pagamento (pending_payment); converted: prenotazione confermata (nuovo abbonamento); declined: rifiutata, postazione liberata; expired: prelazione scaduta o campagna chiusa, postazione liberata.
+	Status RenewalProposalStatus `json:"status"`
+
+	// TermsVersion Versione corrente delle condizioni da accettare.
+	TermsVersion *string `json:"terms_version,omitempty"`
+
+	// TotalAmount Importo in centesimi di euro (IVA inclusa).
+	TotalAmount Money   `json:"total_amount"`
+	ZoneName    *string `json:"zone_name,omitempty"`
+}
+
 // PublicSeason Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva.
 type PublicSeason struct {
 	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
@@ -6666,6 +7124,62 @@ type PublicSpotAvailability struct {
 type PublicTerms struct {
 	Texts   map[string]TermsTexts `json:"texts"`
 	Version string                `json:"version"`
+}
+
+// PublicWaitlistDeclineRequest defines model for PublicWaitlistDeclineRequest.
+type PublicWaitlistDeclineRequest struct {
+	// Leave true = cancella anche l'iscrizione.
+	Leave *bool `json:"leave,omitempty"`
+}
+
+// PublicWaitlistEntry defines model for PublicWaitlistEntry.
+type PublicWaitlistEntry struct {
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn   Date                 `json:"ends_on"`
+	Offer    *PublicWaitlistOffer `json:"offer,omitempty"`
+	PackName string               `json:"pack_name"`
+	Quantity *int                 `json:"quantity,omitempty"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date `json:"starts_on"`
+
+	// Status waiting: in attesa; offered: offerta attiva con hold; converted: prenotazione creata dall'offerta; expired: periodo richiesto passato; removed: cancellata dal cliente o dal gestore.
+	Status   WaitlistEntryStatus `json:"status"`
+	ZoneName *string             `json:"zone_name,omitempty"`
+}
+
+// PublicWaitlistJoin defines model for PublicWaitlistJoin.
+type PublicWaitlistJoin struct {
+	Customer struct {
+		AcceptTermsVersion string              `json:"accept_terms_version"`
+		Email              openapi_types.Email `json:"email"`
+		FirstName          string              `json:"first_name"`
+		LastName           string              `json:"last_name"`
+		Locale             *string             `json:"locale,omitempty"`
+		Phone              *string             `json:"phone,omitempty"`
+	} `json:"customer"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn   Date   `json:"ends_on"`
+	PackId   string `json:"pack_id"`
+	Quantity *int   `json:"quantity,omitempty"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date    `json:"starts_on"`
+	ZoneId   *string `json:"zone_id,omitempty"`
+}
+
+// PublicWaitlistOffer defines model for PublicWaitlistOffer.
+type PublicWaitlistOffer struct {
+	ExpiresAt time.Time           `json:"expires_at"`
+	SpotLabel *string             `json:"spot_label,omitempty"`
+	Status    WaitlistOfferStatus `json:"status"`
 }
 
 // PublicZone defines model for PublicZone.
@@ -6863,6 +7377,264 @@ type RefundPreview struct {
 
 // RefundPreviewAs defines model for RefundPreview.As.
 type RefundPreviewAs string
+
+// RenewalBulkAction defines model for RenewalBulkAction.
+type RenewalBulkAction string
+
+// RenewalBulkFailure defines model for RenewalBulkFailure.
+type RenewalBulkFailure struct {
+	Detail     *string `json:"detail,omitempty"`
+	ProposalId string  `json:"proposal_id"`
+
+	// Type Slug stabile del tipo di errore. I client devono basarsi su questo
+	// valore, mai sul testo di `title` o `detail`.
+	Type ProblemType `json:"type"`
+}
+
+// RenewalBulkRequest proposal_ids oppure status (almeno uno); con entrambi vale l'intersezione.
+type RenewalBulkRequest struct {
+	Action RenewalBulkAction `json:"action"`
+
+	// Confirm accept: come RenewalStaffAcceptRequest.confirm (default true).
+	Confirm *bool `json:"confirm,omitempty"`
+
+	// DeadlineAt Obbligatoria per extend_deadline.
+	DeadlineAt *time.Time `json:"deadline_at,omitempty"`
+
+	// Force release: rilascia anche le proposte con prelazione non ancora scaduta.
+	Force *bool `json:"force,omitempty"`
+
+	// OnlyUnsent send: salta le proposte già inviate (default true).
+	OnlyUnsent  *bool     `json:"only_unsent,omitempty"`
+	ProposalIds *[]string `json:"proposal_ids,omitempty"`
+
+	// Status proposed: prenotazione held in prelazione; accepted: accettata, in attesa di pagamento (pending_payment); converted: prenotazione confermata (nuovo abbonamento); declined: rifiutata, postazione liberata; expired: prelazione scaduta o campagna chiusa, postazione liberata.
+	Status *RenewalProposalStatus `json:"status,omitempty"`
+}
+
+// RenewalBulkResult defines model for RenewalBulkResult.
+type RenewalBulkResult struct {
+	Action  RenewalBulkAction    `json:"action"`
+	Failed  []RenewalBulkFailure `json:"failed"`
+	Matched int                  `json:"matched"`
+
+	// Skipped Proposte non applicabili (stato diverso, già inviate con only_unsent).
+	Skipped   int `json:"skipped"`
+	Succeeded int `json:"succeeded"`
+}
+
+// RenewalCampaign defines model for RenewalCampaign.
+type RenewalCampaign struct {
+	ClosedAt *time.Time `json:"closed_at,omitempty"`
+
+	// ConvertedAmount Importo in centesimi di euro (IVA inclusa).
+	ConvertedAmount Money               `json:"converted_amount"`
+	Counts          RenewalStatusCounts `json:"counts"`
+	CreatedAt       time.Time           `json:"created_at"`
+
+	// DeadlineAt Scadenza predefinita della prelazione (istante UTC).
+	DeadlineAt     time.Time `json:"deadline_at"`
+	Id             string    `json:"id"`
+	Name           string    `json:"name"`
+	Notes          *string   `json:"notes,omitempty"`
+	SourceSeasonId string    `json:"source_season_id"`
+
+	// Status open: proposte in corso; closed: chiusa dal gestore o con tutte le proposte concluse.
+	Status         RenewalCampaignStatus `json:"status"`
+	TargetSeasonId string                `json:"target_season_id"`
+
+	// TotalAmount Importo in centesimi di euro (IVA inclusa).
+	TotalAmount Money     `json:"total_amount"`
+	UpdatedAt   time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// RenewalCampaignCreate defines model for RenewalCampaignCreate.
+type RenewalCampaignCreate struct {
+	// DeadlineAt Scadenza della prelazione; deve essere futura e precedere l'apertura della stagione di destinazione.
+	DeadlineAt time.Time `json:"deadline_at"`
+
+	// DryRun Default false.
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// Name Default "Rinnovi <anno>".
+	Name  *string `json:"name,omitempty"`
+	Notes *string `json:"notes,omitempty"`
+
+	// PassIds Solo questi abbonamenti della stagione di origine (default tutti i confermati).
+	PassIds        *[]string `json:"pass_ids,omitempty"`
+	SourceSeasonId string    `json:"source_season_id"`
+	TargetSeasonId string    `json:"target_season_id"`
+}
+
+// RenewalCampaignList defines model for RenewalCampaignList.
+type RenewalCampaignList struct {
+	Items      []RenewalCampaign `json:"items"`
+	NextCursor *string           `json:"next_cursor,omitempty"`
+}
+
+// RenewalCampaignResult defines model for RenewalCampaignResult.
+type RenewalCampaignResult struct {
+	Campaign *RenewalCampaign `json:"campaign,omitempty"`
+	DryRun   bool             `json:"dry_run"`
+
+	// Proposals Proposte create (o che verrebbero create in anteprima).
+	Proposals []RenewalProposalPreview `json:"proposals"`
+	Skipped   []RenewalSkipped         `json:"skipped"`
+}
+
+// RenewalCampaignStatus open: proposte in corso; closed: chiusa dal gestore o con tutte le proposte concluse.
+type RenewalCampaignStatus string
+
+// RenewalCampaignUpdate defines model for RenewalCampaignUpdate.
+type RenewalCampaignUpdate struct {
+	DeadlineAt *time.Time `json:"deadline_at,omitempty"`
+	Name       *string    `json:"name,omitempty"`
+	Notes      *string    `json:"notes,omitempty"`
+
+	// Status open: proposte in corso; closed: chiusa dal gestore o con tutte le proposte concluse.
+	Status *RenewalCampaignStatus `json:"status,omitempty"`
+}
+
+// RenewalDeclineRequest defines model for RenewalDeclineRequest.
+type RenewalDeclineRequest struct {
+	Reason *string `json:"reason,omitempty"`
+}
+
+// RenewalProposal defines model for RenewalProposal.
+type RenewalProposal struct {
+	BookingCode string `json:"booking_code"`
+
+	// BookingId Prenotazione della nuova stagione (held finché la proposta è aperta).
+	BookingId string `json:"booking_id"`
+
+	// BookingStatus Stato della prenotazione (spec 10.2).
+	BookingStatus       *BookingStatus `json:"booking_status,omitempty"`
+	CampaignId          string         `json:"campaign_id"`
+	CreatedAt           time.Time      `json:"created_at"`
+	CustomerDisplayName string         `json:"customer_display_name"`
+	CustomerHasEmail    *bool          `json:"customer_has_email,omitempty"`
+	CustomerId          string         `json:"customer_id"`
+
+	// DeadlineAt Scadenza della prelazione su questa postazione (= hold della prenotazione).
+	DeadlineAt    time.Time `json:"deadline_at"`
+	DeclineReason *string   `json:"decline_reason,omitempty"`
+
+	// DepositDue Importo in centesimi di euro (IVA inclusa).
+	DepositDue Money `json:"deposit_due"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn     Date       `json:"ends_on"`
+	Id         string     `json:"id"`
+	LastSentAt *time.Time `json:"last_sent_at,omitempty"`
+	PackId     string     `json:"pack_id"`
+
+	// PaidAmount Importo in centesimi di euro (IVA inclusa).
+	PaidAmount Money `json:"paid_amount"`
+
+	// PreviousAmount Importo in centesimi di euro (IVA inclusa).
+	PreviousAmount Money      `json:"previous_amount"`
+	RespondedAt    *time.Time `json:"responded_at,omitempty"`
+
+	// ResponseChannel online: dal link magico; desk: dal pannello; system: scadenza o chiusura.
+	ResponseChannel *RenewalProposalResponseChannel `json:"response_channel,omitempty"`
+	SendCount       int                             `json:"send_count"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+
+	// SourcePassId Abbonamento della stagione di origine.
+	SourcePassId string `json:"source_pass_id"`
+	SpotId       string `json:"spot_id"`
+	SpotLabel    string `json:"spot_label"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date `json:"starts_on"`
+
+	// Status proposed: prenotazione held in prelazione; accepted: accettata, in attesa di pagamento (pending_payment); converted: prenotazione confermata (nuovo abbonamento); declined: rifiutata, postazione liberata; expired: prelazione scaduta o campagna chiusa, postazione liberata.
+	Status RenewalProposalStatus `json:"status"`
+
+	// TotalAmount Importo in centesimi di euro (IVA inclusa).
+	TotalAmount Money     `json:"total_amount"`
+	UpdatedAt   time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+	ZoneId  *string `json:"zone_id,omitempty"`
+}
+
+// RenewalProposalResponseChannel online: dal link magico; desk: dal pannello; system: scadenza o chiusura.
+type RenewalProposalResponseChannel string
+
+// RenewalProposalList defines model for RenewalProposalList.
+type RenewalProposalList struct {
+	Items      []RenewalProposal `json:"items"`
+	NextCursor *string           `json:"next_cursor,omitempty"`
+}
+
+// RenewalProposalPreview defines model for RenewalProposalPreview.
+type RenewalProposalPreview struct {
+	CustomerDisplayName string `json:"customer_display_name"`
+	CustomerId          string `json:"customer_id"`
+
+	// DepositDue Importo in centesimi di euro (IVA inclusa).
+	DepositDue Money `json:"deposit_due"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn Date   `json:"ends_on"`
+	PackId string `json:"pack_id"`
+
+	// PreviousAmount Importo in centesimi di euro (IVA inclusa).
+	PreviousAmount Money `json:"previous_amount"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots        Slots  `json:"slots"`
+	SourcePassId string `json:"source_pass_id"`
+	SpotId       string `json:"spot_id"`
+	SpotLabel    string `json:"spot_label"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date `json:"starts_on"`
+
+	// TotalAmount Importo in centesimi di euro (IVA inclusa).
+	TotalAmount Money `json:"total_amount"`
+}
+
+// RenewalProposalStatus proposed: prenotazione held in prelazione; accepted: accettata, in attesa di pagamento (pending_payment); converted: prenotazione confermata (nuovo abbonamento); declined: rifiutata, postazione liberata; expired: prelazione scaduta o campagna chiusa, postazione liberata.
+type RenewalProposalStatus string
+
+// RenewalSkipReason defines model for RenewalSkipReason.
+type RenewalSkipReason string
+
+// RenewalSkipped defines model for RenewalSkipped.
+type RenewalSkipped struct {
+	CustomerDisplayName *string           `json:"customer_display_name,omitempty"`
+	Detail              *string           `json:"detail,omitempty"`
+	Reason              RenewalSkipReason `json:"reason"`
+	SourcePassId        string            `json:"source_pass_id"`
+	SpotLabel           *string           `json:"spot_label,omitempty"`
+}
+
+// RenewalStaffAcceptRequest defines model for RenewalStaffAcceptRequest.
+type RenewalStaffAcceptRequest struct {
+	// Confirm Default true (conferma subito, driver manuale); false lascia la prenotazione in attesa di pagamento.
+	Confirm *bool   `json:"confirm,omitempty"`
+	Note    *string `json:"note,omitempty"`
+}
+
+// RenewalStatusCounts defines model for RenewalStatusCounts.
+type RenewalStatusCounts struct {
+	Accepted  int `json:"accepted"`
+	Converted int `json:"converted"`
+	Declined  int `json:"declined"`
+	Expired   int `json:"expired"`
+	Proposed  int `json:"proposed"`
+
+	// Sent Proposte con almeno un invio.
+	Sent int `json:"sent"`
+}
 
 // ReportFormat defines model for ReportFormat.
 type ReportFormat string
@@ -7251,6 +8023,106 @@ type SeasonReleaseCreate struct {
 type SeasonReleaseList struct {
 	Items []SeasonRelease `json:"items"`
 }
+
+// SeasonRollover defines model for SeasonRollover.
+type SeasonRollover struct {
+	Counts          SeasonRolloverCounts `json:"counts"`
+	CreatedAt       time.Time            `json:"created_at"`
+	CreatedByUserId *string              `json:"created_by_user_id,omitempty"`
+	Id              string               `json:"id"`
+	SourceSeasonId  string               `json:"source_season_id"`
+	TargetSeasonId  string               `json:"target_season_id"`
+	TargetYear      int                  `json:"target_year"`
+}
+
+// SeasonRolloverCounts defines model for SeasonRolloverCounts.
+type SeasonRolloverCounts struct {
+	ClosureDays int `json:"closure_days"`
+	FixedPrices int `json:"fixed_prices"`
+	Policies    int `json:"policies"`
+	PriceRules  int `json:"price_rules"`
+	RatePeriods int `json:"rate_periods"`
+}
+
+// SeasonRolloverList defines model for SeasonRolloverList.
+type SeasonRolloverList struct {
+	Items      []SeasonRollover `json:"items"`
+	NextCursor *string          `json:"next_cursor,omitempty"`
+}
+
+// SeasonRolloverRequest Passaggio di fine stagione (spec 8.7, 10.4, 28): copia della configurazione sulla stagione successiva.
+type SeasonRolloverRequest struct {
+	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ClosesOn *Date `json:"closes_on,omitempty"`
+
+	// DryRun Default true (solo anteprima); false applica.
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// IncludeClosureDays Default true: le chiusure dentro la stagione di origine, spostate sull'anno nuovo.
+	IncludeClosureDays *bool `json:"include_closure_days,omitempty"`
+
+	// IncludeFixedPrices Default true.
+	IncludeFixedPrices *bool `json:"include_fixed_prices,omitempty"`
+
+	// IncludePolicies Default true.
+	IncludePolicies *bool `json:"include_policies,omitempty"`
+
+	// IncludePriceRules Default true.
+	IncludePriceRules *bool `json:"include_price_rules,omitempty"`
+
+	// IncludeRatePeriods Default true.
+	IncludeRatePeriods *bool `json:"include_rate_periods,omitempty"`
+
+	// OpensOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	OpensOn    *Date `json:"opens_on,omitempty"`
+	TargetYear int   `json:"target_year"`
+}
+
+// SeasonRolloverResult defines model for SeasonRolloverResult.
+type SeasonRolloverResult struct {
+	// AlreadyApplied true se il passaggio era già stato applicato (risposta idempotente).
+	AlreadyApplied bool `json:"already_applied"`
+
+	// ClosesOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	ClosesOn Date                 `json:"closes_on"`
+	Counts   SeasonRolloverCounts `json:"counts"`
+	DryRun   bool                 `json:"dry_run"`
+
+	// OpensOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	OpensOn Date `json:"opens_on"`
+
+	// RolloverId Assente in anteprima.
+	RolloverId *string `json:"rollover_id,omitempty"`
+
+	// Season Stagione di apertura annuale (spec 6.1).
+	Season *Season `json:"season,omitempty"`
+
+	// SeasonPasses Abbonamenti confermati della stagione di origine, candidati al rinnovo.
+	SeasonPasses   *int   `json:"season_passes,omitempty"`
+	SourceSeasonId string `json:"source_season_id"`
+	TargetYear     int    `json:"target_year"`
+
+	// Warnings Cose da controllare dopo il passaggio: codici con parametri, tradotti dal pannello.
+	Warnings []SeasonRolloverWarning `json:"warnings"`
+}
+
+// SeasonRolloverWarning defines model for SeasonRolloverWarning.
+type SeasonRolloverWarning struct {
+	// Code closure_outside_season: la chiusura spostata cade fuori dalla nuova stagione e non è stata copiata; closure_already_closed: la nuova stagione è già chiusa nel giorno spostato; closure_duplicate: due chiusure cadono sullo stesso giorno spostato; season_copy: avviso della copia di stagione dei prezzi (testo in `text`).
+	Code SeasonRolloverWarningCode `json:"code"`
+
+	// Date Data di origine (chiusure), `YYYY-MM-DD`.
+	Date *string `json:"date,omitempty"`
+
+	// TargetDate Data spostata nella nuova stagione (chiusure), `YYYY-MM-DD`.
+	TargetDate *string `json:"target_date,omitempty"`
+
+	// Text Messaggio della copia di stagione (solo `season_copy`).
+	Text *string `json:"text,omitempty"`
+}
+
+// SeasonRolloverWarningCode closure_outside_season: la chiusura spostata cade fuori dalla nuova stagione e non è stata copiata; closure_already_closed: la nuova stagione è già chiusa nel giorno spostato; closure_duplicate: due chiusure cadono sullo stesso giorno spostato; season_copy: avviso della copia di stagione dei prezzi (testo in `text`).
+type SeasonRolloverWarningCode string
 
 // SeasonStatus defines model for SeasonStatus.
 type SeasonStatus string
@@ -7742,6 +8614,160 @@ type VatBreakdown struct {
 // Version Versione per la concorrenza ottimistica; coincide con l'ETag.
 type Version = int64
 
+// WaitlistEntry defines model for WaitlistEntry.
+type WaitlistEntry struct {
+	ActiveOffer *WaitlistOffer `json:"active_offer,omitempty"`
+
+	// Channel Canale di vendita.
+	Channel             Channel   `json:"channel"`
+	CreatedAt           time.Time `json:"created_at"`
+	CustomerDisplayName string    `json:"customer_display_name"`
+	CustomerId          string    `json:"customer_id"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn     Date    `json:"ends_on"`
+	Id         string  `json:"id"`
+	Note       *string `json:"note,omitempty"`
+	OfferCount int     `json:"offer_count"`
+	PackId     string  `json:"pack_id"`
+
+	// Position Posizione corrente tra le iscrizioni in attesa (1 = prima).
+	Position int `json:"position"`
+
+	// Priority Ordine manuale (crescente); a parità vale la data di iscrizione.
+	Priority int `json:"priority"`
+	Quantity int `json:"quantity"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots  Slots   `json:"slots"`
+	SpotId *string `json:"spot_id,omitempty"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date `json:"starts_on"`
+
+	// Status waiting: in attesa; offered: offerta attiva con hold; converted: prenotazione creata dall'offerta; expired: periodo richiesto passato; removed: cancellata dal cliente o dal gestore.
+	Status    WaitlistEntryStatus `json:"status"`
+	UpdatedAt time.Time           `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+	ZoneId  *string `json:"zone_id,omitempty"`
+}
+
+// WaitlistEntryCreate defines model for WaitlistEntryCreate.
+type WaitlistEntryCreate struct {
+	// Channel Canale di vendita.
+	Channel    *Channel `json:"channel,omitempty"`
+	CustomerId string   `json:"customer_id"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn Date    `json:"ends_on"`
+	Note   *string `json:"note,omitempty"`
+	PackId string  `json:"pack_id"`
+
+	// Quantity Default 1.
+	Quantity *int `json:"quantity,omitempty"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots  Slots   `json:"slots"`
+	SpotId *string `json:"spot_id,omitempty"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date    `json:"starts_on"`
+	ZoneId   *string `json:"zone_id,omitempty"`
+}
+
+// WaitlistEntryDetail defines model for WaitlistEntryDetail.
+type WaitlistEntryDetail struct {
+	Entry  WaitlistEntry   `json:"entry"`
+	Offers []WaitlistOffer `json:"offers"`
+}
+
+// WaitlistEntryList defines model for WaitlistEntryList.
+type WaitlistEntryList struct {
+	Items      []WaitlistEntry `json:"items"`
+	NextCursor *string         `json:"next_cursor,omitempty"`
+}
+
+// WaitlistEntryStatus waiting: in attesa; offered: offerta attiva con hold; converted: prenotazione creata dall'offerta; expired: periodo richiesto passato; removed: cancellata dal cliente o dal gestore.
+type WaitlistEntryStatus string
+
+// WaitlistEntryUpdate defines model for WaitlistEntryUpdate.
+type WaitlistEntryUpdate struct {
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn   *Date   `json:"ends_on,omitempty"`
+	Note     *string `json:"note,omitempty"`
+	PackId   *string `json:"pack_id,omitempty"`
+	Priority *int    `json:"priority,omitempty"`
+	Quantity *int    `json:"quantity,omitempty"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots  *Slots  `json:"slots,omitempty"`
+	SpotId *string `json:"spot_id,omitempty"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn *Date   `json:"starts_on,omitempty"`
+	ZoneId   *string `json:"zone_id,omitempty"`
+}
+
+// WaitlistOffer defines model for WaitlistOffer.
+type WaitlistOffer struct {
+	// BookingId Prenotazione creata all'accettazione.
+	BookingId *string `json:"booking_id,omitempty"`
+
+	// Cause Evento che ha liberato l'inventario.
+	Cause       *WaitlistOfferCause `json:"cause,omitempty"`
+	CreatedAt   time.Time           `json:"created_at"`
+	EntryId     string              `json:"entry_id"`
+	ExpiresAt   time.Time           `json:"expires_at"`
+	HoldId      string              `json:"hold_id"`
+	Id          string              `json:"id"`
+	RespondedAt *time.Time          `json:"responded_at,omitempty"`
+	SpotId      *string             `json:"spot_id,omitempty"`
+	SpotLabel   *string             `json:"spot_label,omitempty"`
+	Status      WaitlistOfferStatus `json:"status"`
+}
+
+// WaitlistOfferCause Evento che ha liberato l'inventario.
+type WaitlistOfferCause string
+
+// WaitlistOfferCreate defines model for WaitlistOfferCreate.
+type WaitlistOfferCreate struct {
+	// HoldMinutes Default `offer_hold_minutes` delle impostazioni.
+	HoldMinutes *int    `json:"hold_minutes,omitempty"`
+	SpotId      *string `json:"spot_id,omitempty"`
+}
+
+// WaitlistOfferStatus defines model for WaitlistOfferStatus.
+type WaitlistOfferStatus string
+
+// WaitlistReorderRequest defines model for WaitlistReorderRequest.
+type WaitlistReorderRequest struct {
+	EntryIds []string `json:"entry_ids"`
+}
+
+// WaitlistSettings defines model for WaitlistSettings.
+type WaitlistSettings struct {
+	// AutoOffer Offerta automatica quando si libera inventario (cancellazione, rilascio, scadenza).
+	AutoOffer        bool `json:"auto_offer"`
+	Enabled          bool `json:"enabled"`
+	OfferHoldMinutes int  `json:"offer_hold_minutes"`
+
+	// PublicJoin Iscrizione dalla pagina pubblica quando non c'è disponibilità.
+	PublicJoin bool `json:"public_join"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// WaitlistSettingsInput defines model for WaitlistSettingsInput.
+type WaitlistSettingsInput struct {
+	AutoOffer        bool `json:"auto_offer"`
+	Enabled          bool `json:"enabled"`
+	OfferHoldMinutes int  `json:"offer_hold_minutes"`
+	PublicJoin       bool `json:"public_join"`
+}
+
 // WebhookAck defines model for WebhookAck.
 type WebhookAck struct {
 	Duplicate *bool `json:"duplicate,omitempty"`
@@ -8070,6 +9096,12 @@ type RatePeriodID = string
 // ReleaseID defines model for ReleaseID.
 type ReleaseID = string
 
+// RenewalCampaignID defines model for RenewalCampaignID.
+type RenewalCampaignID = string
+
+// RenewalProposalID defines model for RenewalProposalID.
+type RenewalProposalID = string
+
 // ReportFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
 type ReportFrom = Date
 
@@ -8090,6 +9122,15 @@ type SpotBlockID = string
 
 // TeamUserID defines model for TeamUserID.
 type TeamUserID = string
+
+// WaitlistEntryID defines model for WaitlistEntryID.
+type WaitlistEntryID = string
+
+// WaitlistOfferID defines model for WaitlistOfferID.
+type WaitlistOfferID = string
+
+// WaitlistToken defines model for WaitlistToken.
+type WaitlistToken = string
 
 // WebhookDeliveryID defines model for WebhookDeliveryID.
 type WebhookDeliveryID = string
@@ -8679,6 +9720,27 @@ type UpdateCustomerParams struct {
 type AnonymizeCustomerParams struct {
 	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// GetCustomerCreditsParams defines parameters for GetCustomerCredits.
+type GetCustomerCreditsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateCustomerCreditParams defines parameters for CreateCustomerCredit.
+type CreateCustomerCreditParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
@@ -9358,6 +10420,113 @@ type UpdateRatePeriodParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListRenewalCampaignsParams defines parameters for ListRenewalCampaigns.
+type ListRenewalCampaignsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// TargetSeasonId Stagione di destinazione.
+	TargetSeasonId *string `form:"target_season_id,omitempty" json:"target_season_id,omitempty"`
+
+	// Status Stato della campagna.
+	Status *RenewalCampaignStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// CreateRenewalCampaignParams defines parameters for CreateRenewalCampaign.
+type CreateRenewalCampaignParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateRenewalCampaignParams defines parameters for UpdateRenewalCampaign.
+type UpdateRenewalCampaignParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListRenewalProposalsParams defines parameters for ListRenewalProposals.
+type ListRenewalProposalsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Status Stato della proposta.
+	Status *RenewalProposalStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Sent true = solo inviate, false = solo da inviare.
+	Sent *bool `form:"sent,omitempty" json:"sent,omitempty"`
+
+	// ZoneId Zona della postazione.
+	ZoneId *string `form:"zone_id,omitempty" json:"zone_id,omitempty"`
+
+	// Q Ricerca per cliente, codice o postazione.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+}
+
+// BulkRenewalProposalsParams defines parameters for BulkRenewalProposals.
+type BulkRenewalProposalsParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// AcceptRenewalProposalParams defines parameters for AcceptRenewalProposal.
+type AcceptRenewalProposalParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeclineRenewalProposalParams defines parameters for DeclineRenewalProposal.
+type DeclineRenewalProposalParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// SendRenewalProposalParams defines parameters for SendRenewalProposal.
+type SendRenewalProposalParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // GetBookingsReportParams defines parameters for GetBookingsReport.
 type GetBookingsReportParams struct {
 	// From Primo giorno del periodo (incluso).
@@ -9567,6 +10736,15 @@ type RevokeSeasonPassReleaseParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListSeasonRolloversParams defines parameters for ListSeasonRollovers.
+type ListSeasonRolloversParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
 // ListSeasonsParams defines parameters for ListSeasons.
 type ListSeasonsParams struct {
 	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
@@ -9610,6 +10788,18 @@ type UpdateSeasonParams struct {
 
 // CopySeasonParams defines parameters for CopySeason.
 type CopySeasonParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RolloverSeasonParams defines parameters for RolloverSeason.
+type RolloverSeasonParams struct {
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
 	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
@@ -9723,6 +10913,101 @@ type PublishTermsVersionParams struct {
 	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListWaitlistEntriesParams defines parameters for ListWaitlistEntries.
+type ListWaitlistEntriesParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Status Stato dell'iscrizione.
+	Status *WaitlistEntryStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// ZoneId Zona richiesta.
+	ZoneId *string `form:"zone_id,omitempty" json:"zone_id,omitempty"`
+
+	// PackId Pack richiesto.
+	PackId *string `form:"pack_id,omitempty" json:"pack_id,omitempty"`
+
+	// From Iscrizioni che si sovrappongono al periodo da questa data.
+	From *Date `form:"from,omitempty" json:"from,omitempty"`
+
+	// To Iscrizioni che si sovrappongono al periodo fino a questa data.
+	To *Date `form:"to,omitempty" json:"to,omitempty"`
+
+	// Q Ricerca per cliente.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+}
+
+// CreateWaitlistEntryParams defines parameters for CreateWaitlistEntry.
+type CreateWaitlistEntryParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateWaitlistSettingsParams defines parameters for UpdateWaitlistSettings.
+type UpdateWaitlistSettingsParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ReorderWaitlistParams defines parameters for ReorderWaitlist.
+type ReorderWaitlistParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RemoveWaitlistEntryParams defines parameters for RemoveWaitlistEntry.
+type RemoveWaitlistEntryParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateWaitlistEntryParams defines parameters for UpdateWaitlistEntry.
+type UpdateWaitlistEntryParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// OfferWaitlistEntryParams defines parameters for OfferWaitlistEntry.
+type OfferWaitlistEntryParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RevokeWaitlistOfferParams defines parameters for RevokeWaitlistOffer.
+type RevokeWaitlistOfferParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
@@ -9956,6 +11241,14 @@ type GetPublicCatalogParams struct {
 	SpotId  *string  `form:"spot_id,omitempty" json:"spot_id,omitempty"`
 }
 
+// ApplyManagedCreditParams defines parameters for ApplyManagedCredit.
+type ApplyManagedCreditParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // CancelManagedBookingParams defines parameters for CancelManagedBooking.
 type CancelManagedBookingParams struct {
 	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
@@ -9985,10 +11278,34 @@ type GetManagedBookingQrParams struct {
 // GetManagedBookingQrParamsFormat defines parameters for GetManagedBookingQr.
 type GetManagedBookingQrParamsFormat string
 
+// AcceptManagedRenewalParams defines parameters for AcceptManagedRenewal.
+type AcceptManagedRenewalParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // GetPublicMapParams defines parameters for GetPublicMap.
 type GetPublicMapParams struct {
 	// IfNoneMatch ETag letto in precedenza; se coincide la risposta è 304.
 	IfNoneMatch *IfNoneMatch `json:"If-None-Match,omitempty"`
+}
+
+// JoinWaitlistParams defines parameters for JoinWaitlist.
+type JoinWaitlistParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// AcceptWaitlistOfferParams defines parameters for AcceptWaitlistOffer.
+type AcceptWaitlistOfferParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
 // ReceivePaymentWebhookJSONBody defines parameters for ReceivePaymentWebhook.
@@ -10090,6 +11407,9 @@ type CreateCustomerJSONRequestBody = CustomerInput
 // UpdateCustomerJSONRequestBody defines body for UpdateCustomer for application/json ContentType.
 type UpdateCustomerJSONRequestBody = CustomerInput
 
+// CreateCustomerCreditJSONRequestBody defines body for CreateCustomerCredit for application/json ContentType.
+type CreateCustomerCreditJSONRequestBody = CustomerCreditCreate
+
 // CreateDevicePairingCodeJSONRequestBody defines body for CreateDevicePairingCode for application/json ContentType.
 type CreateDevicePairingCodeJSONRequestBody = DevicePairingCodeRequest
 
@@ -10174,6 +11494,21 @@ type CreateRatePeriodJSONRequestBody = RatePeriodInput
 // UpdateRatePeriodJSONRequestBody defines body for UpdateRatePeriod for application/json ContentType.
 type UpdateRatePeriodJSONRequestBody = RatePeriodInput
 
+// CreateRenewalCampaignJSONRequestBody defines body for CreateRenewalCampaign for application/json ContentType.
+type CreateRenewalCampaignJSONRequestBody = RenewalCampaignCreate
+
+// UpdateRenewalCampaignJSONRequestBody defines body for UpdateRenewalCampaign for application/json ContentType.
+type UpdateRenewalCampaignJSONRequestBody = RenewalCampaignUpdate
+
+// BulkRenewalProposalsJSONRequestBody defines body for BulkRenewalProposals for application/json ContentType.
+type BulkRenewalProposalsJSONRequestBody = RenewalBulkRequest
+
+// AcceptRenewalProposalJSONRequestBody defines body for AcceptRenewalProposal for application/json ContentType.
+type AcceptRenewalProposalJSONRequestBody = RenewalStaffAcceptRequest
+
+// DeclineRenewalProposalJSONRequestBody defines body for DeclineRenewalProposal for application/json ContentType.
+type DeclineRenewalProposalJSONRequestBody = RenewalDeclineRequest
+
 // CreateSeasonPassJSONRequestBody defines body for CreateSeasonPass for application/json ContentType.
 type CreateSeasonPassJSONRequestBody = SeasonPassCreate
 
@@ -10192,6 +11527,9 @@ type UpdateSeasonJSONRequestBody = SeasonInput
 // CopySeasonJSONRequestBody defines body for CopySeason for application/json ContentType.
 type CopySeasonJSONRequestBody = SeasonCopyRequest
 
+// RolloverSeasonJSONRequestBody defines body for RolloverSeason for application/json ContentType.
+type RolloverSeasonJSONRequestBody = SeasonRolloverRequest
+
 // ApplySetupTemplateJSONRequestBody defines body for ApplySetupTemplate for application/json ContentType.
 type ApplySetupTemplateJSONRequestBody = ApplyTemplateRequest
 
@@ -10209,6 +11547,21 @@ type UpdateTeamMemberJSONRequestBody = TeamMemberUpdate
 
 // PublishTermsVersionJSONRequestBody defines body for PublishTermsVersion for application/json ContentType.
 type PublishTermsVersionJSONRequestBody = TermsVersionInput
+
+// CreateWaitlistEntryJSONRequestBody defines body for CreateWaitlistEntry for application/json ContentType.
+type CreateWaitlistEntryJSONRequestBody = WaitlistEntryCreate
+
+// UpdateWaitlistSettingsJSONRequestBody defines body for UpdateWaitlistSettings for application/json ContentType.
+type UpdateWaitlistSettingsJSONRequestBody = WaitlistSettingsInput
+
+// ReorderWaitlistJSONRequestBody defines body for ReorderWaitlist for application/json ContentType.
+type ReorderWaitlistJSONRequestBody = WaitlistReorderRequest
+
+// UpdateWaitlistEntryJSONRequestBody defines body for UpdateWaitlistEntry for application/json ContentType.
+type UpdateWaitlistEntryJSONRequestBody = WaitlistEntryUpdate
+
+// OfferWaitlistEntryJSONRequestBody defines body for OfferWaitlistEntry for application/json ContentType.
+type OfferWaitlistEntryJSONRequestBody = WaitlistOfferCreate
 
 // CreateWebhookEndpointJSONRequestBody defines body for CreateWebhookEndpoint for application/json ContentType.
 type CreateWebhookEndpointJSONRequestBody = WebhookEndpointCreate
@@ -10252,6 +11605,9 @@ type PayPublicBookingJSONRequestBody = CheckoutPayRequest
 // RequestManageLinkJSONRequestBody defines body for RequestManageLink for application/json ContentType.
 type RequestManageLinkJSONRequestBody = ManageLinkRequest
 
+// ApplyManagedCreditJSONRequestBody defines body for ApplyManagedCredit for application/json ContentType.
+type ApplyManagedCreditJSONRequestBody = PublicApplyCreditRequest
+
 // CancelManagedBookingJSONRequestBody defines body for CancelManagedBooking for application/json ContentType.
 type CancelManagedBookingJSONRequestBody = ManageCancelRequest
 
@@ -10261,8 +11617,20 @@ type ModifyManagedBookingJSONRequestBody = ManageModifyRequest
 // ReleaseManagedSeasonDaysJSONRequestBody defines body for ReleaseManagedSeasonDays for application/json ContentType.
 type ReleaseManagedSeasonDaysJSONRequestBody = ManageReleaseRequest
 
+// AcceptManagedRenewalJSONRequestBody defines body for AcceptManagedRenewal for application/json ContentType.
+type AcceptManagedRenewalJSONRequestBody = PublicRenewalAcceptRequest
+
+// DeclineManagedRenewalJSONRequestBody defines body for DeclineManagedRenewal for application/json ContentType.
+type DeclineManagedRenewalJSONRequestBody = PublicRenewalDeclineRequest
+
 // QuotePublicBookingJSONRequestBody defines body for QuotePublicBooking for application/json ContentType.
 type QuotePublicBookingJSONRequestBody = PublicSelection
+
+// JoinWaitlistJSONRequestBody defines body for JoinWaitlist for application/json ContentType.
+type JoinWaitlistJSONRequestBody = PublicWaitlistJoin
+
+// DeclineWaitlistOfferJSONRequestBody defines body for DeclineWaitlistOffer for application/json ContentType.
+type DeclineWaitlistOfferJSONRequestBody = PublicWaitlistDeclineRequest
 
 // ReceivePaymentWebhookJSONRequestBody defines body for ReceivePaymentWebhook for application/json ContentType.
 type ReceivePaymentWebhookJSONRequestBody ReceivePaymentWebhookJSONBody
@@ -10449,6 +11817,12 @@ type ServerInterface interface {
 	// AnonymizeCustomer Anonimizza il cliente (GDPR)
 	// (POST /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/anonymize)
 	AnonymizeCustomer(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID, params AnonymizeCustomerParams)
+	// GetCustomerCredits Saldo e movimenti dei crediti del cliente
+	// (GET /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits)
+	GetCustomerCredits(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID, params GetCustomerCreditsParams)
+	// CreateCustomerCredit Riconosce un credito (cortesia, manuale) o registra una rettifica
+	// (POST /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits)
+	CreateCustomerCredit(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID, params CreateCustomerCreditParams)
 	// ExportCustomer Esportazione GDPR dei dati del cliente (JSON)
 	// (GET /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/export)
 	ExportCustomer(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID)
@@ -10674,6 +12048,36 @@ type ServerInterface interface {
 	// UpdateRatePeriod Sostituisce periodo tariffario
 	// (PUT /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
 	UpdateRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID, params UpdateRatePeriodParams)
+	// ListRenewalCampaigns Campagne di rinnovo degli abbonamenti
+	// (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns)
+	ListRenewalCampaigns(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRenewalCampaignsParams)
+	// CreateRenewalCampaign Proponi rinnovi: crea la campagna e una proposta per ogni abbonato (anteprima con dry_run)
+	// (POST /api/admin/v1/establishments/{establishmentId}/renewal-campaigns)
+	CreateRenewalCampaign(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateRenewalCampaignParams)
+	// GetRenewalCampaign Dettaglio della campagna con i conteggi per stato
+	// (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId})
+	GetRenewalCampaign(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID)
+	// UpdateRenewalCampaign Modifica nome, note o scadenza predefinita; chiude la campagna
+	// (PATCH /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId})
+	UpdateRenewalCampaign(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID, params UpdateRenewalCampaignParams)
+	// ListRenewalProposals Proposte di rinnovo della campagna (filtri)
+	// (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals)
+	ListRenewalProposals(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID, params ListRenewalProposalsParams)
+	// BulkRenewalProposals Azioni di massa sulle proposte (invio, accettazione, rifiuto, proroga, rilascio)
+	// (POST /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals/bulk)
+	BulkRenewalProposals(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID, params BulkRenewalProposalsParams)
+	// GetRenewalProposal Dettaglio della proposta di rinnovo
+	// (GET /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId})
+	GetRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID)
+	// AcceptRenewalProposal Accetta il rinnovo per conto del cliente (dal pannello)
+	// (POST /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/accept)
+	AcceptRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID, params AcceptRenewalProposalParams)
+	// DeclineRenewalProposal Registra il rifiuto del rinnovo e libera la postazione
+	// (POST /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/decline)
+	DeclineRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID, params DeclineRenewalProposalParams)
+	// SendRenewalProposal Invia (o reinvia) al cliente l'email della proposta con il link magico
+	// (POST /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/send)
+	SendRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID, params SendRenewalProposalParams)
 	// GetBookingsReport Prenotazioni per canale, anticipo di prenotazione, formula o giorno
 	// (GET /api/admin/v1/establishments/{establishmentId}/reports/bookings)
 	GetBookingsReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetBookingsReportParams)
@@ -10722,6 +12126,9 @@ type ServerInterface interface {
 	// RevokeSeasonPassRelease Revoca un rilascio non ancora rivenduto
 	// (DELETE /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/releases/{releaseId})
 	RevokeSeasonPassRelease(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID, releaseId ReleaseID, params RevokeSeasonPassReleaseParams)
+	// ListSeasonRollovers Storico dei passaggi di stagione
+	// (GET /api/admin/v1/establishments/{establishmentId}/season-rollovers)
+	ListSeasonRollovers(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonRolloversParams)
 	// ListSeasons Elenco stagioni
 	// (GET /api/admin/v1/establishments/{establishmentId}/seasons)
 	ListSeasons(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonsParams)
@@ -10740,6 +12147,9 @@ type ServerInterface interface {
 	// CopySeason Copia stagione sull'anno indicato (periodi, regole, prezzi fissi, policy)
 	// (POST /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/copy)
 	CopySeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params CopySeasonParams)
+	// RolloverSeason Fine stagione: crea la stagione successiva copiando la configurazione (anteprima e applicazione)
+	// (POST /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/rollover)
+	RolloverSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params RolloverSeasonParams)
 	// ApplySetupTemplate Applica un modello (stagione, mappa, zone, catalogo)
 	// (POST /api/admin/v1/establishments/{establishmentId}/setup/apply-template)
 	ApplySetupTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ApplySetupTemplateParams)
@@ -10779,6 +12189,36 @@ type ServerInterface interface {
 	// PublishTermsVersion Pubblica una nuova versione delle condizioni (immutabile)
 	// (POST /api/admin/v1/establishments/{establishmentId}/terms-versions)
 	PublishTermsVersion(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PublishTermsVersionParams)
+	// ListWaitlistEntries Lista d'attesa in ordine di priorità
+	// (GET /api/admin/v1/establishments/{establishmentId}/waitlist)
+	ListWaitlistEntries(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListWaitlistEntriesParams)
+	// CreateWaitlistEntry Iscrive un cliente alla lista d'attesa dal pannello
+	// (POST /api/admin/v1/establishments/{establishmentId}/waitlist)
+	CreateWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateWaitlistEntryParams)
+	// GetWaitlistSettings Impostazioni della lista d'attesa
+	// (GET /api/admin/v1/establishments/{establishmentId}/waitlist-settings)
+	GetWaitlistSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// UpdateWaitlistSettings Aggiorna le impostazioni della lista d'attesa
+	// (PUT /api/admin/v1/establishments/{establishmentId}/waitlist-settings)
+	UpdateWaitlistSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateWaitlistSettingsParams)
+	// ReorderWaitlist Riordina la lista d'attesa
+	// (POST /api/admin/v1/establishments/{establishmentId}/waitlist/reorder)
+	ReorderWaitlist(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ReorderWaitlistParams)
+	// RemoveWaitlistEntry Rimuove l'iscrizione (stato removed); un'offerta attiva viene revocata e il suo hold rilasciato
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId})
+	RemoveWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, params RemoveWaitlistEntryParams)
+	// GetWaitlistEntry Dettaglio dell'iscrizione con le offerte
+	// (GET /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId})
+	GetWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID)
+	// UpdateWaitlistEntry Modifica l'iscrizione (periodo, zona, pack, priorità, note)
+	// (PATCH /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId})
+	UpdateWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, params UpdateWaitlistEntryParams)
+	// OfferWaitlistEntry Offre subito un posto all'iscritto (hold riservato a tempo e email con link)
+	// (POST /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offer)
+	OfferWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, params OfferWaitlistEntryParams)
+	// RevokeWaitlistOffer Revoca un'offerta attiva e rilascia il suo hold
+	// (POST /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offers/{offerId}/revoke)
+	RevokeWaitlistOffer(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, offerId WaitlistOfferID, params RevokeWaitlistOfferParams)
 	// ListWebhookEndpoints Endpoint dei webhook in uscita (mai il segreto)
 	// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints)
 	ListWebhookEndpoints(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
@@ -10911,9 +12351,15 @@ type ServerInterface interface {
 	// GetManagedBooking Prenotazione dal link magico (area gestione del cliente)
 	// (GET /api/public/v1/{slug}/manage/{token})
 	GetManagedBooking(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken)
+	// ApplyManagedCredit Usa il saldo crediti per pagare (in parte) la prenotazione
+	// (POST /api/public/v1/{slug}/manage/{token}/apply-credit)
+	ApplyManagedCredit(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken, params ApplyManagedCreditParams)
 	// CancelManagedBooking Cancellazione secondo policy, con anteprima del rimborso o credito
 	// (POST /api/public/v1/{slug}/manage/{token}/cancel)
 	CancelManagedBooking(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken, params CancelManagedBookingParams)
+	// GetManagedCredits Saldo crediti del cliente della prenotazione
+	// (GET /api/public/v1/{slug}/manage/{token}/credits)
+	GetManagedCredits(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken)
 	// GetManagedBookingIcs Evento di calendario (.ics) dal link magico
 	// (GET /api/public/v1/{slug}/manage/{token}/ics)
 	GetManagedBookingIcs(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken)
@@ -10929,12 +12375,36 @@ type ServerInterface interface {
 	// ReleaseManagedSeasonDays Rilascio di giorni dell'abbonamento (abbonati)
 	// (POST /api/public/v1/{slug}/manage/{token}/releases)
 	ReleaseManagedSeasonDays(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken)
+	// GetManagedRenewal Proposta di rinnovo dal link magico
+	// (GET /api/public/v1/{slug}/manage/{token}/renewal)
+	GetManagedRenewal(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken)
+	// AcceptManagedRenewal Accetta il rinnovo e avvia il pagamento (acconto o saldo) con il provider online
+	// (POST /api/public/v1/{slug}/manage/{token}/renewal/accept)
+	AcceptManagedRenewal(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken, params AcceptManagedRenewalParams)
+	// DeclineManagedRenewal Rifiuta il rinnovo: la postazione torna disponibile
+	// (POST /api/public/v1/{slug}/manage/{token}/renewal/decline)
+	DeclineManagedRenewal(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken)
 	// GetPublicMap Geometria pubblica della mappa (senza dati sensibili)
 	// (GET /api/public/v1/{slug}/maps/{mapId})
 	GetPublicMap(w http.ResponseWriter, r *http.Request, slug Slug, mapId MapID, params GetPublicMapParams)
 	// QuotePublicBooking Prezzo e policy di una selezione (nessuna scrittura)
 	// (POST /api/public/v1/{slug}/quote)
 	QuotePublicBooking(w http.ResponseWriter, r *http.Request, slug Slug)
+	// JoinWaitlist Iscrizione alla lista d'attesa quando la richiesta non trova disponibilità
+	// (POST /api/public/v1/{slug}/waitlist)
+	JoinWaitlist(w http.ResponseWriter, r *http.Request, slug Slug, params JoinWaitlistParams)
+	// LeaveWaitlist Cancella l'iscrizione alla lista d'attesa
+	// (DELETE /api/public/v1/{slug}/waitlist/{waitlistToken})
+	LeaveWaitlist(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken)
+	// GetPublicWaitlistEntry Iscrizione alla lista d'attesa dal link personale, con l'eventuale offerta attiva
+	// (GET /api/public/v1/{slug}/waitlist/{waitlistToken})
+	GetPublicWaitlistEntry(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken)
+	// AcceptWaitlistOffer Accetta l'offerta: la prenotazione nasce dall'hold riservato e prosegue nel checkout
+	// (POST /api/public/v1/{slug}/waitlist/{waitlistToken}/accept)
+	AcceptWaitlistOffer(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken, params AcceptWaitlistOfferParams)
+	// DeclineWaitlistOffer Rifiuta l'offerta (l'iscrizione resta in attesa, salvo `leave`)
+	// (POST /api/public/v1/{slug}/waitlist/{waitlistToken}/decline)
+	DeclineWaitlistOffer(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken)
 	// GetHealthz Processo vivo
 	// (GET /healthz)
 	GetHealthz(w http.ResponseWriter, r *http.Request)
@@ -11307,6 +12777,18 @@ func (_ Unimplemented) UpdateCustomer(w http.ResponseWriter, r *http.Request, es
 // AnonymizeCustomer Anonimizza il cliente (GDPR)
 // (POST /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/anonymize)
 func (_ Unimplemented) AnonymizeCustomer(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID, params AnonymizeCustomerParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetCustomerCredits Saldo e movimenti dei crediti del cliente
+// (GET /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits)
+func (_ Unimplemented) GetCustomerCredits(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID, params GetCustomerCreditsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateCustomerCredit Riconosce un credito (cortesia, manuale) o registra una rettifica
+// (POST /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits)
+func (_ Unimplemented) CreateCustomerCredit(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID, params CreateCustomerCreditParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -11760,6 +13242,66 @@ func (_ Unimplemented) UpdateRatePeriod(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListRenewalCampaigns Campagne di rinnovo degli abbonamenti
+// (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns)
+func (_ Unimplemented) ListRenewalCampaigns(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRenewalCampaignsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateRenewalCampaign Proponi rinnovi: crea la campagna e una proposta per ogni abbonato (anteprima con dry_run)
+// (POST /api/admin/v1/establishments/{establishmentId}/renewal-campaigns)
+func (_ Unimplemented) CreateRenewalCampaign(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateRenewalCampaignParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetRenewalCampaign Dettaglio della campagna con i conteggi per stato
+// (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId})
+func (_ Unimplemented) GetRenewalCampaign(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateRenewalCampaign Modifica nome, note o scadenza predefinita; chiude la campagna
+// (PATCH /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId})
+func (_ Unimplemented) UpdateRenewalCampaign(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID, params UpdateRenewalCampaignParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListRenewalProposals Proposte di rinnovo della campagna (filtri)
+// (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals)
+func (_ Unimplemented) ListRenewalProposals(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID, params ListRenewalProposalsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// BulkRenewalProposals Azioni di massa sulle proposte (invio, accettazione, rifiuto, proroga, rilascio)
+// (POST /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals/bulk)
+func (_ Unimplemented) BulkRenewalProposals(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, campaignId RenewalCampaignID, params BulkRenewalProposalsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetRenewalProposal Dettaglio della proposta di rinnovo
+// (GET /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId})
+func (_ Unimplemented) GetRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// AcceptRenewalProposal Accetta il rinnovo per conto del cliente (dal pannello)
+// (POST /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/accept)
+func (_ Unimplemented) AcceptRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID, params AcceptRenewalProposalParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeclineRenewalProposal Registra il rifiuto del rinnovo e libera la postazione
+// (POST /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/decline)
+func (_ Unimplemented) DeclineRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID, params DeclineRenewalProposalParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SendRenewalProposal Invia (o reinvia) al cliente l'email della proposta con il link magico
+// (POST /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/send)
+func (_ Unimplemented) SendRenewalProposal(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, proposalId RenewalProposalID, params SendRenewalProposalParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // GetBookingsReport Prenotazioni per canale, anticipo di prenotazione, formula o giorno
 // (GET /api/admin/v1/establishments/{establishmentId}/reports/bookings)
 func (_ Unimplemented) GetBookingsReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetBookingsReportParams) {
@@ -11856,6 +13398,12 @@ func (_ Unimplemented) RevokeSeasonPassRelease(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListSeasonRollovers Storico dei passaggi di stagione
+// (GET /api/admin/v1/establishments/{establishmentId}/season-rollovers)
+func (_ Unimplemented) ListSeasonRollovers(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonRolloversParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListSeasons Elenco stagioni
 // (GET /api/admin/v1/establishments/{establishmentId}/seasons)
 func (_ Unimplemented) ListSeasons(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonsParams) {
@@ -11889,6 +13437,12 @@ func (_ Unimplemented) UpdateSeason(w http.ResponseWriter, r *http.Request, esta
 // CopySeason Copia stagione sull'anno indicato (periodi, regole, prezzi fissi, policy)
 // (POST /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/copy)
 func (_ Unimplemented) CopySeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params CopySeasonParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RolloverSeason Fine stagione: crea la stagione successiva copiando la configurazione (anteprima e applicazione)
+// (POST /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/rollover)
+func (_ Unimplemented) RolloverSeason(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, seasonId SeasonID, params RolloverSeasonParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -11967,6 +13521,66 @@ func (_ Unimplemented) ListTermsVersions(w http.ResponseWriter, r *http.Request,
 // PublishTermsVersion Pubblica una nuova versione delle condizioni (immutabile)
 // (POST /api/admin/v1/establishments/{establishmentId}/terms-versions)
 func (_ Unimplemented) PublishTermsVersion(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PublishTermsVersionParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListWaitlistEntries Lista d'attesa in ordine di priorità
+// (GET /api/admin/v1/establishments/{establishmentId}/waitlist)
+func (_ Unimplemented) ListWaitlistEntries(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListWaitlistEntriesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateWaitlistEntry Iscrive un cliente alla lista d'attesa dal pannello
+// (POST /api/admin/v1/establishments/{establishmentId}/waitlist)
+func (_ Unimplemented) CreateWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateWaitlistEntryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetWaitlistSettings Impostazioni della lista d'attesa
+// (GET /api/admin/v1/establishments/{establishmentId}/waitlist-settings)
+func (_ Unimplemented) GetWaitlistSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateWaitlistSettings Aggiorna le impostazioni della lista d'attesa
+// (PUT /api/admin/v1/establishments/{establishmentId}/waitlist-settings)
+func (_ Unimplemented) UpdateWaitlistSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateWaitlistSettingsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ReorderWaitlist Riordina la lista d'attesa
+// (POST /api/admin/v1/establishments/{establishmentId}/waitlist/reorder)
+func (_ Unimplemented) ReorderWaitlist(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ReorderWaitlistParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RemoveWaitlistEntry Rimuove l'iscrizione (stato removed); un'offerta attiva viene revocata e il suo hold rilasciato
+// (DELETE /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId})
+func (_ Unimplemented) RemoveWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, params RemoveWaitlistEntryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetWaitlistEntry Dettaglio dell'iscrizione con le offerte
+// (GET /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId})
+func (_ Unimplemented) GetWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateWaitlistEntry Modifica l'iscrizione (periodo, zona, pack, priorità, note)
+// (PATCH /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId})
+func (_ Unimplemented) UpdateWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, params UpdateWaitlistEntryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// OfferWaitlistEntry Offre subito un posto all'iscritto (hold riservato a tempo e email con link)
+// (POST /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offer)
+func (_ Unimplemented) OfferWaitlistEntry(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, params OfferWaitlistEntryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RevokeWaitlistOffer Revoca un'offerta attiva e rilascia il suo hold
+// (POST /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offers/{offerId}/revoke)
+func (_ Unimplemented) RevokeWaitlistOffer(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryId WaitlistEntryID, offerId WaitlistOfferID, params RevokeWaitlistOfferParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -12234,9 +13848,21 @@ func (_ Unimplemented) GetManagedBooking(w http.ResponseWriter, r *http.Request,
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ApplyManagedCredit Usa il saldo crediti per pagare (in parte) la prenotazione
+// (POST /api/public/v1/{slug}/manage/{token}/apply-credit)
+func (_ Unimplemented) ApplyManagedCredit(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken, params ApplyManagedCreditParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // CancelManagedBooking Cancellazione secondo policy, con anteprima del rimborso o credito
 // (POST /api/public/v1/{slug}/manage/{token}/cancel)
 func (_ Unimplemented) CancelManagedBooking(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken, params CancelManagedBookingParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetManagedCredits Saldo crediti del cliente della prenotazione
+// (GET /api/public/v1/{slug}/manage/{token}/credits)
+func (_ Unimplemented) GetManagedCredits(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -12270,6 +13896,24 @@ func (_ Unimplemented) ReleaseManagedSeasonDays(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// GetManagedRenewal Proposta di rinnovo dal link magico
+// (GET /api/public/v1/{slug}/manage/{token}/renewal)
+func (_ Unimplemented) GetManagedRenewal(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// AcceptManagedRenewal Accetta il rinnovo e avvia il pagamento (acconto o saldo) con il provider online
+// (POST /api/public/v1/{slug}/manage/{token}/renewal/accept)
+func (_ Unimplemented) AcceptManagedRenewal(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken, params AcceptManagedRenewalParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeclineManagedRenewal Rifiuta il rinnovo: la postazione torna disponibile
+// (POST /api/public/v1/{slug}/manage/{token}/renewal/decline)
+func (_ Unimplemented) DeclineManagedRenewal(w http.ResponseWriter, r *http.Request, slug Slug, token ManageToken) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // GetPublicMap Geometria pubblica della mappa (senza dati sensibili)
 // (GET /api/public/v1/{slug}/maps/{mapId})
 func (_ Unimplemented) GetPublicMap(w http.ResponseWriter, r *http.Request, slug Slug, mapId MapID, params GetPublicMapParams) {
@@ -12279,6 +13923,36 @@ func (_ Unimplemented) GetPublicMap(w http.ResponseWriter, r *http.Request, slug
 // QuotePublicBooking Prezzo e policy di una selezione (nessuna scrittura)
 // (POST /api/public/v1/{slug}/quote)
 func (_ Unimplemented) QuotePublicBooking(w http.ResponseWriter, r *http.Request, slug Slug) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// JoinWaitlist Iscrizione alla lista d'attesa quando la richiesta non trova disponibilità
+// (POST /api/public/v1/{slug}/waitlist)
+func (_ Unimplemented) JoinWaitlist(w http.ResponseWriter, r *http.Request, slug Slug, params JoinWaitlistParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// LeaveWaitlist Cancella l'iscrizione alla lista d'attesa
+// (DELETE /api/public/v1/{slug}/waitlist/{waitlistToken})
+func (_ Unimplemented) LeaveWaitlist(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPublicWaitlistEntry Iscrizione alla lista d'attesa dal link personale, con l'eventuale offerta attiva
+// (GET /api/public/v1/{slug}/waitlist/{waitlistToken})
+func (_ Unimplemented) GetPublicWaitlistEntry(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// AcceptWaitlistOffer Accetta l'offerta: la prenotazione nasce dall'hold riservato e prosegue nel checkout
+// (POST /api/public/v1/{slug}/waitlist/{waitlistToken}/accept)
+func (_ Unimplemented) AcceptWaitlistOffer(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken, params AcceptWaitlistOfferParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeclineWaitlistOffer Rifiuta l'offerta (l'iscrizione resta in attesa, salvo `leave`)
+// (POST /api/public/v1/{slug}/waitlist/{waitlistToken}/decline)
+func (_ Unimplemented) DeclineWaitlistOffer(w http.ResponseWriter, r *http.Request, slug Slug, waitlistToken WaitlistToken) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -16200,6 +17874,148 @@ func (siw *ServerInterfaceWrapper) AnonymizeCustomer(w http.ResponseWriter, r *h
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.AnonymizeCustomer(w, r, establishmentId, customerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetCustomerCredits operation middleware
+func (siw *ServerInterfaceWrapper) GetCustomerCredits(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "customerId" -------------
+	var customerId CustomerID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "customerId", chi.URLParam(r, "customerId"), &customerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "customerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCustomerCreditsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetCustomerCredits(w, r, establishmentId, customerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateCustomerCredit operation middleware
+func (siw *ServerInterfaceWrapper) CreateCustomerCredit(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "customerId" -------------
+	var customerId CustomerID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "customerId", chi.URLParam(r, "customerId"), &customerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "customerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateCustomerCreditParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateCustomerCredit(w, r, establishmentId, customerId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -21074,6 +22890,751 @@ func (siw *ServerInterfaceWrapper) UpdateRatePeriod(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// ListRenewalCampaigns operation middleware
+func (siw *ServerInterfaceWrapper) ListRenewalCampaigns(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListRenewalCampaignsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "target_season_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "target_season_id", r.URL.Query(), &params.TargetSeasonId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "target_season_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "target_season_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListRenewalCampaigns(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateRenewalCampaign operation middleware
+func (siw *ServerInterfaceWrapper) CreateRenewalCampaign(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateRenewalCampaignParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateRenewalCampaign(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetRenewalCampaign operation middleware
+func (siw *ServerInterfaceWrapper) GetRenewalCampaign(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "campaignId" -------------
+	var campaignId RenewalCampaignID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campaignId", chi.URLParam(r, "campaignId"), &campaignId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "campaignId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetRenewalCampaign(w, r, establishmentId, campaignId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateRenewalCampaign operation middleware
+func (siw *ServerInterfaceWrapper) UpdateRenewalCampaign(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "campaignId" -------------
+	var campaignId RenewalCampaignID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campaignId", chi.URLParam(r, "campaignId"), &campaignId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "campaignId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateRenewalCampaignParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateRenewalCampaign(w, r, establishmentId, campaignId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListRenewalProposals operation middleware
+func (siw *ServerInterfaceWrapper) ListRenewalProposals(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "campaignId" -------------
+	var campaignId RenewalCampaignID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campaignId", chi.URLParam(r, "campaignId"), &campaignId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "campaignId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListRenewalProposalsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "sent" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "sent", r.URL.Query(), &params.Sent, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "sent"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "sent", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "zone_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "zone_id", r.URL.Query(), &params.ZoneId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "zone_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zone_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "q" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "q", r.URL.Query(), &params.Q, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "q"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "q", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListRenewalProposals(w, r, establishmentId, campaignId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// BulkRenewalProposals operation middleware
+func (siw *ServerInterfaceWrapper) BulkRenewalProposals(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "campaignId" -------------
+	var campaignId RenewalCampaignID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campaignId", chi.URLParam(r, "campaignId"), &campaignId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "campaignId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params BulkRenewalProposalsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.BulkRenewalProposals(w, r, establishmentId, campaignId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetRenewalProposal operation middleware
+func (siw *ServerInterfaceWrapper) GetRenewalProposal(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "proposalId" -------------
+	var proposalId RenewalProposalID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "proposalId", chi.URLParam(r, "proposalId"), &proposalId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "proposalId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetRenewalProposal(w, r, establishmentId, proposalId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AcceptRenewalProposal operation middleware
+func (siw *ServerInterfaceWrapper) AcceptRenewalProposal(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "proposalId" -------------
+	var proposalId RenewalProposalID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "proposalId", chi.URLParam(r, "proposalId"), &proposalId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "proposalId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AcceptRenewalProposalParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AcceptRenewalProposal(w, r, establishmentId, proposalId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeclineRenewalProposal operation middleware
+func (siw *ServerInterfaceWrapper) DeclineRenewalProposal(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "proposalId" -------------
+	var proposalId RenewalProposalID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "proposalId", chi.URLParam(r, "proposalId"), &proposalId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "proposalId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeclineRenewalProposalParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeclineRenewalProposal(w, r, establishmentId, proposalId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SendRenewalProposal operation middleware
+func (siw *ServerInterfaceWrapper) SendRenewalProposal(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "proposalId" -------------
+	var proposalId RenewalProposalID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "proposalId", chi.URLParam(r, "proposalId"), &proposalId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "proposalId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SendRenewalProposalParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SendRenewalProposal(w, r, establishmentId, proposalId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetBookingsReport operation middleware
 func (siw *ServerInterfaceWrapper) GetBookingsReport(w http.ResponseWriter, r *http.Request) {
 
@@ -22325,6 +24886,61 @@ func (siw *ServerInterfaceWrapper) RevokeSeasonPassRelease(w http.ResponseWriter
 	handler.ServeHTTP(w, r)
 }
 
+// ListSeasonRollovers operation middleware
+func (siw *ServerInterfaceWrapper) ListSeasonRollovers(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListSeasonRolloversParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListSeasonRollovers(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListSeasons operation middleware
 func (siw *ServerInterfaceWrapper) ListSeasons(w http.ResponseWriter, r *http.Request) {
 
@@ -22709,6 +25325,84 @@ func (siw *ServerInterfaceWrapper) CopySeason(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CopySeason(w, r, establishmentId, seasonId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RolloverSeason operation middleware
+func (siw *ServerInterfaceWrapper) RolloverSeason(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "seasonId" -------------
+	var seasonId SeasonID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "seasonId", chi.URLParam(r, "seasonId"), &seasonId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "seasonId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RolloverSeasonParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RolloverSeason(w, r, establishmentId, seasonId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -23458,6 +26152,690 @@ func (siw *ServerInterfaceWrapper) PublishTermsVersion(w http.ResponseWriter, r 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PublishTermsVersion(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListWaitlistEntries operation middleware
+func (siw *ServerInterfaceWrapper) ListWaitlistEntries(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListWaitlistEntriesParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "zone_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "zone_id", r.URL.Query(), &params.ZoneId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "zone_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zone_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "pack_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "pack_id", r.URL.Query(), &params.PackId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "pack_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pack_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "q" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "q", r.URL.Query(), &params.Q, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "q"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "q", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListWaitlistEntries(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateWaitlistEntry operation middleware
+func (siw *ServerInterfaceWrapper) CreateWaitlistEntry(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateWaitlistEntryParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateWaitlistEntry(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWaitlistSettings operation middleware
+func (siw *ServerInterfaceWrapper) GetWaitlistSettings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWaitlistSettings(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateWaitlistSettings operation middleware
+func (siw *ServerInterfaceWrapper) UpdateWaitlistSettings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateWaitlistSettingsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateWaitlistSettings(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReorderWaitlist operation middleware
+func (siw *ServerInterfaceWrapper) ReorderWaitlist(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ReorderWaitlistParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReorderWaitlist(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RemoveWaitlistEntry operation middleware
+func (siw *ServerInterfaceWrapper) RemoveWaitlistEntry(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryId" -------------
+	var entryId WaitlistEntryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryId", chi.URLParam(r, "entryId"), &entryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RemoveWaitlistEntryParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RemoveWaitlistEntry(w, r, establishmentId, entryId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWaitlistEntry operation middleware
+func (siw *ServerInterfaceWrapper) GetWaitlistEntry(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryId" -------------
+	var entryId WaitlistEntryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryId", chi.URLParam(r, "entryId"), &entryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWaitlistEntry(w, r, establishmentId, entryId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateWaitlistEntry operation middleware
+func (siw *ServerInterfaceWrapper) UpdateWaitlistEntry(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryId" -------------
+	var entryId WaitlistEntryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryId", chi.URLParam(r, "entryId"), &entryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateWaitlistEntryParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateWaitlistEntry(w, r, establishmentId, entryId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// OfferWaitlistEntry operation middleware
+func (siw *ServerInterfaceWrapper) OfferWaitlistEntry(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryId" -------------
+	var entryId WaitlistEntryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryId", chi.URLParam(r, "entryId"), &entryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params OfferWaitlistEntryParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.OfferWaitlistEntry(w, r, establishmentId, entryId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RevokeWaitlistOffer operation middleware
+func (siw *ServerInterfaceWrapper) RevokeWaitlistOffer(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryId" -------------
+	var entryId WaitlistEntryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryId", chi.URLParam(r, "entryId"), &entryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "offerId" -------------
+	var offerId WaitlistOfferID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "offerId", chi.URLParam(r, "offerId"), &offerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RevokeWaitlistOfferParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RevokeWaitlistOffer(w, r, establishmentId, entryId, offerId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -25548,6 +28926,65 @@ func (siw *ServerInterfaceWrapper) GetManagedBooking(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r)
 }
 
+// ApplyManagedCredit operation middleware
+func (siw *ServerInterfaceWrapper) ApplyManagedCredit(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "token" -------------
+	var token ManageToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "token", chi.URLParam(r, "token"), &token, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "token", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ApplyManagedCreditParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ApplyManagedCredit(w, r, slug, token, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // CancelManagedBooking operation middleware
 func (siw *ServerInterfaceWrapper) CancelManagedBooking(w http.ResponseWriter, r *http.Request) {
 
@@ -25598,6 +29035,41 @@ func (siw *ServerInterfaceWrapper) CancelManagedBooking(w http.ResponseWriter, r
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CancelManagedBooking(w, r, slug, token, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetManagedCredits operation middleware
+func (siw *ServerInterfaceWrapper) GetManagedCredits(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "token" -------------
+	var token ManageToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "token", chi.URLParam(r, "token"), &token, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "token", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetManagedCredits(w, r, slug, token)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -25846,6 +29318,135 @@ func (siw *ServerInterfaceWrapper) ReleaseManagedSeasonDays(w http.ResponseWrite
 	handler.ServeHTTP(w, r)
 }
 
+// GetManagedRenewal operation middleware
+func (siw *ServerInterfaceWrapper) GetManagedRenewal(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "token" -------------
+	var token ManageToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "token", chi.URLParam(r, "token"), &token, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "token", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetManagedRenewal(w, r, slug, token)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AcceptManagedRenewal operation middleware
+func (siw *ServerInterfaceWrapper) AcceptManagedRenewal(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "token" -------------
+	var token ManageToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "token", chi.URLParam(r, "token"), &token, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "token", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AcceptManagedRenewalParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AcceptManagedRenewal(w, r, slug, token, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeclineManagedRenewal operation middleware
+func (siw *ServerInterfaceWrapper) DeclineManagedRenewal(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "token" -------------
+	var token ManageToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "token", chi.URLParam(r, "token"), &token, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "token", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeclineManagedRenewal(w, r, slug, token)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetPublicMap operation middleware
 func (siw *ServerInterfaceWrapper) GetPublicMap(w http.ResponseWriter, r *http.Request) {
 
@@ -25922,6 +29523,220 @@ func (siw *ServerInterfaceWrapper) QuotePublicBooking(w http.ResponseWriter, r *
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.QuotePublicBooking(w, r, slug)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// JoinWaitlist operation middleware
+func (siw *ServerInterfaceWrapper) JoinWaitlist(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params JoinWaitlistParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.JoinWaitlist(w, r, slug, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// LeaveWaitlist operation middleware
+func (siw *ServerInterfaceWrapper) LeaveWaitlist(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "waitlistToken" -------------
+	var waitlistToken WaitlistToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "waitlistToken", chi.URLParam(r, "waitlistToken"), &waitlistToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "waitlistToken", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LeaveWaitlist(w, r, slug, waitlistToken)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPublicWaitlistEntry operation middleware
+func (siw *ServerInterfaceWrapper) GetPublicWaitlistEntry(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "waitlistToken" -------------
+	var waitlistToken WaitlistToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "waitlistToken", chi.URLParam(r, "waitlistToken"), &waitlistToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "waitlistToken", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPublicWaitlistEntry(w, r, slug, waitlistToken)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AcceptWaitlistOffer operation middleware
+func (siw *ServerInterfaceWrapper) AcceptWaitlistOffer(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "waitlistToken" -------------
+	var waitlistToken WaitlistToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "waitlistToken", chi.URLParam(r, "waitlistToken"), &waitlistToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "waitlistToken", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AcceptWaitlistOfferParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AcceptWaitlistOffer(w, r, slug, waitlistToken, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeclineWaitlistOffer operation middleware
+func (siw *ServerInterfaceWrapper) DeclineWaitlistOffer(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "slug" -------------
+	var slug Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "slug", chi.URLParam(r, "slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "waitlistToken" -------------
+	var waitlistToken WaitlistToken
+
+	err = runtime.BindStyledParameterWithOptions("simple", "waitlistToken", chi.URLParam(r, "waitlistToken"), &waitlistToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "waitlistToken", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeclineWaitlistOffer(w, r, slug, waitlistToken)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -26781,6 +30596,108 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/desktop/v1/backups/{backupName}/restore", wrapper.RestoreDesktopBackup)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/rollover", wrapper.RolloverSeason)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/season-rollovers", wrapper.ListSeasonRollovers)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-campaigns", wrapper.ListRenewalCampaigns)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-campaigns", wrapper.CreateRenewalCampaign)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}", wrapper.GetRenewalCampaign)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}", wrapper.UpdateRenewalCampaign)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals", wrapper.ListRenewalProposals)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals/bulk", wrapper.BulkRenewalProposals)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}", wrapper.GetRenewalProposal)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/accept", wrapper.AcceptRenewalProposal)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/decline", wrapper.DeclineRenewalProposal)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/send", wrapper.SendRenewalProposal)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist", wrapper.ListWaitlistEntries)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist", wrapper.CreateWaitlistEntry)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}", wrapper.RemoveWaitlistEntry)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}", wrapper.GetWaitlistEntry)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}", wrapper.UpdateWaitlistEntry)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist/reorder", wrapper.ReorderWaitlist)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offer", wrapper.OfferWaitlistEntry)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offers/{offerId}/revoke", wrapper.RevokeWaitlistOffer)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist-settings", wrapper.GetWaitlistSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/waitlist-settings", wrapper.UpdateWaitlistSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits", wrapper.GetCustomerCredits)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits", wrapper.CreateCustomerCredit)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/public/v1/{slug}/manage/{token}/renewal", wrapper.GetManagedRenewal)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/public/v1/{slug}/manage/{token}/renewal/accept", wrapper.AcceptManagedRenewal)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/public/v1/{slug}/manage/{token}/renewal/decline", wrapper.DeclineManagedRenewal)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/public/v1/{slug}/manage/{token}/credits", wrapper.GetManagedCredits)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/public/v1/{slug}/manage/{token}/apply-credit", wrapper.ApplyManagedCredit)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/public/v1/{slug}/waitlist", wrapper.JoinWaitlist)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/public/v1/{slug}/waitlist/{waitlistToken}", wrapper.LeaveWaitlist)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/public/v1/{slug}/waitlist/{waitlistToken}", wrapper.GetPublicWaitlistEntry)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/public/v1/{slug}/waitlist/{waitlistToken}/accept", wrapper.AcceptWaitlistOffer)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/public/v1/{slug}/waitlist/{waitlistToken}/decline", wrapper.DeclineWaitlistOffer)
 	})
 
 	return r

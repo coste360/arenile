@@ -20,6 +20,17 @@ export const WEBHOOK_EVENTS = [
   'allocation.released',
   'season.day_released',
   'season.renewal_offered',
+  'season.renewal_accepted',
+  'season.renewal_declined',
+  'season.renewal_expired',
+  'season.rolled_over',
+  'waitlist.joined',
+  'waitlist.offered',
+  'waitlist.offer_expired',
+  'waitlist.converted',
+  'credit.issued',
+  'credit.consumed',
+  'credit.expired',
   'payment.succeeded',
   'payment.failed',
   'payment.refunded',
@@ -34,7 +45,7 @@ export const ALL_EVENTS = '*';
 
 const prefixOf = (event: string) => event.slice(0, event.indexOf('.'));
 
-/** Groups in spec order: booking, allocation, season, payment, customer, cash_session, config. */
+/** Groups in spec order: booking, allocation, season, waitlist, credit, payment, customer, cash_session, config. */
 export const EVENT_GROUPS: readonly string[] = [...new Set(WEBHOOK_EVENTS.map(prefixOf))];
 
 /** Every filter value in display order: `*`, then each group followed by its events. */

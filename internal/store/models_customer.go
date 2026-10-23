@@ -53,6 +53,10 @@ const (
 	CreditSourceWeather       = "weather"
 	CreditSourceManual        = "manual"
 	CreditSourceRedemption    = "redemption"
+	// M5B (migration 00008).
+	CreditSourceGoodwill   = "goodwill"   // courtesy credit (amount > 0)
+	CreditSourceExpiry     = "expiry"     // expiry of ReferenceCreditID (amount < 0)
+	CreditSourceAdjustment = "adjustment" // manager correction (any sign)
 )
 
 // CustomerCredit is one movement of the customer credit ledger (spec 13.4):
@@ -73,4 +77,6 @@ type CustomerCredit struct {
 	ExpiresOn       *calendar.Date `bun:"expires_on"`
 	CreatedByUserID *string        `bun:"created_by_user_id"`
 	CreatedAt       time.Time      `bun:"created_at,notnull"`
+	// ReferenceCreditID is set only on expiry rows: the grant they expire.
+	ReferenceCreditID *string `bun:"reference_credit_id"`
 }

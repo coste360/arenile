@@ -1,0 +1,46 @@
+{
+  "title": "La tua richiesta in lista d'attesa",
+  "linkInvalid": "Il link non è valido o la richiesta non esiste più.",
+  "toBooking": "Prenota",
+  "back": "Torna indietro",
+  "leave": "Esci dalla lista d'attesa",
+  "leaveQuestion": "Vuoi davvero uscire dalla lista d'attesa?",
+  "leaveConfirm": "Esci dalla lista",
+  "status": {
+    "waiting": "In attesa",
+    "offered": "Posto disponibile",
+    "converted": "Prenotato",
+    "expired": "Scaduta",
+    "removed": "Non più attiva"
+  },
+  "slots": {
+    "FULL": "Giornata intera",
+    "AM": "Mattina",
+    "PM": "Pomeriggio"
+  },
+  "message": {
+    "waiting": "Sei in lista: ti scriveremo appena si libera un posto per queste date.",
+    "offered": "C'è un'offerta per te: controlla l'email.",
+    "converted": "Hai prenotato dall'offerta: trovi i dettagli nell'email di conferma.",
+    "expired": "Le date richieste sono passate: la richiesta non è più attiva.",
+    "removed": "Non sei più in lista d'attesa per queste date."
+  },
+  "offer": {
+    "title": "Si è liberato un posto per te!",
+    "titleSpot": "Si è liberata la postazione {{spot}} per te!",
+    "until": "Te la teniamo fino al {{date}}:",
+    "left": "mancano {{hours}} h {{minutes}} min.",
+    "leftDays_one": "manca {{count}} giorno.",
+    "leftDays_other": "mancano {{count}} giorni.",
+    "accept": "Prenota ora",
+    "decline": "Rinuncia",
+    "leave": "Esci anche dalla lista d'attesa",
+    "declineConfirm": "Rinuncio all'offerta",
+    "expired": "L'offerta è scaduta.",
+    "expiredHint": "Resti in lista d'attesa: ti scriveremo se si libera un altro posto."
+  },
+  "problem": {
+    "offer_expired": "L'offerta è scaduta o non è più disponibile.",
+    "spot_unavailable": "Il posto non è più disponibile."
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "title": "Lista d'attesa",
+  "description": "Richieste senza disponibilità in ordine di priorità, offerte automatiche quando si libera un posto e impostazioni.",
+  "optional": "(facoltativo)",
+  "loadMore": "Carica altre iscrizioni",
+  "entry": {
+    "newTitle": "Nuova iscrizione",
+    "editTitle": "Modifica la richiesta",
+    "newDescription": "Il cliente entra in coda e riceve un'offerta quando si libera un posto compatibile.",
+    "required": "Campo obbligatorio.",
+    "quantityInvalid": "Da 1 a 20.",
+    "create": "Iscrivi",
+    "save": "Salva",
+    "created": "{{customer}} è in lista d'attesa.",
+    "updated": "Richiesta aggiornata."
+  },
+  "fields": {
+    "customer": "Cliente",
+    "period": "Periodo",
+    "slots": "Fascia",
+    "pack": "Pacchetto",
+    "pickPack": "Scegli il pacchetto",
+    "zone": "Zona",
+    "anyZone": "Qualsiasi zona",
+    "quantity": "Quantità",
+    "note": "Nota"
+  },
+  "offer": {
+    "title": "Offri un posto",
+    "description": "{{customer}} riceve un'email con il link per prenotare: il posto resta bloccato fino alla scadenza.",
+    "spot": "Postazione",
+    "anySpot": "La prima compatibile",
+    "minutes": "Durata dell'offerta (minuti)",
+    "minutesInvalid": "Da 5 a 10080 minuti (7 giorni).",
+    "help": "Se il cliente non risponde in tempo, l'offerta scade e passa al successivo in coda.",
+    "submit": "Invia l'offerta",
+    "done": "Offerta inviata a {{customer}}.",
+    "revoked": "Offerta revocata: il posto è di nuovo libero."
+  },
+  "settings": {
+    "open": "Impostazioni",
+    "title": "Impostazioni della lista d'attesa",
+    "description": "Valgono per tutto lo stabilimento.",
+    "enabled": {
+      "label": "Lista d'attesa attiva",
+      "help": "Spenta, non si accettano iscrizioni e non partono offerte."
+    },
+    "public_join": {
+      "label": "Iscrizione dalla pagina pubblica",
+      "help": "Quando non c'è disponibilità, il cliente può mettersi in lista dal sito."
+    },
+    "auto_offer": {
+      "label": "Offerte automatiche",
+      "help": "Quando un posto si libera (cancellazione, rilascio, scadenza) parte un'offerta al primo in coda."
+    },
+    "minutes": "Durata predefinita delle offerte (minuti)",
+    "saved": "Impostazioni salvate.",
+    "summaryAuto": "Offerte automatiche attive: ogni offerta resta valida {{minutes}} minuti.",
+    "summaryManual": "Offerte automatiche disattivate: le offerte partono solo a mano."
+  },
+  "disabled": {
+    "title": "Lista d'attesa disattivata",
+    "description": "Non si accettano nuove iscrizioni e non partono offerte. Riattivala dalle impostazioni."
+  },
+  "columns": {
+    "position": "Posizione",
+    "customer": "Cliente",
+    "period": "Periodo",
+    "request": "Richiesta",
+    "status": "Stato",
+    "offer": "Offerta",
+    "channel": "Canale",
+    "actions": "Azioni"
+  },
+  "status": {
+    "waiting": "In attesa",
+    "offered": "Offerta inviata",
+    "converted": "Prenotato",
+    "expired": "Scaduta",
+    "removed": "Rimossa"
+  },
+  "offerStatus": {
+    "pending": "In attesa di risposta",
+    "accepted": "Accettata",
+    "declined": "Rifiutata",
+    "expired": "Scaduta",
+    "revoked": "Revocata"
+  },
+  "cause": {
+    "cancellation": "Cancellazione",
+    "release": "Rilascio abbonamento",
+    "expiry": "Prenotazione scaduta",
+    "manual": "Manuale"
+  },
+  "filters": {
+    "search": "Cerca cliente",
+    "status": "Stato",
+    "allStatuses": "Tutti gli stati",
+    "zone": "Zona",
+    "allZones": "Tutte le zone"
+  },
+  "reorder": {
+    "up": "Sposta {{customer}} più avanti in coda",
+    "upShort": "Più avanti",
+    "down": "Sposta {{customer}} più indietro in coda",
+    "downShort": "Più indietro",
+    "done": "Coda aggiornata: {{customer}} spostato."
+  },
+  "row": {
+    "open": "Apri l'iscrizione di {{customer}}",
+    "more": "Azioni per {{customer}}",
+    "offer": "Offri un posto",
+    "revoke": "Revoca l'offerta",
+    "edit": "Modifica la richiesta",
+    "remove": "Rimuovi dalla lista"
+  },
+  "remove": {
+    "title": "Rimuovere dalla lista d'attesa?",
+    "description": "{{customer}} esce dalla coda; un'offerta in corso viene revocata.",
+    "done": "Iscrizione rimossa."
+  },
+  "empty": {
+    "title": "Nessuna iscrizione",
+    "description": "Le richieste senza disponibilità compaiono qui in ordine di arrivo."
+  },
+  "offers": {
+    "title": "Offerte",
+    "created": "Inviata il",
+    "spot": "Postazione",
+    "cause": "Motivo",
+    "status": "Esito",
+    "empty": "Nessuna offerta finora."
+  },
+  "sheet": {
+    "loading": "Iscrizione",
+    "joined": "Iscritto il"
+  }
+}

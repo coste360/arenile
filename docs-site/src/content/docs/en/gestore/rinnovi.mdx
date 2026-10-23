@@ -1,0 +1,95 @@
+---
+title: Season pass renewals
+description: Renewal campaigns with right of pre-emption - proposals with the same spot at the new price, email sending, acceptance at the desk or online, spots released at the deadline.
+sidebar:
+  order: 25.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Renewals**. **Who:** cashiers, managers and owners.
+
+After the [season rollover](/en/gestore/cambio-stagione/), a **renewal campaign** offers every pass holder of the
+past season the **same spot** in the new season, at the new price list. Until the pre-emption deadline the spot is
+reserved for the holder: nobody can book it, neither at the desk nor online.
+
+<Screenshot name="admin-renewals" alt="Renewals page: campaign summary with countdown and table of proposals with status and sending" />
+
+## Creating the campaign
+
+<Steps>
+
+1. **New campaign** (or **Offer renewals** at the end of the season rollover).
+2. Choose the **Source season** and the **New season**.
+3. Set the **Pre-emption deadline**: until that day (at 23:59, establishment time) the spot stays reserved. It must
+   be before the new season opens.
+4. Optional: **Name** and **Internal notes**.
+5. **Preview**: see the proposals with their amount and the **Excluded passes** with the reason (spot unavailable or
+   deactivated, no price in the new list, already renewed, anonymised customer).
+6. **Create proposals**.
+
+</Steps>
+
+Each proposal creates a held booking in the new season: on the map the spot shows as **Held for renewal**. No
+email is sent yet.
+
+A pass that covered the whole season renews for the whole new season; a shorter one keeps the same dates moved by
+one year.
+
+## Sending the proposals
+
+- **Bulk actions** → **Send to those who have not received it**: every holder with an email gets the proposal with
+  the personal link.
+- **Bulk actions** → **Remind those who have not replied**: sends the link again to those who have not answered.
+- From the row menu: **Send the proposal** or **Send a reminder** to one person.
+
+The **Sending** column tells whether and how many times the proposal went out; customers without an email are
+marked **no email** and are handled at the desk.
+
+## Answers
+
+| Status | Meaning |
+| --- | --- |
+| **Waiting** | open proposal, spot reserved |
+| **Accepted, to be paid** | the customer accepted online and is paying |
+| **Renewed** | booking confirmed in the new season |
+| **Declined** | the customer gave up: spot released |
+| **Expired** | no answer by the deadline: spot released |
+
+### At the desk
+
+- **Accept (at the desk)**: with **Confirm now** the renewal is confirmed and the balance is recorded at the
+  [cash desk](/en/gestore/cassa/) like any booking; without it, it waits for the payment.
+- **Decline and release**: closes the proposal (with an optional **Reason**) and puts the spot back on sale.
+
+The same actions are available on the selected proposals, together with **Extend the deadline** and **Release
+now**.
+
+### Online
+
+The customer opens the link of the email and sees the proposal in the manage area: new and previous price,
+deadline, choice between deposit and full amount (following the [policy](/en/gestore/policy/)), use of the
+available credit and acceptance of the terms. **Renew and pay** leads to the online payment; **I will not renew**
+releases the spot.
+
+<Aside type="note" title="Confirmed only by the payment">
+An online renewal becomes **Renewed** only when the payment confirmation arrives from the provider (or the manual
+driver), never from the browser return. Without online payments the button reads **Confirm the renewal** and the
+page explains that the balance is paid at the desk by the deadline: the acceptance stays **Accepted, to be paid**
+and you confirm it at the desk when collecting the balance; if the deadline passes without a confirmation, the
+proposal expires and the spot goes back on sale like an unanswered one, and any credit used goes back to the
+customer. The email link works only for the latest email received (proposal or reminder).
+</Aside>
+
+## Deadline and closing
+
+- At the deadline the proposals without an answer become **Expired** and the spots are bookable again
+  automatically, within a minute.
+- **Change deadline** moves the deadline of the proposals still open (their bookings stay reserved until the new
+  date).
+- **Close campaign** closes all open proposals at once and releases their spots.
+- **Bulk actions** → **Release expired pre-emptions** forces the release without waiting for the automatic check.
+
+When a customer asks for their data to be erased (GDPR), the decline reason they wrote is wiped with the other free
+texts.

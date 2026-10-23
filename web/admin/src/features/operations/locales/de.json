@@ -1,35 +1,35 @@
 {
   "today": {
     "title": "Heute",
-    "description": "Tageskarte, Ankünfte, offene Salden und zuzuweisende Positionen.",
-    "subtitle": "{{date}}: Live-Status des Strandes.",
+    "description": "Tagesplan, Ankünfte, offene Beträge und zuzuweisende Positionen.",
+    "subtitle": "{{date}}: aktuelle Lage am Strand.",
     "kpis": "Kennzahlen des Tages",
     "chartTitle": "Plätze nach Status",
-    "chartDescription": "Dieselben Farben wie auf der Karte.",
+    "chartDescription": "Dieselben Farben wie auf dem Plan.",
     "chartEmpty": "Keine Plätze für dieses Datum.",
     "spots": "Plätze",
     "worklist": "Zu erledigen",
     "toCheckIn": "Check-in",
-    "toCollect": "Salden",
+    "toCollect": "Offene Beträge",
     "toAssign": "Zuzuweisen",
     "noCheckIns": "Keine ausstehenden Check-ins.",
-    "noBalances": "Keine offenen Salden.",
+    "noBalances": "Keine offenen Beträge.",
     "noAssignments": "Keine zuzuweisenden Positionen.",
     "checkInAria": "{{customer}} einchecken",
-    "mapTitle": "Tageskarte"
+    "mapTitle": "Tagesplan"
   },
   "map": {
-    "title": "Karte",
-    "description": "Betriebskarte für jedes Datum und jeden Zeitraum, nach Status eingefärbt.",
-    "noMapsTitle": "Noch keine Karte",
-    "noMapsDescription": "Zeichnen Sie die Karte des Betriebs, um den Status der Plätze zu sehen.",
-    "openEditor": "Karteneditor öffnen",
+    "title": "Plan",
+    "description": "Operativer Plan für jedes Datum und jede Tageszeit, nach Status eingefärbt.",
+    "noMapsTitle": "Noch kein Plan",
+    "noMapsDescription": "Zeichnen Sie den Plan des Betriebs, um den Status der Plätze zu sehen.",
+    "openEditor": "Planeditor öffnen",
     "closedTitle": "Betrieb geschlossen",
     "closedDescription": "Ruhetag oder außerhalb der Saison: Plätze sind nicht buchbar.",
-    "viewMap": "Karte",
+    "viewMap": "Plan",
     "viewList": "Liste",
     "views": "Ansicht",
-    "aria": "Betriebskarte {{name}}, {{date}}, {{slot}}"
+    "aria": "Operativer Plan {{name}}, {{date}}, {{slot}}"
   },
   "slot": {
     "FULL": "Ganzer Tag",
@@ -40,17 +40,17 @@
     "free": "Frei",
     "booked": "Gebucht",
     "checked_in": "Anwesend",
-    "pass_holder": "Saisonkarte",
-    "released": "Saisongast heute abwesend",
-    "held": "Reserviert",
-    "renewal_offer": "Verlängerungsoption",
+    "pass_holder": "Saisonabo",
+    "released": "Abonnent heute abwesend",
+    "held": "Vorgemerkt",
+    "renewal_offer": "Für Verlängerung reserviert",
     "blocked": "Gesperrt",
     "closed": "Geschlossen",
     "inactive": "Inaktiv"
   },
   "bookingStatus": {
     "draft": "Entwurf",
-    "held": "Reserviert",
+    "held": "Vorgemerkt",
     "pending_payment": "Zahlung ausstehend",
     "awaiting_approval": "Genehmigung ausstehend",
     "confirmed": "Bestätigt",
@@ -62,17 +62,17 @@
     "rejected": "Abgelehnt"
   },
   "toolbar": {
-    "label": "Tag und Zeitraum",
+    "label": "Tag und Tageszeit",
     "previousDay": "Vorheriger Tag",
     "nextDay": "Nächster Tag",
     "today": "Heute",
     "date": "Datum",
-    "slot": "Zeitraum",
-    "map": "Karte"
+    "slot": "Tageszeit",
+    "map": "Plan"
   },
   "search": {
     "placeholder": "Gast, Code oder Platz suchen",
-    "label": "Auf der Karte suchen",
+    "label": "Auf dem Plan suchen",
     "clear": "Suche löschen",
     "results_one": "{{count}} Platz gefunden",
     "results_other": "{{count}} Plätze gefunden"
@@ -87,19 +87,19 @@
     "empty": "Platz",
     "title": "Platz {{label}}",
     "booking": "Buchung",
-    "seasonPass": "Saisonkarte",
+    "seasonPass": "Saisonabo",
     "code": "Code",
     "period": "Zeitraum",
-    "slots": "Zeitraum",
+    "slots": "Tageszeit",
     "packs": "Pakete",
     "bookingStatus": "Status",
     "total": "Gesamt",
     "paid": "Bezahlt",
-    "balance": "Saldo",
+    "balance": "Restbetrag",
     "holdExpires": "Vorläufige Reservierung bis {{time}}.",
     "blocked": "Platz manuell gesperrt.",
     "blockedReason": "Gesperrt: {{reason}}",
-    "free": "Keine Belegung in diesem Zeitraum.",
+    "free": "Keine Belegung zu dieser Tageszeit.",
     "checkedIn": "{{code}} eingecheckt.",
     "readOnly": "Nur Lesezugriff."
   },
@@ -115,17 +115,17 @@
   },
   "release": {
     "title": "Platz {{label}} freigeben?",
-    "description": "{{customer}} kommt am {{date}} ({{slot}}) nicht: der Platz wird buchbar. Wird er weiterverkauft, erhält der Saisongast die vereinbarte Gutschrift.",
+    "description": "{{customer}} kommt am {{date}} ({{slot}}) nicht: Der Platz wird buchbar. Wird er weiterverkauft, erhält der Abonnent die vorgesehene Gutschrift.",
     "done": "Platz {{label}} freigegeben."
   },
   "revoke": {
     "title": "Freigabe von {{label}} widerrufen?",
-    "description": "Der Platz geht für diesen Zeitraum an {{customer}} zurück.",
+    "description": "Der Platz geht für diese Tageszeit an {{customer}} zurück.",
     "done": "Freigabe von {{label}} widerrufen."
   },
   "move": {
     "pickTitle": "Verschieben von {{label}}",
-    "pickDescription": "Wählen Sie auf der Karte einen freien Zielplatz.",
+    "pickDescription": "Wählen Sie auf dem Plan einen freien Zielplatz.",
     "title": "Von {{from}} nach {{to}} verschieben?",
     "description": "Buchung {{code}} von {{customer}} wechselt ab {{date}} von {{from}} nach {{to}}.",
     "confirm": "Verschieben",
@@ -140,13 +140,13 @@
   },
   "conflict": {
     "spot_unavailable": "Platz belegt",
-    "pool_exhausted": "Kontingent erschöpft",
+    "pool_exhausted": "Bestand erschöpft",
     "quota_exceeded": "Online-Kontingent erschöpft",
     "closed": "Betrieb geschlossen",
     "inactive": "Platz inaktiv"
   },
   "quick": {
-    "map": "Karte",
+    "map": "Plan",
     "planning": "Belegungsplan",
     "cash": "Kasse"
   },
@@ -159,12 +159,12 @@
     "pendingCheckIns": "Ausstehende Check-ins",
     "checkedIn_one": "{{count}} bereits eingecheckt",
     "checkedIn_other": "{{count}} bereits eingecheckt",
-    "passHolders": "Erwartete Saisongäste",
+    "passHolders": "Erwartete Abonnenten",
     "released": "Freigegebene Plätze",
-    "releasedHint": "Wieder verkaufte Saisontage",
+    "releasedHint": "Wieder zum Verkauf freigegebene Abo-Tage",
     "takings": "Einnahmen heute",
     "takingsOffline": "Offline nicht verfügbar",
-    "balanceDue": "Offene Salden: {{amount}}",
-    "balanceDueTitle": "Offene Salden"
+    "balanceDue": "Offene Beträge: {{amount}}",
+    "balanceDueTitle": "Offene Beträge"
   }
 }

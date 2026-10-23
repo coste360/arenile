@@ -75,7 +75,7 @@
   "stats": {
     "bookings": "Buchungen",
     "spent": "Gesamtumsatz",
-    "balance": "Offener Betrag",
+    "balance": "Offener Restbetrag",
     "credit": "Verfügbares Guthaben"
   },
   "bookings": {
@@ -101,7 +101,7 @@
   },
   "credits": {
     "title": "Guthaben",
-    "balance": "Saldo: {{amount}}",
+    "balance": "Guthabenstand: {{amount}}",
     "empty": "Keine Bewegungen.",
     "movement": "Bewegung",
     "amount": "Betrag",
@@ -124,7 +124,7 @@
     "description": "Name, Kontakte, Notizen und Einwilligungen werden endgültig ersetzt.",
     "irreversible": "Nicht rückgängig zu machen",
     "keeps": "Buchungen und Zahlungen bleiben für die Buchhaltung, ohne personenbezogene Daten.",
-    "typeLabel": "Zur Bestätigung den Nachnamen eingeben: {{lastName}}",
+    "typeLabel": "Geben Sie zur Bestätigung den Nachnamen ein: {{lastName}}",
     "confirm": "Endgültig anonymisieren",
     "done": "Kunde anonymisiert."
   }

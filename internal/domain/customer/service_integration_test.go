@@ -346,6 +346,24 @@ func TestCustomerService_AnonymizeKeepsAccounting(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		// A renewal proposal declined online with a free-text reason (M5B).
+		s27 := &store.Season{ID: store.NewID(), EstablishmentID: e.estA.ID, Year: 2027, OpensOn: calendar.MustParse("2027-05-01"), ClosesOn: calendar.MustParse("2027-09-30"), Status: "active", Version: 1, CreatedAt: t0, UpdatedAt: t0}
+		s28 := &store.Season{ID: store.NewID(), EstablishmentID: e.estA.ID, Year: 2028, OpensOn: calendar.MustParse("2028-05-01"), ClosesOn: calendar.MustParse("2028-09-30"), Status: "draft", Version: 1, CreatedAt: t0, UpdatedAt: t0}
+		e.insert(t, s27)
+		e.insert(t, s28)
+		camp := &store.RenewalCampaign{ID: store.NewID(), EstablishmentID: e.estA.ID, Name: "Rinnovi 2028", Status: store.RenewalCampaignOpen, SourceSeasonID: s27.ID, TargetSeasonID: s28.ID, DeadlineAt: t0, Version: 1, CreatedAt: t0, UpdatedAt: t0}
+		e.insert(t, camp)
+		line := &store.BookingLine{}
+		if err := db.NewSelect().Model(line).Where("booking_id = ?", b.ID).Limit(1).Scan(e.ctx); err != nil {
+			t.Fatal(err)
+		}
+		online := store.RenewalResponseOnline
+		e.insert(t, &store.RenewalProposal{
+			ID: store.NewID(), EstablishmentID: e.estA.ID, CampaignID: camp.ID, SourceBookingID: b.ID, BookingID: b.ID, CustomerID: c.ID,
+			SpotID: *line.SpotID, PackID: line.PackID, Status: store.RenewalDeclined, DeadlineAt: t0, RespondedAt: &t0, ResponseChannel: &online,
+			DeclineReason: "motivo-rinnovo-rossi", Version: 1, CreatedAt: t0, UpdatedAt: t0,
+		})
+
 		x, err := e.svc.Export(e.ctx, e.owner, "", e.estA.ID, c.ID)
 		if err != nil {
 			t.Fatal(err)
@@ -379,8 +397,8 @@ func TestCustomerService_AnonymizeKeepsAccounting(t *testing.T) {
 		}
 		// Every free text written by the desk is gone (spec 23): cancel
 		// reason, payment note, credit note; the audit log never held them.
-		for _, needle := range []string{"motivo-riservato-rossi", "nota-incasso-rossi", "nota-credito-rossi", "3331234567", "abituale"} {
-			for _, table := range []string{"bookings", "payments", "customer_credits", "audit_log", "outbox_events"} {
+		for _, needle := range []string{"motivo-riservato-rossi", "nota-incasso-rossi", "nota-credito-rossi", "motivo-rinnovo-rossi", "3331234567", "abituale"} {
+			for _, table := range []string{"bookings", "payments", "customer_credits", "renewal_proposals", "audit_log", "outbox_events"} {
 				if n := e.count(t, table, "CAST("+textOf(table)+" AS TEXT) LIKE ?", "%"+needle+"%"); n != 0 {
 					t.Fatalf("%q still in %s", needle, table)
 				}
@@ -430,6 +448,8 @@ func textOf(table string) string {
 		return "note || description"
 	case "customer_credits":
 		return "note"
+	case "renewal_proposals":
+		return "decline_reason"
 	case "audit_log":
 		return "diff"
 	}

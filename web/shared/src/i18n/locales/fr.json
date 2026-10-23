@@ -86,7 +86,7 @@
       "text": "Texte",
       "custom": "Élément"
     },
-    "zoomHint": "Agrandissez la carte pour lire les étiquettes, ou utilisez la liste.",
+    "zoomHint": "Agrandissez le plan pour lire les étiquettes, ou utilisez la liste.",
     "flag": {
       "green": "vert",
       "yellow": "jaune",
@@ -124,6 +124,8 @@
     "calendar": "Calendrier",
     "customers": "Clients",
     "seasonPasses": "Abonnements",
+    "renewals": "Renouvellements",
+    "waitlist": "Liste d'attente",
     "cash": "Caisse",
     "reports": "Rapports",
     "settings": "Configuration",
@@ -139,7 +141,7 @@
       "pools": "Stocks",
       "catalog": "Catalogue",
       "pricing": "Prix",
-      "policies": "Règles",
+      "policies": "Politiques",
       "setup": "Configuration guidée",
       "team": "Utilisateurs",
       "online": "Page publique",
@@ -149,7 +151,8 @@
       "devicesLan": "Réseau local",
       "desktop": "Application de bureau",
       "apiKeys": "Clés API",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "seasonRollover": "Nouvelle saison"
     },
     "operations": "Exploitation",
     "configGroup": "Configuration",
@@ -161,15 +164,17 @@
   "admin": {
     "placeholder": {
       "title": "Section en préparation",
-      "today": "Plan opérationnel du jour, arrivées, soldes à encaisser et lignes à attribuer.",
+      "today": "Plan opérationnel du jour, arrivées, soldes à encaisser et réservations à attribuer.",
       "map": "Vue opérationnelle du plan pour n'importe quelle date, colorée par statut.",
       "bookings": "Liste filtrable des réservations, détail et création.",
       "calendar": "Grille de planning emplacements × jours pour les longs séjours.",
-      "customers": "Fiches clients, historique, crédits et abonnements.",
+      "customers": "Fiches clients, historique, avoirs et abonnements.",
       "seasonPasses": "Abonnements saisonniers, libérations journalières et renouvellements.",
+      "renewals": "Campagnes de renouvellement des abonnements avec droit de préemption.",
+      "waitlist": "Demandes sans disponibilité et offres automatiques lorsqu'une place se libère.",
       "cash": "Session de caisse, encaissements et clôtures.",
       "reports": "Occupation, revenus, canaux et exports.",
-      "settings": "Saisons, plans, zones, catalogue, prix, règles, page publique et paiements."
+      "settings": "Saisons, plans, zones, catalogue, prix, politiques, page publique et paiements."
     },
     "establishments": {
       "title": "Tous les établissements",
@@ -213,7 +218,7 @@
     "stepText": {
       "when": "Choisissez le premier et le dernier jour de votre séjour.",
       "where": "Choisissez un emplacement sur le plan ou la zone que vous préférez.",
-      "what": "Choisissez la formule et les extras ; le récapitulatif du prix se met à jour.",
+      "what": "Choisissez la formule et les suppléments ; le récapitulatif du prix se met à jour à chaque modification.",
       "who": "Saisissez vos coordonnées et confirmez. Sans compte et sans commission."
     },
     "comingSoonDetail": "La réservation en ligne sera bientôt disponible. En attendant, contactez directement l'établissement.",

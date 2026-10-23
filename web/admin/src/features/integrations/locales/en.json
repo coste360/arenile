@@ -171,6 +171,8 @@
     "booking": "Bookings",
     "allocation": "Spots",
     "season": "Season passes",
+    "waitlist": "Waitlist",
+    "credit": "Credits",
     "payment": "Payments",
     "customer": "Customers",
     "cash_session": "Cash desk",
@@ -196,7 +198,22 @@
       },
       "season": {
         "day_released": "Day released by pass holder",
-        "renewal_offered": "Renewal offered"
+        "renewal_offered": "Renewal offered",
+        "renewal_accepted": "Renewal accepted",
+        "renewal_declined": "Renewal declined",
+        "renewal_expired": "Renewal expired",
+        "rolled_over": "New season created"
+      },
+      "waitlist": {
+        "joined": "Joined the waitlist",
+        "offered": "Spot offered",
+        "offer_expired": "Offer expired",
+        "converted": "Booking from the waitlist"
+      },
+      "credit": {
+        "issued": "Credit issued",
+        "consumed": "Credit used",
+        "expired": "Credit expired"
       },
       "payment": {
         "succeeded": "Payment succeeded",

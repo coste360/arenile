@@ -13,7 +13,7 @@
     "offlineTitle": "Sie sind offline",
     "savedAt": "Sie sehen die um {{time}} gespeicherten Daten.",
     "noData": "Auf diesem Gerät sind keine Daten dieses Betriebs gespeichert.",
-    "allowed": "Sie können einchecken, Notizen hinzufügen und Barzahlungen erfassen: sie werden gesendet, sobald die Verbindung zurück ist. Neue Buchungen und Verschiebungen sind nicht verfügbar.",
+    "allowed": "Sie können einchecken, Notizen hinzufügen und Barzahlungen erfassen: Diese werden gesendet, sobald die Verbindung wieder besteht. Neue Buchungen und Verschiebungen sind nicht verfügbar.",
     "rejectedTitle": "Offline-Vorgänge zu prüfen",
     "rejected_one": "{{count}} offline erfasster Vorgang wurde vom Server nicht angenommen.",
     "rejected_other": "{{count}} offline erfasste Vorgänge wurden vom Server nicht angenommen.",
@@ -44,7 +44,7 @@
   },
   "onlineOnly": {
     "title": "Offline nicht verfügbar",
-    "body": "Buchungen anlegen oder verschieben erfordert die Verbindung: nur der Server garantiert, dass der Platz frei ist."
+    "body": "Buchungen anlegen oder verschieben erfordert eine Verbindung: Nur der Server garantiert, dass der Platz frei ist."
   },
   "actions": {
     "unavailable": "Offline: neue Buchungen und Verschiebungen sind nicht verfügbar.",
@@ -55,13 +55,13 @@
     "noteLabel": "Notiz",
     "noteRequired": "Geben Sie den Text der Notiz ein.",
     "cashTitle": "Offline-Barzahlung",
-    "cashDescription": "Offener Saldo {{balance}}. Die Zahlung wird bei Wiederverbindung erfasst und erfordert eine offene Kassensitzung.",
+    "cashDescription": "Offener Restbetrag {{balance}}. Die Zahlung wird bei Wiederverbindung erfasst und erfordert eine offene Kassensitzung.",
     "amount": "Betrag",
-    "amountInvalid": "Geben Sie einen Betrag größer als null und nicht über dem Saldo ein.",
+    "amountInvalid": "Geben Sie einen Betrag größer als null ein, der den Restbetrag nicht übersteigt.",
     "submit": "In Warteschlange",
-    "queuedNote": "Notiz in der Warteschlange: sie wird bei Wiederverbindung gesendet.",
-    "queuedCash": "Zahlung über {{amount}} in der Warteschlange: sie wird bei Wiederverbindung gesendet.",
-    "queuedCheckIn": "Check-in von {{code}} in der Warteschlange: er wird bei Wiederverbindung gesendet."
+    "queuedNote": "Notiz in der Warteschlange: Sie wird bei Wiederverbindung gesendet.",
+    "queuedCash": "Zahlung über {{amount}} in der Warteschlange: Sie wird bei Wiederverbindung gesendet.",
+    "queuedCheckIn": "Check-in von {{code}} in der Warteschlange: Er wird bei Wiederverbindung gesendet."
   },
   "sync": {
     "sent_one": "{{count}} Offline-Vorgang gesendet.",

@@ -1,0 +1,70 @@
+{
+  "title": "Guthabenbewegungen",
+  "description": "Gewährte Guthaben, Verwendungen, Abläufe und Korrekturen.",
+  "optional": "(optional)",
+  "loadMore": "Weitere Bewegungen laden",
+  "empty": "Keine Bewegungen.",
+  "available": "Verfügbares Guthaben",
+  "balanceHint": "Buchsaldo {{amount}}",
+  "expiring": "Läuft ab",
+  "expiringHint": "bis {{date}}",
+  "noExpiry": "Kein Guthaben läuft ab",
+  "columns": {
+    "date": "Datum",
+    "movement": "Bewegung",
+    "booking": "Buchung",
+    "openBooking": "Öffnen",
+    "expires": "Ablauf",
+    "amount": "Betrag"
+  },
+  "source": {
+    "cancellation": "Stornierung",
+    "season_release": "Abo-Freigabe",
+    "weather": "Schlechtwetter",
+    "manual": "Manuelles Guthaben",
+    "redemption": "Verwendung",
+    "goodwill": "Kulanz",
+    "expiry": "Ablauf",
+    "adjustment": "Korrektur"
+  },
+  "grant": {
+    "open": "Guthaben gewähren",
+    "title": "Guthaben gewähren",
+    "description": "Das Guthaben wird bei künftigen Buchungen als Zahlungsmittel verwendet.",
+    "source": "Art",
+    "help": {
+      "goodwill": "Eine Kulanzgeste gegenüber dem Kunden.",
+      "manual": "Ein Guthaben aus einem anderen Grund, in der Notiz zu erläutern.",
+      "adjustment": "Eine Korrektur des Saldos, nach oben oder unten."
+    },
+    "direction": "Korrektur",
+    "add": "Hinzufügen",
+    "remove": "Abziehen",
+    "amount": "Betrag",
+    "amountRequired": "Geben Sie einen Betrag größer als null ein.",
+    "amountTooHigh": "Höchstens das verfügbare Guthaben ({{available}}).",
+    "expires": "Ablauf",
+    "expiresHelp": "Leer: die in der Richtlinie vorgesehene Gültigkeit.",
+    "note": "Notiz",
+    "submit": "Gewähren",
+    "submitRemove": "Vom Saldo abziehen",
+    "done": "Guthaben von {{amount}} gewährt.",
+    "removed": "Saldo um {{amount}} verringert."
+  },
+  "apply": {
+    "open": "Für eine Buchung verwenden",
+    "title": "Guthaben verwenden",
+    "description": "Verfügbar: {{available}}. Es wird als Zahlung „Kundenguthaben“ erfasst.",
+    "booking": "Buchung",
+    "due": "{{amount}} offen",
+    "max": "Höchstens {{max}}.",
+    "amountTooHigh": "Höchstens {{max}}.",
+    "note": "Kundenguthaben",
+    "submit": "Guthaben verwenden",
+    "done": "Guthaben von {{amount}} für {{code}} verwendet."
+  },
+  "hint": {
+    "available": "Verfügbares Guthaben des Kunden: {{available}}.",
+    "tooMuch": "Der Betrag übersteigt das verfügbare Guthaben des Kunden ({{available}})."
+  }
+}

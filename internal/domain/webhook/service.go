@@ -32,6 +32,10 @@ var EventTypes = []string{
 	event.SeasonRenewalOffered, event.PaymentSucceeded, event.PaymentFailed, event.PaymentRefunded,
 	event.CustomerCreated, event.CustomerAnonymized, event.CashSessionClosed,
 	event.ConfigPricingChanged, event.ConfigMapChanged,
+	// M5B.
+	event.SeasonRenewalAccepted, event.SeasonRenewalDeclined, event.SeasonRenewalExpired, event.SeasonRolledOver,
+	event.WaitlistJoined, event.WaitlistOffered, event.WaitlistOfferExpired, event.WaitlistConverted,
+	event.CreditIssued, event.CreditConsumed, event.CreditExpired,
 }
 
 // DefaultGrace is the default grace period of a rotated secret.

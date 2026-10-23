@@ -37,7 +37,7 @@
   "scope": {
     "channels": "Canaux",
     "zones": "Zones",
-    "packs": "Formules",
+    "packs": "Forfaits",
     "periods": "Périodes"
   },
   "paymentModes": {
@@ -112,13 +112,13 @@
   "sortTiers": "Trier par jours",
   "examples": {
     "title": "Exemples rapides",
-    "hint": "Ils remplissent la portée et les règles de l’exemple ; vous pouvez ensuite tout modifier.",
+    "hint": "Ils remplissent le périmètre et les règles de l’exemple ; vous pouvez ensuite tout modifier.",
     "august_weeks": "Août en ligne : semaines samedi-samedi",
     "gazebo_approval": "Gazebos avec approbation",
     "online_full": "En ligne : paiement total",
     "desk_free": "Caisse : aucune contrainte",
     "warnNoPeak": "Aucune période d’août trouvée : choisissez les périodes manuellement.",
-    "warnNoGazebo": "Aucun pack gazebo trouvé : choisissez les packs manuellement."
+    "warnNoGazebo": "Aucun forfait gazebo trouvé : choisissez les forfaits manuellement."
   },
   "daysShort": "j",
   "tiersCaption": "Paliers de remboursement"

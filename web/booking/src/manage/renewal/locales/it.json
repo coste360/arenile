@@ -1,0 +1,63 @@
+{
+  "title": "Rinnovo dell'abbonamento {{year}}",
+  "status": {
+    "proposed": "In attesa della tua risposta",
+    "accepted": "Accettato, da pagare",
+    "converted": "Rinnovato",
+    "declined": "Rifiutato",
+    "expired": "Scaduto"
+  },
+  "slots": {
+    "FULL": "Giornata intera",
+    "AM": "Mattina",
+    "PM": "Pomeriggio"
+  },
+  "price": "Prezzo della nuova stagione",
+  "previous": "Prezzo della stagione scorsa",
+  "paid": "Già pagato",
+  "deadline": "La postazione è riservata a te fino al {{date}}:",
+  "deadlinePassed": "Il periodo di prelazione è terminato.",
+  "left": {
+    "days_one": "manca {{count}} giorno.",
+    "days_other": "mancano {{count}} giorni.",
+    "hours": "mancano {{hours}} h {{minutes}} min."
+  },
+  "payment": {
+    "legend": "Come vuoi pagare?",
+    "deposit": "Acconto di {{amount}}",
+    "full": "Intero importo di {{amount}}"
+  },
+  "useCredit": "Usa il credito disponibile ({{amount}})",
+  "showTerms": "Leggi le condizioni",
+  "termsVersion": "Condizioni, versione {{version}}",
+  "acceptTerms": "Ho letto e accetto le condizioni di prenotazione (versione {{version}})",
+  "termsRequired": "Per rinnovare devi accettare le condizioni.",
+  "accept": "Rinnova",
+  "acceptPay": "Rinnova e paga {{amount}}",
+
+  "acceptDesk": "Conferma il rinnovo",
+
+  "deskHint": "Il saldo di {{amount}} si paga in cassa entro il {{date}}: dopo questa data la postazione torna disponibile.",
+  "decline": "Non rinnovo",
+  "declineQuestion": "Vuoi rinunciare alla postazione {{spot}}?",
+  "declineHint": "La postazione verrà liberata e potrà essere prenotata da altri.",
+  "declineReason": "Vuoi dirci perché? (facoltativo)",
+  "declineConfirm": "Rinuncio al rinnovo",
+  "declineBack": "Torna indietro",
+  "outcome": {
+    "proposed": "La proposta è in attesa della tua risposta.",
+    "accepted": "Rinnovo accettato: completa il pagamento per confermarlo.",
+    "converted": "Rinnovo confermato: ci vediamo in spiaggia!",
+    "declined": "Hai rinunciato al rinnovo: la postazione è stata liberata.",
+    "expired": "Il periodo di prelazione è scaduto e la postazione è stata liberata."
+  },
+  "problem": {
+    "renewal_expired": "Il periodo di prelazione è scaduto: la postazione è stata liberata.",
+    "credit_insufficient": "Il credito disponibile non è sufficiente: ricarica la pagina."
+  },
+  "credit": {
+    "available": "Hai un credito di {{amount}} che puoi usare per questa prenotazione o in cassa.",
+    "apply": "Usa {{amount}} di credito per il saldo",
+    "applied": "Credito di {{amount}} applicato alla prenotazione."
+  }
+}

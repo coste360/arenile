@@ -21,7 +21,7 @@ import {
   SunIcon,
   type LucideIcon,
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   manageDocumentUrl,
@@ -44,6 +44,10 @@ import { ModifySection } from './ModifySection';
 import { ReleaseSection } from './ReleaseSection';
 import { RequestLinkForm } from './RequestLinkForm';
 import { resolveManageToken } from './token';
+
+// M5B additions, loaded only when the booking needs them (renewal proposal, credit).
+const RenewalSection = lazy(() => import('./renewal/RenewalSection'));
+const ApplyCreditSection = lazy(() => import('./renewal/ApplyCreditSection'));
 
 export interface ManagePageProps {
   location: BookingLocation;
@@ -137,6 +141,8 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
   const slug = location.slug ?? '';
   const token = resolveManageToken(win, slug, location.manageToken);
   const booking = useManagedBooking(slug, token);
+  // Kept here: the credit section disappears from the data once the credit is used.
+  const [creditApplied, setCreditApplied] = useState<number | null>(null);
 
   const invalid =
     !location.slug ||
@@ -173,7 +179,11 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
   } else {
     const b = booking.data;
     const allowed = b.allowed;
+    const renewal = b.renewal;
+    const canUseCredit =
+      !renewal && allowed.pay_balance && (b.credit_available ?? 0) > 0 && b.summary.balance_due > 0;
     const anyAction =
+      !!renewal ||
       (allowed.pay_balance && b.summary.balance_due > 0) ||
       allowed.modify ||
       allowed.cancel ||
@@ -187,7 +197,9 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
                 <h1 className="text-xl">{t('manage.title')}</h1>
               </CardTitle>
               <Badge variant={b.status === 'confirmed' ? 'default' : 'secondary'}>
-                {t(`manage.status.${b.status}`)}
+                {renewal && b.status !== 'confirmed'
+                  ? t('manage.renewalBadge')
+                  : t(`manage.status.${b.status}`)}
               </Badge>
             </div>
             <CardDescription>
@@ -227,8 +239,30 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
           </CardContent>
         </Card>
 
+        {renewal && (
+          <Suspense fallback={<Skeleton aria-hidden="true" className="h-48 w-full" />}>
+            <RenewalSection
+              slug={slug}
+              token={token}
+              booking={{ ...b, renewal }}
+              win={win}
+              now={now}
+            />
+          </Suspense>
+        )}
         {allowed.pay_balance && b.summary.balance_due > 0 && (
           <PayBalance slug={slug} token={token} booking={b} win={win} />
+        )}
+        {(canUseCredit || creditApplied !== null) && (
+          <Suspense fallback={null}>
+            <ApplyCreditSection
+              slug={slug}
+              token={token}
+              booking={b}
+              applied={creditApplied}
+              onApplied={setCreditApplied}
+            />
+          </Suspense>
         )}
         <div className="space-y-3">
           {allowed.modify && (

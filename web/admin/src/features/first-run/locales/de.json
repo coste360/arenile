@@ -1,21 +1,21 @@
 {
   "title": "Willkommen bei Arenile",
-  "description": "Legen Sie den Inhaber-Benutzer an: danach führen wir Sie durch die Einrichtung des Strandbads.",
+  "description": "Legen Sie den Inhaber-Benutzer an: Danach führen wir Sie durch die Einrichtung des Betriebs.",
   "fields": {
-    "organization": "Unternehmen oder Strandbad",
+    "organization": "Unternehmen oder Betrieb",
     "organizationHint": "Der Name auf Ihren Belegen, zum Beispiel „Lido Azzurro srl“.",
     "name": "Vor- und Nachname",
     "email": "E-Mail",
     "emailHint": "Damit melden Sie sich an. Arenile Desktop versendet keine E-Mails und verbindet sich nicht mit dem Internet.",
     "password": "Passwort",
-    "passwordHint": "Mindestens 10 Zeichen. Gut aufbewahren: Sie brauchen es auch auf den anderen Geräten des Strandbads.",
+    "passwordHint": "Mindestens 10 Zeichen. Bewahren Sie es gut auf: Sie benötigen es auch auf den anderen Geräten des Betriebs.",
     "passwordConfirm": "Passwort wiederholen"
   },
   "submit": "Benutzer anlegen und weiter",
   "submitting": "Wird angelegt…",
   "privacy": "Ihre Daten bleiben auf diesem Computer, im Datenordner von Arenile.",
   "validation": {
-    "organizationRequired": "Geben Sie den Namen des Unternehmens oder Strandbads ein.",
+    "organizationRequired": "Geben Sie den Namen des Unternehmens oder Betriebs ein.",
     "nameRequired": "Geben Sie Ihren Namen ein.",
     "emailInvalid": "Geben Sie eine gültige E-Mail-Adresse ein.",
     "passwordTooShort": "Das Passwort muss mindestens 10 Zeichen lang sein.",
@@ -23,11 +23,11 @@
     "tooLong": "Text zu lang."
   },
   "errors": {
-    "noToken": "Öffnen Sie diese Seite über das Arenile-Menü in der Taskleiste (Panel öffnen): der Link enthält einen Sicherheitscode.",
+    "noToken": "Öffnen Sie diese Seite über das Arenile-Menü in der Taskleiste (Panel öffnen): Der Link enthält einen Sicherheitscode.",
     "tokenInvalid": "Der Einrichtungslink ist nicht mehr gültig. Schließen Sie diesen Tab und wählen Sie „Panel öffnen“ im Arenile-Menü der Taskleiste.",
-    "completed": "Die Ersteinrichtung ist bereits abgeschlossen: melden Sie sich mit dem angelegten Benutzer an.",
-    "network": "Arenile antwortet nicht: prüfen Sie, ob die App geöffnet ist, und versuchen Sie es erneut.",
-    "generic": "Der Benutzer konnte nicht angelegt werden. Bitte erneut versuchen."
+    "completed": "Die Ersteinrichtung ist bereits abgeschlossen: Melden Sie sich mit dem angelegten Benutzer an.",
+    "network": "Arenile antwortet nicht: Prüfen Sie, ob die App geöffnet ist, und versuchen Sie es erneut.",
+    "generic": "Der Benutzer konnte nicht angelegt werden. Bitte versuchen Sie es erneut."
   },
   "done": {
     "title": "Ersteinrichtung abgeschlossen",

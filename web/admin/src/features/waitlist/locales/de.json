@@ -1,0 +1,138 @@
+{
+  "title": "Warteliste",
+  "description": "Anfragen ohne Verfügbarkeit nach Priorität, automatische Angebote, wenn ein Platz frei wird, und Einstellungen.",
+  "optional": "(optional)",
+  "loadMore": "Weitere Einträge laden",
+  "entry": {
+    "newTitle": "Neuer Eintrag",
+    "editTitle": "Anfrage bearbeiten",
+    "newDescription": "Der Kunde kommt in die Warteschlange und erhält ein Angebot, sobald ein passender Platz frei wird.",
+    "required": "Pflichtfeld.",
+    "quantityInvalid": "Von 1 bis 20.",
+    "create": "Eintragen",
+    "save": "Speichern",
+    "created": "{{customer}} steht auf der Warteliste.",
+    "updated": "Anfrage aktualisiert."
+  },
+  "fields": {
+    "customer": "Kunde",
+    "period": "Zeitraum",
+    "slots": "Tageszeit",
+    "pack": "Paket",
+    "pickPack": "Paket wählen",
+    "zone": "Zone",
+    "anyZone": "Beliebige Zone",
+    "quantity": "Anzahl",
+    "note": "Notiz"
+  },
+  "offer": {
+    "title": "Platz anbieten",
+    "description": "{{customer}} erhält eine E-Mail mit dem Buchungslink: Der Platz bleibt bis zum Ablauf reserviert.",
+    "spot": "Platz",
+    "anySpot": "Der erste passende",
+    "minutes": "Gültigkeit des Angebots (Minuten)",
+    "minutesInvalid": "Von 5 bis 10080 Minuten (7 Tage).",
+    "help": "Antwortet der Kunde nicht rechtzeitig, läuft das Angebot ab und geht an den Nächsten in der Warteschlange.",
+    "submit": "Angebot senden",
+    "done": "Angebot an {{customer}} gesendet.",
+    "revoked": "Angebot widerrufen: Der Platz ist wieder frei."
+  },
+  "settings": {
+    "open": "Einstellungen",
+    "title": "Einstellungen der Warteliste",
+    "description": "Sie gelten für den gesamten Betrieb.",
+    "enabled": {
+      "label": "Warteliste aktiv",
+      "help": "Wenn deaktiviert, werden keine Einträge angenommen und keine Angebote versendet."
+    },
+    "public_join": {
+      "label": "Eintragung über die öffentliche Seite",
+      "help": "Wenn nichts verfügbar ist, kann sich der Kunde über die Website auf die Warteliste setzen."
+    },
+    "auto_offer": {
+      "label": "Automatische Angebote",
+      "help": "Wird ein Platz frei (Stornierung, Freigabe, Ablauf), geht ein Angebot an den Ersten in der Warteschlange."
+    },
+    "minutes": "Standardgültigkeit der Angebote (Minuten)",
+    "saved": "Einstellungen gespeichert.",
+    "summaryAuto": "Automatische Angebote aktiv: Jedes Angebot ist {{minutes}} Minuten gültig.",
+    "summaryManual": "Automatische Angebote deaktiviert: Angebote werden nur manuell versendet."
+  },
+  "disabled": {
+    "title": "Warteliste deaktiviert",
+    "description": "Es werden keine neuen Einträge angenommen und keine Angebote versendet. Aktivieren Sie sie in den Einstellungen wieder."
+  },
+  "columns": {
+    "position": "Position",
+    "customer": "Kunde",
+    "period": "Zeitraum",
+    "request": "Anfrage",
+    "status": "Status",
+    "offer": "Angebot",
+    "channel": "Kanal",
+    "actions": "Aktionen"
+  },
+  "status": {
+    "waiting": "Wartend",
+    "offered": "Angebot gesendet",
+    "converted": "Gebucht",
+    "expired": "Abgelaufen",
+    "removed": "Entfernt"
+  },
+  "offerStatus": {
+    "pending": "Antwort ausstehend",
+    "accepted": "Angenommen",
+    "declined": "Abgelehnt",
+    "expired": "Abgelaufen",
+    "revoked": "Widerrufen"
+  },
+  "cause": {
+    "cancellation": "Stornierung",
+    "release": "Abo-Freigabe",
+    "expiry": "Buchung abgelaufen",
+    "manual": "Manuell"
+  },
+  "filters": {
+    "search": "Kunde suchen",
+    "status": "Status",
+    "allStatuses": "Alle Status",
+    "zone": "Zone",
+    "allZones": "Alle Zonen"
+  },
+  "reorder": {
+    "up": "{{customer}} in der Warteschlange nach vorne verschieben",
+    "upShort": "Nach vorne",
+    "down": "{{customer}} in der Warteschlange nach hinten verschieben",
+    "downShort": "Nach hinten",
+    "done": "Warteschlange aktualisiert: {{customer}} verschoben."
+  },
+  "row": {
+    "open": "Eintrag von {{customer}} öffnen",
+    "more": "Aktionen für {{customer}}",
+    "offer": "Platz anbieten",
+    "revoke": "Angebot widerrufen",
+    "edit": "Anfrage bearbeiten",
+    "remove": "Von der Warteliste entfernen"
+  },
+  "remove": {
+    "title": "Von der Warteliste entfernen?",
+    "description": "{{customer}} verlässt die Warteschlange; ein laufendes Angebot wird widerrufen.",
+    "done": "Eintrag entfernt."
+  },
+  "empty": {
+    "title": "Keine Einträge",
+    "description": "Anfragen ohne Verfügbarkeit erscheinen hier in der Reihenfolge ihres Eingangs."
+  },
+  "offers": {
+    "title": "Angebote",
+    "created": "Gesendet am",
+    "spot": "Platz",
+    "cause": "Anlass",
+    "status": "Ergebnis",
+    "empty": "Bisher keine Angebote."
+  },
+  "sheet": {
+    "loading": "Eintrag",
+    "joined": "Eingetragen am"
+  }
+}

@@ -2952,6 +2952,504 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/rollover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fine stagione: crea la stagione successiva copiando la configurazione (anteprima e applicazione)
+         * @description Spec 8.7, 10.4, 28 (M5). `dry_run = true` (default) restituisce l'anteprima senza scrivere. L'applicazione crea in una transazione la stagione dell'anno indicato copiando periodi tariffari, chiusure (spostate sull'anno), regole di prezzo, prezzi fissi e policy; catalogo e mappe non dipendono dalla stagione e restano invariati. Idempotente: un secondo `apply` con lo stesso anno restituisce 200 con il risultato già registrato (`already_applied = true`); 409 `season_rollover_conflict` se esiste già una stagione di quell'anno non creata da questo passaggio. Permesso establishment.configure.
+         */
+        post: operations["rolloverSeason"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/season-rollovers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Storico dei passaggi di stagione */
+        get: operations["listSeasonRollovers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-campaigns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Campagne di rinnovo degli abbonamenti */
+        get: operations["listRenewalCampaigns"];
+        put?: never;
+        /**
+         * Proponi rinnovi: crea la campagna e una proposta per ogni abbonato (anteprima con dry_run)
+         * @description Spec 10.4. Per ogni abbonamento confermato della stagione di origine (o solo `pass_ids`) crea una proposta con la stessa postazione e lo stesso pack, prezzo calcolato dal listino della stagione di destinazione, e una prenotazione `held` (`renewal_of_booking_id` = abbonamento di origine) con hold fino alla scadenza della prelazione: la postazione resta riservata dai vincoli del database (allocazioni) e in mappa appare come `renewal_offer`. Gli abbonamenti senza prezzo o con postazione non disponibile finiscono in `skipped`. `dry_run = true` non scrive. Una sola campagna per coppia origine/destinazione (409 conflict). Le email partono solo con l'azione `send`. Permesso bookings.write.
+         */
+        post: operations["createRenewalCampaign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio della campagna con i conteggi per stato */
+        get: operations["getRenewalCampaign"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifica nome, note o scadenza predefinita; chiude la campagna
+         * @description Una nuova `deadline_at` vale per le proposte future e per quelle ancora `proposed` con la scadenza precedente (gli hold vengono prorogati nella stessa transazione). `status = closed` rilascia le proposte ancora aperte come `expired`.
+         */
+        patch: operations["updateRenewalCampaign"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Proposte di rinnovo della campagna (filtri) */
+        get: operations["listRenewalProposals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Azioni di massa sulle proposte (invio, accettazione, rifiuto, proroga, rilascio)
+         * @description Applica `action` alle proposte indicate (`proposal_ids`) oppure a tutte quelle della campagna nello stato `status`. Ogni proposta è una transazione separata: gli errori sono riportati per proposta. `release` rilascia (come `expired`) le proposte `proposed` con prelazione scaduta o, con `force`, anche non scaduta. Permesso bookings.write.
+         */
+        post: operations["bulkRenewalProposals"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio della proposta di rinnovo */
+        get: operations["getRenewalProposal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accetta il rinnovo per conto del cliente (dal pannello)
+         * @description La prenotazione `held` passa dal servizio prenotazioni: con `confirm = true` (default) viene confermata come una prenotazione del banco (driver manuale, audit e outbox nella stessa transazione) e la proposta diventa `converted`; con `confirm = false` resta in attesa di pagamento (`accepted`). Un eventuale incasso si registra con POST /bookings/{id}/payments (anche metodo `credit`).
+         */
+        post: operations["acceptRenewalProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Registra il rifiuto del rinnovo e libera la postazione */
+        post: operations["declineRenewalProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Invia (o reinvia) al cliente l'email della proposta con il link magico */
+        post: operations["sendRenewalProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/waitlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista d'attesa in ordine di priorità
+         * @description Ordine: `priority` crescente, poi data di iscrizione (spec 10.5).
+         */
+        get: operations["listWaitlistEntries"];
+        put?: never;
+        /** Iscrive un cliente alla lista d'attesa dal pannello */
+        post: operations["createWaitlistEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio dell'iscrizione con le offerte */
+        get: operations["getWaitlistEntry"];
+        put?: never;
+        post?: never;
+        /** Rimuove l'iscrizione (stato removed); un'offerta attiva viene revocata e il suo hold rilasciato */
+        delete: operations["removeWaitlistEntry"];
+        options?: never;
+        head?: never;
+        /** Modifica l'iscrizione (periodo, zona, pack, priorità, note) */
+        patch: operations["updateWaitlistEntry"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/waitlist/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Riordina la lista d'attesa
+         * @description Assegna `priority` 10, 20, 30, ... alle iscrizioni nell'ordine dato; quelle non elencate mantengono la priorità attuale.
+         */
+        post: operations["reorderWaitlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Offre subito un posto all'iscritto (hold riservato a tempo e email con link)
+         * @description Crea un hold sulle risorse compatibili (o sulla postazione indicata) con i vincoli del database e invia l'offerta. 409 spot_unavailable / pool_exhausted se non c'è disponibilità.
+         */
+        post: operations["offerWaitlistEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offers/{offerId}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoca un'offerta attiva e rilascia il suo hold */
+        post: operations["revokeWaitlistOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/waitlist-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Impostazioni della lista d'attesa */
+        get: operations["getWaitlistSettings"];
+        /**
+         * Aggiorna le impostazioni della lista d'attesa
+         * @description Permesso establishment.configure.
+         */
+        put: operations["updateWaitlistSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Saldo e movimenti dei crediti del cliente
+         * @description Spec 13.4. `balance` = somma dei movimenti; `available` = saldo spendibile oggi (al netto dei crediti scaduti non ancora registrati come `expiry`); `expiring` = crediti in scadenza per data.
+         */
+        get: operations["getCustomerCredits"];
+        put?: never;
+        /**
+         * Riconosce un credito (cortesia, manuale) o registra una rettifica
+         * @description Permesso refunds.issue. `amount` > 0 accredita, < 0 (solo `adjustment`) riduce il saldo, che non può mai diventare negativo (422 credit_insufficient). Audit e outbox `credit.issued` nella stessa transazione.
+         */
+        post: operations["createCustomerCredit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/renewal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Proposta di rinnovo dal link magico
+         * @description Il link magico della prenotazione `held` creata dalla proposta. 404 se la prenotazione non è una proposta di rinnovo (o token sconosciuto, scaduto, revocato).
+         */
+        get: operations["getManagedRenewal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/renewal/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accetta il rinnovo e avvia il pagamento (acconto o saldo) con il provider online
+         * @description La conferma arriva solo dal webhook del provider (o dal driver manuale): il ritorno del browser non conferma. Con `use_credit` il saldo crediti disponibile viene applicato prima del pagamento online; se copre l'importo dovuto non c'è passo online (`pay.mode = none`). 410 renewal_expired dopo la scadenza della prelazione.
+         */
+        post: operations["acceptManagedRenewal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/renewal/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rifiuta il rinnovo: la postazione torna disponibile */
+        post: operations["declineManagedRenewal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Saldo crediti del cliente della prenotazione */
+        get: operations["getManagedCredits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/apply-credit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Usa il saldo crediti per pagare (in parte) la prenotazione
+         * @description Registra un pagamento con metodo `credit` (servizio pagamenti, stessa transazione del movimento `redemption`). Senza `amount` usa il minimo tra saldo disponibile e importo dovuto.
+         */
+        post: operations["applyManagedCredit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/waitlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Iscrizione alla lista d'attesa quando la richiesta non trova disponibilità
+         * @description Spec 10.5. Risponde sempre 202 senza dati (nessuna enumerazione); l'email di conferma contiene il link personale della lista d'attesa (token 256 bit salvato come hash). 409 waitlist_disabled se lo stabilimento non accetta iscrizioni online.
+         */
+        post: operations["joinWaitlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/waitlist/{waitlistToken}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Iscrizione alla lista d'attesa dal link personale, con l'eventuale offerta attiva */
+        get: operations["getPublicWaitlistEntry"];
+        put?: never;
+        post?: never;
+        /** Cancella l'iscrizione alla lista d'attesa */
+        delete: operations["leaveWaitlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/waitlist/{waitlistToken}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accetta l'offerta: la prenotazione nasce dall'hold riservato e prosegue nel checkout
+         * @description Converte l'hold dell'offerta in una prenotazione `held` con sessione di checkout (stessa risposta di createPublicBooking): il cliente prosegue con `X-Arenile-Checkout` (dati, pagamento). 410 waitlist_offer_expired se l'offerta è scaduta.
+         */
+        post: operations["acceptWaitlistOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/waitlist/{waitlistToken}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rifiuta l'offerta (l'iscrizione resta in attesa, salvo `leave`) */
+        post: operations["declineWaitlistOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2961,7 +3459,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -4004,6 +4502,8 @@ export interface components {
             allow_spot_change_during_stay?: boolean;
             customer_can_release_season_days?: boolean;
             season_release_credit?: components["schemas"]["PolicySeasonReleaseCredit"];
+            /** @description Validità in giorni dei crediti emessi da questa policy (cancellazione, meteo, rilascio): expires_on = giorno di emissione + giorni. Assente o 0 = nessuna scadenza (spec 9, 13.4). */
+            credit_validity_days?: number;
         };
         BookingPolicyInput: {
             /** Format: uuid */
@@ -4546,8 +5046,16 @@ export interface components {
             /** Format: uuid */
             id: string;
             amount: components["schemas"]["Money"];
-            /** @enum {string} */
-            source: "cancellation" | "season_release" | "weather" | "manual" | "redemption";
+            /**
+             * @description Origine: cancellation, season_release, weather, manual, goodwill (crediti; goodwill sempre > 0, le altre negative solo come storno); redemption (uso come metodo di pagamento `credit`) ed expiry (scadenza) hanno amount < 0; adjustment è una rettifica del gestore con segno libero.
+             * @enum {string}
+             */
+            source: "cancellation" | "season_release" | "weather" | "manual" | "redemption" | "goodwill" | "expiry" | "adjustment";
+            /**
+             * Format: uuid
+             * @description expiry: il credito scaduto a cui si riferisce.
+             */
+            reference_credit_id?: string;
             /** Format: uuid */
             booking_id?: string;
             note?: string;
@@ -5835,6 +6343,8 @@ export interface components {
             qr_svg?: string;
             /** Format: date-time */
             link_expires_at: string;
+            renewal?: components["schemas"]["PublicRenewalProposal"];
+            credit_available?: components["schemas"]["Money"];
             version: components["schemas"]["Version"];
         };
         ManageModifyRequest: components["schemas"]["PublicSelection"] & {
@@ -6433,7 +6943,7 @@ export interface components {
          * @description Tipi di evento sottoscrivibili (spec 18.1) più `webhook.test`, inviato solo dal test.
          * @enum {string}
          */
-        WebhookEventType: "booking.created" | "booking.held" | "booking.confirmed" | "booking.modified" | "booking.cancelled" | "booking.checked_in" | "booking.no_show" | "booking.completed" | "booking.approval_requested" | "allocation.released" | "season.day_released" | "season.renewal_offered" | "payment.succeeded" | "payment.failed" | "payment.refunded" | "customer.created" | "customer.anonymized" | "cash_session.closed" | "config.pricing_changed" | "config.map_changed" | "webhook.test";
+        WebhookEventType: "booking.created" | "booking.held" | "booking.confirmed" | "booking.modified" | "booking.cancelled" | "booking.checked_in" | "booking.no_show" | "booking.completed" | "booking.approval_requested" | "allocation.released" | "season.day_released" | "season.renewal_offered" | "season.renewal_accepted" | "season.renewal_declined" | "season.renewal_expired" | "season.rolled_over" | "waitlist.joined" | "waitlist.offered" | "waitlist.offer_expired" | "waitlist.converted" | "credit.issued" | "credit.consumed" | "credit.expired" | "payment.succeeded" | "payment.failed" | "payment.refunded" | "customer.created" | "customer.anonymized" | "cash_session.closed" | "config.pricing_changed" | "config.map_changed" | "webhook.test";
         /** @description Un WebhookEventType, un gruppo `<prefisso>.*` (es. `booking.*`) o `*` (tutti). */
         WebhookEventFilter: string;
         /**
@@ -6882,6 +7392,539 @@ export interface components {
             backup: components["schemas"]["DesktopBackup"];
             restart_required: boolean;
         };
+        /** @description Passaggio di fine stagione (spec 8.7, 10.4, 28): copia della configurazione sulla stagione successiva. */
+        SeasonRolloverRequest: {
+            target_year: number;
+            opens_on?: components["schemas"]["Date"];
+            closes_on?: components["schemas"]["Date"];
+            /** @description Default true. */
+            include_rate_periods?: boolean;
+            /** @description Default true: le chiusure dentro la stagione di origine, spostate sull'anno nuovo. */
+            include_closure_days?: boolean;
+            /** @description Default true. */
+            include_price_rules?: boolean;
+            /** @description Default true. */
+            include_fixed_prices?: boolean;
+            /** @description Default true. */
+            include_policies?: boolean;
+            /** @description Default true (solo anteprima); false applica. */
+            dry_run?: boolean;
+        };
+        SeasonRolloverCounts: {
+            rate_periods: number;
+            closure_days: number;
+            price_rules: number;
+            fixed_prices: number;
+            policies: number;
+        };
+        SeasonRolloverResult: {
+            dry_run: boolean;
+            /** @description true se il passaggio era già stato applicato (risposta idempotente). */
+            already_applied: boolean;
+            /**
+             * Format: uuid
+             * @description Assente in anteprima.
+             */
+            rollover_id?: string;
+            /** Format: uuid */
+            source_season_id: string;
+            target_year: number;
+            opens_on: components["schemas"]["Date"];
+            closes_on: components["schemas"]["Date"];
+            season?: components["schemas"]["Season"];
+            counts: components["schemas"]["SeasonRolloverCounts"];
+            /** @description Abbonamenti confermati della stagione di origine, candidati al rinnovo. */
+            season_passes?: number;
+            /** @description Cose da controllare dopo il passaggio: codici con parametri, tradotti dal pannello. */
+            warnings: components["schemas"]["SeasonRolloverWarning"][];
+        };
+        SeasonRolloverWarning: {
+            /**
+             * @description closure_outside_season: la chiusura spostata cade fuori dalla nuova stagione e non è stata copiata; closure_already_closed: la nuova stagione è già chiusa nel giorno spostato; closure_duplicate: due chiusure cadono sullo stesso giorno spostato; season_copy: avviso della copia di stagione dei prezzi (testo in `text`).
+             * @enum {string}
+             */
+            code: "closure_outside_season" | "closure_already_closed" | "closure_duplicate" | "season_copy";
+            /** @description Data di origine (chiusure), `YYYY-MM-DD`. */
+            date?: string;
+            /** @description Data spostata nella nuova stagione (chiusure), `YYYY-MM-DD`. */
+            target_date?: string;
+            /** @description Messaggio della copia di stagione (solo `season_copy`). */
+            text?: string;
+        };
+        SeasonRollover: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            source_season_id: string;
+            /** Format: uuid */
+            target_season_id: string;
+            target_year: number;
+            counts: components["schemas"]["SeasonRolloverCounts"];
+            /** Format: uuid */
+            created_by_user_id?: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        SeasonRolloverList: {
+            items: components["schemas"]["SeasonRollover"][];
+            next_cursor?: string;
+        };
+        /**
+         * @description open: proposte in corso; closed: chiusa dal gestore o con tutte le proposte concluse.
+         * @enum {string}
+         */
+        RenewalCampaignStatus: "open" | "closed";
+        /**
+         * @description proposed: prenotazione held in prelazione; accepted: accettata, in attesa di pagamento (pending_payment); converted: prenotazione confermata (nuovo abbonamento); declined: rifiutata, postazione liberata; expired: prelazione scaduta o campagna chiusa, postazione liberata.
+         * @enum {string}
+         */
+        RenewalProposalStatus: "proposed" | "accepted" | "declined" | "expired" | "converted";
+        RenewalStatusCounts: {
+            proposed: number;
+            accepted: number;
+            declined: number;
+            expired: number;
+            converted: number;
+            /** @description Proposte con almeno un invio. */
+            sent: number;
+        };
+        RenewalCampaign: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            status: components["schemas"]["RenewalCampaignStatus"];
+            /** Format: uuid */
+            source_season_id: string;
+            /** Format: uuid */
+            target_season_id: string;
+            /**
+             * Format: date-time
+             * @description Scadenza predefinita della prelazione (istante UTC).
+             */
+            deadline_at: string;
+            notes?: string;
+            counts: components["schemas"]["RenewalStatusCounts"];
+            total_amount: components["schemas"]["Money"];
+            converted_amount: components["schemas"]["Money"];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: date-time */
+            closed_at?: string;
+        };
+        RenewalCampaignList: {
+            items: components["schemas"]["RenewalCampaign"][];
+            next_cursor?: string;
+        };
+        RenewalCampaignCreate: {
+            /** @description Default "Rinnovi <anno>". */
+            name?: string;
+            /** Format: uuid */
+            source_season_id: string;
+            /** Format: uuid */
+            target_season_id: string;
+            /**
+             * Format: date-time
+             * @description Scadenza della prelazione; deve essere futura e precedere l'apertura della stagione di destinazione.
+             */
+            deadline_at: string;
+            /** @description Solo questi abbonamenti della stagione di origine (default tutti i confermati). */
+            pass_ids?: string[];
+            notes?: string;
+            /** @description Default false. */
+            dry_run?: boolean;
+        };
+        RenewalCampaignUpdate: {
+            name?: string;
+            notes?: string;
+            /** Format: date-time */
+            deadline_at?: string;
+            status?: components["schemas"]["RenewalCampaignStatus"];
+        };
+        /** @enum {string} */
+        RenewalSkipReason: "spot_unavailable" | "spot_inactive" | "no_price" | "already_renewed" | "customer_anonymized" | "not_confirmed";
+        RenewalSkipped: {
+            /** Format: uuid */
+            source_pass_id: string;
+            customer_display_name?: string;
+            spot_label?: string;
+            reason: components["schemas"]["RenewalSkipReason"];
+            detail?: string;
+        };
+        RenewalProposalPreview: {
+            /** Format: uuid */
+            source_pass_id: string;
+            /** Format: uuid */
+            customer_id: string;
+            customer_display_name: string;
+            /** Format: uuid */
+            spot_id: string;
+            spot_label: string;
+            /** Format: uuid */
+            pack_id: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            previous_amount: components["schemas"]["Money"];
+            total_amount: components["schemas"]["Money"];
+            deposit_due: components["schemas"]["Money"];
+        };
+        RenewalCampaignResult: {
+            dry_run: boolean;
+            campaign?: components["schemas"]["RenewalCampaign"];
+            /** @description Proposte create (o che verrebbero create in anteprima). */
+            proposals: components["schemas"]["RenewalProposalPreview"][];
+            skipped: components["schemas"]["RenewalSkipped"][];
+        };
+        RenewalProposal: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            campaign_id: string;
+            status: components["schemas"]["RenewalProposalStatus"];
+            /**
+             * Format: uuid
+             * @description Abbonamento della stagione di origine.
+             */
+            source_pass_id: string;
+            /**
+             * Format: uuid
+             * @description Prenotazione della nuova stagione (held finché la proposta è aperta).
+             */
+            booking_id: string;
+            booking_code: string;
+            booking_status?: components["schemas"]["BookingStatus"];
+            /** Format: uuid */
+            customer_id: string;
+            customer_display_name: string;
+            customer_has_email?: boolean;
+            /** Format: uuid */
+            spot_id: string;
+            spot_label: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            pack_id: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            previous_amount: components["schemas"]["Money"];
+            total_amount: components["schemas"]["Money"];
+            deposit_due: components["schemas"]["Money"];
+            paid_amount: components["schemas"]["Money"];
+            /**
+             * Format: date-time
+             * @description Scadenza della prelazione su questa postazione (= hold della prenotazione).
+             */
+            deadline_at: string;
+            send_count: number;
+            /** Format: date-time */
+            last_sent_at?: string;
+            /** Format: date-time */
+            responded_at?: string;
+            /**
+             * @description online: dal link magico; desk: dal pannello; system: scadenza o chiusura.
+             * @enum {string}
+             */
+            response_channel?: "online" | "desk" | "system";
+            decline_reason?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        RenewalProposalList: {
+            items: components["schemas"]["RenewalProposal"][];
+            next_cursor?: string;
+        };
+        /** @enum {string} */
+        RenewalBulkAction: "send" | "accept" | "decline" | "extend_deadline" | "release";
+        /** @description proposal_ids oppure status (almeno uno); con entrambi vale l'intersezione. */
+        RenewalBulkRequest: {
+            action: components["schemas"]["RenewalBulkAction"];
+            proposal_ids?: string[];
+            status?: components["schemas"]["RenewalProposalStatus"];
+            /** @description send: salta le proposte già inviate (default true). */
+            only_unsent?: boolean;
+            /**
+             * Format: date-time
+             * @description Obbligatoria per extend_deadline.
+             */
+            deadline_at?: string;
+            /** @description accept: come RenewalStaffAcceptRequest.confirm (default true). */
+            confirm?: boolean;
+            /** @description release: rilascia anche le proposte con prelazione non ancora scaduta. */
+            force?: boolean;
+        };
+        RenewalBulkFailure: {
+            /** Format: uuid */
+            proposal_id: string;
+            type: components["schemas"]["ProblemType"];
+            detail?: string;
+        };
+        RenewalBulkResult: {
+            action: components["schemas"]["RenewalBulkAction"];
+            matched: number;
+            succeeded: number;
+            /** @description Proposte non applicabili (stato diverso, già inviate con only_unsent). */
+            skipped: number;
+            failed: components["schemas"]["RenewalBulkFailure"][];
+        };
+        RenewalStaffAcceptRequest: {
+            /** @description Default true (conferma subito, driver manuale); false lascia la prenotazione in attesa di pagamento. */
+            confirm?: boolean;
+            note?: string;
+        };
+        RenewalDeclineRequest: {
+            reason?: string;
+        };
+        PublicRenewalProposal: {
+            status: components["schemas"]["RenewalProposalStatus"];
+            season_year: number;
+            spot_label: string;
+            zone_name?: string;
+            pack_name?: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            previous_amount: components["schemas"]["Money"];
+            total_amount: components["schemas"]["Money"];
+            deposit_due: components["schemas"]["Money"];
+            paid_amount: components["schemas"]["Money"];
+            credit_available?: components["schemas"]["Money"];
+            /** Format: date-time */
+            deadline_at: string;
+            /** @description Versione corrente delle condizioni da accettare. */
+            terms_version?: string;
+            allowed: {
+                accept: boolean;
+                decline: boolean;
+                pay_deposit: boolean;
+                pay_full: boolean;
+                use_credit: boolean;
+            };
+        };
+        PublicRenewalAcceptRequest: {
+            /**
+             * @description deposit: acconto da policy della nuova stagione (se previsto); full: intero importo.
+             * @enum {string}
+             */
+            payment: "deposit" | "full";
+            /** @description Applica prima il saldo crediti disponibile. */
+            use_credit?: boolean;
+            accept_terms_version: string;
+        };
+        PublicRenewalAcceptResult: {
+            proposal: components["schemas"]["PublicRenewalProposal"];
+            credit_applied?: components["schemas"]["Money"];
+            pay: components["schemas"]["PayResult"];
+        };
+        PublicRenewalDeclineRequest: {
+            reason?: string;
+        };
+        /**
+         * @description waiting: in attesa; offered: offerta attiva con hold; converted: prenotazione creata dall'offerta; expired: periodo richiesto passato; removed: cancellata dal cliente o dal gestore.
+         * @enum {string}
+         */
+        WaitlistEntryStatus: "waiting" | "offered" | "converted" | "expired" | "removed";
+        /** @enum {string} */
+        WaitlistOfferStatus: "pending" | "accepted" | "declined" | "expired" | "revoked";
+        WaitlistOffer: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            entry_id: string;
+            status: components["schemas"]["WaitlistOfferStatus"];
+            /** Format: uuid */
+            hold_id: string;
+            /** Format: uuid */
+            spot_id?: string;
+            spot_label?: string;
+            /**
+             * Format: uuid
+             * @description Prenotazione creata all'accettazione.
+             */
+            booking_id?: string;
+            /**
+             * @description Evento che ha liberato l'inventario.
+             * @enum {string}
+             */
+            cause?: "cancellation" | "release" | "expiry" | "manual";
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: date-time */
+            responded_at?: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        WaitlistEntry: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["WaitlistEntryStatus"];
+            channel: components["schemas"]["Channel"];
+            /** Format: uuid */
+            customer_id: string;
+            customer_display_name: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            /** Format: uuid */
+            pack_id: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            spot_id?: string;
+            quantity: number;
+            /** @description Ordine manuale (crescente); a parità vale la data di iscrizione. */
+            priority: number;
+            /** @description Posizione corrente tra le iscrizioni in attesa (1 = prima). */
+            position: number;
+            note?: string;
+            offer_count: number;
+            active_offer?: components["schemas"]["WaitlistOffer"];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        WaitlistEntryList: {
+            items: components["schemas"]["WaitlistEntry"][];
+            next_cursor?: string;
+        };
+        WaitlistEntryDetail: {
+            entry: components["schemas"]["WaitlistEntry"];
+            offers: components["schemas"]["WaitlistOffer"][];
+        };
+        WaitlistEntryCreate: {
+            /** Format: uuid */
+            customer_id: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            /** Format: uuid */
+            pack_id: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            spot_id?: string;
+            /** @description Default 1. */
+            quantity?: number;
+            channel?: components["schemas"]["Channel"];
+            note?: string;
+        };
+        WaitlistEntryUpdate: {
+            starts_on?: components["schemas"]["Date"];
+            ends_on?: components["schemas"]["Date"];
+            slots?: components["schemas"]["Slots"];
+            /** Format: uuid */
+            pack_id?: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            spot_id?: string;
+            quantity?: number;
+            priority?: number;
+            note?: string;
+        };
+        WaitlistReorderRequest: {
+            entry_ids: string[];
+        };
+        WaitlistOfferCreate: {
+            /** Format: uuid */
+            spot_id?: string;
+            /** @description Default `offer_hold_minutes` delle impostazioni. */
+            hold_minutes?: number;
+        };
+        WaitlistSettings: {
+            enabled: boolean;
+            /** @description Iscrizione dalla pagina pubblica quando non c'è disponibilità. */
+            public_join: boolean;
+            /** @description Offerta automatica quando si libera inventario (cancellazione, rilascio, scadenza). */
+            auto_offer: boolean;
+            offer_hold_minutes: number;
+            version: components["schemas"]["Version"];
+        };
+        WaitlistSettingsInput: {
+            enabled: boolean;
+            public_join: boolean;
+            auto_offer: boolean;
+            offer_hold_minutes: number;
+        };
+        PublicWaitlistJoin: {
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            /** Format: uuid */
+            pack_id: string;
+            /** Format: uuid */
+            zone_id?: string;
+            quantity?: number;
+            customer: {
+                first_name: string;
+                last_name: string;
+                /** Format: email */
+                email: string;
+                phone?: string;
+                locale?: string;
+                accept_terms_version: string;
+            };
+        };
+        PublicWaitlistOffer: {
+            status: components["schemas"]["WaitlistOfferStatus"];
+            spot_label?: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        PublicWaitlistEntry: {
+            status: components["schemas"]["WaitlistEntryStatus"];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            pack_name: string;
+            zone_name?: string;
+            quantity?: number;
+            offer?: components["schemas"]["PublicWaitlistOffer"];
+        };
+        PublicWaitlistDeclineRequest: {
+            /** @description true = cancella anche l'iscrizione. */
+            leave?: boolean;
+        };
+        CustomerCreditExpiring: {
+            expires_on: components["schemas"]["Date"];
+            amount: components["schemas"]["Money"];
+        };
+        CustomerCreditLedger: {
+            /** Format: uuid */
+            customer_id: string;
+            balance: components["schemas"]["Money"];
+            available: components["schemas"]["Money"];
+            expiring: components["schemas"]["CustomerCreditExpiring"][];
+            items: components["schemas"]["CustomerCredit"][];
+            next_cursor?: string;
+        };
+        CustomerCreditCreate: {
+            amount: components["schemas"]["Money"];
+            /**
+             * @description goodwill: credito di cortesia; manual: altro credito; adjustment: rettifica (anche negativa).
+             * @enum {string}
+             */
+            source: "goodwill" | "manual" | "adjustment";
+            expires_on?: components["schemas"]["Date"];
+            /** Format: uuid */
+            booking_id?: string;
+            note?: string;
+        };
+        PublicCreditBalance: {
+            available: components["schemas"]["Money"];
+            expiring: components["schemas"]["CustomerCreditExpiring"][];
+        };
+        PublicApplyCreditRequest: {
+            amount?: components["schemas"]["Money"];
+        };
     };
     responses: {
         /** @description Richiesta non valida */
@@ -6998,6 +8041,12 @@ export interface components {
         };
     };
     parameters: {
+        RenewalCampaignID: string;
+        RenewalProposalID: string;
+        WaitlistEntryID: string;
+        WaitlistOfferID: string;
+        /** @description Token del link personale della lista d'attesa (256 bit, base64url). */
+        WaitlistToken: string;
         DeviceID: string;
         FiscalBridgeJobID: string;
         /** @description Nome del file di backup come restituito da `listDesktopBackups` (nessun percorso). */
@@ -14974,6 +16023,1294 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    rolloverSeason: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                seasonId: components["parameters"]["SeasonID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonRolloverRequest"];
+            };
+        };
+        responses: {
+            /** @description Anteprima o passaggio già applicato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonRolloverResult"];
+                };
+            };
+            /** @description Passaggio applicato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonRolloverResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listSeasonRollovers: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Passaggi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonRolloverList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listRenewalCampaigns: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+                /** @description Stagione di destinazione. */
+                target_season_id?: string;
+                /** @description Stato della campagna. */
+                status?: components["schemas"]["RenewalCampaignStatus"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di campagne */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalCampaignList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createRenewalCampaign: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenewalCampaignCreate"];
+            };
+        };
+        responses: {
+            /** @description Anteprima (dry_run) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalCampaignResult"];
+                };
+            };
+            /** @description Campagna creata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalCampaignResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getRenewalCampaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                campaignId: components["parameters"]["RenewalCampaignID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Campagna */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalCampaign"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateRenewalCampaign: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                campaignId: components["parameters"]["RenewalCampaignID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenewalCampaignUpdate"];
+            };
+        };
+        responses: {
+            /** @description Campagna aggiornata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalCampaign"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listRenewalProposals: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+                /** @description Stato della proposta. */
+                status?: components["schemas"]["RenewalProposalStatus"];
+                /** @description true = solo inviate, false = solo da inviare. */
+                sent?: boolean;
+                /** @description Zona della postazione. */
+                zone_id?: string;
+                /** @description Ricerca per cliente, codice o postazione. */
+                q?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                campaignId: components["parameters"]["RenewalCampaignID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di proposte */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalProposalList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    bulkRenewalProposals: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                campaignId: components["parameters"]["RenewalCampaignID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenewalBulkRequest"];
+            };
+        };
+        responses: {
+            /** @description Esito per proposta */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalBulkResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getRenewalProposal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                proposalId: components["parameters"]["RenewalProposalID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposta */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalProposal"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    acceptRenewalProposal: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                proposalId: components["parameters"]["RenewalProposalID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenewalStaffAcceptRequest"];
+            };
+        };
+        responses: {
+            /** @description Proposta accettata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalProposal"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    declineRenewalProposal: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                proposalId: components["parameters"]["RenewalProposalID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenewalDeclineRequest"];
+            };
+        };
+        responses: {
+            /** @description Proposta rifiutata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalProposal"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    sendRenewalProposal: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                proposalId: components["parameters"]["RenewalProposalID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposta inviata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenewalProposal"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listWaitlistEntries: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+                /** @description Stato dell'iscrizione. */
+                status?: components["schemas"]["WaitlistEntryStatus"];
+                /** @description Zona richiesta. */
+                zone_id?: string;
+                /** @description Pack richiesto. */
+                pack_id?: string;
+                /** @description Iscrizioni che si sovrappongono al periodo da questa data. */
+                from?: components["schemas"]["Date"];
+                /** @description Iscrizioni che si sovrappongono al periodo fino a questa data. */
+                to?: components["schemas"]["Date"];
+                /** @description Ricerca per cliente. */
+                q?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di iscrizioni */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistEntryList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createWaitlistEntry: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistEntryCreate"];
+            };
+        };
+        responses: {
+            /** @description Iscrizione creata */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistEntry"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getWaitlistEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryId: components["parameters"]["WaitlistEntryID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Iscrizione */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistEntryDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    removeWaitlistEntry: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryId: components["parameters"]["WaitlistEntryID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rimossa */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateWaitlistEntry: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryId: components["parameters"]["WaitlistEntryID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistEntryUpdate"];
+            };
+        };
+        responses: {
+            /** @description Iscrizione aggiornata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistEntry"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    reorderWaitlist: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistReorderRequest"];
+            };
+        };
+        responses: {
+            /** @description Riordinata */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    offerWaitlistEntry: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryId: components["parameters"]["WaitlistEntryID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistOfferCreate"];
+            };
+        };
+        responses: {
+            /** @description Offerta creata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistOffer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    revokeWaitlistOffer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryId: components["parameters"]["WaitlistEntryID"];
+                offerId: components["parameters"]["WaitlistOfferID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offerta revocata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistOffer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getWaitlistSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Impostazioni */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateWaitlistSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Impostazioni aggiornate */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCustomerCredits: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                customerId: components["parameters"]["CustomerID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Saldo e movimenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerCreditLedger"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createCustomerCredit: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                customerId: components["parameters"]["CustomerID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerCreditCreate"];
+            };
+        };
+        responses: {
+            /** @description Movimento registrato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerCredit"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getManagedRenewal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposta */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicRenewalProposal"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    acceptManagedRenewal: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicRenewalAcceptRequest"];
+            };
+        };
+        responses: {
+            /** @description Istruzioni per completare */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicRenewalAcceptResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    declineManagedRenewal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicRenewalDeclineRequest"];
+            };
+        };
+        responses: {
+            /** @description Proposta rifiutata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicRenewalProposal"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getManagedCredits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Saldo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicCreditBalance"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    applyManagedCredit: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicApplyCreditRequest"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione aggiornata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManageBooking"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    joinWaitlist: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicWaitlistJoin"];
+            };
+        };
+        responses: {
+            /** @description Iscrizione ricevuta */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPublicWaitlistEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link personale della lista d'attesa (256 bit, base64url). */
+                waitlistToken: components["parameters"]["WaitlistToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Iscrizione */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicWaitlistEntry"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    leaveWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link personale della lista d'attesa (256 bit, base64url). */
+                waitlistToken: components["parameters"]["WaitlistToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancellata */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    acceptWaitlistOffer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link personale della lista d'attesa (256 bit, base64url). */
+                waitlistToken: components["parameters"]["WaitlistToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prenotazione provvisoria creata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutSession"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    declineWaitlistOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link personale della lista d'attesa (256 bit, base64url). */
+                waitlistToken: components["parameters"]["WaitlistToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicWaitlistDeclineRequest"];
+            };
+        };
+        responses: {
+            /** @description Offerta rifiutata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicWaitlistEntry"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
             501: components["responses"]["NotImplemented"];
         };
     };

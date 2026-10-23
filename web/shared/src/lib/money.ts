@@ -8,6 +8,7 @@
  *   "12" "12,5" "12,50" "1.234,50" "1 234,50" ",5" "12.50" (single dot + 1-2 digits = decimal)
  *   "1.234" "1.234.567" (dot groups of three = thousands)
  */
+import { uiIntlLocale } from './intl';
 
 const PLAIN_RE = /^(\d*)(?:,(\d*))?$/;
 const THOUSANDS_DOTS_RE = /^\d{1,3}(?:\.\d{3})+$/;
@@ -93,8 +94,8 @@ export function centsToEuroText(cents: number): string {
   return formatScaled(cents, 2);
 }
 
-/** Display-only currency formatting of integer cents: 123450 → "1.234,50 €". */
-export function formatCents(cents: number, currency = 'EUR', locale = 'it-IT'): string {
+/** Display-only currency formatting of integer cents in the UI language: 123450 → "1.234,50 €" (it). */
+export function formatCents(cents: number, currency = 'EUR', locale = uiIntlLocale()): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
@@ -114,7 +115,7 @@ export function basisPointsToPercentText(bp: number): string {
 }
 
 /** Display-only percentage: 550 → "5,5%". */
-export function formatBasisPoints(bp: number, locale = 'it-IT'): string {
+export function formatBasisPoints(bp: number, locale = uiIntlLocale()): string {
   return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 2 }).format(
     bp / 10_000,
   );

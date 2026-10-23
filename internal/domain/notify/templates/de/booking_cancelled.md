@@ -8,4 +8,4 @@ Hallo {{customer.first_name}}, die Buchung **{{booking.code}}** ({{booking.perio
 
 {{> summary}}
 
-Falls Ihnen eine Erstattung oder ein Guthaben zusteht, erhalten Sie eine separate Nachricht mit dem Betrag. Bei Fragen antworten Sie einfach auf diese E-Mail oder kontaktieren Sie den Betrieb.
+Falls Ihnen eine Erstattung oder ein Guthaben zusteht, erhalten Sie eine separate Nachricht mit dem Betrag. Bei Fragen antworten Sie einfach auf diese E-Mail oder wenden Sie sich an das Strandbad.

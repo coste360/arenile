@@ -19,12 +19,16 @@ import (
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
+	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
@@ -78,6 +82,15 @@ const (
 	SetupCompleted        = api.ProblemType("setup_completed")
 )
 
+// M5B type slugs (renewals, waitlist, credits, season rollover).
+const (
+	RenewalExpired         = api.ProblemType("renewal_expired")
+	WaitlistOfferExpired   = api.ProblemType("waitlist_offer_expired")
+	WaitlistDisabled       = api.ProblemType("waitlist_disabled")
+	CreditInsufficient     = api.ProblemType("credit_insufficient")
+	SeasonRolloverConflict = api.ProblemType("season_rollover_conflict")
+)
+
 type meta struct {
 	status int
 	title  string
@@ -126,6 +139,12 @@ var catalog = map[api.ProblemType]meta{
 	LoopbackRequired:      {http.StatusForbidden, "Operazione disponibile solo dal computer della cassa"},
 	SetupTokenInvalid:     {http.StatusForbidden, "Collegamento di configurazione non valido: riapri Arenile dal menu"},
 	SetupCompleted:        {http.StatusConflict, "Configurazione iniziale già completata"},
+	// M5B.
+	RenewalExpired:         {http.StatusGone, "Il termine per rinnovare l'abbonamento è scaduto"},
+	WaitlistOfferExpired:   {http.StatusGone, "L'offerta dalla lista d'attesa è scaduta"},
+	WaitlistDisabled:       {http.StatusConflict, "La lista d'attesa non è attiva"},
+	CreditInsufficient:     {http.StatusUnprocessableEntity, "Credito del cliente insufficiente"},
+	SeasonRolloverConflict: {http.StatusConflict, "Esiste già una stagione per l'anno scelto"},
 }
 
 // Option customises a problem.
@@ -260,6 +279,16 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, RateLimited, RetryAfter(rl.RetryAfter))
 	case errors.Is(err, checkout.ErrSessionNotFound):
 		Write(w, r, CheckoutNotFound)
+	case errors.Is(err, renewal.ErrExpired):
+		Write(w, r, RenewalExpired)
+	case errors.Is(err, waitlist.ErrOfferExpired):
+		Write(w, r, WaitlistOfferExpired)
+	case errors.Is(err, waitlist.ErrDisabled):
+		Write(w, r, WaitlistDisabled)
+	case errors.Is(err, credit.ErrInsufficient):
+		Write(w, r, CreditInsufficient)
+	case errors.Is(err, rollover.ErrTargetExists):
+		Write(w, r, SeasonRolloverConflict)
 	case errors.Is(err, gateway.ErrProviderUnavailable):
 		Write(w, r, ProviderUnavailable, RetryAfter(30*time.Second))
 	case errors.Is(err, ext.ErrInvalidSignature):

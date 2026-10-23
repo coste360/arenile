@@ -4,6 +4,7 @@
  * when previous = 0); this module only decides how to present them.
  */
 import type { Schemas } from '@arenile/shared/api';
+import { uiIntlLocale } from '@arenile/shared/lib/intl';
 
 export type ComparisonMetric = Schemas['ComparisonMetric'];
 export type ComparisonMetricKey = Schemas['ComparisonMetricKey'];
@@ -29,15 +30,20 @@ export function metricsByKey(
 }
 
 /**
- * Integer basis points as a signed Italian percentage with one decimal,
- * without floats: 1250 → "+12,5%", -33 → "−0,3%", 0 → "0,0%".
+ * Integer basis points as a signed percentage with one decimal (truncated, as
+ * the server does), in the UI language: 1250 → "+12,5%" (it), "+12.5%" (en),
+ * "+12,5 %" (de, fr); -33 → "−0,3%"; 0 → "0,0%".
  */
 export function formatSignedBP(bp: number): string {
   const sign = bp > 0 ? '+' : bp < 0 ? '−' : '';
-  const abs = Math.abs(Math.trunc(bp));
-  const whole = Math.trunc(abs / 100);
-  const tenth = Math.trunc((abs % 100) / 10);
-  return `${sign}${whole.toLocaleString('it-IT')},${tenth}%`;
+  const tenths = Math.trunc(Math.abs(Math.trunc(bp)) / 10);
+  const percent = new Intl.NumberFormat(uiIntlLocale(), {
+    style: 'percent',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  // tenths / 1000 is exact enough for display: the value is already truncated.
+  return `${sign}${percent.format(tenths / 1000)}`;
 }
 
 /** Ratio in basis points as a plain percentage with one decimal: 6234 → "62,3%". */
@@ -50,14 +56,12 @@ export function formatRatioBP(bp: number): string {
  * 450 → "+4,5 p.p.".
  */
 export function formatPointsDelta(deltaBP: number): string {
-  return `${formatSignedBP(deltaBP).replace('%', '')} p.p.`;
+  return `${formatSignedBP(deltaBP).replace(/\s?%/, '')} p.p.`;
 }
 
-const COUNT = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
-
-/** Integer count with Italian grouping: 12345 → "12.345". */
+/** Integer count with the grouping of the UI language: 12345 → "12.345" (it), "12,345" (en). */
 export function formatCount(n: number): string {
-  return COUNT.format(n);
+  return new Intl.NumberFormat(uiIntlLocale(), { maximumFractionDigits: 0 }).format(n);
 }
 
 /**

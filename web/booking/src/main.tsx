@@ -8,7 +8,7 @@ import { BookingPage } from './BookingPage';
 import { addPublicMessages } from './i18n';
 import { observeServerDate } from './flow/serverClock';
 import { parseBookingLocation } from './location';
-import { ManagePage } from './views';
+import { ManagePage, WaitlistOfferPage } from './views';
 import '@arenile/shared/styles/globals.css';
 
 async function bootstrap() {
@@ -38,6 +38,10 @@ async function bootstrap() {
             {location.view === 'manage' ? (
               <Suspense fallback={null}>
                 <ManagePage location={location} />
+              </Suspense>
+            ) : location.view === 'waitlist' ? (
+              <Suspense fallback={null}>
+                <WaitlistOfferPage location={location} />
               </Suspense>
             ) : (
               <BookingPage location={location} />

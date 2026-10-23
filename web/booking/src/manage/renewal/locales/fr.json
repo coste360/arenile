@@ -1,0 +1,63 @@
+{
+  "title": "Renouvellement de l'abonnement {{year}}",
+  "status": {
+    "proposed": "En attente de votre réponse",
+    "accepted": "Accepté, à payer",
+    "converted": "Renouvelé",
+    "declined": "Refusé",
+    "expired": "Expiré"
+  },
+  "slots": {
+    "FULL": "Journée entière",
+    "AM": "Matin",
+    "PM": "Après-midi"
+  },
+  "price": "Prix de la nouvelle saison",
+  "previous": "Prix de la saison dernière",
+  "paid": "Déjà payé",
+  "deadline": "L'emplacement vous est réservé jusqu'au {{date}} :",
+  "deadlinePassed": "La période de préemption est terminée.",
+  "left": {
+    "days_one": "il reste {{count}} jour.",
+    "days_other": "il reste {{count}} jours.",
+    "hours": "il reste {{hours}} h {{minutes}} min."
+  },
+  "payment": {
+    "legend": "Comment souhaitez-vous payer ?",
+    "deposit": "Acompte de {{amount}}",
+    "full": "Montant total de {{amount}}"
+  },
+  "useCredit": "Utiliser l'avoir disponible ({{amount}})",
+  "showTerms": "Lire les conditions",
+  "termsVersion": "Conditions, version {{version}}",
+  "acceptTerms": "J'ai lu et j'accepte les conditions de réservation (version {{version}})",
+  "termsRequired": "Pour renouveler, vous devez accepter les conditions.",
+  "accept": "Renouveler",
+  "acceptPay": "Renouveler et payer {{amount}}",
+
+  "acceptDesk": "Confirmer le renouvellement",
+
+  "deskHint": "Le solde de {{amount}} se règle à la caisse avant le {{date}} : passé cette date, l'emplacement redevient disponible.",
+  "decline": "Je ne renouvelle pas",
+  "declineQuestion": "Souhaitez-vous renoncer à l'emplacement {{spot}} ?",
+  "declineHint": "L'emplacement sera libéré et pourra être réservé par d'autres.",
+  "declineReason": "Pouvez-vous nous dire pourquoi ? (facultatif)",
+  "declineConfirm": "Renoncer au renouvellement",
+  "declineBack": "Retour",
+  "outcome": {
+    "proposed": "La proposition attend votre réponse.",
+    "accepted": "Renouvellement accepté : finalisez le paiement pour le confirmer.",
+    "converted": "Renouvellement confirmé : à bientôt sur la plage !",
+    "declined": "Vous avez renoncé au renouvellement : l'emplacement a été libéré.",
+    "expired": "La période de préemption a expiré et l'emplacement a été libéré."
+  },
+  "problem": {
+    "renewal_expired": "La période de préemption a expiré : l'emplacement a été libéré.",
+    "credit_insufficient": "L'avoir disponible ne suffit pas : rechargez la page."
+  },
+  "credit": {
+    "available": "Vous disposez d'un avoir de {{amount}}, utilisable pour cette réservation ou à la caisse.",
+    "apply": "Utiliser {{amount}} d'avoir pour le solde",
+    "applied": "Crédit de {{amount}} appliqué à la réservation."
+  }
+}

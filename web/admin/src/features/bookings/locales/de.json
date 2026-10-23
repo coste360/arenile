@@ -1,7 +1,7 @@
 {
   "list": {
     "title": "Buchungen",
-    "description": "Liste filterbar nach Datum, Status, Kanal, Platz und Saldo.",
+    "description": "Liste filterbar nach Zeitraum, Status, Kanal, Platz und offenem Betrag.",
     "empty": "Noch keine Buchungen.",
     "emptyFiltered": "Keine Buchung entspricht den Filtern.",
     "loadMore": "Weitere laden",
@@ -24,7 +24,7 @@
     "description": "Daten, Plätze, Paket, Kunde und Preisvorschau.",
     "when": "Wann",
     "where": "Was und wo",
-    "targetSpots": "Plätze auf der Karte",
+    "targetSpots": "Plätze auf dem Plan",
     "targetZone": "Zone oder Menge",
     "target": "Zuweisung",
     "perSpot": "pro Platz",
@@ -42,8 +42,8 @@
   },
   "fields": {
     "period": "Zeitraum",
-    "slots": "Zeitfenster",
-    "formula": "Tarifart",
+    "slots": "Tageszeit",
+    "formula": "Dauer",
     "pack": "Paket",
     "packPlaceholder": "Paket wählen",
     "zone": "Zone",
@@ -63,16 +63,16 @@
     "required": "Pflichtfeld.",
     "date": "Ungültiges Datum.",
     "dateOrder": "Das Enddatum liegt vor dem Anfangsdatum.",
-    "pack": "Wähle ein Paket.",
-    "spots": "Wähle mindestens einen Platz auf der Karte.",
-    "zone": "Wähle eine Zone.",
+    "pack": "Wählen Sie ein Paket.",
+    "spots": "Wählen Sie mindestens einen Platz auf dem Plan.",
+    "zone": "Wählen Sie eine Zone.",
     "quantity": "Menge von 1 bis 100.",
-    "customer": "Wähle einen Kunden oder lege einen neuen an.",
+    "customer": "Wählen Sie einen Kunden oder legen Sie einen neuen an.",
     "lastName": "Der Nachname ist erforderlich.",
     "contact": "Telefon oder E-Mail ist erforderlich.",
     "email": "Ungültige E-Mail.",
     "phone": "Ungültige Telefonnummer (z. B. +39 333 1234567).",
-    "amount": "Gültigen Betrag eingeben.",
+    "amount": "Geben Sie einen gültigen Betrag ein.",
     "amountMax": "Der Betrag übersteigt den zulässigen.",
     "method": "Zahlungsart wählen.",
     "text": "Notiztext eingeben."
@@ -115,7 +115,7 @@
     "bank_transfer": "Überweisung",
     "wallet": "Wallet",
     "credit": "Kundenguthaben",
-    "other": "Andere"
+    "other": "Sonstiges"
   },
   "columns": {
     "code": "Code",
@@ -125,7 +125,7 @@
     "status": "Status",
     "channel": "Kanal",
     "total": "Gesamt",
-    "balance": "Offen"
+    "balance": "Restbetrag"
   },
   "filters": {
     "searchPlaceholder": "Code, Kunde oder Telefon",
@@ -146,7 +146,7 @@
   "quote": {
     "title": "Preisvorschau",
     "loading": "Preis wird berechnet…",
-    "empty": "Wähle Daten, Paket und Plätze, um den Preis zu sehen.",
+    "empty": "Wählen Sie Zeitraum, Paket und Plätze, um den Preis zu sehen.",
     "total": "Gesamt",
     "deposit": "Anzahlung",
     "lines": "Aufschlüsselung",
@@ -179,25 +179,25 @@
     }
   },
   "picker": {
-    "mapTitle": "Karte der freien Plätze",
+    "mapTitle": "Plan der freien Plätze",
     "free": "frei",
     "unavailable": "nicht verfügbar",
     "selected": "ausgewählt",
     "none": "Kein Platz ausgewählt.",
     "remove": "{{label}} entfernen",
-    "noMaps": "Keine Karte eingerichtet: nach Zone oder Menge buchen."
+    "noMaps": "Kein Plan eingerichtet: nach Zone oder Menge buchen."
   },
   "problem": {
     "spotUnavailable": "Ein oder mehrere Plätze sind an den gewählten Daten nicht verfügbar.",
     "poolExhausted": "Menge an den gewählten Daten nicht verfügbar.",
     "quotaExceeded": "Das Online-Kontingent ist an den gewählten Daten erschöpft.",
-    "holdExpired": "Die Vormerkung ist abgelaufen: bitte neu auswählen.",
-    "invalidTransition": "Im aktuellen Status nicht erlaubt: Buchung neu laden.",
+    "holdExpired": "Die Vormerkung ist abgelaufen: Bitte wählen Sie erneut.",
+    "invalidTransition": "Im aktuellen Status nicht erlaubt: Laden Sie die Buchung neu.",
     "invalidTransitionNow": "Nicht erlaubt: Die Buchung ist jetzt „{{status}}“.",
-    "versionConflict": "Jemand anderes hat die Buchung geändert: neu laden.",
+    "versionConflict": "Jemand anderes hat die Buchung geändert: Laden Sie neu, um die aktuellen Daten zu sehen.",
     "policyViolation": "Die Anfrage verletzt die Buchungsregeln.",
     "noPrice": "Kein Preis für die gewählten Daten oder das Paket.",
-    "cashSessionClosed": "Die Kasse ist geschlossen: öffnen, um Barzahlungen zu erfassen.",
+    "cashSessionClosed": "Die Kasse ist geschlossen: Öffnen Sie sie, um Barzahlungen zu erfassen.",
     "outsidePeriod": "Check-in und Nichterscheinen sind nur an den Tagen des Aufenthalts möglich (Datum des Betriebs).",
     "conflictLine": "{{label}}: {{days}}",
     "more_one": "und {{count}} weiterer Tag",
@@ -281,7 +281,7 @@
   },
   "move": {
     "title": "Platz wechseln",
-    "description": "Wähle einen freien Platz für den restlichen Aufenthalt; bei Kategoriewechsel wird der Preis neu berechnet.",
+    "description": "Wählen Sie einen freien Platz für den restlichen Aufenthalt; bei einem Kategoriewechsel wird der Preis neu berechnet.",
     "line": "Position",
     "from": "Ab",
     "fromHint": "Leer = gesamter Aufenthalt.",
@@ -314,11 +314,11 @@
     "description_other": "{{count}} halbe Tage belegt",
     "empty": "Keine Ressourcen belegt.",
     "date": "Datum",
-    "slot": "Zeitfenster",
+    "slot": "Tageszeit",
     "resource": "Ressource",
     "kind": "Art",
-    "pool_one": "{{count}} Einheit aus dem Pool",
-    "pool_other": "{{count}} Einheiten aus dem Pool",
+    "pool_one": "{{count}} Einheit aus dem Bestand",
+    "pool_other": "{{count}} Einheiten aus dem Bestand",
     "kinds": {
       "booking": "Buchung",
       "hold": "Vormerkung",
@@ -335,7 +335,7 @@
     "recorded": "Zahlung von {{amount}} erfasst.",
     "refund": "Erstattung",
     "refundTitle": "Erstattung erfassen",
-    "refundDescription": "Bisher bezahlt: {{paid}}. Die Erstattung darf ihn nicht übersteigen.",
+    "refundDescription": "Bisher bezahlt: {{paid}}. Die Erstattung darf diesen Betrag nicht übersteigen.",
     "refundAs": "Form",
     "reason": "Grund",
     "refunded": "Erstattung von {{amount}} erfasst.",
@@ -370,7 +370,7 @@
       "booking": {
         "created": "Buchung angelegt",
         "confirmed": "Bestätigt",
-        "checked_in": "Check-in",
+        "checked_in": "Eingecheckt",
         "no_show": "Nicht erschienen",
         "cancelled": "Storniert",
         "rejected": "Abgelehnt",

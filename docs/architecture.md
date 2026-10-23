@@ -290,3 +290,36 @@ go build ./cmd/arenile ──► binario unico ──► immagine distroless (de
 - **Lato del mare** (spec 11.2, `mapping.ReorientLayout`): trasformazione pura (specchio per lati opposti, rotazione
   di 90° per lati adiacenti) applicata dal servizio delle mappe in un unico salvataggio versionato con audit ed evento
   `config.map_changed` (`reoriented`); id e allocazioni non cambiano (INV-66).
+
+## 10. M5 parte B: cambio stagione, rinnovi, lista d'attesa, crediti
+
+Decisioni in [ADR 0017](adr/0017-scelte-m5b.md); invarianti INV-67..INV-72.
+
+```
+Stagione N ──rollover (dry_run = stesse scritture in tx annullata)──► Stagione N+1 (bozza)
+                                                                         │
+abbonamenti N ──campagna──► renewal_proposals + prenotazioni held N+1 (allocazioni = prelazione)
+                               │  email (link magico) ──► accettazione ──► checkout M4 ──► webhook
+                               │                                                         │
+                               │◄──── sink "renewal" su booking.confirmed: converted ◄────┘
+                               │      (e su booking.cancelled dell'abbonamento di origine: proposta scaduta, posto libero)
+                               └──── job renewals.sync (ogni minuto): scadenze, rilascio, recupero conversioni
+eventi di rilascio (booking.cancelled, allocation.released, ...) ──sink "waitlist"──► offerta = hold riservato
+                                                         ──► email /b/{slug}/m/w/{token} ──► checkout M4
+movimenti di credito ──credit.Service──► customer_credits + customer_credit_balances (UPDATE condizionale, >= 0)
+```
+
+- **Rollover** (`internal/domain/rollover`): funzioni pure in `plan.go` (date e chiusure spostate sull'anno),
+  scrittura in una transazione con la copia del listino di `pricingconfig` (`CopySeasonInTx`); idempotente su
+  `season_rollovers`.
+- **Rinnovi** (`internal/domain/renewal`): ogni cambio di stato di una proposta e della sua prenotazione avviene in
+  una transazione tramite le porte `Bookings`/`Checkout` (servizio prenotazioni, audit e outbox). La conversione in
+  "rinnovato" arriva dal sink degli eventi (subito) o dal job (recupero); entrambi usano la stessa transizione
+  idempotente (`syncOne`).
+- **Lista d'attesa** (`internal/domain/waitlist`): sink degli eventi di rilascio; ogni candidato è tentato in una
+  transazione propria e decide il database (hold e allocazioni). Le iscrizioni dal pannello usano il canale `desk`
+  (policy e pagamento della cassa), quelle dal sito il canale `online`.
+- **Crediti** (`internal/domain/credit`): unico punto di scrittura del registro; `customer.Service` (porta `Credits`
+  di pagamenti e abbonamenti) delega a esso con `UseCreditLedger`.
+- Cablaggio in un solo file, `internal/app/m5b.go` (servizi, job `renewals.sync`, `credits.expire`,
+  `waitlist.expire`, sink `waitlist` e `renewal`).

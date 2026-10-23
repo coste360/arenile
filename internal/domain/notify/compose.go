@@ -56,12 +56,18 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		content   Content
 		onFailure func(context.Context)
 	)
-	if m.Template == TemplateTest {
+	switch {
+	case m.Template == TemplateTest:
 		content = Content{
 			Locale: cat.locale, Manager: true, Contacts: establishmentContacts(est),
 			Vars: map[string]string{"establishment.name": est.Name},
 		}
-	} else {
+	case waitlistTemplates[m.Template]:
+		// M5B waitlist emails: no booking (waitlist.go).
+		if content, err = s.waitlistContent(ctx, es, m, est, cat); err != nil {
+			return Email{}, nil, err
+		}
+	default:
 		if m.BookingID == nil {
 			return Email{}, nil, fmt.Errorf("%w: no booking", errSkip)
 		}
@@ -97,6 +103,17 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 				Attachment{Filename: "qr-" + d.Booking.Code + ".png", ContentType: contentTypePNG, ContentID: QRContentID, Inline: true, Data: png},
 				Attachment{Filename: cat.t("ics_filename", map[string]string{"code": d.Booking.Code}), ContentType: ICSContentType + "; method=PUBLISH", Data: ics},
 			)
+		case TemplateRenewalProposal, TemplateRenewalReminder:
+			// M5B renewal emails: the manage link of the proposal booking (renewal.go).
+			link, err := s.renewalLink(ctx, es, d)
+			if err != nil {
+				return Email{}, nil, err
+			}
+			onFailure = s.revokeOnFailure(es, link.ID)
+			opts.ManageURL, opts.LinkExpires, opts.Policy = link.URL, link.ExpiresAt, m.Template == TemplateRenewalProposal
+			for k, v := range renewalVars(m, est, cat) {
+				opts.Vars[k] = v
+			}
 		case TemplateManageLink:
 			keep, _ := m.Payload["keep_link_id"].(string)
 			link, err := s.issueForEmail(ctx, es, d.Booking.ID, []string{keep})
@@ -123,9 +140,9 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 }
 
 // issueForEmail issues a link in its own transaction. For the manage_link
-// template (revokePrevious != nil) the previous links are revoked, except
-// the new one and the ids in revokePrevious (the link just shown at the
-// desk by RegenerateLink).
+// and renewal templates (revokePrevious != nil) the previous links are
+// revoked, except the new one and the ids in revokePrevious (the link just
+// shown at the desk by RegenerateLink).
 func (s *Service) issueForEmail(ctx context.Context, es store.EstablishmentScope, bookingID string, revokePrevious []string) (*MagicLink, error) {
 	var link *MagicLink
 	err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {

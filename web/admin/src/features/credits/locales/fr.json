@@ -1,0 +1,70 @@
+{
+  "title": "Mouvements d'avoir",
+  "description": "Avoirs accordés, utilisations, expirations et ajustements.",
+  "optional": "(facultatif)",
+  "loadMore": "Charger plus de mouvements",
+  "empty": "Aucun mouvement.",
+  "available": "Avoir disponible",
+  "balanceHint": "Solde comptable {{amount}}",
+  "expiring": "Bientôt expiré",
+  "expiringHint": "d'ici le {{date}}",
+  "noExpiry": "Aucun avoir n'arrive à échéance",
+  "columns": {
+    "date": "Date",
+    "movement": "Mouvement",
+    "booking": "Réservation",
+    "openBooking": "Ouvrir",
+    "expires": "Échéance",
+    "amount": "Montant"
+  },
+  "source": {
+    "cancellation": "Annulation",
+    "season_release": "Libération d'abonnement",
+    "weather": "Intempéries",
+    "manual": "Avoir manuel",
+    "redemption": "Utilisation",
+    "goodwill": "Geste commercial",
+    "expiry": "Expiration",
+    "adjustment": "Ajustement"
+  },
+  "grant": {
+    "open": "Accorder un avoir",
+    "title": "Accorder un avoir",
+    "description": "L'avoir s'utilise comme moyen de paiement sur les prochaines réservations.",
+    "source": "Type",
+    "help": {
+      "goodwill": "Un geste commercial envers le client.",
+      "manual": "Un avoir pour une autre raison, à expliquer dans la note.",
+      "adjustment": "Une correction du solde, à la hausse ou à la baisse."
+    },
+    "direction": "Ajustement",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "amount": "Montant",
+    "amountRequired": "Saisissez un montant supérieur à zéro.",
+    "amountTooHigh": "Au maximum l'avoir disponible ({{available}}).",
+    "expires": "Échéance",
+    "expiresHelp": "Vide : la validité prévue par la politique.",
+    "note": "Note",
+    "submit": "Accorder",
+    "submitRemove": "Retirer du solde",
+    "done": "Avoir de {{amount}} accordé.",
+    "removed": "Solde réduit de {{amount}}."
+  },
+  "apply": {
+    "open": "Utiliser sur une réservation",
+    "title": "Utiliser l'avoir",
+    "description": "Disponible : {{available}}. Il est enregistré comme paiement « Avoir client ».",
+    "booking": "Réservation",
+    "due": "{{amount}} à régler",
+    "max": "Au maximum {{max}}.",
+    "amountTooHigh": "Au maximum {{max}}.",
+    "note": "Avoir client",
+    "submit": "Utiliser l'avoir",
+    "done": "Avoir de {{amount}} utilisé sur {{code}}."
+  },
+  "hint": {
+    "available": "Avoir disponible du client : {{available}}.",
+    "tooMuch": "Le montant dépasse l'avoir disponible du client ({{available}})."
+  }
+}

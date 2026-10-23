@@ -1,6 +1,6 @@
 ---
 subject: Buchung {{booking.code}} bestätigt – {{establishment.name}}
-preheader: Wir freuen uns auf Sie {{booking.period}}.
+preheader: Ihr Aufenthalt: {{booking.period}}. Wir freuen uns auf Sie!
 ---
 # Ihre Buchung ist bestätigt
 

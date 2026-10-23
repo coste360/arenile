@@ -8,7 +8,7 @@
     "email": "Email",
     "emailHint": "You will use it to sign in. Arenile desktop sends no email and does not connect to the internet.",
     "password": "Password",
-    "passwordHint": "At least 10 characters. Keep it safe: you also need it on the other devices of the beach.",
+    "passwordHint": "At least 10 characters. Keep it safe: you also need it on the beach club's other devices.",
     "passwordConfirm": "Repeat the password"
   },
   "submit": "Create the user and continue",

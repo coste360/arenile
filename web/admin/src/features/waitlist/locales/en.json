@@ -1,0 +1,138 @@
+{
+  "title": "Waitlist",
+  "description": "Requests with no availability in priority order, automatic offers when a spot frees up, and settings.",
+  "optional": "(optional)",
+  "loadMore": "Load more entries",
+  "entry": {
+    "newTitle": "New entry",
+    "editTitle": "Edit the request",
+    "newDescription": "The customer joins the queue and gets an offer when a matching spot frees up.",
+    "required": "Required field.",
+    "quantityInvalid": "From 1 to 20.",
+    "create": "Add to waitlist",
+    "save": "Save",
+    "created": "{{customer}} is on the waitlist.",
+    "updated": "Request updated."
+  },
+  "fields": {
+    "customer": "Customer",
+    "period": "Period",
+    "slots": "Time slot",
+    "pack": "Package",
+    "pickPack": "Choose the package",
+    "zone": "Zone",
+    "anyZone": "Any zone",
+    "quantity": "Quantity",
+    "note": "Note"
+  },
+  "offer": {
+    "title": "Offer a spot",
+    "description": "{{customer}} gets an email with the link to book: the spot stays held until the deadline.",
+    "spot": "Spot",
+    "anySpot": "The first matching one",
+    "minutes": "Offer duration (minutes)",
+    "minutesInvalid": "From 5 to 10080 minutes (7 days).",
+    "help": "If the customer does not reply in time, the offer expires and moves to the next in the queue.",
+    "submit": "Send the offer",
+    "done": "Offer sent to {{customer}}.",
+    "revoked": "Offer revoked: the spot is free again."
+  },
+  "settings": {
+    "open": "Settings",
+    "title": "Waitlist settings",
+    "description": "They apply to the whole establishment.",
+    "enabled": {
+      "label": "Waitlist active",
+      "help": "When off, no entries are accepted and no offers are sent."
+    },
+    "public_join": {
+      "label": "Join from the public page",
+      "help": "When nothing is available, the customer can join the waitlist from the website."
+    },
+    "auto_offer": {
+      "label": "Automatic offers",
+      "help": "When a spot frees up (cancellation, release, expiry) an offer goes to the first in the queue."
+    },
+    "minutes": "Default offer duration (minutes)",
+    "saved": "Settings saved.",
+    "summaryAuto": "Automatic offers on: each offer stays valid for {{minutes}} minutes.",
+    "summaryManual": "Automatic offers off: offers are only sent by hand."
+  },
+  "disabled": {
+    "title": "Waitlist turned off",
+    "description": "No new entries are accepted and no offers are sent. Turn it back on in the settings."
+  },
+  "columns": {
+    "position": "Position",
+    "customer": "Customer",
+    "period": "Period",
+    "request": "Request",
+    "status": "Status",
+    "offer": "Offer",
+    "channel": "Channel",
+    "actions": "Actions"
+  },
+  "status": {
+    "waiting": "Waiting",
+    "offered": "Offer sent",
+    "converted": "Booked",
+    "expired": "Expired",
+    "removed": "Removed"
+  },
+  "offerStatus": {
+    "pending": "Awaiting reply",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "expired": "Expired",
+    "revoked": "Revoked"
+  },
+  "cause": {
+    "cancellation": "Cancellation",
+    "release": "Pass release",
+    "expiry": "Booking expired",
+    "manual": "Manual"
+  },
+  "filters": {
+    "search": "Search customer",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "zone": "Zone",
+    "allZones": "All zones"
+  },
+  "reorder": {
+    "up": "Move {{customer}} up the queue",
+    "upShort": "Move up",
+    "down": "Move {{customer}} down the queue",
+    "downShort": "Move down",
+    "done": "Queue updated: {{customer}} moved."
+  },
+  "row": {
+    "open": "Open the entry of {{customer}}",
+    "more": "Actions for {{customer}}",
+    "offer": "Offer a spot",
+    "revoke": "Revoke the offer",
+    "edit": "Edit the request",
+    "remove": "Remove from the waitlist"
+  },
+  "remove": {
+    "title": "Remove from the waitlist?",
+    "description": "{{customer}} leaves the queue; an offer in progress is revoked.",
+    "done": "Entry removed."
+  },
+  "empty": {
+    "title": "No entries",
+    "description": "Requests with no availability appear here in order of arrival."
+  },
+  "offers": {
+    "title": "Offers",
+    "created": "Sent on",
+    "spot": "Spot",
+    "cause": "Reason",
+    "status": "Outcome",
+    "empty": "No offers so far."
+  },
+  "sheet": {
+    "loading": "Entry",
+    "joined": "Joined on"
+  }
+}

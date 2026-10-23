@@ -35,7 +35,7 @@
     "monthDay": "Format MM-TT verwenden, z. B. 08-16",
     "overlap": "Der Zeitraum überschneidet sich mit einer anderen Tarifperiode der Saison",
     "outsideSeason": "Der Zeitraum muss innerhalb der Saisondaten liegen",
-    "slotRequired": "Mindestens einen Zeitraum wählen",
+    "slotRequired": "Mindestens eine Tageszeit wählen",
     "duplicate": "Komponente bereits vorhanden",
     "passwordLength": "Das Passwort muss mindestens 12 Zeichen haben",
     "dateRequired": "Wählen Sie mindestens einen Tag"
@@ -99,7 +99,7 @@
     "title": "Design der öffentlichen Seite",
     "description": "Farben, Schrift und Texte; die Vorschau aktualisiert sich beim Bearbeiten.",
     "preview": "Vorschau",
-    "previewIntro": "Daten, Platz und Paket wählen: in einer Minute gebucht.",
+    "previewIntro": "Daten, Platz und Paket wählen: In einer Minute gebucht.",
     "previewLink": "Buchungsbedingungen",
     "previewButton": "Buchen",
     "picker": "Farbauswahl: {{field}}",
@@ -109,7 +109,7 @@
       "font_family": "Schrift",
       "radius": "Eckenradius",
       "logo_url": "Logo-URL",
-      "show_prices_on_map": "Preise auf der Karte anzeigen",
+      "show_prices_on_map": "Preise auf dem Plan anzeigen",
       "hide_header_in_embed": "Kopfzeile ausblenden, wenn die Seite eingebettet ist",
       "intro": "Einleitungstext"
     },
@@ -126,8 +126,8 @@
     },
     "warnings": {
       "primaryText": "Kontrast der Hauptfarbe auf Weiß {{ratio}}:1 (mindestens 4,5:1): Links und Texte verwenden automatisch {{corrected}}.",
-      "accentContrast": "Die Akzentfarbe hat {{ratio}}:1 Kontrast auf Weiß (mindestens 3:1): ausgewählte Plätze sind eventuell schlecht sichtbar.",
-      "similarColors": "Haupt- und Akzentfarbe sind zu ähnlich: wählen Sie deutlicher unterschiedliche Farben."
+      "accentContrast": "Die Akzentfarbe hat auf Weiß einen Kontrast von {{ratio}}:1 (mindestens 3:1): Ausgewählte Plätze sind eventuell schlecht sichtbar.",
+      "similarColors": "Haupt- und Akzentfarbe sind zu ähnlich: Wählen Sie deutlicher unterschiedliche Farben."
     },
     "previewBadge": "Verfügbar"
   },
@@ -135,7 +135,7 @@
     "title": "Preiseinstellungen",
     "description": "Werte, die die Preisberechnung verwendet, wenn eine Regel nichts anderes festlegt.",
     "halfDayHint": "Halbtagespreis = Tag × Faktor (z. B. 0,6).",
-    "vatHint": "Satz für Pakete ohne eigenen Satz. Mit Ihrem Steuerberater prüfen.",
+    "vatHint": "Satz für Pakete ohne eigenen Satz. Prüfen Sie ihn mit Ihrem Steuerberater.",
     "fields": {
       "half_day_factor": "Halbtagesfaktor",
       "rounding": "Rundung der Summe",
@@ -149,7 +149,7 @@
   },
   "new": {
     "title": "Neuer Betrieb",
-    "description": "Einen weiteren Betrieb Ihrer Organisation anlegen.",
+    "description": "Legen Sie einen weiteren Betrieb Ihrer Organisation an.",
     "ownerOnly": "Nur Inhaber können neue Betriebe anlegen.",
     "organization": "Organisation {{index}}",
     "organizationWith": "Organisation {{index}} ({{names}})",
@@ -183,7 +183,7 @@
   },
   "periods": {
     "title": "Tarifperioden {{year}}",
-    "description": "Neben-, Zwischen-, Hauptsaison und Spitze: jeder Tag der Saison gehört höchstens zu einer Periode.",
+    "description": "Neben-, Zwischen-, Haupt- und Spitzensaison: Jeder Tag der Saison gehört höchstens zu einer Periode.",
     "add": "Neue Periode",
     "empty": "Keine Tarifperioden für diese Saison.",
     "timeline": "Kalender der Tarifperioden der Saison",
@@ -209,7 +209,7 @@
       "low": "Nebensaison",
       "mid": "Zwischensaison",
       "high": "Hauptsaison",
-      "peak": "Spitze"
+      "peak": "Spitzensaison"
     },
     "days": "Tage",
     "views": "Periodenansicht",
@@ -242,11 +242,11 @@
     "editAria": "Schließtag am {{date}} bearbeiten",
     "deleteAria": "Schließtag am {{date}} löschen",
     "deleteConfirm": "Der Schließtag am {{date}} wird gelöscht.",
-    "formHint": "Unwetter, Veranstaltungen oder Arbeiten: In den gewählten Zeiträumen sind keine Plätze buchbar.",
+    "formHint": "Unwetter, Veranstaltungen oder Arbeiten: Zu den gewählten Tageszeiten sind keine Plätze buchbar.",
     "reasonPlaceholder": "Z. B. Unwetterwarnung",
     "fields": {
       "date": "Datum",
-      "slots": "Zeiträume",
+      "slots": "Tageszeiten",
       "reason": "Grund",
       "dates": "Tage"
     },
@@ -258,7 +258,7 @@
     "calendarHint": "Tippen Sie auf einen Tag, um eine Schließung hinzuzufügen oder zu bearbeiten.",
     "calendarHintReadOnly": "Schließtage sind hervorgehoben.",
     "legend": "Legende",
-    "oneSlot": "Ein Zeitfenster",
+    "oneSlot": "Eine Tageszeit",
     "createdMany_one": "{{count}} Schließung erstellt",
     "createdMany_other": "{{count}} Schließungen erstellt",
     "selectedDays_one": "{{count}} Tag ausgewählt: {{list}}",
@@ -276,7 +276,7 @@
     "onlineAll": "Alle online",
     "deskOnly": "Nur Kasse",
     "spots": "Plätze",
-    "noMap": "Keine Karte",
+    "noMap": "Kein Plan",
     "autoAssignShort": "automatische Zuweisung",
     "priceCategoryHint": "Schlüssel für Preisregeln, z. B. row1.",
     "autoAssignHint": "Bei Bestätigung wählt das System einen freien Platz; sonst weist ihn das Personal zu.",
@@ -287,7 +287,7 @@
     "fields": {
       "assignment_mode": "Zuweisungsart",
       "price_category": "Preiskategorie",
-      "map_id": "Karte",
+      "map_id": "Plan",
       "auto_assign": "Automatische Zuweisung",
       "online_visible": "Auf der öffentlichen Seite sichtbar",
       "quota_type": "Online-Kontingent",
@@ -299,7 +299,7 @@
       "quantity": "Menge"
     },
     "modeHints": {
-      "seat": "Der Kunde wählt den genauen Platz auf der Karte.",
+      "seat": "Der Kunde wählt den genauen Platz auf dem Plan.",
       "zone": "Der Kunde wählt die Zone; der Platz wird später zugewiesen.",
       "quantity": "Nur Anzahl der Ausstattung, ohne Position (z. B. freie Liegen)."
     },
@@ -319,28 +319,28 @@
     }
   },
   "pools": {
-    "title": "Pools",
+    "title": "Bestände",
     "description": "Mengenbestand ohne Position.",
-    "add": "Neuer Pool",
-    "empty": "Keine Pools.",
+    "add": "Neuer Bestand",
+    "empty": "Keine Bestände.",
     "systemManaged": "Vom System verwaltet",
-    "systemHint": "Von der Zone erstellt: über die Zone bearbeiten.",
+    "systemHint": "Von der Zone erstellt: Bearbeiten Sie ihn über die Zone.",
     "noZone": "Keine Zone",
     "overrides": "Kapazität nach Zeitraum",
     "overridesHint": "Optional: abweichende Kapazität an einigen Tagen (z. B. zusätzliche Liegen im August).",
     "addOverride": "Abweichung hinzufügen",
     "removeOverride": "Abweichung {{index}} entfernen",
-    "editTitle": "Pool bearbeiten",
-    "editAria": "Pool {{name}} bearbeiten",
-    "deleteAria": "Pool {{name}} löschen",
-    "deleteConfirm": "Der Pool {{name}} wird gelöscht.",
+    "editTitle": "Bestand bearbeiten",
+    "editAria": "Bestand {{name}} bearbeiten",
+    "deleteAria": "Bestand {{name}} löschen",
+    "deleteConfirm": "Der Bestand {{name}} wird gelöscht.",
     "fields": {
       "component_code": "Komponente",
       "zone_id": "Mengenzone",
       "capacity": "Kapazität"
     },
-    "overrideRange": "Daten der Änderung {{index}}",
-    "overrideCapacity": "Kapazität der Änderung {{index}}"
+    "overrideRange": "Daten der Abweichung {{index}}",
+    "overrideCapacity": "Kapazität der Abweichung {{index}}"
   },
   "catalog": {
     "title": "Katalog",
@@ -350,8 +350,8 @@
       "packs": "Pakete",
       "extras": "Extras"
     },
-    "componentsHint": "Physische Ausstattung (Schirm, Liege, Liegestuhl). Erfasste verbrauchen einen Pool.",
-    "packsHint": "Verkaufbare Produkte aus Komponenten, z. B. Schirm + 2 Liegen.",
+    "componentsHint": "Physische Ausstattung (Sonnenschirm, Liege, Liegestuhl). Erfasste Komponenten verbrauchen einen Bestand.",
+    "packsHint": "Verkaufbare Produkte aus Komponenten, z. B. Sonnenschirm + 2 Liegen.",
     "extrasHint": "Optionale Zusätze zu einem Paket oder zur Buchung.",
     "addComponent": "Neue Komponente",
     "addPack": "Neues Paket",
@@ -367,8 +367,8 @@
     "deleteConfirm": "{{name}} wird aus dem Katalog entfernt.",
     "tracked": "Erfasst",
     "trackedIn": "Erfasst in {{pool}}",
-    "trackedHint": "Buchungen verbrauchen die Verfügbarkeit des gewählten Pools.",
-    "componentCodeHint": "Z. B. umbrella, sunbed, deckchair: das Symbol ergibt sich aus dem Code.",
+    "trackedHint": "Buchungen verbrauchen die Verfügbarkeit des gewählten Bestands.",
+    "componentCodeHint": "Z. B. umbrella, sunbed, deckchair: Das Symbol ergibt sich aus dem Code.",
     "inactive": "Inaktiv",
     "vatBadge": "MwSt. {{rate}} %",
     "vatHint": "Leer: Standard-MwSt. des Betriebs.",
@@ -383,9 +383,9 @@
     "allIfEmpty": "Keine Auswahl: alle.",
     "fields": {
       "tracked": "Bestand erfasst",
-      "pool_id": "Pool",
+      "pool_id": "Bestand",
       "composition": "Zusammensetzung",
-      "allowed_formulas": "Erlaubte Formeln",
+      "allowed_formulas": "Erlaubte Buchungsdauern",
       "channels": "Verkaufskanäle",
       "requires_spot_kind": "Kompatible Platztypen",
       "allowed_zone_ids": "Erlaubte Zonen",
@@ -403,7 +403,7 @@
     "pricingUnits": {
       "per_booking": "Pro Buchung",
       "per_day": "Pro Tag",
-      "per_slot": "Pro Zeitraum"
+      "per_slot": "Pro Tageszeit"
     },
     "attachTo": {
       "line": "Platz",

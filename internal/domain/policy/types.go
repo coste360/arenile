@@ -109,6 +109,10 @@ type Rules struct {
 	AllowSpotChangeDuringStay    *bool                `json:"allow_spot_change_during_stay,omitempty"`
 	CustomerCanReleaseSeasonDays *bool                `json:"customer_can_release_season_days,omitempty"`
 	SeasonReleaseCredit          *SeasonReleaseCredit `json:"season_release_credit,omitempty"`
+	// CreditValidityDays is the validity of the credits issued under this
+	// policy (cancellation, weather, season release): expires_on = issue
+	// day + days; nil or 0 = no expiry (M5B, spec 13.4).
+	CreditValidityDays *int `json:"credit_validity_days,omitempty"`
 }
 
 // MinLeadTime is the minimum advance with which a booking must be placed.

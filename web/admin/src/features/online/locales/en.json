@@ -5,7 +5,7 @@
   "unsaved": "Unsaved changes",
   "settings": {
     "title": "Public page",
-    "description": "Theme, languages, online packages, conditions and the code to embed the widget in your website.",
+    "description": "Theme, languages, online durations, conditions and the code to embed the widget in your website.",
     "tabsLabel": "Sections of the public page",
     "tabs": {
       "flow": "Online bookings",
@@ -24,7 +24,7 @@
     "flow": {
       "title": "Booking flow",
       "description": "What customers can choose on the public page.",
-      "formulas": "Package types offered online",
+      "formulas": "Durations offered online",
       "formulasHint": "None selected: all those allowed by the packages sold online.",
       "slots": "Time slots bookable online",
       "slot": {
@@ -59,12 +59,12 @@
     "previewHint": "You can try every step in the preview: no booking is created.",
     "embed": {
       "title": "Embed code",
-      "description": "Direct link and code to paste into the beach website.",
+      "description": "Direct link and code to paste into the beach club's website.",
       "pageUrl": "Public page link",
       "script": "Recommended code (script: handles height, language and dates)",
       "iframe": "Alternatively: iframe",
       "originsList": "Allowed websites: {{origins}}. On other websites the browser blocks the embedding.",
-      "originsNone": "No website allowed: the page only works as a direct link. Add your website under \"Online bookings\".",
+      "originsNone": "No website allowed: the page only works as a direct link. Add your website under “Online bookings”.",
       "events": "The script re-dispatches the arenile:booked (booking code only), arenile:resize and arenile:navigate events on the host page, useful to track conversions. Optional parameters: data-lang, data-from, data-to, data-pack."
     }
   },
@@ -113,7 +113,7 @@
     "webhookConfigured": "Webhook secret configured",
     "webhookMissing": "Webhook secret missing",
     "verifiedAt": "Verified on {{date}}",
-    "manualHint": "Online bookings are paid at the beach or confirmed according to the online policy.",
+    "manualHint": "Online bookings are paid at the beach club or confirmed according to the online policy.",
     "incomplete": "To take payments online you need the secret key and the webhook secret.",
     "test": "Check credentials",
     "testOk": "Credentials valid",
@@ -142,7 +142,7 @@
       "events": "Events to send",
       "step1": "In Stripe open Developers → Webhooks and add an endpoint with this URL.",
       "step2": "Select the events listed above and save.",
-      "step3": "Copy the signing secret (whsec_…) into the field above and press \"Check credentials\"."
+      "step3": "Copy the signing secret (whsec_…) into the field above and press “Check credentials”."
     },
     "validation": {
       "publishable": "The publishable key starts with pk_test_ or pk_live_",
@@ -172,7 +172,7 @@
       "replyTo": "Reply to",
       "replyToHint": "Customer replies arrive here.",
       "managerEmail": "Manager email",
-      "managerEmailHint": "Receives the notifications for the beach.",
+      "managerEmailHint": "Receives the notifications for the establishment.",
       "customer": "To the customer",
       "manager": "To the manager"
     },

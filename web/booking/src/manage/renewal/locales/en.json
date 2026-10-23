@@ -1,0 +1,63 @@
+{
+  "title": "Season pass renewal {{year}}",
+  "status": {
+    "proposed": "Awaiting your reply",
+    "accepted": "Accepted, to be paid",
+    "converted": "Renewed",
+    "declined": "Declined",
+    "expired": "Expired"
+  },
+  "slots": {
+    "FULL": "Full day",
+    "AM": "Morning",
+    "PM": "Afternoon"
+  },
+  "price": "Price for the new season",
+  "previous": "Price last season",
+  "paid": "Already paid",
+  "deadline": "The spot is reserved for you until {{date}}:",
+  "deadlinePassed": "The pre-emption period has ended.",
+  "left": {
+    "days_one": "{{count}} day left.",
+    "days_other": "{{count}} days left.",
+    "hours": "{{hours}} h {{minutes}} min left."
+  },
+  "payment": {
+    "legend": "How would you like to pay?",
+    "deposit": "Deposit of {{amount}}",
+    "full": "Full amount of {{amount}}"
+  },
+  "useCredit": "Use the available credit ({{amount}})",
+  "showTerms": "Read the terms",
+  "termsVersion": "Terms, version {{version}}",
+  "acceptTerms": "I have read and accept the booking terms (version {{version}})",
+  "termsRequired": "To renew you need to accept the terms.",
+  "accept": "Renew",
+  "acceptPay": "Renew and pay {{amount}}",
+
+  "acceptDesk": "Confirm the renewal",
+
+  "deskHint": "The balance of {{amount}} is paid at the desk by {{date}}: after that date the spot becomes available again.",
+  "decline": "I will not renew",
+  "declineQuestion": "Do you want to give up spot {{spot}}?",
+  "declineHint": "The spot will be released and others will be able to book it.",
+  "declineReason": "Would you tell us why? (optional)",
+  "declineConfirm": "Give up the renewal",
+  "declineBack": "Go back",
+  "outcome": {
+    "proposed": "The proposal is awaiting your reply.",
+    "accepted": "Renewal accepted: complete the payment to confirm it.",
+    "converted": "Renewal confirmed: see you on the beach!",
+    "declined": "You gave up the renewal: the spot has been released.",
+    "expired": "The pre-emption period has expired and the spot has been released."
+  },
+  "problem": {
+    "renewal_expired": "The pre-emption period has expired: the spot has been released.",
+    "credit_insufficient": "The available credit is not enough: reload the page."
+  },
+  "credit": {
+    "available": "You have a credit of {{amount}} to use for this booking or at the desk.",
+    "apply": "Use {{amount}} of credit for the balance",
+    "applied": "Credit of {{amount}} applied to the booking."
+  }
+}

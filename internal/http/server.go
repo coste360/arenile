@@ -17,6 +17,11 @@ import (
 	"github.com/coste360/arenile/internal/domain/report"
 	"github.com/coste360/arenile/internal/domain/webhook"
 
+	"github.com/coste360/arenile/internal/domain/credit"
+	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/waitlist"
+
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/uptrace/bun"
@@ -117,6 +122,13 @@ type Deps struct {
 	DesktopUsers desktophttp.UsersCounter
 	// PairingsPerMinute overrides the per-IP limit of POST /api/device/v1/pair (default 10).
 	PairingsPerMinute int
+
+	// M5B services (season rollover, renewals, waitlist, customer credits);
+	// nil ones answer 501 until implemented.
+	Rollover *rollover.Service
+	Renewals *renewal.Service
+	Waitlist *waitlist.Service
+	Credits  *credit.Service
 
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
@@ -223,7 +235,8 @@ func New(d Deps) http.Handler {
 			Online: d.Online, Notify: d.Notify, Gateway: d.Gateway,
 			Meta: d.Meta, Devices: d.Devices, FiscalBridge: d.FiscalBridge,
 			Reports: d.Reports, APIKeys: d.APIKeys, Webhooks: d.Webhooks,
-			Stream: &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
+			Stream:   &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
+			Rollover: d.Rollover, Renewals: d.Renewals, Waitlist: d.Waitlist, Credits: d.Credits,
 		},
 		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
 		desktopHandlers: &desktopHandlers{
@@ -232,6 +245,7 @@ func New(d Deps) http.Handler {
 		publicHandlers: &public.Handlers{
 			Establishments: d.Establishments, Online: d.Online, Checkout: d.Checkout,
 			TenantResolver: d.Extensions.TenantResolver, Log: d.Log,
+			Renewals: d.Renewals, Waitlist: d.Waitlist, Credits: d.Credits,
 		},
 		webhookHandlers: webhooks.New(d.Gateway, d.Clock, d.Log),
 		ops:             &ops{readiness: d.Readiness, version: d.Version},

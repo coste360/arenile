@@ -17,7 +17,6 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import {
   ArrowLeftIcon,
   CalendarIcon,
-  CoinsIcon,
   DownloadIcon,
   PencilIcon,
   PlusIcon,
@@ -31,12 +30,12 @@ import { useInstantFormat, useRequiredEstablishmentId } from '../../establishmen
 import { STATUS_TONE, useOperationalPermissions } from '../bookings/model';
 import { describeProblem } from '../bookings/problem';
 import { NewBookingSheet } from '../bookings/NewBookingSheet';
+import { CustomerCreditsSection } from '../credits';
 import { downloadJson, useCustomer, useExportCustomer, type CustomerDetail } from './api';
 import { AnonymizeDialog, CustomerFormDialog } from './CustomerDialogs';
 
 type RecentBooking = CustomerDetail['recent_bookings'][number];
 type CustomerPass = CustomerDetail['season_passes'][number];
-type CreditMovement = CustomerDetail['credits'][number];
 
 /** Scheda cliente: contacts, tags, consent, stats, credits, bookings and passes, GDPR actions. */
 export function CustomerDetailPage() {
@@ -72,14 +71,7 @@ export function CustomerDetailPage() {
       </Page>
     );
   }
-  const {
-    customer: c,
-    stats,
-    credits,
-    credit_balance,
-    recent_bookings,
-    season_passes,
-  } = query.data;
+  const { customer: c, stats, recent_bookings, season_passes } = query.data;
   const anonymized = !!c.anonymized_at;
   const openBooking = (id: string) =>
     void navigate({
@@ -180,34 +172,6 @@ export function CustomerDetailPage() {
     },
   ];
 
-  const creditColumns: ColumnDef<CreditMovement>[] = [
-    {
-      id: 'movement',
-      header: t('credits.movement'),
-      meta: { label: t('credits.movement') },
-      cell: ({ row: { original: cr } }) => (
-        <span>
-          {t(`credits.source.${cr.source}`)}
-          <span className="block text-xs text-muted-foreground">
-            {fmt.date(cr.created_at)}
-            {cr.expires_on && ` · ${t('credits.expires', { date: formatIsoDate(cr.expires_on) })}`}
-          </span>
-        </span>
-      ),
-    },
-    {
-      id: 'amount',
-      header: t('credits.amount'),
-      meta: { label: t('credits.amount'), align: 'right' },
-      cell: ({ row: { original: cr } }) =>
-        cr.amount < 0 ? (
-          <span className="text-muted-foreground">−{formatCents(-cr.amount)}</span>
-        ) : (
-          <span className="font-medium">{formatCents(cr.amount)}</span>
-        ),
-    },
-  ];
-
   return (
     <Page
       eyebrow={back}
@@ -251,7 +215,7 @@ export function CustomerDetailPage() {
         )
       }
     >
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard label={t('stats.bookings')} value={stats.bookings_count} />
         <StatCard label={t('stats.spent')} value={formatCents(stats.total_spent)} />
         <StatCard
@@ -259,7 +223,6 @@ export function CustomerDetailPage() {
           value={formatCents(stats.balance_due)}
           tone={stats.balance_due > 0 ? 'danger' : 'default'}
         />
-        <StatCard label={t('stats.credit')} value={formatCents(credit_balance)} />
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -301,6 +264,13 @@ export function CustomerDetailPage() {
               empty={<EmptyState icon={TicketIcon} bordered={false} title={t('passes.empty')} />}
             />
           </SectionCard>
+
+          <CustomerCreditsSection
+            establishmentId={establishmentId}
+            customerId={c.id}
+            bookings={recent_bookings}
+            readOnly={anonymized}
+          />
         </div>
 
         <div className="min-w-0 space-y-6">
@@ -337,22 +307,6 @@ export function CustomerDetailPage() {
                 <Field label={t('anonymized')}>{fmt.dateTime(c.anonymized_at)}</Field>
               )}
             </dl>
-          </SectionCard>
-          <SectionCard
-            flush
-            title={t('credits.title')}
-            description={t('credits.balance', { amount: formatCents(credit_balance) })}
-          >
-            <DataTable
-              embedded
-              caption={t('credits.title')}
-              columns={creditColumns}
-              data={credits}
-              getRowId={(cr) => cr.id}
-              columnToggle={false}
-              pageSize={0}
-              empty={<EmptyState icon={CoinsIcon} bordered={false} title={t('credits.empty')} />}
-            />
           </SectionCard>
         </div>
       </div>

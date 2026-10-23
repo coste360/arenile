@@ -216,12 +216,16 @@ type WipedFreeText struct {
 	Bookings int
 	Payments int
 	Credits  int
+	// RenewalReasons counts the renewal proposals whose decline reason was
+	// cleared (M5B, spec 10.4: the customer may have written it online).
+	RenewalReasons int
 }
 
 // CustomerWipeFreeText clears every free text linked to a customer being
 // anonymized: booking notes and cancel reasons (CustomerWipeBookingNotes),
-// the notes of its payments and refunds (directly or through its bookings)
-// and the notes of its credit movements. Amounts, dates, VAT splits and
+// the notes of its payments and refunds (directly or through its bookings),
+// the notes of its credit movements and the decline reasons of its renewal
+// proposals. Amounts, dates, VAT splits and
 // links are untouched (spec 23: the accounts stay, the person disappears).
 func CustomerWipeFreeText(ctx context.Context, db bun.IDB, es EstablishmentScope, customerID string, now time.Time) (WipedFreeText, error) {
 	var out WipedFreeText
@@ -255,6 +259,19 @@ func CustomerWipeFreeText(ctx context.Context, db bun.IDB, es EstablishmentScope
 	}
 	n, _ = res.RowsAffected()
 	out.Credits = int(n)
+	res, err = db.NewUpdate().Model((*RenewalProposal)(nil)).
+		Set("decline_reason = ''").
+		Set("version = version + 1").
+		Set("updated_at = ?", now).
+		Where("establishment_id = ?", es.ID()).
+		Where("customer_id = ?", customerID).
+		Where("decline_reason <> ''").
+		Exec(ctx)
+	if err != nil {
+		return out, fmt.Errorf("store: wipe renewal decline reasons: %w", err)
+	}
+	n, _ = res.RowsAffected()
+	out.RenewalReasons = int(n)
 	return out, nil
 }
 

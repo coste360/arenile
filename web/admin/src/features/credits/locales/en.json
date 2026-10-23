@@ -1,0 +1,70 @@
+{
+  "title": "Credit movements",
+  "description": "Credits granted, uses, expiries and adjustments.",
+  "optional": "(optional)",
+  "loadMore": "Load more movements",
+  "empty": "No movements.",
+  "available": "Available credit",
+  "balanceHint": "Book balance {{amount}}",
+  "expiring": "Expiring",
+  "expiringHint": "by {{date}}",
+  "noExpiry": "No credit expiring",
+  "columns": {
+    "date": "Date",
+    "movement": "Movement",
+    "booking": "Booking",
+    "openBooking": "Open",
+    "expires": "Expiry",
+    "amount": "Amount"
+  },
+  "source": {
+    "cancellation": "Cancellation",
+    "season_release": "Pass release",
+    "weather": "Bad weather",
+    "manual": "Manual credit",
+    "redemption": "Use",
+    "goodwill": "Goodwill",
+    "expiry": "Expiry",
+    "adjustment": "Adjustment"
+  },
+  "grant": {
+    "open": "Grant credit",
+    "title": "Grant a credit",
+    "description": "The credit is used as a payment method on future bookings.",
+    "source": "Type",
+    "help": {
+      "goodwill": "A goodwill gesture towards the customer.",
+      "manual": "A credit for another reason, to be explained in the note.",
+      "adjustment": "A correction of the balance, up or down."
+    },
+    "direction": "Adjustment",
+    "add": "Add",
+    "remove": "Remove",
+    "amount": "Amount",
+    "amountRequired": "Enter an amount greater than zero.",
+    "amountTooHigh": "At most the available credit ({{available}}).",
+    "expires": "Expiry",
+    "expiresHelp": "Empty: the validity set by the policy.",
+    "note": "Note",
+    "submit": "Grant",
+    "submitRemove": "Remove from balance",
+    "done": "Credit of {{amount}} granted.",
+    "removed": "Balance reduced by {{amount}}."
+  },
+  "apply": {
+    "open": "Use on a booking",
+    "title": "Use the credit",
+    "description": "Available: {{available}}. It is recorded as a \"Customer credit\" payment.",
+    "booking": "Booking",
+    "due": "{{amount}} due",
+    "max": "At most {{max}}.",
+    "amountTooHigh": "At most {{max}}.",
+    "note": "Customer credit",
+    "submit": "Use the credit",
+    "done": "Credit of {{amount}} used on {{code}}."
+  },
+  "hint": {
+    "available": "Customer's available credit: {{available}}.",
+    "tooMuch": "The amount exceeds the customer's available credit ({{available}})."
+  }
+}

@@ -1,0 +1,95 @@
+---
+title: Rinnovi degli abbonamenti
+description: Campagne di rinnovo con diritto di prelazione - proposte con la stessa postazione al prezzo nuovo, invio per email, accettazione al banco o online, posti liberati alla scadenza.
+sidebar:
+  order: 25.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Rinnovi**. **Chi:** cassieri, gestori e proprietari.
+
+Dopo il [cambio stagione](/gestore/cambio-stagione/), una **campagna di rinnovo** propone a ogni abbonato della
+stagione passata la **stessa postazione** nella nuova stagione, al prezzo del nuovo listino. Fino alla scadenza
+della prelazione la postazione è riservata all'abbonato: nessuno può prenotarla, né in cassa né online.
+
+<Screenshot name="admin-renewals" alt="Pagina Rinnovi: riepilogo della campagna con conto alla rovescia e tabella delle proposte con stato e invio" />
+
+## Creare la campagna
+
+<Steps>
+
+1. **Nuova campagna** (oppure **Proponi i rinnovi** alla fine del cambio stagione).
+2. Scegli la **Stagione di origine** e la **Nuova stagione**.
+3. Imposta la **Scadenza della prelazione**: fino a quel giorno (alle 23:59, ora dello stabilimento) la
+   postazione resta riservata. Deve essere prima dell'apertura della nuova stagione.
+4. Facoltativo: **Nome** e **Note interne**.
+5. **Anteprima**: vedi le proposte con l'importo e gli **Abbonamenti esclusi** con il motivo (postazione non
+   disponibile o disattivata, nessun prezzo nel nuovo listino, già rinnovato, cliente anonimizzato).
+6. **Crea le proposte**.
+
+</Steps>
+
+Ogni proposta crea una prenotazione in attesa nella nuova stagione: in mappa la postazione appare come
+**Prelazione rinnovo**. Le email non partono ancora.
+
+Un abbonamento che copriva tutta la stagione si rinnova per tutta la nuova stagione; uno più breve mantiene le
+stesse date spostate di un anno.
+
+## Inviare le proposte
+
+- **Azioni di gruppo** → **Invia a chi non l'ha ancora ricevuta**: ogni abbonato con email riceve la proposta con
+  il link personale.
+- **Azioni di gruppo** → **Sollecita chi non ha risposto**: rimanda il link a chi non ha ancora risposto.
+- Dal menu della riga: **Invia la proposta** o **Invia un sollecito** a una persona.
+
+La colonna **Invio** dice se e quante volte la proposta è partita; chi non ha un'email è segnato **senza email** e
+si gestisce al banco.
+
+## Risposte
+
+| Stato | Significato |
+| --- | --- |
+| **In attesa** | proposta aperta, postazione riservata |
+| **Accettato, da pagare** | il cliente ha accettato online e sta pagando |
+| **Rinnovato** | prenotazione confermata nella nuova stagione |
+| **Rifiutato** | il cliente ha rinunciato: postazione liberata |
+| **Scaduto** | nessuna risposta entro la scadenza: postazione liberata |
+
+### Al banco
+
+- **Accetta (al banco)**: con **Conferma subito** il rinnovo è confermato e il saldo si registra in
+  [cassa](/gestore/cassa/) come per ogni prenotazione; senza, resta in attesa del pagamento.
+- **Rifiuta e libera**: chiude la proposta (con un **Motivo** facoltativo) e rimette in vendita la postazione.
+
+Le stesse azioni sono disponibili sulle proposte selezionate, insieme a **Proroga la scadenza** e **Libera
+subito**.
+
+### Online
+
+Il cliente apre il link dell'email e vede la proposta nell'area di gestione: prezzo nuovo e precedente, scadenza,
+scelta tra acconto e intero importo (secondo la [policy](/gestore/policy/)), uso del credito disponibile e
+accettazione delle condizioni. **Rinnova e paga** porta al pagamento online; **Non rinnovo** libera la postazione.
+Senza pagamenti online attivi il pulsante è **Conferma il rinnovo** e la pagina spiega che il saldo si paga in cassa
+entro la scadenza. Il link dell'email vale solo per l'ultima email ricevuta (proposta o promemoria).
+
+<Aside type="note" title="Conferma solo dal pagamento">
+Il rinnovo online diventa **Rinnovato** solo quando arriva la conferma del pagamento dal circuito (o dal driver
+manuale), mai dal ritorno del browser. Senza pagamenti online attivi, l'accettazione resta **Accettato, da pagare**
+e la confermi al banco incassando il saldo: se la scadenza passa senza conferma, la proposta scade e la postazione
+torna in vendita come per le proposte senza risposta; il credito eventualmente usato torna al cliente.
+</Aside>
+
+## Scadenza e chiusura
+
+- Alla scadenza le proposte senza risposta diventano **Scadute** e le postazioni tornano prenotabili
+  automaticamente, entro un minuto.
+- **Cambia scadenza** sposta la scadenza delle proposte ancora aperte (le prenotazioni restano riservate fino alla
+  nuova data).
+- **Chiudi campagna** chiude subito tutte le proposte aperte e libera le loro postazioni.
+- **Azioni di gruppo** → **Libera le prelazioni scadute** forza il rilascio senza aspettare il controllo
+  automatico.
+
+Se il cliente chiede la cancellazione dei dati (GDPR), il motivo di rifiuto che ha scritto viene cancellato
+insieme agli altri testi liberi.

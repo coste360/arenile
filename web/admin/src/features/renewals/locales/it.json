@@ -1,0 +1,220 @@
+{
+  "title": "Rinnovi",
+  "description": "Campagne di rinnovo degli abbonamenti: proposte con diritto di prelazione, invii, accettazioni e posti liberati alla scadenza.",
+  "optional": "(facoltativo)",
+  "countdown": {
+    "expired": "Scaduta",
+    "days": "{{days}} g {{hours}} h",
+    "hours": "{{hours}} h {{minutes}} min",
+    "minutes": "{{minutes}} min"
+  },
+  "problem": {
+    "renewal_expired": "La prelazione è scaduta: la postazione è stata liberata.",
+    "waitlist_offer_expired": "L'offerta è scaduta.",
+    "waitlist_disabled": "La lista d'attesa è disattivata.",
+    "credit_insufficient": "Credito insufficiente: il saldo non può diventare negativo.",
+    "season_rollover_conflict": "Esiste già una stagione per quell'anno non creata da questo passaggio."
+  },
+  "accept": {
+    "title": "Accetta il rinnovo",
+    "description": "{{spot}} · {{customer}} · {{amount}}",
+    "confirmNow": "Conferma subito",
+    "confirmNowHelp": "Il rinnovo viene confermato ora; il saldo si registra in cassa come per ogni prenotazione.",
+    "awaitPaymentHelp": "La prenotazione resta in attesa di pagamento: si conferma quando arriva il pagamento.",
+    "note": "Nota",
+    "submit": "Accetta",
+    "done": "Rinnovo di {{spot}} accettato."
+  },
+  "decline": {
+    "title": "Rifiuta il rinnovo",
+    "description": "{{spot}} · {{customer}}: la postazione viene liberata.",
+    "reason": "Motivo",
+    "submit": "Rifiuta e libera",
+    "done": "Rinnovo di {{spot}} rifiutato: postazione liberata."
+  },
+  "deadline": {
+    "date": "Nuova scadenza",
+    "help": "La prelazione scade alle 23:59 del giorno scelto (ora dello stabilimento).",
+    "submit": "Salva la scadenza"
+  },
+  "create": {
+    "title": "Nuova campagna",
+    "description": "Una proposta per ogni abbonato della stagione di origine, con la stessa postazione e il prezzo del nuovo listino.",
+    "source": "Stagione di origine",
+    "target": "Nuova stagione",
+    "pickSeason": "Scegli la stagione",
+    "sameSeason": "Scegli due stagioni diverse.",
+    "deadline": "Scadenza della prelazione",
+    "deadlineHelp": "Fino a questa data la postazione resta riservata all'abbonato.",
+    "name": "Nome",
+    "namePlaceholder": "Rinnovi {{year}}",
+    "notes": "Note interne",
+    "preview": "Anteprima",
+    "previewHint": "Usa «Anteprima» per vedere le proposte e gli abbonamenti esclusi prima di crearle.",
+    "previewSummary_one": "Verrà creata {{count}} proposta",
+    "previewSummary_other": "Verranno create {{count}} proposte",
+    "previewDetail": "Valore complessivo {{amount}}; abbonamenti esclusi: {{skipped}}.",
+    "previewTable": "Proposte in anteprima",
+    "skippedTable": "Abbonamenti esclusi",
+    "skippedTitle_one": "{{count}} abbonamento escluso",
+    "skippedTitle_other": "{{count}} abbonamenti esclusi",
+    "submit": "Crea le proposte",
+    "done_one": "Campagna creata: {{count}} proposta pronta da inviare.",
+    "done_other": "Campagna creata: {{count}} proposte pronte da inviare."
+  },
+  "skip": {
+    "spot_unavailable": "Postazione non disponibile nella nuova stagione",
+    "spot_inactive": "Postazione disattivata",
+    "no_price": "Nessun prezzo nel nuovo listino",
+    "already_renewed": "Già rinnovato",
+    "customer_anonymized": "Cliente anonimizzato",
+    "not_confirmed": "Abbonamento non confermato"
+  },
+  "columns": {
+    "spot": "Postazione",
+    "customer": "Cliente",
+    "period": "Periodo",
+    "previous": "Prezzo precedente",
+    "amount": "Importo",
+    "reason": "Motivo",
+    "status": "Stato",
+    "sent": "Invio",
+    "deadline": "Scadenza",
+    "response": "Risposta",
+    "actions": "Azioni"
+  },
+  "status": {
+    "proposed": "In attesa",
+    "accepted": "Accettato, da pagare",
+    "converted": "Rinnovato",
+    "declined": "Rifiutato",
+    "expired": "Scaduto"
+  },
+  "campaignStatus": {
+    "open": "Aperta",
+    "closed": "Chiusa"
+  },
+  "stats": {
+    "proposals": "Proposte",
+    "sent_one": "{{count}} inviata",
+    "sent_other": "{{count}} inviate",
+    "waiting": "In attesa di risposta",
+    "renewed": "Rinnovi accettati",
+    "converted_one": "{{count}} confermato",
+    "converted_other": "{{count}} confermati",
+    "released": "Posti liberati",
+    "releasedHint": "{{declined}} rifiutati · {{expired}} scaduti"
+  },
+  "campaign": {
+    "pick": "Campagna",
+    "seasons": "Stagione {{source}} → {{target}}",
+    "status": "Stato",
+    "deadline": "Scadenza prelazione",
+    "total": "Valore proposte",
+    "converted": "Rinnovi confermati",
+    "changeDeadline": "Cambia scadenza",
+    "changeDeadlineHelp": "Vale per le proposte ancora in attesa.",
+    "deadlineChanged": "Scadenza aggiornata.",
+    "close": "Chiudi campagna",
+    "closeTitle": "Chiudere la campagna?",
+    "closeDescription_one": "{{count}} proposta ancora aperta verrà chiusa e la sua postazione liberata.",
+    "closeDescription_other": "{{count}} proposte ancora aperte verranno chiuse e le loro postazioni liberate.",
+    "closed": "Campagna chiusa."
+  },
+  "filters": {
+    "search": "Cerca cliente o postazione",
+    "status": "Stato",
+    "allStatuses": "Tutti gli stati",
+    "sent": "Invio",
+    "sentAll": "Inviate e non",
+    "sentYes": "Inviate",
+    "sentNo": "Non inviate",
+    "zone": "Zona",
+    "allZones": "Tutte le zone"
+  },
+  "proposals": {
+    "title": "Proposte di rinnovo",
+    "loadMore": "Carica altre proposte",
+    "empty": "Nessuna proposta con questi filtri.",
+    "emptyHint": "Cambia i filtri o crea una nuova campagna."
+  },
+  "empty": {
+    "title": "Nessuna campagna di rinnovo",
+    "description": "Prepara la nuova stagione con il passaggio di fine stagione, poi proponi i rinnovi agli abbonati.",
+    "rollover": "Passaggio di fine stagione"
+  },
+  "row": {
+    "more": "Azioni per {{spot}}, {{customer}}",
+    "send": "Invia la proposta",
+    "remind": "Invia un sollecito",
+    "sent": "Proposta inviata a {{customer}}.",
+    "accept": "Accetta (al banco)",
+    "decline": "Rifiuta e libera",
+    "openBooking": "Apri la prenotazione",
+    "noEmail": "senza email",
+    "previous": "prima {{amount}}",
+    "sentCount_one": "Inviata",
+    "sentCount_other": "Inviata {{count}} volte",
+    "notSent": "Non inviata"
+  },
+  "bulk": {
+    "menu": "Azioni di gruppo",
+    "selected_one": "{{count}} selezionata",
+    "selected_other": "{{count}} selezionate",
+    "selectAll": "Seleziona tutte le proposte aperte",
+    "selectOne": "Seleziona {{spot}}, {{customer}}",
+    "onSelection": "Sulle proposte selezionate",
+    "send": "Invia o sollecita",
+    "accept": "Accetta",
+    "extend": "Proroga la scadenza",
+    "decline": "Rifiuta e libera",
+    "release": "Libera subito",
+    "clear": "Deseleziona",
+    "sendUnsent": "Invia a chi non l'ha ancora ricevuta",
+    "remind": "Sollecita chi non ha risposto",
+    "releaseExpired": "Libera le prelazioni scadute",
+    "extendTitle": "Proroga la scadenza",
+    "extendDescription_one": "{{count}} proposta selezionata.",
+    "extendDescription_other": "{{count}} proposte selezionate.",
+    "result": "Fatto: {{succeeded}} riuscite, {{skipped}} saltate, {{failed}} non riuscite.",
+    "failedTitle_one": "{{count}} proposta non aggiornata",
+    "failedTitle_other": "{{count}} proposte non aggiornate",
+    "dismiss": "Chiudi",
+    "confirm": {
+      "selection": {
+        "send": {
+          "title": "Inviare le proposte?",
+          "description_one": "L'email con il link di rinnovo parte per {{count}} proposta (anche se già inviata).",
+          "description_other": "L'email con il link di rinnovo parte per {{count}} proposte (anche se già inviate)."
+        },
+        "accept": {
+          "title": "Accettare i rinnovi?",
+          "description_one": "{{count}} rinnovo viene confermato al banco.",
+          "description_other": "{{count}} rinnovi vengono confermati al banco."
+        },
+        "decline": {
+          "title": "Rifiutare i rinnovi?",
+          "description_one": "{{count}} proposta viene rifiutata e la postazione liberata.",
+          "description_other": "{{count}} proposte vengono rifiutate e le postazioni liberate."
+        },
+        "release": {
+          "title": "Liberare subito le postazioni?",
+          "description_one": "La prelazione di {{count}} proposta termina ora, anche se non è scaduta.",
+          "description_other": "La prelazione di {{count}} proposte termina ora, anche se non è scaduta."
+        }
+      },
+      "unsent": {
+        "title": "Inviare le proposte non ancora inviate?",
+        "description": "Ogni abbonato con email che non ha ancora ricevuto la proposta riceve il link di rinnovo."
+      },
+      "remind": {
+        "title": "Inviare un sollecito?",
+        "description": "Tutti gli abbonati che non hanno ancora risposto ricevono di nuovo il link di rinnovo."
+      },
+      "releaseExpired": {
+        "title": "Liberare le prelazioni scadute?",
+        "description": "Le postazioni delle proposte senza risposta e con scadenza passata tornano prenotabili."
+      }
+    }
+  }
+}

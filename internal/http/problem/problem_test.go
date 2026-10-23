@@ -17,11 +17,15 @@ import (
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
+	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/pkg/ext"
@@ -40,6 +44,12 @@ func TestError_Mapping(t *testing.T) {
 		{"loopback", control.ErrLoopbackRequired, 403, "loopback_required"},
 		{"setup token", control.ErrSetupTokenInvalid, 403, "setup_token_invalid"},
 		{"setup completed", control.ErrSetupCompleted, 409, "setup_completed"},
+		{"renewal expired", fmt.Errorf("x: %w", renewal.ErrExpired), 410, "renewal_expired"},
+		{"renewal not open", renewal.ErrNotOpen, 409, "conflict"},
+		{"waitlist offer expired", waitlist.ErrOfferExpired, 410, "waitlist_offer_expired"},
+		{"waitlist disabled", waitlist.ErrDisabled, 409, "waitlist_disabled"},
+		{"credit insufficient", credit.ErrInsufficient, 422, "credit_insufficient"},
+		{"rollover target exists", rollover.ErrTargetExists, 409, "season_rollover_conflict"},
 		{"backup not found", control.ErrBackupNotFound, 404, "not_found"},
 		{"credentials", auth.ErrInvalidCredentials, 401, "invalid_credentials"},
 		{"totp required", auth.ErrTOTPRequired, 401, "totp_required"},

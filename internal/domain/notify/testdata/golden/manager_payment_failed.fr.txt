@@ -1,7 +1,7 @@
 Subject: Échec du paiement pour LD-2027-000001
 
-Paiement échoué
-===============
+Échec du paiement
+=================
 
 Le paiement en ligne de 370,00 € pour la réservation LD-2027-000001 a échoué. Le client peut réessayer tant que le blocage est valable ; vérifiez la réservation dans le panneau.
 

@@ -20,8 +20,12 @@ import (
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/waitlist"
 	httpserver "github.com/coste360/arenile/internal/http"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
@@ -83,6 +87,12 @@ func newEnv(t *testing.T, db *store.DB) *env {
 	h := httpserver.New(httpserver.Deps{
 		DB: db, Clock: c, Version: "test", Auth: as, Establishments: establishment.NewService(db),
 		Bus: broker, Readiness: readiness{db}, SecureCookies: false, SSEHeartbeat: 50 * time.Millisecond,
+		// M5B services with the database only: enough for the routing and
+		// the tenancy checks (INV-26) exercised here.
+		Rollover: rollover.NewService(rollover.Deps{DB: db, Clock: c}),
+		Renewals: renewal.NewService(renewal.Deps{DB: db, Clock: c}),
+		Waitlist: waitlist.NewService(waitlist.Deps{DB: db, Clock: c}),
+		Credits:  credit.NewService(credit.Deps{DB: db, Clock: c}),
 	})
 	srv := httptest.NewServer(h)
 	t.Cleanup(srv.Close)

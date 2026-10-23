@@ -64,6 +64,21 @@ describe('BookingPage', () => {
     );
   });
 
+  it('keeps the language chosen in the picker (not reset by the automatic choice)', async () => {
+    const user = userEvent.setup();
+    renderPage('/b/lido-demo', ok({ ...ESTABLISHMENT, enabled_locales: ['it', 'de'] }));
+    await screen.findByRole('heading', { name: 'Prenota il tuo posto in spiaggia' });
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Lingua' }), 'de');
+    expect(
+      await screen.findByRole('heading', { name: 'Buchen Sie Ihren Platz am Strand' }),
+    ).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(
+      screen.getByRole('heading', { name: 'Buchen Sie Ihren Platz am Strand' }),
+    ).toBeInTheDocument();
+    expect(document.documentElement.lang).toBe('de');
+  });
+
   it('keeps the later steps unavailable until the previous ones are complete', async () => {
     const user = userEvent.setup();
     renderPage('/b/lido-demo', ok());

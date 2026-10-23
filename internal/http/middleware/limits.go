@@ -22,7 +22,8 @@ import (
 
 // PublicRateLimit limits public API calls per client IP with the two budgets
 // of spec 17.2: creations are the requests that create something new from
-// nothing, POST .../bookings (a hold) and POST .../manage-links (an email);
+// nothing, POST .../bookings (a hold), POST .../manage-links (an email) and
+// POST .../waitlist (a customer, an entry and an email);
 // every other call counts as a read, including the session-token or
 // magic-link steps of an existing booking (customer details, pay, modify,
 // cancel), so one checkout never spends more than one creation and
@@ -233,11 +234,14 @@ func (c *captureWriter) Write(b []byte) (int, error) {
 
 func (c *captureWriter) Unwrap() http.ResponseWriter { return c.ResponseWriter }
 
-// isPublicCreation: POST of a new booking session or of a new manage link.
+// isPublicCreation: POST of a new booking session, of a new manage link or
+// of a waitlist request (POST .../waitlist creates a customer, an entry and
+// an email; the accept/decline steps of an existing request under
+// .../waitlist/{token}/... are reads).
 func isPublicCreation(r *http.Request) bool {
 	if r.Method != http.MethodPost {
 		return false
 	}
 	p := strings.TrimRight(r.URL.Path, "/")
-	return strings.HasSuffix(p, "/bookings") || strings.HasSuffix(p, "/manage-links")
+	return strings.HasSuffix(p, "/bookings") || strings.HasSuffix(p, "/manage-links") || strings.HasSuffix(p, "/waitlist")
 }
