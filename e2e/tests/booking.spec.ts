@@ -29,7 +29,7 @@ test("/b/lido-demo shows the establishment name", async ({ page, request }) => {
     .click();
   await expect(dates).toHaveText(/^15\/0[5-9]\/\d{4} – /);
 
-  // The later steps are honest: disabled until their backend exists.
+  // Only the first day is chosen: the next steps stay locked until the range is complete.
   await expect(page.getByRole("button", { name: "Avanti" })).toBeDisabled();
   await expect(page.getByRole("button", { name: /Dove/ })).toHaveAttribute(
     "aria-disabled",

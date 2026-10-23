@@ -2,6 +2,11 @@ import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
 export const DEMO_SLUG = "lido-demo";
 
+/** The lido's own website (another origin) embedding the widget: M4 acceptance. */
+export const hostPort = Number(process.env.E2E_HOST_PORT ?? 8092);
+/** Fake Stripe API + hosted payment page (internal/testtools/stripefake). */
+export const stripePort = Number(process.env.E2E_STRIPE_PORT ?? 12111);
+
 /** Demo owner created by `seed demo` (password from ARENILE_ADMIN_PASSWORD, set by the config). */
 export const DEMO_OWNER_EMAIL = "demo@lido-demo.example";
 export const DEMO_OWNER_PASSWORD =

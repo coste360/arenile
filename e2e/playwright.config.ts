@@ -3,7 +3,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DEMO_OWNER_PASSWORD } from './tests/helpers';
+import { DEMO_OWNER_PASSWORD, hostPort, stripePort } from './tests/helpers';
 
 /**
  * End-to-end tests against a real `arenile` binary.
@@ -21,6 +21,7 @@ const port = Number(process.env.E2E_PORT ?? 8090);
 const externalBaseURL = process.env.E2E_BASE_URL;
 const baseURL = externalBaseURL ?? `http://localhost:${port}`;
 
+
 // Evaluated by the runner and by each worker: keep one directory per run.
 process.env.ARENILE_E2E_DATA_DIR ??= mkdtempSync(join(tmpdir(), 'arenile-e2e-'));
 const dataDir = process.env.ARENILE_E2E_DATA_DIR;
@@ -37,31 +38,65 @@ export default defineConfig({
     locale: 'it-IT',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /booking\.spec\.ts/ },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      // The M4 acceptance is a smartphone scenario (spec 28).
+      testIgnore: /m4-acceptance\.spec\.ts/,
+    },
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 7'] },
+      testMatch: /(booking|m4-acceptance)\.spec\.ts/,
+    },
   ],
   webServer: externalBaseURL
     ? undefined
-    : {
-        command:
-          'go run ./cmd/arenile migrate up && go run ./cmd/arenile seed demo && go run ./cmd/arenile serve',
-        cwd: repoRoot,
-        url: `${baseURL}/healthz`,
-        reuseExistingServer: !process.env.CI,
-        timeout: 180_000,
-        stdout: 'pipe',
-        stderr: 'pipe',
-        env: {
-          ARENILE_ADDR: `:${port}`,
-          ARENILE_BASE_URL: baseURL,
-          ARENILE_DATA_DIR: dataDir,
-          ARENILE_AUTO_MIGRATE: 'true',
-          // Fixed test-only key (32 zero bytes, base64): never use in production.
-          ARENILE_SECRET_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-          ARENILE_LOG_LEVEL: 'warn',
-          ARENILE_TELEMETRY: 'false',
-          // Password of the demo owner created by `seed demo` (test-only value).
-          ARENILE_ADMIN_PASSWORD: DEMO_OWNER_PASSWORD,
+    : [
+        {
+          command:
+            'go run ./cmd/arenile migrate up && go run ./cmd/arenile seed demo && go run ./cmd/arenile serve',
+          cwd: repoRoot,
+          url: `${baseURL}/healthz`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180_000,
+          stdout: 'pipe',
+          stderr: 'pipe',
+          env: {
+            ARENILE_ADDR: `:${port}`,
+            ARENILE_BASE_URL: baseURL,
+            ARENILE_DATA_DIR: dataDir,
+            ARENILE_AUTO_MIGRATE: 'true',
+            // Fixed test-only key (32 zero bytes, base64): never use in production.
+            ARENILE_SECRET_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+            ARENILE_LOG_LEVEL: 'warn',
+            ARENILE_TELEMETRY: 'false',
+            // Password of the demo owner created by `seed demo` (test-only value).
+            ARENILE_ADMIN_PASSWORD: DEMO_OWNER_PASSWORD,
+            // Emails as .eml files (magic link of the manage area).
+            ARENILE_MAIL_DIR: join(dataDir, 'mail'),
+            // Stripe test double (never in production).
+            ARENILE_STRIPE_API_URL: `http://127.0.0.1:${stripePort}`,
+            // Parallel workers from one address (spec 17.2 limits are per IP).
+            ARENILE_PUBLIC_READS_PER_MINUTE: '100000',
+            ARENILE_PUBLIC_CREATIONS_PER_MINUTE: '100000',
+          },
         },
-      },
+        {
+          command: `go run ./internal/testtools/stripefake -addr 127.0.0.1:${stripePort} -arenile ${baseURL}`,
+          cwd: repoRoot,
+          url: `http://127.0.0.1:${stripePort}/healthz`,
+          // Never reuse: a stray fake bound to another instance would
+          // swallow the webhooks.
+          reuseExistingServer: false,
+          timeout: 180_000,
+        },
+        {
+          command: 'node fixtures/host-server.mjs',
+          cwd: here,
+          url: `http://127.0.0.1:${hostPort}/healthz`,
+          reuseExistingServer: false,
+          env: { E2E_HOST_PORT: String(hostPort), ARENILE_URL: baseURL },
+        },
+      ],
 });
