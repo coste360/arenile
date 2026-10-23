@@ -53,13 +53,15 @@ func TestHTTPIntegration_CrossTenant(t *testing.T) {
 			{http.MethodGet, "/customers/" + someID + "/credits"},
 			{http.MethodPost, "/customers/" + someID + "/credits"},
 			{http.MethodGet, "/season-rollovers"},
-			{http.MethodPost, "/season-rollovers"},
+			{http.MethodPost, "/seasons/" + someID + "/rollover"},
 		} {
 			var payload any
+			var headers map[string]string
 			if step.method == http.MethodPost {
 				payload = map[string]any{}
+				headers = map[string]string{"X-CSRF-Token": c.csrf()}
 			}
-			resp, body = c.do(step.method, "/api/admin/v1/establishments/"+e.estB.ID+step.path, payload, nil)
+			resp, body = c.do(step.method, "/api/admin/v1/establishments/"+e.estB.ID+step.path, payload, headers)
 			if resp.StatusCode != 404 {
 				t.Fatalf("%s %s on establishment B: %d %v", step.method, step.path, resp.StatusCode, body)
 			}

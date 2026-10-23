@@ -173,7 +173,8 @@ func TestConcurrency_RenewalProposalAccept(t *testing.T) {
 		if err != nil || rows != 2 {
 			t.Fatalf("allocations of the day: %d %v", rows, err)
 		}
-		if n := x.Count((*store.AuditEntry)(nil), "action = 'renewal_proposal.converted' OR (action = 'renewal_proposal.accepted' AND CAST(diff AS TEXT) LIKE '%\"confirmed\":true%')"); n != 1 {
+		// PostgreSQL prints jsonb with a space after the colon: strip spaces.
+		if n := x.Count((*store.AuditEntry)(nil), "action = 'renewal_proposal.converted' OR (action = 'renewal_proposal.accepted' AND REPLACE(CAST(diff AS TEXT), ' ', '') LIKE '%\"confirmed\":true%')"); n != 1 {
 			t.Fatalf("conversions recorded %d", n)
 		}
 		if n := x.Count((*store.OutboxEvent)(nil), "type = ?", event.SeasonRenewalAccepted); n != 1 {
