@@ -131,11 +131,11 @@ func TestEventTypes_MatchStore(t *testing.T) {
 
 func TestRedactURL_HidesTheQuery(t *testing.T) {
 	tests := map[string]string{
-		"https://hooks.example.com/arenile":               "https://hooks.example.com/arenile",
-		"https://hooks.example.com/arenile?token=s3cr3t":  "https://hooks.example.com/arenile?…",
-		"https://hooks.example.com/a?x=1&token=s3cr3t#f":  "https://hooks.example.com/a?…",
-		"https://hooks.example.com/arenile?":              "https://hooks.example.com/arenile",
-		"http://localhost:9000/h?k=v":                     "http://localhost:9000/h?…",
+		"https://hooks.example.com/arenile":              "https://hooks.example.com/arenile",
+		"https://hooks.example.com/arenile?token=s3cr3t": "https://hooks.example.com/arenile?…",
+		"https://hooks.example.com/a?x=1&token=s3cr3t#f": "https://hooks.example.com/a?…",
+		"https://hooks.example.com/arenile?":             "https://hooks.example.com/arenile",
+		"http://localhost:9000/h?k=v":                    "http://localhost:9000/h?…",
 	}
 	for in, want := range tests {
 		if got := RedactURL(in); got != want {
