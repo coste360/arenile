@@ -85,7 +85,10 @@ function instantFormatter(opts: InstantFormatOptions, withTime: boolean): Intl.D
  * (four-digit year, as every date of the UI; never `dateStyle: 'short'`).
  * Empty string for a missing or malformed instant.
  */
-export function formatInstant(iso: string | null | undefined, opts: InstantFormatOptions = {}): string {
+export function formatInstant(
+  iso: string | null | undefined,
+  opts: InstantFormatOptions = {},
+): string {
   if (!iso) return '';
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? '' : instantFormatter(opts, true).format(d);

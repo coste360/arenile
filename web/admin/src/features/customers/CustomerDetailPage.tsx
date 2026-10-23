@@ -273,9 +273,7 @@ export function CustomerDetailPage() {
                 <span className="whitespace-pre-line">{c.notes || '—'}</span>
               </Field>
               {c.anonymized_at && (
-                <Field label={t('anonymized')}>
-                  {fmt.dateTime(c.anonymized_at)}
-                </Field>
+                <Field label={t('anonymized')}>{fmt.dateTime(c.anonymized_at)}</Field>
               )}
             </CardContent>
           </Card>

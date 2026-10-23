@@ -104,7 +104,7 @@ var catalog = map[api.ProblemType]meta{
 	InvalidTransition:     {http.StatusConflict, "Operazione non ammessa nello stato attuale della prenotazione"},
 	CashSessionClosed:     {http.StatusConflict, "La sessione di cassa è chiusa"},
 	CashSessionOpen:       {http.StatusConflict, "C'è già una sessione di cassa aperta"},
-	BookingOutsidePeriod:  {http.StatusUnprocessableEntity, "Operazione possibile solo nei giorni del soggiorno"},
+	BookingOutsidePeriod:  {http.StatusUnprocessableEntity, "Operazione ammessa solo nei giorni del soggiorno"},
 }
 
 // Option customises a problem.

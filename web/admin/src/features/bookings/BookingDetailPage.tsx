@@ -130,9 +130,7 @@ export function BookingDetailPage() {
     startsOn: b.starts_on,
     endsOn: b.ends_on,
     today: todayIso(),
-  }).filter((a) =>
-    a === 'check-in' || a === 'no-show' ? perms.canOperate : perms.canWrite,
-  );
+  }).filter((a) => (a === 'check-in' || a === 'no-show' ? perms.canOperate : perms.canWrite));
   const active = ACTIVE_STATUSES.includes(b.status);
   const run = async (action: TransitionVars['action']) => {
     setFailure(null);
@@ -466,9 +464,7 @@ function PaymentsCard({
           <TableBody>
             {booking.payments.map((p) => (
               <TableRow key={p.id}>
-                <TableCell className="pl-6 tabular-nums">
-                  {fmt.dateTime(p.created_at)}
-                </TableCell>
+                <TableCell className="pl-6 tabular-nums">{fmt.dateTime(p.created_at)}</TableCell>
                 <TableCell>
                   {t(`method.${p.method}`)}
                   {p.direction === 'refund' && (

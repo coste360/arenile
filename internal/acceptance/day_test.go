@@ -3,12 +3,12 @@
 package acceptance
 
 import (
-	"slices"
 	"context"
 	"fmt"
 	"math/rand/v2"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"

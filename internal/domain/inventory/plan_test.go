@@ -265,7 +265,6 @@ func TestDisplayName_Scenarios(t *testing.T) {
 	}
 }
 
-
 func TestCombineStatus_FullDay(t *testing.T) {
 	got := combineStatus([]halfDayState{{status: SpotFree}, {status: SpotBooked}})
 	if got != SpotBooked {
