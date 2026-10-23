@@ -95,6 +95,11 @@ test("a booking created from the new booking sheet appears on the map", async ({
   await expect(moreBeds).toBeDisabled();
   await form.getByRole("button", { name: "Diminuisci Lettino aggiuntivo" }).click();
   await expect(sunbed).toHaveAttribute("aria-valuenow", "1");
+  // Let the buttons' enable/disable transitions finish: axe samples colours
+  // mid-transition otherwise (seen on WebKit in CI).
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== "running"),
+  );
   const axe = await new AxeBuilder({ page })
     .include('[role="dialog"]')
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

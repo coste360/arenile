@@ -151,13 +151,21 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   await page.keyboard.press("ArrowDown");
   await expect(sunbed).toHaveAttribute("aria-valuenow", "1");
   await noSidewaysScroll("3 Cosa");
+  // Let the buttons' enable/disable transitions finish: axe samples colours
+  // mid-transition otherwise (seen on WebKit in CI).
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== "running"),
+  );
   const axe = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
   expect(
     axe.violations
       .filter((v) => v.impact === "serious" || v.impact === "critical")
-      .map((v) => `${v.id}: ${v.help}`),
+      .map(
+        (v) =>
+          `${v.id}: ${v.help} → ${v.nodes.map((n) => `${n.target.join(" ")} ${n.failureSummary ?? ""}`).join(" | ")}`,
+      ),
   ).toEqual([]);
   await page.getByRole("button", { name: "Continua" }).click();
 
