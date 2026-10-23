@@ -47,13 +47,14 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 |---|---|---|
 | `cmd/arenile` | `main`, CLI: `serve`, `migrate up\|status`, `admin create`, `seed demo`, `backup --out`, `restore --in`, `version` (versione iniettata con `-ldflags "-X main.version=..."`) | `internal/app`, `internal/config` |
 | `internal/app` | Composition root: costruisce store, servizi, router, job runner; registry delle estensioni (`pkg/ext.Extensions`) | tutto `internal/` |
-| `internal/config` | Lettura e validazione delle variabili d'ambiente (spec 24.4: `ARENILE_ADDR`, `ARENILE_BASE_URL`, `ARENILE_DATA_DIR`, `DATABASE_URL`, `ARENILE_SECRET_KEY`, `ARENILE_AUTO_MIGRATE`, `ARENILE_TLS_AUTOCERT_DOMAINS`, `ARENILE_SMTP_URL`, `ARENILE_MAIL_FROM`, `ARENILE_HOLD_TTL`, `ARENILE_LOG_LEVEL`, `ARENILE_TRUSTED_PROXIES`, `ARENILE_REQUIRE_TOTP_FOR_OWNERS`, `ARENILE_TELEMETRY`) | stdlib |
+| `internal/config` | Lettura e validazione delle variabili d'ambiente (spec 24.4: `ARENILE_ADDR`, `ARENILE_BASE_URL`, `ARENILE_DATA_DIR`, `DATABASE_URL`, `ARENILE_SECRET_KEY`, `ARENILE_AUTO_MIGRATE`, `ARENILE_TLS_AUTOCERT_DOMAINS`, `ARENILE_SMTP_URL`, `ARENILE_MAIL_FROM`, `ARENILE_HOLD_TTL`, `ARENILE_LOG_LEVEL`, `ARENILE_TRUSTED_PROXIES`, `ARENILE_REQUIRE_TOTP_FOR_OWNERS`, `ARENILE_TELEMETRY`; estensioni M4: `ARENILE_MAIL_DIR`, `ARENILE_PUBLIC_READS_PER_MINUTE`, `ARENILE_PUBLIC_CREATIONS_PER_MINUTE`, `ARENILE_STRIPE_API_URL` solo per i test) | stdlib |
 | `internal/http/api` | **Generato** da `api/openapi.yaml` con oapi-codegen (`api.gen.go`): modelli e interfacce server chi. Non si modifica a mano | — |
 | `internal/http/admin` | Handler di `/api/admin/v1`: decodifica, chiamata al servizio, codifica; errori `application/problem+json` | `http/api`, `domain/*` |
-| `internal/http/public` | Handler di `/api/public/v1/{slug}` e dei webhook di pagamento `/webhooks/payments/{provider}/{establishment_id}` | `http/api`, `domain/*` |
+| `internal/http/public` | Handler di `/api/public/v1/{slug}` (profilo, calendario, mappa, disponibilità, catalogo, preventivo, checkout, area gestione col link magico); `frame-ancestors` per stabilimento | `http/api`, `domain/checkout`, `domain/online` |
+| `internal/http/webhooks` | `POST /webhooks/payments/{provider}/{establishment_id}`: corpo grezzo al gateway, che verifica la firma | `domain/payment/gateway` |
 | `internal/http/middleware` | Logging slog, recover, request ID, sessione e chiavi API, CSRF double-submit, rate limit, risoluzione dello stabilimento, header di sicurezza | `domain/auth` |
 | `internal/http/sse` | `GET /api/admin/v1/stream`: broker in memoria, `event:` = topic (`booking.changed`, `allocation.changed`, `hold.changed`, `cash.changed`, ...), messaggi leggeri `{topic, type, booking_id, spot_ids, dates}` senza dati personali (ADR 0010) | `domain/event` |
-| `internal/http/static` | `embed.FS` di `static/admin` e `static/booking` (copiati da `web/*/dist` in build); pagina segnaposto se manca `index.html`. Serve `/admin/`, `/b/{slug}`, `/embed.js` | stdlib |
+| `internal/http/static` | `embed.FS` di `static/admin` e `static/booking` (copiati da `web/*/dist` in build); pagina segnaposto se manca `index.html`. Serve `/admin/`, `/b/{slug}`, `/embed.js`, compressi gzip una volta in memoria | stdlib |
 | `internal/reqctx` | Metadati della richiesta nel `context` (request ID, IP del client, schema, metodo di autenticazione): li scrive il middleware, li leggono handler e servizi per l'audit. Nessuna dipendenza da `net/http` | stdlib |
 | `internal/domain/establishment` | Organizzazioni e stabilimenti: creazione (solo owner dell'organizzazione), impostazioni con `If-Match`, tema, archiviazione | `store`, `audit`, `event` |
 | `internal/domain/season` | Stagioni, periodi tariffari (senza sovrapposizioni, lock sulla riga della stagione), giorni di chiusura, copia delle date di stagione | `store`, `audit`, `event` |
@@ -69,14 +70,18 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/domain/booking` | Ciclo di vita della prenotazione (spec 10.2); unico punto che cambia lo stato; audit + outbox nella stessa transazione; porte `Inventory`, `Pricer`, `Customers`, `Payments`, `Releases`; `Ledger` per `paid_amount` | `inventory`, `pricingconfig`, `customer`, `payment`, `event` |
 | `internal/domain/pass` | Abbonamenti stagionali (prenotazioni `is_season_pass`) e rilasci; `Resale` per le rivendite | `booking`, `inventory`, `store` |
 | `internal/domain/customer` | Clienti, consensi, crediti, esportazione e anonimizzazione GDPR | `store`, `audit`, `event` |
-| `internal/domain/payment` | Pagamenti, rimborsi, vendite di cassa, registro dei driver (`manual`; `stripe`, deduplica dei webhook e riconciliazione in M4); porte `BookingLedger`, `CashDesk`, `Fiscal`, `Credits` | `pkg/ext`, `store` |
+| `internal/domain/payment` | Pagamenti, rimborsi, vendite di cassa, registro dei driver; registrazione dei pagamenti e rimborsi dei provider (`provider.go`); porte `BookingLedger`, `CashDesk`, `Fiscal`, `Credits` | `pkg/ext`, `store` |
+| `internal/domain/payment/gateway` | Pagamenti online (ADR 0014): avvio con chiave di idempotenza, webhook in una transazione (deduplica su `webhook_events`, registro, conferma tramite `booking`), pagamenti tardivi e doppi rimborsati, rimborsi tramite provider fuori dai lock, riconciliazione ogni 15 minuti | `payment`, `online`, `pkg/ext` |
+| `internal/domain/payment/stripe` | Driver Stripe Checkout (SDK ufficiale `stripe-go`): sessioni, firma dei webhook sull'orologio iniettato, rimborsi, stato per la riconciliazione; `stripetest` è il finto Stripe con firme reali (anche come processo: `internal/testtools/stripefake`) | `pkg/ext` |
+| `internal/domain/online` | Impostazioni della pagina pubblica (flusso, tema, origini, condizioni versionate, credenziali cifrate dei provider, email) con `If-Match` | `store`, `audit`, `event` |
+| `internal/domain/checkout` | Flusso pubblico: letture sul canale online (quota inclusa), sessione di checkout col token in hash, dati del cliente e consensi, pagamento, area di gestione (modifica, cancellazione con rimborso, rilasci), ritorno nel widget (`return_to`) | `booking`, `inventory`, `pricingconfig`, `gateway`, `notify`, `online` |
 | `internal/domain/cash` | Sessioni di cassa per registro, movimenti, chiusure con differenza (INV-25) | `store`, `audit`, `event` |
 | `internal/domain/fiscal` | Corrispettivi per aliquota e metodo (JSON/CSV), documenti commerciali tramite `ext.FiscalDriver` (`none`, `export`) | `pkg/ext`, `store` |
-| `internal/domain/notification` | Template, invio email (SMTP), `ext.Notifier` | |
+| `internal/domain/notify` | Dall'outbox alle email (deduplicate per evento e modello), consegna con claim esclusivo e backoff, trasporti SMTP/file/log, modelli Markdown in it/en/de/fr, link magici in hash, QR e `.ics` | `online`, `store`, `pkg/ext` |
 | `internal/domain/event` | Tipi di evento, scrittura nell'outbox, dispatcher verso sink, webhook in uscita e SSE | |
 | `internal/domain/auth` | Utenti, membership, ruoli e permessi (spec 16), sessioni, TOTP, chiavi API | `x/crypto` |
 | `internal/store` | Repository Bun; **unico posto con SQL**; ogni query operativa filtra per `establishment_id` | `bun` |
-| `internal/jobs` | Job runner in-process: job di base (dispatch outbox, webhook in uscita con backoff, pulizia sessioni e chiavi di idempotenza) più i job dei servizi registrati dalla composizione (rilascio hold scaduti ogni 30 s, scadenza e completamento prenotazioni, emissione documenti fiscali); riconciliazione pagamenti e backup in M4/M5 | `clock` |
+| `internal/jobs` | Job runner in-process: job di base (dispatch outbox, webhook in uscita con backoff, pulizia sessioni e chiavi di idempotenza) più i job dei servizi registrati dalla composizione (rilascio hold scaduti ogni 30 s, scadenza e completamento prenotazioni, emissione documenti fiscali); riconciliazione dei pagamenti (M4) e consegna delle email (svegliata subito da `Job.Wake`); backup in M5 | `clock` |
 | `internal/migrations/sqlite`, `internal/migrations/postgres` | Migrazioni goose per dialetto, stessa numerazione | — |
 | `internal/clock` | `Clock` iniettabile (`System`, `Fake`) | — |
 | `internal/money` | `Cents` (`int64`), arrotondamento half-even, scorporo IVA | — |
@@ -97,7 +102,7 @@ Regole di dipendenza:
  Cliente (/b/{slug} o iframe)          API pubblica                    Dominio / DB                     Provider
  ───────────────────────────          ─────────────                   ─────────────                    ────────
  1 sceglie date e fasce ──GET  /availability──► availability.Query ─► spot_allocations, pool_usage
-                                                (cache 10 s per stabilimento+intervallo)
+                                                (conteggi sempre dal vivo; prezzi "da" in cache 60 s)
  2 sceglie pack/posto   ──POST /quote─────────► pricing.Quote (puro) + policy.Resolve
                                                 (nessuna scrittura)
  3 conferma il carrello ──POST /bookings──────► booking.CreateHeld          ┐ una transazione:
@@ -109,7 +114,7 @@ Regole di dipendenza:
  4 dati e consensi      ──PATCH /bookings/{id}─► customer + consensi versionati
  5 paga                 ──POST /bookings/{id}/pay► payment.Start ──────────────────────────────► CreatePayment
                                                 status=pending_payment, hold esteso (max 30 min)      │
-                         ◄── redirect Stripe Checkout (target=_top) / client_secret                    │
+                         ◄── redirect Stripe Checkout (target=_top); dal widget ritorno su return_to   │
                                                                                                        ▼
  6                                               POST /webhooks/payments/{provider}/{establishment_id}
                                                 ParseWebhook (firma) ─► deduplica per ID evento
@@ -123,7 +128,12 @@ Punti chiave:
 - La conferma avviene **solo** dal webhook (o dal driver `manual`), mai dal ritorno del browser.
 - Se l'hold scade (`ARENILE_HOLD_TTL`, default 10 minuti) il job lo rilascia e porta la prenotazione in
   `expired`; anche senza job, gli hold scaduti vengono ripuliti al momento del conflitto.
-- Il job di riconciliazione interroga il provider per i pagamenti `pending` più vecchi di 10 minuti.
+- Il job di riconciliazione (ogni 15 minuti) interroga il provider per i pagamenti e i rimborsi rimasti aperti.
+- Un pagamento confermato dal provider dopo la scadenza dell'hold è registrato e rimborsato per intero (INV-51).
+- Nelle zone `zone` la riga occupa il pool della zona finché è in hold; alla conferma riceve una postazione
+  (assegnazione automatica, INV-50).
+- Dal widget incorporato Stripe riporta il cliente sulla pagina del sito ospitante (`return_to`, solo origini
+  autorizzate) con `arenile_checkout=<id>`: `embed.js` riapre il widget sull'esito (ADR 0013 §11).
 
 Stati (spec 10.2):
 

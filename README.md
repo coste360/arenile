@@ -11,7 +11,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fcoste360%2Farenile-2496ED?logo=docker&logoColor=white)](https://github.com/coste360/arenile/pkgs/container/arenile)
 [![SQLite | PostgreSQL](https://img.shields.io/badge/DB-SQLite%20%7C%20PostgreSQL-003B57?logo=sqlite&logoColor=white)](#architettura)
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
-[![Stato: M0-M3 completate, M4 in arrivo](https://img.shields.io/badge/stato-M0%E2%80%93M3%20prenotazioni%20e%20cassa-orange.svg)](#roadmap)
+[![Stato: M0-M4 completate nel ramo di sviluppo, nessun rilascio](https://img.shields.io/badge/stato-M0%E2%80%93M4%20MVP%20pubblico%2C%20non%20rilasciato-orange.svg)](#roadmap)
 
 [Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-a-codice-sorgente-disponibile) ·
 [Funzionalità](#funzionalità) ·
@@ -27,7 +27,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 ---
 
 > [!IMPORTANT]
-> **Stato del progetto: fondamenta (M0), inventario e mappa (M1), prezzi e policy (M2), prenotazioni dal pannello e cassa (M3) completati nel ramo di sviluppo (non ancora pubblicato); prossima milestone M4 (pagina di prenotazione online e pagamenti con Stripe). Nessuna versione ancora rilasciata.**
+> **Stato del progetto: fondamenta (M0), inventario e mappa (M1), prezzi e policy (M2), prenotazioni dal pannello e cassa (M3) e pagina pubblica con pagamenti online (M4) completati nel ramo di sviluppo, verificati da test automatici ma non ancora provati sul campo in uno stabilimento reale né con un account Stripe di produzione. Nessuna versione ancora rilasciata; prossima milestone M5 (completamento della stagione).**
 > Arenile non è ancora pronto per la produzione. Le funzionalità descritte in questa pagina sono la roadmap della [specifica tecnica](docs/spec/README.md): la [tabella di stato](#stato-delle-funzionalità) indica con precisione cosa è disponibile, cosa è in sviluppo e cosa è pianificato. Se gestisci un lido e vuoi provarlo per la stagione, segui il repository (*Watch → Releases*) per essere avvisato al primo rilascio.
 
 **Arenile** è un **software gratuito per la gestione di stabilimenti balneari, con codice sorgente disponibile**, lidi, spiagge attrezzate e piscine. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
@@ -132,7 +132,7 @@ Panoramica delle aree funzionali previste dalla specifica. Lo stato di ciascuna 
 
 Legenda: **Disponibile** = rilasciato e utilizzabile · **Completato** = implementato e coperto da test nel ramo di sviluppo, non ancora pubblicato né rilasciato · **In sviluppo** = lavori in corso nella milestone indicata · **Pianificato** = previsto dalla specifica, non ancora iniziato.
 
-Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono completate le fondamenta (M0), l'inventario con l'editor della mappa e la configurazione guidata (M1), la configurazione di prezzi e policy (M2) e il **gestionale operativo del lido** (M3): dal pannello si prenotano ombrelloni e lettini sulla mappa operativa o sul calendario planning, si gestiscono clienti, abbonamenti stagionali e rilasci dei giorni, si incassa in contanti o con carta nella cassa con apertura e chiusura, e si esportano i corrispettivi per il commercialista. La mappa si aggiorna in tempo reale su tutte le postazioni di lavoro. La prenotazione online da parte dei clienti e i pagamenti con Stripe arrivano con M4.
+Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono completate le fondamenta (M0), l'inventario con l'editor della mappa e la configurazione guidata (M1), la configurazione di prezzi e policy (M2) e il **gestionale operativo del lido** (M3): dal pannello si prenotano ombrelloni e lettini sulla mappa operativa o sul calendario planning, si gestiscono clienti, abbonamenti stagionali e rilasci dei giorni, si incassa in contanti o con carta nella cassa con apertura e chiusura, e si esportano i corrispettivi per il commercialista. La mappa si aggiorna in tempo reale su tutte le postazioni di lavoro. Con M4 i clienti prenotano da soli dalla pagina pubblica o dal widget incorporato nel sito del lido (posto sulla mappa, zona con assegnazione automatica o quantità), pagano con Stripe Checkout (la conferma arriva solo dal webhook firmato), ricevono l'email con QR, `.ics` e link magico per gestire, modificare o cancellare la prenotazione con rimborso tramite Stripe. Promemoria del saldo e del giorno prima, modifica dei modelli email dal pannello e pagamento incorporato con Stripe Elements non sono ancora disponibili.
 
 | Area | Funzionalità | Milestone | Stato |
 |---|---|:-:|---|
@@ -152,9 +152,9 @@ Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono comp
 | Pannello | Pagina "Oggi", vista operativa della mappa, calendario planning, clienti (ricerca, esportazione e anonimizzazione GDPR), abbonamenti e rilasci con rivendita | M3 | Completato |
 | Cassa | Pagamenti manuali, rimborsi, vendite di cassa, cassa con apertura/chiusura e riepilogo Z stampabile, esportazione corrispettivi CSV/JSON | M3 | Completato |
 | Tempo reale | Aggiornamento della mappa via SSE con ripresa dopo la riconnessione (`Last-Event-ID`) | M3 | Completato |
-| Pagina pubblica | Booking online (posto, zona, quantità), widget `embed.js`, tema | M4 | Pianificato |
-| Pagamenti | Driver Stripe (Checkout), webhook, riconciliazione, rimborsi | M4 | Pianificato |
-| Clienti | Link magico, email transazionali, QR, `.ics`, assegnazione automatica | M4 | Pianificato |
+| Pagina pubblica | Booking online (posto, zona, quantità, anche misti), widget `embed.js` con ritorno dal pagamento nel sito ospitante, tema con anteprima dal vivo, condizioni versionate | M4 | Completato |
+| Pagamenti | Driver Stripe (Checkout), webhook firmato, riconciliazione ogni 15 minuti, rimborsi tramite Stripe, rimborso automatico dei pagamenti tardivi o doppi | M4 | Completato (Stripe Elements incorporato: in arrivo) |
+| Clienti | Link magico e area di gestione, email transazionali (it/en/de/fr), QR, `.ics`, assegnazione automatica nelle zone `zone` | M4 | Completato (promemoria: in arrivo) |
 | Stagione | Rinnovi abbonamenti, lista d'attesa, crediti | M5 | Pianificato |
 | Report | Report completi, confronto anni, esportazioni CSV/XLSX | M5 | Pianificato |
 | Offline | PWA del pannello con offline limitato | M5 | Pianificato |
@@ -166,8 +166,10 @@ Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono comp
 
 ## Installazione in 5 minuti
 
-> [!NOTE]
-> Le istruzioni seguenti descrivono l'installazione prevista al termine di M0. Fino al primo rilascio l'immagine `ghcr.io/coste360/arenile` potrebbe non essere ancora pubblicata: in quel caso compila dai sorgenti (vedi [Sviluppo](#sviluppo)).
+> [!TIP]
+> La **documentazione completa** (installazione, guida del gestore funzione per funzione, API e sviluppo, in italiano e inglese) è nel sito [docs.arenile.it](https://docs.arenile.it), generato da [`docs-site/`](docs-site/) (in locale: `make docs-dev`). Da lì parti con [Scegli come installare](https://docs.arenile.it/installazione/scegli-come-installare/).
+
+**Dove si scarica.** Su GitHub trovi il codice sorgente e le istruzioni per compilarlo ed eseguirlo: i binari pronti **non** vengono pubblicati qui. L'immagine Docker `ghcr.io/coste360/arenile` è pubblica e gratuita (fino al primo rilascio potrebbe non essere ancora pubblicata: in quel caso il compose la compila dai sorgenti). I pacchetti pronti per Windows, macOS e Linux (edizione desktop, milestone M6) saranno scaricabili dal portale Coste360 previo accesso.
 
 **Requisiti:** un server Linux (`amd64` o `arm64`) con Docker e Docker Compose, un dominio che punti al server. Bastano 1 vCPU e 512 MB di RAM per un lido.
 
@@ -232,11 +234,11 @@ docker compose exec -e ARENILE_ADMIN_PASSWORD='scegli-una-password-lunga' arenil
   /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
 ```
 
-**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/`. Oggi il pannello offre l'accesso (con verifica in due passaggi TOTP facoltativa), la creazione e la scelta degli stabilimenti, la configurazione guidata, l'editor della mappa, il catalogo, i listini, le policy e il simulatore prezzi; prenotazioni, cassa e pagina pubblica completa arrivano con le milestone successive (vedi [Roadmap](#roadmap)).
+**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/` e segui la configurazione guidata in sei passi (dati, modello, file sulla mappa, listino rapido, pagina pubblica, pagamenti): la procedura completa è in [Primo avvio e configurazione guidata](https://docs.arenile.it/installazione/primo-avvio/).
 
 Per provare con dati dimostrativi: `docker compose exec arenile /arenile seed demo`.
 
-Per HTTPS puoi mettere Arenile dietro un reverse proxy (Caddy, Traefik, Nginx) oppure far gestire i certificati al binario con `ARENILE_TLS_AUTOCERT_DOMAINS`: in questo caso Arenile ascolta direttamente sulle porte 80 e 443, che vanno pubblicate nel compose (`"80:80"` e `"443:443"`, righe già presenti e commentate in `deploy/docker-compose.yml`). Guide dettagliate per VPS, Raspberry Pi, Coolify, CapRover, backup e aggiornamenti in [docs/guida/installazione.md](docs/guida/installazione.md).
+Per HTTPS puoi mettere Arenile dietro un reverse proxy (Caddy, Traefik, Nginx) oppure far gestire i certificati al binario con `ARENILE_TLS_AUTOCERT_DOMAINS`: in questo caso Arenile ascolta direttamente sulle porte 80 e 443, che vanno pubblicate nel compose (`"80:80"` e `"443:443"`, righe già presenti e commentate in `deploy/docker-compose.yml`). Guide dettagliate per Docker, VPS, Raspberry Pi, Coolify, CapRover, compilazione dai sorgenti, HTTPS, backup e aggiornamenti nella sezione [Installazione e operatività](https://docs.arenile.it/installazione/) della documentazione.
 
 ### Comandi del binario
 
@@ -277,7 +279,10 @@ Tutta la configurazione avviene tramite variabili d'ambiente, compatibili con Do
 | `ARENILE_SMTP_URL` | vuoto | Server email, es. `smtp://user:pass@host:587` |
 | `ARENILE_MAIL_FROM` | `noreply@<host di ARENILE_BASE_URL>` | Mittente delle email |
 | `ARENILE_MAIL_DIR` | vuoto | Senza SMTP, cartella in cui scrivere le email come file `.eml` (sviluppo e test); vuota = solo log |
+| `ARENILE_STRIPE_API_URL` | vuoto | Solo test: API Stripe finta (stripe-mock, test e2e); vuota = `https://api.stripe.com` |
 | `ARENILE_HOLD_TTL` | `10m` | Durata del blocco temporaneo del posto durante il checkout |
+| `ARENILE_PUBLIC_READS_PER_MINUTE` | `60` | Letture al minuto per IP sull'API pubblica (spec 17.2) |
+| `ARENILE_PUBLIC_CREATIONS_PER_MINUTE` | `10` | Prenotazioni avviate al minuto per IP sull'API pubblica |
 | `ARENILE_LOG_LEVEL` | `info` | Livello di log (`debug`, `info`, `warn`, `error`) |
 | `ARENILE_TRUSTED_PROXIES` | vuoto | CIDR dei reverse proxy fidati, per ricavare l'IP reale |
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | Rende obbligatoria l'autenticazione a due fattori per i titolari |
@@ -314,6 +319,7 @@ La pagina di prenotazione è raggiungibile direttamente su `https://{host}/b/{sl
 - Funziona con **WordPress** (blocco "HTML personalizzato"), Wix, Squarespace, Joomla, siti statici e qualsiasi CMS.
 - `embed.js` pesa meno di 3 KB e rilancia sulla pagina ospitante gli eventi `arenile:resize`, `arenile:booked` e `arenile:navigate` come `CustomEvent`, utili per tracciare le conversioni.
 - Per sicurezza, l'incorporamento è consentito solo dai domini indicati dal gestore (`frame-ancestors` per stabilimento) e non usa cookie di terze parti.
+- Il pagamento Stripe si apre a tutta finestra e al termine riporta il cliente sulla pagina del tuo sito, dove il widget mostra l'esito (codice e QR).
 - Colori, logo, caratteri e testi si personalizzano dal pannello; il contrasto WCAG AA del testo è calcolato automaticamente.
 
 ---
@@ -408,6 +414,9 @@ Il `Makefile` è l'**unica interfaccia** per build, test e verifiche, per le per
 | `make test-race` | Test `TestConcurrency_*` con `-race` (idempotenza, outbox, webhook; poi disponibilità e pagamenti) |
 | `make up` | Istanza locale vuota con `docker compose up --build` (`compose.yaml`) |
 | `make e2e` | Playwright con server di prova e dati demo |
+| `make acceptance-m4` | Accettazione M4 sul binario reale con `curl`: checkout, Stripe finto con webhook firmato, link magico, QR, `.ics`, rimborso |
+| `make lighthouse` | Lighthouse mobile (rete e CPU rallentate) sulla pagina pubblica: performance ≥ 90, accessibilità, best practices e SEO ≥ 95 |
+| `make docs-build` / `make docs-screenshots` | Sito della documentazione (link verificati) / screenshot chiari e scuri rigenerati sui dati demo |
 | `make check` | `gen` + verifica che il codice generato sia aggiornato + `lint` + `test` (< 2 minuti) |
 | `make check-full` | `check` + `test-db` + `test-race` + `e2e` (prima di aprire una pull request) |
 | `make seed` | Database locale con lo stabilimento dimostrativo |
@@ -457,7 +466,7 @@ Il dettaglio con i criteri di accettazione è nella sezione 28 della [specifica]
 - [x] **M1 — Inventario e mappa** *(implementata; accettazione parziale: il percorso completo, dal nuovo stabilimento al listino, è verificato da un test end-to-end Playwright, mentre il tempo impiegato da un gestore reale non è ancora stato misurato)*: stagioni e periodi, editor della mappa con generatore di file, catalogo pack ed extra, configurazione guidata. *Accettazione:* un lido di 8 file da 15 posti configurato in meno di 15 minuti.
 - [x] **M2 — Prezzi e policy** *(completata: oltre 400 casi di test del motore prezzi)*: motore prezzi completo, prezzi a durata fissa, promo e convenzioni, simulatore e matrice di listino, policy. *Accettazione:* almeno 150 casi di test del motore prezzi.
 - [x] **M3 — Prenotazioni dal pannello e cassa** *(completata: 28 test di concorrenza da almeno 100 tentativi paralleli e una giornata simulata da oltre 450 operazioni, su SQLite e PostgreSQL, senza incoerenze tra allocazioni, prenotazioni e incassi; manca ancora la prova sul campo in uno stabilimento reale)*: motore di disponibilità, vista operativa, planning, clienti, abbonamenti e rilasci, cassa, corrispettivi, SSE. *Accettazione:* test di concorrenza superati, giornata simulata da 300 operazioni senza incoerenze.
-- [ ] **M4 — Pagina pubblica e pagamenti online (MVP pubblico)** *(prossima)*: booking online, `embed.js`, tema, Stripe, link magico, email, QR e `.ics`. *Accettazione:* prenotazione completa da smartphone in un iframe su dominio esterno in meno di 2 minuti.
+- [x] **M4 — Pagina pubblica e pagamenti online (MVP pubblico)** *(completata nel ramo di sviluppo: prenotazione da smartphone dentro un iframe su un'altra origine, pagata con un doppio di Stripe che firma il webhook, in circa 5 secondi nel test Playwright; nessuna doppia vendita tra cassa e online con 120 tentativi paralleli su una postazione e sui pool delle zone, su SQLite e PostgreSQL; prima schermata 135 KB gzip di JavaScript su 150, Lighthouse mobile 97/100/100/100; manca la prova con un account Stripe reale e in uno stabilimento)*: booking online, `embed.js`, tema, Stripe, link magico, email, QR e `.ics`, documentazione completa. *Accettazione:* prenotazione completa da smartphone in un iframe su dominio esterno in meno di 2 minuti.
 - [ ] **M5 — Completamento della stagione**: rinnovi, lista d'attesa, crediti, report, PWA offline, webhook, chiavi API, traduzioni.
 - **Dopo l'MVP**: Satispay e altri provider, driver per registratori telematici, WhatsApp e SMS, app per lo staff in spiaggia, bar e ristorante con addebito sulla postazione.
 

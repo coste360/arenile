@@ -6,10 +6,68 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa**, **M2 — Prezzi e policy** e **M3 — Prenotazioni dal
-pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubblica e pagamenti online**.
+Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa**, **M2 — Prezzi e policy**, **M3 — Prenotazioni dal
+pannello e cassa** e **M4 — Pagina pubblica e pagamenti online** (completate, non rilasciate); prossima **M5 —
+Completamento della stagione**.
 
 ### Added
+
+- **M4 — Pagina pubblica** ([ADR 0013](docs/adr/0013-scelte-m4.md)): prenotazione online in quattro passi
+  (Quando, Dove, Cosa, Chi e pagamento) per zone a posto sulla mappa con il kit, a zona con assegnazione
+  automatica alla conferma e a quantità, anche miste; calendario con giorni pieni e "ultimi posti", legenda dei
+  prezzi per fila, pack con composizione, extra, codice promozionale, riepilogo sempre visibile, conto alla
+  rovescia dell'hold sull'orologio del server, condizioni versionate e consenso marketing separato; pagina di
+  esito con codice, QR e `.ics`; area di gestione dal link magico (dettagli, saldo, cambio date con anteprima,
+  cancellazione con rimborso tramite Stripe o credito, rilascio dei giorni per gli abbonati, nuovo link via
+  email). Tema dello stabilimento con contrasto WCAG AA, chiaro/scuro, italiano, inglese, tedesco e francese.
+- **Widget `embed.js`** (1,1 KB gzip): iframe con altezza automatica, eventi `arenile:resize`,
+  `arenile:booked` (solo codice) e `arenile:navigate`; `frame-ancestors` per stabilimento; dopo il pagamento
+  Stripe riporta il cliente sulla pagina del sito ospitante (`return_to` sull'API `pay`, solo origini
+  autorizzate) e il widget riapre l'esito senza cookie di terze parti.
+- **Pagamenti online** ([ADR 0014](docs/adr/0014-pagamenti-online-m4.md)): driver Stripe Checkout con l'SDK
+  ufficiale, webhook firmato come unico percorso di conferma online, deduplica, eventi fuori ordine,
+  pagamenti tardivi o doppi rimborsati automaticamente (nuovo evento `payment.refund_scheduled`), rimborsi
+  tramite Stripe dal pannello e dall'area di gestione, riconciliazione ogni 15 minuti con report.
+- **Notifiche** (spec 19): email di conferma (QR in linea, `.ics`, link magico, condizioni di cancellazione),
+  modifica, cancellazione, rifiuto, rimborso, richiesta ricevuta e notifiche al gestore, in it/en/de/fr con
+  modelli Markdown sostituibili per stabilimento; consegna con claim esclusivo, backoff fino a 6 ore e dead
+  letter con evento `message.failed`; trasporti SMTP (TLS obbligatorio con credenziali), file `.eml` e log;
+  destinatari cifrati e mascherati, nessun pixel di tracciamento. Mailpit nel `compose.yaml` di sviluppo.
+- **Pannello**: pagine Pagina pubblica (flusso, tema con anteprima dal vivo telefono/computer chiaro/scuro,
+  condizioni, codice da incorporare), Pagamenti online (chiavi in sola scrittura, URL ed eventi del webhook,
+  verifica delle credenziali) ed Email e notifiche (mittente, interruttori, email di prova, registro degli
+  invii); reinvio della conferma e rigenerazione del link dalla prenotazione.
+- **Documentazione** `docs-site/` (Astro Starlight, italiano e inglese, 325 pagine): guida del gestore
+  funzione per funzione, installazione e operatività, API e webhook con riferimento generato da
+  `api/openapi.yaml`, sviluppo ed estensioni; componenti reali da `web/shared` (mappa col kit, simulatore
+  prezzi su dati demo, badge di stato); 46 screenshot chiari e scuri generati da Playwright sui dati demo
+  (`make docs-screenshots`), ricerca integrata, link verificati a ogni build, pubblicazione con ogni rilascio
+  (`.github/workflows/docs.yml`).
+- **Accettazione M4** automatizzata: `e2e/tests/m4-acceptance.spec.ts` (smartphone, iframe su un'altra
+  origine, pagamento con un finto Stripe che firma il webhook, esito con codice e QR: circa 5 s; un'origine non
+  autorizzata è bloccata da `frame-ancestors`); fase online della giornata simulata di
+  `TestAcceptance_SimulatedDay` (120 tentativi cassa/online su una postazione, gare sul pool di una zona
+  `zone`, scadenze, webhook riconsegnati, rimborsi, pagamenti tardivi) su SQLite e PostgreSQL;
+  `make acceptance-m4` (binario reale con `curl`, 29 controlli); `make lighthouse` (mobile, rete e CPU
+  rallentate: 97 performance, 100 accessibilità, best practices e SEO), anche in CI.
+- Configurazione: `ARENILE_PUBLIC_READS_PER_MINUTE` e `ARENILE_PUBLIC_CREATIONS_PER_MINUTE` (limiti per IP
+  dell'API pubblica, default 60 e 10 della spec 17.2), `ARENILE_STRIPE_API_URL` (solo test). `embed origins`
+  accettano anche `http://localhost` e `http://127.0.0.1` per provare il widget in locale.
+- Dati dimostrativi: condizioni d'esempio (`demo-2027`) e prenotazione online aperta fino a 366 giorni prima,
+  così la demo si prenota anche fuori stagione.
+
+### Changed
+
+- I file testuali delle SPA incorporate sono serviti compressi gzip (`Vary: Accept-Encoding`).
+- Limiti dell'API pubblica: contano come creazioni solo l'avvio di una prenotazione e la richiesta di un nuovo
+  link; i passi successivi della stessa prenotazione contano come letture.
+- Il calendario pubblico non propone date oltre l'anticipo massimo della policy online.
+- La mappa segna la postazione scelta con una spunta, la legenda dei prezzi unisce le file con lo stesso prezzo
+  ("File C–H") e il prezzo "da" di un pack è quello della postazione scelta.
+
+### Fixed
+
+- `seed demo` non fa più partire, al primo `serve`, le email di conferma delle prenotazioni dimostrative.
 
 - M4, contratto e scaffolding ([ADR 0013](docs/adr/0013-scelte-m4.md)): API pubblica completa in
   `api/openapi.yaml` (profilo con configurazione del flusso ed `ETag`, calendario, mappa pubblica,
@@ -20,8 +78,7 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
   conferma e rigenerazione del link; nuovi tipi di errore `checkout_not_found`, `payment_provider_unavailable`,
   `webhook_signature_invalid`. Migrazione `00005_online_payments_notifications` (SQLite e PostgreSQL). Nuova
   variabile `ARENILE_MAIL_DIR`. Sito della documentazione `docs-site/` (Astro Starlight, italiano e inglese) con
-  `make docs-dev`, `make docs-build`, `make docs-screenshots`. Le operazioni M4 rispondono `501` finché i builder
-  non le completano.
+  `make docs-dev`, `make docs-build`, `make docs-screenshots`. Le operazioni M4 sono implementate (vedi sopra).
 - Kit di illustrazioni della mappa ([ADR 0012](docs/adr/0012-kit-mappa.md)): le 107 illustrazioni originali di
   Coste360 (`assets/beach-map-kit`, provenienza in `NOTICE.md`) sostituiscono pallini e rettangoli in editor,
   mappa operativa e mini mappa delle prenotazioni. Un solo sprite `<symbol>` per pagina con i soli disegni usati,

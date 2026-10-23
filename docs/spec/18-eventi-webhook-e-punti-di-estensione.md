@@ -10,6 +10,7 @@ booking.modified         booking.cancelled       booking.checked_in
 booking.no_show          booking.completed       booking.approval_requested
 allocation.released      season.day_released     season.renewal_offered
 payment.succeeded        payment.failed          payment.refunded
+payment.refund_scheduled
 customer.created         customer.anonymized
 cash_session.closed      config.pricing_changed  config.map_changed
 ```

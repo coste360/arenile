@@ -129,7 +129,7 @@ Verificata da: `TestBookingService_AuditAndOutboxAtomic` (modifica rifiutata pri
 **INV-19 — Conferma solo dal pagamento.**
 Una prenotazione online passa a `confirmed` solo da un webhook verificato del provider o dal driver
 `manual`; nessun endpoint pubblico chiamato dal browser può confermarla.
-Verificata da: `TestPaymentService_ConfirmsOnDeposit` e `TestBookingRealServices_DeskDay` (conferma dal driver `manual` nella transazione del pagamento, tag `integration`); `TestPublicBooking_ReturnURLDoesNotConfirm` e `TestPaymentWebhook_ConfirmsBooking` arrivano con la pagina pubblica e Stripe (M4). Stato: partial.
+Verificata da: `TestPaymentService_ConfirmsOnDeposit` e `TestBookingRealServices_DeskDay` (conferma dal driver `manual` nella transazione del pagamento), `TestCheckoutFlow_OnlinePaymentNeverConfirmsFromBrowser` (`internal/domain/checkout`: ritorno dal provider e polling non confermano), `TestPaymentWebhook_ConfirmsBooking`, `TestPaymentWebhook_SignatureAndTarget` (`internal/domain/payment/gateway`: solo un webhook con firma valida conferma), tag `integration`. Verifica di sistema: `TestAcceptance_SimulatedDay` (fase online: lo stato pubblico resta non confermato fino al webhook firmato), `e2e/tests/m4-acceptance.spec.ts` (browser reale, iframe su un'altra origine) e `scripts/acceptance/m4-real-binary.sh` (binario reale, webhook contraffatto rifiutato). Stato: implemented.
 
 **INV-20 — Risorse coerenti con lo stato.**
 Prenotazioni `draft`, `expired`, `cancelled`, `rejected` non hanno allocazioni; `held`, `pending_payment`,
@@ -154,11 +154,11 @@ Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (
 **INV-23 — Webhook elaborati una sola volta.**
 Lo stesso evento del provider (stesso ID) produce effetti una sola volta, anche se consegnato più volte
 o in parallelo.
-Verificata da: `TestPaymentWebhook_Deduplicated`, `TestConcurrency_PaymentWebhook_Duplicate`. Stato: planned.
+Verificata da: `TestPaymentWebhook_Deduplicated`, `TestPaymentWebhook_OutOfOrder`, `TestConcurrency_WebhookDuplicate` (100 consegne parallele: un pagamento, una conferma) (`internal/domain/payment/gateway`, tag `integration`); verifica di sistema nella fase online di `TestAcceptance_SimulatedDay` (ogni webhook dei pagati è riconsegnato). Stato: implemented.
 
 **INV-24 — Rimborsi entro il pagato.**
 La somma dei rimborsi riusciti di una prenotazione non supera mai la somma dei pagamenti riusciti.
-Verificata da: `TestRefund_NeverExceedsPaid` (`internal/domain/payment`, 100 rimborsi paralleli, tag `integration`). Stato: implemented.
+Verificata da: `TestRefund_NeverExceedsPaid` (`internal/domain/payment`, 100 rimborsi paralleli, tag `integration`), `TestRefundViaProvider_CapsAndIdempotency` e `TestConcurrency_RefundViaProvider` (`internal/domain/payment/gateway`: il tetto conta anche i rimborsi in corso presso il provider). Stato: implemented.
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-25 — Chiusura di cassa coerente.**
@@ -319,3 +319,43 @@ concorrenti su prenotazioni diverse o vendite libere: ogni redemption blocca la 
 pagamenti non possono spendere due volte lo stesso credito (lo schema ha solo `CHECK amount <> 0`).
 Verificata da: `TestConcurrency_CreditRedemption_NeverNegative` (`internal/domain/payment`, tag `integration`,
 100 tentativi, SQLite e PostgreSQL). Stato: implemented.
+
+## Pagina pubblica e pagamenti online (spec 7.5, 7.6, 12, 13, 19 — M4)
+
+**INV-49 — Nessuna doppia vendita tra cassa e online.**
+Prenotazioni della cassa e checkout della pagina pubblica sulla stessa postazione e sullo stesso giorno, o sullo
+stesso pool di una zona `zone`, non vendono mai più di quanto esiste: decidono i vincoli del database
+(`spot_allocations`, `pool_usage`), anche sotto carico parallelo; la quota online di una zona non viene mai
+superata e vincola i canali `online` e `api`.
+Verificata da: `TestConcurrency_OnlineVsDesk` (120 tentativi alternati, una vendita), `TestConcurrency_ZoneAutoAssign` (`internal/domain/checkout`, tag `integration`, `make test-race`); verifica di sistema: fasi `onlineVsDesk`, `onlineZoneBurst` e `onlineZoneQuota` di `TestAcceptance_SimulatedDay` (`internal/acceptance`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-50 — Assegnazione automatica alla conferma, mai doppia.**
+Una riga di una zona `zone` occupa il pool della zona finché la prenotazione è in hold; alla conferma (webhook,
+driver `manual` o approvazione) riceve una postazione libera della zona e due conferme parallele non ricevono
+mai la stessa postazione.
+Verificata da: `TestCheckoutZone_AutoAssignAtConfirmation`, `TestConcurrency_ZoneAutoAssign` (`internal/domain/checkout`, tag `integration`); verifica di sistema: `onlineZoneQuota` di `TestAcceptance_SimulatedDay` (vincitori confermati in parallelo su postazioni distinte, poi la cassa vende solo quelle rimaste). Stato: implemented.
+
+**INV-51 — Pagamento tardivo rimborsato per intero.**
+Un pagamento che il provider conferma dopo la scadenza dell'hold viene registrato e rimborsato per intero
+automaticamente (evento `payment.refund_scheduled`): la prenotazione resta `expired`, la postazione libera e
+`paid_amount` torna a zero (ADR 0014).
+Verificata da: `TestPaymentWebhook_LatePayment`, `TestPaymentWebhook_DoublePaymentRefundsExcess` (`internal/domain/payment/gateway`, tag `integration`); verifica di sistema: `onlineLatePayments` di `TestAcceptance_SimulatedDay`. Stato: implemented.
+
+**INV-52 — Link magico e token del checkout mai in chiaro.**
+Il token del checkout (`X-Arenile-Checkout`) e il token del link magico sono di 256 bit, salvati solo come hash,
+mai nei log né negli eventi; un token sconosciuto, scaduto, revocato o di un altro stabilimento risponde 404 senza
+distinguere i casi, e "inviami un nuovo link" risponde sempre 202.
+Verificata da: `TestNewToken_Format`, `TestHashToken_Stable` (`internal/domain/checkout`), `TestManage_MagicLinkLifecycle`, `TestManage_RequestLinkNoEnumeration` (`internal/domain/checkout`, tag `integration`), `TestNotify_MagicLinks`, `TestNotify_RequestLink` (`internal/domain/notify`, tag `integration`); verifica di sistema: `scripts/acceptance/m4-real-binary.sh` (token assente dal log del server, 404 sui token sconosciuti, 202 sulle richieste). Stato: implemented.
+
+**INV-53 — Ritorno dal widget solo verso i siti autorizzati.**
+La pagina di ritorno dal provider indicata dal widget incorporato (`return_to`) è accettata solo se la sua origine
+è tra gli `allowed_embed_origins` dello stabilimento (nessun open redirect); `frame-ancestors` della pagina pubblica
+elenca solo quelle origini.
+Verificata da: `TestEmbedReturnURL_Scenarios` (`internal/domain/checkout`), `TestPublicHTTP_FrameAncestorsAndLimits` (`internal/http/public`, tag `integration`), `TestNormalizeEmbedOrigin_Scenarios` (`internal/domain/establishment`); verifica di sistema: `e2e/tests/m4-acceptance.spec.ts` (il browser blocca l'iframe su un'origine non autorizzata). Stato: implemented.
+
+**INV-54 — Email transazionali una sola volta, senza dati in chiaro nei log.**
+Un evento dell'outbox produce al massimo un messaggio per modello (deduplicato anche se riconsegnato); ogni
+messaggio è consegnato da un solo worker anche con più istanze; destinatari mascherati nei log e cifrati nel
+registro; i dati dimostrativi non generano email.
+Verificata da: `TestNotify_OutboxToDelivery`, `TestConcurrency_DeliverClaimsOnce` (`internal/domain/notify`, tag `integration`); verifica di sistema: `scripts/acceptance/m4-real-binary.sh` (nessuna email dopo `seed demo`). Stato: implemented.
+

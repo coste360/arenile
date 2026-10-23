@@ -63,6 +63,37 @@ in parallelo sullo stesso contratto: i punti che la specifica lascia aperti vann
     italiano come locale radice e inglese, componenti reali da `web/shared` tramite alias (React deduplicato),
     screenshot con l'installazione Playwright di `e2e/`.
 
+11. **Decisioni dell'integrazione** (consolidate al termine di M4; i pagamenti online sono in
+    [ADR 0014](0014-pagamenti-online-m4.md)):
+    - **Ritorno dal pagamento nel widget.** Lo storage dell'iframe è partizionato per sito ospitante: al ritorno da
+      Stripe sulla pagina `/b/{slug}` a tutta finestra il token del checkout non c'è. Il widget passa quindi a
+      `pay` l'indirizzo della pagina ospitante (`return_to`, accettato solo se la sua origine è tra gli
+      `allowed_embed_origins`, INV-53); Stripe riporta il cliente lì con `arenile_checkout=<id>` ed `embed.js`
+      riapre il widget sull'esito, dove il token è ancora nel `sessionStorage` dell'iframe.
+    - **Origini locali.** Oltre a `https://`, `allowed_embed_origins` accetta `http://` solo su host di loopback
+      (`localhost`, `*.localhost`, `127.0.0.0/8`, `::1`), contesti sicuri per i browser: si prova il widget su un
+      sito in locale.
+    - **Calendario e policy.** `max_date` del profilo pubblico tiene conto dell'anticipo massimo della policy
+      online (il più permissivo tra default e policy del canale online): la pagina non propone date che il
+      checkout rifiuterebbe. I dati dimostrativi aprono l'anticipo a 366 giorni, così la demo si prenota anche
+      fuori stagione, e pubblicano condizioni d'esempio (`demo-2027`).
+    - **Limiti dell'API pubblica.** Contano come "creazioni" (10/min per IP, spec 17.2) solo l'avvio di una
+      prenotazione e la richiesta di un nuovo link; i passi successivi della stessa prenotazione contano come
+      letture. I limiti sono configurabili (`ARENILE_PUBLIC_READS_PER_MINUTE`,
+      `ARENILE_PUBLIC_CREATIONS_PER_MINUTE`) per le reti condivise.
+    - **Doppio di Stripe.** `ARENILE_STRIPE_API_URL` (solo test) punta il driver a un doppio dell'API; il finto
+      Stripe di `stripetest` gira anche come processo (`internal/testtools/stripefake`) con la pagina di pagamento
+      ospitata e consegna webhook firmati: lo usano l'e2e e l'accettazione sul binario reale.
+    - **Peso in rete.** I file testuali delle SPA incorporate sono serviti compressi gzip (calcolati una volta in
+      memoria, `Vary: Accept-Encoding`): senza, il JavaScript della prima schermata viaggiava non compresso e
+      Lighthouse mobile scendeva a 78.
+    - **Orologio del countdown.** Il conto alla rovescia dell'hold usa l'orologio del server (header `Date` delle
+      risposte), non quello del telefono.
+    - **Storia dimostrativa.** Gli eventi dell'outbox creati da `seed demo` sono segnati come già consegnati: il
+      primo `serve` non invia decine di email a clienti fittizi.
+    - **Email.** Il job di consegna viene svegliato appena un messaggio entra in coda (`jobs.Job.Wake`), oltre al
+      giro periodico di 30 secondi.
+
 ## Conseguenze
 
 - Positive: i builder lavorano su interfacce stabili dichiarate dai consumatori (`checkout.*`, `gateway.*`,
@@ -73,4 +104,4 @@ in parallelo sullo stesso contratto: i punti che la specifica lascia aperti vann
   versione dell'API fissata.
 - Verifiche: `TestMigration00005_ModelsRoundtrip` (`internal/store`, SQLite e PostgreSQL) per vincoli e indici
   unici; i test dei builder (firma dei webhook con segreto di prova, deduplica, riconciliazione,
-  `TestConcurrency_DeskVsOnline` per l'assenza di doppie vendite tra cassa e online).
+  `TestConcurrency_OnlineVsDesk` per l'assenza di doppie vendite tra cassa e online).
