@@ -140,13 +140,15 @@ else
 	label="-unsigned"
 fi
 sign "$app"
-codesign --verify --strict --verbose=2 "$app" >&2
+codesign --verify --deep --strict --verbose=2 "$app" >&2
 
 # Notarize and staple the .app too, so it opens offline once copied out of the dmg.
 if [ "$can_notarize" = 1 ]; then
 	ditto -c -k --keepParent "$app" "$work/app.zip"
 	notarize "$work/app.zip"
 	xcrun stapler staple "$app" >&2
+	xcrun stapler validate "$app" >&2
+	spctl --assess --type execute -vvv "$app" >&2
 fi
 
 # --- 4. dmg -------------------------------------------------------------------
@@ -164,7 +166,8 @@ fi
 if [ "$can_notarize" = 1 ]; then
 	notarize "$dmg"
 	xcrun stapler staple "$dmg" >&2
-	spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg" >&2 || true
+	xcrun stapler validate "$dmg" >&2
+	spctl --assess --type open --context context:primary-signature -vvv "$dmg" >&2
 fi
 hdiutil verify "$dmg" >/dev/null
 sha256_sidecar "$dmg"

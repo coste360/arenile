@@ -103,8 +103,11 @@ stage_binary() {
 			-e "s|@MANIFEST@|$(mixpath "$PKG_DIR/windows/arenile.exe.manifest")|" \
 			-e "s|@V_COMMA@|${v//./,}|g" -e "s|@V_DOT@|$v|g" -e "s|@VERSION@|$VERSION|g" \
 			"$PKG_DIR/windows/arenile.rc.in" >"$rc"
+		# windres and its preprocessor are native Windows programs: under Git
+		# Bash they do not understand MSYS paths such as /tmp/..., so pass
+		# C:/... paths.
 		# shellcheck disable=SC2086 # empty target on arm64
-		"$windres" $WINDRES_TARGET -O coff -i "$rc" -o "$SYSO"
+		"$windres" $WINDRES_TARGET -O coff -i "$(mixpath "$rc")" -o "$(mixpath "$SYSO")"
 		log "resources compiled with $windres"
 	else
 		log "WARNING: windres (MinGW) not found: the .exe has no icon nor version info"

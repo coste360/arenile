@@ -41,15 +41,16 @@ func openGatedSQLite(t *testing.T, busyMS string) *sql.DB {
 }
 
 // TestConcurrency_SQLiteWriteGate: 200 parallel read-modify-write
-// transactions and 100 autocommit updates on the same row, each holding the
+// transactions, 100 autocommit updates and 100 autocommit UPDATE ...
+// RETURNING on the same row, each holding the
 // write lock longer than busy_timeout allows a waiter to poll, all succeed
 // and none is lost. Without the gate the waiters fail with SQLITE_BUSY.
 func TestConcurrency_SQLiteWriteGate(t *testing.T) {
 	db := openGatedSQLite(t, "20")
 	ctx := context.Background()
-	const txs, execs = 200, 100
+	const txs, execs, returns = 200, 100, 100
 	var wg sync.WaitGroup
-	errs := make(chan error, txs+execs)
+	errs := make(chan error, txs+execs+returns)
 	start := make(chan struct{})
 	for range txs {
 		wg.Add(1)
@@ -88,6 +89,17 @@ func TestConcurrency_SQLiteWriteGate(t *testing.T) {
 			}
 		}()
 	}
+	for range returns {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+			var n int
+			if err := db.QueryRowContext(ctx, "UPDATE counter SET n = n + 1 WHERE id = 1 RETURNING n").Scan(&n); err != nil {
+				errs <- err
+			}
+		}()
+	}
 	close(start)
 	wg.Wait()
 	close(errs)
@@ -98,8 +110,8 @@ func TestConcurrency_SQLiteWriteGate(t *testing.T) {
 	if err := db.QueryRow("SELECT n FROM counter WHERE id = 1").Scan(&n); err != nil {
 		t.Fatal(err)
 	}
-	if n != txs+execs {
-		t.Fatalf("counter = %d, want %d (lost updates)", n, txs+execs)
+	if n != txs+execs+returns {
+		t.Fatalf("counter = %d, want %d (lost updates)", n, txs+execs+returns)
 	}
 }
 
@@ -143,5 +155,38 @@ func TestSQLiteWriteGate_ContextAndRelease(t *testing.T) {
 	}
 	if _, err := db.ExecContext(ctx, "UPDATE counter SET n = 1"); err != nil {
 		t.Fatalf("autocommit after release: %v", err)
+	}
+}
+
+// TestSQLiteWriteGate_ReleasedByContextEnd: a write transaction whose context
+// ends while it is open is rolled back by database/sql, which frees the gate
+// for the next writer.
+func TestSQLiteWriteGate_ReleasedByContextEnd(t *testing.T) {
+	db := openGatedSQLite(t, "1000")
+	ctx := context.Background()
+	tctx, cancel := context.WithCancel(ctx)
+	tx, err := db.BeginTx(tctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tx.ExecContext(tctx, "UPDATE counter SET n = 42"); err != nil {
+		t.Fatal(err)
+	}
+	cancel()
+	wctx, wcancel := context.WithTimeout(ctx, 5*time.Second)
+	defer wcancel()
+	next, err := db.BeginTx(wctx, nil)
+	if err != nil {
+		t.Fatalf("gate not released by the context end: %v", err)
+	}
+	var n int
+	if err := next.QueryRowContext(wctx, "SELECT n FROM counter").Scan(&n); err != nil || n != 0 {
+		t.Fatalf("cancelled transaction not rolled back: n = %d, %v", n, err)
+	}
+	if err := next.Commit(); err != nil {
+		t.Fatal(err)
+	}
+	if err := tx.Commit(); !errors.Is(err, sql.ErrTxDone) {
+		t.Fatalf("commit after the context end: %v", err)
 	}
 }

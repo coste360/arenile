@@ -216,6 +216,13 @@ draft ─▶ held ─▶ pending_payment ─▶ confirmed ─▶ checked_in ─�
 - **Verifica di sistema:** `internal/acceptance` avvia l'applicazione reale con `clock.Fake`, la usa
   solo attraverso l'API (oltre 450 operazioni, raffiche concorrenti) e controlla le invarianti sul
   database, su SQLite e PostgreSQL.
+- **Scritture concorrenti su SQLite:** SQLite ammette un solo scrittore e il suo `busy_timeout` è un
+  polling non equo. Il connettore di `internal/store` (`sqlitegate.go`) mette in coda FIFO, nel processo,
+  le transazioni di scrittura e le scritture autocommit (Exec, `... RETURNING`) prima che chiedano il
+  lock; l'attesa rispetta il context e `busy_timeout` resta per gli altri processi (CLI, backup). Regole:
+  dentro una transazione di scrittura non si scrive mai attraverso il pool (`*DB`) invece che con la
+  transazione (attenderebbe la coda che la stessa goroutine occupa) e non si eseguono `BEGIN`/`COMMIT`
+  come istruzioni. I vincoli di disponibilità restano nel database: la coda serializza, non verifica.
 
 ## 6. Motore dei prezzi (spec 8, ADR 0004)
 

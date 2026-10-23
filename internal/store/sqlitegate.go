@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"errors"
+	"regexp"
 	"sync"
 )
 
@@ -15,16 +16,26 @@ import (
 // lose the race for the lock again and again until busy_timeout runs out,
 // even though the total work fits in it.
 //
-// writeGate queues the writers of one *DB in-process, in FIFO order (a
+// writeGate queues the writers of one *DB (one per process: the server opens
+// the database once) in FIFO order (a
 // buffered channel of capacity one serves blocked senders in arrival order),
 // before they ask SQLite for the lock. busy_timeout is then left to cover
 // the contention with other processes (CLI, backup), which is rare and
 // short. Waiting in the gate honours the context.
 //
 // Gated: every read-write transaction (BeginTx without ReadOnly, which the
-// DSN opens with BEGIN IMMEDIATE, so it takes the write lock at once) and
-// every ExecContext outside a transaction (an autocommit write). Reads and
-// read-only transactions use WAL snapshots and never wait.
+// DSN opens with BEGIN IMMEDIATE, so it takes the write lock at once), every
+// ExecContext outside a transaction (an autocommit write) and every
+// QueryContext outside a transaction whose statement has a RETURNING clause
+// (an autocommit INSERT/UPDATE/DELETE ... RETURNING, held until its rows are
+// closed). Reads and read-only transactions use WAL snapshots and never wait.
+// Prepared statements (PrepareContext) are not gated: bun does not use them.
+//
+// Rules that keep the gate sound:
+//   - inside a write transaction, never write through the pool (the *DB)
+//     instead of the transaction: the write would wait for the gate that the
+//     same goroutine holds, until its context ends;
+//   - never run BEGIN/COMMIT as statements: use BeginTx (bun RunInTx).
 type writeGate chan struct{}
 
 func newWriteGate() writeGate { return make(writeGate, 1) }
@@ -105,15 +116,17 @@ func (c *gatedConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.
 }
 
 // Close releases the gate if the connection is discarded with its
-// transaction still open (database/sql does so on a bad connection).
+// transaction still open (database/sql does so on a bad connection), after
+// closing it so that SQLite has dropped the lock.
 func (c *gatedConn) Close() error {
+	err := c.sqliteConn.Close()
 	c.mu.Lock()
 	tx := c.tx
 	c.mu.Unlock()
 	if tx != nil {
 		tx.done()
 	}
-	return c.sqliteConn.Close()
+	return err
 }
 
 // Begin is the deprecated entry point; database/sql prefers BeginTx.
@@ -133,6 +146,58 @@ func (c *gatedConn) ExecContext(ctx context.Context, query string, args []driver
 	}
 	defer c.gate.release()
 	return c.sqliteConn.ExecContext(ctx, query, args)
+}
+
+// returning matches a RETURNING clause: through QueryContext, the only
+// statements that write (bun runs every other write through ExecContext).
+var returning = regexp.MustCompile(`(?i)\breturning\b`)
+
+func (c *gatedConn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
+	c.mu.Lock()
+	inTx := c.tx != nil
+	c.mu.Unlock()
+	if inTx || !returning.MatchString(query) {
+		return c.sqliteConn.QueryContext(ctx, query, args)
+	}
+	if err := c.gate.acquire(ctx); err != nil {
+		return nil, err
+	}
+	rows, err := c.sqliteConn.QueryContext(ctx, query, args)
+	if err != nil {
+		c.gate.release()
+		return nil, err
+	}
+	inner, ok := rows.(sqliteRows)
+	if !ok {
+		_ = rows.Close()
+		c.gate.release()
+		return nil, errors.New("store: sqlite driver rows lack the column type interfaces")
+	}
+	return &gatedRows{sqliteRows: inner, gate: c.gate}, nil
+}
+
+// sqliteRows is the set of interfaces the modernc rows implement; gatedRows
+// forwards all of them (bun reads column types when scanning into maps).
+type sqliteRows interface {
+	driver.Rows
+	driver.RowsColumnTypeDatabaseTypeName
+	driver.RowsColumnTypeLength
+	driver.RowsColumnTypeNullable
+	driver.RowsColumnTypePrecisionScale
+	driver.RowsColumnTypeScanType
+}
+
+// gatedRows holds the gate until the statement is finished (rows closed).
+type gatedRows struct {
+	sqliteRows
+	gate writeGate
+	once sync.Once
+}
+
+func (r *gatedRows) Close() error {
+	err := r.sqliteRows.Close()
+	r.once.Do(r.gate.release)
+	return err
 }
 
 type gatedTx struct {
