@@ -1,16 +1,240 @@
 {
+  "copy": "Copier",
+  "copied": "Copié",
+  "saved": "Paramètres enregistrés",
+  "unsaved": "Modifications non enregistrées",
   "settings": {
     "title": "Page publique",
     "description": "Thème, langues, formules en ligne, conditions et code pour intégrer le widget à votre site.",
+    "tabsLabel": "Sections de la page publique",
+    "tabs": {
+      "flow": "Réservations en ligne",
+      "theme": "Thème et aperçu",
+      "terms": "Conditions",
+      "embed": "Intégrer"
+    },
+    "booking": {
+      "title": "Réservations en ligne",
+      "description": "Activez la page publique et choisissez les sites autorisés à l'intégrer.",
+      "enabled": "Accepter les réservations en ligne",
+      "enabledHint": "Désactivé : la page reste visible avec les contacts mais on ne peut pas réserver.",
+      "origins": "Sites autorisés à intégrer la page",
+      "originsHint": "Une origine par ligne, par exemple https://www.plage-exemple.fr. Vide : lien direct uniquement."
+    },
+    "flow": {
+      "title": "Parcours de réservation",
+      "description": "Ce que le client peut choisir sur la page publique.",
+      "formulas": "Formules proposées en ligne",
+      "formulasHint": "Aucune sélection : toutes celles autorisées par les forfaits vendus en ligne.",
+      "slots": "Créneaux réservables en ligne",
+      "slot": {
+        "FULL": "Journée entière",
+        "AM": "Matin",
+        "PM": "Après-midi"
+      },
+      "maxDaysAhead": "Réservable jusqu'à",
+      "maxDaysAheadHint": "Nombre maximal de jours à l'avance, en plus des limites de la politique en ligne. Vide : aucune limite supplémentaire.",
+      "days": "jours",
+      "showRatePeriods": "Mettre en évidence les périodes tarifaires dans le calendrier",
+      "promoCodes": "Champ code promo",
+      "requirePhone": "Téléphone obligatoire"
+    },
+    "offer": {
+      "title": "Zones et forfaits vendus en ligne",
+      "description": "La visibilité en ligne se règle sur chaque zone (mode emplacement, zone ou quantité) et sur les forfaits et suppléments avec le canal en ligne ; les règles d'anticipation, d'acompte et d'annulation sont dans la politique en ligne.",
+      "zones": "Zones",
+      "catalog": "Forfaits et suppléments",
+      "policies": "Politique"
+    },
+    "themeDescription": "Couleurs, police et textes de la page : l'aperçu à droite est la vraie page en mode test et se met à jour pendant la modification, avant l'enregistrement.",
     "preview": "Aperçu en direct",
-    "embed": "Code d'intégration"
+    "previewDevice": "Appareil de l'aperçu",
+    "previewMobile": "Téléphone",
+    "previewDesktop": "Ordinateur",
+    "previewScheme": "Aperçu clair ou sombre",
+    "previewLight": "Clair",
+    "previewDark": "Sombre",
+    "previewOpen": "Ouvrir l'aperçu dans un nouvel onglet",
+    "previewFrame": "Aperçu de la page publique",
+    "previewHint": "Dans l'aperçu vous pouvez essayer toutes les étapes : aucune réservation n'est créée.",
+    "embed": {
+      "title": "Code d'intégration",
+      "description": "Lien direct et code à coller dans le site de la plage.",
+      "pageUrl": "Lien de la page publique",
+      "script": "Code recommandé (script : gère la hauteur, la langue et les dates)",
+      "iframe": "Sinon : iframe",
+      "originsList": "Sites autorisés : {{origins}}. Sur d'autres sites le navigateur bloque l'intégration.",
+      "originsNone": "Aucun site autorisé : la page fonctionne seulement en lien direct. Ajoutez votre site dans \"Réservations en ligne\".",
+      "events": "Le script relaie sur la page du site les événements arenile:booked (code de réservation uniquement), arenile:resize et arenile:navigate, utiles pour suivre les conversions. Paramètres facultatifs : data-lang, data-from, data-to, data-pack."
+    }
+  },
+  "terms": {
+    "title": "Conditions et politique de confidentialité",
+    "description": "Versions immuables : le paiement demande d'accepter la version courante et chaque réservation enregistre celle acceptée.",
+    "new": "Nouvelle version",
+    "empty": "Aucune version publiée",
+    "emptyHint": "Publiez les conditions de réservation avant d'ouvrir les réservations en ligne.",
+    "current": "Courante",
+    "publishedAt": "Publiée le {{date}}",
+    "show": "Texte",
+    "publishTitle": "Publier une nouvelle version",
+    "publishDescription": "Les versions publiées ne peuvent pas être modifiées. Le texte dans la langue par défaut est obligatoire.",
+    "version": "Version",
+    "versionHint": "Identifiant lisible, par exemple la date de publication.",
+    "defaultLocale": "langue par défaut",
+    "terms": "Conditions de réservation",
+    "privacy": "Politique de confidentialité",
+    "marketing": "Texte du consentement marketing",
+    "marketingHint": "Facultatif, affiché à côté de la case de consentement séparée.",
+    "makeCurrent": "Rendre courante",
+    "makeCurrentHint": "Dès le prochain paiement les clients accepteront cette version.",
+    "publish": "Publier",
+    "published": "Version {{version}} publiée"
   },
   "payments": {
     "title": "Paiements en ligne",
-    "description": "Connectez Stripe pour encaisser en ligne : les clés sont chiffrées et ne sont plus jamais affichées."
+    "description": "Connectez Stripe pour encaisser en ligne : les clés sont chiffrées et jamais réaffichées.",
+    "status": {
+      "title": "État",
+      "description": "Prestataire actif et vérification des identifiants enregistrés."
+    },
+    "providerLabel": "Prestataire : {{provider}}",
+    "providers": {
+      "manual": "Aucun paiement en ligne",
+      "stripe": "Stripe Checkout"
+    },
+    "modes": {
+      "test": "Mode test",
+      "live": "Paiements réels"
+    },
+    "configured": "Configurée",
+    "configuredLast4": "Clé configurée ••••{{last4}}",
+    "secretMissing": "Clé secrète manquante",
+    "webhookConfigured": "Secret du webhook configuré",
+    "webhookMissing": "Secret du webhook manquant",
+    "verifiedAt": "Vérifiée le {{date}}",
+    "manualHint": "Les réservations en ligne se paient à la plage ou sont confirmées selon la politique en ligne.",
+    "incomplete": "Pour encaisser en ligne il faut la clé secrète et le secret du webhook.",
+    "test": "Vérifier les identifiants",
+    "testOk": "Identifiants valides",
+    "testFailed": "Vérification échouée",
+    "provider": {
+      "title": "Prestataire et clés",
+      "description": "Les clés se trouvent dans le tableau de bord Stripe, dans Développeurs → Clés API.",
+      "label": "Prestataire"
+    },
+    "mode": "Mode",
+    "liveWarning": "Mode réel : les clients seront débités. Essayez d'abord un paiement en mode test.",
+    "publishableKey": "Clé publiable",
+    "publishableKeyHint": "Commence par pk_{{mode}}_.",
+    "secretKey": "Clé secrète",
+    "secretKeyHint": "Commence par sk_{{mode}}_ (ou rk_{{mode}}_ pour une clé restreinte). Laissez vide pour la conserver.",
+    "webhookSecret": "Secret de signature du webhook",
+    "webhookSecretHint": "Commence par whsec_ : vous le trouvez dans le webhook créé dans Stripe. Laissez vide pour le conserver.",
+    "remove": "Supprimer",
+    "keep": "Conserver",
+    "embedded": "Paiement intégré à la page",
+    "embeddedHint": "Disponible dans une prochaine version : aujourd'hui le paiement s'ouvre sur la page sécurisée de Stripe Checkout.",
+    "webhook": {
+      "title": "Webhook Stripe",
+      "description": "Une réservation n'est confirmée que lorsque Stripe notifie le paiement à cette adresse.",
+      "url": "URL du point de terminaison à coller dans Stripe",
+      "events": "Événements à envoyer",
+      "step1": "Dans Stripe, ouvrez Développeurs → Webhooks et ajoutez un point de terminaison avec cette URL.",
+      "step2": "Sélectionnez les événements listés ci-dessus et enregistrez.",
+      "step3": "Copiez le secret de signature (whsec_…) dans le champ ci-dessus et cliquez sur \"Vérifier les identifiants\"."
+    },
+    "validation": {
+      "publishable": "La clé publiable commence par pk_test_ ou pk_live_",
+      "secret": "La clé secrète commence par sk_test_, sk_live_, rk_test_ ou rk_live_",
+      "webhook": "Le secret du webhook commence par whsec_",
+      "mode": "La clé ne correspond pas au mode choisi"
+    }
   },
   "email": {
     "title": "E-mails et notifications",
-    "description": "Expéditeur, notifications au client et au gérant, e-mail de test et journal des envois."
+    "description": "Expéditeur, notifications au client et au gérant, e-mail de test et journal des envois.",
+    "transport": {
+      "title": "Envoi des e-mails",
+      "description": "Le serveur de messagerie se configure au démarrage d'Arenile et est ici en lecture seule.",
+      "smtp": "Serveur SMTP configuré",
+      "log": "Pas de SMTP : e-mails dans le journal",
+      "file": "Pas de SMTP : e-mails enregistrés en fichiers",
+      "from": "Adresse de l'expéditeur : {{from}}",
+      "noSmtpTitle": "Les e-mails n'arrivent pas aux clients",
+      "logHint": "Sans ARENILE_SMTP_URL les e-mails sont seulement enregistrés dans le journal (destinataire masqué). Définissez ARENILE_SMTP_URL et ARENILE_MAIL_FROM pour les envoyer réellement.",
+      "fileHint": "Les e-mails sont enregistrés en fichiers .eml dans le dossier ARENILE_MAIL_DIR (développement et tests). Définissez ARENILE_SMTP_URL pour les envoyer réellement."
+    },
+    "settings": {
+      "title": "Expéditeur et notifications",
+      "description": "Nom affiché aux clients, adresse de réponse et notifications actives.",
+      "senderName": "Nom de l'expéditeur",
+      "replyTo": "Répondre à",
+      "replyToHint": "Les réponses des clients arrivent ici.",
+      "managerEmail": "E-mail du gérant",
+      "managerEmailHint": "Reçoit les notifications pour la plage.",
+      "customer": "Au client",
+      "manager": "Au gérant"
+    },
+    "customer": {
+      "confirmation": "Confirmation avec lien de gestion, QR et calendrier",
+      "balance_reminder": "Rappel du solde",
+      "day_before_reminder": "Rappel la veille",
+      "cancellation": "Annulation",
+      "refund": "Remboursement ou avoir",
+      "upcoming": "Prévu dans une prochaine version : pas encore envoyé."
+    },
+    "manager": {
+      "new_online_booking": "Nouvelle réservation en ligne",
+      "approval_requested": "Demande à approuver",
+      "payment_failed": "Paiement refusé",
+      "webhook_error": "Erreur du webhook de paiement"
+    },
+    "test": {
+      "title": "E-mail de test",
+      "description": "Vérifiez que les e-mails partent et n'arrivent pas dans les spams.",
+      "to": "Destinataire",
+      "send": "Envoyer un test",
+      "queued": "E-mail de test mis en file : consultez le journal ci-dessous.",
+      "failed": "Impossible de mettre l'e-mail de test en file."
+    },
+    "log": {
+      "title": "Journal des envois",
+      "description": "Derniers e-mails envoyés ou en file ; les destinataires sont masqués et le contenu n'est pas conservé.",
+      "filter": "Filtrer par état",
+      "all": "Tous les états",
+      "empty": "Aucun e-mail envoyé",
+      "emptyHint": "Les e-mails partent à la confirmation des réservations en ligne et depuis les actions de l'accueil.",
+      "date": "Date",
+      "template": "Message",
+      "recipient": "Destinataire",
+      "booking": "Réservation",
+      "status": "État",
+      "attempts_one": "{{count}} tentative",
+      "attempts_other": "{{count}} tentatives"
+    },
+    "status": {
+      "queued": "En file",
+      "sending": "En cours d'envoi",
+      "sent": "Envoyé",
+      "failed": "Échec",
+      "cancelled": "Annulé"
+    },
+    "templates": {
+      "booking_confirmed": "Confirmation de réservation",
+      "booking_modified": "Réservation modifiée",
+      "booking_cancelled": "Annulation",
+      "booking_rejected": "Demande refusée",
+      "booking_approval_pending": "Demande reçue (en attente)",
+      "refund_issued": "Remboursement",
+      "balance_reminder": "Rappel du solde",
+      "day_before_reminder": "Rappel de la veille",
+      "manage_link": "Lien de gestion",
+      "test": "E-mail de test",
+      "manager_new_booking": "Nouvelle réservation en ligne",
+      "manager_approval_requested": "Demande à approuver",
+      "manager_payment_failed": "Paiement refusé",
+      "manager_delivery_failed": "E-mail non distribué"
+    }
   }
 }

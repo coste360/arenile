@@ -1,16 +1,240 @@
 {
+  "copy": "Copy",
+  "copied": "Copied",
+  "saved": "Settings saved",
+  "unsaved": "Unsaved changes",
   "settings": {
     "title": "Public page",
-    "description": "Theme, languages, online formulas, terms and the code to embed the widget in your website.",
+    "description": "Theme, languages, online packages, conditions and the code to embed the widget in your website.",
+    "tabsLabel": "Sections of the public page",
+    "tabs": {
+      "flow": "Online bookings",
+      "theme": "Theme and preview",
+      "terms": "Conditions",
+      "embed": "Embed"
+    },
+    "booking": {
+      "title": "Online bookings",
+      "description": "Turn on the public page and choose the websites that may embed it.",
+      "enabled": "Accept online bookings",
+      "enabledHint": "Off: the page stays visible with the contacts but nobody can book.",
+      "origins": "Websites allowed to embed the page",
+      "originsHint": "One origin per line, for example https://www.examplebeach.com. Empty: direct link only."
+    },
+    "flow": {
+      "title": "Booking flow",
+      "description": "What customers can choose on the public page.",
+      "formulas": "Package types offered online",
+      "formulasHint": "None selected: all those allowed by the packages sold online.",
+      "slots": "Time slots bookable online",
+      "slot": {
+        "FULL": "Full day",
+        "AM": "Morning",
+        "PM": "Afternoon"
+      },
+      "maxDaysAhead": "Bookable up to",
+      "maxDaysAheadHint": "Maximum days in advance, on top of the online policy limits. Empty: no extra limit.",
+      "days": "days",
+      "showRatePeriods": "Highlight rate periods in the calendar",
+      "promoCodes": "Promo code field",
+      "requirePhone": "Phone required"
+    },
+    "offer": {
+      "title": "Areas and packages sold online",
+      "description": "Online visibility is set on each area (seat, area or quantity mode) and on the packages and extras with the online channel; lead time, deposit and cancellation rules are in the online policy.",
+      "zones": "Areas",
+      "catalog": "Packages and extras",
+      "policies": "Policy"
+    },
+    "themeDescription": "Colours, font and texts of the page: the preview on the right is the real page in test mode and updates while you edit, before saving.",
     "preview": "Live preview",
-    "embed": "Embed code"
+    "previewDevice": "Preview device",
+    "previewMobile": "Phone",
+    "previewDesktop": "Computer",
+    "previewScheme": "Light or dark preview",
+    "previewLight": "Light",
+    "previewDark": "Dark",
+    "previewOpen": "Open the preview in a new tab",
+    "previewFrame": "Preview of the public page",
+    "previewHint": "You can try every step in the preview: no booking is created.",
+    "embed": {
+      "title": "Embed code",
+      "description": "Direct link and code to paste into the beach website.",
+      "pageUrl": "Public page link",
+      "script": "Recommended code (script: handles height, language and dates)",
+      "iframe": "Alternatively: iframe",
+      "originsList": "Allowed websites: {{origins}}. On other websites the browser blocks the embedding.",
+      "originsNone": "No website allowed: the page only works as a direct link. Add your website under \"Online bookings\".",
+      "events": "The script re-dispatches the arenile:booked (booking code only), arenile:resize and arenile:navigate events on the host page, useful to track conversions. Optional parameters: data-lang, data-from, data-to, data-pack."
+    }
+  },
+  "terms": {
+    "title": "Conditions and privacy notice",
+    "description": "Immutable versions: checkout asks to accept the current version and every booking records the one accepted.",
+    "new": "New version",
+    "empty": "No version published",
+    "emptyHint": "Publish the booking conditions before opening online bookings.",
+    "current": "Current",
+    "publishedAt": "Published on {{date}}",
+    "show": "Text",
+    "publishTitle": "Publish a new version",
+    "publishDescription": "Published versions cannot be changed. The text in the default language is required.",
+    "version": "Version",
+    "versionHint": "Readable identifier, for example the publication date.",
+    "defaultLocale": "default language",
+    "terms": "Booking conditions",
+    "privacy": "Privacy notice",
+    "marketing": "Marketing consent text",
+    "marketingHint": "Optional, shown next to the separate consent checkbox.",
+    "makeCurrent": "Make current",
+    "makeCurrentHint": "From the next checkout customers accept this version.",
+    "publish": "Publish",
+    "published": "Version {{version}} published"
   },
   "payments": {
     "title": "Online payments",
-    "description": "Connect Stripe to take payments online: keys are encrypted and never shown again."
+    "description": "Connect Stripe to take payments online: keys are encrypted and never shown again.",
+    "status": {
+      "title": "Status",
+      "description": "Active provider and check of the saved credentials."
+    },
+    "providerLabel": "Provider: {{provider}}",
+    "providers": {
+      "manual": "No online payment",
+      "stripe": "Stripe Checkout"
+    },
+    "modes": {
+      "test": "Test mode",
+      "live": "Live payments"
+    },
+    "configured": "Configured",
+    "configuredLast4": "Key configured ••••{{last4}}",
+    "secretMissing": "Secret key missing",
+    "webhookConfigured": "Webhook secret configured",
+    "webhookMissing": "Webhook secret missing",
+    "verifiedAt": "Verified on {{date}}",
+    "manualHint": "Online bookings are paid at the beach or confirmed according to the online policy.",
+    "incomplete": "To take payments online you need the secret key and the webhook secret.",
+    "test": "Check credentials",
+    "testOk": "Credentials valid",
+    "testFailed": "Check failed",
+    "provider": {
+      "title": "Provider and keys",
+      "description": "Keys are in the Stripe dashboard under Developers → API keys.",
+      "label": "Provider"
+    },
+    "mode": "Mode",
+    "liveWarning": "Live mode: customers will be charged. Try a payment in test mode first.",
+    "publishableKey": "Publishable key",
+    "publishableKeyHint": "Starts with pk_{{mode}}_.",
+    "secretKey": "Secret key",
+    "secretKeyHint": "Starts with sk_{{mode}}_ (or rk_{{mode}}_ for a restricted key). Leave empty to keep it.",
+    "webhookSecret": "Webhook signing secret",
+    "webhookSecretHint": "Starts with whsec_: you find it in the webhook created in Stripe. Leave empty to keep it.",
+    "remove": "Remove",
+    "keep": "Keep",
+    "embedded": "Payment embedded in the page",
+    "embeddedHint": "Available in a future version: today payment opens on the secure Stripe Checkout page.",
+    "webhook": {
+      "title": "Stripe webhook",
+      "description": "A booking is confirmed only when Stripe notifies the payment to this address.",
+      "url": "Endpoint URL to paste in Stripe",
+      "events": "Events to send",
+      "step1": "In Stripe open Developers → Webhooks and add an endpoint with this URL.",
+      "step2": "Select the events listed above and save.",
+      "step3": "Copy the signing secret (whsec_…) into the field above and press \"Check credentials\"."
+    },
+    "validation": {
+      "publishable": "The publishable key starts with pk_test_ or pk_live_",
+      "secret": "The secret key starts with sk_test_, sk_live_, rk_test_ or rk_live_",
+      "webhook": "The webhook secret starts with whsec_",
+      "mode": "The key does not match the chosen mode"
+    }
   },
   "email": {
     "title": "Email and notifications",
-    "description": "Sender, customer and manager notifications, test email and delivery log."
+    "description": "Sender, customer and manager notifications, test email and delivery log.",
+    "transport": {
+      "title": "Email delivery",
+      "description": "The mail server is configured when Arenile starts and is read-only here.",
+      "smtp": "SMTP server configured",
+      "log": "No SMTP: emails in the log",
+      "file": "No SMTP: emails saved to files",
+      "from": "Sender address: {{from}}",
+      "noSmtpTitle": "Emails do not reach customers",
+      "logHint": "Without ARENILE_SMTP_URL emails are only recorded in the log (masked recipient). Set ARENILE_SMTP_URL and ARENILE_MAIL_FROM to really send them.",
+      "fileHint": "Emails are saved as .eml files in the ARENILE_MAIL_DIR folder (development and tests). Set ARENILE_SMTP_URL to really send them."
+    },
+    "settings": {
+      "title": "Sender and notifications",
+      "description": "Name shown to customers, reply address and active notifications.",
+      "senderName": "Sender name",
+      "replyTo": "Reply to",
+      "replyToHint": "Customer replies arrive here.",
+      "managerEmail": "Manager email",
+      "managerEmailHint": "Receives the notifications for the beach.",
+      "customer": "To the customer",
+      "manager": "To the manager"
+    },
+    "customer": {
+      "confirmation": "Confirmation with manage link, QR and calendar",
+      "balance_reminder": "Balance reminder",
+      "day_before_reminder": "Reminder the day before",
+      "cancellation": "Cancellation",
+      "refund": "Refund or credit",
+      "upcoming": "Coming in a future version: not sent yet."
+    },
+    "manager": {
+      "new_online_booking": "New online booking",
+      "approval_requested": "Request to approve",
+      "payment_failed": "Payment failed",
+      "webhook_error": "Payment webhook error"
+    },
+    "test": {
+      "title": "Test email",
+      "description": "Check that emails go out and do not end up in spam.",
+      "to": "Recipient",
+      "send": "Send test",
+      "queued": "Test email queued: check the log below.",
+      "failed": "Could not queue the test email."
+    },
+    "log": {
+      "title": "Delivery log",
+      "description": "Latest emails sent or queued; recipients are masked and the content is not kept.",
+      "filter": "Filter by status",
+      "all": "All statuses",
+      "empty": "No email sent",
+      "emptyHint": "Emails go out when online bookings are confirmed and from desk actions.",
+      "date": "Date",
+      "template": "Message",
+      "recipient": "Recipient",
+      "booking": "Booking",
+      "status": "Status",
+      "attempts_one": "{{count}} attempt",
+      "attempts_other": "{{count}} attempts"
+    },
+    "status": {
+      "queued": "Queued",
+      "sending": "Sending",
+      "sent": "Sent",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "templates": {
+      "booking_confirmed": "Booking confirmation",
+      "booking_modified": "Booking changed",
+      "booking_cancelled": "Cancellation",
+      "booking_rejected": "Request declined",
+      "booking_approval_pending": "Request received (pending)",
+      "refund_issued": "Refund",
+      "balance_reminder": "Balance reminder",
+      "day_before_reminder": "Day-before reminder",
+      "manage_link": "Manage link",
+      "test": "Test email",
+      "manager_new_booking": "New online booking",
+      "manager_approval_requested": "Request to approve",
+      "manager_payment_failed": "Payment failed",
+      "manager_delivery_failed": "Email not delivered"
+    }
   }
 }

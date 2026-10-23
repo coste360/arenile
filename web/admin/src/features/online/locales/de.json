@@ -1,16 +1,240 @@
 {
+  "copy": "Kopieren",
+  "copied": "Kopiert",
+  "saved": "Einstellungen gespeichert",
+  "unsaved": "Ungespeicherte Änderungen",
   "settings": {
     "title": "Öffentliche Seite",
-    "description": "Design, Sprachen, Online-Tarife, Bedingungen und der Code, um das Widget in deine Website einzubetten.",
+    "description": "Design, Sprachen, Online-Angebote, Bedingungen und der Code zum Einbetten des Widgets in Ihre Website.",
+    "tabsLabel": "Bereiche der öffentlichen Seite",
+    "tabs": {
+      "flow": "Online-Buchungen",
+      "theme": "Design und Vorschau",
+      "terms": "Bedingungen",
+      "embed": "Einbetten"
+    },
+    "booking": {
+      "title": "Online-Buchungen",
+      "description": "Aktivieren Sie die öffentliche Seite und wählen Sie die Websites, die sie einbetten dürfen.",
+      "enabled": "Online-Buchungen annehmen",
+      "enabledHint": "Aus: Die Seite bleibt mit den Kontakten sichtbar, aber Buchungen sind nicht möglich.",
+      "origins": "Websites, die die Seite einbetten dürfen",
+      "originsHint": "Eine Origin pro Zeile, z. B. https://www.beispielstrand.de. Leer: nur direkter Link."
+    },
+    "flow": {
+      "title": "Buchungsablauf",
+      "description": "Was Kunden auf der öffentlichen Seite wählen können.",
+      "formulas": "Online angebotene Angebotsarten",
+      "formulasHint": "Keine Auswahl: alle, die die online verkauften Pakete erlauben.",
+      "slots": "Online buchbare Zeitfenster",
+      "slot": {
+        "FULL": "Ganzer Tag",
+        "AM": "Vormittag",
+        "PM": "Nachmittag"
+      },
+      "maxDaysAhead": "Buchbar bis",
+      "maxDaysAheadHint": "Maximale Tage im Voraus, zusätzlich zu den Grenzen der Online-Richtlinie. Leer: keine zusätzliche Grenze.",
+      "days": "Tage",
+      "showRatePeriods": "Tarifzeiträume im Kalender hervorheben",
+      "promoCodes": "Feld für Aktionscodes",
+      "requirePhone": "Telefon erforderlich"
+    },
+    "offer": {
+      "title": "Online verkaufte Bereiche und Pakete",
+      "description": "Die Online-Sichtbarkeit wird für jeden Bereich (Platz-, Bereichs- oder Mengenmodus) und für Pakete und Extras mit dem Online-Kanal festgelegt; Regeln zu Vorlauf, Anzahlung und Stornierung stehen in der Online-Richtlinie.",
+      "zones": "Bereiche",
+      "catalog": "Pakete und Extras",
+      "policies": "Richtlinie"
+    },
+    "themeDescription": "Farben, Schrift und Texte der Seite: Die Vorschau rechts ist die echte Seite im Testmodus und aktualisiert sich beim Bearbeiten, noch vor dem Speichern.",
     "preview": "Live-Vorschau",
-    "embed": "Einbettungscode"
+    "previewDevice": "Gerät der Vorschau",
+    "previewMobile": "Telefon",
+    "previewDesktop": "Computer",
+    "previewScheme": "Helle oder dunkle Vorschau",
+    "previewLight": "Hell",
+    "previewDark": "Dunkel",
+    "previewOpen": "Vorschau in neuem Tab öffnen",
+    "previewFrame": "Vorschau der öffentlichen Seite",
+    "previewHint": "In der Vorschau können Sie alle Schritte testen: Es wird keine Buchung erstellt.",
+    "embed": {
+      "title": "Code zum Einbetten",
+      "description": "Direkter Link und Code zum Einfügen in die Website des Strandes.",
+      "pageUrl": "Link der öffentlichen Seite",
+      "script": "Empfohlener Code (Script: regelt Höhe, Sprache und Daten)",
+      "iframe": "Alternativ: iframe",
+      "originsList": "Erlaubte Websites: {{origins}}. Auf anderen Websites blockiert der Browser das Einbetten.",
+      "originsNone": "Keine Website erlaubt: Die Seite funktioniert nur als direkter Link. Fügen Sie Ihre Website unter \"Online-Buchungen\" hinzu.",
+      "events": "Das Script gibt die Ereignisse arenile:booked (nur Buchungscode), arenile:resize und arenile:navigate auf der Website weiter, nützlich für das Conversion-Tracking. Optionale Parameter: data-lang, data-from, data-to, data-pack."
+    }
+  },
+  "terms": {
+    "title": "Bedingungen und Datenschutzhinweis",
+    "description": "Unveränderliche Versionen: Der Checkout verlangt die aktuelle Version und jede Buchung speichert die akzeptierte.",
+    "new": "Neue Version",
+    "empty": "Keine Version veröffentlicht",
+    "emptyHint": "Veröffentlichen Sie die Buchungsbedingungen, bevor Sie Online-Buchungen öffnen.",
+    "current": "Aktuell",
+    "publishedAt": "Veröffentlicht am {{date}}",
+    "show": "Text",
+    "publishTitle": "Neue Version veröffentlichen",
+    "publishDescription": "Veröffentlichte Versionen können nicht geändert werden. Der Text in der Standardsprache ist erforderlich.",
+    "version": "Version",
+    "versionHint": "Lesbare Kennung, z. B. das Veröffentlichungsdatum.",
+    "defaultLocale": "Standardsprache",
+    "terms": "Buchungsbedingungen",
+    "privacy": "Datenschutzhinweis",
+    "marketing": "Text der Marketing-Einwilligung",
+    "marketingHint": "Optional, neben dem separaten Einwilligungskästchen angezeigt.",
+    "makeCurrent": "Als aktuell festlegen",
+    "makeCurrentHint": "Ab dem nächsten Checkout akzeptieren Kunden diese Version.",
+    "publish": "Veröffentlichen",
+    "published": "Version {{version}} veröffentlicht"
   },
   "payments": {
     "title": "Online-Zahlungen",
-    "description": "Verbinde Stripe, um online zu kassieren: Schlüssel werden verschlüsselt und nie wieder angezeigt."
+    "description": "Verbinden Sie Stripe, um online zu kassieren: Die Schlüssel werden verschlüsselt und nie wieder angezeigt.",
+    "status": {
+      "title": "Status",
+      "description": "Aktiver Anbieter und Prüfung der gespeicherten Zugangsdaten."
+    },
+    "providerLabel": "Anbieter: {{provider}}",
+    "providers": {
+      "manual": "Keine Online-Zahlung",
+      "stripe": "Stripe Checkout"
+    },
+    "modes": {
+      "test": "Testmodus",
+      "live": "Echte Zahlungen"
+    },
+    "configured": "Konfiguriert",
+    "configuredLast4": "Schlüssel konfiguriert ••••{{last4}}",
+    "secretMissing": "Geheimer Schlüssel fehlt",
+    "webhookConfigured": "Webhook-Geheimnis konfiguriert",
+    "webhookMissing": "Webhook-Geheimnis fehlt",
+    "verifiedAt": "Geprüft am {{date}}",
+    "manualHint": "Online-Buchungen werden am Strand bezahlt oder gemäß der Online-Richtlinie bestätigt.",
+    "incomplete": "Für Online-Zahlungen sind der geheime Schlüssel und das Webhook-Geheimnis nötig.",
+    "test": "Zugangsdaten prüfen",
+    "testOk": "Zugangsdaten gültig",
+    "testFailed": "Prüfung fehlgeschlagen",
+    "provider": {
+      "title": "Anbieter und Schlüssel",
+      "description": "Die Schlüssel finden Sie im Stripe-Dashboard unter Entwickler → API-Schlüssel.",
+      "label": "Anbieter"
+    },
+    "mode": "Modus",
+    "liveWarning": "Echtmodus: Kunden werden belastet. Testen Sie zuerst eine Zahlung im Testmodus.",
+    "publishableKey": "Veröffentlichbarer Schlüssel",
+    "publishableKeyHint": "Beginnt mit pk_{{mode}}_.",
+    "secretKey": "Geheimer Schlüssel",
+    "secretKeyHint": "Beginnt mit sk_{{mode}}_ (oder rk_{{mode}}_ für einen eingeschränkten Schlüssel). Leer lassen, um ihn zu behalten.",
+    "webhookSecret": "Signaturgeheimnis des Webhooks",
+    "webhookSecretHint": "Beginnt mit whsec_: Sie finden es im in Stripe erstellten Webhook. Leer lassen, um es zu behalten.",
+    "remove": "Entfernen",
+    "keep": "Behalten",
+    "embedded": "In die Seite eingebettete Zahlung",
+    "embeddedHint": "In einer künftigen Version verfügbar: Heute öffnet sich die Zahlung auf der sicheren Seite von Stripe Checkout.",
+    "webhook": {
+      "title": "Stripe-Webhook",
+      "description": "Eine Buchung wird erst bestätigt, wenn Stripe die Zahlung an diese Adresse meldet.",
+      "url": "Endpunkt-URL zum Einfügen in Stripe",
+      "events": "Zu sendende Ereignisse",
+      "step1": "Öffnen Sie in Stripe Entwickler → Webhooks und fügen Sie einen Endpunkt mit dieser URL hinzu.",
+      "step2": "Wählen Sie die oben aufgeführten Ereignisse und speichern Sie.",
+      "step3": "Kopieren Sie das Signaturgeheimnis (whsec_…) in das Feld oben und klicken Sie auf \"Zugangsdaten prüfen\"."
+    },
+    "validation": {
+      "publishable": "Der veröffentlichbare Schlüssel beginnt mit pk_test_ oder pk_live_",
+      "secret": "Der geheime Schlüssel beginnt mit sk_test_, sk_live_, rk_test_ oder rk_live_",
+      "webhook": "Das Webhook-Geheimnis beginnt mit whsec_",
+      "mode": "Der Schlüssel passt nicht zum gewählten Modus"
+    }
   },
   "email": {
     "title": "E-Mail und Benachrichtigungen",
-    "description": "Absender, Benachrichtigungen an Kunden und Betreiber, Test-E-Mail und Versandprotokoll."
+    "description": "Absender, Benachrichtigungen an Kunden und Betreiber, Test-E-Mail und Versandprotokoll.",
+    "transport": {
+      "title": "E-Mail-Versand",
+      "description": "Der Mailserver wird beim Start von Arenile konfiguriert und ist hier schreibgeschützt.",
+      "smtp": "SMTP-Server konfiguriert",
+      "log": "Kein SMTP: E-Mails im Log",
+      "file": "Kein SMTP: E-Mails als Dateien gespeichert",
+      "from": "Absenderadresse: {{from}}",
+      "noSmtpTitle": "E-Mails erreichen die Kunden nicht",
+      "logHint": "Ohne ARENILE_SMTP_URL werden E-Mails nur im Log erfasst (maskierter Empfänger). Setzen Sie ARENILE_SMTP_URL und ARENILE_MAIL_FROM, um sie wirklich zu senden.",
+      "fileHint": "E-Mails werden als .eml-Dateien im Ordner ARENILE_MAIL_DIR gespeichert (Entwicklung und Tests). Setzen Sie ARENILE_SMTP_URL, um sie wirklich zu senden."
+    },
+    "settings": {
+      "title": "Absender und Benachrichtigungen",
+      "description": "Den Kunden angezeigter Name, Antwortadresse und aktive Benachrichtigungen.",
+      "senderName": "Name des Absenders",
+      "replyTo": "Antwort an",
+      "replyToHint": "Antworten der Kunden kommen hier an.",
+      "managerEmail": "E-Mail des Betreibers",
+      "managerEmailHint": "Erhält die Benachrichtigungen für den Strand.",
+      "customer": "An den Kunden",
+      "manager": "An den Betreiber"
+    },
+    "customer": {
+      "confirmation": "Bestätigung mit Verwaltungslink, QR und Kalender",
+      "balance_reminder": "Erinnerung an den Restbetrag",
+      "day_before_reminder": "Erinnerung am Vortag",
+      "cancellation": "Stornierung",
+      "refund": "Erstattung oder Gutschrift",
+      "upcoming": "Folgt in einer späteren Version: wird noch nicht gesendet."
+    },
+    "manager": {
+      "new_online_booking": "Neue Online-Buchung",
+      "approval_requested": "Zu genehmigende Anfrage",
+      "payment_failed": "Zahlung fehlgeschlagen",
+      "webhook_error": "Fehler des Zahlungs-Webhooks"
+    },
+    "test": {
+      "title": "Test-E-Mail",
+      "description": "Prüfen Sie, dass E-Mails versendet werden und nicht im Spam landen.",
+      "to": "Empfänger",
+      "send": "Test senden",
+      "queued": "Test-E-Mail eingereiht: prüfen Sie das Protokoll unten.",
+      "failed": "Die Test-E-Mail konnte nicht eingereiht werden."
+    },
+    "log": {
+      "title": "Versandprotokoll",
+      "description": "Zuletzt gesendete oder wartende E-Mails; Empfänger sind maskiert und der Inhalt wird nicht gespeichert.",
+      "filter": "Nach Status filtern",
+      "all": "Alle Status",
+      "empty": "Keine E-Mail gesendet",
+      "emptyHint": "E-Mails werden bei der Bestätigung von Online-Buchungen und bei Aktionen am Schalter versendet.",
+      "date": "Datum",
+      "template": "Nachricht",
+      "recipient": "Empfänger",
+      "booking": "Buchung",
+      "status": "Status",
+      "attempts_one": "{{count}} Versuch",
+      "attempts_other": "{{count}} Versuche"
+    },
+    "status": {
+      "queued": "Wartend",
+      "sending": "Wird gesendet",
+      "sent": "Gesendet",
+      "failed": "Fehlgeschlagen",
+      "cancelled": "Abgebrochen"
+    },
+    "templates": {
+      "booking_confirmed": "Buchungsbestätigung",
+      "booking_modified": "Buchung geändert",
+      "booking_cancelled": "Stornierung",
+      "booking_rejected": "Anfrage abgelehnt",
+      "booking_approval_pending": "Anfrage erhalten (ausstehend)",
+      "refund_issued": "Erstattung",
+      "balance_reminder": "Erinnerung Restbetrag",
+      "day_before_reminder": "Erinnerung am Vortag",
+      "manage_link": "Verwaltungslink",
+      "test": "Test-E-Mail",
+      "manager_new_booking": "Neue Online-Buchung",
+      "manager_approval_requested": "Zu genehmigende Anfrage",
+      "manager_payment_failed": "Zahlung fehlgeschlagen",
+      "manager_delivery_failed": "E-Mail nicht zugestellt"
+    }
   }
 }

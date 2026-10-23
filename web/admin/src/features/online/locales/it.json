@@ -1,16 +1,240 @@
 {
+  "copy": "Copia",
+  "copied": "Copiato",
+  "saved": "Impostazioni salvate",
+  "unsaved": "Modifiche non salvate",
   "settings": {
     "title": "Pagina pubblica",
     "description": "Tema, lingue, formule online, condizioni e codice per incorporare il widget nel tuo sito.",
+    "tabsLabel": "Sezioni della pagina pubblica",
+    "tabs": {
+      "flow": "Prenotazioni online",
+      "theme": "Tema e anteprima",
+      "terms": "Condizioni",
+      "embed": "Incorpora"
+    },
+    "booking": {
+      "title": "Prenotazioni online",
+      "description": "Attiva la pagina pubblica e scegli i siti che possono incorporarla.",
+      "enabled": "Accetta prenotazioni online",
+      "enabledHint": "Spento: la pagina resta visibile con i contatti ma non si può prenotare.",
+      "origins": "Siti autorizzati a incorporare la pagina",
+      "originsHint": "Una origine per riga, ad esempio https://www.lidoesempio.it. Vuoto: solo il link diretto."
+    },
+    "flow": {
+      "title": "Flusso di prenotazione",
+      "description": "Cosa può scegliere il cliente sulla pagina pubblica.",
+      "formulas": "Formule proposte online",
+      "formulasHint": "Nessuna selezionata: tutte quelle ammesse dai pacchetti venduti online.",
+      "slots": "Fasce prenotabili online",
+      "slot": {
+        "FULL": "Giornata intera",
+        "AM": "Mattina",
+        "PM": "Pomeriggio"
+      },
+      "maxDaysAhead": "Prenotabile fino a",
+      "maxDaysAheadHint": "Giorni di anticipo massimo, oltre ai limiti della policy online. Vuoto: nessun limite aggiuntivo.",
+      "days": "giorni",
+      "showRatePeriods": "Evidenzia i periodi tariffari nel calendario",
+      "promoCodes": "Campo codice promozionale",
+      "requirePhone": "Telefono obbligatorio"
+    },
+    "offer": {
+      "title": "Zone e pacchetti venduti online",
+      "description": "La visibilità online si imposta su ogni zona (modalità posto, zona o quantità) e sui pacchetti ed extra con il canale online; le regole su anticipo, acconto e cancellazione sono nella policy online.",
+      "zones": "Zone",
+      "catalog": "Pacchetti ed extra",
+      "policies": "Policy"
+    },
+    "themeDescription": "Colori, carattere e testi della pagina: l'anteprima a destra è la pagina reale in modalità prova e si aggiorna mentre modifichi, prima di salvare.",
     "preview": "Anteprima dal vivo",
-    "embed": "Codice da incorporare"
+    "previewDevice": "Dispositivo dell'anteprima",
+    "previewMobile": "Telefono",
+    "previewDesktop": "Computer",
+    "previewScheme": "Tema chiaro o scuro dell'anteprima",
+    "previewLight": "Chiaro",
+    "previewDark": "Scuro",
+    "previewOpen": "Apri l'anteprima in una nuova scheda",
+    "previewFrame": "Anteprima della pagina pubblica",
+    "previewHint": "Nell'anteprima puoi provare tutti i passaggi: nessuna prenotazione viene creata.",
+    "embed": {
+      "title": "Codice da incorporare",
+      "description": "Link diretto e codice da incollare nel sito dello stabilimento.",
+      "pageUrl": "Link della pagina pubblica",
+      "script": "Codice consigliato (script: gestisce altezza, lingua e date)",
+      "iframe": "In alternativa: iframe",
+      "originsList": "Siti autorizzati: {{origins}}. Su altri siti il browser blocca l'incorporamento.",
+      "originsNone": "Nessun sito autorizzato: la pagina funziona solo come link diretto. Aggiungi il tuo sito in \"Prenotazioni online\".",
+      "events": "Lo script rilancia sulla pagina del sito gli eventi arenile:booked (con il solo codice prenotazione), arenile:resize e arenile:navigate, utili per tracciare le conversioni. Parametri facoltativi: data-lang, data-from, data-to, data-pack."
+    }
+  },
+  "terms": {
+    "title": "Condizioni e informativa",
+    "description": "Versioni immutabili: il checkout chiede di accettare la versione corrente e ogni prenotazione registra quella accettata.",
+    "new": "Nuova versione",
+    "empty": "Nessuna versione pubblicata",
+    "emptyHint": "Pubblica le condizioni di prenotazione prima di aprire le prenotazioni online.",
+    "current": "Corrente",
+    "publishedAt": "Pubblicata il {{date}}",
+    "show": "Testo",
+    "publishTitle": "Pubblica una nuova versione",
+    "publishDescription": "Le versioni pubblicate non si possono modificare. Il testo nella lingua predefinita è obbligatorio.",
+    "version": "Versione",
+    "versionHint": "Identificativo leggibile, ad esempio la data di pubblicazione.",
+    "defaultLocale": "lingua predefinita",
+    "terms": "Condizioni di prenotazione",
+    "privacy": "Informativa sulla privacy",
+    "marketing": "Testo del consenso marketing",
+    "marketingHint": "Facoltativo, mostrato accanto alla casella separata del consenso.",
+    "makeCurrent": "Rendi corrente",
+    "makeCurrentHint": "Dal prossimo checkout i clienti accetteranno questa versione.",
+    "publish": "Pubblica",
+    "published": "Versione {{version}} pubblicata"
   },
   "payments": {
     "title": "Pagamenti online",
-    "description": "Collega Stripe per incassare online: le chiavi sono cifrate e non vengono mai mostrate di nuovo."
+    "description": "Collega Stripe per incassare online: le chiavi sono cifrate e non vengono mai mostrate di nuovo.",
+    "status": {
+      "title": "Stato",
+      "description": "Provider attivo e verifica delle credenziali salvate."
+    },
+    "providerLabel": "Provider: {{provider}}",
+    "providers": {
+      "manual": "Nessun pagamento online",
+      "stripe": "Stripe Checkout"
+    },
+    "modes": {
+      "test": "Modalità di prova",
+      "live": "Pagamenti reali"
+    },
+    "configured": "Configurata",
+    "configuredLast4": "Chiave configurata ••••{{last4}}",
+    "secretMissing": "Chiave segreta mancante",
+    "webhookConfigured": "Segreto del webhook configurato",
+    "webhookMissing": "Segreto del webhook mancante",
+    "verifiedAt": "Verificata il {{date}}",
+    "manualHint": "Le prenotazioni online si pagano allo stabilimento o vengono confermate secondo la policy online.",
+    "incomplete": "Per incassare online servono la chiave segreta e il segreto del webhook.",
+    "test": "Verifica credenziali",
+    "testOk": "Credenziali valide",
+    "testFailed": "Verifica non riuscita",
+    "provider": {
+      "title": "Provider e chiavi",
+      "description": "Le chiavi si trovano nella dashboard di Stripe, in Sviluppatori → Chiavi API.",
+      "label": "Provider"
+    },
+    "mode": "Modalità",
+    "liveWarning": "Modalità reale: i clienti verranno addebitati. Prova prima un pagamento in modalità di prova.",
+    "publishableKey": "Chiave pubblicabile",
+    "publishableKeyHint": "Inizia con pk_{{mode}}_.",
+    "secretKey": "Chiave segreta",
+    "secretKeyHint": "Inizia con sk_{{mode}}_ (o rk_{{mode}}_ per una chiave limitata). Lascia vuoto per non modificarla.",
+    "webhookSecret": "Segreto di firma del webhook",
+    "webhookSecretHint": "Inizia con whsec_: lo trovi nel webhook creato in Stripe. Lascia vuoto per non modificarlo.",
+    "remove": "Rimuovi",
+    "keep": "Mantieni",
+    "embedded": "Pagamento incorporato nella pagina",
+    "embeddedHint": "Disponibile in una prossima versione: oggi il pagamento si apre sulla pagina sicura di Stripe Checkout.",
+    "webhook": {
+      "title": "Webhook di Stripe",
+      "description": "La prenotazione viene confermata solo quando Stripe notifica il pagamento a questo indirizzo.",
+      "url": "URL dell'endpoint da incollare in Stripe",
+      "events": "Eventi da inviare",
+      "step1": "In Stripe apri Sviluppatori → Webhook e aggiungi un endpoint con questo URL.",
+      "step2": "Seleziona gli eventi elencati sopra e salva.",
+      "step3": "Copia il segreto di firma (whsec_…) nel campo qui sopra e premi \"Verifica credenziali\"."
+    },
+    "validation": {
+      "publishable": "La chiave pubblicabile inizia con pk_test_ o pk_live_",
+      "secret": "La chiave segreta inizia con sk_test_, sk_live_, rk_test_ o rk_live_",
+      "webhook": "Il segreto del webhook inizia con whsec_",
+      "mode": "La chiave non corrisponde alla modalità scelta"
+    }
   },
   "email": {
     "title": "Email e notifiche",
-    "description": "Mittente, notifiche al cliente e al gestore, email di prova e registro degli invii."
+    "description": "Mittente, notifiche al cliente e al gestore, email di prova e registro degli invii.",
+    "transport": {
+      "title": "Invio delle email",
+      "description": "Il server di posta si configura all'avvio di Arenile e qui è in sola lettura.",
+      "smtp": "Server SMTP configurato",
+      "log": "Nessun SMTP: email nel log",
+      "file": "Nessun SMTP: email salvate in file",
+      "from": "Indirizzo del mittente: {{from}}",
+      "noSmtpTitle": "Le email non arrivano ai clienti",
+      "logHint": "Senza ARENILE_SMTP_URL le email vengono solo registrate nel log (destinatario mascherato). Imposta ARENILE_SMTP_URL e ARENILE_MAIL_FROM per inviarle davvero.",
+      "fileHint": "Le email vengono salvate come file .eml nella cartella ARENILE_MAIL_DIR (sviluppo e prove). Imposta ARENILE_SMTP_URL per inviarle davvero."
+    },
+    "settings": {
+      "title": "Mittente e notifiche",
+      "description": "Nome mostrato ai clienti, indirizzo per le risposte e notifiche attive.",
+      "senderName": "Nome del mittente",
+      "replyTo": "Rispondi a",
+      "replyToHint": "Le risposte dei clienti arrivano qui.",
+      "managerEmail": "Email del gestore",
+      "managerEmailHint": "Riceve le notifiche per lo stabilimento.",
+      "customer": "Al cliente",
+      "manager": "Al gestore"
+    },
+    "customer": {
+      "confirmation": "Conferma con link di gestione, QR e calendario",
+      "balance_reminder": "Promemoria del saldo",
+      "day_before_reminder": "Promemoria il giorno prima",
+      "cancellation": "Cancellazione",
+      "refund": "Rimborso o credito",
+      "upcoming": "In arrivo in una prossima versione: per ora non viene inviato."
+    },
+    "manager": {
+      "new_online_booking": "Nuova prenotazione online",
+      "approval_requested": "Richiesta da approvare",
+      "payment_failed": "Pagamento non riuscito",
+      "webhook_error": "Errore del webhook di pagamento"
+    },
+    "test": {
+      "title": "Email di prova",
+      "description": "Verifica che le email partano e non finiscano nello spam.",
+      "to": "Destinatario",
+      "send": "Invia prova",
+      "queued": "Email di prova accodata: controlla il registro qui sotto.",
+      "failed": "Impossibile accodare l'email di prova."
+    },
+    "log": {
+      "title": "Registro degli invii",
+      "description": "Ultime email inviate o in coda; i destinatari sono mascherati e il contenuto non viene conservato.",
+      "filter": "Filtra per stato",
+      "all": "Tutti gli stati",
+      "empty": "Nessuna email inviata",
+      "emptyHint": "Le email partono alla conferma delle prenotazioni online e dalle azioni del banco.",
+      "date": "Data",
+      "template": "Messaggio",
+      "recipient": "Destinatario",
+      "booking": "Prenotazione",
+      "status": "Stato",
+      "attempts_one": "{{count}} tentativo",
+      "attempts_other": "{{count}} tentativi"
+    },
+    "status": {
+      "queued": "In coda",
+      "sending": "In invio",
+      "sent": "Inviata",
+      "failed": "Non riuscita",
+      "cancelled": "Annullata"
+    },
+    "templates": {
+      "booking_confirmed": "Conferma prenotazione",
+      "booking_modified": "Prenotazione modificata",
+      "booking_cancelled": "Cancellazione",
+      "booking_rejected": "Richiesta non accettata",
+      "booking_approval_pending": "Richiesta ricevuta (in attesa)",
+      "refund_issued": "Rimborso",
+      "balance_reminder": "Promemoria saldo",
+      "day_before_reminder": "Promemoria del giorno prima",
+      "manage_link": "Link di gestione",
+      "test": "Email di prova",
+      "manager_new_booking": "Nuova prenotazione online",
+      "manager_approval_requested": "Richiesta da approvare",
+      "manager_payment_failed": "Pagamento non riuscito",
+      "manager_delivery_failed": "Email non recapitata"
+    }
   }
 }
