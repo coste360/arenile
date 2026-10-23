@@ -1,0 +1,59 @@
+{
+  "title": "Verlängerung des Saisonabos {{year}}",
+  "status": {
+    "proposed": "Wartet auf Ihre Antwort",
+    "accepted": "Angenommen, zu zahlen",
+    "converted": "Verlängert",
+    "declined": "Abgelehnt",
+    "expired": "Abgelaufen"
+  },
+  "slots": {
+    "FULL": "Ganzer Tag",
+    "AM": "Vormittag",
+    "PM": "Nachmittag"
+  },
+  "price": "Preis der neuen Saison",
+  "previous": "Preis der letzten Saison",
+  "paid": "Bereits bezahlt",
+  "deadline": "Der Platz ist bis {{date}} für Sie reserviert:",
+  "deadlinePassed": "Die Vorkaufsfrist ist abgelaufen.",
+  "left": {
+    "days_one": "noch {{count}} Tag.",
+    "days_other": "noch {{count}} Tage.",
+    "hours": "noch {{hours}} Std. {{minutes}} Min."
+  },
+  "payment": {
+    "legend": "Wie möchten Sie bezahlen?",
+    "deposit": "Anzahlung von {{amount}}",
+    "full": "Gesamtbetrag von {{amount}}"
+  },
+  "useCredit": "Verfügbares Guthaben verwenden ({{amount}})",
+  "showTerms": "Bedingungen lesen",
+  "termsVersion": "Bedingungen, Version {{version}}",
+  "acceptTerms": "Ich habe die Buchungsbedingungen gelesen und akzeptiere sie (Version {{version}})",
+  "termsRequired": "Für die Verlängerung müssen Sie die Bedingungen akzeptieren.",
+  "accept": "Verlängern",
+  "acceptPay": "Verlängern und {{amount}} bezahlen",
+  "decline": "Nicht verlängern",
+  "declineQuestion": "Möchten Sie auf den Platz {{spot}} verzichten?",
+  "declineHint": "Der Platz wird freigegeben und kann von anderen gebucht werden.",
+  "declineReason": "Möchten Sie uns den Grund nennen? (optional)",
+  "declineConfirm": "Auf die Verlängerung verzichten",
+  "declineBack": "Zurück",
+  "outcome": {
+    "proposed": "Das Angebot wartet auf Ihre Antwort.",
+    "accepted": "Verlängerung angenommen: Schließen Sie die Zahlung ab, um sie zu bestätigen.",
+    "converted": "Verlängerung bestätigt: Wir sehen uns am Strand!",
+    "declined": "Sie haben auf die Verlängerung verzichtet: Der Platz wurde freigegeben.",
+    "expired": "Die Vorkaufsfrist ist abgelaufen und der Platz wurde freigegeben."
+  },
+  "problem": {
+    "renewal_expired": "Die Vorkaufsfrist ist abgelaufen: Der Platz wurde freigegeben.",
+    "credit_insufficient": "Das verfügbare Guthaben reicht nicht aus: Laden Sie die Seite neu."
+  },
+  "credit": {
+    "available": "Sie haben ein Guthaben von {{amount}}, das Sie im Betrieb verwenden können.",
+    "apply": "{{amount}} Guthaben für den Restbetrag verwenden",
+    "applied": "Guthaben von {{amount}} auf die Buchung angerechnet."
+  }
+}

@@ -24,7 +24,11 @@ export type EstablishmentArea =
   | 'fiscal'
   // M5A: reports (invalidated by booking/cash topics) and integrations.
   | 'reports'
-  | 'integrations';
+  | 'integrations'
+  // M5B: renewal campaigns/proposals, waitlist, customer credit ledgers.
+  | 'renewals'
+  | 'waitlist'
+  | 'credits';
 
 export const establishmentKeys = {
   /** Every operational query of one establishment. */
@@ -55,6 +59,9 @@ export const TOPIC_AREAS: Record<StreamTopicName, readonly EstablishmentArea[]> 
     'season-passes',
     'payments',
     'cash',
+    'renewals',
+    'waitlist',
+    'credits',
   ],
   'allocation.changed': [
     'operations',
@@ -63,10 +70,11 @@ export const TOPIC_AREAS: Record<StreamTopicName, readonly EstablishmentArea[]> 
     'blocks',
     'bookings',
     'season-passes',
+    'waitlist',
   ],
-  'hold.changed': ['operations', 'planning', 'availability', 'holds'],
+  'hold.changed': ['operations', 'planning', 'availability', 'holds', 'waitlist'],
   'cash.changed': ['cash', 'payments', 'fiscal', 'operations', 'bookings'],
-  'customer.changed': ['customers', 'bookings', 'operations', 'season-passes'],
+  'customer.changed': ['customers', 'bookings', 'operations', 'season-passes', 'credits'],
   'config.changed': ['operations', 'planning', 'availability'],
   event: [],
 };

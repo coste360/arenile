@@ -1,0 +1,46 @@
+{
+  "title": "Votre demande sur liste d'attente",
+  "linkInvalid": "Le lien n'est pas valide ou la demande n'existe plus.",
+  "toBooking": "Réserver",
+  "back": "Retour",
+  "leave": "Quitter la liste d'attente",
+  "leaveQuestion": "Voulez-vous vraiment quitter la liste d'attente ?",
+  "leaveConfirm": "Quitter la liste",
+  "status": {
+    "waiting": "En attente",
+    "offered": "Emplacement disponible",
+    "converted": "Réservé",
+    "expired": "Expirée",
+    "removed": "Plus active"
+  },
+  "slots": {
+    "FULL": "Journée entière",
+    "AM": "Matin",
+    "PM": "Après-midi"
+  },
+  "message": {
+    "waiting": "Vous êtes sur la liste : nous vous écrirons dès qu'un emplacement se libère pour ces dates.",
+    "offered": "Une offre vous attend : consultez vos e-mails.",
+    "converted": "Vous avez réservé grâce à l'offre : les détails figurent dans l'e-mail de confirmation.",
+    "expired": "Les dates demandées sont passées : la demande n'est plus active.",
+    "removed": "Vous n'êtes plus sur la liste d'attente pour ces dates."
+  },
+  "offer": {
+    "title": "Un emplacement s'est libéré pour vous !",
+    "titleSpot": "L'emplacement {{spot}} s'est libéré pour vous !",
+    "until": "Nous vous le réservons jusqu'au {{date}} :",
+    "left": "il reste {{hours}} h {{minutes}} min.",
+    "leftDays_one": "il reste {{count}} jour.",
+    "leftDays_other": "il reste {{count}} jours.",
+    "accept": "Réserver maintenant",
+    "decline": "Refuser",
+    "leave": "Quitter aussi la liste d'attente",
+    "declineConfirm": "Refuser l'offre",
+    "expired": "L'offre a expiré.",
+    "expiredHint": "Vous restez sur la liste d'attente : nous vous écrirons si un autre emplacement se libère."
+  },
+  "problem": {
+    "offer_expired": "L'offre a expiré ou n'est plus disponible.",
+    "spot_unavailable": "L'emplacement n'est plus disponible."
+  }
+}

@@ -1,5 +1,79 @@
 {
   "title": "Nouvelle saison",
-  "description": "Créez la saison suivante en copiant périodes, fermetures, prix et politiques ; proposez ensuite les renouvellements aux abonnés.",
-  "back": "Saisons et périodes"
+  "description": "Créez la saison suivante en copiant périodes, fermetures, prix et politiques ; proposez ensuite le renouvellement aux abonnés.",
+  "back": "Saisons et périodes",
+  "entry": "Nouvelle saison à partir de celle-ci",
+  "noSeasons": "Créez d'abord une saison de départ.",
+  "step": {
+    "season": "1. Saison de départ et dates",
+    "seasonHelp": "La nouvelle saison reprend la configuration de celle choisie, avec les dates décalées sur la nouvelle année.",
+    "copy": "2. Éléments à copier",
+    "copyHelp": "Le catalogue, les plans et les emplacements ne dépendent pas de la saison et restent inchangés.",
+    "preview": "3. Aperçu de la saison {{year}}",
+    "previewHelp": "Du {{from}} au {{to}}. Rien n'a encore été créé."
+  },
+  "fields": {
+    "source": "Saison d'origine",
+    "targetYear": "Année de la nouvelle saison",
+    "yearInvalid": "Saisissez une année entre 2000 et 2100.",
+    "opensOn": "Ouverture",
+    "closesOn": "Fermeture",
+    "datesInvalid": "La fermeture doit suivre l'ouverture."
+  },
+  "options": {
+    "include_rate_periods": {
+      "label": "Périodes tarifaires",
+      "help": "Basse, moyenne et haute saison aux mêmes dates sur la nouvelle année."
+    },
+    "include_closure_days": {
+      "label": "Jours de fermeture",
+      "help": "Les fermetures de la saison, décalées sur la nouvelle année."
+    },
+    "include_price_rules": {
+      "label": "Règles de prix",
+      "help": "Tarif, majorations et remises liés à la saison."
+    },
+    "include_fixed_prices": {
+      "label": "Prix fixes",
+      "help": "Prix à durée fixe par forfait et période."
+    },
+    "include_policies": {
+      "label": "Politiques",
+      "help": "Acomptes, annulations et avoirs de la saison."
+    }
+  },
+  "preview": "Calculer l'aperçu",
+  "apply": "Créer la saison {{year}}",
+  "openApplied": "Voir le résultat",
+  "alreadyApplied": "La saison {{year}} a déjà été créée par ce passage.",
+  "warnings": "À vérifier",
+  "readOnly": "Seuls les utilisateurs autorisés à configurer l'établissement peuvent créer la saison.",
+  "counts": {
+    "rate_periods": "Périodes tarifaires",
+    "closure_days": "Jours de fermeture",
+    "price_rules": "Règles de prix",
+    "fixed_prices": "Prix fixes",
+    "policies": "Politiques",
+    "season_passes": "Abonnés à renouveler",
+    "seasonPassesHint": "Abonnements confirmés de la saison d'origine"
+  },
+  "confirm": {
+    "title": "Créer la saison {{year}} ?",
+    "description": "La saison {{year}} est créée en brouillon avec la configuration copiée. Répéter l'opération ne crée pas de doublons.",
+    "submit": "Créer la saison"
+  },
+  "done": {
+    "title": "Saison {{year}} créée",
+    "description": "Vérifiez les dates et les prix de la nouvelle saison, puis proposez le renouvellement aux abonnés.",
+    "openSeason": "Ouvrir la saison",
+    "renewals_one": "Proposer le renouvellement à {{count}} abonné",
+    "renewals_other": "Proposer le renouvellement à {{count}} abonnés"
+  },
+  "history": {
+    "title": "Passages déjà effectués",
+    "seasons": "Saisons",
+    "copied": "Copié",
+    "summary": "{{periods}} périodes, {{rules}} règles, {{prices}} prix fixes",
+    "when": "Effectué le"
+  }
 }

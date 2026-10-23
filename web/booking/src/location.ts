@@ -2,9 +2,12 @@
  * Views of the public SPA, chosen from the path without a router library
  * (first-screen budget, spec 12.6):
  * - `book`: `/b/{slug}` the four-step flow (and its confirmation);
- * - `manage`: `/b/{slug}/m/{token}` the customer manage area (spec 12.4).
+ * - `manage`: `/b/{slug}/m/{token}` the customer manage area (spec 12.4);
+ * - `waitlist`: `/b/{slug}/m/w/{token}` the personal waitlist link (spec
+ *   10.5, M5B): under `/m/` so it gets the same no-referrer / no-store
+ *   headers as the manage area.
  */
-export type BookingView = 'book' | 'manage';
+export type BookingView = 'book' | 'manage' | 'waitlist';
 
 /** Parameters of the public page URL (spec 12.1). */
 export interface BookingLocation {
@@ -17,6 +20,8 @@ export interface BookingLocation {
    * token the page stored when the link was opened.
    */
   manageToken: string | null;
+  /** Personal waitlist token of `/b/{slug}/m/w/{token}` (never logged). */
+  waitlistToken: string | null;
   /**
    * Booking id of a checkout to resume (`?checkout=<id>`): the return URL of
    * the payment provider. The page reads the session token from
@@ -81,6 +86,7 @@ export function parseBookingLocation(pathname: string, search: string): BookingL
   }
   const q = new URLSearchParams(search);
   const embed = q.get('embed');
+  const waitlist = /^\/b\/[^/?#]+\/m\/w\/([^/?#]+)\/?$/.exec(pathname);
   const manage = /^\/b\/[^/?#]+\/m(?:\/([^/?#]*))?\/?$/.exec(pathname);
   const manageToken = manage?.[1] && TOKEN_RE.test(manage[1]) ? manage[1] : null;
   const checkout = q.get('checkout');
@@ -88,8 +94,9 @@ export function parseBookingLocation(pathname: string, search: string): BookingL
   const scheme = q.get('theme');
   return {
     slug,
-    view: manage ? 'manage' : 'book',
+    view: waitlist ? 'waitlist' : manage ? 'manage' : 'book',
     manageToken,
+    waitlistToken: waitlist?.[1] && TOKEN_RE.test(waitlist[1]) ? waitlist[1] : null,
     checkoutBookingId: checkout && UUID_RE.test(checkout) ? checkout.toLowerCase() : null,
     embed: embed === '1' || embed === 'true',
     lang: q.get('lang'),

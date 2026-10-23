@@ -12,6 +12,7 @@ describe('parseBookingLocation', () => {
       slug: 'lido-demo',
       view: 'book',
       manageToken: null,
+      waitlistToken: null,
       checkoutBookingId: null,
       embed: true,
       lang: 'en',
@@ -57,6 +58,22 @@ describe('parseBookingLocation', () => {
       view: 'manage',
       manageToken: null,
     });
+  });
+
+  it('recognises the personal waitlist link under /m/w/ and validates the token', () => {
+    const token = 'w'.repeat(43);
+    expect(parseBookingLocation(`/b/lido/m/w/${token}`, '')).toMatchObject({
+      slug: 'lido',
+      view: 'waitlist',
+      waitlistToken: token,
+      manageToken: null,
+    });
+    expect(parseBookingLocation('/b/lido/m/w/short', '')).toMatchObject({
+      view: 'waitlist',
+      waitlistToken: null,
+    });
+    // A manage token is never read as a waitlist token.
+    expect(parseBookingLocation(`/b/lido/m/${token}`, '').waitlistToken).toBeNull();
   });
 
   it('reads the host page of the widget only in embed mode', () => {

@@ -1,4 +1,219 @@
 {
   "title": "Renouvellements",
-  "description": "Campagnes de renouvellement des abonnements : propositions avec droit de préemption, envois, acceptations et places libérées à l'échéance."
+  "description": "Campagnes de renouvellement des abonnements : propositions avec droit de préemption, envois, acceptations et emplacements libérés à l'échéance.",
+  "optional": "(facultatif)",
+  "countdown": {
+    "expired": "Expirée",
+    "days": "{{days}} j {{hours}} h",
+    "hours": "{{hours}} h {{minutes}} min",
+    "minutes": "{{minutes}} min"
+  },
+  "problem": {
+    "renewal_expired": "Le droit de préemption a expiré : l'emplacement a été libéré.",
+    "waitlist_offer_expired": "L'offre a expiré.",
+    "waitlist_disabled": "La liste d'attente est désactivée.",
+    "credit_insufficient": "Avoir insuffisant : le solde ne peut pas devenir négatif.",
+    "season_rollover_conflict": "Une saison existe déjà pour cette année et n'a pas été créée par ce passage."
+  },
+  "accept": {
+    "title": "Accepter le renouvellement",
+    "description": "{{spot}} · {{customer}} · {{amount}}",
+    "confirmNow": "Confirmer maintenant",
+    "confirmNowHelp": "Le renouvellement est confirmé maintenant ; le solde est enregistré en caisse comme pour toute réservation.",
+    "awaitPaymentHelp": "La réservation reste en attente de paiement et sera confirmée à réception du paiement.",
+    "note": "Note",
+    "submit": "Accepter",
+    "done": "Renouvellement de {{spot}} accepté."
+  },
+  "decline": {
+    "title": "Refuser le renouvellement",
+    "description": "{{spot}} · {{customer}} : l'emplacement sera libéré.",
+    "reason": "Motif",
+    "submit": "Refuser et libérer",
+    "done": "Renouvellement de {{spot}} refusé : emplacement libéré."
+  },
+  "deadline": {
+    "date": "Nouvelle échéance",
+    "help": "La préemption se termine à 23:59 le jour choisi (heure de l'établissement).",
+    "submit": "Enregistrer l'échéance"
+  },
+  "create": {
+    "title": "Nouvelle campagne",
+    "description": "Une proposition pour chaque abonné de la saison d'origine, avec le même emplacement et le prix du nouveau tarif.",
+    "source": "Saison d'origine",
+    "target": "Nouvelle saison",
+    "pickSeason": "Choisissez la saison",
+    "sameSeason": "Choisissez deux saisons différentes.",
+    "deadline": "Échéance de la préemption",
+    "deadlineHelp": "Jusqu'à cette date, l'emplacement reste réservé à l'abonné.",
+    "name": "Nom",
+    "namePlaceholder": "Renouvellements {{year}}",
+    "notes": "Notes internes",
+    "preview": "Aperçu",
+    "previewHint": "Utilisez « Aperçu » pour voir les propositions et les abonnements exclus avant de les créer.",
+    "previewSummary_one": "{{count}} proposition sera créée",
+    "previewSummary_other": "{{count}} propositions seront créées",
+    "previewDetail": "Valeur totale {{amount}} ; abonnements exclus : {{skipped}}.",
+    "previewTable": "Aperçu des propositions",
+    "skippedTable": "Abonnements exclus",
+    "skippedTitle_one": "{{count}} abonnement exclu",
+    "skippedTitle_other": "{{count}} abonnements exclus",
+    "submit": "Créer les propositions",
+    "done_one": "Campagne créée : {{count}} proposition prête à envoyer.",
+    "done_other": "Campagne créée : {{count}} propositions prêtes à envoyer."
+  },
+  "skip": {
+    "spot_unavailable": "Emplacement indisponible pour la nouvelle saison",
+    "spot_inactive": "Emplacement désactivé",
+    "no_price": "Aucun prix dans le nouveau tarif",
+    "already_renewed": "Déjà renouvelé",
+    "customer_anonymized": "Client anonymisé",
+    "not_confirmed": "Abonnement non confirmé"
+  },
+  "columns": {
+    "spot": "Emplacement",
+    "customer": "Client",
+    "period": "Période",
+    "previous": "Prix précédent",
+    "amount": "Montant",
+    "reason": "Motif",
+    "status": "Statut",
+    "sent": "Envoi",
+    "deadline": "Échéance",
+    "actions": "Actions"
+  },
+  "status": {
+    "proposed": "En attente",
+    "accepted": "Accepté, à payer",
+    "converted": "Renouvelé",
+    "declined": "Refusé",
+    "expired": "Expiré"
+  },
+  "campaignStatus": {
+    "open": "Ouverte",
+    "closed": "Clôturée"
+  },
+  "stats": {
+    "proposals": "Propositions",
+    "sent_one": "{{count}} envoyée",
+    "sent_other": "{{count}} envoyées",
+    "waiting": "En attente de réponse",
+    "renewed": "Renouvellements acceptés",
+    "converted_one": "{{count}} confirmé",
+    "converted_other": "{{count}} confirmés",
+    "released": "Emplacements libérés",
+    "releasedHint": "{{declined}} refusés · {{expired}} expirés"
+  },
+  "campaign": {
+    "pick": "Campagne",
+    "seasons": "Saison {{source}} → {{target}}",
+    "status": "Statut",
+    "deadline": "Échéance de la préemption",
+    "total": "Valeur des propositions",
+    "converted": "Renouvellements confirmés",
+    "changeDeadline": "Modifier l'échéance",
+    "changeDeadlineHelp": "S'applique aux propositions encore en attente.",
+    "deadlineChanged": "Échéance mise à jour.",
+    "close": "Clôturer la campagne",
+    "closeTitle": "Clôturer la campagne ?",
+    "closeDescription_one": "{{count}} proposition encore ouverte sera clôturée et son emplacement libéré.",
+    "closeDescription_other": "{{count}} propositions encore ouvertes seront clôturées et leurs emplacements libérés.",
+    "closed": "Campagne clôturée."
+  },
+  "filters": {
+    "search": "Rechercher un client ou un emplacement",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "sent": "Envoi",
+    "sentAll": "Envoyées ou non",
+    "sentYes": "Envoyées",
+    "sentNo": "Non envoyées",
+    "zone": "Zone",
+    "allZones": "Toutes les zones"
+  },
+  "proposals": {
+    "title": "Propositions de renouvellement",
+    "loadMore": "Charger plus de propositions",
+    "empty": "Aucune proposition avec ces filtres.",
+    "emptyHint": "Modifiez les filtres ou créez une nouvelle campagne."
+  },
+  "empty": {
+    "title": "Aucune campagne de renouvellement",
+    "description": "Préparez la nouvelle saison avec le passage de fin de saison, puis proposez le renouvellement aux abonnés.",
+    "rollover": "Passage de fin de saison"
+  },
+  "row": {
+    "more": "Actions pour {{spot}}, {{customer}}",
+    "send": "Envoyer la proposition",
+    "remind": "Envoyer une relance",
+    "sent": "Proposition envoyée à {{customer}}.",
+    "accept": "Accepter (au comptoir)",
+    "decline": "Refuser et libérer",
+    "openBooking": "Ouvrir la réservation",
+    "noEmail": "sans e-mail",
+    "previous": "avant {{amount}}",
+    "sentCount_one": "Envoyée",
+    "sentCount_other": "Envoyée {{count}} fois",
+    "notSent": "Non envoyée"
+  },
+  "bulk": {
+    "menu": "Actions groupées",
+    "selected_one": "{{count}} sélectionnée",
+    "selected_other": "{{count}} sélectionnées",
+    "selectAll": "Sélectionner toutes les propositions ouvertes",
+    "selectOne": "Sélectionner {{spot}}, {{customer}}",
+    "onSelection": "Sur les propositions sélectionnées",
+    "send": "Envoyer ou relancer",
+    "accept": "Accepter",
+    "extend": "Prolonger l'échéance",
+    "decline": "Refuser et libérer",
+    "release": "Libérer maintenant",
+    "clear": "Désélectionner",
+    "sendUnsent": "Envoyer à ceux qui ne l'ont pas encore reçue",
+    "remind": "Relancer ceux qui n'ont pas répondu",
+    "releaseExpired": "Libérer les préemptions expirées",
+    "extendTitle": "Prolonger l'échéance",
+    "extendDescription_one": "{{count}} proposition sélectionnée.",
+    "extendDescription_other": "{{count}} propositions sélectionnées.",
+    "result": "Terminé : {{succeeded}} réussies, {{skipped}} ignorées, {{failed}} en échec.",
+    "failedTitle_one": "{{count}} proposition non mise à jour",
+    "failedTitle_other": "{{count}} propositions non mises à jour",
+    "dismiss": "Fermer",
+    "confirm": {
+      "selection": {
+        "send": {
+          "title": "Envoyer les propositions ?",
+          "description_one": "L'e-mail avec le lien de renouvellement part pour {{count}} proposition (même si déjà envoyée).",
+          "description_other": "L'e-mail avec le lien de renouvellement part pour {{count}} propositions (même si déjà envoyées)."
+        },
+        "accept": {
+          "title": "Accepter les renouvellements ?",
+          "description_one": "{{count}} renouvellement est confirmé au comptoir.",
+          "description_other": "{{count}} renouvellements sont confirmés au comptoir."
+        },
+        "decline": {
+          "title": "Refuser les renouvellements ?",
+          "description_one": "{{count}} proposition est refusée et l'emplacement libéré.",
+          "description_other": "{{count}} propositions sont refusées et les emplacements libérés."
+        },
+        "release": {
+          "title": "Libérer les emplacements maintenant ?",
+          "description_one": "La préemption de {{count}} proposition se termine maintenant, même si elle n'a pas expiré.",
+          "description_other": "La préemption de {{count}} propositions se termine maintenant, même si elle n'a pas expiré."
+        }
+      },
+      "unsent": {
+        "title": "Envoyer les propositions pas encore envoyées ?",
+        "description": "Chaque abonné avec un e-mail qui n'a pas encore reçu la proposition reçoit le lien de renouvellement."
+      },
+      "remind": {
+        "title": "Envoyer une relance ?",
+        "description": "Tous les abonnés qui n'ont pas encore répondu reçoivent à nouveau le lien de renouvellement."
+      },
+      "releaseExpired": {
+        "title": "Libérer les préemptions expirées ?",
+        "description": "Les emplacements des propositions sans réponse dont l'échéance est passée redeviennent réservables."
+      }
+    }
+  }
 }

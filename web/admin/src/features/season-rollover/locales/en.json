@@ -1,5 +1,79 @@
 {
   "title": "New season",
   "description": "Create the next season by copying periods, closures, prices and policies; then offer renewals to pass holders.",
-  "back": "Seasons and periods"
+  "back": "Seasons and periods",
+  "entry": "New season from this one",
+  "noSeasons": "Create a season to start from first.",
+  "step": {
+    "season": "1. Starting season and dates",
+    "seasonHelp": "The new season inherits the configuration of the chosen one, with the dates moved to the new year.",
+    "copy": "2. What to copy",
+    "copyHelp": "Catalogue, maps and spots do not depend on the season and stay unchanged.",
+    "preview": "3. Preview of season {{year}}",
+    "previewHelp": "From {{from}} to {{to}}. Nothing has been created yet."
+  },
+  "fields": {
+    "source": "Source season",
+    "targetYear": "Year of the new season",
+    "yearInvalid": "Enter a year between 2000 and 2100.",
+    "opensOn": "Opening",
+    "closesOn": "Closing",
+    "datesInvalid": "Closing must follow opening."
+  },
+  "options": {
+    "include_rate_periods": {
+      "label": "Rate periods",
+      "help": "Low, mid and high season with the same dates in the new year."
+    },
+    "include_closure_days": {
+      "label": "Closure days",
+      "help": "The closures of the season, moved to the new year."
+    },
+    "include_price_rules": {
+      "label": "Price rules",
+      "help": "Price list, surcharges and discounts tied to the season."
+    },
+    "include_fixed_prices": {
+      "label": "Fixed prices",
+      "help": "Flat prices per package and period."
+    },
+    "include_policies": {
+      "label": "Policies",
+      "help": "Deposits, cancellations and credits of the season."
+    }
+  },
+  "preview": "Calculate preview",
+  "apply": "Create season {{year}}",
+  "openApplied": "Go to the result",
+  "alreadyApplied": "Season {{year}} has already been created by this rollover.",
+  "warnings": "To check",
+  "readOnly": "Only users who can configure the establishment can create the season.",
+  "counts": {
+    "rate_periods": "Rate periods",
+    "closure_days": "Closure days",
+    "price_rules": "Price rules",
+    "fixed_prices": "Fixed prices",
+    "policies": "Policies",
+    "season_passes": "Pass holders to renew",
+    "seasonPassesHint": "Confirmed passes of the source season"
+  },
+  "confirm": {
+    "title": "Create season {{year}}?",
+    "description": "Season {{year}} is created as a draft with the copied configuration. Repeating the operation does not create duplicates.",
+    "submit": "Create season"
+  },
+  "done": {
+    "title": "Season {{year}} created",
+    "description": "Check the dates and prices of the new season, then offer renewals to pass holders.",
+    "openSeason": "Open the season",
+    "renewals_one": "Offer renewal to {{count}} pass holder",
+    "renewals_other": "Offer renewals to {{count}} pass holders"
+  },
+  "history": {
+    "title": "Rollovers already run",
+    "seasons": "Seasons",
+    "copied": "Copied",
+    "summary": "{{periods}} periods, {{rules}} rules, {{prices}} fixed prices",
+    "when": "Run on"
+  }
 }

@@ -1,0 +1,46 @@
+{
+  "title": "Your waitlist request",
+  "linkInvalid": "The link is not valid or the request no longer exists.",
+  "toBooking": "Book",
+  "back": "Go back",
+  "leave": "Leave the waitlist",
+  "leaveQuestion": "Do you really want to leave the waitlist?",
+  "leaveConfirm": "Leave the waitlist",
+  "status": {
+    "waiting": "Waiting",
+    "offered": "Spot available",
+    "converted": "Booked",
+    "expired": "Expired",
+    "removed": "No longer active"
+  },
+  "slots": {
+    "FULL": "Full day",
+    "AM": "Morning",
+    "PM": "Afternoon"
+  },
+  "message": {
+    "waiting": "You are on the waitlist: we will email you as soon as a spot frees up for these dates.",
+    "offered": "There is an offer for you: check your email.",
+    "converted": "You booked from the offer: the details are in the confirmation email.",
+    "expired": "The requested dates have passed: the request is no longer active.",
+    "removed": "You are no longer on the waitlist for these dates."
+  },
+  "offer": {
+    "title": "A spot has freed up for you!",
+    "titleSpot": "Spot {{spot}} has freed up for you!",
+    "until": "We are holding it for you until {{date}}:",
+    "left": "{{hours}} h {{minutes}} min left.",
+    "leftDays_one": "{{count}} day left.",
+    "leftDays_other": "{{count}} days left.",
+    "accept": "Book now",
+    "decline": "Decline",
+    "leave": "Also leave the waitlist",
+    "declineConfirm": "Decline the offer",
+    "expired": "The offer has expired.",
+    "expiredHint": "You stay on the waitlist: we will email you if another spot frees up."
+  },
+  "problem": {
+    "offer_expired": "The offer has expired or is no longer available.",
+    "spot_unavailable": "The spot is no longer available."
+  }
+}

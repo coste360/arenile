@@ -1,0 +1,46 @@
+{
+  "title": "Ihre Anfrage auf der Warteliste",
+  "linkInvalid": "Der Link ist ungültig oder die Anfrage existiert nicht mehr.",
+  "toBooking": "Buchen",
+  "back": "Zurück",
+  "leave": "Warteliste verlassen",
+  "leaveQuestion": "Möchten Sie die Warteliste wirklich verlassen?",
+  "leaveConfirm": "Warteliste verlassen",
+  "status": {
+    "waiting": "Wartend",
+    "offered": "Platz verfügbar",
+    "converted": "Gebucht",
+    "expired": "Abgelaufen",
+    "removed": "Nicht mehr aktiv"
+  },
+  "slots": {
+    "FULL": "Ganzer Tag",
+    "AM": "Vormittag",
+    "PM": "Nachmittag"
+  },
+  "message": {
+    "waiting": "Sie stehen auf der Warteliste: Wir schreiben Ihnen, sobald für diese Daten ein Platz frei wird.",
+    "offered": "Es gibt ein Angebot für Sie: Prüfen Sie Ihre E-Mails.",
+    "converted": "Sie haben über das Angebot gebucht: Die Details finden Sie in der Bestätigungs-E-Mail.",
+    "expired": "Die gewünschten Daten sind vorbei: Die Anfrage ist nicht mehr aktiv.",
+    "removed": "Sie stehen für diese Daten nicht mehr auf der Warteliste."
+  },
+  "offer": {
+    "title": "Ein Platz ist für Sie frei geworden!",
+    "titleSpot": "Der Platz {{spot}} ist für Sie frei geworden!",
+    "until": "Wir halten ihn für Sie bis {{date}}:",
+    "left": "noch {{hours}} Std. {{minutes}} Min.",
+    "leftDays_one": "noch {{count}} Tag.",
+    "leftDays_other": "noch {{count}} Tage.",
+    "accept": "Jetzt buchen",
+    "decline": "Ablehnen",
+    "leave": "Auch die Warteliste verlassen",
+    "declineConfirm": "Angebot ablehnen",
+    "expired": "Das Angebot ist abgelaufen.",
+    "expiredHint": "Sie bleiben auf der Warteliste: Wir schreiben Ihnen, wenn ein anderer Platz frei wird."
+  },
+  "problem": {
+    "offer_expired": "Das Angebot ist abgelaufen oder nicht mehr verfügbar.",
+    "spot_unavailable": "Der Platz ist nicht mehr verfügbar."
+  }
+}

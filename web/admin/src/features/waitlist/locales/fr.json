@@ -1,4 +1,138 @@
 {
   "title": "Liste d'attente",
-  "description": "Demandes sans disponibilité par ordre de priorité, offres automatiques lorsqu'une place se libère et réglages."
+  "description": "Demandes sans disponibilité par ordre de priorité, offres automatiques lorsqu'un emplacement se libère, et paramètres.",
+  "optional": "(facultatif)",
+  "loadMore": "Charger plus d'inscriptions",
+  "entry": {
+    "newTitle": "Nouvelle inscription",
+    "editTitle": "Modifier la demande",
+    "newDescription": "Le client entre dans la file et reçoit une offre lorsqu'un emplacement compatible se libère.",
+    "required": "Champ obligatoire.",
+    "quantityInvalid": "De 1 à 20.",
+    "create": "Inscrire",
+    "save": "Enregistrer",
+    "created": "{{customer}} est sur la liste d'attente.",
+    "updated": "Demande mise à jour."
+  },
+  "fields": {
+    "customer": "Client",
+    "period": "Période",
+    "slots": "Créneau",
+    "pack": "Forfait",
+    "pickPack": "Choisissez le forfait",
+    "zone": "Zone",
+    "anyZone": "N'importe quelle zone",
+    "quantity": "Quantité",
+    "note": "Note"
+  },
+  "offer": {
+    "title": "Proposer un emplacement",
+    "description": "{{customer}} reçoit un e-mail avec le lien pour réserver : l'emplacement reste bloqué jusqu'à l'échéance.",
+    "spot": "Emplacement",
+    "anySpot": "Le premier compatible",
+    "minutes": "Durée de l'offre (minutes)",
+    "minutesInvalid": "De 5 à 10080 minutes (7 jours).",
+    "help": "Si le client ne répond pas à temps, l'offre expire et passe au suivant dans la file.",
+    "submit": "Envoyer l'offre",
+    "done": "Offre envoyée à {{customer}}.",
+    "revoked": "Offre révoquée : l'emplacement est de nouveau libre."
+  },
+  "settings": {
+    "open": "Paramètres",
+    "title": "Paramètres de la liste d'attente",
+    "description": "Ils s'appliquent à tout l'établissement.",
+    "enabled": {
+      "label": "Liste d'attente active",
+      "help": "Désactivée, aucune inscription n'est acceptée et aucune offre n'est envoyée."
+    },
+    "public_join": {
+      "label": "Inscription depuis la page publique",
+      "help": "En l'absence de disponibilité, le client peut s'inscrire sur la liste depuis le site."
+    },
+    "auto_offer": {
+      "label": "Offres automatiques",
+      "help": "Lorsqu'un emplacement se libère (annulation, libération, expiration), une offre part au premier de la file."
+    },
+    "minutes": "Durée par défaut des offres (minutes)",
+    "saved": "Paramètres enregistrés.",
+    "summaryAuto": "Offres automatiques actives : chaque offre reste valable {{minutes}} minutes.",
+    "summaryManual": "Offres automatiques désactivées : les offres ne partent que manuellement."
+  },
+  "disabled": {
+    "title": "Liste d'attente désactivée",
+    "description": "Aucune nouvelle inscription n'est acceptée et aucune offre n'est envoyée. Réactivez-la dans les paramètres."
+  },
+  "columns": {
+    "position": "Position",
+    "customer": "Client",
+    "period": "Période",
+    "request": "Demande",
+    "status": "Statut",
+    "offer": "Offre",
+    "channel": "Canal",
+    "actions": "Actions"
+  },
+  "status": {
+    "waiting": "En attente",
+    "offered": "Offre envoyée",
+    "converted": "Réservé",
+    "expired": "Expirée",
+    "removed": "Retirée"
+  },
+  "offerStatus": {
+    "pending": "En attente de réponse",
+    "accepted": "Acceptée",
+    "declined": "Refusée",
+    "expired": "Expirée",
+    "revoked": "Révoquée"
+  },
+  "cause": {
+    "cancellation": "Annulation",
+    "release": "Libération d'abonnement",
+    "expiry": "Réservation expirée",
+    "manual": "Manuelle"
+  },
+  "filters": {
+    "search": "Rechercher un client",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "zone": "Zone",
+    "allZones": "Toutes les zones"
+  },
+  "reorder": {
+    "up": "Avancer {{customer}} dans la file",
+    "upShort": "Avancer",
+    "down": "Reculer {{customer}} dans la file",
+    "downShort": "Reculer",
+    "done": "File mise à jour : {{customer}} déplacé."
+  },
+  "row": {
+    "open": "Ouvrir l'inscription de {{customer}}",
+    "more": "Actions pour {{customer}}",
+    "offer": "Proposer un emplacement",
+    "revoke": "Révoquer l'offre",
+    "edit": "Modifier la demande",
+    "remove": "Retirer de la liste"
+  },
+  "remove": {
+    "title": "Retirer de la liste d'attente ?",
+    "description": "{{customer}} quitte la file ; une offre en cours est révoquée.",
+    "done": "Inscription retirée."
+  },
+  "empty": {
+    "title": "Aucune inscription",
+    "description": "Les demandes sans disponibilité apparaissent ici par ordre d'arrivée."
+  },
+  "offers": {
+    "title": "Offres",
+    "created": "Envoyée le",
+    "spot": "Emplacement",
+    "cause": "Motif",
+    "status": "Résultat",
+    "empty": "Aucune offre pour l'instant."
+  },
+  "sheet": {
+    "loading": "Inscription",
+    "joined": "Inscrit le"
+  }
 }

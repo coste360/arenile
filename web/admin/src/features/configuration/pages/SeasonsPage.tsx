@@ -25,11 +25,12 @@ import {
   ResponsiveTabsList,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import {
   CalendarDaysIcon,
   CalendarRangeIcon,
   ChartGanttIcon,
+  CopyPlusIcon,
   PlusIcon,
   SunIcon,
   TriangleAlertIcon,
@@ -166,10 +167,24 @@ export function SeasonsPage() {
       readOnly={readOnly}
       actions={
         !readOnly && (
-          <Button onClick={editor.create}>
-            <PlusIcon aria-hidden="true" />
-            {t('seasons.add')}
-          </Button>
+          <>
+            {selected && (
+              <Button variant="outline" asChild>
+                <Link
+                  to="/e/$establishmentId/config/seasons/rollover"
+                  params={{ establishmentId: ctx.establishmentId }}
+                  search={{ seasonId: selected.id }}
+                >
+                  <CopyPlusIcon aria-hidden="true" />
+                  {t('seasonRollover:entry')}
+                </Link>
+              </Button>
+            )}
+            <Button onClick={editor.create}>
+              <PlusIcon aria-hidden="true" />
+              {t('seasons.add')}
+            </Button>
+          </>
         )
       }
     >

@@ -1,5 +1,79 @@
 {
   "title": "Nuova stagione",
   "description": "Crea la stagione successiva copiando periodi, chiusure, prezzi e policy; poi proponi i rinnovi agli abbonati.",
-  "back": "Stagioni e periodi"
+  "back": "Stagioni e periodi",
+  "entry": "Nuova stagione da questa",
+  "noSeasons": "Crea prima una stagione da cui partire.",
+  "step": {
+    "season": "1. Stagione di partenza e date",
+    "seasonHelp": "La nuova stagione eredita la configurazione di quella scelta, con le date spostate sull'anno nuovo.",
+    "copy": "2. Cosa copiare",
+    "copyHelp": "Catalogo, mappe e postazioni non dipendono dalla stagione e restano invariati.",
+    "preview": "3. Anteprima della stagione {{year}}",
+    "previewHelp": "Dal {{from}} al {{to}}. Nulla è stato ancora creato."
+  },
+  "fields": {
+    "source": "Stagione di origine",
+    "targetYear": "Anno della nuova stagione",
+    "yearInvalid": "Inserisci un anno tra 2000 e 2100.",
+    "opensOn": "Apertura",
+    "closesOn": "Chiusura",
+    "datesInvalid": "La chiusura deve seguire l'apertura."
+  },
+  "options": {
+    "include_rate_periods": {
+      "label": "Periodi tariffari",
+      "help": "Bassa, media e alta stagione con le stesse date sull'anno nuovo."
+    },
+    "include_closure_days": {
+      "label": "Giorni di chiusura",
+      "help": "Le chiusure della stagione, spostate sull'anno nuovo."
+    },
+    "include_price_rules": {
+      "label": "Regole di prezzo",
+      "help": "Listino, maggiorazioni e sconti legati alla stagione."
+    },
+    "include_fixed_prices": {
+      "label": "Prezzi fissi",
+      "help": "Prezzi a forfait per pacchetto e periodo."
+    },
+    "include_policies": {
+      "label": "Policy",
+      "help": "Acconti, cancellazioni e crediti della stagione."
+    }
+  },
+  "preview": "Calcola anteprima",
+  "apply": "Crea la stagione {{year}}",
+  "openApplied": "Vai al risultato",
+  "alreadyApplied": "La stagione {{year}} è già stata creata con questo passaggio.",
+  "warnings": "Da controllare",
+  "readOnly": "Solo chi può configurare lo stabilimento può creare la stagione.",
+  "counts": {
+    "rate_periods": "Periodi tariffari",
+    "closure_days": "Giorni di chiusura",
+    "price_rules": "Regole di prezzo",
+    "fixed_prices": "Prezzi fissi",
+    "policies": "Policy",
+    "season_passes": "Abbonati da rinnovare",
+    "seasonPassesHint": "Abbonamenti confermati della stagione di origine"
+  },
+  "confirm": {
+    "title": "Creare la stagione {{year}}?",
+    "description": "La stagione {{year}} viene creata in bozza con la configurazione copiata. Ripetere l'operazione non crea duplicati.",
+    "submit": "Crea la stagione"
+  },
+  "done": {
+    "title": "Stagione {{year}} creata",
+    "description": "Controlla date e prezzi della nuova stagione, poi proponi i rinnovi agli abbonati.",
+    "openSeason": "Apri la stagione",
+    "renewals_one": "Proponi il rinnovo a {{count}} abbonato",
+    "renewals_other": "Proponi i rinnovi a {{count}} abbonati"
+  },
+  "history": {
+    "title": "Passaggi già eseguiti",
+    "seasons": "Stagioni",
+    "copied": "Copiato",
+    "summary": "{{periods}} periodi, {{rules}} regole, {{prices}} prezzi fissi",
+    "when": "Eseguito il"
+  }
 }

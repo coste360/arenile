@@ -1,4 +1,70 @@
 {
-  "title": "Crediti",
-  "description": "Saldo, crediti in scadenza e movimenti del cliente."
+  "title": "Movimenti crediti",
+  "description": "Crediti riconosciuti, utilizzi, scadenze e rettifiche.",
+  "optional": "(facoltativo)",
+  "loadMore": "Carica altri movimenti",
+  "empty": "Nessun movimento.",
+  "available": "Credito disponibile",
+  "balanceHint": "Saldo contabile {{amount}}",
+  "expiring": "In scadenza",
+  "expiringHint": "entro il {{date}}",
+  "noExpiry": "Nessun credito in scadenza",
+  "columns": {
+    "date": "Data",
+    "movement": "Movimento",
+    "booking": "Prenotazione",
+    "openBooking": "Apri",
+    "expires": "Scadenza",
+    "amount": "Importo"
+  },
+  "source": {
+    "cancellation": "Cancellazione",
+    "season_release": "Rilascio abbonamento",
+    "weather": "Maltempo",
+    "manual": "Credito manuale",
+    "redemption": "Utilizzo",
+    "goodwill": "Cortesia",
+    "expiry": "Scadenza",
+    "adjustment": "Rettifica"
+  },
+  "grant": {
+    "open": "Riconosci credito",
+    "title": "Riconosci un credito",
+    "description": "Il credito si usa come metodo di pagamento sulle prossime prenotazioni.",
+    "source": "Tipo",
+    "help": {
+      "goodwill": "Un gesto di cortesia verso il cliente.",
+      "manual": "Un credito per un altro motivo, da spiegare nella nota.",
+      "adjustment": "Una correzione del saldo, in più o in meno."
+    },
+    "direction": "Rettifica",
+    "add": "Aggiungi",
+    "remove": "Togli",
+    "amount": "Importo",
+    "amountRequired": "Inserisci un importo maggiore di zero.",
+    "amountTooHigh": "Al massimo il credito disponibile ({{available}}).",
+    "expires": "Scadenza",
+    "expiresHelp": "Vuota: la validità prevista dalla policy.",
+    "note": "Nota",
+    "submit": "Riconosci",
+    "submitRemove": "Togli dal saldo",
+    "done": "Credito di {{amount}} riconosciuto.",
+    "removed": "Saldo ridotto di {{amount}}."
+  },
+  "apply": {
+    "open": "Usa su una prenotazione",
+    "title": "Usa il credito",
+    "description": "Disponibile: {{available}}. Viene registrato come pagamento «Credito cliente».",
+    "booking": "Prenotazione",
+    "due": "da saldare {{amount}}",
+    "max": "Al massimo {{max}}.",
+    "amountTooHigh": "Al massimo {{max}}.",
+    "note": "Credito cliente",
+    "submit": "Usa il credito",
+    "done": "Credito di {{amount}} usato su {{code}}."
+  },
+  "hint": {
+    "available": "Credito disponibile del cliente: {{available}}.",
+    "tooMuch": "L'importo supera il credito disponibile del cliente ({{available}})."
+  }
 }

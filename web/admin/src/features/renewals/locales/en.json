@@ -1,4 +1,219 @@
 {
   "title": "Renewals",
-  "description": "Season pass renewal campaigns: proposals with right of pre-emption, sending, acceptances and spots released at the deadline."
+  "description": "Season pass renewal campaigns: proposals with right of pre-emption, sending, acceptances and spots released at the deadline.",
+  "optional": "(optional)",
+  "countdown": {
+    "expired": "Expired",
+    "days": "{{days}} d {{hours}} h",
+    "hours": "{{hours}} h {{minutes}} min",
+    "minutes": "{{minutes}} min"
+  },
+  "problem": {
+    "renewal_expired": "The pre-emption period has expired: the spot has been released.",
+    "waitlist_offer_expired": "The offer has expired.",
+    "waitlist_disabled": "The waitlist is turned off.",
+    "credit_insufficient": "Insufficient credit: the balance cannot become negative.",
+    "season_rollover_conflict": "A season for that year already exists and was not created by this rollover."
+  },
+  "accept": {
+    "title": "Accept the renewal",
+    "description": "{{spot}} · {{customer}} · {{amount}}",
+    "confirmNow": "Confirm now",
+    "confirmNowHelp": "The renewal is confirmed now; the balance is recorded at the cash desk as for any booking.",
+    "awaitPaymentHelp": "The booking stays awaiting payment and is confirmed when the payment arrives.",
+    "note": "Note",
+    "submit": "Accept",
+    "done": "Renewal of {{spot}} accepted."
+  },
+  "decline": {
+    "title": "Decline the renewal",
+    "description": "{{spot}} · {{customer}}: the spot will be released.",
+    "reason": "Reason",
+    "submit": "Decline and release",
+    "done": "Renewal of {{spot}} declined: spot released."
+  },
+  "deadline": {
+    "date": "New deadline",
+    "help": "Pre-emption ends at 23:59 on the chosen day (establishment time).",
+    "submit": "Save deadline"
+  },
+  "create": {
+    "title": "New campaign",
+    "description": "One proposal for each pass holder of the source season, with the same spot and the price of the new price list.",
+    "source": "Source season",
+    "target": "New season",
+    "pickSeason": "Choose the season",
+    "sameSeason": "Choose two different seasons.",
+    "deadline": "Pre-emption deadline",
+    "deadlineHelp": "Until this date the spot stays reserved for the pass holder.",
+    "name": "Name",
+    "namePlaceholder": "Renewals {{year}}",
+    "notes": "Internal notes",
+    "preview": "Preview",
+    "previewHint": "Use \"Preview\" to see the proposals and the excluded passes before creating them.",
+    "previewSummary_one": "{{count}} proposal will be created",
+    "previewSummary_other": "{{count}} proposals will be created",
+    "previewDetail": "Total value {{amount}}; excluded passes: {{skipped}}.",
+    "previewTable": "Proposals preview",
+    "skippedTable": "Excluded passes",
+    "skippedTitle_one": "{{count}} pass excluded",
+    "skippedTitle_other": "{{count}} passes excluded",
+    "submit": "Create proposals",
+    "done_one": "Campaign created: {{count}} proposal ready to send.",
+    "done_other": "Campaign created: {{count}} proposals ready to send."
+  },
+  "skip": {
+    "spot_unavailable": "Spot not available in the new season",
+    "spot_inactive": "Spot deactivated",
+    "no_price": "No price in the new price list",
+    "already_renewed": "Already renewed",
+    "customer_anonymized": "Customer anonymised",
+    "not_confirmed": "Pass not confirmed"
+  },
+  "columns": {
+    "spot": "Spot",
+    "customer": "Customer",
+    "period": "Period",
+    "previous": "Previous price",
+    "amount": "Amount",
+    "reason": "Reason",
+    "status": "Status",
+    "sent": "Sending",
+    "deadline": "Deadline",
+    "actions": "Actions"
+  },
+  "status": {
+    "proposed": "Waiting",
+    "accepted": "Accepted, to be paid",
+    "converted": "Renewed",
+    "declined": "Declined",
+    "expired": "Expired"
+  },
+  "campaignStatus": {
+    "open": "Open",
+    "closed": "Closed"
+  },
+  "stats": {
+    "proposals": "Proposals",
+    "sent_one": "{{count}} sent",
+    "sent_other": "{{count}} sent",
+    "waiting": "Awaiting reply",
+    "renewed": "Renewals accepted",
+    "converted_one": "{{count}} confirmed",
+    "converted_other": "{{count}} confirmed",
+    "released": "Spots released",
+    "releasedHint": "{{declined}} declined · {{expired}} expired"
+  },
+  "campaign": {
+    "pick": "Campaign",
+    "seasons": "Season {{source}} → {{target}}",
+    "status": "Status",
+    "deadline": "Pre-emption deadline",
+    "total": "Proposals value",
+    "converted": "Renewals confirmed",
+    "changeDeadline": "Change deadline",
+    "changeDeadlineHelp": "Applies to the proposals still waiting.",
+    "deadlineChanged": "Deadline updated.",
+    "close": "Close campaign",
+    "closeTitle": "Close the campaign?",
+    "closeDescription_one": "{{count}} proposal still open will be closed and its spot released.",
+    "closeDescription_other": "{{count}} proposals still open will be closed and their spots released.",
+    "closed": "Campaign closed."
+  },
+  "filters": {
+    "search": "Search customer or spot",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "sent": "Sending",
+    "sentAll": "Sent and not sent",
+    "sentYes": "Sent",
+    "sentNo": "Not sent",
+    "zone": "Zone",
+    "allZones": "All zones"
+  },
+  "proposals": {
+    "title": "Renewal proposals",
+    "loadMore": "Load more proposals",
+    "empty": "No proposals match these filters.",
+    "emptyHint": "Change the filters or create a new campaign."
+  },
+  "empty": {
+    "title": "No renewal campaigns",
+    "description": "Prepare the new season with the end-of-season rollover, then offer renewals to pass holders.",
+    "rollover": "End-of-season rollover"
+  },
+  "row": {
+    "more": "Actions for {{spot}}, {{customer}}",
+    "send": "Send the proposal",
+    "remind": "Send a reminder",
+    "sent": "Proposal sent to {{customer}}.",
+    "accept": "Accept (at the desk)",
+    "decline": "Decline and release",
+    "openBooking": "Open the booking",
+    "noEmail": "no email",
+    "previous": "was {{amount}}",
+    "sentCount_one": "Sent",
+    "sentCount_other": "Sent {{count}} times",
+    "notSent": "Not sent"
+  },
+  "bulk": {
+    "menu": "Bulk actions",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "selectAll": "Select all open proposals",
+    "selectOne": "Select {{spot}}, {{customer}}",
+    "onSelection": "On the selected proposals",
+    "send": "Send or remind",
+    "accept": "Accept",
+    "extend": "Extend the deadline",
+    "decline": "Decline and release",
+    "release": "Release now",
+    "clear": "Clear selection",
+    "sendUnsent": "Send to those who have not received it",
+    "remind": "Remind those who have not replied",
+    "releaseExpired": "Release expired pre-emptions",
+    "extendTitle": "Extend the deadline",
+    "extendDescription_one": "{{count}} proposal selected.",
+    "extendDescription_other": "{{count}} proposals selected.",
+    "result": "Done: {{succeeded}} succeeded, {{skipped}} skipped, {{failed}} failed.",
+    "failedTitle_one": "{{count}} proposal not updated",
+    "failedTitle_other": "{{count}} proposals not updated",
+    "dismiss": "Close",
+    "confirm": {
+      "selection": {
+        "send": {
+          "title": "Send the proposals?",
+          "description_one": "The email with the renewal link goes out for {{count}} proposal (even if already sent).",
+          "description_other": "The email with the renewal link goes out for {{count}} proposals (even if already sent)."
+        },
+        "accept": {
+          "title": "Accept the renewals?",
+          "description_one": "{{count}} renewal is confirmed at the desk.",
+          "description_other": "{{count}} renewals are confirmed at the desk."
+        },
+        "decline": {
+          "title": "Decline the renewals?",
+          "description_one": "{{count}} proposal is declined and the spot released.",
+          "description_other": "{{count}} proposals are declined and the spots released."
+        },
+        "release": {
+          "title": "Release the spots now?",
+          "description_one": "Pre-emption of {{count}} proposal ends now, even if it has not expired.",
+          "description_other": "Pre-emption of {{count}} proposals ends now, even if it has not expired."
+        }
+      },
+      "unsent": {
+        "title": "Send the proposals not yet sent?",
+        "description": "Every pass holder with an email who has not received the proposal yet gets the renewal link."
+      },
+      "remind": {
+        "title": "Send a reminder?",
+        "description": "All pass holders who have not replied yet receive the renewal link again."
+      },
+      "releaseExpired": {
+        "title": "Release expired pre-emptions?",
+        "description": "The spots of unanswered proposals past their deadline become bookable again."
+      }
+    }
+  }
 }
