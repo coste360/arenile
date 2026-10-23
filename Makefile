@@ -15,7 +15,7 @@ SHELL := /bin/bash
 # ---------------------------------------------------------------------------
 
 MODULE                := github.com/coste360/arenile
-VERSION               ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+VERSION               ?= $(shell scripts/version.sh)
 IMAGE                 ?= ghcr.io/coste360/arenile
 GOLANGCI_LINT_VERSION ?= v2.15.0
 POSTGRES_IMAGE        ?= postgres:17-alpine

@@ -2,7 +2,8 @@
 # Shared helpers of the desktop packaging scripts (sourced, not executed).
 #
 # Inputs (environment):
-#   VERSION        release tag (e.g. v1.4.0); default: git describe, else "dev".
+#   VERSION        release tag (e.g. v1.4.0); default: scripts/version.sh (the tag,
+#                  or a dev build such as 0.6.0-dev.187+835d645, else "dev").
 #                  The desktop packages use the same tag as the server (spec 29.1).
 #   DESKTOP_TAGS   Go build tags of the launcher: "" = headless, CGO off;
 #                  "desktop" = tray build, CGO on (native runner of each OS).
@@ -24,7 +25,7 @@ APP_NAME="Arenile"
 BUNDLE_ID="it.coste360.arenile"
 
 if [ -z "${VERSION:-}" ]; then
-	VERSION="$(git -C "$DESKTOP_ROOT" describe --tags --always --dirty 2>/dev/null || echo dev)"
+	VERSION="$("$DESKTOP_ROOT/scripts/version.sh")"
 fi
 # File-name safe form of the version (PR refs such as "12/merge").
 VERSION_SAFE="$(printf '%s' "$VERSION" | tr '/ ' '--')"
@@ -35,9 +36,9 @@ die() {
 	exit 1
 }
 
-# numeric_version prints MAJOR.MINOR.PATCH from a tag such as v1.2.3-rc.1
-# (0.0.0 when the version is not a semver tag). Windows file versions and
-# macOS CFBundleShortVersionString accept digits only.
+# numeric_version prints MAJOR.MINOR.PATCH from a version such as v1.2.3-rc.1
+# or 0.6.0-dev.187+835d645 (0.0.0 only for a bare "dev" without git metadata).
+# Windows file versions and macOS CFBundleShortVersionString accept digits only.
 numeric_version() {
 	local v="${VERSION#v}"
 	if [[ "$v" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
@@ -45,6 +46,12 @@ numeric_version() {
 	else
 		printf '0.0.0'
 	fi
+}
+
+# build_number prints a monotonically increasing integer for macOS
+# CFBundleVersion: the number of commits of HEAD (1 without git metadata).
+build_number() {
+	git -C "$DESKTOP_ROOT" rev-list --count HEAD 2>/dev/null || printf 1
 }
 
 # go_ldflags: -s -w strip, empty build id (reproducible-ish), version injection.

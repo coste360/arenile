@@ -66,7 +66,10 @@ func (u UpdateChecker) Check(ctx context.Context) (latest string, newer bool, er
 }
 
 // CompareVersions compares two dotted versions ("v1.4.0", "1.10") on their
-// numeric parts (pure): -1, 0 or 1. Pre-release suffixes are ignored; a
+// numeric parts (pure): -1, 0 or 1. With equal numeric parts a pre-release
+// ("1.4.0-rc.1", the development builds "0.6.0-dev.187+835d645" of
+// scripts/version.sh) is lower than the release, as in semver; two
+// pre-releases compare equal and build metadata ("+...") is ignored. A
 // non-numeric version (e.g. "dev") is lower than any release.
 func CompareVersions(a, b string) int {
 	pa, oka := versionParts(a)
@@ -94,7 +97,22 @@ func CompareVersions(a, b string) int {
 			return 1
 		}
 	}
+	switch pra, prb := isPrerelease(a), isPrerelease(b); {
+	case pra && !prb:
+		return -1
+	case !pra && prb:
+		return 1
+	}
 	return 0
+}
+
+// isPrerelease reports whether v carries a semver pre-release suffix
+// ("-..." before any "+build" metadata).
+func isPrerelease(v string) bool {
+	if i := strings.IndexByte(v, '+'); i >= 0 {
+		v = v[:i]
+	}
+	return strings.Contains(v, "-")
 }
 
 func versionParts(v string) ([]int, bool) {

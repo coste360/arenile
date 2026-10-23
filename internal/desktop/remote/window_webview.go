@@ -146,15 +146,17 @@ func PairingHTML() string {
 	return b.String()
 }
 
+// The heading mark is the Arenile favicon (assets/brand/arenile/arenile-favicon.svg).
 var pairingTemplate = template.Must(template.New("pairing").Parse(`<!doctype html>
 <html lang="{{.lang}}"><head><meta charset="utf-8"><meta name="color-scheme" content="light dark">
 <title>{{.title}}</title>
 <style>
-  :root { color-scheme: light dark; --fg: #0f172a; --muted: #64748b; --border: #cbd5e1; --bg: #ffffff; --primary: #0e6ba8; --primary-fg: #ffffff; --ring: #93c5fd; --error: #b91c1c; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #e2e8f0; --muted: #94a3b8; --border: #334155; --bg: #0b1220; --primary: #3b9ddd; --primary-fg: #06111f; --ring: #1d4ed8; --error: #fca5a5; } }
+  :root { color-scheme: light dark; --fg: #0b305f; --muted: #52637a; --border: #c9d5e3; --bg: #ffffff; --primary: #092d62; --primary-fg: #ffffff; --ring: #0d79ac; --error: #b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #e6eef7; --muted: #9fb1c6; --border: #2a3f5c; --bg: #071a33; --primary: #16cde1; --primary-fg: #092d62; --ring: #16cde1; --error: #fca5a5; } }
   html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif; }
   main { max-width: 32rem; margin: 0 auto; padding: 1.5rem 1.5rem 2rem; }
-  h1 { font-size: 1.25rem; font-weight: 600; margin: 0 0 .5rem; }
+  h1 { display: flex; align-items: center; gap: .6rem; font-size: 1.25rem; font-weight: 600; margin: 0 0 .5rem; }
+  h1 svg { width: 2rem; height: 2rem; flex: none; }
   p.intro { color: var(--muted); margin: 0 0 1.25rem; }
   label { display: block; font-weight: 500; margin: 0 0 .25rem; }
   .field { margin-bottom: .9rem; }
@@ -166,7 +168,7 @@ var pairingTemplate = template.Must(template.New("pairing").Parse(`<!doctype htm
   #err.busy { color: var(--muted); }
 </style></head>
 <body><main>
-<h1>{{.title}}</h1>
+<h1><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0A326A"/><path d="M10 50L27 15Q32 6 37 15L56 50H44L34 28Q32 24 30 28L20 50Z" fill="#FFF3D9"/><path d="M8 52Q17 56 25 43Q32 33 40 42Q48 52 57 52Q47 55 37 48Q31 44 25 50Q16 60 8 52Z" fill="#16D4E5"/></svg>{{.title}}</h1>
 <p class="intro">{{.intro}}</p>
 <form id="f" autocomplete="off">
 <div class="field"><label for="url">{{.url}}</label><input id="url" name="url" type="url" placeholder="https://lido.example.it"></div>

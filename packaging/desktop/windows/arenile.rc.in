@@ -27,7 +27,7 @@ BEGIN
             VALUE "FileDescription",  "Arenile - gestionale per stabilimenti balneari"
             VALUE "FileVersion",      "@V_DOT@.0"
             VALUE "InternalName",     "arenile-desktop"
-            VALUE "LegalCopyright",   "Coste360 SRL - BSL 1.1 (BUSL-1.1)"
+            VALUE "LegalCopyright",   "Arenile - Coste360.it, (c) Coste360 SRL - BSL 1.1 (BUSL-1.1)"
             VALUE "OriginalFilename", "arenile-desktop.exe"
             VALUE "ProductName",      "Arenile"
             VALUE "ProductVersion",   "@VERSION@"

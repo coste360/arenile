@@ -36,7 +36,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version label (default git describe)
+        description: Version label (default scripts/version.sh)
         type: string
         required: false
   pull_request:
@@ -60,7 +60,7 @@ env:
   # Tray build (spec 29.1): CGO on macOS and Windows (native runners), CGO-free
   # on Linux (scripts/desktop/common.sh cgo_flag). The core stays CGO-free.
   DESKTOP_TAGS: desktop
-  # VERSION empty on pull requests: the scripts fall back to `git describe`.
+  # VERSION empty on pull requests: the scripts fall back to scripts/version.sh.
   VERSION: ${{ inputs.version }}
   SKIP_WEB_BUILD: "1"
   RETENTION_DAYS: ${{ inputs.retention-days || 3 }}

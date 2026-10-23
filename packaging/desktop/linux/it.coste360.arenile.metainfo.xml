@@ -16,7 +16,7 @@
   <developer id="it.coste360">
     <name>Coste360 SRL</name>
   </developer>
-  <url type="homepage">https://coste360.it</url>
+  <url type="homepage">https://arenile.app</url>
   <url type="vcs-browser">https://github.com/coste360/arenile</url>
   <launchable type="desktop-id">arenile.desktop</launchable>
   <content_rating type="oars-1.1"/>

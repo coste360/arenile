@@ -1,41 +1,54 @@
 #!/usr/bin/env bash
-# Regenerates the desktop package icons from the brand SVGs in
-# packaging/desktop/icons (the same mark as web/admin/public/icon.svg).
+# Regenerates the desktop package icons in packaging/desktop/icons from the
+# Arenile brand kit (assets/brand/arenile, ADR 0018):
 #
-#   arenile.svg        full-bleed mark -> arenile.ico (Windows), arenile.png (Linux, 512 px)
-#   arenile-macos.svg  mark on the macOS 1024 grid (824 px body, 100 px margin) -> arenile.icns
+#   arenile/arenile-app-icon-1024.png          full-bleed app icon -> arenile.ico (Windows), arenile.png (Linux, 512 px)
+#   arenile/png/arenile-app-icon-macos-1024.png  app icon on the macOS 1024 grid (824 px body, 100 px margin) -> arenile.icns
+#   arenile/arenile-app-icon.svg               copied as arenile.svg (Linux hicolor scalable icon, text-free)
 #
 # The outputs are committed, so packaging needs no image tooling on the CI
-# runners. Run this only when the brand mark changes. Requires ImageMagick 7
-# (`magick`) and, for the .icns, macOS `iconutil`.
+# runners. Run this only when the brand kit changes (after
+# scripts/brand/build-brand.mjs). Requires ImageMagick 7 (`magick`) and, for
+# the .icns, macOS `iconutil`.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 dir="$root/packaging/desktop/icons"
+brand="$root/assets/brand/arenile"
+full="$brand/arenile-app-icon-1024.png"
+macos="$brand/png/arenile-app-icon-macos-1024.png"
 command -v magick >/dev/null || { echo "gen-icons: ImageMagick 7 (magick) is required" >&2; exit 1; }
+for f in "$full" "$macos"; do
+	[[ -f "$f" ]] || { echo "gen-icons: missing $f" >&2; exit 1; }
+done
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-render() { # svg size out
-	magick -background none -density 1200 "$1" -resize "${2}x${2}" -strip "PNG32:$3"
+resize() { # png size out
+	magick "$1" -filter Lanczos -resize "${2}x${2}" -strip "PNG32:$3"
 }
 
-# Linux (hicolor 512x512, also used by the AppImage as .DirIcon).
-render "$dir/arenile.svg" 512 "$dir/arenile.png"
+# Linux (hicolor 512x512, also used by the AppImage as .DirIcon) and the scalable icon.
+resize "$full" 512 "$dir/arenile.png"
+cp "$brand/arenile-app-icon.svg" "$dir/arenile.svg"
 
 # Windows: multi-resolution .ico (16..256).
-for s in 16 24 32 48 64 128 256; do render "$dir/arenile.svg" "$s" "$work/ico-$s.png"; done
-magick "$work"/ico-16.png "$work"/ico-24.png "$work"/ico-32.png "$work"/ico-48.png \
-	"$work"/ico-64.png "$work"/ico-128.png "$work"/ico-256.png "$dir/arenile.ico"
+sizes=(16 24 32 48 64 128 256)
+frames=()
+for s in "${sizes[@]}"; do
+	resize "$full" "$s" "$work/ico-$s.png"
+	frames+=("$work/ico-$s.png")
+done
+magick "${frames[@]}" "$dir/arenile.ico"
 
 # macOS: .iconset -> .icns.
 if command -v iconutil >/dev/null; then
 	set_dir="$work/arenile.iconset"
 	mkdir -p "$set_dir"
 	for s in 16 32 128 256 512; do
-		render "$dir/arenile-macos.svg" "$s" "$set_dir/icon_${s}x${s}.png"
-		render "$dir/arenile-macos.svg" "$((s * 2))" "$set_dir/icon_${s}x${s}@2x.png"
+		resize "$macos" "$s" "$set_dir/icon_${s}x${s}.png"
+		resize "$macos" "$((s * 2))" "$set_dir/icon_${s}x${s}@2x.png"
 	done
 	iconutil -c icns -o "$dir/arenile.icns" "$set_dir"
 else

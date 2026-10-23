@@ -135,7 +135,12 @@ func TestCompareVersions_Scenarios(t *testing.T) {
 		{"1.4.0", "1.3.9", 1},
 		{"v1.10.0", "1.9.0", 1},
 		{"1.4", "1.4.0", 0},
-		{"1.4.0-rc.1", "1.4.0", 0},
+		{"1.4.0-rc.1", "1.4.0", -1},
+		{"v1.4.0", "1.4.0-rc.1", 1},
+		{"1.4.0-rc.1", "1.4.0-rc.2", 0},
+		{"0.6.0-dev.187+835d645", "v0.6.0", -1},
+		{"0.6.0-dev.187+835d645.dirty", "0.5.9", 1},
+		{"0.6.0+build.7", "0.6.0", 0},
 		{"1.3.0", "v1.4.0", -1},
 		{"1.0.0", "dev", 1},
 		{"dev", "dev", 0},
@@ -201,15 +206,35 @@ func TestRunUpdateChecks_NoNetworkWhenDisabled(t *testing.T) {
 }
 
 func TestTrayIcon_PNGAndICO(t *testing.T) {
-	for _, tmpl := range []bool{true, false} {
-		b := TrayIconPNG(32, tmpl)
+	for _, tc := range []struct {
+		size     int
+		template bool
+		want     int
+	}{
+		{16, false, 16},
+		{32, false, 32},
+		{44, false, 64},
+		{200, false, 64},
+		{18, true, 18},
+		{32, true, 36},
+		{44, true, 36},
+	} {
+		b := TrayIconPNG(tc.size, tc.template)
 		img, err := png.Decode(bytes.NewReader(b))
-		if err != nil || img.Bounds().Dx() != 32 {
-			t.Fatalf("png: %v", err)
+		if err != nil || img.Bounds().Dx() != tc.want || img.Bounds().Dy() != tc.want {
+			t.Fatalf("size %d template=%v: got %v, %v", tc.size, tc.template, img, err)
 		}
-		_, _, _, a := img.At(0, 0).RGBA()
-		if tmpl != (a == 0) {
-			t.Fatalf("template=%v corner alpha %d", tmpl, a)
+		// Transparent corners; the template image is a pure black silhouette.
+		if _, _, _, a := img.At(0, 0).RGBA(); a != 0 {
+			t.Fatalf("size %d template=%v: corner alpha %d", tc.size, tc.template, a)
+		}
+		c := tc.want / 2
+		r, g, bl, a := img.At(c, c*3/2).RGBA()
+		if tc.template && a > 0 && (r|g|bl) != 0 {
+			t.Fatalf("template pixel not black: %d %d %d", r, g, bl)
+		}
+		if !tc.template && a == 0 {
+			t.Fatalf("colour tile has a transparent centre")
 		}
 	}
 	p16, p32 := TrayIconPNG(16, false), TrayIconPNG(32, false)

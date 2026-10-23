@@ -72,7 +72,7 @@ printf 'APPL????' >"$app/Contents/PkgInfo"
 short="$(numeric_version)"
 sed -e "s|@BUNDLE_ID@|$BUNDLE_ID|g" \
 	-e "s|@SHORT_VERSION@|$short|g" \
-	-e "s|@BUNDLE_VERSION@|$short|g" \
+	-e "s|@BUNDLE_VERSION@|$(build_number)|g" \
 	-e "s|@VERSION@|$VERSION|g" \
 	-e "s|@MIN_MACOS@|$MACOS_MIN_VERSION|g" \
 	"$PKG_DIR/macos/Info.plist.in" >"$app/Contents/Info.plist"

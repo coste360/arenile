@@ -36,7 +36,7 @@
 	<key>CFBundleVersion</key>
 	<string>@BUNDLE_VERSION@</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Arenile @VERSION@</string>
+	<string>Arenile — Coste360.it @VERSION@</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.business</string>
 	<key>LSMinimumSystemVersion</key>
@@ -50,6 +50,7 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Arenile usa la rete locale solo se attivi la modalità rete locale, per far lavorare gli altri dispositivi del lido sullo stesso archivio.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© Coste360 SRL. Codice sorgente disponibile, licenza BSL 1.1 (BUSL-1.1).</string>
+	<string>Arenile — Coste360.it · @VERSION@
+© Coste360 SRL. Codice sorgente disponibile, licenza BSL 1.1 (BUSL-1.1).</string>
 </dict>
 </plist>

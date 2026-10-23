@@ -2,51 +2,46 @@ package desktop
 
 import (
 	"bytes"
+	"embed"
 	"encoding/binary"
-	"image"
-	"image/color"
+	"fmt"
 	"image/png"
-	"math"
 )
 
-// Tray icon colours (the Arenile mark: sea blue tile, sand umbrella).
+// Tray icons from the Arenile brand kit (assets/brand/arenile/png, rendered by
+// scripts/brand/build-brand.mjs): the mono "A" in black for the macOS menu bar
+// template image, the app tile in colour for the Windows and Linux trays.
+//
+//go:embed trayicons/*.png
+var trayIcons embed.FS
+
 var (
-	iconSea  = color.NRGBA{0x0e, 0x6b, 0xa8, 0xff}
-	iconSand = color.NRGBA{0xf2, 0xb1, 0x34, 0xff}
-	iconPole = color.NRGBA{0xff, 0xff, 0xff, 0xff}
+	trayTemplateSizes = []int{18, 36}
+	trayColorSizes    = []int{16, 32, 64}
 )
 
-// TrayIconPNG draws the tray icon (a beach umbrella) at size×size pixels
-// (pure, deterministic). template=true draws a black silhouette on
-// transparent background, the macOS menu bar "template" image that the
-// system tints for light and dark mode. Drawn in code: no binary asset to
-// keep in sync with packaging/desktop/icons.
+// TrayIconPNG returns the tray icon closest to size×size pixels (the smallest
+// embedded rendering at least that large, else the largest one); pure and
+// deterministic. template=true returns the black silhouette on transparent
+// background, the macOS menu bar "template" image that the system tints for
+// light and dark mode.
 func TrayIconPNG(size int, template bool) []byte {
-	img := image.NewNRGBA(image.Rect(0, 0, size, size))
-	s := float64(size)
-	black := color.NRGBA{0, 0, 0, 0xff}
-	for y := 0; y < size; y++ {
-		for x := 0; x < size; x++ {
-			fx, fy := (float64(x)+0.5)/s, (float64(y)+0.5)/s
-			canopy := fy <= 0.52 && math.Hypot(fx-0.5, (fy-0.52)*1.15) <= 0.42 && fy >= 0.14
-			pole := math.Abs(fx-0.5) <= 0.045 && fy > 0.5 && fy <= 0.86
-			sand := fy > 0.86 && fy <= 0.94 && fx >= 0.18 && fx <= 0.82
-			switch {
-			case template && (canopy || pole || sand):
-				img.SetNRGBA(x, y, black)
-			case template:
-			case canopy:
-				img.SetNRGBA(x, y, iconSand)
-			case pole || sand:
-				img.SetNRGBA(x, y, iconPole)
-			default:
-				img.SetNRGBA(x, y, iconSea)
-			}
+	kind, sizes := "color", trayColorSizes
+	if template {
+		kind, sizes = "template", trayTemplateSizes
+	}
+	pick := sizes[len(sizes)-1]
+	for _, s := range sizes {
+		if s >= size {
+			pick = s
+			break
 		}
 	}
-	var buf bytes.Buffer
-	_ = png.Encode(&buf, img)
-	return buf.Bytes()
+	b, err := trayIcons.ReadFile(fmt.Sprintf("trayicons/tray-%s-%d.png", kind, pick))
+	if err != nil {
+		panic(err) // embedded at build time: unreachable
+	}
+	return b
 }
 
 // ICOFromPNG wraps PNG images in an .ico container (PNG-compressed icon

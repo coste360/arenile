@@ -229,7 +229,7 @@ func TestAllowExternal_Policy(t *testing.T) {
 	panel := "http://127.0.0.1:5173/admin/"
 	for target, want := range map[string]bool{
 		"https://dashboard.stripe.com/":    true,
-		"https://docs.arenile.it/guida":    true,
+		"https://docs.arenile.app/guida":   true,
 		"mailto:info@example.it":           true,
 		"http://127.0.0.1:5173/admin/oggi": false,
 		"http://127.0.0.1:9999/":           true,
