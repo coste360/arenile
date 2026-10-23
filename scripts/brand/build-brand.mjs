@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Derives the outlined SVGs and the raster exports of the brand from the kit
-// sources in assets/brand (ADR 0018). The outputs are committed, so neither
-// the build nor the CI needs this script or its tools; run it only when the
-// kit changes:
+// sources in assets/brand/arenile (brand kit v2.0, ADR 0018). The outputs are
+// committed, so neither the build nor the CI needs this script or its tools;
+// run it only when the kit changes:
 //
 //   mkdir -p /tmp/brandtools && cd /tmp/brandtools && npm init -y >/dev/null &&
 //     npm i @fontsource/titillium-web@5.3.0 opentype.js@2.0.0
@@ -11,8 +11,8 @@
 // Text is converted to outlines with Titillium Web (OFL-1.1, the kit font) so
 // the logos render the same where the font is not available (<img>, emails,
 // desktop icons, favicons, social images). PNGs are rendered by the Chromium
-// of the e2e Playwright install (e2e/node_modules), which handles the kit
-// gradients faithfully.
+// of the e2e Playwright install (e2e/node_modules). After this script, run
+// scripts/desktop/gen-icons.sh for the desktop package icons.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
@@ -29,16 +29,18 @@ const opentype = req('opentype.js');
 const { chromium } = createRequire(join(root, 'e2e', 'noop.js'))('@playwright/test');
 
 const A = join(root, 'assets', 'brand', 'arenile');
-const C = join(root, 'assets', 'brand', 'coste360');
 const OUT_SVG = join(A, 'outlined');
 const OUT_PNG = join(A, 'png');
 mkdirSync(OUT_SVG, { recursive: true });
 mkdirSync(OUT_PNG, { recursive: true });
 
+const NAVY = '#0B2542';
+const WHITE = '#FFFFFF';
+
 const fontFile = (w) =>
   readFileSync(join(tools, '@fontsource', 'titillium-web', 'files', `titillium-web-latin-${w}-normal.woff`));
 const fonts = Object.fromEntries(
-  [600, 700, 900].map((w) => {
+  [600, 700].map((w) => {
     const b = fontFile(w);
     return [w, opentype.parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength))];
   }),
@@ -82,36 +84,37 @@ function outline(svg) {
   });
 }
 
+/** Single-colour version of a kit SVG (every fill, the title and the label adjusted). */
+function recolour(svg, fill, label) {
+  return svg
+    .replace(/fill="#[0-9A-Fa-f]{6}"/g, `fill="${fill}"`)
+    .replace(/(aria-label="Arenile — )[^"]*"/, `$1${label}"`)
+    .replace(/(<title>Arenile — )[^<]*</, `$1${label}<`);
+}
+
 const read = (dir, f) => readFileSync(join(dir, f), 'utf8');
 const write = (f, s) => writeFileSync(join(OUT_SVG, f), s.trim() + '\n');
 
-// 1. The kit logos with outlined text.
-for (const f of [
-  'arenile-logo-horizontal.svg',
-  'arenile-logo-horizontal-dark.svg',
-  'arenile-logo-header.svg',
-  'arenile-logo-stacked.svg',
-  'arenile-wordmark.svg',
-]) {
-  write(f, outline(read(A, f)));
+// 1. The kit logos with outlined text. Plain names are for light surfaces
+// (navy "A"), -dark for dark surfaces (sand "A", white lettering), -white and
+// -navy are single-colour (navy bands and dark mode; mono marks and print).
+const IT = { horizontal: 'orizzontale', header: 'header', stacked: 'verticale' };
+for (const l of ['horizontal', 'header', 'stacked']) {
+  const light = outline(read(A, `arenile-logo-${l}.svg`));
+  write(`arenile-logo-${l}.svg`, light);
+  write(`arenile-logo-${l}-dark.svg`, outline(read(A, `arenile-logo-${l}-dark.svg`)));
+  write(`arenile-logo-${l}-white.svg`, recolour(light, WHITE, `logo ${IT[l]} bianco`));
+  write(`arenile-logo-${l}-navy.svg`, recolour(light, NAVY, `logo ${IT[l]} navy`));
 }
-// Header logo for dark surfaces (colours of the kit's horizontal-dark logo).
-write(
-  'arenile-logo-header-dark.svg',
-  outline(
-    read(A, 'arenile-logo-header.svg')
-      .replace('fill="#0B305F"', 'fill="#FFFFFF"')
-      .replace('fill="#277D9F"', 'fill="#9EE2EE"')
-      .replace('— Header', '— Header per sfondo scuro'),
-  ),
-);
+write('arenile-wordmark.svg', outline(read(A, 'arenile-wordmark.svg')));
+write('arenile-wordmark-white.svg', outline(read(A, 'arenile-wordmark-white.svg')));
 
 // 2. The name alone ("Arenile", Titillium Web 700), for the app chrome next to the symbol.
 const name = textPath({ text: 'Arenile', x: 0, y: 0, size: 100, weight: 700, spacing: -1.7 });
 const nameBox = fonts[700].getPath('Arenile', 0, 0, 100).getBoundingBox();
 for (const [variant, fill] of [
-  ['navy', '#0B305F'],
-  ['white', '#FFFFFF'],
+  ['navy', NAVY],
+  ['white', WHITE],
 ]) {
   const w = Math.ceil(name.width + 2);
   const h = Math.ceil(-nameBox.y1 + 2);
@@ -121,58 +124,76 @@ for (const [variant, fill] of [
   );
 }
 
-// 3. Coste360 lockup: the company's original raster logo (assets/brand/coste360/logo-*.png, 781x312, with transparent margins)
-// is used as is; it is never redrawn here.
+// 3. Coste360 lockup: the company's original raster logo (assets/brand/coste360/logo-*.png) is used as
+// is; it is never redrawn here.
 
 // 4. Raster exports.
-const symbolInner = read(A, 'arenile-symbol-color.svg')
-  .replace(/^[\s\S]*?<defs>/, '<defs>')
-  .replace(/<\/svg>\s*$/, '');
-const tile = (rx, scale = 1) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="${rx}" fill="#092D62"/><g transform="translate(${512 - 512 * scale} ${512 - 512 * scale}) scale(${scale})">${symbolInner}</g></svg>`;
-const navySymbol = read(A, 'arenile-symbol-navy.svg');
-// macOS menu bar template image: the mono symbol in black, cropped to its
-// bounds and with a heavier wave so it stays legible at 18 px.
-const templateSymbol = navySymbol
-  .replace('color:#082F63', 'color:#000000')
-  .replace('viewBox="0 0 1024 1024"', 'viewBox="80 90 880 880"')
-  .replace('stroke-width="27"', 'stroke-width="58"');
+/** The drawing of a kit SVG without the root element, the title and the tile. */
+const inner = (svg) =>
+  svg
+    .replace(/^[\s\S]*?<\/title>/, '')
+    .replace(/<\/svg>\s*$/, '')
+    .replace(/<rect[^>]*\/>/, '');
+const symbolDark = read(A, 'arenile-symbol-color-dark.svg');
+const symbolVB = attr(symbolDark, 'viewBox').split(' ').map(Number);
+const [sx, sy, sw, sh] = symbolVB;
+/** Navy full-bleed tile with the sand-A symbol centred at `scale` of the tile (apple-touch, maskable). */
+const tile = (scale) => {
+  const s = (1024 * scale) / Math.max(sw, sh);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="${NAVY}"/><g transform="translate(512 512) scale(${s}) translate(${-(sx + sw / 2)} ${-(sy + sh / 2)})">${inner(symbolDark)}</g></svg>`;
+};
+// macOS menu bar template image: the mono symbol in black on transparent, cropped to its bounds; a mask
+// widens the gaps around the wave so the three shapes stay apart at 18 px (the system tints it).
+const mono = read(A, 'arenile-symbol-navy.svg');
+const waveD = [...mono.matchAll(/<path d="([^"]+)"/g)].map((m) => m[1])[3];
+const side = Math.max(sw, sh) - 60;
+const templateSymbol = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${sx + sw / 2 - side / 2} ${sy + sh / 2 - side / 2} ${side} ${side}"><defs><mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024"><rect width="1024" height="1024" fill="#fff"/><path d="${waveD}" fill="#000" stroke="#000" stroke-width="56" stroke-linejoin="round"/></mask></defs><g mask="url(#m)">${inner(mono).replace(/fill="#[0-9A-Fa-f]{6}"/g, 'fill="#000"')}</g><path d="${waveD}" fill="#000"/></svg>`;
 const appIcon = read(A, 'arenile-app-icon.svg');
-const macIcon = appIcon.replace(
-  /<svg([^>]*)viewBox="0 0 1024 1024"([^>]*)>/,
-  '<svg$1viewBox="-100 -100 1224 1224"$2>',
-);
-const ogImage = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#FFF0D1"/><rect y="560" width="1200" height="70" fill="#092D62"/>${read(OUT_SVG, 'arenile-logo-horizontal.svg').replace('<svg ', '<svg x="240" y="168" width="720" height="224" ')}</svg>`;
+const appFlat = read(A, 'arenile-app-icon-flat.svg');
+const favicon = read(A, 'arenile-favicon.svg');
+// macOS icon grid: 824 px body with a 100 px margin on the 1024 canvas.
+const macIcon = appIcon.replace(/viewBox="0 0 1024 1024"/, 'viewBox="-100 -100 1224 1224"');
+const logoLight = read(OUT_SVG, 'arenile-logo-horizontal.svg');
+const ogImage = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#FFF0D1"/><rect y="560" width="1200" height="70" fill="${NAVY}"/>${logoLight.replace(/ width="\d+" height="\d+"/, '').replace('<svg ', '<svg x="225" y="166" width="750" height="238" ')}</svg>`;
+const symbolH = (w) => Math.round((w * sh) / sw);
 
 const jobs = [
-  // name, svg, width, height
-  ['arenile-app-icon-macos-1024.png', macIcon, 1024],
-  ['apple-touch-icon-180.png', tile(0, 0.86), 180],
-  ['maskable-icon-512.png', tile(0, 0.7), 512],
-  ['pwa-icon-512.png', read(A, 'arenile-app-icon-flat.svg'), 512],
-  ['pwa-icon-192.png', read(A, 'arenile-app-icon-flat.svg'), 192],
-  ['favicon-32.png', read(A, 'arenile-favicon.svg'), 32],
-  ['favicon-16.png', read(A, 'arenile-favicon.svg'), 16],
-  ['favicon-48.png', read(A, 'arenile-favicon.svg'), 48],
-  ['email-mark-64.png', read(A, 'arenile-app-icon-flat.svg'), 64],
-  ['tray-template-18.png', templateSymbol, 18],
-  ['tray-template-36.png', templateSymbol, 36],
-  ['tray-color-32.png', read(A, 'arenile-app-icon-flat.svg'), 32],
-  ['tray-color-64.png', read(A, 'arenile-app-icon-flat.svg'), 64],
-  ['og-image-1200x630.png', ogImage, 1200, 630],
-  ['arenile-logo-horizontal-640.png', read(OUT_SVG, 'arenile-logo-horizontal.svg'), 640, 199],
+  // dir, name, svg, width, height
+  // The kit's own PNG exports (same names as supplied).
+  ...[16, 32, 64, 128, 180, 192, 256, 512, 1024].map((s) => [A, `arenile-app-icon-${s}.png`, appIcon, s]),
+  [A, 'arenile-app-icon-light-1024.png', read(A, 'arenile-app-icon-light.svg'), 1024],
+  [A, 'arenile-symbol-color-1024.png', read(A, 'arenile-symbol-color.svg'), 1024, symbolH(1024)],
+  [A, 'arenile-symbol-color-dark-1024.png', symbolDark, 1024, symbolH(1024)],
+  // Derived exports used by the apps.
+  [OUT_PNG, 'arenile-app-icon-macos-1024.png', macIcon, 1024],
+  [OUT_PNG, 'apple-touch-icon-180.png', tile(0.74), 180],
+  [OUT_PNG, 'maskable-icon-512.png', tile(0.6), 512],
+  [OUT_PNG, 'pwa-icon-512.png', appFlat, 512],
+  [OUT_PNG, 'pwa-icon-192.png', appFlat, 192],
+  [OUT_PNG, 'favicon-16.png', favicon, 16],
+  [OUT_PNG, 'favicon-32.png', favicon, 32],
+  [OUT_PNG, 'favicon-48.png', favicon, 48],
+  [OUT_PNG, 'email-mark-64.png', appFlat, 64],
+  [OUT_PNG, 'tray-template-18.png', templateSymbol, 18],
+  [OUT_PNG, 'tray-template-36.png', templateSymbol, 36],
+  // Inset by 1.5% so the antialiased rounded corners stay fully transparent at 16 px.
+  [OUT_PNG, 'tray-color-16.png', favicon.replace('viewBox="0 0 128 128"', 'viewBox="-2 -2 132 132"'), 16],
+  [OUT_PNG, 'tray-color-32.png', appFlat, 32],
+  [OUT_PNG, 'tray-color-64.png', appFlat, 64],
+  [OUT_PNG, 'og-image-1200x630.png', ogImage, 1200, 630],
+  [OUT_PNG, 'arenile-logo-horizontal-640.png', logoLight, 640, 203],
 ];
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
-for (const [file, svg, w, h = w] of jobs) {
+for (const [dir, file, svg, w, h = w] of jobs) {
   await page.setViewportSize({ width: w, height: h });
   const src = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
   await page.setContent(
     `<html><body style="margin:0;background:transparent"><img src="${src}" width="${w}" height="${h}" style="display:block"></body></html>`,
   );
   await page.waitForFunction(() => document.images[0]?.complete);
-  writeFileSync(join(OUT_PNG, file), await page.screenshot({ omitBackground: true, type: 'png' }));
+  writeFileSync(join(dir, file), await page.screenshot({ omitBackground: true, type: 'png' }));
 }
 await browser.close();
-console.log(`build-brand: ${jobs.length} PNGs in assets/brand/arenile/png, outlined SVGs in assets/brand/arenile/outlined`);
+console.log(`build-brand: ${jobs.length} PNGs, outlined SVGs in assets/brand/arenile/outlined`);

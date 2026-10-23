@@ -1,64 +1,247 @@
 {
   "brand": "Arenile",
-  "by": "Coste360",
+  "version": "2.0.0",
+  "revision": "2.0.0-polish.1 (2026-10-23)",
+  "tagline": null,
   "font": "Titillium Web",
-  "version": "1.0",
-  "note": "Creative vector reinterpretation of approved A mark; no PNGs embedded",
+  "colors": {
+    "navy": "#0B2542",
+    "sand": "#FFF0D1",
+    "sandWarm": "#F2C893",
+    "sky": "#38BDF8",
+    "sea": "#0EA5E9"
+  },
+  "source": "Brand kit v2.0 supplied by Coste360 SRL (editable vector redraw of the approved app icon concept), polished: uniform 22-unit gaps between the wave and the A, straight inner edge of the right leg (notch removed), symbol optically centred in the tile (+8, +2), light-surface variants with the navy A. Logo SVGs keep live <text>; outlined/ has them as paths.",
   "assets": [
     {
-      "file": "arenile-symbol-color.svg",
-      "label": "Marchio A — a colori",
-      "variant": "transparent"
+      "file": "arenile-app-icon-1024.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
     },
     {
-      "file": "arenile-symbol-navy.svg",
-      "label": "Marchio A — navy monocromatico",
-      "variant": "transparent"
+      "file": "arenile-app-icon-128.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
     },
     {
-      "file": "arenile-symbol-white.svg",
-      "label": "Marchio A — bianco monocromatico",
-      "variant": "transparent"
+      "file": "arenile-app-icon-16.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
     },
     {
-      "file": "arenile-app-icon.svg",
-      "label": "Icona app — sfondo navy sfumato",
-      "variant": "app"
+      "file": "arenile-app-icon-180.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
+    },
+    {
+      "file": "arenile-app-icon-192.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
+    },
+    {
+      "file": "arenile-app-icon-256.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
+    },
+    {
+      "file": "arenile-app-icon-32.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
+    },
+    {
+      "file": "arenile-app-icon-512.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
+    },
+    {
+      "file": "arenile-app-icon-64.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
+    },
+    {
+      "file": "arenile-app-icon-compact.svg",
+      "kind": "app",
+      "format": "svg",
+      "surface": "any"
     },
     {
       "file": "arenile-app-icon-flat.svg",
-      "label": "Icona app — sfondo navy flat",
-      "variant": "app"
+      "kind": "app",
+      "format": "svg",
+      "surface": "any"
     },
     {
-      "file": "arenile-logo-horizontal.svg",
-      "label": "Logo orizzontale — sfondo chiaro",
-      "variant": "logo"
+      "file": "arenile-app-icon-light-1024.png",
+      "kind": "app",
+      "format": "png",
+      "surface": "any"
     },
     {
-      "file": "arenile-logo-horizontal-dark.svg",
-      "label": "Logo orizzontale — sfondo scuro",
-      "variant": "logo"
+      "file": "arenile-app-icon-light.svg",
+      "kind": "app",
+      "format": "svg",
+      "surface": "any"
     },
     {
-      "file": "arenile-logo-stacked.svg",
-      "label": "Logo verticale",
-      "variant": "logo"
+      "file": "arenile-app-icon-monochrome.svg",
+      "kind": "app",
+      "format": "svg",
+      "surface": "any"
     },
     {
-      "file": "arenile-logo-header.svg",
-      "label": "Logo compatto per sidebar/header",
-      "variant": "logo"
-    },
-    {
-      "file": "arenile-wordmark.svg",
-      "label": "Scritta Arenile Coste360.it",
-      "variant": "logo"
+      "file": "arenile-app-icon.svg",
+      "kind": "app",
+      "format": "svg",
+      "surface": "any"
     },
     {
       "file": "arenile-favicon.svg",
-      "label": "Favicon semplificata",
-      "variant": "favicon"
+      "kind": "app",
+      "format": "svg",
+      "surface": "any"
+    },
+    {
+      "file": "arenile-logo-header-dark.svg",
+      "kind": "logo",
+      "format": "svg",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-logo-header.svg",
+      "kind": "logo",
+      "format": "svg",
+      "surface": "light"
+    },
+    {
+      "file": "arenile-logo-horizontal-dark.svg",
+      "kind": "logo",
+      "format": "svg",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-logo-horizontal.svg",
+      "kind": "logo",
+      "format": "svg",
+      "surface": "light"
+    },
+    {
+      "file": "arenile-logo-stacked-dark.svg",
+      "kind": "logo",
+      "format": "svg",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-logo-stacked.svg",
+      "kind": "logo",
+      "format": "svg",
+      "surface": "light"
+    },
+    {
+      "file": "arenile-symbol-color-1024.png",
+      "kind": "symbol",
+      "format": "png",
+      "surface": "light"
+    },
+    {
+      "file": "arenile-symbol-color-dark-1024.png",
+      "kind": "symbol",
+      "format": "png",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-symbol-color-dark.svg",
+      "kind": "symbol",
+      "format": "svg",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-symbol-color.svg",
+      "kind": "symbol",
+      "format": "svg",
+      "surface": "light"
+    },
+    {
+      "file": "arenile-symbol-navy.svg",
+      "kind": "symbol",
+      "format": "svg",
+      "surface": "light"
+    },
+    {
+      "file": "arenile-symbol-outline.svg",
+      "kind": "symbol",
+      "format": "svg",
+      "surface": "light"
+    },
+    {
+      "file": "arenile-symbol-sand.svg",
+      "kind": "symbol",
+      "format": "svg",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-symbol-white.svg",
+      "kind": "symbol",
+      "format": "svg",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-wordmark-white.svg",
+      "kind": "wordmark",
+      "format": "svg",
+      "surface": "dark"
+    },
+    {
+      "file": "arenile-wordmark.svg",
+      "kind": "wordmark",
+      "format": "svg",
+      "surface": "light"
     }
-  ]
+  ],
+  "derived": {
+    "outlined": [
+      "arenile-logo-header-dark.svg",
+      "arenile-logo-header-navy.svg",
+      "arenile-logo-header-white.svg",
+      "arenile-logo-header.svg",
+      "arenile-logo-horizontal-dark.svg",
+      "arenile-logo-horizontal-navy.svg",
+      "arenile-logo-horizontal-white.svg",
+      "arenile-logo-horizontal.svg",
+      "arenile-logo-stacked-dark.svg",
+      "arenile-logo-stacked-navy.svg",
+      "arenile-logo-stacked-white.svg",
+      "arenile-logo-stacked.svg",
+      "arenile-name-navy.svg",
+      "arenile-name-white.svg",
+      "arenile-wordmark-white.svg",
+      "arenile-wordmark.svg"
+    ],
+    "png": [
+      "apple-touch-icon-180.png",
+      "arenile-app-icon-macos-1024.png",
+      "arenile-logo-horizontal-640.png",
+      "email-mark-64.png",
+      "favicon-16.png",
+      "favicon-32.png",
+      "favicon-48.png",
+      "maskable-icon-512.png",
+      "og-image-1200x630.png",
+      "pwa-icon-192.png",
+      "pwa-icon-512.png",
+      "tray-color-16.png",
+      "tray-color-32.png",
+      "tray-color-64.png",
+      "tray-template-18.png",
+      "tray-template-36.png"
+    ]
+  }
 }

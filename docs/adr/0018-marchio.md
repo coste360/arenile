@@ -1,6 +1,6 @@
-# 0018 — Marchio ufficiale: Arenile — Coste360.it
+# 0018 — Marchio ufficiale: Arenile (brand kit v2.0) e Coste360.it
 
-- **Stato:** accettato
+- **Stato:** accettato (emendato il 2026-10-23: brand kit v2.0)
 - **Data:** 2026-10-23
 - **Sezioni della specifica:** `docs/spec/12-pagina-pubblica-e-widget-incorporabile.md` (12.5 tema), `docs/spec/README.md`
 
@@ -53,11 +53,41 @@ deve caricare font solo per un logo.
 - Le email portano la firma "Arenile — Coste360.it" con il marchio come immagine inline (`cid:`), senza
   immagini remote.
 
+## Emendamento — brand kit v2.0 (decisione del titolare, 2026-10-23)
+
+- Il **brand kit Arenile v2.0** fornito da Coste360 SRL sostituisce il v1.0 in `assets/brand/arenile/`: "A"
+  sabbia `#FFF0D1` con la traversa a onda azzurra `#38BDF8`, duna sabbia calda `#F2C893`, riquadro navy
+  `#0B2542` (palette Coste360, blu secondario `#0EA5E9`), Titillium Web 700, **nessuna byline** nei logotipi
+  (il testo alternativo è "Arenile"; la dicitura "Arenile — Coste360.it" resta solo nella firma delle email e
+  come titolo della firma Coste360). Tutto il resto di questa ADR resta valido (file fuori dalla licenza,
+  tracciati e PNG generati da `scripts/brand/build-brand.mjs`, nessun font caricato dalle app, copie
+  verificate da test).
+- **Rifinitura approvata** (stesso disegno, prudente): distanza uniforme di 22 unità su 1024 tra l'onda e le
+  gambe della "A" (i tagli sono offset della curva dell'onda), tolta la tacca storta del piede destro, simbolo
+  centrato otticamente nel riquadro, varianti per sfondi chiari con la "A" navy (sul bianco la "A" sabbia
+  sparisce), testo dei logotipi in tracciati (`outlined/`). Dettagli in `assets/brand/arenile/NOTICE.md`.
+- **Regole d'uso** (in UI tramite `BrandLogo`, `variant` + `tone`, `web/shared/src/ui/README.md`):
+  - **icona app a colori** (riquadro navy, "A" sabbia): è l'icona dell'app. App desktop (Dock, barra delle
+    applicazioni e installer di Windows, Linux), icone PWA, apple-touch, favicon, marchio delle email,
+    intestazione della pagina pubblica senza logo dello stabilimento, icona nell'intestazione della
+    documentazione;
+  - **logo/simbolo a colori con la "A" navy** sui fondi chiari, nei punti principali (accesso, primo avvio,
+    intestazione della sidebar in tema chiaro, logo della documentazione in chiaro, immagine social);
+  - **bianco** sui fondi navy/blu Coste360: intestazione scura e piè di pagina navy dei siti, sidebar e accesso
+    in **tema scuro**, fasce e hero navy; la template image della barra dei menu di macOS è la stessa
+    silhouette monocromatica (nera, colorata dal sistema), con le distanze attorno all'onda allargate per i
+    18 px;
+  - **navy monocromatico** sui fondi chiari dove serve un segno a un colore: marchi piccoli, "powered by
+    Arenile" della pagina pubblica e, quando avranno un marchio, stampe (riepilogo Z, ricevute) ed
+    esportazioni PDF (oggi non ne portano);
+  - i logotipi a colori con la "A" sabbia (`-dark`) restano nel kit per fondi navy dove serve il colore pieno,
+    ma l'interfaccia usa il bianco.
+
 ## Conseguenze
 
 - Positive: logo identico ovunque, zero byte di font sulla pagina pubblica, sorgente unica dei file.
-- Negative: i tracciati vanno rigenerati con lo script a ogni cambio del kit; ogni email pesa ~3,5 KB in
-  più; l'icona `.icns` è più pesante (gradienti).
+- Negative: i tracciati vanno rigenerati con lo script a ogni cambio del kit (poi
+  `scripts/desktop/gen-icons.sh` per le icone desktop); ogni email pesa qualche KB in più per il marchio inline.
 - Verifiche: `brand.test.ts` (contrasto AA), `Brand.test.tsx` (copie identiche, niente `<text>`),
   `TestBrandMarkMatchesBrandKit` (marchio delle email), budget della pagina pubblica.
 - Da rivedere con un legale: testi di `TRADEMARK.md` e dei `NOTICE.md` (asset creati con l'aiuto

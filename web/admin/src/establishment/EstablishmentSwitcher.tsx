@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@arenile/shared/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@arenile/shared/ui/sidebar';
-import { ArenileAppIcon, ArenileName } from '@arenile/shared/ui/patterns';
+import { ArenileName, ArenileSymbol } from '@arenile/shared/ui/patterns';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { ChevronsUpDownIcon, PlusIcon } from 'lucide-react';
@@ -69,7 +69,9 @@ export function EstablishmentSwitcher() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               disabled={current.isLoading}
             >
-              <ArenileAppIcon className="rounded-lg" />
+              <span className="flex size-8 shrink-0 items-center justify-center">
+                <ArenileSymbol alt="" className="h-6" />
+              </span>
               <span className="grid flex-1 gap-0.5 text-left text-sm leading-tight">
                 <ArenileName className="h-3.5" />
                 {/* Visible text is part of the name: "Arenile Stabilimento: Lido Demo". */}

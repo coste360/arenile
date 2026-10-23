@@ -311,6 +311,16 @@ offline).
 
 ### Changed
 
+- Marchio: adottato il **brand kit Arenile v2.0** (decisione del titolare del 2026-10-23, ADR 0018) al posto
+  del v1.0 ovunque: pannello, pagina pubblica, email, app desktop (icone `.icns`/`.ico`/Linux, tray e
+  template della barra dei menu), sito della documentazione. "A" sabbia con traversa a onda azzurra su duna,
+  riquadro navy, palette Coste360 (navy `#0B2542`, sabbia `#FFF0D1`, sabbia calda `#F2C893`, onda `#38BDF8`),
+  nessuna byline nei logotipi. Rifinitura del kit approvata: distanza uniforme tra onda e gambe della "A",
+  tolta la tacca sul piede destro, simbolo centrato otticamente, varianti per sfondi chiari con la "A" navy,
+  testo dei logotipi in tracciati. `BrandLogo` ha `variant="symbol"` e `tone` (`colour` / `white` / `mono`)
+  con le regole d'uso nell'ADR 0018; nella sidebar il simbolo sostituisce l'icona, in tema scuro i marchi
+  sono bianchi, il piè "powered by Arenile" ha il simbolo monocromatico.
+
 - Pannello: le pagine di M4, M5 parte A e M6 (Pagina pubblica, Pagamenti online, Email e notifiche,
   Dispositivi, Rete locale, App desktop, Report) seguono lo standard UI comune (`Page`, `SectionCard`, `StatCard`,
   `DataTable`, `ResponsiveTabsList`, `SegmentedControl`); niente più barre di schede che vanno a capo: sotto i

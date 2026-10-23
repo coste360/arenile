@@ -212,6 +212,22 @@ const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues });
 Display formatting: `formatCents(cents)` → "1.234,50 €", `formatBasisPoints(bp)`,
 `formatIsoDate('2026-07-14')` → "14/07/2026" (all Italian conventions, `Intl` it-IT).
 
+### Brand marks (`BrandLogo`)
+
+The Arenile mark goes only through `BrandLogo` (`patterns/Brand.tsx`, brand kit v2.0, ADR 0018), never a
+lucide icon. `variant`: `icon` (full-colour app icon tile), `symbol` (the "A" alone), `name` (lettering),
+`horizontal` (symbol + lettering, the default). `tone` (ignored by `icon`):
+
+| tone               | light scheme                    | dark scheme | where                                                     |
+| ------------------ | ------------------------------- | ----------- | --------------------------------------------------------- |
+| `colour` (default) | colour mark with the **navy A** | white       | main brand spots: login, first run, sidebar header        |
+| `white`            | white                           | white       | navy bands and heroes, primary-coloured headers           |
+| `mono`             | navy, single colour             | white       | small marks, "powered by Arenile", future print/PDF marks |
+
+The app icon (navy tile, sand "A") is for app-like places: PWA, favicons, the public page header fallback,
+the email mark, the desktop app. The sand-"A" colour logos (`-dark` files of the kit) are not used in the UI.
+The files in `src/brand` are copies of `assets/brand` (`Brand.test.tsx` keeps them identical).
+
 ## UI standard (one look per component)
 
 Every admin screen is built from the same pieces, so a component looks the same on every page.

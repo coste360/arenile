@@ -82,13 +82,16 @@ export {
   ARENILE_URL,
   ArenileAppIcon,
   ArenileLogo,
+  ArenileMonoSymbol,
   ArenileName,
+  ArenileSymbol,
   BrandLogo,
   COSTE360_URL,
   Coste360Logo,
   Coste360Signature,
   MadeByCoste360,
   type BrandLogoVariant,
+  type BrandTone,
 } from './Brand';
 export { clampQuantity, QuantityStepper, type QuantityStepperProps } from './QuantityStepper';
 export {

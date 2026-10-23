@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { BrandLogo, Coste360Signature, MadeByCoste360 } from './Brand';
+import { ArenileMonoSymbol, BrandLogo, Coste360Signature, MadeByCoste360 } from './Brand';
 
 const BRAND_DIR = resolve(import.meta.dirname, '../../brand');
 const ASSETS = resolve(import.meta.dirname, '../../../../../assets/brand');
@@ -28,12 +28,70 @@ describe('brand assets', () => {
   });
 });
 
+/** The kit label of an inlined SVG (Vite inlines the small marks as data URIs). */
+function kitLabel(img: HTMLElement | undefined): string {
+  const src = decodeURIComponent(img?.getAttribute('src') ?? '');
+  return /aria-label='Arenile — ([^']+)'/.exec(src)?.[1] ?? src;
+}
+
 describe('BrandLogo', () => {
   it('renders a light and a dark logo, one hidden per scheme', () => {
     render(<BrandLogo />);
-    const [light, dark] = screen.getAllByRole('img', { name: 'brand.lockup' });
+    const [light, dark] = screen.getAllByRole('img', { name: 'Arenile' });
     expect(light).toHaveClass('dark:hidden');
     expect(dark).toHaveClass('hidden', 'dark:block');
+    // Colour logo (navy A) on light surfaces, white in dark mode (ADR 0018).
+    expect(kitLabel(light)).toBe('logo orizzontale');
+    expect(kitLabel(dark)).toBe('logo orizzontale bianco');
+  });
+
+  it.each([
+    ['colour', 'simbolo colore (sfondi chiari)', 'simbolo bianco'],
+    ['mono', 'simbolo navy', 'simbolo bianco'],
+  ] as const)('symbol with the %s tone swaps light and dark files', (tone, light, dark) => {
+    render(<BrandLogo variant="symbol" tone={tone} />);
+    const [l, d] = screen.getAllByRole('img', { name: 'Arenile' });
+    expect(kitLabel(l)).toBe(light);
+    expect(kitLabel(d)).toBe(dark);
+  });
+
+  it.each([
+    ['horizontal', 'colour', ['logo orizzontale', 'logo orizzontale bianco']],
+    ['horizontal', 'white', ['logo orizzontale bianco']],
+    ['horizontal', 'mono', ['logo orizzontale navy', 'logo orizzontale bianco']],
+  ] as const)('%s logo with the %s tone uses the right files', (variant, tone, labels) => {
+    render(<BrandLogo variant={variant} tone={tone} />);
+    expect(screen.getAllByRole('img', { name: 'Arenile' }).map(kitLabel)).toEqual(labels);
+  });
+
+  it.each([
+    ['colour', 2],
+    ['white', 1],
+    ['mono', 2],
+  ] as const)('name with the %s tone renders %i image(s)', (tone, count) => {
+    render(<BrandLogo variant="name" tone={tone} />);
+    expect(screen.getAllByRole('img', { name: 'Arenile' })).toHaveLength(count);
+  });
+
+  it('decorative symbol is hidden from assistive tech', () => {
+    const { container } = render(<BrandLogo variant="symbol" decorative />);
+    expect(screen.queryAllByRole('img')).toHaveLength(0);
+    for (const img of container.querySelectorAll('img')) expect(img).toHaveAttribute('alt', '');
+  });
+
+  it('mono symbol pairs navy (light) and white (dark)', () => {
+    render(<ArenileMonoSymbol />);
+    expect(screen.getAllByRole('img', { name: 'Arenile' }).map(kitLabel)).toEqual([
+      'simbolo navy',
+      'simbolo bianco',
+    ]);
+  });
+
+  it('white tone renders a single white mark in both schemes', () => {
+    render(<BrandLogo variant="symbol" tone="white" />);
+    const imgs = screen.getAllByRole('img', { name: 'Arenile' });
+    expect(imgs).toHaveLength(1);
+    expect(kitLabel(imgs[0])).toBe('simbolo bianco');
   });
 
   it('icon variant can be decorative', () => {
