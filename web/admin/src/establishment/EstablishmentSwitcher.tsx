@@ -9,9 +9,10 @@ import {
   DropdownMenuTrigger,
 } from '@arenile/shared/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@arenile/shared/ui/sidebar';
+import { ArenileAppIcon, ArenileName } from '@arenile/shared/ui/patterns';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { ChevronsUpDownIcon, PlusIcon, UmbrellaIcon } from 'lucide-react';
+import { ChevronsUpDownIcon, PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentEstablishment, useIsOwner } from './context';
 
@@ -68,11 +69,9 @@ export function EstablishmentSwitcher() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               disabled={current.isLoading}
             >
-              <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <UmbrellaIcon aria-hidden="true" className="size-4" />
-              </span>
-              <span className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{t('common.appName')}</span>
+              <ArenileAppIcon className="rounded-lg" />
+              <span className="grid flex-1 gap-0.5 text-left text-sm leading-tight">
+                <ArenileName className="h-3.5" />
                 {/* Visible text is part of the name: "Arenile Stabilimento: Lido Demo". */}
                 <span className="sr-only">{t('admin.switcher.label')}: </span>
                 {current.isLoading ? (

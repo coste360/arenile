@@ -4,7 +4,8 @@ import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { cn } from '@arenile/shared/lib/utils';
-import { TriangleAlertIcon, UmbrellaIcon } from 'lucide-react';
+import { BrandLogo } from '@arenile/shared/ui/patterns';
+import { TriangleAlertIcon } from 'lucide-react';
 import { useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { themeWarnings } from '../lib/publicPage';
@@ -41,7 +42,7 @@ export function ThemePreview({ theme, name, intro }: ThemePreviewProps) {
           {resolved.logoUrl ? (
             <img src={resolved.logoUrl} alt="" className="h-6 w-auto" />
           ) : (
-            <UmbrellaIcon aria-hidden="true" className="size-5 opacity-80" />
+            <BrandLogo variant="icon" decorative className="size-6 rounded-md" />
           )}
           <CardTitle className="text-base">{name}</CardTitle>
         </CardHeader>

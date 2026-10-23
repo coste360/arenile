@@ -248,7 +248,7 @@ func ValidateTheme(t store.Theme, ve *configerr.ValidationError) store.Theme {
 	}{{"theme.primary_color", &t.PrimaryColor}, {"theme.accent_color", &t.AccentColor}} {
 		*c.v = strings.ToLower(strings.TrimSpace(*c.v))
 		if *c.v != "" && !IsHexColor(*c.v) {
-			ve.Add(c.field, "Colore esadecimale non valido (es. #0e6ba8).")
+			ve.Add(c.field, "Colore esadecimale non valido (es. #0d79ac).")
 		}
 	}
 	if t.FontFamily != "" && !slices.Contains(ThemeFontFamilies, t.FontFamily) {

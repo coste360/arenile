@@ -1,3 +1,4 @@
+import { ArenileAppIcon } from '@arenile/shared/ui/patterns/Brand';
 import { ApiProblem } from '@arenile/shared/api';
 import { formatInstantDate } from '@arenile/shared/lib/dates';
 import { Badge } from '@arenile/shared/ui/badge';
@@ -18,7 +19,6 @@ import {
   CreditCardIcon,
   PencilIcon,
   SunIcon,
-  UmbrellaIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
@@ -256,7 +256,7 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
     <div className="flex min-h-svh flex-col bg-muted/30" lang={i18n.language}>
       <header className="bg-primary text-primary-foreground shadow-sm">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <UmbrellaIcon aria-hidden="true" className="size-5" />
+          <ArenileAppIcon className="size-7 rounded-md" />
           <p className="min-w-0 flex-1 truncate font-semibold">{establishment?.name ?? ''}</p>
           {location.slug && (
             <Button

@@ -24,7 +24,7 @@
     "percent": "Prozentsatz zwischen 0 und 100 eingeben (max. 2 Dezimalstellen)",
     "integer": "Gültige ganze Zahl eingeben",
     "email": "Gültige E-Mail-Adresse eingeben",
-    "color": "Hex-Farbe verwenden, z. B. #0e6ba8",
+    "color": "Hex-Farbe verwenden, z. B. #0d79ac",
     "url": "Gültige https://-Adresse eingeben",
     "origin": "Jede Zeile muss ein Ursprung wie https://www.beispiel.de sein (ohne Pfad)",
     "slug": "Nur Kleinbuchstaben, Ziffern und Bindestriche (nicht am Anfang oder Ende)",

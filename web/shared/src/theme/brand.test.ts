@@ -1,0 +1,141 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { contrastRatio, parseHexColor, relativeLuminance, type Rgb } from './contrast';
+import { DARK_SURFACE, DEFAULT_PRIMARY, resolveTheme } from './theme';
+
+/**
+ * WCAG AA of the default theme (styles/globals.css, Arenile brand kit, ADR 0018):
+ * every text/background token pair of both colour schemes reaches 4.5:1, and
+ * the focus ring 3:1 against the page (WCAG 1.4.11).
+ */
+const css = readFileSync(resolve(import.meta.dirname, '../styles/globals.css'), 'utf8');
+
+function block(selector: string): Record<string, string> {
+  const start = css.indexOf(`\n${selector} {`);
+  if (start < 0) throw new Error(`no ${selector} block`);
+  const body = css.slice(start, css.indexOf('\n}', start));
+  const vars: Record<string, string> = {};
+  for (const m of body.matchAll(/^\s*--([\w-]+):\s*([^;]+);/gm))
+    vars[m[1] as string] = m[2] as string;
+  return vars;
+}
+
+/** oklch(L C H) to sRGB (CSS Color 4 reference matrices), clamped to the gamut. */
+function oklchToRgb(l: number, c: number, h: number): Rgb {
+  const a = c * Math.cos((h * Math.PI) / 180);
+  const b = c * Math.sin((h * Math.PI) / 180);
+  const l_ = (l + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m_ = (l - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s_ = (l - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const lin = [
+    4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+    -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+    -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_,
+  ].map((v) => {
+    const x = Math.min(1, Math.max(0, v));
+    return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055);
+  });
+  return { r: lin[0] as number, g: lin[1] as number, b: lin[2] as number };
+}
+
+/** Resolves a token to an opaque colour; var(--x, fallback) uses the fallback. */
+function color(vars: Record<string, string>, name: string): Rgb {
+  let value = vars[name];
+  if (!value) throw new Error(`no --${name}`);
+  const fallback = /^var\(--[\w-]+,\s*(.+)\)$/.exec(value);
+  if (fallback) value = fallback[1] as string;
+  const hex = parseHexColor(value);
+  if (hex) return hex;
+  const ok = /^oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)$/.exec(value);
+  if (ok) return oklchToRgb(Number(ok[1]), Number(ok[2]), Number(ok[3]));
+  throw new Error(`--${name}: unsupported value ${value}`);
+}
+
+const light = block(':root');
+const dark = { ...light, ...block('.dark') };
+
+const TEXT_PAIRS: [string, string][] = [
+  ['foreground', 'background'],
+  ['card-foreground', 'card'],
+  ['popover-foreground', 'popover'],
+  ['primary-foreground', 'primary'],
+  ['secondary-foreground', 'secondary'],
+  ['muted-foreground', 'muted'],
+  ['muted-foreground', 'background'],
+  ['muted-foreground', 'card'],
+  ['muted-foreground', 'accent'],
+  ['muted-foreground', 'secondary'],
+  ['muted-foreground', 'sidebar'],
+  ['muted-foreground', 'sidebar-accent'],
+  ['accent-foreground', 'accent'],
+  ['highlight-foreground', 'highlight'],
+  ['primary-on-surface', 'background'],
+  ['primary-on-surface', 'card'],
+  ['primary-on-surface', 'muted'],
+  ['primary-on-surface', 'accent'],
+  ['primary-on-surface', 'secondary'],
+  ['primary-on-surface', 'sidebar'],
+  ['sidebar-foreground', 'sidebar'],
+  ['sidebar-primary-foreground', 'sidebar-primary'],
+  ['sidebar-accent-foreground', 'sidebar-accent'],
+];
+
+describe.each([
+  ['light', light],
+  ['dark', dark],
+])('brand theme, %s scheme', (_, vars) => {
+  it.each(TEXT_PAIRS)('%s on %s reaches WCAG AA (4.5:1)', (fg, bg) => {
+    expect(contrastRatio(color(vars, fg), color(vars, bg))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('inactive tab labels (foreground at 60%) reach AA on the tab list', () => {
+    const fg = color(vars, 'foreground');
+    const bg = color(vars, 'muted');
+    const mixed = {
+      r: fg.r * 0.6 + bg.r * 0.4,
+      g: fg.g * 0.6 + bg.g * 0.4,
+      b: fg.b * 0.6 + bg.b * 0.4,
+    };
+    // Light scheme only: the dark scheme uses muted-foreground (covered above).
+    if (vars === light) expect(contrastRatio(mixed, bg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('focus ring reaches 3:1 against the page and the cards', () => {
+    for (const bg of ['background', 'card']) {
+      expect(contrastRatio(color(vars, 'ring'), color(vars, bg))).toBeGreaterThanOrEqual(3);
+    }
+  });
+});
+
+describe('brand defaults', () => {
+  it('uses the kit colours for the primary', () => {
+    expect(light.primary).toBe('#092d62');
+    expect(light.ring).toBe('#0d79ac');
+    expect(dark.primary).toBe('#16cde1');
+  });
+
+  it('DARK_SURFACE is the lightest dark surface behind links', () => {
+    const surface = relativeLuminance(parseHexColor(DARK_SURFACE) as Rgb);
+    for (const name of ['background', 'card', 'muted', 'accent', 'secondary']) {
+      expect(surface).toBeGreaterThanOrEqual(relativeLuminance(color(dark, name)) - 1e-3);
+    }
+  });
+
+  it('the public page default primary is the brand ocean, AA with its foreground', () => {
+    expect(DEFAULT_PRIMARY).toBe('#0d79ac');
+    const t = resolveTheme(null);
+    // Selected labels on a primary/10 tint (public page steps) stay AA.
+    const tint = {
+      r: 0.15 * 13 + 0.85 * 255,
+      g: 0.15 * 121 + 0.85 * 255,
+      b: 0.15 * 172 + 0.85 * 255,
+    };
+    expect(contrastRatio(parseHexColor(t.primaryOnSurface) as Rgb, tint)).toBeGreaterThanOrEqual(
+      4.5,
+    );
+    expect(
+      contrastRatio(parseHexColor(t.primary) as Rgb, parseHexColor(t.primaryForeground) as Rgb),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+});

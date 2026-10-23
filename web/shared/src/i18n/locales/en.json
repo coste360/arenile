@@ -220,7 +220,8 @@
     "notFound": "Establishment not found.",
     "disabled": "Online booking is not enabled for this establishment.",
     "contact": "Contacts",
-    "poweredBy": "Commission-free bookings with Arenile",
+    "poweredBy": "powered by",
+    "metaDescription": "Book your beach spot online, commission-free.",
     "mapLoading": "Loading map…",
     "when": {
       "dates": "Dates of your stay",
@@ -297,5 +298,9 @@
       "search": "Search…",
       "clear": "Clear selection"
     }
+  },
+  "brand": {
+    "lockup": "Arenile — Coste360.it",
+    "madeBy": "A product of"
   }
 }

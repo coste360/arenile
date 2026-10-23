@@ -1,3 +1,4 @@
+import { DEFAULT_ACCENT, DEFAULT_PRIMARY } from '@arenile/shared/theme';
 import type { Schemas } from '@arenile/shared/api';
 import { z } from 'zod';
 import { normalizeOrigin, splitLines } from '../../configuration/lib/publicPage';
@@ -68,9 +69,9 @@ export function toOnlineValues(
     promo_codes_enabled: s.flow.promo_codes_enabled,
     require_phone: s.flow.require_phone,
     primary_color:
-      th.primary_color && HEX_COLOR_RE.test(th.primary_color) ? th.primary_color : '#0e6ba8',
+      th.primary_color && HEX_COLOR_RE.test(th.primary_color) ? th.primary_color : DEFAULT_PRIMARY,
     accent_color:
-      th.accent_color && HEX_COLOR_RE.test(th.accent_color) ? th.accent_color : '#f2b134',
+      th.accent_color && HEX_COLOR_RE.test(th.accent_color) ? th.accent_color : DEFAULT_ACCENT,
     font_family: th.font_family ?? 'system',
     radius: th.radius ?? 'md',
     logo_url: th.logo_url ?? '',

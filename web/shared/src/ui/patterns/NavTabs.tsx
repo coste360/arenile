@@ -2,7 +2,7 @@ import { Slot } from 'radix-ui';
 import type { ReactElement, ReactNode } from 'react';
 import { tabsListVariants, tabsTriggerClasses } from '@arenile/shared/ui/tabs';
 import { cn } from '@arenile/shared/lib/utils';
-import { OptionSelectMenu, useIsNarrow, type TabOption } from './ResponsiveTabs';
+import { OptionSelectMenu, useFitsContainer, useIsNarrow, type TabOption } from './ResponsiveTabs';
 
 export interface NavTabsProps {
   /** Accessible name of the <nav>. */
@@ -33,13 +33,19 @@ export function NavTabs({
   className,
 }: NavTabsProps) {
   const narrow = useIsNarrow();
+  // Like ResponsiveTabsList: a Select also when the links do not fit the available width.
+  const { containerRef, listRef, fits } = useFitsContainer<HTMLElement, HTMLDivElement>(
+    options,
+    narrow,
+  );
   return (
     <nav
+      ref={containerRef}
       aria-label={label}
       data-orientation="horizontal"
-      className={cn('group/tabs flex max-w-full', className)}
+      className={cn('group/tabs flex w-full max-w-full min-w-0', className)}
     >
-      {narrow ? (
+      {narrow || !fits ? (
         <OptionSelectMenu
           label={label}
           value={value}
@@ -47,7 +53,12 @@ export function NavTabs({
           options={options}
         />
       ) : (
-        <div data-slot="tabs-list" data-variant="default" className={tabsListVariants()}>
+        <div
+          ref={listRef}
+          data-slot="tabs-list"
+          data-variant="default"
+          className={tabsListVariants()}
+        >
           {children}
         </div>
       )}

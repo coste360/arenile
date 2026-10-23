@@ -1,5 +1,12 @@
 import type { LucideIcon } from 'lucide-react';
-import { useSyncExternalStore, type ReactNode } from 'react';
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import {
   Select,
   SelectContent,
@@ -94,8 +101,57 @@ export interface ResponsiveTabsListProps extends OptionPickerProps {
 }
 
 /**
- * The tab bar of a controlled <Tabs value onValueChange>: shadcn TabsList from
- * `sm` up, a full-width Select (icon + label) below, driving the same value.
+ * Whether a tab bar of natural width `natural` fits in the observed container.
+ * The natural width is measured on the rendered TabsList (its triggers never
+ * shrink below their label, so scrollWidth is the width it needs) and kept
+ * while the Select stands in, so the bar comes back as soon as there is room
+ * again (sidebar closed, wider window). Without ResizeObserver (tests, old
+ * browsers) it always fits.
+ */
+export function useFitsContainer<C extends HTMLElement, L extends HTMLElement>(
+  /** What the bar shows (options, links): a change re-measures it. */
+  content: unknown,
+  /** True while the bar is hidden for another reason (below `sm`): nothing to measure. */
+  hidden = false,
+) {
+  const [container, setContainer] = useState<C | null>(null);
+  const listEl = useRef<L | null>(null);
+  const [available, setAvailable] = useState(Number.POSITIVE_INFINITY);
+  const [natural, setNatural] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!container || typeof ResizeObserver === 'undefined') return;
+    const update = () => setAvailable(container.clientWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [container]);
+
+  // The bar is measured each time it mounts (callback ref, before paint) ...
+  const listRef = useCallback((el: L | null) => {
+    listEl.current = el;
+    if (el) setNatural(el.scrollWidth);
+  }, []);
+
+  // ... and again when its content (labels, language, counts) or the room
+  // changes. While the Select stands in, such a change resets the measure: the
+  // bar mounts for one layout pass and is measured again before paint.
+  useLayoutEffect(() => {
+    const list = listEl.current;
+    if (list) setNatural(list.scrollWidth);
+    else if (!hidden) setNatural(0);
+  }, [content, available, hidden]);
+
+  const fits = natural <= available;
+  return { containerRef: setContainer, listRef, fits };
+}
+
+/**
+ * The tab bar of a controlled <Tabs value onValueChange>: shadcn TabsList when
+ * it fits, a full-width Select (icon + label) driving the same value when it
+ * does not: below `sm`, and whenever the available width (not the viewport:
+ * an open sidebar on a tablet counts) is narrower than the bar.
  * Never wraps, never scrolls.
  */
 export function ResponsiveTabsList({
@@ -107,25 +163,30 @@ export function ResponsiveTabsList({
   className,
 }: ResponsiveTabsListProps) {
   const narrow = useIsNarrow();
-  if (narrow) {
-    return (
-      <OptionSelectMenu
-        label={label}
-        value={value}
-        onValueChange={onValueChange}
-        options={options}
-        className={className}
-      />
-    );
-  }
+  const { containerRef, listRef, fits } = useFitsContainer<HTMLDivElement, HTMLDivElement>(
+    options,
+    narrow,
+  );
   return (
-    <TabsList variant={variant} aria-label={label} className={className}>
-      {options.map((o) => (
-        <TabsTrigger key={o.value} value={o.value} disabled={o.disabled}>
-          <OptionContent option={o} />
-        </TabsTrigger>
-      ))}
-    </TabsList>
+    <div ref={containerRef} data-slot="responsive-tabs" className="w-full min-w-0">
+      {narrow || !fits ? (
+        <OptionSelectMenu
+          label={label}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+          className={className}
+        />
+      ) : (
+        <TabsList ref={listRef} variant={variant} aria-label={label} className={className}>
+          {options.map((o) => (
+            <TabsTrigger key={o.value} value={o.value} disabled={o.disabled}>
+              <OptionContent option={o} />
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      )}
+    </div>
   );
 }
 

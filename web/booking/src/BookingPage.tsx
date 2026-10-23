@@ -7,15 +7,10 @@ import { Button } from '@arenile/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { Separator } from '@arenile/shared/ui/separator';
-import {
-  InfoIcon,
-  MailIcon,
-  MapPinIcon,
-  PhoneIcon,
-  RotateCwIcon,
-  UmbrellaIcon,
-} from 'lucide-react';
+import { InfoIcon, MailIcon, MapPinIcon, PhoneIcon, RotateCwIcon } from 'lucide-react';
 import { useEffect } from 'react';
+// Icon only, not BrandLogo: that would bundle every logo variant into the budgeted page.
+import { ARENILE_URL, ArenileAppIcon } from '@arenile/shared/ui/patterns/Brand';
 import { useTranslation } from 'react-i18next';
 import { BookingEnvProvider } from './flow/context';
 import { usePublicPage } from './flow/usePublicPage';
@@ -65,9 +60,10 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
     applySeo(establishment, {
       embed: location.embed,
       title: t('booking.title'),
+      logoUrl: theme.logoUrl,
       description:
         customText(theme, 'intro', i18n.language, establishment.default_locale) ??
-        t('booking.poweredBy'),
+        t('booking.metaDescription'),
     });
   }, [establishment, location.embed, t, theme, i18n.language]);
 
@@ -191,12 +187,7 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
                 className="h-10 w-auto max-w-32 rounded-md object-contain"
               />
             ) : (
-              <span
-                aria-hidden="true"
-                className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-foreground/15"
-              >
-                <UmbrellaIcon className="size-5" />
-              </span>
+              <ArenileAppIcon className="size-10 rounded-lg" />
             )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-lg leading-tight font-semibold">{e.name}</p>
@@ -230,9 +221,16 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
       </main>
       <footer className="mx-auto w-full max-w-5xl px-4 pb-8">
         <Separator className="mb-4" />
-        <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <UmbrellaIcon aria-hidden="true" className="size-3.5" />
-          {t('booking.poweredBy')}
+        <p className="text-center text-xs text-muted-foreground">
+          {t('booking.poweredBy')}{' '}
+          <a
+            href={ARENILE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Arenile
+          </a>
         </p>
       </footer>
     </div>

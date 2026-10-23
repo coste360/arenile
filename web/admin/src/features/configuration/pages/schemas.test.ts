@@ -1,3 +1,4 @@
+import { DEFAULT_PRIMARY } from '@arenile/shared/theme';
 import { describe, expect, it } from 'vitest';
 import type { Establishment } from '@arenile/shared/api';
 import { establishment } from '../testing';
@@ -82,7 +83,7 @@ describe('establishment schemas', () => {
         theme: { custom_texts: { it: { terms: 'T' } } },
       }) as unknown as Establishment,
     );
-    expect(values.primary_color).toBe('#0e6ba8');
+    expect(values.primary_color).toBe(DEFAULT_PRIMARY);
     expect(themeSchema.safeParse({ ...values, primary_color: 'blue' }).success).toBe(false);
     expect(themeSchema.safeParse({ ...values, logo_url: 'http://x.it/l.png' }).success).toBe(false);
     const patch = themePatch(

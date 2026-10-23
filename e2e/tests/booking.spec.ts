@@ -129,7 +129,10 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   // so two of them do not race for the same one.
   await page.getByRole("button", { name: "Mostra come elenco" }).click();
   await noSidewaysScroll("2 Dove");
-  const free = page.getByRole("button", { name: / – Libero/ });
+  // Gazebos (GZ*) only sell the "Gazebo" package (no "Base" below): umbrellas only.
+  const free = page.getByRole("button", {
+    name: /^(?!.*(?:Gazebo|GZ)).* – Libero/,
+  });
   await expect(free.first()).toBeVisible();
   await free.nth(Math.floor(Math.random() * (await free.count()))).click();
   await page.getByRole("button", { name: "Avanti" }).click();

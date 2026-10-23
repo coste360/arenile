@@ -220,7 +220,8 @@
     "notFound": "Établissement introuvable.",
     "disabled": "La réservation en ligne n'est pas active pour cet établissement.",
     "contact": "Contacts",
-    "poweredBy": "Réservations sans commission avec Arenile",
+    "poweredBy": "propulsé par",
+    "metaDescription": "Réservez votre place à la plage en ligne, sans commission.",
     "mapLoading": "Chargement du plan…",
     "when": {
       "dates": "Dates du séjour",
@@ -297,5 +298,9 @@
       "search": "Rechercher…",
       "clear": "Effacer la sélection"
     }
+  },
+  "brand": {
+    "lockup": "Arenile — Coste360.it",
+    "madeBy": "Un produit de"
   }
 }

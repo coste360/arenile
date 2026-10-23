@@ -220,7 +220,8 @@
     "notFound": "Stabilimento non trovato.",
     "disabled": "Le prenotazioni online di questo stabilimento non sono attive.",
     "contact": "Contatti",
-    "poweredBy": "Prenotazioni senza commissioni con Arenile",
+    "poweredBy": "powered by",
+    "metaDescription": "Prenota online il tuo posto in spiaggia, senza commissioni.",
     "mapLoading": "Caricamento della mappa…",
     "when": {
       "dates": "Date del soggiorno",
@@ -297,5 +298,9 @@
       "search": "Cerca…",
       "clear": "Cancella selezione"
     }
+  },
+  "brand": {
+    "lockup": "Arenile — Coste360.it",
+    "madeBy": "Un prodotto di"
   }
 }

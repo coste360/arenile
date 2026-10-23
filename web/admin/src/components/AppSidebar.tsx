@@ -17,6 +17,7 @@ import {
   SidebarRail,
   useSidebar,
 } from '@arenile/shared/ui/sidebar';
+import { Coste360Signature } from '@arenile/shared/ui/patterns';
 import { Link, useMatchRoute } from '@tanstack/react-router';
 import { ChevronDownIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
@@ -149,6 +150,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
+        <Coste360Signature className="group-data-[collapsible=icon]:hidden" />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -30,11 +30,11 @@ export interface ResolvedTheme {
   customTexts: Record<string, Record<string, string>>;
 }
 
-export const DEFAULT_PRIMARY = '#0e6ba8';
+/** Brand ocean (Arenile kit): works as a button colour in both schemes. */
+export const DEFAULT_PRIMARY = '#0d79ac';
 export const DEFAULT_ACCENT = '#f2b134';
-const SURFACE = '#ffffff';
 /** Lightest surface of the dark scheme behind links (muted / accent tokens of globals.css). */
-export const DARK_SURFACE = '#262a31';
+export const DARK_SURFACE = '#182c3c';
 
 const FONT_STACKS: Record<string, string> = {
   Inter:
@@ -49,6 +49,17 @@ const RADII: Record<string, string> = {
   md: '0.5rem',
   lg: '1rem',
 };
+
+/**
+ * The lightest primary-tinted surface links and selected labels sit on
+ * (`bg-primary/10` over the page, 15% for margin): checking against it instead
+ * of plain white keeps those labels AA too.
+ */
+function primaryTint(primary: string): string {
+  const p = parseHexColor(primary) as { r: number; g: number; b: number };
+  const mix = (c: number) => c * 0.15 + 255 * 0.85; // over white
+  return toHex({ r: mix(p.r), g: mix(p.g), b: mix(p.b) });
+}
 
 function color(value: string | null | undefined, fallback: string): string {
   const parsed = value ? parseHexColor(value) : null;
@@ -74,7 +85,7 @@ export function resolveTheme(theme: Theme | null | undefined): ResolvedTheme {
     logoUrl: safeUrl(t.logo_url),
     primary,
     primaryForeground: readableTextColor(primary),
-    primaryOnSurface: ensureContrast(primary, SURFACE),
+    primaryOnSurface: ensureContrast(primary, primaryTint(primary)),
     primaryOnSurfaceDark: ensureContrast(primary, DARK_SURFACE),
     accent,
     accentForeground: readableTextColor(accent),

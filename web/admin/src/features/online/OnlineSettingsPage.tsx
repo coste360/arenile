@@ -1,3 +1,4 @@
+import { DEFAULT_ACCENT, DEFAULT_PRIMARY } from '@arenile/shared/theme';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
@@ -102,10 +103,10 @@ function OnlineSettingsForm({
     {
       primary_color: /^#[0-9a-f]{6}$/i.test(watched.primary_color ?? '')
         ? watched.primary_color
-        : (settings.theme.primary_color ?? '#0e6ba8'),
+        : (settings.theme.primary_color ?? DEFAULT_PRIMARY),
       accent_color: /^#[0-9a-f]{6}$/i.test(watched.accent_color ?? '')
         ? watched.accent_color
-        : (settings.theme.accent_color ?? '#f2b134'),
+        : (settings.theme.accent_color ?? DEFAULT_ACCENT),
       font_family: watched.font_family,
       radius: watched.radius,
       logo_url: /^https:\/\/\S+$/i.test(watched.logo_url ?? '') ? watched.logo_url : '',

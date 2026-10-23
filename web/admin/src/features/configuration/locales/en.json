@@ -24,7 +24,7 @@
     "percent": "Enter a percentage between 0 and 100 (max 2 decimals)",
     "integer": "Enter a valid whole number",
     "email": "Enter a valid email address",
-    "color": "Use a hex colour, e.g. #0e6ba8",
+    "color": "Use a hex colour, e.g. #0d79ac",
     "url": "Enter a valid https:// address",
     "origin": "Each line must be an origin such as https://www.example.com (no path)",
     "slug": "Only lowercase letters, digits and dashes (not at the start or end)",

@@ -6,6 +6,7 @@ import {
   BreadcrumbSeparator,
 } from '@arenile/shared/ui/breadcrumb';
 import { useMatchRoute } from '@tanstack/react-router';
+import { useDocumentTitle } from '@arenile/shared/hooks/use-document-title';
 import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentEstablishment } from '../establishment';
@@ -17,7 +18,7 @@ import {
 } from '../nav';
 
 /** Where am I: group › (establishment ›) page, derived from the matched route. */
-export function AppBreadcrumb() {
+function useRouteTrail(): string[] {
   const { t } = useTranslation();
   const matchRoute = useMatchRoute();
   const current = useCurrentEstablishment();
@@ -48,19 +49,29 @@ export function AppBreadcrumb() {
       ];
     }
   }
+  return trail;
+}
+
+/** Breadcrumb of the top bar; also names the browser tab ("Oggi · Lido Demo · Arenile"). */
+export function AppBreadcrumb() {
+  const trail = useRouteTrail();
+  const page = trail.at(-1);
+  // The establishment is the middle entry of a three-part trail.
+  useDocumentTitle(page, trail.length === 3 ? trail[1] : undefined);
   if (trail.length === 0) return null;
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
+    <Breadcrumb className="min-w-0">
+      <BreadcrumbList className="flex-nowrap">
         {trail.map((label, i) => {
           const last = i === trail.length - 1;
           return (
             <Fragment key={`${i}-${label}`}>
-              <BreadcrumbItem className={last ? undefined : 'hidden md:inline-flex'}>
-                {last ? <BreadcrumbPage>{label}</BreadcrumbPage> : label}
+              {/* The full trail from lg: at md the open sidebar leaves no room (768 px tablet). */}
+              <BreadcrumbItem className={last ? 'min-w-0' : 'hidden lg:inline-flex'}>
+                {last ? <BreadcrumbPage className="truncate">{label}</BreadcrumbPage> : label}
               </BreadcrumbItem>
-              {!last && <BreadcrumbSeparator className="hidden md:block" />}
+              {!last && <BreadcrumbSeparator className="hidden lg:block" />}
             </Fragment>
           );
         })}

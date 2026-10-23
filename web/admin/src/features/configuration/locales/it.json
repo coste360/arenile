@@ -24,7 +24,7 @@
     "percent": "Inserisci una percentuale tra 0 e 100 (max 2 decimali)",
     "integer": "Inserisci un numero intero valido",
     "email": "Inserisci un indirizzo email valido",
-    "color": "Usa un colore esadecimale, ad esempio #0e6ba8",
+    "color": "Usa un colore esadecimale, ad esempio #0d79ac",
     "url": "Inserisci un indirizzo https:// valido",
     "origin": "Ogni riga deve essere un'origine come https://www.esempio.it (senza percorso)",
     "slug": "Solo lettere minuscole, numeri e trattini (non all'inizio o alla fine)",

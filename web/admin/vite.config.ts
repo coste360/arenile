@@ -18,7 +18,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
-      includeAssets: ['icon.svg', 'apple-touch-icon-180x180.png'],
+      includeAssets: ['icon.svg', 'favicon-32x32.png', 'apple-touch-icon-180x180.png'],
       manifest: {
         id: '/admin/',
         name: 'Arenile – Pannello del gestore',
@@ -33,7 +33,8 @@ export default defineConfig({
         orientation: 'any',
         categories: ['business', 'productivity'],
         background_color: '#ffffff',
-        theme_color: '#0e6ba8',
+        // Brand navy (Arenile kit, ADR 0018).
+        theme_color: '#092d62',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

@@ -4,10 +4,11 @@ import { Button } from '@arenile/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { Form } from '@arenile/shared/ui/form';
 import { Input } from '@arenile/shared/ui/input';
-import { FieldRow, ThemeToggle } from '@arenile/shared/ui/patterns';
+import { BrandLogo, FieldRow, MadeByCoste360, ThemeToggle } from '@arenile/shared/ui/patterns';
 import { Spinner } from '@arenile/shared/ui/spinner';
+import { useDocumentTitle } from '@arenile/shared/hooks/use-document-title';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircleIcon, UmbrellaIcon } from 'lucide-react';
+import { AlertCircleIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +24,7 @@ export interface LoginPageProps {
 export function LoginPage({ onSuccess }: LoginPageProps) {
   const { t } = useTranslation();
   const login = useLogin();
+  useDocumentTitle(t('auth.loginTitle'));
   const [needsTotp, setNeedsTotp] = useState(false);
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -54,12 +56,7 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
         <ThemeToggle />
       </div>
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <div className="flex items-center gap-2 self-center">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <UmbrellaIcon aria-hidden="true" className="size-4" />
-          </span>
-          <span className="text-lg font-semibold tracking-tight">{t('common.appName')}</span>
-        </div>
+        <BrandLogo className="h-20 self-center" />
         <Card className="shadow-lg shadow-primary/5">
           <CardHeader className="text-center">
             <CardTitle>
@@ -119,6 +116,7 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
         <p className="text-center text-xs text-balance text-muted-foreground">
           {t('admin.brandTagline')}
         </p>
+        <MadeByCoste360 className="self-center" />
       </div>
     </main>
   );

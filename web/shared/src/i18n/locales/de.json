@@ -220,7 +220,8 @@
     "notFound": "Strandbad nicht gefunden.",
     "disabled": "Die Online-Buchung ist für dieses Strandbad nicht aktiv.",
     "contact": "Kontakt",
-    "poweredBy": "Provisionsfreie Buchungen mit Arenile",
+    "poweredBy": "powered by",
+    "metaDescription": "Buchen Sie Ihren Strandplatz online, provisionsfrei.",
     "mapLoading": "Plan wird geladen…",
     "when": {
       "dates": "Aufenthaltsdaten",
@@ -297,5 +298,9 @@
       "search": "Suchen…",
       "clear": "Auswahl aufheben"
     }
+  },
+  "brand": {
+    "lockup": "Arenile — Coste360.it",
+    "madeBy": "Ein Produkt von"
   }
 }

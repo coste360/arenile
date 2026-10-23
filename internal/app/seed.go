@@ -66,7 +66,7 @@ func SeedDemo(ctx context.Context, db bun.IDB, c clock.Clock) (*SeedResult, erro
 		e.BookingEnabled = true
 		showPrices, hideHeader := true, true
 		e.Theme = store.Theme{
-			PrimaryColor: "#0E6BA8", AccentColor: "#B45309", FontFamily: "Inter", Radius: "md",
+			PrimaryColor: "#0D79AC", AccentColor: "#B45309", FontFamily: "Inter", Radius: "md",
 			ShowPricesOnMap: &showPrices, HideHeaderInEmbed: &hideHeader,
 			CustomTexts: map[string]map[string]string{
 				"it": {"intro": "Prenota il tuo ombrellone al Lido Demo."},

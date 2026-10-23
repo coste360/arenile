@@ -24,7 +24,7 @@
     "percent": "Saisissez un pourcentage entre 0 et 100 (2 décimales max)",
     "integer": "Saisissez un nombre entier valide",
     "email": "Saisissez une adresse e-mail valide",
-    "color": "Utilisez une couleur hexadécimale, par ex. #0e6ba8",
+    "color": "Utilisez une couleur hexadécimale, par ex. #0d79ac",
     "url": "Saisissez une adresse https:// valide",
     "origin": "Chaque ligne doit être une origine comme https://www.exemple.fr (sans chemin)",
     "slug": "Uniquement minuscules, chiffres et tirets (pas au début ni à la fin)",

@@ -1,7 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node", "vitest/globals"],
+    "types": ["node", "vite/client", "vitest/globals"],
     "paths": {
       "@arenile/shared/ui": ["./src/ui/index.ts"],
       "@arenile/shared/ui/*": ["./src/ui/*"],

@@ -1,3 +1,4 @@
+import { DEFAULT_ACCENT, DEFAULT_PRIMARY } from '@arenile/shared/theme';
 import type { Establishment } from '@arenile/shared/api';
 import { z } from 'zod';
 import type { EstablishmentUpdate } from '../api/establishment';
@@ -157,9 +158,9 @@ export function toThemeValues(e: Establishment): ThemeValues {
   return {
     logo_url: th.logo_url ?? '',
     primary_color:
-      th.primary_color && HEX_COLOR_RE.test(th.primary_color) ? th.primary_color : '#0e6ba8',
+      th.primary_color && HEX_COLOR_RE.test(th.primary_color) ? th.primary_color : DEFAULT_PRIMARY,
     accent_color:
-      th.accent_color && HEX_COLOR_RE.test(th.accent_color) ? th.accent_color : '#f2b134',
+      th.accent_color && HEX_COLOR_RE.test(th.accent_color) ? th.accent_color : DEFAULT_ACCENT,
     font_family: th.font_family ?? 'system',
     radius: th.radius ?? 'md',
     show_prices_on_map: th.show_prices_on_map ?? true,

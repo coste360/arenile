@@ -4,14 +4,21 @@ import { Button } from '@arenile/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { Form } from '@arenile/shared/ui/form';
 import { Input } from '@arenile/shared/ui/input';
-import { FieldRow, QueryState, ThemeToggle } from '@arenile/shared/ui/patterns';
+import {
+  BrandLogo,
+  FieldRow,
+  MadeByCoste360,
+  QueryState,
+  ThemeToggle,
+} from '@arenile/shared/ui/patterns';
 import { Spinner } from '@arenile/shared/ui/spinner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useLocation, useNavigate } from '@tanstack/react-router';
-import { AlertCircleIcon, CheckCircle2Icon, UmbrellaIcon } from 'lucide-react';
+import { AlertCircleIcon, CheckCircle2Icon } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useForm, type Path } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@arenile/shared/hooks/use-document-title';
 import { useCompleteFirstRun, useFirstRunStatus } from './api';
 import { firstRunSchema, tokenFromHash, type FirstRunValues } from './firstRun.schema';
 
@@ -19,20 +26,15 @@ const FORM_FIELDS = ['organization_name', 'name', 'email', 'password'] as const;
 
 /** Shell of the page: same look as the login page, outside the app shell. */
 function FirstRunShell({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
   return (
     <main className="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-muted/40 p-6 md:p-10">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
       <div className="flex w-full max-w-md flex-col gap-6">
-        <div className="flex items-center gap-2 self-center">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <UmbrellaIcon aria-hidden="true" className="size-4" />
-          </span>
-          <span className="text-lg font-semibold tracking-tight">{t('common.appName')}</span>
-        </div>
+        <BrandLogo className="h-20 self-center" />
         {children}
+        <MadeByCoste360 className="self-center" />
       </div>
     </main>
   );
@@ -47,6 +49,8 @@ function FirstRunShell({ children }: { children: ReactNode }) {
  */
 export function FirstRunPage() {
   const { t } = useTranslation('firstRun');
+  // The page title already names the product ("Benvenuto in Arenile"): the tab shows just "Arenile".
+  useDocumentTitle();
   const location = useLocation();
   const navigate = useNavigate();
   const [token] = useState(() => tokenFromHash(location.hash));
