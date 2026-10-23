@@ -263,7 +263,9 @@ describe('BookingDetailPage', () => {
     expect(await screen.findByRole('heading', { name: /AR-7K3Q9/, level: 1 })).toBeInTheDocument();
     expect(screen.getByText('Confermata')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Rossi Mario' })).toBeInTheDocument();
-    expect(screen.getByText('Saldo da incassare').nextElementSibling).toHaveTextContent('40,00 €');
+    expect(screen.getByText('Saldo da incassare').closest('[data-slot="card"]')).toHaveTextContent(
+      '40,00 €',
+    );
     expect(screen.getByRole('table', { name: 'Righe' })).toHaveTextContent('A12');
     expect(screen.getByRole('list', { name: 'Storico' })).toHaveTextContent('Prenotazione creata');
     // Cashier: no refunds.issue, so no refund button; payments allowed.

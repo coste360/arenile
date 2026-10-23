@@ -93,6 +93,12 @@
   "passes": {
     "title": "Saisonabos",
     "empty": "Keine Saisonabos.",
+    "columns": {
+      "pass": "Abonnement",
+      "period": "Zeitraum",
+      "released": "Freigaben",
+      "status": "Status"
+    },
     "released_one": "{{count}} halber Tag freigegeben",
     "released_other": "{{count}} halbe Tage freigegeben"
   },
@@ -100,6 +106,8 @@
     "title": "Guthaben",
     "balance": "Saldo: {{amount}}",
     "empty": "Keine Bewegungen.",
+    "movement": "Bewegung",
+    "amount": "Betrag",
     "expires": "läuft am {{date}} ab",
     "source": {
       "cancellation": "Stornierung",

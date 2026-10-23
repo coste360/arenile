@@ -2,18 +2,28 @@ import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { formatCents } from '@arenile/shared/lib/money';
 import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@arenile/shared/ui/table';
-import { PageHeader, QueryState, StatusBadge } from '@arenile/shared/ui/patterns';
+  BackLink,
+  DataTable,
+  EmptyState,
+  Page,
+  QueryState,
+  SectionCard,
+  StatCard,
+  StatusBadge,
+  type ColumnDef,
+} from '@arenile/shared/ui/patterns';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
-import { ArrowLeftIcon, DownloadIcon, PencilIcon, PlusIcon, UserRoundXIcon } from 'lucide-react';
+import {
+  ArrowLeftIcon,
+  CalendarIcon,
+  CoinsIcon,
+  DownloadIcon,
+  PencilIcon,
+  PlusIcon,
+  TicketIcon,
+  UserRoundXIcon,
+} from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -21,8 +31,12 @@ import { useInstantFormat, useRequiredEstablishmentId } from '../../establishmen
 import { STATUS_TONE, useOperationalPermissions } from '../bookings/model';
 import { describeProblem } from '../bookings/problem';
 import { NewBookingSheet } from '../bookings/NewBookingSheet';
-import { downloadJson, useCustomer, useExportCustomer } from './api';
+import { downloadJson, useCustomer, useExportCustomer, type CustomerDetail } from './api';
 import { AnonymizeDialog, CustomerFormDialog } from './CustomerDialogs';
+
+type RecentBooking = CustomerDetail['recent_bookings'][number];
+type CustomerPass = CustomerDetail['season_passes'][number];
+type CreditMovement = CustomerDetail['credits'][number];
 
 /** Scheda cliente: contacts, tags, consent, stats, credits, bookings and passes, GDPR actions. */
 export function CustomerDetailPage() {
@@ -39,25 +53,23 @@ export function CustomerDetailPage() {
   const [booking, setBooking] = useState(false);
 
   const back = (
-    <Button variant="ghost" size="sm" asChild>
+    <BackLink>
       <Link to="/e/$establishmentId/clienti" params={{ establishmentId }}>
         <ArrowLeftIcon aria-hidden="true" />
         {t('detail.back')}
       </Link>
-    </Button>
+    </BackLink>
   );
   if (!query.data) {
     return (
-      <section aria-labelledby="page-title" className="space-y-6">
-        {back}
-        <PageHeader title={t('detail.title')} />
+      <Page eyebrow={back} title={t('detail.title')}>
         <QueryState
           isLoading={query.isPending}
           error={query.error}
           onRetry={() => void query.refetch()}
           rows={5}
         />
-      </section>
+      </Page>
     );
   }
   const {
@@ -85,166 +97,215 @@ export function CustomerDetailPage() {
     }
   };
 
-  return (
-    <section aria-labelledby="page-title" className="space-y-6">
-      {back}
-      <PageHeader
-        title={
-          <span className="flex flex-wrap items-center gap-3">
-            {c.display_name}
-            {anonymized && <StatusBadge tone="neutral">{t('anonymized')}</StatusBadge>}
-          </span>
-        }
-        description={[c.phone, c.email].filter(Boolean).join(' · ') || undefined}
-        actions={
-          perms.canWrite && (
-            <div className="flex flex-wrap gap-2">
-              {!anonymized && (
-                <Button onClick={() => setBooking(true)}>
-                  <PlusIcon aria-hidden="true" />
-                  {t('detail.newBooking')}
-                </Button>
-              )}
-              {!anonymized && (
-                <Button variant="outline" onClick={() => setEditing(true)}>
-                  <PencilIcon aria-hidden="true" />
-                  {t('common.actions.edit', { ns: 'translation' })}
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={() => void runExport()}
-                disabled={exportData.isPending}
-              >
-                <DownloadIcon aria-hidden="true" />
-                {t('export.action')}
-              </Button>
-              {!anonymized && (
-                <Button variant="destructive" onClick={() => setAnonymizing(true)}>
-                  <UserRoundXIcon aria-hidden="true" />
-                  {t('anonymize.action')}
-                </Button>
-              )}
-            </div>
-          )
-        }
-      />
+  const bookingLink = (id: string, text: ReactNode) => (
+    <Link
+      to="/e/$establishmentId/prenotazioni/$bookingId"
+      params={{ establishmentId, bookingId: id }}
+      className="font-medium underline-offset-4 hover:underline"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {text}
+    </Link>
+  );
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label={t('stats.bookings')}>{stats.bookings_count}</Stat>
-        <Stat label={t('stats.spent')}>{formatCents(stats.total_spent)}</Stat>
-        <Stat label={t('stats.balance')} emphasis={stats.balance_due > 0}>
-          {formatCents(stats.balance_due)}
-        </Stat>
-        <Stat label={t('stats.credit')}>{formatCents(credit_balance)}</Stat>
+  const bookingColumns: ColumnDef<RecentBooking>[] = [
+    {
+      id: 'code',
+      header: t('bookings.code'),
+      meta: { label: t('bookings.code') },
+      cell: ({ row }) => bookingLink(row.original.id, row.original.code),
+    },
+    {
+      id: 'period',
+      header: t('bookings.period'),
+      meta: { label: t('bookings.period') },
+      cell: ({ row: { original: b } }) => (
+        <span className="tabular-nums">
+          {formatIsoDate(b.starts_on)}
+          {b.ends_on !== b.starts_on && ` → ${formatIsoDate(b.ends_on)}`}
+        </span>
+      ),
+    },
+    {
+      id: 'status',
+      header: t('bookings.status'),
+      meta: { label: t('bookings.status') },
+      cell: ({ row: { original: b } }) => (
+        <StatusBadge tone={STATUS_TONE[b.status]}>{t(`bookings:status.${b.status}`)}</StatusBadge>
+      ),
+    },
+    {
+      id: 'total',
+      header: t('bookings.total'),
+      meta: { label: t('bookings.total'), align: 'right' },
+      cell: ({ row }) => formatCents(row.original.total_amount),
+    },
+  ];
+
+  const passColumns: ColumnDef<CustomerPass>[] = [
+    {
+      id: 'pass',
+      header: t('passes.columns.pass'),
+      meta: { label: t('passes.columns.pass') },
+      cell: ({ row: { original: p } }) => bookingLink(p.id, `${p.spot_label} · ${p.code}`),
+    },
+    {
+      id: 'period',
+      header: t('passes.columns.period'),
+      meta: { label: t('passes.columns.period') },
+      cell: ({ row: { original: p } }) => (
+        <span className="tabular-nums">
+          {formatIsoDate(p.starts_on)} → {formatIsoDate(p.ends_on)}
+        </span>
+      ),
+    },
+    {
+      id: 'released',
+      header: t('passes.columns.released'),
+      meta: { label: t('passes.columns.released') },
+      cell: ({ row: { original: p } }) =>
+        p.released_days > 0 ? (
+          <Badge variant="outline">{t('passes.released', { count: p.released_days })}</Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: 'status',
+      header: t('passes.columns.status'),
+      meta: { label: t('passes.columns.status') },
+      cell: ({ row: { original: p } }) => (
+        <StatusBadge tone={STATUS_TONE[p.status]}>{t(`bookings:status.${p.status}`)}</StatusBadge>
+      ),
+    },
+  ];
+
+  const creditColumns: ColumnDef<CreditMovement>[] = [
+    {
+      id: 'movement',
+      header: t('credits.movement'),
+      meta: { label: t('credits.movement') },
+      cell: ({ row: { original: cr } }) => (
+        <span>
+          {t(`credits.source.${cr.source}`)}
+          <span className="block text-xs text-muted-foreground">
+            {fmt.date(cr.created_at)}
+            {cr.expires_on && ` · ${t('credits.expires', { date: formatIsoDate(cr.expires_on) })}`}
+          </span>
+        </span>
+      ),
+    },
+    {
+      id: 'amount',
+      header: t('credits.amount'),
+      meta: { label: t('credits.amount'), align: 'right' },
+      cell: ({ row: { original: cr } }) =>
+        cr.amount < 0 ? (
+          <span className="text-muted-foreground">−{formatCents(-cr.amount)}</span>
+        ) : (
+          <span className="font-medium">{formatCents(cr.amount)}</span>
+        ),
+    },
+  ];
+
+  return (
+    <Page
+      eyebrow={back}
+      title={
+        <span className="flex flex-wrap items-center gap-3">
+          {c.display_name}
+          {anonymized && <StatusBadge tone="neutral">{t('anonymized')}</StatusBadge>}
+        </span>
+      }
+      description={[c.phone, c.email].filter(Boolean).join(' · ') || undefined}
+      actions={
+        perms.canWrite && (
+          <>
+            {!anonymized && (
+              <Button variant="destructive" onClick={() => setAnonymizing(true)}>
+                <UserRoundXIcon aria-hidden="true" />
+                {t('anonymize.action')}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => void runExport()}
+              disabled={exportData.isPending}
+            >
+              <DownloadIcon aria-hidden="true" />
+              {t('export.action')}
+            </Button>
+            {!anonymized && (
+              <Button variant="outline" onClick={() => setEditing(true)}>
+                <PencilIcon aria-hidden="true" />
+                {t('common.actions.edit', { ns: 'translation' })}
+              </Button>
+            )}
+            {!anonymized && (
+              <Button onClick={() => setBooking(true)}>
+                <PlusIcon aria-hidden="true" />
+                {t('detail.newBooking')}
+              </Button>
+            )}
+          </>
+        )
+      }
+    >
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label={t('stats.bookings')} value={stats.bookings_count} />
+        <StatCard label={t('stats.spent')} value={formatCents(stats.total_spent)} />
+        <StatCard
+          label={t('stats.balance')}
+          value={formatCents(stats.balance_due)}
+          tone={stats.balance_due > 0 ? 'danger' : 'default'}
+        />
+        <StatCard label={t('stats.credit')} value={formatCents(credit_balance)} />
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-3">
-        <div className="space-y-6 xl:col-span-2">
-          <Card className="gap-0 py-0">
-            <CardHeader className="border-b py-4">
-              <CardTitle className="text-base">{t('bookings.title')}</CardTitle>
-              {stats.last_booking_on && (
-                <CardDescription>
-                  {t('bookings.last', { date: formatIsoDate(stats.last_booking_on) })}
-                </CardDescription>
-              )}
-            </CardHeader>
-            {recent_bookings.length === 0 ? (
-              <p className="px-6 py-6 text-sm text-muted-foreground">{t('bookings.empty')}</p>
-            ) : (
-              <Table>
-                <caption className="sr-only">{t('bookings.title')}</caption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="pl-6">{t('bookings.code')}</TableHead>
-                    <TableHead>{t('bookings.period')}</TableHead>
-                    <TableHead>{t('bookings.status')}</TableHead>
-                    <TableHead className="pr-6 text-right">{t('bookings.total')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recent_bookings.map((b) => (
-                    <TableRow
-                      key={b.id}
-                      className="cursor-pointer"
-                      onClick={() => openBooking(b.id)}
-                    >
-                      <TableCell className="pl-6 font-medium">
-                        <Link
-                          to="/e/$establishmentId/prenotazioni/$bookingId"
-                          params={{ establishmentId, bookingId: b.id }}
-                          className="underline-offset-4 hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {b.code}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="tabular-nums">
-                        {formatIsoDate(b.starts_on)}
-                        {b.ends_on !== b.starts_on && ` → ${formatIsoDate(b.ends_on)}`}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge tone={STATUS_TONE[b.status]}>
-                          {t(`bookings:status.${b.status}`)}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell className="pr-6 text-right tabular-nums">
-                        {formatCents(b.total_amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </Card>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-6">
+          <SectionCard
+            flush
+            title={t('bookings.title')}
+            description={
+              stats.last_booking_on
+                ? t('bookings.last', { date: formatIsoDate(stats.last_booking_on) })
+                : undefined
+            }
+          >
+            <DataTable
+              embedded
+              caption={t('bookings.title')}
+              columns={bookingColumns}
+              data={recent_bookings}
+              getRowId={(b) => b.id}
+              onRowClick={(b) => openBooking(b.id)}
+              getRowLabel={(b) => b.code}
+              columnToggle={false}
+              pageSize={0}
+              empty={
+                <EmptyState icon={CalendarIcon} bordered={false} title={t('bookings.empty')} />
+              }
+            />
+          </SectionCard>
 
-          <Card className="gap-0 py-0">
-            <CardHeader className="border-b py-4">
-              <CardTitle className="text-base">{t('passes.title')}</CardTitle>
-            </CardHeader>
-            {season_passes.length === 0 ? (
-              <p className="px-6 py-6 text-sm text-muted-foreground">{t('passes.empty')}</p>
-            ) : (
-              <ul className="divide-y">
-                {season_passes.map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex flex-wrap items-center justify-between gap-2 px-6 py-3 text-sm"
-                  >
-                    <Link
-                      to="/e/$establishmentId/prenotazioni/$bookingId"
-                      params={{ establishmentId, bookingId: p.id }}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {p.spot_label} · {p.code}
-                    </Link>
-                    <span className="text-muted-foreground tabular-nums">
-                      {formatIsoDate(p.starts_on)} → {formatIsoDate(p.ends_on)}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      {p.released_days > 0 && (
-                        <Badge variant="outline">
-                          {t('passes.released', { count: p.released_days })}
-                        </Badge>
-                      )}
-                      <StatusBadge tone={STATUS_TONE[p.status]}>
-                        {t(`bookings:status.${p.status}`)}
-                      </StatusBadge>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
+          <SectionCard flush title={t('passes.title')}>
+            <DataTable
+              embedded
+              caption={t('passes.title')}
+              columns={passColumns}
+              data={season_passes}
+              getRowId={(p) => p.id}
+              columnToggle={false}
+              pageSize={0}
+              empty={<EmptyState icon={TicketIcon} bordered={false} title={t('passes.empty')} />}
+            />
+          </SectionCard>
         </div>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t('detail.profile')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+        <div className="min-w-0 space-y-6">
+          <SectionCard title={t('detail.profile')}>
+            <dl className="space-y-4 text-sm">
               <Field label={t('fields.locale')}>
                 {t(`common.languages.${c.locale}`, { ns: 'translation', defaultValue: c.locale })}
               </Field>
@@ -275,43 +336,24 @@ export function CustomerDetailPage() {
               {c.anonymized_at && (
                 <Field label={t('anonymized')}>{fmt.dateTime(c.anonymized_at)}</Field>
               )}
-            </CardContent>
-          </Card>
-          <Card className="gap-0 py-0">
-            <CardHeader className="border-b py-4">
-              <CardTitle className="text-base">{t('credits.title')}</CardTitle>
-              <CardDescription>
-                {t('credits.balance', { amount: formatCents(credit_balance) })}
-              </CardDescription>
-            </CardHeader>
-            {credits.length === 0 ? (
-              <p className="px-6 py-6 text-sm text-muted-foreground">{t('credits.empty')}</p>
-            ) : (
-              <ul className="divide-y text-sm">
-                {credits.map((cr) => (
-                  <li key={cr.id} className="flex items-center justify-between gap-2 px-6 py-3">
-                    <span>
-                      {t(`credits.source.${cr.source}`)}
-                      <span className="block text-xs text-muted-foreground">
-                        {fmt.date(cr.created_at)}
-                        {cr.expires_on &&
-                          ` · ${t('credits.expires', { date: formatIsoDate(cr.expires_on) })}`}
-                      </span>
-                    </span>
-                    <span
-                      className={
-                        cr.amount < 0
-                          ? 'text-muted-foreground tabular-nums'
-                          : 'font-medium tabular-nums'
-                      }
-                    >
-                      {cr.amount < 0 ? `−${formatCents(-cr.amount)}` : formatCents(cr.amount)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
+            </dl>
+          </SectionCard>
+          <SectionCard
+            flush
+            title={t('credits.title')}
+            description={t('credits.balance', { amount: formatCents(credit_balance) })}
+          >
+            <DataTable
+              embedded
+              caption={t('credits.title')}
+              columns={creditColumns}
+              data={credits}
+              getRowId={(cr) => cr.id}
+              columnToggle={false}
+              pageSize={0}
+              empty={<EmptyState icon={CoinsIcon} bordered={false} title={t('credits.empty')} />}
+            />
+          </SectionCard>
         </div>
       </div>
 
@@ -336,42 +378,15 @@ export function CustomerDetailPage() {
         defaults={{ customer: c }}
         onCreated={openBooking}
       />
-    </section>
-  );
-}
-
-function Stat({
-  label,
-  children,
-  emphasis,
-}: {
-  label: string;
-  children: ReactNode;
-  emphasis?: boolean;
-}) {
-  return (
-    <Card className="gap-1 py-4">
-      <CardContent className="px-4">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p
-          className={
-            emphasis
-              ? 'text-xl font-semibold text-destructive tabular-nums'
-              : 'text-xl font-semibold tabular-nums'
-          }
-        >
-          {children}
-        </p>
-      </CardContent>
-    </Card>
+    </Page>
   );
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="space-y-1">
-      <p className="font-medium">{label}</p>
-      <div className="text-muted-foreground">{children}</div>
+      <dt className="font-medium">{label}</dt>
+      <dd className="text-muted-foreground">{children}</dd>
     </div>
   );
 }

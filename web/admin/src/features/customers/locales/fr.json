@@ -93,6 +93,12 @@
   "passes": {
     "title": "Abonnements",
     "empty": "Aucun abonnement.",
+    "columns": {
+      "pass": "Abonnement",
+      "period": "Période",
+      "released": "Libérations",
+      "status": "Statut"
+    },
     "released_one": "{{count}} demi-journée libérée",
     "released_other": "{{count}} demi-journées libérées"
   },
@@ -100,6 +106,8 @@
     "title": "Avoirs",
     "balance": "Solde : {{amount}}",
     "empty": "Aucun mouvement.",
+    "movement": "Mouvement",
+    "amount": "Montant",
     "expires": "expire le {{date}}",
     "source": {
       "cancellation": "Annulation",

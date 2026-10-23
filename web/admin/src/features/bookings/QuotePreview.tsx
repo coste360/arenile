@@ -95,7 +95,7 @@ export function QuotePreview({ quote, loading, error, resourceLabel, stale }: Qu
       )}
 
       {quote.policy.violations.length > 0 && (
-        <Alert className="border-warning/50 bg-warning/10">
+        <Alert variant="warning">
           <TriangleAlertIcon aria-hidden="true" />
           <AlertTitle>{t('quote.violations')}</AlertTitle>
           <AlertDescription>

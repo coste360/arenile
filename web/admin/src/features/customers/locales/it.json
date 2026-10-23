@@ -93,6 +93,12 @@
   "passes": {
     "title": "Abbonamenti",
     "empty": "Nessun abbonamento.",
+    "columns": {
+      "pass": "Abbonamento",
+      "period": "Periodo",
+      "released": "Rilasci",
+      "status": "Stato"
+    },
     "released_one": "{{count}} mezza giornata rilasciata",
     "released_other": "{{count}} mezze giornate rilasciate"
   },
@@ -100,6 +106,8 @@
     "title": "Crediti",
     "balance": "Saldo: {{amount}}",
     "empty": "Nessun movimento.",
+    "movement": "Movimento",
+    "amount": "Importo",
     "expires": "scade il {{date}}",
     "source": {
       "cancellation": "Cancellazione",
