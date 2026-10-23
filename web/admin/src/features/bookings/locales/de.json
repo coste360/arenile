@@ -1,21 +1,87 @@
 {
   "list": {
     "title": "Buchungen",
-    "description": "Liste filterbar nach Datum, Status, Kanal, Kunde und Saldo."
+    "description": "Liste filterbar nach Datum, Status, Kanal, Platz und Saldo.",
+    "empty": "Noch keine Buchungen.",
+    "emptyFiltered": "Keine Buchung entspricht den Filtern.",
+    "loadMore": "Weitere laden",
+    "loadingMore": "Wird geladen…",
+    "pass": "Saisonabo"
   },
   "detail": {
     "title": "Buchung",
-    "description": "Positionen, Belegungen, Zahlungen und Verlauf der Buchung."
+    "description": "Positionen, Belegungen, Zahlungen und Verlauf der Buchung.",
+    "back": "Buchungen",
+    "pass": "Saisonabo",
+    "total": "Gesamt",
+    "paid": "Bezahlt",
+    "balance": "Offener Betrag",
+    "deposit": "Anzahlung",
+    "holdExpires": "Vorgemerkt bis {{at}}.",
+    "reload": "Neu laden"
   },
   "new": {
     "title": "Neue Buchung",
-    "description": "Daten, Plätze, Pakete, Kunde und Preisvorschau."
+    "description": "Daten, Plätze, Paket, Kunde und Preisvorschau.",
+    "when": "Wann",
+    "where": "Was und wo",
+    "targetSpots": "Plätze auf der Karte",
+    "targetZone": "Zone oder Menge",
+    "perSpot": "pro Platz",
+    "customer": "Kunde",
+    "customerExisting": "Kunde suchen",
+    "customerNew": "Neuer Kunde",
+    "payment": "Zahlung und Notizen",
+    "payNow": "Jetzt kassieren",
+    "payLater": "Der Betrag bleibt offen (an der Kasse oder bei Ankunft).",
+    "force": "Trotzdem buchen (übergeht die Buchungsregeln, im Protokoll vermerkt)",
+    "submit": "Buchung anlegen",
+    "created": "Buchung {{code}} angelegt.",
+    "open": "Öffnen",
+    "paymentFailed": "Buchung {{code}} angelegt, die Zahlung wurde jedoch nicht erfasst."
+  },
+  "fields": {
+    "period": "Zeitraum",
+    "slots": "Zeitfenster",
+    "formula": "Tarifart",
+    "pack": "Paket",
+    "packPlaceholder": "Paket wählen",
+    "zone": "Zone",
+    "quantity": "Menge",
+    "extras": "Extras",
+    "customer": "Kunde",
+    "lastName": "Nachname",
+    "firstName": "Vorname",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "amount": "Betrag",
+    "method": "Zahlungsart",
+    "note": "Notiz",
+    "notesInternal": "Interne Notizen"
+  },
+  "validation": {
+    "required": "Pflichtfeld.",
+    "date": "Ungültiges Datum.",
+    "dateOrder": "Das Enddatum liegt vor dem Anfangsdatum.",
+    "pack": "Wähle ein Paket.",
+    "spots": "Wähle mindestens einen Platz auf der Karte.",
+    "zone": "Wähle eine Zone.",
+    "quantity": "Menge von 1 bis 100.",
+    "customer": "Wähle einen Kunden oder lege einen neuen an.",
+    "lastName": "Der Nachname ist erforderlich.",
+    "contact": "Telefon oder E-Mail ist erforderlich.",
+    "email": "Ungültige E-Mail.",
+    "phone": "Ungültige Telefonnummer (z. B. +39 333 1234567).",
+    "amount": "Gültigen Betrag eingeben.",
+    "amountMax": "Der Betrag übersteigt den zulässigen.",
+    "method": "Zahlungsart wählen.",
+    "text": "Notiztext eingeben."
   },
   "status": {
     "draft": "Entwurf",
     "held": "Vorgemerkt",
     "pending_payment": "Zahlung ausstehend",
-    "awaiting_approval": "Genehmigung ausstehend",
+    "awaiting_approval": "Freigabe ausstehend",
     "confirmed": "Bestätigt",
     "checked_in": "Anwesend",
     "completed": "Abgeschlossen",
@@ -28,5 +94,297 @@
     "desk": "Kasse",
     "online": "Online",
     "api": "API"
+  },
+  "slots": {
+    "FULL": "Ganzer Tag",
+    "AM": "Vormittag",
+    "PM": "Nachmittag"
+  },
+  "formula": {
+    "half_day": "Halber Tag",
+    "day": "Tag",
+    "multi_day": "Mehrere Tage",
+    "week": "Woche",
+    "fortnight": "Zwei Wochen",
+    "month": "Monat",
+    "season": "Saison"
+  },
+  "method": {
+    "cash": "Bar",
+    "card": "Karte",
+    "bank_transfer": "Überweisung",
+    "wallet": "Wallet",
+    "credit": "Kundenguthaben",
+    "other": "Andere"
+  },
+  "columns": {
+    "code": "Code",
+    "customer": "Kunde",
+    "period": "Zeitraum",
+    "spots": "Plätze",
+    "status": "Status",
+    "channel": "Kanal",
+    "total": "Gesamt",
+    "balance": "Offen"
+  },
+  "filters": {
+    "title": "Filter",
+    "search": "Suche",
+    "searchPlaceholder": "Code, Kunde oder Telefon",
+    "period": "Zeitraum",
+    "status": "Status",
+    "allStatuses": "Alle Status",
+    "channel": "Kanal",
+    "allChannels": "Alle Kanäle",
+    "spot": "Platz",
+    "allSpots": "Alle Plätze",
+    "kind": "Art",
+    "allKinds": "Buchungen und Abos",
+    "onlyBookings": "Nur Buchungen",
+    "onlyPasses": "Nur Saisonabos",
+    "balanceDue": "Nur mit offenem Betrag",
+    "reset": "Filter zurücksetzen"
+  },
+  "quote": {
+    "title": "Preisvorschau",
+    "loading": "Preis wird berechnet…",
+    "empty": "Wähle Daten, Paket und Plätze, um den Preis zu sehen.",
+    "total": "Gesamt",
+    "deposit": "Anzahlung",
+    "lines": "Aufschlüsselung",
+    "days_one": "{{count}} Tag",
+    "days_other": "{{count}} Tage",
+    "extra": "{{code}} × {{qty}}",
+    "discount": "Rabatt {{source}}",
+    "rounding": "Rundung",
+    "vat": "MwSt. {{rate}} %: {{tax}}",
+    "unavailable": "Auswahl nicht verfügbar",
+    "violations": "Die Buchungsregeln erlauben diese Anfrage nicht:"
+  },
+  "policy": {
+    "title": "Geltende Bedingungen",
+    "approval": "Freigabe nötig",
+    "payFull": "Vollständige Zahlung.",
+    "payNone": "Keine Vorauszahlung.",
+    "depositPercent": "Anzahlung von {{value}} %.",
+    "depositAmount": "Anzahlung von {{value}}.",
+    "balanceOnArrival": "Restbetrag bei Ankunft.",
+    "balanceDaysBefore_one": "Restbetrag {{count}} Tag vorher.",
+    "balanceDaysBefore_other": "Restbetrag {{count}} Tage vorher.",
+    "cancellation": "Stornierung",
+    "tier_one": "Bis {{count}} Tag vorher: {{percent}} % als {{as}}",
+    "tier_other": "Bis {{count}} Tage vorher: {{percent}} % als {{as}}",
+    "noCancellation": "Keine Erstattung bei Stornierung.",
+    "as": {
+      "refund": "Erstattung",
+      "credit": "Guthaben"
+    }
+  },
+  "picker": {
+    "mapTitle": "Karte der freien Plätze",
+    "free": "frei",
+    "unavailable": "nicht verfügbar",
+    "selected": "ausgewählt",
+    "none": "Kein Platz ausgewählt.",
+    "remove": "{{label}} entfernen",
+    "noMaps": "Keine Karte eingerichtet: nach Zone oder Menge buchen."
+  },
+  "problem": {
+    "spotUnavailable": "Ein oder mehrere Plätze sind an den gewählten Daten nicht verfügbar.",
+    "poolExhausted": "Menge an den gewählten Daten nicht verfügbar.",
+    "quotaExceeded": "Das Online-Kontingent ist an den gewählten Daten erschöpft.",
+    "holdExpired": "Die Vormerkung ist abgelaufen: bitte neu auswählen.",
+    "invalidTransition": "Im aktuellen Status nicht erlaubt: Buchung neu laden.",
+    "invalidTransitionNow": "Nicht erlaubt: Die Buchung ist jetzt „{{status}}“.",
+    "versionConflict": "Jemand anderes hat die Buchung geändert: neu laden.",
+    "policyViolation": "Die Anfrage verletzt die Buchungsregeln.",
+    "noPrice": "Kein Preis für die gewählten Daten oder das Paket.",
+    "cashSessionClosed": "Die Kasse ist geschlossen: öffnen, um Barzahlungen zu erfassen.",
+    "conflictLine": "{{label}}: {{days}}",
+    "more_one": "und {{count}} weiterer Tag",
+    "more_other": "und {{count}} weitere Tage",
+    "resource": {
+      "spot": "Platz",
+      "pool": "Menge",
+      "zone": "Zone"
+    }
+  },
+  "actions": {
+    "confirm": "Bestätigen",
+    "approve": "Freigeben",
+    "reject": "Ablehnen",
+    "check-in": "Check-in",
+    "no-show": "Nicht erschienen",
+    "cancel": "Buchung stornieren",
+    "dates": "Daten ändern",
+    "confirmTitle": {
+      "confirm": "{{code}} bestätigen?",
+      "approve": "{{code}} freigeben?",
+      "reject": "{{code}} ablehnen?",
+      "check-in": "Ankunft von {{code}} erfassen?",
+      "no-show": "{{code}} als nicht erschienen markieren?"
+    },
+    "confirmText": {
+      "confirm": "Manuelle Bestätigung: Die Plätze bleiben fest belegt.",
+      "approve": "Die Buchung wird bestätigt.",
+      "reject": "Die Plätze werden freigegeben.",
+      "check-in": "Der Kunde wird als anwesend markiert.",
+      "no-show": "Die Plätze der kommenden Tage werden freigegeben."
+    },
+    "done": {
+      "confirm": "{{code}} bestätigt.",
+      "approve": "{{code}} freigegeben.",
+      "reject": "{{code}} abgelehnt.",
+      "check-in": "Ankunft von {{code}} erfasst.",
+      "no-show": "{{code}} als nicht erschienen markiert."
+    }
+  },
+  "cancel": {
+    "title": "{{code}} stornieren",
+    "description": "Die Plätze werden freigegeben; die Erstattung folgt den bei Buchung akzeptierten Bedingungen.",
+    "preview": "Erstattungsvorschau",
+    "computing": "Erstattung wird berechnet…",
+    "paid": "Bezahlt",
+    "percent": "Prozentsatz laut Bedingungen",
+    "policyAmount": "Laut Bedingungen",
+    "settlementLabel": "Ausgleich",
+    "settlement": {
+      "policy": "Laut Bedingungen",
+      "refund": "Anderen Betrag erstatten",
+      "credit": "Guthaben für den Kunden",
+      "none": "Keine Erstattung"
+    },
+    "amount": "Betrag",
+    "weather": "Stornierung wegen Schlechtwetter",
+    "reason": "Grund",
+    "confirm": "Buchung stornieren",
+    "done": "Buchung storniert.",
+    "doneWith": "Buchung storniert: {{amount}} als {{as}}.",
+    "as": {
+      "refund": "Erstattung",
+      "credit": "Guthaben",
+      "none": "keine Erstattung"
+    }
+  },
+  "change": {
+    "datesTitle": "Daten ändern",
+    "datesDescription": "Neue Daten mit neuem Preis: Die Plätze werden im selben Vorgang neu belegt.",
+    "force": "Änderungsgrenzen übergehen (protokolliert)",
+    "requote": "Neu berechnen",
+    "apply": "Änderung übernehmen",
+    "applied": "Buchung aktualisiert.",
+    "preview": "Auswirkung der Änderung",
+    "previous": "Aktueller Betrag",
+    "next": "Neuer Betrag",
+    "toCollect": "Zu kassieren",
+    "toRefund": "Zu erstatten",
+    "conflicts": "Nicht verfügbar:"
+  },
+  "move": {
+    "title": "Platz wechseln",
+    "description": "Wähle einen freien Platz für den restlichen Aufenthalt; bei Kategoriewechsel wird der Preis neu berechnet.",
+    "line": "Position",
+    "from": "Ab",
+    "fromHint": "Leer = gesamter Aufenthalt.",
+    "spot": "Neuer Platz",
+    "pick": "Platz wählen",
+    "loading": "Verfügbarkeit wird geladen…",
+    "noneFree": "Kein freier Platz",
+    "check": "Prüfen",
+    "apply": "Wechseln",
+    "applied": "Nach {{label}} verlegt.",
+    "short": "Wechseln",
+    "assign": "Zuweisen",
+    "aria": "{{label}} verlegen"
+  },
+  "lines": {
+    "title": "Positionen",
+    "spot": "Platz",
+    "pack": "Paket",
+    "extras": "Extras",
+    "total": "Gesamt",
+    "actions": "Aktionen",
+    "pending": "Zuzuweisen",
+    "quantity_one": "{{count}} Einheit",
+    "quantity_other": "{{count}} Einheiten",
+    "bookingExtra": "Extra {{code}} × {{qty}}"
+  },
+  "allocations": {
+    "title": "Belegungen",
+    "description_one": "{{count}} halber Tag belegt",
+    "description_other": "{{count}} halbe Tage belegt",
+    "empty": "Keine Ressourcen belegt.",
+    "date": "Datum",
+    "slot": "Zeitfenster",
+    "resource": "Ressource",
+    "kind": "Art",
+    "pool_one": "{{count}} Einheit aus dem Pool",
+    "pool_other": "{{count}} Einheiten aus dem Pool",
+    "kinds": {
+      "booking": "Buchung",
+      "hold": "Vormerkung",
+      "block": "Manuelle Sperre",
+      "season": "Saisonabo"
+    }
+  },
+  "payments": {
+    "title": "Zahlungen",
+    "empty": "Keine Zahlungen erfasst.",
+    "record": "Zahlung erfassen",
+    "recordTitle": "Zahlung erfassen",
+    "recordDescription": "Offener Betrag: {{balance}}.",
+    "recorded": "Zahlung von {{amount}} erfasst.",
+    "refund": "Erstattung",
+    "refundTitle": "Erstattung erfassen",
+    "refundDescription": "Bisher bezahlt: {{paid}}. Die Erstattung darf ihn nicht übersteigen.",
+    "refundAs": "Form",
+    "reason": "Grund",
+    "refunded": "Erstattung von {{amount}} erfasst.",
+    "refundBadge": "Erstattung",
+    "when": "Wann",
+    "status": "Status",
+    "statuses": {
+      "pending": "Ausstehend",
+      "succeeded": "Erfolgreich",
+      "failed": "Fehlgeschlagen",
+      "cancelled": "Abgebrochen"
+    }
+  },
+  "notes": {
+    "title": "Notizen",
+    "internal": "Intern",
+    "customer": "Für den Kunden",
+    "add": "Notiz hinzufügen",
+    "visibility": "Sichtbarkeit der Notiz",
+    "save": "Hinzufügen"
+  },
+  "history": {
+    "title": "Verlauf",
+    "empty": "Keine Aktivität erfasst.",
+    "actor": {
+      "user": "Mitarbeiter",
+      "customer": "Kunde",
+      "system": "System",
+      "api_key": "API-Integration"
+    },
+    "actions": {
+      "booking": {
+        "created": "Buchung angelegt",
+        "confirmed": "Bestätigt",
+        "checked_in": "Check-in",
+        "no_show": "Nicht erschienen",
+        "cancelled": "Storniert",
+        "rejected": "Abgelehnt",
+        "expired": "Abgelaufen",
+        "modified": "Geändert",
+        "moved": "Verlegt",
+        "note_added": "Notiz hinzugefügt",
+        "completed": "Abgeschlossen"
+      },
+      "payment": {
+        "succeeded": "Zahlung erfasst",
+        "refunded": "Erstattung erfasst"
+      }
+    }
   }
 }

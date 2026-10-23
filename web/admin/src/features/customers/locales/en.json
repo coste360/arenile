@@ -1,10 +1,126 @@
 {
   "list": {
     "title": "Customers",
-    "description": "Customer records with search by name, phone, email and tag."
+    "description": "Customer records searchable by name, phone, email and tag.",
+    "new": "New customer",
+    "empty": "No customers yet.",
+    "emptyFiltered": "No customers match the search.",
+    "loadMore": "Load more",
+    "loadingMore": "Loading…"
   },
   "detail": {
     "title": "Customer",
-    "description": "Details, history, credits, season passes, GDPR export and anonymization."
+    "description": "Data, history, credits, passes, GDPR export and anonymisation.",
+    "back": "Customers",
+    "profile": "Profile",
+    "newBooking": "New booking"
+  },
+  "anonymized": "Anonymised",
+  "columns": {
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "tags": "Tags",
+    "consent": "Marketing"
+  },
+  "filters": {
+    "title": "Filters",
+    "search": "Search",
+    "searchPlaceholder": "Name, phone or email",
+    "tag": "Tag",
+    "byTag": "Filter by tag {{tag}}",
+    "anonymized": "Show anonymised"
+  },
+  "consent": {
+    "yes": "Yes",
+    "no": "No consent",
+    "given": "Consent given on {{at}} ({{source}})"
+  },
+  "fields": {
+    "lastName": "Last name",
+    "firstName": "First name",
+    "phone": "Phone",
+    "email": "Email",
+    "locale": "Language",
+    "tags": "Tags",
+    "tagsHelp": "Comma separated, e.g. vip, family.",
+    "notes": "Internal notes",
+    "notesHelp": "Never shown to the customer.",
+    "marketing": "Marketing consent",
+    "marketingHelp": "Optional and separate: date, source and text version are recorded."
+  },
+  "form": {
+    "newTitle": "New customer",
+    "editTitle": "Edit customer",
+    "description": "Minimal data: last name and a contact (phone or email).",
+    "created": "Customer {{name}} created.",
+    "updated": "Customer updated."
+  },
+  "validation": {
+    "lastName": "The last name is required.",
+    "email": "Invalid email.",
+    "phone": "Invalid phone (e.g. +39 333 1234567).",
+    "tag": "Each tag at most 30 characters.",
+    "tags": "At most 20 tags.",
+    "confirm": "The text does not match the last name."
+  },
+  "picker": {
+    "placeholder": "Search by name, phone or email",
+    "search": "Search customer",
+    "searching": "Searching…",
+    "typeMore": "Type at least 2 characters.",
+    "none": "No customer found."
+  },
+  "duplicates": {
+    "title": "Possibly already registered",
+    "use": "Use this one"
+  },
+  "stats": {
+    "bookings": "Bookings",
+    "spent": "Total spent",
+    "balance": "Balance due",
+    "credit": "Available credit"
+  },
+  "bookings": {
+    "title": "Recent bookings",
+    "last": "Last on {{date}}",
+    "empty": "No bookings.",
+    "code": "Code",
+    "period": "Period",
+    "status": "Status",
+    "total": "Total"
+  },
+  "passes": {
+    "title": "Season passes",
+    "empty": "No season passes.",
+    "released_one": "{{count}} half-day released",
+    "released_other": "{{count}} half-days released"
+  },
+  "credits": {
+    "title": "Credits",
+    "balance": "Balance: {{amount}}",
+    "empty": "No movements.",
+    "expires": "expires on {{date}}",
+    "source": {
+      "cancellation": "Cancellation",
+      "season_release": "Season pass release",
+      "weather": "Bad weather",
+      "manual": "Manual",
+      "redemption": "Redemption"
+    }
+  },
+  "export": {
+    "action": "Export data (GDPR)",
+    "done": "Export downloaded."
+  },
+  "anonymize": {
+    "action": "Anonymise",
+    "title": "Anonymise {{name}}?",
+    "description": "Name, contacts, notes and consents are replaced for good.",
+    "irreversible": "This cannot be undone",
+    "keeps": "Bookings and payments stay for accounting, without personal data.",
+    "typeLabel": "To confirm, type the last name: {{lastName}}",
+    "confirm": "Anonymise permanently",
+    "done": "Customer anonymised."
   }
 }

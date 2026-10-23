@@ -1,4 +1,91 @@
 {
   "title": "Abbonamenti",
-  "description": "Abbonamenti stagionali, rilasci giornalieri e crediti."
+  "description": "Abbonamenti stagionali per zona e fila, rilasci giornalieri e crediti.",
+  "columns": {
+    "spot": "Postazione",
+    "customer": "Abbonato",
+    "period": "Periodo",
+    "status": "Stato",
+    "released": "Rilasci",
+    "credit": "Credito",
+    "balance": "Saldo"
+  },
+  "list": {
+    "count_one": "{{count}} abbonamento",
+    "count_other": "{{count}} abbonamenti",
+    "empty": "Nessun abbonamento in questa stagione.",
+    "emptyHint": "Crea il primo con «Nuovo abbonamento».",
+    "noSeasons": "Nessuna stagione configurata.",
+    "otherZone": "Altre postazioni",
+    "row": "Fila {{row}}",
+    "zoneCaption": "Abbonamenti della zona {{zone}}",
+    "openAria": "Apri l'abbonamento {{spot}} di {{customer}}",
+    "loadMore": "Carica altri"
+  },
+  "fields": {
+    "customer": "Abbonato",
+    "season": "Stagione",
+    "pack": "Pack",
+    "packPlaceholder": "Scegli il pack",
+    "slots": "Fascia",
+    "spot": "Postazione",
+    "spotPick": "Scegli una postazione libera",
+    "spotLoading": "Caricamento disponibilità…",
+    "spotNone": "Nessuna postazione libera per tutta la stagione",
+    "startsOn": "Dal",
+    "endsOn": "Al",
+    "datesHelp": "Vuoto = apertura e chiusura della stagione.",
+    "notes": "Note interne"
+  },
+  "validation": {
+    "customer": "Scegli l'abbonato.",
+    "season": "Scegli la stagione.",
+    "spot": "Scegli la postazione.",
+    "pack": "Scegli il pack.",
+    "dates": "La data di fine precede quella di inizio.",
+    "note": "Al massimo 500 caratteri."
+  },
+  "create": {
+    "title": "Nuovo abbonamento",
+    "description": "La postazione resta riservata all'abbonato per tutta la stagione.",
+    "price": "Prezzo da listino",
+    "priceHint": "Scegli stagione, pack e postazione per vedere il prezzo.",
+    "deposit": "Acconto richiesto: {{amount}}",
+    "overrideHint": "Il prezzo è calcolato dal listino (formula stagione). Per un prezzo concordato usa una convenzione o una regola di prezzo dedicata.",
+    "submit": "Crea abbonamento",
+    "done": "Abbonamento {{code}} creato."
+  },
+  "sheet": {
+    "title": "{{spot}} · {{customer}}",
+    "loading": "Abbonamento",
+    "total": "Totale",
+    "paid": "Incassato",
+    "openBooking": "Apri la prenotazione (pagamenti, cancellazione)"
+  },
+  "releases": {
+    "summary_one": "{{count}} mezza giornata rilasciata",
+    "summary_other": "{{count}} mezze giornate rilasciate",
+    "credit": "Credito maturato: {{amount}}",
+    "slots": "Parte della giornata da rilasciare",
+    "legend": "Legenda",
+    "legendSelected": "Selezionato",
+    "legendReleased": "Rilasciato",
+    "legendResold": "Rivenduto",
+    "note": "Nota (facoltativa)",
+    "submit_one": "Rilascia {{count}} giorno",
+    "submit_other": "Rilascia {{count}} giorni",
+    "done_one": "{{count}} giorno rilasciato: la postazione è prenotabile.",
+    "done_other": "{{count}} giorni rilasciati: la postazione è prenotabile.",
+    "list": "Giorni rilasciati",
+    "empty": "Nessun giorno rilasciato.",
+    "status": {
+      "released": "Rilasciato",
+      "resold": "Rivenduto",
+      "revoked": "Revocato"
+    },
+    "revoke": "Revoca",
+    "revokeTitle": "Revocare il rilascio del {{date}}?",
+    "revokeText": "La postazione torna riservata all'abbonato. Non è possibile se il giorno è già stato rivenduto.",
+    "revokeAria": "Revoca il rilascio del {{date}} ({{slot}})"
+  }
 }

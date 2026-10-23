@@ -1,4 +1,58 @@
 {
-  "title": "Calendar",
-  "description": "Spots × days planning to place long stays."
+  "title": "Planning",
+  "description": "Spots × days planning to place long stays.",
+  "newBooking": "New booking",
+  "emptyTitle": "No spots",
+  "emptyDescription": "Create a map with spots to use the planning.",
+  "toolbar": {
+    "label": "Planning period",
+    "previous_one": "{{count}} day earlier",
+    "previous_other": "{{count}} days earlier",
+    "next_one": "{{count}} day later",
+    "next_other": "{{count}} days later",
+    "today": "Today",
+    "from": "From",
+    "length": "Visible days",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days"
+  },
+  "grid": {
+    "roledescription": "spot planning",
+    "label_one": "Planning of {{count}} spot",
+    "label_other": "Planning of {{count}} spots",
+    "keyboardHint": "Arrows move between cells, Shift+arrows select, Enter opens the booking or creates one on the selection, M moves the booking under the cursor, Esc cancels.",
+    "cell": "{{spot}}, {{day}}: {{what}}",
+    "free": "free",
+    "closed": "closed",
+    "row": "Row {{row}}",
+    "noZone": "No zone",
+    "corner": "Spot",
+    "moveStart": "Moving: use the arrows, Enter to confirm, Esc to cancel.",
+    "movePreview": "Shift by {{days}} days to {{spot}}"
+  },
+  "move": {
+    "title": "Change booking {{code}}?",
+    "spot": "from {{from}} to {{to}}",
+    "dates": "Dates: {{from}} → {{to}}",
+    "previewing": "Checking availability and price…",
+    "notApplicable": "This booking cannot be moved this way.",
+    "staleTitle": "Booking changed by another user",
+    "staleDescription": "Reload to see the latest version and recompute the move.",
+    "reload": "Reload",
+    "conflicts_one": "{{count}} conflict",
+    "conflicts_other": "{{count}} conflicts",
+    "samePrice": "The price does not change.",
+    "toCollect": "Difference to collect: {{amount}}",
+    "toRefund": "Difference to refund: {{amount}}",
+    "done": "Booking {{code}} updated.",
+    "cancel": "Cancel",
+    "confirm": "Confirm move"
+  },
+  "conflict": {
+    "spot_unavailable": "spot taken",
+    "pool_exhausted": "quantity sold out",
+    "quota_exceeded": "online quota exhausted",
+    "closed": "establishment closed",
+    "inactive": "spot inactive"
+  }
 }

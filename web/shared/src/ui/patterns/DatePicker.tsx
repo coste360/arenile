@@ -34,7 +34,7 @@ interface CommonProps {
 }
 
 const triggerClass =
-  'w-full min-w-0 justify-start gap-2 overflow-hidden bg-transparent px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-56 dark:bg-input/30';
+  'w-full min-w-0 justify-start gap-2 overflow-hidden bg-transparent px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-56 sm:max-w-full dark:bg-input/30';
 
 function CalendarLoading({ label, wide }: { label: string; wide?: boolean }) {
   return (
@@ -154,7 +154,7 @@ export function DateRangePicker({
             variant="outline"
             disabled={disabled}
             data-empty={!from}
-            className={cn(triggerClass, 'sm:w-72')}
+            className={cn(triggerClass, 'sm:w-72 sm:max-w-full')}
             {...aria}
           >
             <CalendarIcon aria-hidden="true" className="text-muted-foreground" />

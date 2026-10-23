@@ -4,3 +4,4 @@ export { BookingDetailPage } from './BookingDetailPage';
 export { BookingsPage } from './BookingsPage';
 export { NewBookingSheet } from './NewBookingSheet';
 export type { NewBookingSheetProps } from './NewBookingSheet';
+export type { NewBookingDefaults } from './booking.schema';

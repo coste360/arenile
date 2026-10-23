@@ -72,7 +72,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon" variant="inset" className="print:hidden">
       <SidebarHeader>
         <EstablishmentSwitcher />
       </SidebarHeader>

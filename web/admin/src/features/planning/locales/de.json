@@ -1,4 +1,58 @@
 {
-  "title": "Kalender",
-  "description": "Planung Plätze × Tage, um lange Aufenthalte zu platzieren."
+  "title": "Belegungsplan",
+  "description": "Plätze × Tage, um lange Aufenthalte einzuplanen.",
+  "newBooking": "Neue Buchung",
+  "emptyTitle": "Keine Plätze",
+  "emptyDescription": "Erstellen Sie eine Karte mit Plätzen, um den Belegungsplan zu nutzen.",
+  "toolbar": {
+    "label": "Zeitraum des Belegungsplans",
+    "previous_one": "{{count}} Tag früher",
+    "previous_other": "{{count}} Tage früher",
+    "next_one": "{{count}} Tag später",
+    "next_other": "{{count}} Tage später",
+    "today": "Heute",
+    "from": "Ab",
+    "length": "Sichtbare Tage",
+    "days_one": "{{count}} Tag",
+    "days_other": "{{count}} Tage"
+  },
+  "grid": {
+    "roledescription": "Platzbelegungsplan",
+    "label_one": "Belegungsplan für {{count}} Platz",
+    "label_other": "Belegungsplan für {{count}} Plätze",
+    "keyboardHint": "Pfeiltasten bewegen zwischen Zellen, Umschalt+Pfeile wählen aus, Eingabe öffnet die Buchung oder erstellt eine für die Auswahl, M verschiebt die Buchung unter dem Cursor, Esc bricht ab.",
+    "cell": "{{spot}}, {{day}}: {{what}}",
+    "free": "frei",
+    "closed": "geschlossen",
+    "row": "Reihe {{row}}",
+    "noZone": "Ohne Zone",
+    "corner": "Platz",
+    "moveStart": "Verschieben: Pfeiltasten, Eingabe zum Bestätigen, Esc zum Abbrechen.",
+    "movePreview": "Verschiebung um {{days}} Tage auf {{spot}}"
+  },
+  "move": {
+    "title": "Buchung {{code}} ändern?",
+    "spot": "von {{from}} nach {{to}}",
+    "dates": "Daten: {{from}} → {{to}}",
+    "previewing": "Verfügbarkeit und Preis werden geprüft…",
+    "notApplicable": "Diese Buchung kann so nicht verschoben werden.",
+    "staleTitle": "Buchung von einem anderen Benutzer geändert",
+    "staleDescription": "Neu laden, um die aktuelle Version zu sehen und die Verschiebung neu zu berechnen.",
+    "reload": "Neu laden",
+    "conflicts_one": "{{count}} Konflikt",
+    "conflicts_other": "{{count}} Konflikte",
+    "samePrice": "Der Preis ändert sich nicht.",
+    "toCollect": "Zu kassierende Differenz: {{amount}}",
+    "toRefund": "Zu erstattende Differenz: {{amount}}",
+    "done": "Buchung {{code}} aktualisiert.",
+    "cancel": "Abbrechen",
+    "confirm": "Verschieben bestätigen"
+  },
+  "conflict": {
+    "spot_unavailable": "Platz belegt",
+    "pool_exhausted": "Kontingent erschöpft",
+    "quota_exceeded": "Online-Kontingent erschöpft",
+    "closed": "Betrieb geschlossen",
+    "inactive": "Platz inaktiv"
+  }
 }

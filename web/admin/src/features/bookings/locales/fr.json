@@ -1,26 +1,92 @@
 {
   "list": {
     "title": "Réservations",
-    "description": "Liste filtrable par dates, état, canal, client et solde."
+    "description": "Liste filtrable par dates, statut, canal, emplacement et solde.",
+    "empty": "Aucune réservation.",
+    "emptyFiltered": "Aucune réservation ne correspond aux filtres.",
+    "loadMore": "Charger plus",
+    "loadingMore": "Chargement…",
+    "pass": "Abonnement"
   },
   "detail": {
     "title": "Réservation",
-    "description": "Lignes, allocations, paiements et historique de la réservation."
+    "description": "Lignes, allocations, paiements et historique de la réservation.",
+    "back": "Réservations",
+    "pass": "Abonnement saisonnier",
+    "total": "Total",
+    "paid": "Encaissé",
+    "balance": "Solde à encaisser",
+    "deposit": "Acompte demandé",
+    "holdExpires": "Bloqué jusqu'au {{at}}.",
+    "reload": "Recharger"
   },
   "new": {
     "title": "Nouvelle réservation",
-    "description": "Dates, emplacements, formules, client et aperçu du prix."
+    "description": "Dates, emplacements, formule, client et aperçu du prix.",
+    "when": "Quand",
+    "where": "Quoi et où",
+    "targetSpots": "Emplacements sur le plan",
+    "targetZone": "Zone ou quantité",
+    "perSpot": "par emplacement",
+    "customer": "Client",
+    "customerExisting": "Rechercher un client",
+    "customerNew": "Nouveau client",
+    "payment": "Paiement et notes",
+    "payNow": "Encaisser maintenant",
+    "payLater": "Le solde restera à encaisser (à la caisse ou à l'arrivée).",
+    "force": "Réserver quand même (ignore les règles, enregistré dans le journal)",
+    "submit": "Créer la réservation",
+    "created": "Réservation {{code}} créée.",
+    "open": "Ouvrir",
+    "paymentFailed": "Réservation {{code}} créée, mais le paiement n'a pas été enregistré."
+  },
+  "fields": {
+    "period": "Période",
+    "slots": "Créneau",
+    "formula": "Formule",
+    "pack": "Formule d'équipement",
+    "packPlaceholder": "Choisir la formule",
+    "zone": "Zone",
+    "quantity": "Quantité",
+    "extras": "Suppléments",
+    "customer": "Client",
+    "lastName": "Nom",
+    "firstName": "Prénom",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "amount": "Montant",
+    "method": "Moyen",
+    "note": "Note",
+    "notesInternal": "Notes internes"
+  },
+  "validation": {
+    "required": "Champ obligatoire.",
+    "date": "Date non valide.",
+    "dateOrder": "La date de fin précède la date de début.",
+    "pack": "Choisissez une formule.",
+    "spots": "Sélectionnez au moins un emplacement sur le plan.",
+    "zone": "Choisissez une zone.",
+    "quantity": "Quantité de 1 à 100.",
+    "customer": "Choisissez un client ou créez-en un.",
+    "lastName": "Le nom est obligatoire.",
+    "contact": "Un téléphone ou un e-mail est requis.",
+    "email": "E-mail non valide.",
+    "phone": "Téléphone non valide (ex. +39 333 1234567).",
+    "amount": "Saisissez un montant valide.",
+    "amountMax": "Le montant dépasse le maximum autorisé.",
+    "method": "Choisissez le moyen.",
+    "text": "Saisissez le texte de la note."
   },
   "status": {
     "draft": "Brouillon",
     "held": "En attente",
     "pending_payment": "Paiement en attente",
-    "awaiting_approval": "En attente d'approbation",
+    "awaiting_approval": "À approuver",
     "confirmed": "Confirmée",
     "checked_in": "Présent",
     "completed": "Terminée",
     "cancelled": "Annulée",
-    "no_show": "Absent",
+    "no_show": "Non présenté",
     "expired": "Expirée",
     "rejected": "Refusée"
   },
@@ -28,5 +94,297 @@
     "desk": "Caisse",
     "online": "En ligne",
     "api": "API"
+  },
+  "slots": {
+    "FULL": "Journée entière",
+    "AM": "Matin",
+    "PM": "Après-midi"
+  },
+  "formula": {
+    "half_day": "Demi-journée",
+    "day": "Journée",
+    "multi_day": "Plusieurs jours",
+    "week": "Semaine",
+    "fortnight": "Quinzaine",
+    "month": "Mois",
+    "season": "Saison"
+  },
+  "method": {
+    "cash": "Espèces",
+    "card": "Carte",
+    "bank_transfer": "Virement",
+    "wallet": "Portefeuille",
+    "credit": "Avoir client",
+    "other": "Autre"
+  },
+  "columns": {
+    "code": "Code",
+    "customer": "Client",
+    "period": "Période",
+    "spots": "Emplacements",
+    "status": "Statut",
+    "channel": "Canal",
+    "total": "Total",
+    "balance": "Solde"
+  },
+  "filters": {
+    "title": "Filtres",
+    "search": "Rechercher",
+    "searchPlaceholder": "Code, client ou téléphone",
+    "period": "Période",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "channel": "Canal",
+    "allChannels": "Tous les canaux",
+    "spot": "Emplacement",
+    "allSpots": "Tous les emplacements",
+    "kind": "Type",
+    "allKinds": "Réservations et abonnements",
+    "onlyBookings": "Réservations uniquement",
+    "onlyPasses": "Abonnements uniquement",
+    "balanceDue": "Seulement avec solde dû",
+    "reset": "Effacer les filtres"
+  },
+  "quote": {
+    "title": "Aperçu du prix",
+    "loading": "Calcul du prix…",
+    "empty": "Choisissez dates, formule et emplacements pour voir le prix.",
+    "total": "Total",
+    "deposit": "Acompte demandé",
+    "lines": "Détail",
+    "days_one": "{{count}} jour",
+    "days_other": "{{count}} jours",
+    "extra": "{{code}} × {{qty}}",
+    "discount": "Remise {{source}}",
+    "rounding": "Arrondi",
+    "vat": "TVA {{rate}} % : {{tax}}",
+    "unavailable": "Sélection non disponible",
+    "violations": "Les règles de réservation n'autorisent pas cette demande :"
+  },
+  "policy": {
+    "title": "Conditions appliquées",
+    "approval": "Approbation requise",
+    "payFull": "Paiement intégral.",
+    "payNone": "Aucun paiement anticipé.",
+    "depositPercent": "Acompte de {{value}} %.",
+    "depositAmount": "Acompte de {{value}}.",
+    "balanceOnArrival": "Solde à l'arrivée.",
+    "balanceDaysBefore_one": "Solde {{count}} jour avant.",
+    "balanceDaysBefore_other": "Solde {{count}} jours avant.",
+    "cancellation": "Annulation",
+    "tier_one": "Jusqu'à {{count}} jour avant : {{percent}} % en {{as}}",
+    "tier_other": "Jusqu'à {{count}} jours avant : {{percent}} % en {{as}}",
+    "noCancellation": "Aucun remboursement en cas d'annulation.",
+    "as": {
+      "refund": "remboursement",
+      "credit": "avoir"
+    }
+  },
+  "picker": {
+    "mapTitle": "Plan des emplacements disponibles",
+    "free": "libre",
+    "unavailable": "indisponible",
+    "selected": "sélectionné",
+    "none": "Aucun emplacement sélectionné.",
+    "remove": "Retirer {{label}}",
+    "noMaps": "Aucun plan configuré : réservez par zone ou quantité."
+  },
+  "problem": {
+    "spotUnavailable": "Un ou plusieurs emplacements ne sont pas disponibles aux dates choisies.",
+    "poolExhausted": "Quantité non disponible aux dates choisies.",
+    "quotaExceeded": "Le quota en ligne est épuisé aux dates choisies.",
+    "holdExpired": "Le blocage a expiré : refaites la sélection.",
+    "invalidTransition": "Opération impossible dans l'état actuel : rechargez la réservation.",
+    "invalidTransitionNow": "Opération impossible : la réservation est désormais « {{status}} ».",
+    "versionConflict": "Quelqu'un d'autre a modifié la réservation : rechargez pour voir les données à jour.",
+    "policyViolation": "La demande enfreint les règles de réservation.",
+    "noPrice": "Aucun prix pour les dates ou la formule choisies.",
+    "cashSessionClosed": "La caisse est fermée : ouvrez-la pour enregistrer des espèces.",
+    "conflictLine": "{{label}} : {{days}}",
+    "more_one": "et {{count}} autre jour",
+    "more_other": "et {{count}} autres jours",
+    "resource": {
+      "spot": "Emplacement",
+      "pool": "Quantité",
+      "zone": "Zone"
+    }
+  },
+  "actions": {
+    "confirm": "Confirmer",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "check-in": "Enregistrer l'arrivée",
+    "no-show": "Non présenté",
+    "cancel": "Annuler la réservation",
+    "dates": "Modifier les dates",
+    "confirmTitle": {
+      "confirm": "Confirmer {{code}} ?",
+      "approve": "Approuver {{code}} ?",
+      "reject": "Refuser {{code}} ?",
+      "check-in": "Enregistrer l'arrivée de {{code}} ?",
+      "no-show": "Marquer {{code}} comme non présenté ?"
+    },
+    "confirmText": {
+      "confirm": "Confirmation manuelle : les emplacements restent réservés.",
+      "approve": "La réservation devient confirmée.",
+      "reject": "Les emplacements sont libérés.",
+      "check-in": "Le client est marqué présent.",
+      "no-show": "Les emplacements des jours futurs sont libérés."
+    },
+    "done": {
+      "confirm": "{{code}} confirmée.",
+      "approve": "{{code}} approuvée.",
+      "reject": "{{code}} refusée.",
+      "check-in": "Arrivée de {{code}} enregistrée.",
+      "no-show": "{{code}} marquée non présentée."
+    }
+  },
+  "cancel": {
+    "title": "Annuler {{code}}",
+    "description": "Les emplacements sont libérés ; le remboursement suit les conditions acceptées.",
+    "preview": "Aperçu du remboursement",
+    "computing": "Calcul du remboursement…",
+    "paid": "Encaissé",
+    "percent": "Pourcentage selon conditions",
+    "policyAmount": "Selon conditions",
+    "settlementLabel": "Règlement",
+    "settlement": {
+      "policy": "Selon les conditions",
+      "refund": "Rembourser un autre montant",
+      "credit": "Avoir au client",
+      "none": "Aucun remboursement"
+    },
+    "amount": "Montant",
+    "weather": "Annulation pour mauvais temps",
+    "reason": "Motif",
+    "confirm": "Annuler la réservation",
+    "done": "Réservation annulée.",
+    "doneWith": "Réservation annulée : {{amount}} en {{as}}.",
+    "as": {
+      "refund": "remboursement",
+      "credit": "avoir",
+      "none": "aucun remboursement"
+    }
+  },
+  "change": {
+    "datesTitle": "Modifier les dates",
+    "datesDescription": "Nouvelles dates et nouveau prix : les emplacements sont réattribués dans la même opération.",
+    "force": "Ignorer les limites de modification (enregistré)",
+    "requote": "Recalculer",
+    "apply": "Appliquer",
+    "applied": "Réservation mise à jour.",
+    "preview": "Effet de la modification",
+    "previous": "Total actuel",
+    "next": "Nouveau total",
+    "toCollect": "À encaisser",
+    "toRefund": "À rembourser",
+    "conflicts": "Indisponible :"
+  },
+  "move": {
+    "title": "Changer d'emplacement",
+    "description": "Choisissez un emplacement libre pour le reste du séjour ; le prix est recalculé si la catégorie change.",
+    "line": "Ligne",
+    "from": "À partir du",
+    "fromHint": "Vide = tout le séjour.",
+    "spot": "Nouvel emplacement",
+    "pick": "Choisir l'emplacement",
+    "loading": "Chargement des disponibilités…",
+    "noneFree": "Aucun emplacement libre",
+    "check": "Vérifier",
+    "apply": "Déplacer",
+    "applied": "Déplacée vers {{label}}.",
+    "short": "Déplacer",
+    "assign": "Attribuer",
+    "aria": "Déplacer {{label}}"
+  },
+  "lines": {
+    "title": "Lignes",
+    "spot": "Emplacement",
+    "pack": "Formule",
+    "extras": "Suppléments",
+    "total": "Total",
+    "actions": "Actions",
+    "pending": "À attribuer",
+    "quantity_one": "{{count}} unité",
+    "quantity_other": "{{count}} unités",
+    "bookingExtra": "Supplément {{code}} × {{qty}}"
+  },
+  "allocations": {
+    "title": "Allocations",
+    "description_one": "{{count}} demi-journée occupée",
+    "description_other": "{{count}} demi-journées occupées",
+    "empty": "Aucune ressource occupée.",
+    "date": "Date",
+    "slot": "Créneau",
+    "resource": "Ressource",
+    "kind": "Type",
+    "pool_one": "{{count}} unité du stock",
+    "pool_other": "{{count}} unités du stock",
+    "kinds": {
+      "booking": "Réservation",
+      "hold": "Blocage",
+      "block": "Blocage manuel",
+      "season": "Abonnement"
+    }
+  },
+  "payments": {
+    "title": "Paiements",
+    "empty": "Aucun paiement enregistré.",
+    "record": "Enregistrer un paiement",
+    "recordTitle": "Enregistrer un paiement",
+    "recordDescription": "Solde à encaisser : {{balance}}.",
+    "recorded": "Paiement de {{amount}} enregistré.",
+    "refund": "Remboursement",
+    "refundTitle": "Enregistrer un remboursement",
+    "refundDescription": "Encaissé jusqu'ici : {{paid}}. Le remboursement ne peut pas le dépasser.",
+    "refundAs": "Forme",
+    "reason": "Motif",
+    "refunded": "Remboursement de {{amount}} enregistré.",
+    "refundBadge": "remboursement",
+    "when": "Quand",
+    "status": "Statut",
+    "statuses": {
+      "pending": "En cours",
+      "succeeded": "Réussi",
+      "failed": "Échoué",
+      "cancelled": "Annulé"
+    }
+  },
+  "notes": {
+    "title": "Notes",
+    "internal": "Interne",
+    "customer": "Pour le client",
+    "add": "Ajouter une note",
+    "visibility": "Visibilité de la note",
+    "save": "Ajouter"
+  },
+  "history": {
+    "title": "Historique",
+    "empty": "Aucune activité enregistrée.",
+    "actor": {
+      "user": "Opérateur",
+      "customer": "Client",
+      "system": "Système",
+      "api_key": "Intégration API"
+    },
+    "actions": {
+      "booking": {
+        "created": "Réservation créée",
+        "confirmed": "Confirmée",
+        "checked_in": "Arrivée enregistrée",
+        "no_show": "Non présenté",
+        "cancelled": "Annulée",
+        "rejected": "Refusée",
+        "expired": "Expirée",
+        "modified": "Modifiée",
+        "moved": "Déplacée",
+        "note_added": "Note ajoutée",
+        "completed": "Terminée"
+      },
+      "payment": {
+        "succeeded": "Paiement enregistré",
+        "refunded": "Remboursement enregistré"
+      }
+    }
   }
 }

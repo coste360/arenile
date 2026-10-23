@@ -1,11 +1,34 @@
 {
   "today": {
     "title": "Heute",
-    "description": "Karte des Tages, Ankünfte, offene Salden und zuzuweisende Positionen."
+    "description": "Tageskarte, Ankünfte, offene Salden und zuzuweisende Positionen.",
+    "subtitle": "{{date}}: Live-Status des Strandes.",
+    "kpis": "Kennzahlen des Tages",
+    "chartTitle": "Plätze nach Status",
+    "chartDescription": "Dieselben Farben wie auf der Karte.",
+    "chartEmpty": "Keine Plätze für dieses Datum.",
+    "spots": "Plätze",
+    "worklist": "Zu erledigen",
+    "toCheckIn": "Check-in",
+    "toCollect": "Salden",
+    "toAssign": "Zuzuweisen",
+    "noCheckIns": "Keine ausstehenden Check-ins.",
+    "noBalances": "Keine offenen Salden.",
+    "noAssignments": "Keine zuzuweisenden Positionen.",
+    "checkInAria": "{{customer}} einchecken",
+    "mapTitle": "Tageskarte"
   },
   "map": {
     "title": "Karte",
-    "description": "Operative Kartenansicht für jedes Datum und jeden Zeitraum, nach Status eingefärbt."
+    "description": "Betriebskarte für jedes Datum und jeden Zeitraum, nach Status eingefärbt.",
+    "noMapsTitle": "Noch keine Karte",
+    "noMapsDescription": "Zeichnen Sie die Karte des Betriebs, um den Status der Plätze zu sehen.",
+    "openEditor": "Karteneditor öffnen",
+    "closedTitle": "Betrieb geschlossen",
+    "closedDescription": "Ruhetag oder außerhalb der Saison: Plätze sind nicht buchbar.",
+    "viewMap": "Karte",
+    "viewList": "Liste",
+    "aria": "Betriebskarte {{name}}, {{date}}, {{slot}}"
   },
   "slot": {
     "FULL": "Ganzer Tag",
@@ -16,12 +39,130 @@
     "free": "Frei",
     "booked": "Gebucht",
     "checked_in": "Anwesend",
-    "pass_holder": "Saisonabo",
-    "released": "Saisonabo heute abwesend",
-    "held": "Vorgemerkt",
+    "pass_holder": "Saisonkarte",
+    "released": "Saisongast heute abwesend",
+    "held": "Reserviert",
     "renewal_offer": "Verlängerungsoption",
     "blocked": "Gesperrt",
     "closed": "Geschlossen",
     "inactive": "Inaktiv"
+  },
+  "bookingStatus": {
+    "draft": "Entwurf",
+    "held": "Reserviert",
+    "pending_payment": "Zahlung ausstehend",
+    "awaiting_approval": "Genehmigung ausstehend",
+    "confirmed": "Bestätigt",
+    "checked_in": "Eingecheckt",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert",
+    "no_show": "Nicht erschienen",
+    "expired": "Abgelaufen",
+    "rejected": "Abgelehnt"
+  },
+  "toolbar": {
+    "label": "Tag und Zeitraum",
+    "previousDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "today": "Heute",
+    "date": "Datum",
+    "slot": "Zeitraum",
+    "map": "Karte"
+  },
+  "search": {
+    "placeholder": "Gast, Code oder Platz suchen",
+    "label": "Auf der Karte suchen",
+    "clear": "Suche löschen",
+    "results_one": "{{count}} Platz gefunden",
+    "results_other": "{{count}} Plätze gefunden"
+  },
+  "indicator": {
+    "legend": "Hinweise",
+    "extra": "Extras",
+    "note": "Notiz",
+    "vip": "VIP"
+  },
+  "sheet": {
+    "empty": "Platz",
+    "title": "Platz {{label}}",
+    "booking": "Buchung",
+    "seasonPass": "Saisonkarte",
+    "code": "Code",
+    "period": "Zeitraum",
+    "slots": "Zeitraum",
+    "packs": "Pakete",
+    "bookingStatus": "Status",
+    "total": "Gesamt",
+    "paid": "Bezahlt",
+    "balance": "Saldo",
+    "holdExpires": "Vorläufige Reservierung bis {{time}}.",
+    "blocked": "Platz manuell gesperrt.",
+    "blockedReason": "Gesperrt: {{reason}}",
+    "free": "Keine Belegung in diesem Zeitraum.",
+    "checkedIn": "{{code}} eingecheckt.",
+    "readOnly": "Nur Lesezugriff."
+  },
+  "actions": {
+    "checkIn": "Einchecken",
+    "newBooking": "Neue Buchung",
+    "releaseDay": "Tag freigeben",
+    "revokeRelease": "Freigabe widerrufen",
+    "move": "Verschieben",
+    "collect": "Kassieren",
+    "openDetail": "Details öffnen",
+    "cancel": "Abbrechen"
+  },
+  "release": {
+    "title": "Platz {{label}} freigeben?",
+    "description": "{{customer}} kommt am {{date}} ({{slot}}) nicht: der Platz wird buchbar. Wird er weiterverkauft, erhält der Saisongast die vereinbarte Gutschrift.",
+    "done": "Platz {{label}} freigegeben."
+  },
+  "revoke": {
+    "title": "Freigabe von {{label}} widerrufen?",
+    "description": "Der Platz geht für diesen Zeitraum an {{customer}} zurück.",
+    "done": "Freigabe von {{label}} widerrufen."
+  },
+  "move": {
+    "pickTitle": "Verschieben von {{label}}",
+    "pickDescription": "Wählen Sie auf der Karte einen freien Zielplatz.",
+    "title": "Von {{from}} nach {{to}} verschieben?",
+    "description": "Buchung {{code}} von {{customer}} wechselt ab {{date}} von {{from}} nach {{to}}.",
+    "confirm": "Verschieben",
+    "previewing": "Verfügbarkeit und Preis werden geprüft…",
+    "conflicts_one": "{{count}} Konflikt",
+    "conflicts_other": "{{count}} Konflikte",
+    "samePrice": "Der Preis ändert sich nicht.",
+    "toCollect": "Zu kassierende Differenz: {{amount}}",
+    "toRefund": "Zu erstattende Differenz: {{amount}}",
+    "done": "{{code}} nach {{to}} verschoben.",
+    "blocked": "Verschieben nicht möglich."
+  },
+  "conflict": {
+    "spot_unavailable": "Platz belegt",
+    "pool_exhausted": "Kontingent erschöpft",
+    "quota_exceeded": "Online-Kontingent erschöpft",
+    "closed": "Betrieb geschlossen",
+    "inactive": "Platz inaktiv"
+  },
+  "quick": {
+    "map": "Karte",
+    "planning": "Belegungsplan",
+    "cash": "Kasse"
+  },
+  "kpi": {
+    "occupancy": "Auslastung",
+    "occupancyHint": "{{occupied}} von {{spots}} Plätzen belegt",
+    "arrivals": "Ankünfte",
+    "departures_one": "{{count}} Abreise",
+    "departures_other": "{{count}} Abreisen",
+    "pendingCheckIns": "Ausstehende Check-ins",
+    "checkedIn_one": "{{count}} bereits eingecheckt",
+    "checkedIn_other": "{{count}} bereits eingecheckt",
+    "passHolders": "Erwartete Saisongäste",
+    "released": "Freigegebene Plätze",
+    "releasedHint": "Wieder verkaufte Saisontage",
+    "takings": "Einnahmen heute",
+    "balanceDue": "Offene Salden: {{amount}}",
+    "balanceDueTitle": "Offene Salden"
   }
 }

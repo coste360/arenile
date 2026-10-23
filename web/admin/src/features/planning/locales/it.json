@@ -1,4 +1,58 @@
 {
   "title": "Calendario",
-  "description": "Planning postazioni × giorni per collocare i soggiorni lunghi."
+  "description": "Planning postazioni × giorni per collocare i soggiorni lunghi.",
+  "newBooking": "Nuova prenotazione",
+  "emptyTitle": "Nessuna postazione",
+  "emptyDescription": "Crea una mappa con postazioni per usare il calendario.",
+  "toolbar": {
+    "label": "Periodo del calendario",
+    "previous_one": "{{count}} giorno prima",
+    "previous_other": "{{count}} giorni prima",
+    "next_one": "{{count}} giorno dopo",
+    "next_other": "{{count}} giorni dopo",
+    "today": "Oggi",
+    "from": "Dal giorno",
+    "length": "Giorni visibili",
+    "days_one": "{{count}} giorno",
+    "days_other": "{{count}} giorni"
+  },
+  "grid": {
+    "roledescription": "calendario postazioni",
+    "label_one": "Calendario di {{count}} postazione",
+    "label_other": "Calendario di {{count}} postazioni",
+    "keyboardHint": "Frecce per spostarsi tra le celle, Maiusc+frecce per selezionare, Invio per aprire la prenotazione o crearne una sulla selezione, M per spostare la prenotazione sotto il cursore, Esc per annullare.",
+    "cell": "{{spot}}, {{day}}: {{what}}",
+    "free": "libero",
+    "closed": "chiuso",
+    "row": "Fila {{row}}",
+    "noZone": "Senza zona",
+    "corner": "Postazione",
+    "moveStart": "Spostamento: usa le frecce, Invio per confermare, Esc per annullare.",
+    "movePreview": "Spostamento di {{days}} giorni su {{spot}}"
+  },
+  "move": {
+    "title": "Modificare la prenotazione {{code}}?",
+    "spot": "da {{from}} a {{to}}",
+    "dates": "Date: {{from}} → {{to}}",
+    "previewing": "Verifica disponibilità e prezzo…",
+    "notApplicable": "Questa prenotazione non può essere spostata così.",
+    "staleTitle": "Prenotazione modificata da un altro utente",
+    "staleDescription": "Ricarica per vedere la versione aggiornata e ricalcolare lo spostamento.",
+    "reload": "Ricarica",
+    "conflicts_one": "{{count}} conflitto",
+    "conflicts_other": "{{count}} conflitti",
+    "samePrice": "Il prezzo non cambia.",
+    "toCollect": "Differenza da incassare: {{amount}}",
+    "toRefund": "Differenza da rimborsare: {{amount}}",
+    "done": "Prenotazione {{code}} aggiornata.",
+    "cancel": "Annulla",
+    "confirm": "Conferma spostamento"
+  },
+  "conflict": {
+    "spot_unavailable": "postazione occupata",
+    "pool_exhausted": "quantità esaurita",
+    "quota_exceeded": "quota online esaurita",
+    "closed": "stabilimento chiuso",
+    "inactive": "postazione non attiva"
+  }
 }

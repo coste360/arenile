@@ -1,11 +1,34 @@
 {
   "today": {
     "title": "Oggi",
-    "description": "Mappa del giorno, arrivi, saldi da incassare e righe da assegnare."
+    "description": "Mappa del giorno, arrivi, saldi da incassare e righe da assegnare.",
+    "subtitle": "{{date}}: situazione della spiaggia in tempo reale.",
+    "kpis": "Indicatori del giorno",
+    "chartTitle": "Postazioni per stato",
+    "chartDescription": "Gli stessi colori della mappa.",
+    "chartEmpty": "Nessuna postazione per questa data.",
+    "spots": "Postazioni",
+    "worklist": "Da fare",
+    "toCheckIn": "Check-in",
+    "toCollect": "Saldi",
+    "toAssign": "Da assegnare",
+    "noCheckIns": "Nessun check-in in sospeso.",
+    "noBalances": "Nessun saldo da incassare.",
+    "noAssignments": "Nessuna riga da assegnare.",
+    "checkInAria": "Registra il check-in di {{customer}}",
+    "mapTitle": "Mappa del giorno"
   },
   "map": {
     "title": "Mappa",
-    "description": "Vista operativa della mappa per qualsiasi data e fascia, con colori per stato."
+    "description": "Vista operativa della mappa per qualsiasi data e fascia, con colori per stato.",
+    "noMapsTitle": "Nessuna mappa",
+    "noMapsDescription": "Disegna la mappa dello stabilimento per vedere lo stato delle postazioni.",
+    "openEditor": "Apri l'editor delle mappe",
+    "closedTitle": "Stabilimento chiuso",
+    "closedDescription": "Giorno di chiusura o fuori stagione: le postazioni non sono prenotabili.",
+    "viewMap": "Mappa",
+    "viewList": "Elenco",
+    "aria": "Mappa operativa {{name}}, {{date}}, {{slot}}"
   },
   "slot": {
     "FULL": "Giorno intero",
@@ -23,5 +46,123 @@
     "blocked": "Bloccato",
     "closed": "Chiuso",
     "inactive": "Non attivo"
+  },
+  "bookingStatus": {
+    "draft": "Bozza",
+    "held": "In attesa",
+    "pending_payment": "In attesa di pagamento",
+    "awaiting_approval": "Da approvare",
+    "confirmed": "Confermata",
+    "checked_in": "Presente",
+    "completed": "Conclusa",
+    "cancelled": "Annullata",
+    "no_show": "Non presentato",
+    "expired": "Scaduta",
+    "rejected": "Rifiutata"
+  },
+  "toolbar": {
+    "label": "Giorno e fascia",
+    "previousDay": "Giorno precedente",
+    "nextDay": "Giorno successivo",
+    "today": "Oggi",
+    "date": "Data",
+    "slot": "Fascia",
+    "map": "Mappa"
+  },
+  "search": {
+    "placeholder": "Cerca cliente, codice o postazione",
+    "label": "Cerca sulla mappa",
+    "clear": "Cancella ricerca",
+    "results_one": "{{count}} postazione trovata",
+    "results_other": "{{count}} postazioni trovate"
+  },
+  "indicator": {
+    "legend": "Indicatori",
+    "extra": "Extra",
+    "note": "Nota",
+    "vip": "VIP"
+  },
+  "sheet": {
+    "empty": "Postazione",
+    "title": "Postazione {{label}}",
+    "booking": "Prenotazione",
+    "seasonPass": "Abbonamento",
+    "code": "Codice",
+    "period": "Periodo",
+    "slots": "Fascia",
+    "packs": "Pacchetti",
+    "bookingStatus": "Stato",
+    "total": "Totale",
+    "paid": "Pagato",
+    "balance": "Saldo",
+    "holdExpires": "Blocco temporaneo fino alle {{time}}.",
+    "blocked": "Postazione bloccata manualmente.",
+    "blockedReason": "Bloccata: {{reason}}",
+    "free": "Nessuna allocazione per questa fascia.",
+    "checkedIn": "Check-in registrato per {{code}}.",
+    "readOnly": "Accesso in sola lettura."
+  },
+  "actions": {
+    "checkIn": "Check-in",
+    "newBooking": "Nuova prenotazione",
+    "releaseDay": "Rilascia giorno",
+    "revokeRelease": "Revoca rilascio",
+    "move": "Sposta",
+    "collect": "Incassa",
+    "openDetail": "Apri dettaglio",
+    "cancel": "Annulla"
+  },
+  "release": {
+    "title": "Rilasciare la postazione {{label}}?",
+    "description": "{{customer}} non verrà il {{date}} ({{slot}}): la postazione diventa prenotabile. Se viene rivenduta, l'abbonato riceve il credito previsto.",
+    "done": "Postazione {{label}} rilasciata."
+  },
+  "revoke": {
+    "title": "Revocare il rilascio di {{label}}?",
+    "description": "La postazione torna a {{customer}} per questa fascia.",
+    "done": "Rilascio di {{label}} revocato."
+  },
+  "move": {
+    "pickTitle": "Sposta da {{label}}",
+    "pickDescription": "Scegli sulla mappa una postazione libera di destinazione.",
+    "title": "Spostare da {{from}} a {{to}}?",
+    "description": "La prenotazione {{code}} di {{customer}} passa da {{from}} a {{to}} dal {{date}}.",
+    "confirm": "Sposta",
+    "previewing": "Verifica disponibilità e prezzo…",
+    "conflicts_one": "{{count}} conflitto",
+    "conflicts_other": "{{count}} conflitti",
+    "samePrice": "Il prezzo non cambia.",
+    "toCollect": "Differenza da incassare: {{amount}}",
+    "toRefund": "Differenza da rimborsare: {{amount}}",
+    "done": "{{code}} spostata su {{to}}.",
+    "blocked": "Spostamento non possibile."
+  },
+  "conflict": {
+    "spot_unavailable": "postazione occupata",
+    "pool_exhausted": "quantità esaurita",
+    "quota_exceeded": "quota online esaurita",
+    "closed": "stabilimento chiuso",
+    "inactive": "postazione non attiva"
+  },
+  "quick": {
+    "map": "Mappa",
+    "planning": "Calendario",
+    "cash": "Cassa"
+  },
+  "kpi": {
+    "occupancy": "Occupazione",
+    "occupancyHint": "{{occupied}} postazioni occupate su {{spots}}",
+    "arrivals": "Arrivi",
+    "departures_one": "{{count}} partenza",
+    "departures_other": "{{count}} partenze",
+    "pendingCheckIns": "Check-in da fare",
+    "checkedIn_one": "{{count}} già presente",
+    "checkedIn_other": "{{count}} già presenti",
+    "passHolders": "Abbonati attesi",
+    "released": "Postazioni rilasciate",
+    "releasedHint": "Giorni di abbonati rimessi in vendita",
+    "takings": "Incassi di oggi",
+    "balanceDue": "Saldi aperti: {{amount}}",
+    "balanceDueTitle": "Saldi aperti"
   }
 }

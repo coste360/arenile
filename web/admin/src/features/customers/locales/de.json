@@ -1,10 +1,126 @@
 {
   "list": {
     "title": "Kunden",
-    "description": "Kundenstamm mit Suche nach Name, Telefon, E-Mail und Tag."
+    "description": "Kundenstamm mit Suche nach Name, Telefon, E-Mail und Tag.",
+    "new": "Neuer Kunde",
+    "empty": "Noch keine Kunden.",
+    "emptyFiltered": "Kein Kunde entspricht der Suche.",
+    "loadMore": "Weitere laden",
+    "loadingMore": "Wird geladen…"
   },
   "detail": {
     "title": "Kunde",
-    "description": "Daten, Verlauf, Guthaben, Saisonabos, DSGVO-Export und Anonymisierung."
+    "description": "Daten, Verlauf, Guthaben, Abos, DSGVO-Export und Anonymisierung.",
+    "back": "Kunden",
+    "profile": "Profil",
+    "newBooking": "Neue Buchung"
+  },
+  "anonymized": "Anonymisiert",
+  "columns": {
+    "name": "Name",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "tags": "Tags",
+    "consent": "Marketing"
+  },
+  "filters": {
+    "title": "Filter",
+    "search": "Suche",
+    "searchPlaceholder": "Name, Telefon oder E-Mail",
+    "tag": "Tag",
+    "byTag": "Nach Tag {{tag}} filtern",
+    "anonymized": "Anonymisierte anzeigen"
+  },
+  "consent": {
+    "yes": "Ja",
+    "no": "Keine Einwilligung",
+    "given": "Einwilligung am {{at}} ({{source}})"
+  },
+  "fields": {
+    "lastName": "Nachname",
+    "firstName": "Vorname",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "locale": "Sprache",
+    "tags": "Tags",
+    "tagsHelp": "Durch Komma getrennt, z. B. vip, familie.",
+    "notes": "Interne Notizen",
+    "notesHelp": "Werden dem Kunden nie angezeigt.",
+    "marketing": "Marketing-Einwilligung",
+    "marketingHelp": "Freiwillig und getrennt: Datum, Quelle und Textversion werden gespeichert."
+  },
+  "form": {
+    "newTitle": "Neuer Kunde",
+    "editTitle": "Kunde bearbeiten",
+    "description": "Mindestangaben: Nachname und ein Kontakt (Telefon oder E-Mail).",
+    "created": "Kunde {{name}} angelegt.",
+    "updated": "Kunde aktualisiert."
+  },
+  "validation": {
+    "lastName": "Der Nachname ist erforderlich.",
+    "email": "Ungültige E-Mail.",
+    "phone": "Ungültige Telefonnummer (z. B. +39 333 1234567).",
+    "tag": "Jeder Tag höchstens 30 Zeichen.",
+    "tags": "Höchstens 20 Tags.",
+    "confirm": "Der Text stimmt nicht mit dem Nachnamen überein."
+  },
+  "picker": {
+    "placeholder": "Nach Name, Telefon oder E-Mail suchen",
+    "search": "Kunde suchen",
+    "searching": "Suche…",
+    "typeMore": "Mindestens 2 Zeichen eingeben.",
+    "none": "Kein Kunde gefunden."
+  },
+  "duplicates": {
+    "title": "Eventuell schon erfasst",
+    "use": "Diesen verwenden"
+  },
+  "stats": {
+    "bookings": "Buchungen",
+    "spent": "Gesamtumsatz",
+    "balance": "Offener Betrag",
+    "credit": "Verfügbares Guthaben"
+  },
+  "bookings": {
+    "title": "Letzte Buchungen",
+    "last": "Zuletzt am {{date}}",
+    "empty": "Keine Buchungen.",
+    "code": "Code",
+    "period": "Zeitraum",
+    "status": "Status",
+    "total": "Gesamt"
+  },
+  "passes": {
+    "title": "Saisonabos",
+    "empty": "Keine Saisonabos.",
+    "released_one": "{{count}} halber Tag freigegeben",
+    "released_other": "{{count}} halbe Tage freigegeben"
+  },
+  "credits": {
+    "title": "Guthaben",
+    "balance": "Saldo: {{amount}}",
+    "empty": "Keine Bewegungen.",
+    "expires": "läuft am {{date}} ab",
+    "source": {
+      "cancellation": "Stornierung",
+      "season_release": "Abo-Freigabe",
+      "weather": "Schlechtwetter",
+      "manual": "Manuell",
+      "redemption": "Einlösung"
+    }
+  },
+  "export": {
+    "action": "Daten exportieren (DSGVO)",
+    "done": "Export heruntergeladen."
+  },
+  "anonymize": {
+    "action": "Anonymisieren",
+    "title": "{{name}} anonymisieren?",
+    "description": "Name, Kontakte, Notizen und Einwilligungen werden endgültig ersetzt.",
+    "irreversible": "Nicht rückgängig zu machen",
+    "keeps": "Buchungen und Zahlungen bleiben für die Buchhaltung, ohne personenbezogene Daten.",
+    "typeLabel": "Zur Bestätigung den Nachnamen eingeben: {{lastName}}",
+    "confirm": "Endgültig anonymisieren",
+    "done": "Kunde anonymisiert."
   }
 }

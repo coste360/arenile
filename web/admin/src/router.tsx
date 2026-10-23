@@ -253,6 +253,7 @@ const bookingDetailRoute = createRoute({
 const planningRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'calendario',
+  validateSearch: validateDaySearch,
   component: lazyRouteComponent(() => import('./features/planning'), 'PlanningPage'),
 });
 const customersRoute = createRoute({

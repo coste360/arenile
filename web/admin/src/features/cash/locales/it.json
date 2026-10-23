@@ -5,7 +5,28 @@
   },
   "corrispettivi": {
     "title": "Corrispettivi",
-    "description": "Incassi giornalieri o mensili per aliquota IVA e metodo, in CSV o JSON."
+    "description": "Incassi giornalieri o mensili per aliquota IVA e metodo, in CSV o JSON.",
+    "period": "Periodo",
+    "day": "Giorno",
+    "month": "Mese",
+    "date": "Data",
+    "monthLabel": "Mese",
+    "year": "Anno",
+    "downloadCsv": "Scarica CSV",
+    "downloadJson": "Scarica JSON",
+    "disclaimer": "Importi IVA inclusa, scorporati per aliquota dallo snapshot del prezzo; i rimborsi sono in negativo. La conformità fiscale della configurazione resta responsabilità del gestore e del suo consulente.",
+    "empty": "Nessun incasso nel periodo selezionato.",
+    "grandTotal": "Totale corrispettivi · {{period}}",
+    "byVat": "Per aliquota IVA",
+    "rate": "Aliquota",
+    "taxable": "Imponibile",
+    "tax": "Imposta",
+    "gross": "Totale",
+    "total": "Totale",
+    "byMethod": "Per metodo di pagamento",
+    "count": "Operazioni",
+    "detail": "Dettaglio",
+    "periodColumn": "Periodo"
   },
   "method": {
     "cash": "Contanti",
@@ -14,5 +35,149 @@
     "wallet": "Wallet",
     "credit": "Credito",
     "other": "Altro"
+  },
+  "perm": {
+    "forbiddenTitle": "Accesso non consentito",
+    "forbidden": "Il tuo ruolo non ha accesso alla cassa.",
+    "reportsForbidden": "Il tuo ruolo non ha accesso ai report e alle esportazioni.",
+    "readOnly": "Accesso in sola lettura: puoi consultare lo storico ma non operare in cassa."
+  },
+  "fields": {
+    "amount": "Importo",
+    "method": "Metodo",
+    "note": "Nota",
+    "notes": "Note",
+    "time": "Ora"
+  },
+  "actions": {
+    "movement": "Movimento",
+    "quickPay": "Incassa",
+    "close": "Chiudi cassa",
+    "print": "Stampa riepilogo",
+    "printZ": "Stampa chiusura Z"
+  },
+  "open": {
+    "title": "Apri la cassa",
+    "description": "Nessuna sessione aperta. Conta il fondo cassa e apri la sessione per registrare gli incassi.",
+    "float": "Fondo cassa",
+    "floatHint": "Contanti presenti nel cassetto all'apertura.",
+    "submit": "Apri sessione",
+    "opened": "Sessione di cassa aperta",
+    "noneReadOnly": "Nessuna sessione di cassa aperta."
+  },
+  "current": {
+    "badge": "{{register}} aperta dal {{time}}",
+    "float": "Fondo cassa",
+    "totalTakings": "Totale incassi",
+    "netMovements": "Versamenti − prelievi",
+    "expectedCash": "Contanti attesi in cassa",
+    "expectedCashHint": "Fondo + incassi in contanti + versamenti − prelievi",
+    "takings": "Incassi per metodo",
+    "noTakings": "Ancora nessun incasso in questa sessione.",
+    "activity": "Attività della sessione"
+  },
+  "tabs": {
+    "payments": "Incassi",
+    "movements": "Movimenti"
+  },
+  "payments": {
+    "empty": "Nessun incasso registrato.",
+    "what": "Prenotazione o descrizione",
+    "counterSale": "Vendita libera",
+    "refund": "Rimborso",
+    "status": {
+      "pending": "In attesa",
+      "succeeded": "Riuscito",
+      "failed": "Fallito",
+      "cancelled": "Annullato"
+    }
+  },
+  "movement": {
+    "title": "Movimento di cassa",
+    "description": "Versamento o prelievo di contanti, sempre con una causale.",
+    "kind": "Tipo",
+    "in": "Versamento",
+    "out": "Prelievo",
+    "reason": "Causale",
+    "reasonPlaceholder": "es. cambio monete, versamento in banca",
+    "submit": "Registra movimento",
+    "recorded": "Movimento registrato",
+    "empty": "Nessun movimento."
+  },
+  "quickPay": {
+    "title": "Incassa prenotazione",
+    "description": "Cerca la prenotazione per codice: l'importo proposto è il saldo dovuto.",
+    "search": "Codice prenotazione o cliente",
+    "searchPlaceholder": "es. AR-7K3Q9",
+    "minChars": "Digita almeno 2 caratteri.",
+    "noResults": "Nessuna prenotazione trovata.",
+    "results": "Prenotazioni trovate",
+    "balance": "Saldo {{amount}}",
+    "paid": "Saldata",
+    "select": "Seleziona",
+    "selectAria": "Seleziona la prenotazione {{code}}",
+    "booking": "Prenotazione",
+    "customer": "Cliente",
+    "total": "Totale",
+    "paidAmount": "Pagato",
+    "balanceDue": "Saldo dovuto",
+    "change": "Cambia",
+    "submit": "Registra incasso",
+    "recorded": "Incasso di {{amount}} registrato su {{code}}"
+  },
+  "close": {
+    "title": "Chiusura di cassa",
+    "description": "Conta il denaro e indica gli importi per metodo: la differenza è calcolata rispetto all'atteso.",
+    "method": "Metodo",
+    "expected": "Atteso",
+    "counted": "Contato",
+    "countedFor": "Contato {{method}}",
+    "difference": "Differenza",
+    "total": "Totale",
+    "notesPlaceholder": "es. motivo della differenza",
+    "submit": "Chiudi sessione",
+    "closed": "Sessione di cassa chiusa",
+    "closedTitle": "Sessione chiusa",
+    "balanced": "In pari",
+    "surplus": "Eccedenza",
+    "shortfall": "Ammanco"
+  },
+  "z": {
+    "title": "Chiusura Z",
+    "register": "Cassa",
+    "status": "Stato",
+    "openedAt": "Apertura",
+    "closedAt": "Chiusura",
+    "float": "Fondo cassa",
+    "movementsIn": "Versamenti",
+    "movementsOut": "Prelievi",
+    "takings": "Incassi",
+    "notes": "Note",
+    "payments": "Operazioni di incasso nella sessione: {{count}}"
+  },
+  "history": {
+    "title": "Storico sessioni",
+    "empty": "Nessuna sessione di cassa.",
+    "openedAt": "Apertura",
+    "closedAt": "Chiusura",
+    "register": "Cassa",
+    "statusLabel": "Stato",
+    "status": {
+      "open": "Aperta",
+      "closed": "Chiusa"
+    },
+    "detail": "Dettaglio sessione",
+    "detailTitle": "Sessione del {{date}}",
+    "detailDescription": "Riepilogo di chiusura, incassi e movimenti della sessione."
+  },
+  "validation": {
+    "amountRequired": "Inserisci un importo valido.",
+    "amountPositive": "L'importo deve essere maggiore di zero.",
+    "reasonRequired": "Indica la causale.",
+    "countedRequired": "Inserisci i contanti contati.",
+    "tooLong": "Testo troppo lungo."
+  },
+  "registers": {
+    "main": "Cassa principale"
   }
 }

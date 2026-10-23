@@ -1,4 +1,91 @@
 {
   "title": "Abonnements",
-  "description": "Abonnements saisonniers, libérations journalières et crédits."
+  "description": "Abonnements saisonniers par zone et rangée, libérations et avoirs.",
+  "columns": {
+    "spot": "Emplacement",
+    "customer": "Abonné",
+    "period": "Période",
+    "status": "Statut",
+    "released": "Libérations",
+    "credit": "Avoir",
+    "balance": "Solde"
+  },
+  "list": {
+    "count_one": "{{count}} abonnement",
+    "count_other": "{{count}} abonnements",
+    "empty": "Aucun abonnement cette saison.",
+    "emptyHint": "Créez le premier avec « Nouvel abonnement ».",
+    "noSeasons": "Aucune saison configurée.",
+    "otherZone": "Autres emplacements",
+    "row": "Rangée {{row}}",
+    "zoneCaption": "Abonnements de la zone {{zone}}",
+    "openAria": "Ouvrir l'abonnement {{spot}} de {{customer}}",
+    "loadMore": "Charger plus"
+  },
+  "fields": {
+    "customer": "Abonné",
+    "season": "Saison",
+    "pack": "Formule",
+    "packPlaceholder": "Choisir la formule",
+    "slots": "Créneau",
+    "spot": "Emplacement",
+    "spotPick": "Choisir un emplacement libre",
+    "spotLoading": "Chargement des disponibilités…",
+    "spotNone": "Aucun emplacement libre toute la saison",
+    "startsOn": "Du",
+    "endsOn": "Au",
+    "datesHelp": "Vide = ouverture et fermeture de la saison.",
+    "notes": "Notes internes"
+  },
+  "validation": {
+    "customer": "Choisissez l'abonné.",
+    "season": "Choisissez la saison.",
+    "spot": "Choisissez l'emplacement.",
+    "pack": "Choisissez la formule.",
+    "dates": "La date de fin précède la date de début.",
+    "note": "500 caractères maximum."
+  },
+  "create": {
+    "title": "Nouvel abonnement",
+    "description": "L'emplacement reste réservé à l'abonné toute la saison.",
+    "price": "Prix catalogue",
+    "priceHint": "Choisissez saison, formule et emplacement pour voir le prix.",
+    "deposit": "Acompte demandé : {{amount}}",
+    "overrideHint": "Le prix vient du catalogue (formule saison). Pour un prix convenu, utilisez une convention ou une règle de prix dédiée.",
+    "submit": "Créer l'abonnement",
+    "done": "Abonnement {{code}} créé."
+  },
+  "sheet": {
+    "title": "{{spot}} · {{customer}}",
+    "loading": "Abonnement",
+    "total": "Total",
+    "paid": "Encaissé",
+    "openBooking": "Ouvrir la réservation (paiements, annulation)"
+  },
+  "releases": {
+    "summary_one": "{{count}} demi-journée libérée",
+    "summary_other": "{{count}} demi-journées libérées",
+    "credit": "Avoir acquis : {{amount}}",
+    "slots": "Partie de la journée à libérer",
+    "legend": "Légende",
+    "legendSelected": "Sélectionné",
+    "legendReleased": "Libéré",
+    "legendResold": "Revendu",
+    "note": "Note (facultative)",
+    "submit_one": "Libérer {{count}} jour",
+    "submit_other": "Libérer {{count}} jours",
+    "done_one": "{{count}} jour libéré : l'emplacement est réservable.",
+    "done_other": "{{count}} jours libérés : l'emplacement est réservable.",
+    "list": "Jours libérés",
+    "empty": "Aucun jour libéré.",
+    "status": {
+      "released": "Libéré",
+      "resold": "Revendu",
+      "revoked": "Révoqué"
+    },
+    "revoke": "Révoquer",
+    "revokeTitle": "Révoquer la libération du {{date}} ?",
+    "revokeText": "L'emplacement revient à l'abonné. Impossible si le jour a déjà été revendu.",
+    "revokeAria": "Révoquer la libération du {{date}} ({{slot}})"
+  }
 }

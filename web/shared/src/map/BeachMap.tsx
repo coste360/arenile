@@ -17,6 +17,7 @@ import {
 } from './geometry';
 import { decorationKindIcon } from './icons';
 import { labelFontSize, useUnitsPerPixel } from './labels';
+import { INDICATOR_CLASSES, type SpotIndicator } from './indicators';
 import { MapGlyph } from './MapGlyph';
 import { MapLegend } from './MapLegend';
 import { MapZoomControls } from './MapZoomControls';
@@ -31,6 +32,13 @@ export interface BeachMapProps {
   defaultStatus?: SpotStatus;
   /** Highlighted spot ids. */
   selectedIds?: readonly string[];
+  /**
+   * Search matches (operational map): when non-empty, the other spots are
+   * dimmed and these get an emphasised outline. Independent of the selection.
+   */
+  highlightedIds?: readonly string[];
+  /** Overlay indicators per spot id (extra, note, VIP); repeat them in `spotDescription`. */
+  spotIndicators?: Readonly<Record<string, readonly SpotIndicator[]>>;
   /** Called on click, tap, Enter or Space on a spot. */
   onSpotActivate?: (spot: MapSpot) => void;
   /** Optional extra text per spot (e.g. a price), appended to the aria-label. */
@@ -84,6 +92,9 @@ interface SpotProps {
   /** Hex override; undefined = theme token classes. */
   color: string | undefined;
   selected: boolean;
+  /** `true` search match, `false` dimmed (another spot matches), undefined no search. */
+  highlighted: boolean | undefined;
+  indicators: readonly SpotIndicator[] | undefined;
   /** The one spot reachable with Tab (roving tabindex). */
   focusable: boolean;
   /** Map units per screen pixel, zoom included (label legibility). */
@@ -97,6 +108,8 @@ const Spot = memo(function Spot({
   status,
   color,
   selected,
+  highlighted,
+  indicators,
   focusable,
   unitsPerPixel,
   ariaLabel,
@@ -123,9 +136,11 @@ const Spot = memo(function Spot({
       aria-disabled={disabled || undefined}
       data-spot-id={spot.id}
       data-status={status}
+      data-highlighted={highlighted === undefined ? undefined : String(highlighted)}
       className={cn(
         'outline-none focus-visible:[&>:first-child]:stroke-ring focus-visible:[&>:first-child]:stroke-4',
         disabled ? 'cursor-default' : 'cursor-pointer',
+        highlighted === false && 'opacity-30',
       )}
       transform={spot.rotation ? `rotate(${spot.rotation} ${spot.x} ${spot.y})` : undefined}
       onClick={activate}
@@ -138,10 +153,23 @@ const Spot = memo(function Spot({
         fill={color}
         className={cn(
           !color && STATUS_CLASSES[status].fill,
-          selected ? 'stroke-map-spot-selected' : 'stroke-map-spot-stroke',
+          selected || highlighted ? 'stroke-map-spot-selected' : 'stroke-map-spot-stroke',
         )}
-        strokeWidth={selected ? size * 0.12 : size * 0.04}
+        strokeWidth={selected || highlighted ? size * 0.12 : size * 0.04}
       />
+      {indicators?.map((kind, i) => (
+        <circle
+          key={kind}
+          cx={spot.x + size * 0.42 - i * size * 0.26}
+          cy={spot.y - size * 0.42}
+          r={size * 0.13}
+          data-indicator={kind}
+          className={cn(INDICATOR_CLASSES[kind].fill, 'stroke-background')}
+          strokeWidth={size * 0.04}
+          pointerEvents="none"
+          aria-hidden="true"
+        />
+      ))}
       {fontSize > 0 && (
         <text
           x={spot.x}
@@ -242,6 +270,8 @@ export function BeachMap({
   statuses,
   defaultStatus = 'free',
   selectedIds,
+  highlightedIds,
+  spotIndicators,
   onSpotActivate,
   spotDescription,
   statusColors,
@@ -260,6 +290,10 @@ export function BeachMap({
   const vb = useMemo(() => computeViewBox(geometry), [geometry]);
   const sea = useMemo(() => seaRect(geometry), [geometry]);
   const selected = useMemo(() => new Set(selectedIds ?? []), [selectedIds]);
+  const highlighted = useMemo(
+    () => (highlightedIds && highlightedIds.length > 0 ? new Set(highlightedIds) : null),
+    [highlightedIds],
+  );
   const unitsPerPixel = useUnitsPerPixel(svgRef, vb) / view.scale;
 
   // Roving tabindex: one focusable spot, moved with the keyboard.
@@ -268,6 +302,7 @@ export function BeachMap({
   const focusableId =
     (activeId && spotIds.includes(activeId) ? activeId : null) ??
     spotIds.find((id) => selected.has(id)) ??
+    (highlighted ? spotIds.find((id) => highlighted.has(id)) : undefined) ??
     spotIds[0];
   const onKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
     const move = NAV_KEYS[e.key];
@@ -412,6 +447,8 @@ export function BeachMap({
                 status={status}
                 color={statusColors?.[status]}
                 selected={selected.has(spot.id)}
+                highlighted={highlighted ? highlighted.has(spot.id) : undefined}
+                indicators={spotIndicators?.[spot.id]}
                 focusable={spot.id === focusableId}
                 unitsPerPixel={unitsPerPixel}
                 ariaLabel={extra ? `${aria}, ${extra}` : aria}

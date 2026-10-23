@@ -1,11 +1,34 @@
 {
   "today": {
     "title": "Aujourd'hui",
-    "description": "Carte du jour, arrivées, soldes à encaisser et lignes à attribuer."
+    "description": "Plan du jour, arrivées, soldes à encaisser et lignes à attribuer.",
+    "subtitle": "{{date}} : état de la plage en temps réel.",
+    "kpis": "Indicateurs du jour",
+    "chartTitle": "Emplacements par statut",
+    "chartDescription": "Les mêmes couleurs que sur le plan.",
+    "chartEmpty": "Aucun emplacement pour cette date.",
+    "spots": "Emplacements",
+    "worklist": "À faire",
+    "toCheckIn": "Check-in",
+    "toCollect": "Soldes",
+    "toAssign": "À attribuer",
+    "noCheckIns": "Aucun check-in en attente.",
+    "noBalances": "Aucun solde à encaisser.",
+    "noAssignments": "Aucune ligne à attribuer.",
+    "checkInAria": "Enregistrer le check-in de {{customer}}",
+    "mapTitle": "Plan du jour"
   },
   "map": {
-    "title": "Carte",
-    "description": "Vue opérationnelle de la carte pour toute date et tranche, colorée selon l'état."
+    "title": "Plan",
+    "description": "Plan opérationnel pour toute date et tranche, coloré par statut.",
+    "noMapsTitle": "Aucun plan",
+    "noMapsDescription": "Dessinez le plan de l'établissement pour voir l'état des emplacements.",
+    "openEditor": "Ouvrir l'éditeur de plans",
+    "closedTitle": "Établissement fermé",
+    "closedDescription": "Jour de fermeture ou hors saison : les emplacements ne sont pas réservables.",
+    "viewMap": "Plan",
+    "viewList": "Liste",
+    "aria": "Plan opérationnel {{name}}, {{date}}, {{slot}}"
   },
   "slot": {
     "FULL": "Journée entière",
@@ -17,11 +40,129 @@
     "booked": "Réservé",
     "checked_in": "Présent",
     "pass_holder": "Abonné",
-    "released": "Abonné absent aujourd'hui",
+    "released": "Abonné absent aujourd’hui",
     "held": "En attente",
-    "renewal_offer": "Option de renouvellement",
+    "renewal_offer": "Priorité de renouvellement",
     "blocked": "Bloqué",
     "closed": "Fermé",
     "inactive": "Inactif"
+  },
+  "bookingStatus": {
+    "draft": "Brouillon",
+    "held": "En attente",
+    "pending_payment": "Paiement en attente",
+    "awaiting_approval": "À approuver",
+    "confirmed": "Confirmée",
+    "checked_in": "Présent",
+    "completed": "Terminée",
+    "cancelled": "Annulée",
+    "no_show": "Non présenté",
+    "expired": "Expirée",
+    "rejected": "Refusée"
+  },
+  "toolbar": {
+    "label": "Jour et tranche",
+    "previousDay": "Jour précédent",
+    "nextDay": "Jour suivant",
+    "today": "Aujourd'hui",
+    "date": "Date",
+    "slot": "Tranche",
+    "map": "Plan"
+  },
+  "search": {
+    "placeholder": "Rechercher client, code ou emplacement",
+    "label": "Rechercher sur le plan",
+    "clear": "Effacer la recherche",
+    "results_one": "{{count}} emplacement trouvé",
+    "results_other": "{{count}} emplacements trouvés"
+  },
+  "indicator": {
+    "legend": "Indicateurs",
+    "extra": "Suppléments",
+    "note": "Note",
+    "vip": "VIP"
+  },
+  "sheet": {
+    "empty": "Emplacement",
+    "title": "Emplacement {{label}}",
+    "booking": "Réservation",
+    "seasonPass": "Abonnement",
+    "code": "Code",
+    "period": "Période",
+    "slots": "Tranche",
+    "packs": "Formules",
+    "bookingStatus": "Statut",
+    "total": "Total",
+    "paid": "Payé",
+    "balance": "Solde",
+    "holdExpires": "Blocage temporaire jusqu'à {{time}}.",
+    "blocked": "Emplacement bloqué manuellement.",
+    "blockedReason": "Bloqué : {{reason}}",
+    "free": "Aucune allocation pour cette tranche.",
+    "checkedIn": "Check-in enregistré pour {{code}}.",
+    "readOnly": "Accès en lecture seule."
+  },
+  "actions": {
+    "checkIn": "Check-in",
+    "newBooking": "Nouvelle réservation",
+    "releaseDay": "Libérer le jour",
+    "revokeRelease": "Annuler la libération",
+    "move": "Déplacer",
+    "collect": "Encaisser",
+    "openDetail": "Ouvrir le détail",
+    "cancel": "Annuler"
+  },
+  "release": {
+    "title": "Libérer l'emplacement {{label}} ?",
+    "description": "{{customer}} ne viendra pas le {{date}} ({{slot}}) : l'emplacement devient réservable. S'il est revendu, l'abonné reçoit le crédit prévu.",
+    "done": "Emplacement {{label}} libéré."
+  },
+  "revoke": {
+    "title": "Annuler la libération de {{label}} ?",
+    "description": "L'emplacement revient à {{customer}} pour cette tranche.",
+    "done": "Libération de {{label}} annulée."
+  },
+  "move": {
+    "pickTitle": "Déplacer depuis {{label}}",
+    "pickDescription": "Choisissez sur le plan un emplacement libre de destination.",
+    "title": "Déplacer de {{from}} à {{to}} ?",
+    "description": "La réservation {{code}} de {{customer}} passe de {{from}} à {{to}} à partir du {{date}}.",
+    "confirm": "Déplacer",
+    "previewing": "Vérification de la disponibilité et du prix…",
+    "conflicts_one": "{{count}} conflit",
+    "conflicts_other": "{{count}} conflits",
+    "samePrice": "Le prix ne change pas.",
+    "toCollect": "Différence à encaisser : {{amount}}",
+    "toRefund": "Différence à rembourser : {{amount}}",
+    "done": "{{code}} déplacée vers {{to}}.",
+    "blocked": "Déplacement impossible."
+  },
+  "conflict": {
+    "spot_unavailable": "emplacement occupé",
+    "pool_exhausted": "quantité épuisée",
+    "quota_exceeded": "quota en ligne épuisé",
+    "closed": "établissement fermé",
+    "inactive": "emplacement inactif"
+  },
+  "quick": {
+    "map": "Plan",
+    "planning": "Planning",
+    "cash": "Caisse"
+  },
+  "kpi": {
+    "occupancy": "Occupation",
+    "occupancyHint": "{{occupied}} emplacements occupés sur {{spots}}",
+    "arrivals": "Arrivées",
+    "departures_one": "{{count}} départ",
+    "departures_other": "{{count}} départs",
+    "pendingCheckIns": "Check-in à faire",
+    "checkedIn_one": "{{count}} déjà présent",
+    "checkedIn_other": "{{count}} déjà présents",
+    "passHolders": "Abonnés attendus",
+    "released": "Emplacements libérés",
+    "releasedHint": "Jours d’abonnés remis en vente",
+    "takings": "Encaissements du jour",
+    "balanceDue": "Soldes ouverts : {{amount}}",
+    "balanceDueTitle": "Soldes ouverts"
   }
 }

@@ -1,11 +1,34 @@
 {
   "today": {
     "title": "Today",
-    "description": "Map of the day, arrivals, balances to collect and lines to assign."
+    "description": "Map of the day, arrivals, balances to collect and lines to assign.",
+    "subtitle": "{{date}}: live status of the beach.",
+    "kpis": "Key figures of the day",
+    "chartTitle": "Spots by status",
+    "chartDescription": "Same colours as the map.",
+    "chartEmpty": "No spots for this date.",
+    "spots": "Spots",
+    "worklist": "To do",
+    "toCheckIn": "Check-in",
+    "toCollect": "Balances",
+    "toAssign": "To assign",
+    "noCheckIns": "No pending check-ins.",
+    "noBalances": "No balances to collect.",
+    "noAssignments": "No lines to assign.",
+    "checkInAria": "Check in {{customer}}",
+    "mapTitle": "Map of the day"
   },
   "map": {
     "title": "Map",
-    "description": "Operational map view for any date and slot, coloured by status."
+    "description": "Operational map for any date and slot, coloured by status.",
+    "noMapsTitle": "No map yet",
+    "noMapsDescription": "Draw the establishment map to see the status of the spots.",
+    "openEditor": "Open the map editor",
+    "closedTitle": "Establishment closed",
+    "closedDescription": "Closing day or off season: spots cannot be booked.",
+    "viewMap": "Map",
+    "viewList": "List",
+    "aria": "Operational map {{name}}, {{date}}, {{slot}}"
   },
   "slot": {
     "FULL": "Full day",
@@ -17,11 +40,129 @@
     "booked": "Booked",
     "checked_in": "Checked in",
     "pass_holder": "Season pass",
-    "released": "Season pass away today",
+    "released": "Pass holder away today",
     "held": "On hold",
-    "renewal_offer": "Renewal option",
+    "renewal_offer": "Renewal offer",
     "blocked": "Blocked",
     "closed": "Closed",
     "inactive": "Inactive"
+  },
+  "bookingStatus": {
+    "draft": "Draft",
+    "held": "On hold",
+    "pending_payment": "Awaiting payment",
+    "awaiting_approval": "Awaiting approval",
+    "confirmed": "Confirmed",
+    "checked_in": "Checked in",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "no_show": "No-show",
+    "expired": "Expired",
+    "rejected": "Rejected"
+  },
+  "toolbar": {
+    "label": "Day and slot",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "today": "Today",
+    "date": "Date",
+    "slot": "Slot",
+    "map": "Map"
+  },
+  "search": {
+    "placeholder": "Search customer, code or spot",
+    "label": "Search on the map",
+    "clear": "Clear search",
+    "results_one": "{{count}} spot found",
+    "results_other": "{{count}} spots found"
+  },
+  "indicator": {
+    "legend": "Indicators",
+    "extra": "Extras",
+    "note": "Note",
+    "vip": "VIP"
+  },
+  "sheet": {
+    "empty": "Spot",
+    "title": "Spot {{label}}",
+    "booking": "Booking",
+    "seasonPass": "Season pass",
+    "code": "Code",
+    "period": "Period",
+    "slots": "Slot",
+    "packs": "Packs",
+    "bookingStatus": "Status",
+    "total": "Total",
+    "paid": "Paid",
+    "balance": "Balance",
+    "holdExpires": "Temporary hold until {{time}}.",
+    "blocked": "Spot blocked manually.",
+    "blockedReason": "Blocked: {{reason}}",
+    "free": "No allocation for this slot.",
+    "checkedIn": "{{code}} checked in.",
+    "readOnly": "Read-only access."
+  },
+  "actions": {
+    "checkIn": "Check in",
+    "newBooking": "New booking",
+    "releaseDay": "Release day",
+    "revokeRelease": "Revoke release",
+    "move": "Move",
+    "collect": "Collect",
+    "openDetail": "Open details",
+    "cancel": "Cancel"
+  },
+  "release": {
+    "title": "Release spot {{label}}?",
+    "description": "{{customer}} will not come on {{date}} ({{slot}}): the spot becomes bookable. If it is resold, the pass holder gets the agreed credit.",
+    "done": "Spot {{label}} released."
+  },
+  "revoke": {
+    "title": "Revoke the release of {{label}}?",
+    "description": "The spot goes back to {{customer}} for this slot.",
+    "done": "Release of {{label}} revoked."
+  },
+  "move": {
+    "pickTitle": "Move from {{label}}",
+    "pickDescription": "Pick a free destination spot on the map.",
+    "title": "Move from {{from}} to {{to}}?",
+    "description": "Booking {{code}} of {{customer}} moves from {{from}} to {{to}} from {{date}}.",
+    "confirm": "Move",
+    "previewing": "Checking availability and price…",
+    "conflicts_one": "{{count}} conflict",
+    "conflicts_other": "{{count}} conflicts",
+    "samePrice": "The price does not change.",
+    "toCollect": "Difference to collect: {{amount}}",
+    "toRefund": "Difference to refund: {{amount}}",
+    "done": "{{code}} moved to {{to}}.",
+    "blocked": "Move not possible."
+  },
+  "conflict": {
+    "spot_unavailable": "spot taken",
+    "pool_exhausted": "quantity sold out",
+    "quota_exceeded": "online quota exhausted",
+    "closed": "establishment closed",
+    "inactive": "spot inactive"
+  },
+  "quick": {
+    "map": "Map",
+    "planning": "Planning",
+    "cash": "Cash desk"
+  },
+  "kpi": {
+    "occupancy": "Occupancy",
+    "occupancyHint": "{{occupied}} of {{spots}} spots occupied",
+    "arrivals": "Arrivals",
+    "departures_one": "{{count}} departure",
+    "departures_other": "{{count}} departures",
+    "pendingCheckIns": "Pending check-ins",
+    "checkedIn_one": "{{count}} already checked in",
+    "checkedIn_other": "{{count}} already checked in",
+    "passHolders": "Pass holders expected",
+    "released": "Released spots",
+    "releasedHint": "Pass days put back on sale",
+    "takings": "Takings today",
+    "balanceDue": "Open balances: {{amount}}",
+    "balanceDueTitle": "Open balances"
   }
 }

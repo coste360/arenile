@@ -1,4 +1,91 @@
 {
   "title": "Season passes",
-  "description": "Season passes, daily releases and credits."
+  "description": "Season passes by zone and row, day releases and credits.",
+  "columns": {
+    "spot": "Spot",
+    "customer": "Subscriber",
+    "period": "Period",
+    "status": "Status",
+    "released": "Releases",
+    "credit": "Credit",
+    "balance": "Balance"
+  },
+  "list": {
+    "count_one": "{{count}} season pass",
+    "count_other": "{{count}} season passes",
+    "empty": "No season passes in this season.",
+    "emptyHint": "Create the first one with “New season pass”.",
+    "noSeasons": "No season configured.",
+    "otherZone": "Other spots",
+    "row": "Row {{row}}",
+    "zoneCaption": "Season passes of zone {{zone}}",
+    "openAria": "Open season pass {{spot}} of {{customer}}",
+    "loadMore": "Load more"
+  },
+  "fields": {
+    "customer": "Subscriber",
+    "season": "Season",
+    "pack": "Pack",
+    "packPlaceholder": "Choose the pack",
+    "slots": "Time slot",
+    "spot": "Spot",
+    "spotPick": "Choose a free spot",
+    "spotLoading": "Loading availability…",
+    "spotNone": "No spot free for the whole season",
+    "startsOn": "From",
+    "endsOn": "To",
+    "datesHelp": "Empty = season opening and closing.",
+    "notes": "Internal notes"
+  },
+  "validation": {
+    "customer": "Choose the subscriber.",
+    "season": "Choose the season.",
+    "spot": "Choose the spot.",
+    "pack": "Choose the pack.",
+    "dates": "The end date is before the start date.",
+    "note": "At most 500 characters."
+  },
+  "create": {
+    "title": "New season pass",
+    "description": "The spot stays reserved to the subscriber for the whole season.",
+    "price": "List price",
+    "priceHint": "Choose season, pack and spot to see the price.",
+    "deposit": "Deposit due: {{amount}}",
+    "overrideHint": "The price comes from the price list (season formula). For an agreed price use an agreement or a dedicated price rule.",
+    "submit": "Create season pass",
+    "done": "Season pass {{code}} created."
+  },
+  "sheet": {
+    "title": "{{spot}} · {{customer}}",
+    "loading": "Season pass",
+    "total": "Total",
+    "paid": "Paid",
+    "openBooking": "Open the booking (payments, cancellation)"
+  },
+  "releases": {
+    "summary_one": "{{count}} half-day released",
+    "summary_other": "{{count}} half-days released",
+    "credit": "Credit accrued: {{amount}}",
+    "slots": "Part of the day to release",
+    "legend": "Legend",
+    "legendSelected": "Selected",
+    "legendReleased": "Released",
+    "legendResold": "Resold",
+    "note": "Note (optional)",
+    "submit_one": "Release {{count}} day",
+    "submit_other": "Release {{count}} days",
+    "done_one": "{{count}} day released: the spot is bookable.",
+    "done_other": "{{count}} days released: the spot is bookable.",
+    "list": "Released days",
+    "empty": "No released days.",
+    "status": {
+      "released": "Released",
+      "resold": "Resold",
+      "revoked": "Revoked"
+    },
+    "revoke": "Revoke",
+    "revokeTitle": "Revoke the release of {{date}}?",
+    "revokeText": "The spot goes back to the subscriber. Not possible if the day was already resold.",
+    "revokeAria": "Revoke the release of {{date}} ({{slot}})"
+  }
 }

@@ -1,4 +1,91 @@
 {
   "title": "Saisonabos",
-  "description": "Saisonabos, tageweise Freigaben und Guthaben."
+  "description": "Saisonabos nach Zone und Reihe, Tagesfreigaben und Guthaben.",
+  "columns": {
+    "spot": "Platz",
+    "customer": "Abonnent",
+    "period": "Zeitraum",
+    "status": "Status",
+    "released": "Freigaben",
+    "credit": "Guthaben",
+    "balance": "Offen"
+  },
+  "list": {
+    "count_one": "{{count}} Saisonabo",
+    "count_other": "{{count}} Saisonabos",
+    "empty": "Keine Saisonabos in dieser Saison.",
+    "emptyHint": "Lege das erste mit „Neues Saisonabo“ an.",
+    "noSeasons": "Keine Saison eingerichtet.",
+    "otherZone": "Weitere Plätze",
+    "row": "Reihe {{row}}",
+    "zoneCaption": "Saisonabos der Zone {{zone}}",
+    "openAria": "Saisonabo {{spot}} von {{customer}} öffnen",
+    "loadMore": "Weitere laden"
+  },
+  "fields": {
+    "customer": "Abonnent",
+    "season": "Saison",
+    "pack": "Paket",
+    "packPlaceholder": "Paket wählen",
+    "slots": "Zeitfenster",
+    "spot": "Platz",
+    "spotPick": "Freien Platz wählen",
+    "spotLoading": "Verfügbarkeit wird geladen…",
+    "spotNone": "Kein Platz für die ganze Saison frei",
+    "startsOn": "Ab",
+    "endsOn": "Bis",
+    "datesHelp": "Leer = Saisonbeginn und -ende.",
+    "notes": "Interne Notizen"
+  },
+  "validation": {
+    "customer": "Abonnent wählen.",
+    "season": "Saison wählen.",
+    "spot": "Platz wählen.",
+    "pack": "Paket wählen.",
+    "dates": "Das Enddatum liegt vor dem Anfangsdatum.",
+    "note": "Höchstens 500 Zeichen."
+  },
+  "create": {
+    "title": "Neues Saisonabo",
+    "description": "Der Platz bleibt die ganze Saison für den Abonnenten reserviert.",
+    "price": "Listenpreis",
+    "priceHint": "Saison, Paket und Platz wählen, um den Preis zu sehen.",
+    "deposit": "Anzahlung: {{amount}}",
+    "overrideHint": "Der Preis stammt aus der Preisliste (Saisontarif). Für einen vereinbarten Preis eine Vereinbarung oder eigene Preisregel verwenden.",
+    "submit": "Saisonabo anlegen",
+    "done": "Saisonabo {{code}} angelegt."
+  },
+  "sheet": {
+    "title": "{{spot}} · {{customer}}",
+    "loading": "Saisonabo",
+    "total": "Gesamt",
+    "paid": "Bezahlt",
+    "openBooking": "Buchung öffnen (Zahlungen, Stornierung)"
+  },
+  "releases": {
+    "summary_one": "{{count}} halber Tag freigegeben",
+    "summary_other": "{{count}} halbe Tage freigegeben",
+    "credit": "Angesammeltes Guthaben: {{amount}}",
+    "slots": "Freizugebender Tagesteil",
+    "legend": "Legende",
+    "legendSelected": "Ausgewählt",
+    "legendReleased": "Freigegeben",
+    "legendResold": "Weiterverkauft",
+    "note": "Notiz (optional)",
+    "submit_one": "{{count}} Tag freigeben",
+    "submit_other": "{{count}} Tage freigeben",
+    "done_one": "{{count}} Tag freigegeben: der Platz ist buchbar.",
+    "done_other": "{{count}} Tage freigegeben: der Platz ist buchbar.",
+    "list": "Freigegebene Tage",
+    "empty": "Keine freigegebenen Tage.",
+    "status": {
+      "released": "Freigegeben",
+      "resold": "Weiterverkauft",
+      "revoked": "Widerrufen"
+    },
+    "revoke": "Widerrufen",
+    "revokeTitle": "Freigabe vom {{date}} widerrufen?",
+    "revokeText": "Der Platz geht an den Abonnenten zurück. Nicht möglich, wenn der Tag bereits weiterverkauft wurde.",
+    "revokeAria": "Freigabe vom {{date}} ({{slot}}) widerrufen"
+  }
 }

@@ -5,14 +5,179 @@
   },
   "corrispettivi": {
     "title": "Recettes journalières",
-    "description": "Recettes journalières ou mensuelles par taux de TVA et mode de paiement, en CSV ou JSON."
+    "description": "Recettes journalières ou mensuelles par taux de TVA et moyen de paiement, en CSV ou JSON.",
+    "period": "Période",
+    "day": "Jour",
+    "month": "Mois",
+    "date": "Date",
+    "monthLabel": "Mois",
+    "year": "Année",
+    "downloadCsv": "Télécharger CSV",
+    "downloadJson": "Télécharger JSON",
+    "disclaimer": "Montants TTC, ventilés par taux à partir de l'instantané du prix ; les remboursements sont négatifs. La conformité fiscale de la configuration reste sous la responsabilité de l'exploitant et de son conseiller.",
+    "empty": "Aucune recette sur la période sélectionnée.",
+    "grandTotal": "Total des recettes · {{period}}",
+    "byVat": "Par taux de TVA",
+    "rate": "Taux",
+    "taxable": "HT",
+    "tax": "TVA",
+    "gross": "Total",
+    "total": "Total",
+    "byMethod": "Par moyen de paiement",
+    "count": "Opérations",
+    "detail": "Détail",
+    "periodColumn": "Période"
   },
   "method": {
     "cash": "Espèces",
     "card": "Carte",
     "bank_transfer": "Virement",
-    "wallet": "Portefeuille",
-    "credit": "Crédit",
+    "wallet": "Wallet",
+    "credit": "Avoir",
     "other": "Autre"
+  },
+  "perm": {
+    "forbiddenTitle": "Accès refusé",
+    "forbidden": "Votre rôle n'a pas accès à la caisse.",
+    "reportsForbidden": "Votre rôle n'a pas accès aux rapports et exports.",
+    "readOnly": "Accès en lecture seule : vous pouvez consulter l'historique mais pas utiliser la caisse."
+  },
+  "fields": {
+    "amount": "Montant",
+    "method": "Moyen",
+    "note": "Note",
+    "notes": "Notes",
+    "time": "Heure"
+  },
+  "actions": {
+    "movement": "Mouvement",
+    "quickPay": "Encaisser",
+    "close": "Clôturer la caisse",
+    "print": "Imprimer le récapitulatif",
+    "printZ": "Imprimer le ticket Z"
+  },
+  "open": {
+    "title": "Ouvrir la caisse",
+    "description": "Aucune session ouverte. Comptez le fond de caisse et ouvrez la session pour enregistrer les encaissements.",
+    "float": "Fond de caisse",
+    "floatHint": "Espèces dans le tiroir à l'ouverture.",
+    "submit": "Ouvrir la session",
+    "opened": "Session de caisse ouverte",
+    "noneReadOnly": "Aucune session de caisse ouverte."
+  },
+  "current": {
+    "badge": "{{register}} ouverte depuis le {{time}}",
+    "float": "Fond de caisse",
+    "totalTakings": "Total des encaissements",
+    "netMovements": "Apports − retraits",
+    "expectedCash": "Espèces attendues en caisse",
+    "expectedCashHint": "Fond + encaissements en espèces + apports − retraits",
+    "takings": "Encaissements par moyen",
+    "noTakings": "Aucun encaissement dans cette session pour l'instant.",
+    "activity": "Activité de la session"
+  },
+  "tabs": {
+    "payments": "Encaissements",
+    "movements": "Mouvements"
+  },
+  "payments": {
+    "empty": "Aucun encaissement enregistré.",
+    "what": "Réservation ou description",
+    "counterSale": "Vente libre",
+    "refund": "Remboursement",
+    "status": {
+      "pending": "En attente",
+      "succeeded": "Réussi",
+      "failed": "Échoué",
+      "cancelled": "Annulé"
+    }
+  },
+  "movement": {
+    "title": "Mouvement de caisse",
+    "description": "Apport ou retrait d'espèces, toujours avec un motif.",
+    "kind": "Type",
+    "in": "Apport",
+    "out": "Retrait",
+    "reason": "Motif",
+    "reasonPlaceholder": "ex. monnaie, dépôt en banque",
+    "submit": "Enregistrer le mouvement",
+    "recorded": "Mouvement enregistré",
+    "empty": "Aucun mouvement."
+  },
+  "quickPay": {
+    "title": "Encaisser une réservation",
+    "description": "Recherchez la réservation par code : le montant proposé est le solde dû.",
+    "search": "Code de réservation ou client",
+    "searchPlaceholder": "ex. AR-7K3Q9",
+    "minChars": "Saisissez au moins 2 caractères.",
+    "noResults": "Aucune réservation trouvée.",
+    "results": "Réservations trouvées",
+    "balance": "Solde {{amount}}",
+    "paid": "Soldée",
+    "select": "Sélectionner",
+    "selectAria": "Sélectionner la réservation {{code}}",
+    "booking": "Réservation",
+    "customer": "Client",
+    "total": "Total",
+    "paidAmount": "Payé",
+    "balanceDue": "Solde dû",
+    "change": "Changer",
+    "submit": "Enregistrer l'encaissement",
+    "recorded": "Encaissement de {{amount}} enregistré sur {{code}}"
+  },
+  "close": {
+    "title": "Clôture de caisse",
+    "description": "Comptez l'argent et indiquez les montants par moyen : l'écart est calculé par rapport au montant attendu.",
+    "method": "Moyen",
+    "expected": "Attendu",
+    "counted": "Compté",
+    "countedFor": "Compté {{method}}",
+    "difference": "Écart",
+    "total": "Total",
+    "notesPlaceholder": "ex. raison de l'écart",
+    "submit": "Clôturer la session",
+    "closed": "Session de caisse clôturée",
+    "closedTitle": "Session clôturée",
+    "balanced": "Équilibrée",
+    "surplus": "Excédent",
+    "shortfall": "Manque"
+  },
+  "z": {
+    "title": "Ticket Z",
+    "register": "Caisse",
+    "status": "État",
+    "openedAt": "Ouverture",
+    "closedAt": "Clôture",
+    "float": "Fond de caisse",
+    "movementsIn": "Apports",
+    "movementsOut": "Retraits",
+    "takings": "Encaissements",
+    "notes": "Notes",
+    "payments": "Encaissements dans la session : {{count}}"
+  },
+  "history": {
+    "title": "Historique des sessions",
+    "empty": "Aucune session de caisse.",
+    "openedAt": "Ouverture",
+    "closedAt": "Clôture",
+    "register": "Caisse",
+    "statusLabel": "État",
+    "status": {
+      "open": "Ouverte",
+      "closed": "Clôturée"
+    },
+    "detail": "Détail de la session",
+    "detailTitle": "Session du {{date}}",
+    "detailDescription": "Récapitulatif de clôture, encaissements et mouvements de la session."
+  },
+  "validation": {
+    "amountRequired": "Saisissez un montant valide.",
+    "amountPositive": "Le montant doit être supérieur à zéro.",
+    "reasonRequired": "Indiquez un motif.",
+    "countedRequired": "Saisissez les espèces comptées.",
+    "tooLong": "Texte trop long."
+  },
+  "registers": {
+    "main": "Caisse principale"
   }
 }

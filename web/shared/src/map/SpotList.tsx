@@ -12,6 +12,12 @@ export interface SpotListProps {
   selectedIds?: readonly string[];
   onSpotActivate?: (spot: MapSpot) => void;
   spotDescription?: (spot: MapSpot) => string | undefined;
+  /**
+   * Allow activating spots in any status (operational view: open the quick
+   * sheet of a booked spot); default false = only free spots (public page).
+   * Inactive spots are never activatable.
+   */
+  activateAny?: boolean;
   className?: string;
 }
 
@@ -48,6 +54,7 @@ export function SpotList({
   selectedIds,
   onSpotActivate,
   spotDescription,
+  activateAny = false,
   className,
 }: SpotListProps) {
   const { t } = useTranslation();
@@ -65,7 +72,8 @@ export function SpotList({
               const status: SpotStatus =
                 spot.active === false ? 'unavailable' : (statuses?.[spot.id] ?? defaultStatus);
               const extra = spotDescription?.(spot);
-              const disabled = status !== 'free' || !onSpotActivate;
+              const disabled =
+                (activateAny ? spot.active === false : status !== 'free') || !onSpotActivate;
               const pressed = selected.has(spot.id);
               const name = `${spot.label} – ${t(`map.status.${status}`)}${extra ? ` – ${extra}` : ''}`;
               return (

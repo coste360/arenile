@@ -1,10 +1,126 @@
 {
   "list": {
     "title": "Clients",
-    "description": "Fichier clients avec recherche par nom, téléphone, e-mail et étiquette."
+    "description": "Fichier clients avec recherche par nom, téléphone, e-mail et tag.",
+    "new": "Nouveau client",
+    "empty": "Aucun client.",
+    "emptyFiltered": "Aucun client ne correspond à la recherche.",
+    "loadMore": "Charger plus",
+    "loadingMore": "Chargement…"
   },
   "detail": {
     "title": "Client",
-    "description": "Données, historique, crédits, abonnements, export et anonymisation RGPD."
+    "description": "Données, historique, avoirs, abonnements, export et anonymisation RGPD.",
+    "back": "Clients",
+    "profile": "Profil",
+    "newBooking": "Nouvelle réservation"
+  },
+  "anonymized": "Anonymisé",
+  "columns": {
+    "name": "Nom",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "tags": "Tags",
+    "consent": "Marketing"
+  },
+  "filters": {
+    "title": "Filtres",
+    "search": "Rechercher",
+    "searchPlaceholder": "Nom, téléphone ou e-mail",
+    "tag": "Tag",
+    "byTag": "Filtrer par tag {{tag}}",
+    "anonymized": "Afficher les anonymisés"
+  },
+  "consent": {
+    "yes": "Oui",
+    "no": "Aucun consentement",
+    "given": "Consentement donné le {{at}} ({{source}})"
+  },
+  "fields": {
+    "lastName": "Nom",
+    "firstName": "Prénom",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "locale": "Langue",
+    "tags": "Tags",
+    "tagsHelp": "Séparés par des virgules, ex. vip, famille.",
+    "notes": "Notes internes",
+    "notesHelp": "Jamais montrées au client.",
+    "marketing": "Consentement marketing",
+    "marketingHelp": "Facultatif et distinct : date, source et version du texte sont enregistrées."
+  },
+  "form": {
+    "newTitle": "Nouveau client",
+    "editTitle": "Modifier le client",
+    "description": "Données minimales : nom et un contact (téléphone ou e-mail).",
+    "created": "Client {{name}} créé.",
+    "updated": "Client mis à jour."
+  },
+  "validation": {
+    "lastName": "Le nom est obligatoire.",
+    "email": "E-mail non valide.",
+    "phone": "Téléphone non valide (ex. +39 333 1234567).",
+    "tag": "Chaque tag 30 caractères maximum.",
+    "tags": "20 tags maximum.",
+    "confirm": "Le texte ne correspond pas au nom."
+  },
+  "picker": {
+    "placeholder": "Rechercher par nom, téléphone ou e-mail",
+    "search": "Rechercher un client",
+    "searching": "Recherche…",
+    "typeMore": "Saisissez au moins 2 caractères.",
+    "none": "Aucun client trouvé."
+  },
+  "duplicates": {
+    "title": "Peut-être déjà enregistré",
+    "use": "Utiliser celui-ci"
+  },
+  "stats": {
+    "bookings": "Réservations",
+    "spent": "Total dépensé",
+    "balance": "Solde à encaisser",
+    "credit": "Avoir disponible"
+  },
+  "bookings": {
+    "title": "Réservations récentes",
+    "last": "Dernière le {{date}}",
+    "empty": "Aucune réservation.",
+    "code": "Code",
+    "period": "Période",
+    "status": "Statut",
+    "total": "Total"
+  },
+  "passes": {
+    "title": "Abonnements",
+    "empty": "Aucun abonnement.",
+    "released_one": "{{count}} demi-journée libérée",
+    "released_other": "{{count}} demi-journées libérées"
+  },
+  "credits": {
+    "title": "Avoirs",
+    "balance": "Solde : {{amount}}",
+    "empty": "Aucun mouvement.",
+    "expires": "expire le {{date}}",
+    "source": {
+      "cancellation": "Annulation",
+      "season_release": "Libération d'abonnement",
+      "weather": "Mauvais temps",
+      "manual": "Manuel",
+      "redemption": "Utilisation"
+    }
+  },
+  "export": {
+    "action": "Exporter les données (RGPD)",
+    "done": "Export téléchargé."
+  },
+  "anonymize": {
+    "action": "Anonymiser",
+    "title": "Anonymiser {{name}} ?",
+    "description": "Nom, contacts, notes et consentements sont remplacés définitivement.",
+    "irreversible": "Opération irréversible",
+    "keeps": "Réservations et paiements restent pour la comptabilité, sans données personnelles.",
+    "typeLabel": "Pour confirmer, saisissez le nom : {{lastName}}",
+    "confirm": "Anonymiser définitivement",
+    "done": "Client anonymisé."
   }
 }

@@ -1,20 +1,86 @@
 {
   "list": {
     "title": "Bookings",
-    "description": "List filterable by dates, status, channel, customer and balance."
+    "description": "List filterable by dates, status, channel, spot and balance.",
+    "empty": "No bookings yet.",
+    "emptyFiltered": "No bookings match the filters.",
+    "loadMore": "Load more",
+    "loadingMore": "Loading…",
+    "pass": "Season pass"
   },
   "detail": {
     "title": "Booking",
-    "description": "Lines, allocations, payments and history of the booking."
+    "description": "Lines, allocations, payments and history of the booking.",
+    "back": "Bookings",
+    "pass": "Season pass",
+    "total": "Total",
+    "paid": "Paid",
+    "balance": "Balance due",
+    "deposit": "Deposit due",
+    "holdExpires": "Held until {{at}}.",
+    "reload": "Reload"
   },
   "new": {
     "title": "New booking",
-    "description": "Dates, spots, packs, customer and price preview."
+    "description": "Dates, spots, pack, customer and price preview.",
+    "when": "When",
+    "where": "What and where",
+    "targetSpots": "Spots on the map",
+    "targetZone": "Zone or quantity",
+    "perSpot": "per spot",
+    "customer": "Customer",
+    "customerExisting": "Find customer",
+    "customerNew": "New customer",
+    "payment": "Payment and notes",
+    "payNow": "Take payment now",
+    "payLater": "The balance stays due (at the desk or on arrival).",
+    "force": "Book anyway (overrides the booking rules, recorded in the activity log)",
+    "submit": "Create booking",
+    "created": "Booking {{code}} created.",
+    "open": "Open",
+    "paymentFailed": "Booking {{code}} created, but the payment was not recorded."
+  },
+  "fields": {
+    "period": "Period",
+    "slots": "Time slot",
+    "formula": "Formula",
+    "pack": "Pack",
+    "packPlaceholder": "Choose the pack",
+    "zone": "Zone",
+    "quantity": "Quantity",
+    "extras": "Extras",
+    "customer": "Customer",
+    "lastName": "Last name",
+    "firstName": "First name",
+    "phone": "Phone",
+    "email": "Email",
+    "amount": "Amount",
+    "method": "Method",
+    "note": "Note",
+    "notesInternal": "Internal notes"
+  },
+  "validation": {
+    "required": "Required.",
+    "date": "Invalid date.",
+    "dateOrder": "The end date is before the start date.",
+    "pack": "Choose a pack.",
+    "spots": "Select at least one spot on the map.",
+    "zone": "Choose a zone.",
+    "quantity": "Quantity from 1 to 100.",
+    "customer": "Choose a customer or create a new one.",
+    "lastName": "The last name is required.",
+    "contact": "A phone or an email is required.",
+    "email": "Invalid email.",
+    "phone": "Invalid phone (e.g. +39 333 1234567).",
+    "amount": "Enter a valid amount.",
+    "amountMax": "The amount exceeds the allowed one.",
+    "method": "Choose the method.",
+    "text": "Write the note text."
   },
   "status": {
     "draft": "Draft",
-    "held": "On hold",
-    "pending_payment": "Awaiting payment",
+    "held": "Held",
+    "pending_payment": "Pending payment",
     "awaiting_approval": "Awaiting approval",
     "confirmed": "Confirmed",
     "checked_in": "Checked in",
@@ -28,5 +94,297 @@
     "desk": "Desk",
     "online": "Online",
     "api": "API"
+  },
+  "slots": {
+    "FULL": "Full day",
+    "AM": "Morning",
+    "PM": "Afternoon"
+  },
+  "formula": {
+    "half_day": "Half day",
+    "day": "Day",
+    "multi_day": "Multi-day",
+    "week": "Week",
+    "fortnight": "Fortnight",
+    "month": "Month",
+    "season": "Season"
+  },
+  "method": {
+    "cash": "Cash",
+    "card": "Card",
+    "bank_transfer": "Bank transfer",
+    "wallet": "Wallet",
+    "credit": "Customer credit",
+    "other": "Other"
+  },
+  "columns": {
+    "code": "Code",
+    "customer": "Customer",
+    "period": "Period",
+    "spots": "Spots",
+    "status": "Status",
+    "channel": "Channel",
+    "total": "Total",
+    "balance": "Balance"
+  },
+  "filters": {
+    "title": "Filters",
+    "search": "Search",
+    "searchPlaceholder": "Code, customer or phone",
+    "period": "Period",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "channel": "Channel",
+    "allChannels": "All channels",
+    "spot": "Spot",
+    "allSpots": "All spots",
+    "kind": "Type",
+    "allKinds": "Bookings and passes",
+    "onlyBookings": "Bookings only",
+    "onlyPasses": "Season passes only",
+    "balanceDue": "Only with balance due",
+    "reset": "Clear filters"
+  },
+  "quote": {
+    "title": "Price preview",
+    "loading": "Calculating the price…",
+    "empty": "Choose dates, pack and spots to see the price.",
+    "total": "Total",
+    "deposit": "Deposit due",
+    "lines": "Breakdown",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "extra": "{{code}} × {{qty}}",
+    "discount": "Discount {{source}}",
+    "rounding": "Rounding",
+    "vat": "VAT {{rate}}%: {{tax}}",
+    "unavailable": "Selection not available",
+    "violations": "The booking rules do not allow this request:"
+  },
+  "policy": {
+    "title": "Terms applied",
+    "approval": "Requires approval",
+    "payFull": "Full payment.",
+    "payNone": "No advance payment.",
+    "depositPercent": "Deposit of {{value}}%.",
+    "depositAmount": "Deposit of {{value}}.",
+    "balanceOnArrival": "Balance on arrival.",
+    "balanceDaysBefore_one": "Balance due {{count}} day before.",
+    "balanceDaysBefore_other": "Balance due {{count}} days before.",
+    "cancellation": "Cancellation",
+    "tier_one": "Up to {{count}} day before: {{percent}}% as {{as}}",
+    "tier_other": "Up to {{count}} days before: {{percent}}% as {{as}}",
+    "noCancellation": "No refund on cancellation.",
+    "as": {
+      "refund": "refund",
+      "credit": "credit"
+    }
+  },
+  "picker": {
+    "mapTitle": "Map of available spots",
+    "free": "free",
+    "unavailable": "not available",
+    "selected": "selected",
+    "none": "No spot selected.",
+    "remove": "Remove {{label}}",
+    "noMaps": "No map configured: book by zone or quantity."
+  },
+  "problem": {
+    "spotUnavailable": "One or more spots are not available on the chosen dates.",
+    "poolExhausted": "Quantity not available on the chosen dates.",
+    "quotaExceeded": "The online quota is used up on the chosen dates.",
+    "holdExpired": "The hold has expired: select again.",
+    "invalidTransition": "Not allowed in the current status: reload the booking.",
+    "invalidTransitionNow": "Not allowed: the booking is now “{{status}}”.",
+    "versionConflict": "Someone else changed the booking: reload to see the latest data.",
+    "policyViolation": "The request breaks the booking rules.",
+    "noPrice": "No price for the chosen dates or pack.",
+    "cashSessionClosed": "The cash desk is closed: open it to record cash payments.",
+    "conflictLine": "{{label}}: {{days}}",
+    "more_one": "and {{count}} more day",
+    "more_other": "and {{count}} more days",
+    "resource": {
+      "spot": "Spot",
+      "pool": "Quantity",
+      "zone": "Zone"
+    }
+  },
+  "actions": {
+    "confirm": "Confirm",
+    "approve": "Approve",
+    "reject": "Reject",
+    "check-in": "Check in",
+    "no-show": "No-show",
+    "cancel": "Cancel booking",
+    "dates": "Change dates",
+    "confirmTitle": {
+      "confirm": "Confirm {{code}}?",
+      "approve": "Approve {{code}}?",
+      "reject": "Reject {{code}}?",
+      "check-in": "Check in {{code}}?",
+      "no-show": "Mark {{code}} as no-show?"
+    },
+    "confirmText": {
+      "confirm": "Manual confirmation: the spots stay booked.",
+      "approve": "The booking becomes confirmed.",
+      "reject": "The spots are released.",
+      "check-in": "The customer is marked as present.",
+      "no-show": "The spots of future days are released."
+    },
+    "done": {
+      "confirm": "{{code}} confirmed.",
+      "approve": "{{code}} approved.",
+      "reject": "{{code}} rejected.",
+      "check-in": "{{code}} checked in.",
+      "no-show": "{{code}} marked as no-show."
+    }
+  },
+  "cancel": {
+    "title": "Cancel {{code}}",
+    "description": "The spots are released; the refund follows the terms accepted at booking.",
+    "preview": "Refund preview",
+    "computing": "Calculating the refund…",
+    "paid": "Paid",
+    "percent": "Percentage from terms",
+    "policyAmount": "Per terms",
+    "settlementLabel": "Settlement",
+    "settlement": {
+      "policy": "As per terms",
+      "refund": "Refund another amount",
+      "credit": "Credit to the customer",
+      "none": "No refund"
+    },
+    "amount": "Amount",
+    "weather": "Cancelled for bad weather",
+    "reason": "Reason",
+    "confirm": "Cancel booking",
+    "done": "Booking cancelled.",
+    "doneWith": "Booking cancelled: {{amount}} as {{as}}.",
+    "as": {
+      "refund": "refund",
+      "credit": "credit",
+      "none": "no refund"
+    }
+  },
+  "change": {
+    "datesTitle": "Change dates",
+    "datesDescription": "New dates with a new price: the spots are re-allocated in the same operation.",
+    "force": "Override the modification limits (recorded)",
+    "requote": "Re-quote",
+    "apply": "Apply change",
+    "applied": "Booking updated.",
+    "preview": "Effect of the change",
+    "previous": "Current total",
+    "next": "New total",
+    "toCollect": "To collect",
+    "toRefund": "To refund",
+    "conflicts": "Not available:"
+  },
+  "move": {
+    "title": "Move spot",
+    "description": "Choose a free spot for the rest of the stay; the price is recalculated if the category changes.",
+    "line": "Line",
+    "from": "From",
+    "fromHint": "Empty = the whole stay.",
+    "spot": "New spot",
+    "pick": "Choose the spot",
+    "loading": "Loading availability…",
+    "noneFree": "No free spot",
+    "check": "Check",
+    "apply": "Move",
+    "applied": "Moved to {{label}}.",
+    "short": "Move",
+    "assign": "Assign",
+    "aria": "Move {{label}}"
+  },
+  "lines": {
+    "title": "Lines",
+    "spot": "Spot",
+    "pack": "Pack",
+    "extras": "Extras",
+    "total": "Total",
+    "actions": "Actions",
+    "pending": "To assign",
+    "quantity_one": "{{count}} unit",
+    "quantity_other": "{{count}} units",
+    "bookingExtra": "Extra {{code}} × {{qty}}"
+  },
+  "allocations": {
+    "title": "Allocations",
+    "description_one": "{{count}} half-day held",
+    "description_other": "{{count}} half-days held",
+    "empty": "No resources held.",
+    "date": "Date",
+    "slot": "Slot",
+    "resource": "Resource",
+    "kind": "Kind",
+    "pool_one": "{{count}} unit from the pool",
+    "pool_other": "{{count}} units from the pool",
+    "kinds": {
+      "booking": "Booking",
+      "hold": "Hold",
+      "block": "Manual block",
+      "season": "Season pass"
+    }
+  },
+  "payments": {
+    "title": "Payments",
+    "empty": "No payments recorded.",
+    "record": "Record payment",
+    "recordTitle": "Record payment",
+    "recordDescription": "Balance due: {{balance}}.",
+    "recorded": "Payment of {{amount}} recorded.",
+    "refund": "Refund",
+    "refundTitle": "Record refund",
+    "refundDescription": "Paid so far: {{paid}}. The refund cannot exceed it.",
+    "refundAs": "Form",
+    "reason": "Reason",
+    "refunded": "Refund of {{amount}} recorded.",
+    "refundBadge": "refund",
+    "when": "When",
+    "status": "Status",
+    "statuses": {
+      "pending": "Pending",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "notes": {
+    "title": "Notes",
+    "internal": "Internal",
+    "customer": "For the customer",
+    "add": "Add a note",
+    "visibility": "Note visibility",
+    "save": "Add"
+  },
+  "history": {
+    "title": "History",
+    "empty": "No activity recorded.",
+    "actor": {
+      "user": "Operator",
+      "customer": "Customer",
+      "system": "System",
+      "api_key": "API integration"
+    },
+    "actions": {
+      "booking": {
+        "created": "Booking created",
+        "confirmed": "Confirmed",
+        "checked_in": "Checked in",
+        "no_show": "No-show",
+        "cancelled": "Cancelled",
+        "rejected": "Rejected",
+        "expired": "Expired",
+        "modified": "Changed",
+        "moved": "Moved",
+        "note_added": "Note added",
+        "completed": "Completed"
+      },
+      "payment": {
+        "succeeded": "Payment recorded",
+        "refunded": "Refund recorded"
+      }
+    }
   }
 }

@@ -1,4 +1,58 @@
 {
-  "title": "Calendrier",
-  "description": "Planning emplacements × jours pour placer les longs séjours."
+  "title": "Planning",
+  "description": "Planning emplacements × jours pour placer les longs séjours.",
+  "newBooking": "Nouvelle réservation",
+  "emptyTitle": "Aucun emplacement",
+  "emptyDescription": "Créez un plan avec des emplacements pour utiliser le planning.",
+  "toolbar": {
+    "label": "Période du planning",
+    "previous_one": "{{count}} jour plus tôt",
+    "previous_other": "{{count}} jours plus tôt",
+    "next_one": "{{count}} jour plus tard",
+    "next_other": "{{count}} jours plus tard",
+    "today": "Aujourd'hui",
+    "from": "À partir du",
+    "length": "Jours visibles",
+    "days_one": "{{count}} jour",
+    "days_other": "{{count}} jours"
+  },
+  "grid": {
+    "roledescription": "planning des emplacements",
+    "label_one": "Planning de {{count}} emplacement",
+    "label_other": "Planning de {{count}} emplacements",
+    "keyboardHint": "Flèches pour se déplacer, Maj+flèches pour sélectionner, Entrée pour ouvrir la réservation ou en créer une sur la sélection, M pour déplacer la réservation sous le curseur, Échap pour annuler.",
+    "cell": "{{spot}}, {{day}} : {{what}}",
+    "free": "libre",
+    "closed": "fermé",
+    "row": "Rangée {{row}}",
+    "noZone": "Sans zone",
+    "corner": "Emplacement",
+    "moveStart": "Déplacement : flèches, Entrée pour confirmer, Échap pour annuler.",
+    "movePreview": "Décalage de {{days}} jours vers {{spot}}"
+  },
+  "move": {
+    "title": "Modifier la réservation {{code}} ?",
+    "spot": "de {{from}} à {{to}}",
+    "dates": "Dates : {{from}} → {{to}}",
+    "previewing": "Vérification de la disponibilité et du prix…",
+    "notApplicable": "Cette réservation ne peut pas être déplacée ainsi.",
+    "staleTitle": "Réservation modifiée par un autre utilisateur",
+    "staleDescription": "Rechargez pour voir la version à jour et recalculer le déplacement.",
+    "reload": "Recharger",
+    "conflicts_one": "{{count}} conflit",
+    "conflicts_other": "{{count}} conflits",
+    "samePrice": "Le prix ne change pas.",
+    "toCollect": "Différence à encaisser : {{amount}}",
+    "toRefund": "Différence à rembourser : {{amount}}",
+    "done": "Réservation {{code}} mise à jour.",
+    "cancel": "Annuler",
+    "confirm": "Confirmer le déplacement"
+  },
+  "conflict": {
+    "spot_unavailable": "emplacement occupé",
+    "pool_exhausted": "quantité épuisée",
+    "quota_exceeded": "quota en ligne épuisé",
+    "closed": "établissement fermé",
+    "inactive": "emplacement inactif"
+  }
 }

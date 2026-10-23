@@ -1,10 +1,126 @@
 {
   "list": {
     "title": "Clienti",
-    "description": "Anagrafica con ricerca per nome, telefono, email e tag."
+    "description": "Anagrafica con ricerca per nome, telefono, email e tag.",
+    "new": "Nuovo cliente",
+    "empty": "Nessun cliente.",
+    "emptyFiltered": "Nessun cliente corrisponde alla ricerca.",
+    "loadMore": "Carica altri",
+    "loadingMore": "Caricamento…"
   },
   "detail": {
     "title": "Cliente",
-    "description": "Dati, storico, crediti, abbonamenti, esportazione e anonimizzazione GDPR."
+    "description": "Dati, storico, crediti, abbonamenti, esportazione e anonimizzazione GDPR.",
+    "back": "Clienti",
+    "profile": "Profilo",
+    "newBooking": "Nuova prenotazione"
+  },
+  "anonymized": "Anonimizzato",
+  "columns": {
+    "name": "Nome",
+    "phone": "Telefono",
+    "email": "Email",
+    "tags": "Tag",
+    "consent": "Marketing"
+  },
+  "filters": {
+    "title": "Filtri",
+    "search": "Cerca",
+    "searchPlaceholder": "Nome, telefono o email",
+    "tag": "Tag",
+    "byTag": "Filtra per tag {{tag}}",
+    "anonymized": "Mostra anonimizzati"
+  },
+  "consent": {
+    "yes": "Sì",
+    "no": "Nessun consenso",
+    "given": "Consenso dato il {{at}} ({{source}})"
+  },
+  "fields": {
+    "lastName": "Cognome",
+    "firstName": "Nome",
+    "phone": "Telefono",
+    "email": "Email",
+    "locale": "Lingua",
+    "tags": "Tag",
+    "tagsHelp": "Separati da virgola, es. vip, famiglia.",
+    "notes": "Note interne",
+    "notesHelp": "Mai mostrate al cliente.",
+    "marketing": "Consenso marketing",
+    "marketingHelp": "Facoltativo e separato: registra data, fonte e versione del testo."
+  },
+  "form": {
+    "newTitle": "Nuovo cliente",
+    "editTitle": "Modifica cliente",
+    "description": "Dati minimi: cognome e un recapito (telefono o email).",
+    "created": "Cliente {{name}} creato.",
+    "updated": "Cliente aggiornato."
+  },
+  "validation": {
+    "lastName": "Il cognome è obbligatorio.",
+    "email": "Email non valida.",
+    "phone": "Telefono non valido (es. +39 333 1234567).",
+    "tag": "Ogni tag al massimo 30 caratteri.",
+    "tags": "Al massimo 20 tag.",
+    "confirm": "Il testo non coincide con il cognome."
+  },
+  "picker": {
+    "placeholder": "Cerca per nome, telefono o email",
+    "search": "Cerca cliente",
+    "searching": "Ricerca…",
+    "typeMore": "Scrivi almeno 2 caratteri.",
+    "none": "Nessun cliente trovato."
+  },
+  "duplicates": {
+    "title": "Forse è già registrato",
+    "use": "Usa questo"
+  },
+  "stats": {
+    "bookings": "Prenotazioni",
+    "spent": "Speso in totale",
+    "balance": "Saldo da incassare",
+    "credit": "Credito disponibile"
+  },
+  "bookings": {
+    "title": "Prenotazioni recenti",
+    "last": "Ultima il {{date}}",
+    "empty": "Nessuna prenotazione.",
+    "code": "Codice",
+    "period": "Periodo",
+    "status": "Stato",
+    "total": "Totale"
+  },
+  "passes": {
+    "title": "Abbonamenti",
+    "empty": "Nessun abbonamento.",
+    "released_one": "{{count}} mezza giornata rilasciata",
+    "released_other": "{{count}} mezze giornate rilasciate"
+  },
+  "credits": {
+    "title": "Crediti",
+    "balance": "Saldo: {{amount}}",
+    "empty": "Nessun movimento.",
+    "expires": "scade il {{date}}",
+    "source": {
+      "cancellation": "Cancellazione",
+      "season_release": "Rilascio abbonamento",
+      "weather": "Maltempo",
+      "manual": "Manuale",
+      "redemption": "Utilizzo"
+    }
+  },
+  "export": {
+    "action": "Esporta dati (GDPR)",
+    "done": "Esportazione scaricata."
+  },
+  "anonymize": {
+    "action": "Anonimizza",
+    "title": "Anonimizzare {{name}}?",
+    "description": "Nome, contatti, note e consensi vengono sostituiti in modo definitivo.",
+    "irreversible": "Operazione irreversibile",
+    "keeps": "Prenotazioni e pagamenti restano per gli obblighi contabili, senza dati personali.",
+    "typeLabel": "Per confermare scrivi il cognome: {{lastName}}",
+    "confirm": "Anonimizza definitivamente",
+    "done": "Cliente anonimizzato."
   }
 }

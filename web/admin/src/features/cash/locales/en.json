@@ -5,7 +5,28 @@
   },
   "corrispettivi": {
     "title": "Daily takings",
-    "description": "Daily or monthly takings by VAT rate and method, as CSV or JSON."
+    "description": "Daily or monthly takings by VAT rate and method, as CSV or JSON.",
+    "period": "Period",
+    "day": "Day",
+    "month": "Month",
+    "date": "Date",
+    "monthLabel": "Month",
+    "year": "Year",
+    "downloadCsv": "Download CSV",
+    "downloadJson": "Download JSON",
+    "disclaimer": "Amounts include VAT, split by rate from the price snapshot; refunds are negative. Fiscal compliance of the setup remains the responsibility of the operator and their accountant.",
+    "empty": "No takings in the selected period.",
+    "grandTotal": "Total takings · {{period}}",
+    "byVat": "By VAT rate",
+    "rate": "Rate",
+    "taxable": "Taxable",
+    "tax": "Tax",
+    "gross": "Total",
+    "total": "Total",
+    "byMethod": "By payment method",
+    "count": "Transactions",
+    "detail": "Detail",
+    "periodColumn": "Period"
   },
   "method": {
     "cash": "Cash",
@@ -14,5 +35,149 @@
     "wallet": "Wallet",
     "credit": "Credit",
     "other": "Other"
+  },
+  "perm": {
+    "forbiddenTitle": "Access denied",
+    "forbidden": "Your role has no access to the cash desk.",
+    "reportsForbidden": "Your role has no access to reports and exports.",
+    "readOnly": "Read-only access: you can browse the history but not operate the cash desk."
+  },
+  "fields": {
+    "amount": "Amount",
+    "method": "Method",
+    "note": "Note",
+    "notes": "Notes",
+    "time": "Time"
+  },
+  "actions": {
+    "movement": "Movement",
+    "quickPay": "Take payment",
+    "close": "Close cash desk",
+    "print": "Print summary",
+    "printZ": "Print Z report"
+  },
+  "open": {
+    "title": "Open the cash desk",
+    "description": "No open session. Count the float and open the session to record takings.",
+    "float": "Opening float",
+    "floatHint": "Cash in the drawer at opening.",
+    "submit": "Open session",
+    "opened": "Cash session opened",
+    "noneReadOnly": "No open cash session."
+  },
+  "current": {
+    "badge": "{{register}} open since {{time}}",
+    "float": "Opening float",
+    "totalTakings": "Total takings",
+    "netMovements": "Cash in − cash out",
+    "expectedCash": "Expected cash in drawer",
+    "expectedCashHint": "Float + cash takings + cash in − cash out",
+    "takings": "Takings by method",
+    "noTakings": "No takings in this session yet.",
+    "activity": "Session activity"
+  },
+  "tabs": {
+    "payments": "Takings",
+    "movements": "Movements"
+  },
+  "payments": {
+    "empty": "No takings recorded.",
+    "what": "Booking or description",
+    "counterSale": "Counter sale",
+    "refund": "Refund",
+    "status": {
+      "pending": "Pending",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "movement": {
+    "title": "Cash movement",
+    "description": "Cash paid in or taken out, always with a reason.",
+    "kind": "Type",
+    "in": "Cash in",
+    "out": "Cash out",
+    "reason": "Reason",
+    "reasonPlaceholder": "e.g. change, bank deposit",
+    "submit": "Record movement",
+    "recorded": "Movement recorded",
+    "empty": "No movements."
+  },
+  "quickPay": {
+    "title": "Take payment for a booking",
+    "description": "Find the booking by code: the proposed amount is the balance due.",
+    "search": "Booking code or customer",
+    "searchPlaceholder": "e.g. AR-7K3Q9",
+    "minChars": "Type at least 2 characters.",
+    "noResults": "No booking found.",
+    "results": "Bookings found",
+    "balance": "Balance {{amount}}",
+    "paid": "Paid",
+    "select": "Select",
+    "selectAria": "Select booking {{code}}",
+    "booking": "Booking",
+    "customer": "Customer",
+    "total": "Total",
+    "paidAmount": "Paid",
+    "balanceDue": "Balance due",
+    "change": "Change",
+    "submit": "Record payment",
+    "recorded": "Payment of {{amount}} recorded on {{code}}"
+  },
+  "close": {
+    "title": "Close cash desk",
+    "description": "Count the money and enter the amounts per method: the difference is computed against the expected amount.",
+    "method": "Method",
+    "expected": "Expected",
+    "counted": "Counted",
+    "countedFor": "Counted {{method}}",
+    "difference": "Difference",
+    "total": "Total",
+    "notesPlaceholder": "e.g. reason for the difference",
+    "submit": "Close session",
+    "closed": "Cash session closed",
+    "closedTitle": "Session closed",
+    "balanced": "Balanced",
+    "surplus": "Surplus",
+    "shortfall": "Shortfall"
+  },
+  "z": {
+    "title": "Z report",
+    "register": "Register",
+    "status": "Status",
+    "openedAt": "Opened",
+    "closedAt": "Closed",
+    "float": "Opening float",
+    "movementsIn": "Cash in",
+    "movementsOut": "Cash out",
+    "takings": "Takings",
+    "notes": "Notes",
+    "payments": "Payments in the session: {{count}}"
+  },
+  "history": {
+    "title": "Session history",
+    "empty": "No cash sessions.",
+    "openedAt": "Opened",
+    "closedAt": "Closed",
+    "register": "Register",
+    "statusLabel": "Status",
+    "status": {
+      "open": "Open",
+      "closed": "Closed"
+    },
+    "detail": "Session detail",
+    "detailTitle": "Session of {{date}}",
+    "detailDescription": "Closing summary, takings and movements of the session."
+  },
+  "validation": {
+    "amountRequired": "Enter a valid amount.",
+    "amountPositive": "The amount must be greater than zero.",
+    "reasonRequired": "Enter a reason.",
+    "countedRequired": "Enter the counted cash.",
+    "tooLong": "Text too long."
+  },
+  "registers": {
+    "main": "Main register"
   }
 }

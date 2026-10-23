@@ -45,9 +45,12 @@ export function OptionSelect({
   onBlur,
   ...aria
 }: OptionSelectProps) {
+  // Without an explicit "" option, an empty value shows the placeholder
+  // (Radix resets to the placeholder on value="").
+  const hasEmpty = options.some((o) => o.value === '');
   return (
     <Select
-      value={value === '' ? NONE : value}
+      value={value === '' ? (hasEmpty ? NONE : '') : value}
       onValueChange={(v) => onChange(v === NONE ? '' : v)}
       disabled={disabled}
       name={name}

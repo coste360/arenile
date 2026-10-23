@@ -242,3 +242,43 @@ describe('SpotList', () => {
     ]);
   });
 });
+
+describe('operational overlays (additive props)', () => {
+  it('dims non-matching spots and outlines the search matches', () => {
+    renderWithI18n(<BeachMap geometry={geometry} highlightedIds={['s2']} />);
+    const a2 = screen.getByRole('button', { name: /A2/ });
+    expect(a2).toHaveAttribute('data-highlighted', 'true');
+    expect(a2.querySelector('circle')).toHaveClass('stroke-map-spot-selected');
+    expect(screen.getByRole('button', { name: /A1/ })).toHaveAttribute('data-highlighted', 'false');
+    expect(screen.getByRole('button', { name: /A1/ })).toHaveClass('opacity-30');
+  });
+
+  it('without matches nothing is dimmed', () => {
+    renderWithI18n(<BeachMap geometry={geometry} highlightedIds={[]} />);
+    expect(screen.getByRole('button', { name: /A1/ })).not.toHaveAttribute('data-highlighted');
+  });
+
+  it('draws indicator dots with theme classes, hidden from assistive tech', () => {
+    renderWithI18n(<BeachMap geometry={geometry} spotIndicators={{ s1: ['extra', 'vip'] }} />);
+    const a1 = screen.getByRole('button', { name: /A1/ });
+    const dots = a1.querySelectorAll('[data-indicator]');
+    expect([...dots].map((d) => d.getAttribute('data-indicator'))).toEqual(['extra', 'vip']);
+    expect(dots[1]).toHaveClass('fill-warning');
+    expect(dots[1]).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('SpotList with activateAny lets booked spots be opened, never inactive ones', async () => {
+    const onActivate = vi.fn();
+    renderWithI18n(
+      <SpotList
+        spots={geometry.spots}
+        statuses={{ s1: 'booked_desk' }}
+        onSpotActivate={onActivate}
+        activateAny
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /A1/ }));
+    expect(onActivate).toHaveBeenCalledWith(expect.objectContaining({ id: 's1' }));
+    expect(screen.getByRole('button', { name: /B2/ })).toBeDisabled();
+  });
+});
