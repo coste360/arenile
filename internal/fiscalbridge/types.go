@@ -145,3 +145,92 @@ type Status struct {
 	PendingJobs  int
 	FailedJobs   int
 }
+
+// Retry tuning of retryable failures reported by the device.
+const (
+	retryBase = 15 * time.Second
+	retryMax  = 10 * time.Minute
+	// MaxRawBytes bounds Result.Raw (api.FiscalBridgeJobResult.raw).
+	MaxRawBytes = 16 << 10
+	// MaxErrorLen bounds Result.Error (characters kept).
+	MaxErrorLen = 500
+)
+
+// Backoff is the delay before a job that failed with a retryable error at
+// delivery attempt is offered again: 15 s doubling up to 10 minutes (pure,
+// deterministic so that tests and operators can predict it).
+func Backoff(attempt int) time.Duration {
+	if attempt < 1 {
+		attempt = 1
+	}
+	d := retryBase
+	for i := 1; i < attempt; i++ {
+		d *= 2
+		if d >= retryMax {
+			return retryMax
+		}
+	}
+	return d
+}
+
+// Transition is the job state decided for a submitted result.
+type Transition struct {
+	Status  string // store.FiscalBridgeJob{Succeeded,Failed,Queued}
+	RetryIn time.Duration
+}
+
+// Decide maps a result submitted for a job delivered attempts times to
+// the next job state (functional core of Service.Submit): success is
+// final; a retryable failure goes back to the queue with Backoff until
+// MaxAttempts deliveries, then it is final like any other failure.
+func Decide(attempts int, r Result) Transition {
+	switch {
+	case r.Outcome == OutcomeSucceeded:
+		return Transition{Status: statusSucceeded}
+	case r.Retryable && attempts < MaxAttempts:
+		return Transition{Status: statusQueued, RetryIn: Backoff(attempts)}
+	default:
+		return Transition{Status: statusFailed}
+	}
+}
+
+// Store statuses mirrored here to keep Decide free of the store import.
+const (
+	statusQueued    = "queued"
+	statusSucceeded = "succeeded"
+	statusFailed    = "failed"
+)
+
+// Validate checks a submitted result (outcome, sizes) and trims the error
+// text. It returns the normalised result.
+func (r Result) Validate() (Result, error) {
+	switch r.Outcome {
+	case OutcomeSucceeded, OutcomeFailed:
+	default:
+		return r, errInvalid("outcome", "deve essere succeeded o failed")
+	}
+	if len(r.Raw) > MaxRawBytes {
+		return r, errInvalid("raw", "supera 16 KiB")
+	}
+	if len(r.Raw) > 0 && !json.Valid(r.Raw) {
+		return r, errInvalid("raw", "JSON non valido")
+	}
+	if rs := []rune(r.Error); len(rs) > MaxErrorLen {
+		r.Error = string(rs[:MaxErrorLen])
+	}
+	if r.Outcome == OutcomeSucceeded {
+		r.Retryable = false
+	}
+	if r.IssuedAt != nil {
+		t := r.IssuedAt.UTC()
+		r.IssuedAt = &t
+	}
+	return r, nil
+}
+
+// SameAs reports whether r is a duplicate submission of stored (the fields
+// that identify an outcome; Raw and timestamps may be re-serialised).
+func (r Result) SameAs(stored Result) bool {
+	return r.Outcome == stored.Outcome && r.Ref == stored.Ref && r.Number == stored.Number &&
+		r.Error == stored.Error && r.Retryable == stored.Retryable
+}

@@ -38,15 +38,42 @@
 // Failed jobs with retryable=true are re-queued with backoff (max 5
 // attempts); otherwise the document becomes failed.
 //
+// # Delivery semantics (exactly-once issuing)
+//
+//   - Enqueue is idempotent on (establishment, kind, idempotency key); the
+//     fiscal job asks again every minute and gets the stored outcome.
+//   - Every job transition is a conditional UPDATE (store/fiscalbridge.go):
+//     concurrent polls never share a lease, and a result completes a job
+//     once (TestConcurrency_FiscalBridgeAck). A duplicate submission of the
+//     stored outcome answers 204; a different one 409.
+//   - A lease that expires (agent crashed, network down) is offered again
+//     with attempt+1; after MaxAttempts deliveries without an answer the
+//     job fails (a poison job must not loop). A late result of the same
+//     device is still accepted: the receipt was printed.
+//   - The agent remembers each outcome by idempotency key before
+//     submitting it (ResultStore, a file in the data dir), so a redelivered
+//     job is acknowledged without printing again.
+//   - Retryable device errors (RetryableError, Temporary()) go back to the
+//     queue with Backoff (15 s doubling, max 10 min).
+//
 // # Files
 //
-//   - types.go (pure, tested): Document / Job / Result / DeviceStatus and
-//     the mapping from ext.FiscalDocumentRequest.
+//   - types.go (pure, tested): Document / Job / Result / DeviceStatus, the
+//     mapping from ext.FiscalDocumentRequest, Decide, Backoff, Validate.
 //   - service.go (shell): registration, lease-based queue, results,
 //     status, lease expiry job; DeactivateDevice for device revocation.
+//   - notifier.go: wakes waiting long-polls on Enqueue (observer).
 //   - driver.go: the "bridge" ext.FiscalDriver on top of the Queue port.
-//   - agent.go: the desktop side (used by cmd/arenile-desktop in remote
-//     mode): poll, execute on the local ext.FiscalDriver, submit.
+//   - agent.go: the desktop side (internal/desktop/remote): register, poll,
+//     execute on the local ext.FiscalDriver, submit with retries.
+//   - local.go: registry of local drivers (strategy) with the noop driver,
+//     RetryableError.
+//   - results.go: ResultStore (memory, file).
+//
+// The selection stays explicit (strategy/registry): an establishment uses
+// the bridge when settings.fiscal.driver = "bridge"; any other driver is
+// called locally by the instance as before. Jobs enqueued while no bridge
+// is registered wait for one (the panel shows them as pending).
 //
 // # Permissions
 //
