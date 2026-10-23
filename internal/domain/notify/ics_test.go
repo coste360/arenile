@@ -205,11 +205,11 @@ func TestParseClockTime_Scenarios(t *testing.T) {
 // inject content lines into the calendar.
 func TestICSParamValue_NoInjection(t *testing.T) {
 	for in, want := range map[string]string{
-		"Lido Delfino":                        "Lido Delfino",
-		"Lido; Delfino":                       `"Lido; Delfino"`,
-		"Lido \"Delfino\"":                    "Lido Delfino",
-		"Lido\r\nATTENDEE:mailto:x@y.z":        `"LidoATTENDEE:mailto:x@y.z"`,
-		"Lido\nBEGIN:VALARM\x7f":               `"LidoBEGIN:VALARM"`,
+		"Lido Delfino":                  "Lido Delfino",
+		"Lido; Delfino":                 `"Lido; Delfino"`,
+		"Lido \"Delfino\"":              "Lido Delfino",
+		"Lido\r\nATTENDEE:mailto:x@y.z": `"LidoATTENDEE:mailto:x@y.z"`,
+		"Lido\nBEGIN:VALARM\x7f":        `"LidoBEGIN:VALARM"`,
 	} {
 		if got := icsParamValue(in); got != want {
 			t.Errorf("%q -> %q, want %q", in, got, want)
