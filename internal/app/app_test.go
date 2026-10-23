@@ -73,8 +73,13 @@ func TestSmoke_ServeHealthAndReady(t *testing.T) {
 	if _, err := os.Stat(cfg.SQLitePath()); err != nil {
 		t.Fatalf("sqlite file not created: %v", err)
 	}
-	if got := a.Jobs().Jobs(); len(got) != 4 {
-		t.Fatalf("core jobs: %v", got)
+	wantJobs := []string{
+		"outbox.dispatch", "webhooks.deliver", "sessions.cleanup", "idempotency.cleanup",
+		"inventory.sweep_expired_holds", "bookings.expire_holds", "bookings.complete",
+		"fiscal.issue_pending",
+	}
+	if got := a.Jobs().Jobs(); !sameSet(got, wantJobs) {
+		t.Fatalf("registered jobs: got %v, want %v", got, wantJobs)
 	}
 	cancel()
 	select {
@@ -196,4 +201,22 @@ func TestSeedDemo_Idempotent(t *testing.T) {
 	if orgs != 1 {
 		t.Fatalf("organizations: %d", orgs)
 	}
+}
+
+// sameSet reports whether a and b hold the same strings, ignoring order.
+func sameSet(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	seen := make(map[string]int, len(a))
+	for _, s := range a {
+		seen[s]++
+	}
+	for _, s := range b {
+		if seen[s] == 0 {
+			return false
+		}
+		seen[s]--
+	}
+	return true
 }

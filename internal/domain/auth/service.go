@@ -309,6 +309,17 @@ func (s *Service) AuthenticateAPIKey(ctx context.Context, key string) (*Principa
 	}, nil
 }
 
+// PrincipalForEmail builds the principal of a user outside any HTTP session,
+// with the grants of their memberships. It serves trusted system tasks run
+// on behalf of a known user (the CLI demo seed); it never authenticates.
+func (s *Service) PrincipalForEmail(ctx context.Context, email string) (*Principal, error) {
+	user, err := store.GetUserByEmail(ctx, s.db, email)
+	if err != nil {
+		return nil, fmt.Errorf("auth: principal for user: %w", err)
+	}
+	return s.userPrincipal(ctx, user, "")
+}
+
 func (s *Service) userPrincipal(ctx context.Context, user *store.User, sessionID string) (*Principal, error) {
 	ms, err := store.ListUserMemberships(ctx, s.db, user.ID)
 	if err != nil {

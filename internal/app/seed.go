@@ -7,8 +7,16 @@ import (
 
 	"github.com/uptrace/bun"
 
+	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/audit"
+	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/booking"
+	"github.com/coste360/arenile/internal/domain/cash"
+	"github.com/coste360/arenile/internal/domain/pass"
+	"github.com/coste360/arenile/internal/domain/payment"
+	"github.com/coste360/arenile/internal/domain/setup"
+	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -76,4 +84,57 @@ func SeedDemo(ctx context.Context, db bun.IDB, c clock.Clock) (*SeedResult, erro
 		return nil, fmt.Errorf("app: seed demo: %w", err)
 	}
 	return res, nil
+}
+
+// DemoOperations adapts the M3 services of the App to the ports of
+// setup.SeedDemoOperations (adapter: the setup package knows only its own
+// narrow ports, the composition root knows the services).
+func (a *App) DemoOperations(p *auth.Principal) setup.DemoOperations {
+	const ip = "127.0.0.1"
+	return setup.DemoOperations{
+		Actor: p, Customers: a.Customers, Bookings: a.Bookings,
+		ReleaseDays: func(ctx context.Context, p *auth.Principal, est, passID string, dates []calendar.Date) error {
+			_, err := a.Passes.Release(ctx, p, ip, est, passID, pass.ReleaseInput{Dates: dates, Slots: calendar.SlotsFull, Note: "Giorni rilasciati (demo)"})
+			return err
+		},
+		OpenCash: func(ctx context.Context, p *auth.Principal, est string, float money.Cents) (string, error) {
+			cs, err := a.Cash.Open(ctx, p, ip, est, cash.OpenInput{OpeningFloat: float})
+			if err != nil {
+				return "", err
+			}
+			return cs.ID, nil
+		},
+		RecordPayment: func(ctx context.Context, p *auth.Principal, est string, pay setup.DemoPayment) error {
+			sid := pay.CashSessionID
+			_, err := a.Payments.RecordPayment(ctx, p, ip, est, pay.BookingID, payment.Input{Amount: pay.Amount, Method: pay.Method, CashSessionID: &sid})
+			return err
+		},
+		CloseCash: func(ctx context.Context, p *auth.Principal, est, sessionID string, counted store.MethodTotals) error {
+			_, err := a.Cash.Close(ctx, p, ip, est, sessionID, nil, cash.CloseInput{Counted: counted, Notes: "Chiusura (demo)"})
+			return err
+		},
+		CancelBooking: func(ctx context.Context, p *auth.Principal, est, id, reason string) error {
+			_, err := a.Bookings.Cancel(ctx, p, est, id, booking.CancelInput{Reason: reason, RefundMethod: store.PaymentMethodCash})
+			return err
+		},
+		CheckIn: func(ctx context.Context, p *auth.Principal, est, id string) error {
+			_, err := a.Bookings.CheckIn(ctx, p, est, id, booking.ActionInput{})
+			return err
+		},
+	}
+}
+
+// SeedDemoOperations adds the M3 operational demo data (customers, passes,
+// bookings, payments, cash sessions) to the demo establishment, acting as the
+// user with the given email (the demo owner). Idempotent like SeedDemo.
+func (a *App) SeedDemoOperations(ctx context.Context, actorEmail string) (*setup.DemoOperationsResult, error) {
+	est, err := store.GetEstablishmentBySlug(ctx, a.db, DemoSlug)
+	if err != nil {
+		return nil, fmt.Errorf("app: seed demo operations: %w", err)
+	}
+	p, err := a.Auth.PrincipalForEmail(ctx, actorEmail)
+	if err != nil {
+		return nil, fmt.Errorf("app: seed demo operations: %w", err)
+	}
+	return a.Setup.SeedDemoOperations(ctx, est.ID, a.DemoOperations(p))
 }

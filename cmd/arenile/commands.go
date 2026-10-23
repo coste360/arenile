@@ -268,7 +268,32 @@ func (c *cli) seed(ctx context.Context, args []string) error {
 	if err := c.seedDemoOwner(ctx, cfg, db, clk, aw, log); err != nil {
 		return err
 	}
+	if err := c.seedDemoOperations(ctx, cfg, log); err != nil {
+		return err
+	}
 	fmt.Fprintf(c.stdout, "Pagina pubblica: %s/b/%s\nPannello: %s/admin/\n", cfg.EffectiveBaseURL(), app.DemoSlug, cfg.EffectiveBaseURL())
+	return nil
+}
+
+// seedDemoOperations adds the M3 operational demo data (customers, season
+// passes, bookings, payments, cash sessions) through the fully wired
+// services, acting as the demo owner. Idempotent.
+func (c *cli) seedDemoOperations(ctx context.Context, cfg config.Config, log *slog.Logger) error {
+	a, err := app.New(cfg, app.WithLogger(log), app.WithoutSignalHandling())
+	if err != nil {
+		return err
+	}
+	defer a.Close()
+	ops, err := a.SeedDemoOperations(ctx, DemoOwnerEmail)
+	if err != nil {
+		return err
+	}
+	if ops.Applied {
+		fmt.Fprintf(c.stdout, "Dati operativi dimostrativi creati: %d clienti, %d abbonamenti, %d prenotazioni, %d pagamenti\n",
+			ops.Customers, ops.SeasonPasses, ops.Bookings, ops.Payments)
+	} else {
+		fmt.Fprintln(c.stdout, "Dati operativi dimostrativi già presenti: nessuna modifica")
+	}
 	return nil
 }
 

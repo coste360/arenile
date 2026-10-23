@@ -31,6 +31,7 @@ var (
 	_ pass.Bookings             = (*booking.Service)(nil)
 	_ pass.Inventory            = (*inventory.Service)(nil)
 	_ pass.Credits              = (*customer.Service)(nil)
+	_ payment.BookingConfirmer  = (*booking.Service)(nil)
 )
 
 // wireOperations builds the M3 services (bookings from the panel and cash
@@ -58,6 +59,9 @@ func (a *App) wireOperations(aw *audit.Writer) {
 		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
 		Bookings: a.Bookings, Inventory: a.Inventory, Credits: a.Customers,
 	})
+	// Closing the payment -> booking loop after both exist: a held booking
+	// paid at the desk is confirmed in the payment transaction (INV-19).
+	a.Payments.SetConfirmer(a.Bookings)
 }
 
 // operationJobs are the background jobs contributed by the M3 services.
@@ -65,5 +69,6 @@ func (a *App) operationJobs() []jobs.Job {
 	var out []jobs.Job
 	out = append(out, a.Inventory.Jobs()...)
 	out = append(out, a.Bookings.Jobs()...)
+	out = append(out, a.Fiscal.Jobs()...)
 	return out
 }

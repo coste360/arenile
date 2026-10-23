@@ -42,6 +42,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
 	httpserver "github.com/coste360/arenile/internal/http"
+	"github.com/coste360/arenile/internal/http/sse"
 	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/pkg/ext"
@@ -212,11 +213,13 @@ func (a *App) wire() error {
 	a.wireConfiguration(aw)
 	a.registry = NewRegistry(c, x)
 	a.wireOperations(aw)
+	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
+	// with Last-Event-ID without losing or duplicating map updates.
+	var bus ext.EventBus = event.NewBroker(a.log, 64)
 	if x.EventBus != nil {
-		a.Bus = x.EventBus
-	} else {
-		a.Bus = event.NewBroker(a.log, 64)
+		bus = x.EventBus
 	}
+	a.Bus = sse.NewReplayBus(bus, 0)
 	dispatcher := event.NewDispatcher(a.db, c, x.EventSinks, a.Bus, a.log)
 	deliverer := event.NewDeliverer(a.db, c, a.keys, nil, aw, a.log, event.DeliveryOptions{})
 
