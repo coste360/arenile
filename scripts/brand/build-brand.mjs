@@ -121,29 +121,8 @@ for (const [variant, fill] of [
   );
 }
 
-// 3. Coste360 lockup: icon + "Coste360.it", fitted on coste360/logo-primary.png
-// (781x312: icon 156 px at x 32, text ink from x 203 to 746, cap height 77 px,
-// baseline at y 195). The company lettering is Titillium Web Black (900): the
-// 700 outlines are visibly thinner than the PNG, the 900 ones overlap it.
-const icon = read(C, 'icon-primary.svg');
-const iconPaths = [...icon.matchAll(/<path[^>]* d="([^"]+)"/g)].map((m) => m[1]);
-const ICON = 156;
-const capBox = fonts[900].getPath('C', 0, 0, 100).getBoundingBox();
-const inkBox = fonts[900].getPath('Coste360.it', 0, 0, 100).getBoundingBox();
-const lockSize = 77 / ((capBox.y2 - capBox.y1) / 100);
-const lockSpacing = (543 - ((inkBox.x2 - inkBox.x1) * lockSize) / 100) / 10;
-const textX = 203 - 32 - (inkBox.x1 * lockSize) / 100;
-const textY = 195 - 78 - (capBox.y2 * lockSize) / 100;
-const lockText = textPath({ text: 'Coste360.it', x: 0, y: 0, size: lockSize, weight: 900, spacing: lockSpacing });
-const lockW = Math.ceil(textX + lockText.width + 2);
-for (const [variant, fill] of [
-  ['primary', '#0c2442'],
-  ['white', '#ffffff'],
-  ['black', '#000000'],
-]) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${lockW} ${ICON}" role="img" aria-label="Coste360.it"><title>Coste360.it</title><g fill="${fill}"><g transform="scale(${(ICON / 999.73).toFixed(5)})">${iconPaths.map((d) => `<path d="${d}"/>`).join('')}</g><path transform="translate(${textX.toFixed(2)} ${textY.toFixed(2)})" d="${lockText.d}"/></g></svg>`;
-  writeFileSync(join(C, `coste360-logo-${variant}.svg`), svg + '\n');
-}
+// 3. Coste360 lockup: the company's original raster logo (assets/brand/coste360/logo-*.png, 781x312, with transparent margins)
+// is used as is; it is never redrawn here.
 
 // 4. Raster exports.
 const symbolInner = read(A, 'arenile-symbol-color.svg')

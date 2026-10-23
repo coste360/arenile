@@ -4,8 +4,8 @@ import logoDarkUrl from '../../brand/arenile-logo-horizontal-dark.svg';
 import logoUrl from '../../brand/arenile-logo-horizontal.svg';
 import nameNavyUrl from '../../brand/arenile-name-navy.svg';
 import nameWhiteUrl from '../../brand/arenile-name-white.svg';
-import coste360PrimaryUrl from '../../brand/coste360-logo-primary.svg';
-import coste360WhiteUrl from '../../brand/coste360-logo-white.svg';
+import coste360PrimaryUrl from '../../brand/coste360-logo-primary.png';
+import coste360WhiteUrl from '../../brand/coste360-logo-white.png';
 import { cn } from '../../lib/utils';
 
 /**
@@ -18,7 +18,7 @@ import { cn } from '../../lib/utils';
  */
 
 export const ARENILE_URL = 'https://arenile.app';
-export const COSTE360_URL = 'https://coste360.it';
+export const COSTE360_URL = 'https://www.coste360.it/';
 
 interface BrandProps {
   className?: string;
@@ -74,7 +74,7 @@ export function Coste360Logo({ className }: BrandProps) {
       light={coste360PrimaryUrl}
       dark={coste360WhiteUrl}
       alt="Coste360.it"
-      className={cn('h-6', className)}
+      className={cn('h-12', className)}
     />
   );
 }
@@ -93,7 +93,7 @@ export function MadeByCoste360({ className }: BrandProps) {
       )}
     >
       <span>{t('brand.madeBy')}</span>
-      <Coste360Logo className="h-5" />
+      <Coste360Logo className="h-10" />
     </a>
   );
 }
@@ -133,7 +133,7 @@ export function Coste360Signature({ className }: BrandProps) {
         className,
       )}
     >
-      <Coste360Logo className="h-4" />
+      <Coste360Logo className="h-8" />
     </a>
   );
 }

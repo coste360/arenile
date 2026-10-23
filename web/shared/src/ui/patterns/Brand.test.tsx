@@ -9,23 +9,20 @@ const ASSETS = resolve(import.meta.dirname, '../../../../../assets/brand');
 
 /** Where each copy in shared/src/brand comes from (assets/brand is the source of truth). */
 function sourceOf(file: string): string {
-  if (file.startsWith('coste360-')) return resolve(ASSETS, 'coste360', file);
+  // The Coste360 lockup is the company's original raster logo (logo-*.png, 781x312), never redrawn.
+  const coste360 = /^coste360-logo-(\w+)\.png$/.exec(file);
+  if (coste360) return resolve(ASSETS, 'coste360', `logo-${coste360[1]}.png`);
   if (/^arenile-(logo|name)-/.test(file)) return resolve(ASSETS, 'arenile', 'outlined', file);
   return resolve(ASSETS, 'arenile', file);
 }
 
 describe('brand assets', () => {
-  it.each(readdirSync(BRAND_DIR).filter((f) => f.endsWith('.svg')))(
-    '%s is an unmodified copy of assets/brand',
-    (file) => {
-      expect(readFileSync(resolve(BRAND_DIR, file), 'utf8')).toBe(
-        readFileSync(sourceOf(file), 'utf8'),
-      );
-    },
-  );
+  it.each(readdirSync(BRAND_DIR))('%s is an unmodified copy of assets/brand', (file) => {
+    expect(readFileSync(resolve(BRAND_DIR, file))).toEqual(readFileSync(sourceOf(file)));
+  });
 
-  it('the copies have no live text (outlined, no font needed)', () => {
-    for (const file of readdirSync(BRAND_DIR)) {
+  it('the SVG copies have no live text (outlined, no font needed)', () => {
+    for (const file of readdirSync(BRAND_DIR).filter((f) => f.endsWith('.svg'))) {
       expect(readFileSync(resolve(BRAND_DIR, file), 'utf8')).not.toContain('<text');
     }
   });
@@ -52,7 +49,7 @@ describe('BrandLogo', () => {
       </>,
     );
     for (const link of screen.getAllByRole('link')) {
-      expect(link).toHaveAttribute('href', 'https://coste360.it');
+      expect(link).toHaveAttribute('href', 'https://www.coste360.it/');
     }
   });
 });

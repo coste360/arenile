@@ -75,13 +75,13 @@ func TestWindowHelpers(t *testing.T) {
 	if !strings.Contains(js, `"mode":"remote"`) || !strings.Contains(js, `"kiosk":true`) || !strings.Contains(js, "arenileOpenExternal") {
 		t.Fatal(js)
 	}
-	if !IsExternal("http://127.0.0.1:5/admin/", "https://coste360.it/") || IsExternal("http://127.0.0.1:5/admin/", "http://127.0.0.1:5/x") {
+	if !IsExternal("http://127.0.0.1:5/admin/", "https://www.coste360.it/") || IsExternal("http://127.0.0.1:5/admin/", "http://127.0.0.1:5/x") {
 		t.Fatal("IsExternal")
 	}
 	// The binding opens web links of other origins only: never local
 	// programs, files or custom schemes, even though they are "external".
 	panel := "http://127.0.0.1:5/admin/"
-	for _, ok := range []string{"https://coste360.it/", "mailto:info@lido.example", "http://192.168.1.20:8443/admin/"} {
+	for _, ok := range []string{"https://www.coste360.it/", "mailto:info@lido.example", "http://192.168.1.20:8443/admin/"} {
 		if !AllowExternal(panel, ok) {
 			t.Errorf("AllowExternal(%q) = false", ok)
 		}

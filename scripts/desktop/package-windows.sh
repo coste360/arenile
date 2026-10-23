@@ -123,7 +123,7 @@ stage_sign() { # files...
 	st="$(find_signtool)"
 	for f in "$@"; do
 		"$st" sign /f "$(winpath "$(pfx_file)")" /p "${WINDOWS_CERTIFICATE_PASSWORD:-}" \
-			/fd SHA256 /tr "$TIMESTAMP_URL" /td SHA256 /d "Arenile" /du "https://coste360.it" "$(winpath "$f")"
+			/fd SHA256 /tr "$TIMESTAMP_URL" /td SHA256 /d "Arenile" /du "https://www.coste360.it/" "$(winpath "$f")"
 		"$st" verify /pa /v "$(winpath "$f")" >/dev/null
 		log "signed $(basename "$f")"
 	done

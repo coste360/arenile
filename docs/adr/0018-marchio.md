@@ -23,8 +23,8 @@ deve caricare font solo per un logo.
   tray, icona macOS, immagine social) con il Chromium di Playwright. Gli output sono versionati: build e
   CI non dipendono dallo script. **Nessuna nuova dipendenza di runtime**: il font non viene caricato da
   nessuna app (pannello, pagina pubblica, documentazione).
-- Il lockup Coste360 (`coste360-logo-{primary,white,black}.svg`) è ricostruito sull'icona ufficiale e
-  sul PNG fornito: la scritta "Coste360.it" combacia con Titillium Web **Black (900)**, non 700.
+- Il logo Coste360 è il PNG originale fornito dall'azienda (`logo-{primary,white}.png`, 781x312), usato così
+  com'è: non viene ridisegnato né vettorializzato. Il link è sempre https://www.coste360.it/.
 - Il tema shadcn predefinito (`web/shared/src/styles/globals.css`) usa il navy come primario chiaro,
   l'oceano per focus e link, il ciano come primario scuro su superfici blu notte; ogni coppia testo/sfondo
   è verificata AA da `web/shared/src/theme/brand.test.ts`. La pagina pubblica mantiene il tema dello

@@ -89,7 +89,7 @@ func TestOpenURL_OnlyWebLinks(t *testing.T) {
 			}
 		}
 	}
-	for _, s := range []string{"https://coste360.it/", "http://127.0.0.1:5/admin/", "mailto:info@lido.example", "HTTPS://Lido.Example/x?y=1#f"} {
+	for _, s := range []string{"https://www.coste360.it/", "http://127.0.0.1:5/admin/", "mailto:info@lido.example", "HTTPS://Lido.Example/x?y=1#f"} {
 		if !IsWebLink(s) {
 			t.Errorf("IsWebLink(%q) = false", s)
 		}
@@ -104,7 +104,7 @@ func TestOpenFolder_OnlyExistingDirectories(t *testing.T) {
 	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	for _, bad := range []string{"", "relative/dir", file, filepath.Join(dir, "missing"), "https://coste360.it/", `\\host\share`, "-" + dir} {
+	for _, bad := range []string{"", "relative/dir", file, filepath.Join(dir, "missing"), "https://www.coste360.it/", `\\host\share`, "-" + dir} {
 		if err := OpenFolder(context.Background(), "linux", bad); !errors.Is(err, ErrUnsafeTarget) {
 			t.Errorf("OpenFolder(%q): %v", bad, err)
 		}

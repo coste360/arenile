@@ -260,7 +260,7 @@ jobs:
           file-digest: SHA256
           timestamp-digest: SHA256
           description: Arenile
-          description-url: https://coste360.it
+          description-url: https://www.coste360.it/
 
       - name: Build the installer (Inno Setup; signs setup and uninstaller with the PFX)
         run: scripts/desktop/package-windows.sh installer
@@ -280,7 +280,7 @@ jobs:
           file-digest: SHA256
           timestamp-digest: SHA256
           description: Arenile
-          description-url: https://coste360.it
+          description-url: https://www.coste360.it/
 
       - name: Checksums and smoke test
         run: |
