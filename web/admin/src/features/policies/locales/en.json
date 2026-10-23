@@ -120,5 +120,6 @@
     "warnNoPeak": "No August period found: pick the periods by hand.",
     "warnNoGazebo": "No gazebo pack found: pick the packs by hand."
   },
-  "daysShort": "days"
+  "daysShort": "days",
+  "tiersCaption": "Refund tiers"
 }

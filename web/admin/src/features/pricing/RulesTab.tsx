@@ -1,8 +1,8 @@
 import {
   Badge,
   Button,
-  Card,
-  CardContent,
+  Alert,
+  AlertDescription,
   Form,
   FormControl,
   FormDescription,
@@ -79,11 +79,11 @@ export function RulesTab(p: PricingTabProps) {
       : [
           {
             accessorKey: 'priority',
-            meta: { label: t('fields.priority') },
+            meta: { label: t('fields.priority'), align: 'right' },
             header: ({ column }) => (
               <DataTableColumnHeader column={column} title={t('fields.priority')} />
             ),
-            cell: ({ row }) => <span className="tabular-nums">{row.original.priority}</span>,
+            cell: ({ row }) => row.original.priority,
           } satisfies ColumnDef<PriceRule>,
         ]),
     {
@@ -99,7 +99,7 @@ export function RulesTab(p: PricingTabProps) {
             </span>
             {!r.active && <Badge variant="outline">{t('inactive')}</Badge>}
             {r.stage !== 'base' && r.stackable && (
-              <Badge variant="secondary">{t('fields.stackable')}</Badge>
+              <Badge variant="outline">{t('fields.stackable')}</Badge>
             )}
           </div>
         );
@@ -139,64 +139,52 @@ export function RulesTab(p: PricingTabProps) {
     },
   ];
 
+  const add = !p.readOnly && (
+    <Button onClick={editor.create}>
+      <PlusIcon aria-hidden="true" />
+      {t('rules.add')}
+    </Button>
+  );
+  // Stage order (base → modifier → discount), then the engine order inside a stage.
+  const ordered = STAGES.flatMap((stage) => sortRules(items.filter((r) => r.stage === stage)));
+
   return (
-    <div className="space-y-6">
-      {!p.readOnly && (
-        <div className="flex justify-end">
-          <Button onClick={editor.create}>
-            <PlusIcon aria-hidden="true" />
-            {t('rules.add')}
-          </Button>
-        </div>
-      )}
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">{t('rules.tabDescription')}</p>
       <QueryState
         isLoading={list.isPending}
         error={list.error}
         onRetry={() => void list.refetch()}
       />
-      {list.data && items.length === 0 && (
-        <EmptyState
-          icon={ListOrderedIcon}
-          title={t('rules.empty')}
-          action={
-            !p.readOnly && (
-              <Button onClick={editor.create}>
-                <PlusIcon aria-hidden="true" />
-                {t('rules.add')}
-              </Button>
-            )
+      {list.data && (
+        <DataTable
+          caption={t('rules.caption')}
+          columns={columns}
+          data={ordered}
+          getRowId={(r) => r.id}
+          pageSize={0}
+          searchable
+          toolbar={add}
+          groupBy={(r) => r.stage}
+          renderGroup={(stage, rows) => (
+            <span className="flex flex-wrap items-center gap-2">
+              <StatusBadge tone={STAGE_TONE[stage as Stage]}>{t(`stages.${stage}`)}</StatusBadge>
+              <span className="font-normal text-muted-foreground">{t(`stageHints.${stage}`)}</span>
+              <span className="ml-auto font-normal text-muted-foreground tabular-nums">
+                {t('rules.count', { count: rows.length })}
+              </span>
+            </span>
+          )}
+          empty={
+            <EmptyState
+              icon={ListOrderedIcon}
+              title={t('rules.empty')}
+              bordered={false}
+              action={add}
+            />
           }
         />
       )}
-      {items.length > 0 &&
-        STAGES.map((stage) => {
-          const group = sortRules(items.filter((r) => r.stage === stage));
-          return (
-            <section key={stage} aria-labelledby={`rules-stage-${stage}`} className="space-y-3">
-              <h3 id={`rules-stage-${stage}`} className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={STAGE_TONE[stage]}>{t(`stages.${stage}`)}</StatusBadge>
-                <span className="text-sm text-muted-foreground">{t(`stageHints.${stage}`)}</span>
-                <Badge variant="outline" className="ml-auto tabular-nums">
-                  {group.length}
-                </Badge>
-              </h3>
-              {group.length === 0 ? (
-                <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
-                  {t('rules.emptyStage')}
-                </p>
-              ) : (
-                <DataTable
-                  caption={t('rules.stageCaption', { stage: t(`stages.${stage}`) })}
-                  columns={columns}
-                  data={group}
-                  getRowId={(r) => r.id}
-                  pageSize={0}
-                  columnToggle={false}
-                />
-              )}
-            </section>
-          );
-        })}
       <FormSheet
         size="lg"
         padded={false}
@@ -372,13 +360,10 @@ function RulePreview({
   const values = useWatch({ control }) as RuleValues;
   const parsed = ruleSchema.safeParse(values);
   return (
-    <Card className="border-primary/30 bg-primary/5 py-0 shadow-none">
-      <CardContent className="flex gap-3 p-4">
-        <SparklesIcon
-          aria-hidden="true"
-          className="mt-0.5 size-4 shrink-0 text-primary-on-surface"
-        />
-        <p aria-live="polite" className="text-sm" data-testid="rule-preview">
+    <Alert>
+      <SparklesIcon aria-hidden="true" />
+      <AlertDescription>
+        <p aria-live="polite" data-testid="rule-preview">
           <span className="font-medium">{t('rules.summary')}: </span>
           {parsed.success
             ? describeRule(
@@ -389,7 +374,7 @@ function RulePreview({
               )
             : t('rules.previewIncomplete')}
         </p>
-      </CardContent>
-    </Card>
+      </AlertDescription>
+    </Alert>
   );
 }

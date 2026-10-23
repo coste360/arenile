@@ -5,7 +5,9 @@ import {
   DataTableColumnHeader,
   EmptyState,
   OptionSelect,
+  PageToolbar,
   QueryState,
+  StatusBadge,
 } from '@arenile/shared/ui/patterns';
 import { CalendarXIcon, DownloadIcon, LockIcon, Table2Icon } from 'lucide-react';
 import { useId, useState } from 'react';
@@ -84,7 +86,7 @@ export function PriceMatrixPage() {
           <AlertDescription>{t('configureOnly')}</AlertDescription>
         </Alert>
       )}
-      <div className="flex flex-wrap items-end gap-4">
+      <PageToolbar>
         <LabeledSelect
           label={t('fields.formula')}
           value={formula}
@@ -117,7 +119,7 @@ export function PriceMatrixPage() {
           <DownloadIcon aria-hidden="true" />
           {t('matrix.exportCsv')}
         </Button>
-      </div>
+      </PageToolbar>
       <QueryState
         isLoading={sel.isLoading || (allowed && !!sel.season && matrix.isPending)}
         error={sel.error ?? matrix.error}
@@ -154,8 +156,10 @@ function LabeledSelect({
 }) {
   const id = useId();
   return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+    <div className="flex items-center gap-2">
+      <Label htmlFor={id} className="text-muted-foreground">
+        {label}
+      </Label>
       <OptionSelect id={id} value={value} onChange={onChange} options={options} className="w-40" />
     </div>
   );
@@ -211,30 +215,28 @@ function MatrixTable({
       meta: { label: t('fields.code') },
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.code')} />,
       cell: ({ row }) => (
-        <Badge variant="secondary" className="font-mono">
+        <Badge variant="outline" className="font-mono">
           {row.original.category}
         </Badge>
       ),
     },
     ...matrix.rate_periods.map((period): ColumnDef<MatrixRow> => ({
       id: `period:${period}`,
-      meta: { label: periodName(period) },
+      meta: { label: periodName(period), align: 'right' },
       accessorFn: (r) => (r.cells[period]?.priced ? r.cells[period].price : -1),
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={periodName(period)} className="justify-end" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={periodName(period)} />,
       cell: ({ row }) => {
         const c = row.original.cells[period];
         return (
-          <div className="text-right tabular-nums" title={c?.date}>
+          <span title={c?.date}>
             {!c ? (
               <span className="text-muted-foreground">—</span>
             ) : c.priced ? (
               formatCents(c.price)
             ) : (
-              <Badge variant="destructive">{t('matrix.noPrice')}</Badge>
+              <StatusBadge tone="danger">{t('matrix.noPrice')}</StatusBadge>
             )}
-          </div>
+          </span>
         );
       },
     })),
@@ -242,6 +244,7 @@ function MatrixTable({
   return (
     <div className="space-y-2">
       <DataTable
+        stickyHeader
         caption={t('matrix.title')}
         columns={columns}
         data={rows}
@@ -249,7 +252,6 @@ function MatrixTable({
         pageSize={0}
         searchable
         initialColumnVisibility={{ category: false }}
-        className="[&_[data-slot=table-container]]:max-h-[70vh] [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-muted"
       />
       <p className="text-xs text-muted-foreground">{t('matrix.note')}</p>
     </div>

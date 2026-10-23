@@ -1,24 +1,15 @@
 import { dateFnsLocale } from '@arenile/shared/lib/dateLocales';
 import { dateToIso, formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
-import {
-  Alert,
-  AlertDescription,
-  Badge,
-  Button,
-  Calendar,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arenile/shared/ui';
+import { Alert, AlertDescription, Badge, Button, Calendar } from '@arenile/shared/ui';
 import {
   type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   EmptyState,
   FormSheet,
+  PageToolbar,
   QueryState,
+  SectionCard,
 } from '@arenile/shared/ui/patterns';
 import { CalendarXIcon, CircleCheckIcon, LockIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -86,7 +77,7 @@ export function CoveragePage() {
         <DataTableColumnHeader column={column} title={t('fields.price_category')} />
       ),
       cell: ({ row }) => (
-        <Badge variant="secondary" className="font-mono">
+        <Badge variant="outline" className="font-mono">
           {row.original.price_category}
         </Badge>
       ),
@@ -143,8 +134,10 @@ export function CoveragePage() {
           <AlertDescription>{t('configureOnly')}</AlertDescription>
         </Alert>
       )}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium">{t('fields.slots')}</span>
+      <PageToolbar>
+        <span aria-hidden="true" className="text-sm text-muted-foreground">
+          {t('fields.slots')}
+        </span>
         <SingleToggle
           label={t('fields.slots')}
           value={slots}
@@ -157,7 +150,7 @@ export function CoveragePage() {
             label: t(`slots.${s}`),
           }))}
         />
-      </div>
+      </PageToolbar>
       <QueryState
         isLoading={sel.isLoading || (allowed && !!sel.season && report.isPending)}
         error={sel.error ?? report.error}
@@ -168,7 +161,7 @@ export function CoveragePage() {
       )}
       {report.data &&
         (report.data.complete ? (
-          <Alert role="status" className="border-success/40 bg-success/10">
+          <Alert role="status" variant="success">
             <CircleCheckIcon aria-hidden="true" />
             <AlertDescription className="text-foreground">
               {t('coverage.complete', {
@@ -180,31 +173,28 @@ export function CoveragePage() {
         ) : (
           <>
             <CoverageHeatmap report={report.data} selected={day} onSelect={setDay} />
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base text-destructive">
-                  {t('coverage.gaps', { count: report.data.gaps.length })}
-                </CardTitle>
-                {day && (
-                  <CardDescription className="flex flex-wrap items-center gap-2">
-                    {t('coverage.filteredDay', { date: formatIsoDate(day) })}
-                    <Button variant="ghost" size="sm" onClick={() => setDay(undefined)}>
-                      <XIcon aria-hidden="true" />
-                      {t('coverage.showAll')}
-                    </Button>
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <DataTable
-                  caption={t('coverage.gaps', { count: report.data.gaps.length })}
-                  columns={columns}
-                  data={gaps}
-                  getRowId={(g) => `${g.pack_id}-${g.price_category}-${g.channel}-${g.from}`}
-                  columnToggle={false}
-                />
-              </CardContent>
-            </Card>
+            <SectionCard
+              title={t('coverage.gaps', { count: report.data.gaps.length })}
+              description={day && t('coverage.filteredDay', { date: formatIsoDate(day) })}
+              actions={
+                day && (
+                  <Button variant="outline" size="sm" onClick={() => setDay(undefined)}>
+                    <XIcon aria-hidden="true" />
+                    {t('coverage.showAll')}
+                  </Button>
+                )
+              }
+              flush
+            >
+              <DataTable
+                embedded
+                caption={t('coverage.gaps', { count: report.data.gaps.length })}
+                columns={columns}
+                data={gaps}
+                getRowId={(g) => `${g.pack_id}-${g.price_category}-${g.channel}-${g.from}`}
+                columnToggle={false}
+              />
+            </SectionCard>
           </>
         ))}
       {sel.season && (
@@ -275,61 +265,60 @@ export function CoverageHeatmap({
   const from = isoToDate(report.from);
   const to = isoToDate(report.to);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{t('coverage.calendar')}</CardTitle>
-        <CardDescription className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline" className="gap-1.5">
+    <SectionCard
+      title={t('coverage.calendar')}
+      description={
+        <span className="flex flex-wrap items-center gap-3 pt-1">
+          <Badge variant="outline">
             <span aria-hidden="true" className="size-2.5 rounded-sm bg-success/40" />
             {t('coverage.legendOk')}
           </Badge>
-          <Badge variant="outline" className="gap-1.5">
+          <Badge variant="outline">
             <span aria-hidden="true" className="size-2.5 rounded-sm bg-destructive" />
             {t('coverage.legendGaps', { max })}
           </Badge>
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Calendar
-          mode="single"
-          selected={isoToDate(selected)}
-          onSelect={(d) => onSelect(d ? dateToIso(d) : undefined)}
-          locale={dateFnsLocale(i18n.language)}
-          weekStartsOn={1}
-          defaultMonth={from}
-          startMonth={from}
-          endMonth={to}
-          numberOfMonths={months.length}
-          hideNavigation
-          showOutsideDays={false}
-          disabled={from && to ? [{ before: from }, { after: to }] : undefined}
-          modifiers={{
-            heat0: levels[0] ?? [],
-            heat1: levels[1] ?? [],
-            heat2: levels[2] ?? [],
-            heat3: levels[3] ?? [],
-            heat4: levels[4] ?? [],
-          }}
-          modifiersClassNames={{
-            heat0: HEAT_CLASSES[0],
-            heat1: HEAT_CLASSES[1],
-            heat2: HEAT_CLASSES[2],
-            heat3: HEAT_CLASSES[3],
-            heat4: HEAT_CLASSES[4],
-          }}
-          labels={{
-            labelDayButton: (date) => {
-              const iso = dateToIso(date);
-              const n = counts.get(iso) ?? 0;
-              return n
-                ? t('coverage.dayGaps', { count: n, date: formatIsoDate(iso) })
-                : t('coverage.dayOk', { date: formatIsoDate(iso) });
-            },
-          }}
-          classNames={{ months: 'relative flex flex-wrap gap-6' }}
-          className="p-0"
-        />
-      </CardContent>
-    </Card>
+        </span>
+      }
+    >
+      <Calendar
+        mode="single"
+        selected={isoToDate(selected)}
+        onSelect={(d) => onSelect(d ? dateToIso(d) : undefined)}
+        locale={dateFnsLocale(i18n.language)}
+        weekStartsOn={1}
+        defaultMonth={from}
+        startMonth={from}
+        endMonth={to}
+        numberOfMonths={months.length}
+        hideNavigation
+        showOutsideDays={false}
+        disabled={from && to ? [{ before: from }, { after: to }] : undefined}
+        modifiers={{
+          heat0: levels[0] ?? [],
+          heat1: levels[1] ?? [],
+          heat2: levels[2] ?? [],
+          heat3: levels[3] ?? [],
+          heat4: levels[4] ?? [],
+        }}
+        modifiersClassNames={{
+          heat0: HEAT_CLASSES[0],
+          heat1: HEAT_CLASSES[1],
+          heat2: HEAT_CLASSES[2],
+          heat3: HEAT_CLASSES[3],
+          heat4: HEAT_CLASSES[4],
+        }}
+        labels={{
+          labelDayButton: (date) => {
+            const iso = dateToIso(date);
+            const n = counts.get(iso) ?? 0;
+            return n
+              ? t('coverage.dayGaps', { count: n, date: formatIsoDate(iso) })
+              : t('coverage.dayOk', { date: formatIsoDate(iso) });
+          },
+        }}
+        classNames={{ months: 'relative flex flex-wrap gap-6' }}
+        className="p-0"
+      />
+    </SectionCard>
   );
 }

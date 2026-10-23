@@ -1,32 +1,24 @@
 import {
-  Badge,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
   ToggleGroup,
   ToggleGroupItem,
 } from '@arenile/shared/ui';
-import { DeleteButton, EmptyState, OptionSelect, QueryState } from '@arenile/shared/ui/patterns';
+import {
+  type ColumnDef,
+  DataTable,
+  DeleteButton,
+  EmptyState,
+  FormActions,
+  FormDialog,
+  OptionSelect,
+  QueryState,
+} from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PackageIcon, PlusIcon, TagsIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -47,6 +39,13 @@ import {
 } from './rules.schema';
 
 type FixedFormula = (typeof FIXED_FORMULAS)[number];
+
+/** One grid row: a price category of a pack. */
+interface FixedRow {
+  id: string;
+  pack: string;
+  category: string;
+}
 
 /** Key of a grid cell: pack × formula × price category × rate period ("" = any period). */
 function fixedCellKey(pack: string, formula: string, category: string, period: string) {
@@ -91,39 +90,71 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
     editor.create();
   };
 
+  const rows: FixedRow[] = p.packs.flatMap((pack) =>
+    categories.map((category) => ({ id: `${pack.id}|${category}`, pack: pack.id, category })),
+  );
+  const tableColumns: ColumnDef<FixedRow>[] = [
+    {
+      id: 'category',
+      meta: { label: t('fields.price_category') },
+      header: t('fields.price_category'),
+      cell: ({ row }) => (
+        <>
+          <span className="block font-medium">
+            {p.categoryNames[row.original.category] ?? row.original.category}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground">{row.original.category}</span>
+        </>
+      ),
+    },
+    ...columns.map((period): ColumnDef<FixedRow> => ({
+      id: `period-${period || 'any'}`,
+      meta: {
+        label: period ? periodName(period) : t('fixed.anyPeriod'),
+        align: 'right',
+      },
+      header: period ? periodName(period) : t('fixed.anyPeriod'),
+      cell: ({ row }) => {
+        const { pack, category } = row.original;
+        const f = byCell.get(fixedCellKey(pack, formula, category, period));
+        if (p.readOnly) return f ? formatCents(f.amount) : '—';
+        const where = `${packName(pack)} · ${t(`formulas.${formula}`)} · ${p.categoryNames[category] ?? category} · ${period ? periodName(period) : t('fixed.anyPeriod')}`;
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-mr-3"
+            onClick={() => open(pack, category, period)}
+            aria-label={
+              f ? t('fixed.editAria', { name: where }) : t('fixed.addAria', { name: where })
+            }
+          >
+            {f ? (
+              formatCents(f.amount)
+            ) : (
+              <PlusIcon aria-hidden="true" className="text-muted-foreground" />
+            )}
+          </Button>
+        );
+      },
+    })),
+  ];
+
+  const add = !p.readOnly && (
+    <Button
+      onClick={() => {
+        setPrefill({ formula });
+        editor.create();
+      }}
+    >
+      <PlusIcon aria-hidden="true" />
+      {t('fixed.add')}
+    </Button>
+  );
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">{t('fixed.description')}</p>
-        {!p.readOnly && (
-          <Button
-            onClick={() => {
-              setPrefill({ formula });
-              editor.create();
-            }}
-          >
-            <PlusIcon aria-hidden="true" />
-            {t('fixed.add')}
-          </Button>
-        )}
-      </div>
-      <ToggleGroup
-        type="single"
-        variant="outline"
-        aria-label={t('fields.formula')}
-        value={formula}
-        onValueChange={(v) => v && setFormula(v as FixedFormula)}
-        className="flex-wrap"
-      >
-        {FIXED_FORMULAS.map((f) => (
-          <ToggleGroupItem key={f} value={f} className="gap-2">
-            {t(`formulas.${f}`)}
-            <Badge variant="secondary" className="tabular-nums">
-              {countByFormula(f)}
-            </Badge>
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+      <p className="text-sm text-muted-foreground">{t('fixed.description')}</p>
       <QueryState
         isLoading={list.isPending}
         error={list.error}
@@ -135,97 +166,57 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
       {list.data && p.packs.length > 0 && categories.length === 0 && (
         <EmptyState icon={TagsIcon} title={t('fixed.noCategories')} />
       )}
-      {list.data &&
-        categories.length > 0 &&
-        p.packs.map((pack) => (
-          <Card key={pack.id} className="gap-0 py-0">
-            <CardHeader className="border-b py-4">
-              <CardTitle className="text-base">
-                {packName(pack.id)}{' '}
-                <span className="font-normal text-muted-foreground">
-                  · {t(`formulas.${formula}`)}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-0">
-              <Table>
-                <caption className="sr-only">
-                  {packName(pack.id)} · {t(`formulas.${formula}`)}
-                </caption>
-                <TableHeader className="bg-muted/50">
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="pl-6">{t('fields.price_category')}</TableHead>
-                    {columns.map((c) => (
-                      <TableHead key={c || 'any'} className="text-right">
-                        {c ? periodName(c) : t('fixed.anyPeriod')}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.map((cat) => (
-                    <TableRow key={cat}>
-                      <TableHead scope="row" className="pl-6">
-                        <span className="block font-medium">{p.categoryNames[cat] ?? cat}</span>
-                        <span className="font-mono text-xs text-muted-foreground">{cat}</span>
-                      </TableHead>
-                      {columns.map((period) => {
-                        const f = byCell.get(fixedCellKey(pack.id, formula, cat, period));
-                        const where = `${packName(pack.id)} · ${t(`formulas.${formula}`)} · ${p.categoryNames[cat] ?? cat} · ${period ? periodName(period) : t('fixed.anyPeriod')}`;
-                        return (
-                          <TableCell key={period || 'any'} className="p-1 text-right">
-                            {p.readOnly ? (
-                              <span className="px-2 tabular-nums">
-                                {f ? formatCents(f.amount) : '—'}
-                              </span>
-                            ) : (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => open(pack.id, cat, period)}
-                                aria-label={
-                                  f
-                                    ? t('fixed.editAria', { name: where })
-                                    : t('fixed.addAria', { name: where })
-                                }
-                                className={
-                                  f
-                                    ? 'w-full justify-end tabular-nums'
-                                    : 'w-full justify-end text-muted-foreground'
-                                }
-                              >
-                                {f ? formatCents(f.amount) : <PlusIcon aria-hidden="true" />}
-                              </Button>
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        ))}
-      <Dialog open={editor.open} onOpenChange={editor.setOpen}>
-        <DialogContent
-          closeLabel={t('common.close', { ns: 'translation' })}
-          className="sm:max-w-lg"
-        >
-          <DialogHeader>
-            <DialogTitle>{editor.item ? t('fixed.editTitle') : t('fixed.add')}</DialogTitle>
-            <DialogDescription>{t('fixed.description')}</DialogDescription>
-          </DialogHeader>
-          <FixedForm
-            key={editor.key}
-            {...p}
-            categories={categories}
-            item={editor.item}
-            initial={prefill}
-            onDone={editor.close}
-          />
-        </DialogContent>
-      </Dialog>
+      {list.data && rows.length > 0 && (
+        <DataTable
+          caption={t('fixed.caption', { formula: t(`formulas.${formula}`) })}
+          columns={tableColumns}
+          data={rows}
+          getRowId={(r) => r.id}
+          pageSize={0}
+          columnToggle={false}
+          filters={
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              aria-label={t('fields.formula')}
+              value={formula}
+              onValueChange={(v) => v && setFormula(v as FixedFormula)}
+            >
+              {FIXED_FORMULAS.map((f) => (
+                <ToggleGroupItem key={f} value={f}>
+                  {t(`formulas.${f}`)}
+                  <span className="text-muted-foreground tabular-nums">{countByFormula(f)}</span>
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          }
+          toolbar={add}
+          groupBy={(r) => r.pack}
+          renderGroup={(pack) => (
+            <>
+              {packName(pack)}{' '}
+              <span className="font-normal text-muted-foreground">
+                · {t(`formulas.${formula}`)}
+              </span>
+            </>
+          )}
+        />
+      )}
+      <FormDialog
+        open={editor.open}
+        onOpenChange={editor.setOpen}
+        title={editor.item ? t('fixed.editTitle') : t('fixed.add')}
+        description={t('fixed.description')}
+      >
+        <FixedForm
+          key={editor.key}
+          {...p}
+          categories={categories}
+          item={editor.item}
+          initial={prefill}
+          onDone={editor.close}
+        />
+      </FormDialog>
     </div>
   );
 }
@@ -350,30 +341,24 @@ function FixedForm(
             )}
           />
         </div>
-        <DialogFooter className="items-center sm:justify-between">
-          {p.item ? (
-            <DeleteButton
-              withText
-              label={t('fixed.deleteAria', { name: p.item.price_category })}
-              message={t('fixed.deleteConfirm', { name: p.item.price_category })}
-              onConfirm={async () => {
-                if (!p.item) return;
-                await remove.mutateAsync({ id: p.item.id, version: p.item.version });
-                p.onDone();
-              }}
-            />
-          ) : (
-            <span />
-          )}
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={p.onDone}>
-              {t('common.actions.cancel', { ns: 'translation' })}
-            </Button>
-            <Button type="submit" disabled={s.pending}>
-              {t('common.actions.save', { ns: 'translation' })}
-            </Button>
-          </div>
-        </DialogFooter>
+        <FormActions
+          onCancel={p.onDone}
+          pending={s.pending}
+          start={
+            p.item && (
+              <DeleteButton
+                withText
+                label={t('fixed.deleteAria', { name: p.item.price_category })}
+                message={t('fixed.deleteConfirm', { name: p.item.price_category })}
+                onConfirm={async () => {
+                  if (!p.item) return;
+                  await remove.mutateAsync({ id: p.item.id, version: p.item.version });
+                  p.onDone();
+                }}
+              />
+            )
+          }
+        />
       </form>
     </Form>
   );

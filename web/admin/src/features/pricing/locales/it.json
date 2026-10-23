@@ -166,10 +166,12 @@
     "editAria": "Modifica la regola {{name}}",
     "deleteAria": "Elimina la regola {{name}}",
     "deleteConfirm": "La regola {{name}} verrà eliminata.",
-    "emptyStage": "Nessuna regola in questa fase.",
-    "stageCaption": "Regole della fase {{stage}}",
     "summary": "In breve",
-    "previewIncomplete": "completa i campi obbligatori per vedere il riepilogo."
+    "previewIncomplete": "completa i campi obbligatori per vedere il riepilogo.",
+    "tabDescription": "Regole in ordine di applicazione: prezzo base, modificatori, sconti.",
+    "caption": "Regole di prezzo",
+    "count_one": "{{count}} regola",
+    "count_other": "{{count}} regole"
   },
   "fixed": {
     "title": "Prezzi a durata fissa",
@@ -183,7 +185,8 @@
     "deleteConfirm": "Il prezzo {{name}} verrà eliminato.",
     "noPacks": "Crea prima almeno un pack nel catalogo.",
     "noCategories": "Nessuna categoria di prezzo: assegnala alle zone o aggiungi un prezzo fisso.",
-    "addAria": "Aggiungi prezzo per {{name}}"
+    "addAria": "Aggiungi prezzo per {{name}}",
+    "caption": "Prezzi a durata fissa · {{formula}}"
   },
   "promo": {
     "title": "Codici promozionali",
@@ -257,7 +260,8 @@
     "vatRate": "Aliquota e imponibile",
     "vatTax": "Imposta",
     "showAll": "Mostra tutti i {{count}} giorni",
-    "showLess": "Mostra meno giorni"
+    "showLess": "Mostra meno giorni",
+    "adjustments": "Extra e sconti"
   },
   "matrix": {
     "title": "Matrice di listino",

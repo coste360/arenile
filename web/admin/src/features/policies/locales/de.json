@@ -120,5 +120,6 @@
     "warnNoPeak": "Kein August-Zeitraum gefunden: Zeiträume manuell wählen.",
     "warnNoGazebo": "Kein Pavillon-Paket gefunden: Pakete manuell wählen."
   },
-  "daysShort": "Tage"
+  "daysShort": "Tage",
+  "tiersCaption": "Erstattungsstufen"
 }

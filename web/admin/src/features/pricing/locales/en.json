@@ -166,10 +166,12 @@
     "editAria": "Edit rule {{name}}",
     "deleteAria": "Delete rule {{name}}",
     "deleteConfirm": "Rule {{name}} will be deleted.",
-    "emptyStage": "No rules in this stage.",
-    "stageCaption": "{{stage}} stage rules",
     "summary": "Summary",
-    "previewIncomplete": "fill in the required fields to see the summary."
+    "previewIncomplete": "fill in the required fields to see the summary.",
+    "tabDescription": "Rules in the order they apply: base price, modifiers, discounts.",
+    "caption": "Price rules",
+    "count_one": "{{count}} rule",
+    "count_other": "{{count}} rules"
   },
   "fixed": {
     "title": "Fixed-duration prices",
@@ -183,7 +185,8 @@
     "deleteConfirm": "Price {{name}} will be deleted.",
     "noPacks": "Create at least one pack in the catalog first.",
     "noCategories": "No price category yet: assign one to the zones or add a fixed price.",
-    "addAria": "Add price for {{name}}"
+    "addAria": "Add price for {{name}}",
+    "caption": "Fixed-duration prices · {{formula}}"
   },
   "promo": {
     "title": "Promo codes",
@@ -257,7 +260,8 @@
     "vatRate": "Rate and taxable amount",
     "vatTax": "Tax",
     "showAll": "Show all {{count}} days",
-    "showLess": "Show fewer days"
+    "showLess": "Show fewer days",
+    "adjustments": "Extras and discounts"
   },
   "matrix": {
     "title": "Price matrix",

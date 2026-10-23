@@ -6,12 +6,6 @@ import {
   AlertDescription,
   Badge,
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
   Form,
   FormControl,
   FormField,
@@ -36,6 +30,7 @@ import {
   type Option,
   QueryState,
   RowActions,
+  SectionCard,
   SheetForm,
   StatusBadge,
 } from '@arenile/shared/ui/patterns';
@@ -134,11 +129,11 @@ export function PoliciesPage() {
   const columns: ColumnDef<BookingPolicy>[] = [
     {
       accessorKey: 'priority',
-      meta: { label: t('fields.priority') },
+      meta: { label: t('fields.priority'), align: 'right' },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('fields.priority')} />
       ),
-      cell: ({ row }) => <span className="tabular-nums">{row.original.priority}</span>,
+      cell: ({ row }) => row.original.priority,
     },
     {
       accessorKey: 'name',
@@ -158,7 +153,7 @@ export function PoliciesPage() {
         ) : (
           <div className="flex flex-wrap gap-1">
             {parts.map((s) => (
-              <Badge key={s} variant="secondary">
+              <Badge key={s} variant="outline">
                 {s}
               </Badge>
             ))}
@@ -210,7 +205,7 @@ export function PoliciesPage() {
       actions={<SeasonSelect seasons={sel.seasons} season={sel.season} onSelect={sel.select} />}
     >
       <Tabs value={tab} onValueChange={(v) => setTab(v as 'season' | 'default')} className="gap-4">
-        <TabsList aria-label={t('tabs.label')}>
+        <TabsList variant="line" aria-label={t('tabs.label')}>
           <TabsTrigger value="season">{t('tabs.season')}</TabsTrigger>
           <TabsTrigger value="default">{t('tabs.default')}</TabsTrigger>
         </TabsList>
@@ -229,15 +224,7 @@ export function PoliciesPage() {
           )}
         </TabsContent>
         <TabsContent value="season" className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="max-w-2xl text-sm text-muted-foreground">{t('seasonHint')}</p>
-            {!readOnly && sel.season && (
-              <Button onClick={editor.create}>
-                <PlusIcon aria-hidden="true" />
-                {t('add')}
-              </Button>
-            )}
-          </div>
+          <p className="text-sm text-muted-foreground">{t('seasonHint')}</p>
           <QueryState
             isLoading={sel.isLoading || (!!sel.season && list.isPending)}
             error={sel.error ?? list.error}
@@ -253,6 +240,15 @@ export function PoliciesPage() {
               data={items}
               getRowId={(p) => p.id}
               searchable
+              toolbar={
+                !readOnly &&
+                sel.season && (
+                  <Button onClick={editor.create}>
+                    <PlusIcon aria-hidden="true" />
+                    {t('add')}
+                  </Button>
+                )
+              }
               initialSorting={[{ id: 'priority', desc: true }]}
               empty={<EmptyState icon={ShieldCheckIcon} title={t('empty')} bordered={false} />}
             />
@@ -412,36 +408,35 @@ function PolicyForm(p: {
     <Form {...form}>
       <SheetForm onSubmit={s.submit} onCancel={p.onDone} pending={s.pending}>
         <FormErrorAlert state={s.alert} onReload={p.onDone} />
-        <Card className="gap-3 border-dashed bg-muted/30 py-4 shadow-none">
-          <CardHeader className="px-4">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <WandSparklesIcon aria-hidden="true" className="size-4 text-primary-on-surface" />
+        <EditorSection
+          title={
+            <span className="flex items-center gap-2">
+              <WandSparklesIcon aria-hidden="true" className="size-4 text-muted-foreground" />
               {t('examples.title')}
-            </CardTitle>
-            <CardDescription>{t('examples.hint')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 px-4">
-            <div className="flex flex-wrap gap-2">
-              {POLICY_EXAMPLES.map((id) => (
-                <Button key={id} variant="outline" size="sm" onClick={() => applyExample(id)}>
-                  {t(`examples.${id}`)}
-                </Button>
-              ))}
-            </div>
-            {exampleWarnings.length > 0 && (
-              <Alert role="status" className="border-warning/50 bg-warning/10">
-                <TriangleAlertIcon aria-hidden="true" />
-                <AlertDescription>
-                  <ul className="list-inside list-disc">
-                    {exampleWarnings.map((w) => (
-                      <li key={w}>{t(w)}</li>
-                    ))}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+            </span>
+          }
+          description={t('examples.hint')}
+        >
+          <div className="flex flex-wrap gap-2">
+            {POLICY_EXAMPLES.map((id) => (
+              <Button key={id} variant="outline" size="sm" onClick={() => applyExample(id)}>
+                {t(`examples.${id}`)}
+              </Button>
+            ))}
+          </div>
+          {exampleWarnings.length > 0 && (
+            <Alert role="status" variant="warning">
+              <TriangleAlertIcon aria-hidden="true" />
+              <AlertDescription>
+                <ul className="list-inside list-disc">
+                  {exampleWarnings.map((w) => (
+                    <li key={w}>{t(w)}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+        </EditorSection>
         <EditorSection title={t('sections.general')}>
           <div className="grid gap-4 sm:grid-cols-3">
             <TextRow
@@ -489,26 +484,25 @@ function DefaultPolicyForm(p: {
   return (
     <Form {...form}>
       <form noValidate onSubmit={section.submit}>
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('tabs.default')}</CardTitle>
-            <CardDescription>{t('defaultHint')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormErrorAlert state={section.alert} onReload={section.reload} />
-            <fieldset disabled={p.readOnly} className="min-w-0">
-              <RulesFields control={form.control} isDefault />
-            </fieldset>
-          </CardContent>
-          {!p.readOnly && (
-            <CardFooter className="justify-end border-t">
+        <SectionCard
+          title={t('tabs.default')}
+          description={t('defaultHint')}
+          footer={
+            !p.readOnly && (
               <Button type="submit" disabled={section.pending}>
                 {section.pending && <Spinner />}
                 {t('common.actions.save', { ns: 'translation' })}
               </Button>
-            </CardFooter>
-          )}
-        </Card>
+            )
+          }
+        >
+          <div className="space-y-4">
+            <FormErrorAlert state={section.alert} onReload={section.reload} />
+            <fieldset disabled={p.readOnly} className="min-w-0">
+              <RulesFields control={form.control} isDefault />
+            </fieldset>
+          </div>
+        </SectionCard>
       </form>
     </Form>
   );

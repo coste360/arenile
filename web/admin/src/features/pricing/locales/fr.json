@@ -166,10 +166,12 @@
     "editAria": "Modifier la règle {{name}}",
     "deleteAria": "Supprimer la règle {{name}}",
     "deleteConfirm": "La règle {{name}} sera supprimée.",
-    "emptyStage": "Aucune règle à cette étape.",
-    "stageCaption": "Règles de l’étape {{stage}}",
     "summary": "En bref",
-    "previewIncomplete": "remplissez les champs obligatoires pour voir le résumé."
+    "previewIncomplete": "remplissez les champs obligatoires pour voir le résumé.",
+    "tabDescription": "Règles dans l’ordre d’application : prix de base, modificateurs, remises.",
+    "caption": "Règles de prix",
+    "count_one": "{{count}} règle",
+    "count_other": "{{count}} règles"
   },
   "fixed": {
     "title": "Prix forfaitaires",
@@ -183,7 +185,8 @@
     "deleteConfirm": "Le prix {{name}} sera supprimé.",
     "noPacks": "Créez d’abord au moins un pack dans le catalogue.",
     "noCategories": "Aucune catégorie de prix : attribuez-la aux zones ou ajoutez un prix fixe.",
-    "addAria": "Ajouter un prix pour {{name}}"
+    "addAria": "Ajouter un prix pour {{name}}",
+    "caption": "Prix à durée fixe · {{formula}}"
   },
   "promo": {
     "title": "Codes promo",
@@ -257,7 +260,8 @@
     "vatRate": "Taux et base imposable",
     "vatTax": "Taxe",
     "showAll": "Afficher les {{count}} jours",
-    "showLess": "Afficher moins de jours"
+    "showLess": "Afficher moins de jours",
+    "adjustments": "Extras et remises"
   },
   "matrix": {
     "title": "Matrice tarifaire",
