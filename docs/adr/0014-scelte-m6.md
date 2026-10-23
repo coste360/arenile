@@ -60,4 +60,43 @@ condivisi devono restare minime.
   `setup_completed`. `Me` ha il campo facoltativo `device`.
 - I pacchetti firmati (Authenticode, Developer ID e notarizzazione) richiedono certificati e runner nativi: il job
   di packaging va nell'artefatto `portal-bundle-<tag>`, mai come asset GitHub.
-- Le operazioni M6 rispondono `501` finché i builder non le completano; il token per dispositivo fallisce chiuso.
+- Le operazioni M6 sono implementate (nessun `501` residuo); il token per dispositivo fallisce chiuso.
+
+## Implementazione (integrazione M6, 2026-10-23)
+
+Decisioni prese durante l'implementazione, a complemento dei punti sopra.
+
+8. **Launcher nello stesso modulo Go.** `cmd/arenile-desktop` usa lo stesso bootstrap `app.New` di
+   `arenile serve` (migrazioni comprese): un solo archivio SQLite, un solo formato di backup, nessun fork del
+   core. Porte e adattatori: `internal/desktop` definisce le porte `UI`, `LANMode` e `RemoteMode`;
+   `internal/desktop/lan` e `internal/desktop/remote` le implementano e `main.go` le collega
+   (`NewLAN: lan.New`, `Remote: remote.New(...)`), così `desktop` non importa gli adattatori.
+9. **Tag di build e librerie native.** Senza tag: UI headless, nessun CGO (CI, `go build ./...`). Con
+   `-tags desktop` e CGO: icona nella barra di sistema `fyne.io/systray` (Apache-2.0) e finestra della modalità
+   remota con il webview di sistema `github.com/webview/webview_go` (MIT; WebView2 su Windows, WKWebView su macOS,
+   WebKitGTK su Linux). Il pacchetto macOS pubblicato oggi usa la build headless universale; la build tray si
+   compila sui runner nativi (`desktop.yml`).
+10. **Chiave segreta nel portachiavi del sistema** (`github.com/zalando/go-keyring`, MIT; Keychain, Credential
+    Manager, Secret Service) con account derivato dalla cartella dati e fallback su file 0600. Con un archivio
+    esistente e nessuna chiave l'avvio si ferma invece di generarne una nuova (INV-53).
+11. **Rete locale: TLS autogenerato e doppio filtro sugli indirizzi.** Certificato ECDSA P-256 di 825 giorni
+    nella cartella dati, impronta stabile ai riavvii e ai cambi di IP. Il listener chiude prima dell'handshake
+    le connessioni da indirizzi non privati (RFC 1918, link-local, ULA, loopback; CGNAT 100.64/10 rifiutato) e il
+    middleware `LocalPeersOnly` ripete il controllo per richiesta (INV-50). Niente mDNS (nessuna dipendenza). Il
+    QR del pannello (`desktop.lan_qr_svg` in `/meta`) contiene solo l'indirizzo, per la fotocamera dei browser;
+    l'impronta viaggia nel QR di abbinamento, dove l'app la usa per il pinning.
+12. **Token Bearer accanto ai cookie.** Il middleware sceglie la strategia dal prefisso; CSRF solo per i cookie;
+    `last_used_at` scritto al massimo una volta al minuto; revoca efficace dalla richiesta successiva (nessuna
+    cache). L'abbinamento crea dispositivo, consuma il codice e scrive l'audit nella stessa transazione
+    (INV-48, INV-49).
+13. **Ponte fiscale.** Coda `fiscal_bridge_jobs` con lease, long polling risvegliato da un notifier in processo,
+    esiti idempotenti, ritentativi con attesa crescente, lease rilasciati alla scadenza o alla revoca del
+    dispositivo (INV-51). Lato cassa l'agente salva gli esiti su file per non stampare due volte un lavoro
+    riconsegnato. Driver selezionato esplicitamente con `settings.fiscal.driver = "bridge"`.
+14. **Abbinamento della modalità remota anche da riga di comando**: `arenile-desktop -pair <QR|URL>
+    [-pair-code ...] [-pair-fingerprint ...]` salva token e configurazione e passa la cartella dati in modalità
+    remota (utile per installazioni gestite e per i PC senza fotocamera).
+15. **Pacchetti**: macOS `.app` + `.dmg` universale, Windows Inno Setup (per utente, senza amministratore),
+    Linux AppImage su `ubuntu-22.04` (glibc vecchia). Firme solo se i segreti esistono, altrimenti suffisso
+    `-unsigned`; tutto nell'artefatto `portal-bundle-<tag>`, mai come asset di una release GitHub
+    (`docs/desktop-build.md`).

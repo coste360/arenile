@@ -12,6 +12,7 @@ Questa guida è pensata per chi gestisce un lido, una spiaggia attrezzata o uno 
 | [Installazione](installazione.md) | Docker, VPS, Raspberry Pi (arm64), Coolify e CapRover, HTTPS, backup e ripristino, aggiornamento |
 | [Privacy e GDPR](privacy-gdpr.md) | Ruoli titolare/responsabile, dati raccolti, consensi, diritti degli interessati, modello di informativa |
 | [Nota fiscale](fiscale.md) | Cosa fa e cosa non fa Arenile su corrispettivi, documento commerciale e registratore telematico |
+| [App desktop: rete locale e modalità remota](desktop-rete-locale-e-remota.md) | Modalità rete locale con certificato e QR, collegamento a un'istanza, ponte fiscale verso il registratore |
 
 ## In breve
 

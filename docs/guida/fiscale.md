@@ -42,6 +42,12 @@ La cassa di Arenile registra aperture, incassi per metodo (contanti, carta, boni
 
 Con il driver Stripe gli incassi online arrivano direttamente sul conto Stripe dello stabilimento. Arenile non trattiene commissioni; Stripe applica le proprie commissioni di circuito, che compaiono nei suoi report. Il trattamento fiscale e contabile di questi incassi (inclusi acconti e rimborsi) va concordato con il commercialista.
 
+## Registratore sul PC della cassa con un server online
+
+Se Arenile gira su un server online e il registratore telematico è collegato al PC della cassa, l'app desktop in
+modalità remota fa da ponte: lo stabilimento usa il driver `bridge` e i documenti vengono emessi sul PC della cassa,
+una sola volta anche se la connessione cade. Dettagli in [App desktop: rete locale e modalità remota](desktop-rete-locale-e-remota.md#ponte-fiscale).
+
 ## Contribuire con un driver fiscale
 
 Se conosci il protocollo di una famiglia di registratori telematici e vuoi contribuire un driver, apri una issue con il modello [Nuovo driver](https://github.com/coste360/arenile/issues/new?template=driver.yml) indicando dispositivi supportati, documentazione tecnica e modalità di test senza un dispositivo reale.
