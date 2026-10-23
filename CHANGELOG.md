@@ -14,23 +14,36 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 - M5 parte A, report completi (spec 15.3): riepilogo, occupazione per giorno/zona/fila/fascia, ricavi incassati o
   venduti per periodo/canale/pack/extra/metodo/aliquota, prenotazioni per canale/anticipo/formula, cancellazioni e
   no-show, abbonamenti con rilasci e rivendite, clienti migliori (solo nome), saldi aperti e confronto con l'anno
-  precedente allineato per data o per giorno della settimana (nuovo parametro `align=calendar|weekday`). Esportazione
-  CSV italiana di ogni report (BOM, `;`, virgola decimale). Il ricavo incassato coincide al centesimo con i
-  corrispettivi (INV-51); una stagione di un lido da 300 postazioni risponde in meno di 0,3 secondi.
+  precedente allineato per data o per giorno della settimana (nuovo parametro `align=calendar|weekday`). Riepilogo e
+  confronto su due sole basi di data (soggiorno per occupazione, prenotazioni, prenotato, abbonamenti, cancellazioni
+  e no-show; incasso per l'incassato), stampate sotto ogni scheda; la serie del confronto sovrappone gli anni per
+  giorno di calendario (29 febbraio ripiegato sul 28) e `compare_year` deve precedere l'anno del periodo.
+  Esportazione CSV italiana di ogni report aggregato (BOM, `;`, virgola decimale). Il ricavo incassato coincide al
+  centesimo con l'export giornaliero dei corrispettivi (INV-51); una stagione di un lido da 300 postazioni risponde in
+  meno di 0,3 secondi. Non ancora fatte, rimandate a M5 parte B ([ADR 0014](docs/adr/0014-scelte-m5a.md)): le
+  esportazioni di elenco (prenotazioni, clienti, pagamenti, corrispettivi) e il formato XLSX richiesti da 15.3.
 - M5 parte A, chiavi API e webhook in uscita dal pannello: chiavi con scope, scadenza (rifiutata in autenticazione),
   revoca immediata, limite di 300 richieste al minuto per chiave e canale `api` forzato per prenotazioni e hold creati
   con una chiave (quota online, ADR 0011); endpoint webhook con filtro sugli eventi, evento di prova sincrono,
   registro delle consegne con reinvio, rotazione del segreto con doppia firma nel periodo di grazia, ritenzione di 30
   giorni, limite di 256 KiB sul corpo e protezione SSRF (risoluzione unica e connessione all'IP controllato, link-local
   e metadati sempre bloccati, reti private solo con la nuova variabile `ARENILE_WEBHOOKS_ALLOW_PRIVATE`, nessun
-  redirect seguito). Guida in [`docs/guida/integrazioni.md`](docs/guida/integrazioni.md) con la verifica della firma;
-  invarianti INV-52, INV-53, INV-54.
+  redirect seguito; `localhost` e loopback rifiutati già al salvataggio quando la variabile è spenta). La query
+  string dell'URL (dove spesso viaggia un token del ricevitore) non compare mai nel registro attività né
+  nell'elenco del pannello. La disattivazione automatica dopo 20 errori non invia ancora l'email al proprietario
+  prevista da 18.2 (registro attività e stato nel pannello; email in M5 parte B, ADR 0014). Guida in
+  [`docs/guida/integrazioni.md`](docs/guida/integrazioni.md) con la verifica della firma; invarianti INV-52, INV-53,
+  INV-54.
 - M5 parte A, pannello PWA con offline limitato (spec 21.2): pannello installabile (manifest e icone Arenile, avviso
   di nuova versione con aggiornamento su conferma), copia offline in IndexedDB solo dello stabilimento corrente
   (utente, mappe, situazione di oggi e domani, scadenza 48 ore, cancellata all'uscita o al cambio utente), indicatore
   di connessione con operazioni in coda, avviso offline, coda di check-in, note e incassi in contanti inviata in
   ordine con `Idempotency-Key` alla riconnessione e conflitti da rivedere (riprova o scarta); creazione e spostamento
-  di prenotazioni non disponibili offline. Il service worker non mette mai in cache le risposte `/api/`. Guida in
+  di prenotazioni non disponibili offline. La coda sopravvive al cambio di utente sul dispositivo (incassi davvero
+  riscossi: li invia la nuova sessione); un check-in accodato dopo un incasso sulla stessa prenotazione non fallisce
+  più per versione superata; gli incassi del giorno dicono «Non disponibile offline». L'avviso «pronto per
+  funzionare offline» compare una sola volta per browser, in basso a destra, senza coprire l'indicatore di
+  connessione. Il service worker non mette mai in cache le risposte `/api/`. Guida in
   [`docs/guida/pannello-offline.md`](docs/guida/pannello-offline.md); invariante INV-55.
 - M5 parte A, contratto e scaffolding ([ADR 0014](docs/adr/0014-scelte-m5a.md)): report completi in
   `api/openapi.yaml` (riepilogo, occupazione per giorno/zona/fila/fascia, ricavi per periodo/canale/pack/extra/metodo

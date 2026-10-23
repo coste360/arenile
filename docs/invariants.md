@@ -322,9 +322,11 @@ Verificata da: `TestConcurrency_CreditRedemption_NeverNegative` (`internal/domai
 
 **INV-51 — Report riconciliati con il registro dei pagamenti e i corrispettivi.**
 Il ricavo incassato di un periodo (report ricavi `basis=collected`, riepilogo, confronto) è uguale al totale
-dell'export dei corrispettivi dello stesso periodo; raggruppato per giorno, settimana, mese, metodo o aliquota, lo
-scorporo avviene sulle stesse celle (giorno, aliquota, metodo) dell'export giornaliero, quindi imponibile e imposta per
-aliquota coincidono al centesimo. Occupazione = unità (postazione, giorno, fascia) allocate a prenotazioni e
+dell'export dei corrispettivi dello stesso periodo; il riferimento è l'**export giornaliero** (`group_by=day`): lo
+scorporo del report avviene sempre per cella (giorno, aliquota, metodo), quindi imponibile e imposta per aliquota
+coincidono al centesimo con quell'export qualunque sia il raggruppamento del report (giorno, settimana, mese, metodo,
+aliquota), mentre l'export dei corrispettivi raggruppato per mese scorpora per cella mensile e può differire di
+qualche centesimo nell'imponibile e nell'imposta (il lordo coincide sempre). Occupazione = unità (postazione, giorno, fascia) allocate a prenotazioni e
 abbonamenti sui mezzi giorni aperti diviso le unità disponibili (postazioni attive meno blocchi, esclusi giorni di
 chiusura e fuori stagione); i report sono sempre filtrati per stabilimento e non espongono mai contatti dei clienti.
 Verificata da: `TestBuildRevenueCollected_ReconcilesWithCorrispettivi` (property test), `TestReportService_ReconcilesWithLedger`
@@ -355,8 +357,12 @@ Ogni tentativo di consegna è preso con un lease (`ClaimWebhookDelivery`, `Claim
 istanze e il test sincrono del pannello non inviano mai due volte lo stesso tentativo; il corpo è l'envelope
 dell'outbox, firmato `t=<ts>,v1=<HMAC-SHA256>` con il segreto corrente e, nel periodo di grazia di una rotazione,
 anche con il precedente. I segreti sono cifrati con il portachiavi (AAD `<id>` e `<id>:previous`), mostrati solo alla
-creazione e alla rotazione, mai nel registro attività né nei log; una risposta `Cache-Control: no-store` non viene mai
-salvata da `Idempotency-Key` (`TestIdempotency_NeverStoresNoStoreResponses`).
+creazione e alla rotazione, mai nel registro attività né nei log; l'URL entra nel registro attività e nell'elenco del
+pannello senza query string (`webhook.RedactURL`, `redactWebhookUrl`), dove spesso viaggia un token del ricevitore;
+una risposta `Cache-Control: no-store` non viene mai salvata da `Idempotency-Key`
+(`TestIdempotency_NeverStoresNoStoreResponses`). Scostamento dichiarato (ADR 0014): la disattivazione automatica
+dopo 20 errori consecutivi scrive registro attività e log ma non invia ancora l'email al proprietario prevista da
+18.2.
 Verificata da: `TestConcurrency_WebhookDelivery` (100 worker, SQLite e PostgreSQL),
 `TestDeliverer_SignsWithPreviousSecretDuringGrace`, `TestDeliverer_RetryBackoffAndDeadLetter`,
 `TestDeliverer_AttemptNowTestEvent` (`internal/domain/event`), `TestWebhookService_Flow` (`internal/domain/webhook`),
@@ -368,15 +374,19 @@ di [`docs/guida/webhook-verifica-firma.md`](guida/webhook-verifica-firma.md)) e 
 Offline si accodano solo check-in, nota e incasso in contanti su una prenotazione esistente; creazione e spostamento
 non partono mai senza connessione. La coda è inviata in ordine, ognuna con la `Idempotency-Key` generata all'accodamento
 (la stessa anche per la richiesta online non arrivata al server), quindi una replica non applica mai due volte
-un'operazione; 409/412/422 diventano conflitti mostrati all'utente, 401 sospende la coda. Il service worker precarica
-solo shell e risorse statiche e non mette mai in cache `/api/`; sul dispositivo restano solo le chiavi dell'allowlist
-(`admin/src/offline/cache.ts`) dello stabilimento corrente, per 48 ore, cancellate all'uscita e al cambio utente.
+un'operazione; 409/412/422 diventano conflitti mostrati all'utente, 401 sospende la coda. Un check-in accodato dietro
+un'altra operazione sulla stessa prenotazione non invia `If-Match` (ogni operazione alza la versione; la versione in
+cache segue). Il service worker precarica solo shell e risorse statiche e non mette mai in cache `/api/`; sul
+dispositivo restano solo le chiavi dell'allowlist (`admin/src/offline/cache.ts`) dello stabilimento corrente, per 48
+ore, cancellate all'uscita e al cambio utente; la coda invece sopravvive al cambio utente (incassi davvero riscossi,
+nessun dato personale) e la invia la nuova sessione.
 Verificata da: `OperationQueue_Flush` e `OperationQueue_RetryDiscard` (`web/shared/src/offline/queue.test.ts`),
 `createPersistPolicy_Allowlist` (`web/admin/src/offline/cache.test.ts`), `OfflineRuntime_Queue` e
 `OfflineRuntime_Cache` (`web/admin/src/offline/runtime.test.ts`), `offline-ui.test.tsx` e
 `e2e/tests/offline.spec.ts` (Chromium reale: avvio offline dalla copia salvata, cancellazione all'uscita) e
 `e2e/tests/offline-queue.spec.ts` (check-in offline inviato una sola volta alla riconnessione, versione della
-prenotazione +1). Stato: implemented.
+prenotazione +1; mappa e prenotazione di oggi leggibili dopo un ricaricamento offline; incasso in contanti seguito da
+check-in sulla stessa prenotazione, entrambi applicati). Stato: implemented.
 
 **INV-56 — Spostare il lato del mare cambia solo la geometria.**
 Ribaltare o ruotare una mappa al cambio del lato del mare (`mapping.ReorientLayout`, `POST .../maps/{id}/reorient`)
@@ -385,6 +395,8 @@ Ogni fila resta alla stessa distanza dal mare e l'ordine delle file è conservat
 passaggio inverso ricostruisce la disposizione originale; le passerelle restano sulla griglia di 60 unità. Il
 salvataggio è unico e versionato (If-Match, versione +1, audit `map.reoriented` ed evento `config.map_changed` con
 `reoriented` nella stessa transazione); con allocazioni future serve la conferma esplicita (`409` altrimenti).
+Lati opposti sono uno specchio e lati adiacenti una rotazione, quindi percorsi diversi tra gli stessi due lati danno
+disposizioni diverse (scelta documentata in ADR 0014, `TestReorientLayout_PathsDoNotCompose`).
 Verificata da: `TestReorientLayout_PropertyRoundTripIsIdentity`, `TestReorientLayout_PropertyDistanceFromTheSea`,
 `TestReorientLayout_AllSideCombinations`, `TestReorientLayout_TilesKeepTheTileGrid` (`internal/domain/mapping`),
 `TestMappingIntegration_ReorientMap`, `TestMapsHTTP_Reorient`, `TestSeedDemo_UpgradesSeaToTop` (tag `integration`,
