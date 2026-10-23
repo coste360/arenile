@@ -162,6 +162,7 @@
     "released": "Emplacements libérés",
     "releasedHint": "Jours d’abonnés remis en vente",
     "takings": "Encaissements du jour",
+    "takingsOffline": "Indisponible hors ligne",
     "balanceDue": "Soldes ouverts : {{amount}}",
     "balanceDueTitle": "Soldes ouverts"
   }

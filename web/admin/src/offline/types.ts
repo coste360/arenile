@@ -17,7 +17,9 @@ import type { OperationQueue, QueuedOperationBase } from '@arenile/shared/offlin
  *   render them and the signed-in user (to start the shell offline). Only
  *   the current establishment is kept; cleared on logout and when another
  *   user signs in; snapshots older than 48 hours are dropped (policy in
- *   cache.ts).
+ *   cache.ts). The queue instead survives a change of user: it holds cash
+ *   really collected and check-ins really made (no personal data), and the
+ *   new session sends it.
  * - Only low-risk operations are queued offline: check-in, note, cash
  *   payment on an existing booking. Creating or moving bookings is never
  *   allowed offline (availability is guaranteed only by the server).
@@ -25,7 +27,9 @@ import type { OperationQueue, QueuedOperationBase } from '@arenile/shared/offlin
  *   the Idempotency-Key generated at enqueue time (safe replays). Problem
  *   responses 409/412/422 mark the operation `conflict` and stop nothing
  *   else; they are shown to the user with the problem detail. 401 pauses the
- *   queue until the user logs in again.
+ *   queue until the user logs in again. A check-in carries If-Match only
+ *   when nothing else is queued on its booking (every queued operation
+ *   raises the version on the server; the cached one follows, optimistic.ts).
  * - A connection indicator is always visible in the shell (online, offline,
  *   syncing with the count of pending operations, conflicts).
  */

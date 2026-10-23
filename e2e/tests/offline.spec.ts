@@ -92,6 +92,12 @@ test("starts offline from the saved copy and clears it on logout", async ({ page
   await expect(header.getByRole("status")).toHaveText("Offline");
   await expect(page.getByText("Sei offline")).toBeVisible();
   await expect(page.getByText(/Stai consultando i dati salvati alle/)).toBeVisible();
+  // The map of the day renders from the restored document and day (spec 21.2:
+  // the cached map must be readable), with its spots; the takings, never
+  // kept on the device, say so instead of showing a placeholder.
+  await expect(page.getByRole("group", { name: /^Mappa con \d+ postazioni$/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Postazione A1:/ })).toBeVisible();
+  await expect(page.getByText("Non disponibile offline")).toBeVisible();
 
   // Client-side navigation works offline too (lazy chunks are precached).
   await page.goto(`${base}/mappa`);

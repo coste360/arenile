@@ -162,6 +162,7 @@
     "released": "Released spots",
     "releasedHint": "Pass days put back on sale",
     "takings": "Takings today",
+    "takingsOffline": "Not available offline",
     "balanceDue": "Open balances: {{amount}}",
     "balanceDueTitle": "Open balances"
   }

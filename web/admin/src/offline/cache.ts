@@ -36,8 +36,13 @@ export const OFFLINE_CONFIG_AREAS: ReadonlySet<string> = new Set([
 ]);
 
 export interface PersistPolicyContext {
-  /** Establishment shown in the URL (only its data is kept). */
-  currentEstablishmentId: () => string | undefined;
+  /**
+   * Establishment shown in the URL (only its data is kept). At restore
+   * time the URL is not parsed yet: the runtime answers `'*'` so that the
+   * data of the one establishment the snapshot holds is accepted (the
+   * save path never writes another one).
+   */
+  currentEstablishmentId: () => string | '*' | undefined;
   /** Time zone of an establishment (from the cached list), if known. */
   timezoneOf: (establishmentId: string) => string | undefined;
   now?: () => Date;
@@ -68,11 +73,11 @@ export function createPersistPolicy(ctx: PersistPolicyContext) {
     const [root, a, b, c] = key;
     if (root === 'auth') return a === 'me';
     if (root === 'establishments') return true;
-    const est = ctx.currentEstablishmentId();
-    if (!est || a !== est) return false;
+    const current = ctx.currentEstablishmentId();
+    if (!current || typeof a !== 'string' || (current !== '*' && a !== current)) return false;
     if (root === 'config') return typeof b === 'string' && OFFLINE_CONFIG_AREAS.has(b);
     if (root !== 'est') return false;
-    const window = offlineWindow(ctx.timezoneOf(est), now());
+    const window = offlineWindow(ctx.timezoneOf(a), now());
     if (b === 'operations' && c === 'day') {
       const params = key[4] as { date?: unknown } | undefined;
       return typeof params?.date === 'string' && window.includes(params.date);

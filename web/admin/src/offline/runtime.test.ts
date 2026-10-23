@@ -149,6 +149,56 @@ describe('OfflineRuntime_Queue', () => {
     expect(listener).toHaveBeenCalledWith(expect.objectContaining({ sent: 1, conflicts: 1 }));
   });
 
+  it('drops If-Match from a check-in queued behind another operation on the same booking', async () => {
+    const online = { value: false };
+    const { runtime, queryClient, fetchMock } = setup(
+      {
+        [`POST ${API}/bookings/b1/payments`]: () => json(201, { id: 'p1' }),
+        [`POST ${API}/bookings/b1/check-in`]: () => json(200, { id: 'b1' }),
+        [`POST ${API}/bookings/b2/check-in`]: () => json(200, { id: 'b2' }),
+      },
+      { online },
+    );
+    await runtime.start();
+    queryClient.setQueryData(DAY_KEY, day);
+    // The usual arrival: the balance in cash, then the check-in.
+    await runtime.enqueue({
+      kind: 'cash_payment',
+      establishmentId: EST,
+      bookingId: 'b1',
+      label: 'A2',
+      amount: 2000,
+    });
+    // The cached version moved with the payment (the server will bump it too).
+    const cached = queryClient.getQueryData<typeof day>(DAY_KEY)?.spots[0]?.booking;
+    expect(cached?.version).toBe((day.spots[0]?.booking?.version ?? 0) + 1);
+    await runtime.enqueue({
+      kind: 'check_in',
+      establishmentId: EST,
+      bookingId: 'b1',
+      label: 'A2',
+      ifMatch: `"${cached?.version}"`,
+    });
+    // Another booking with nothing queued keeps its If-Match.
+    await runtime.enqueue({
+      kind: 'check_in',
+      establishmentId: EST,
+      bookingId: 'b2',
+      label: 'A3',
+      ifMatch: '"7"',
+    });
+    online.value = true;
+    expect(await runtime.flush()).toMatchObject({ sent: 3, conflicts: 0 });
+    const calls = fetchMock.mock.calls.map(([r]) => r as Request);
+    expect(calls.map((r) => new URL(r.url).pathname)).toEqual([
+      `${API}/bookings/b1/payments`,
+      `${API}/bookings/b1/check-in`,
+      `${API}/bookings/b2/check-in`,
+    ]);
+    expect(calls[1]!.headers.get('If-Match')).toBeNull();
+    expect(calls[2]!.headers.get('If-Match')).toBe('"7"');
+  });
+
   it('keeps the queue across a reload (same IndexedDB)', async () => {
     const db = memoryDatabase('reload');
     const first = setup({}, { db, online: { value: false } });
@@ -191,24 +241,51 @@ describe('OfflineRuntime_Cache', () => {
     expect(reloaded.queryClient.getQueryData(['auth', 'me'])).toEqual(ME('u1'));
   });
 
-  it('drops the previous user data when another user signs in', async () => {
+  it('restores the snapshot before the establishment is known (production order)', async () => {
+    const db = memoryDatabase('order');
+    const first = setup({}, { db });
+    await first.runtime.start();
+    first.runtime.setEstablishment(EST);
+    first.queryClient.setQueryData(['auth', 'me'], ME('u1'));
+    first.queryClient.setQueryData(DAY_KEY, day);
+    first.queryClient.setQueryData(['config', EST, 'maps', 'operational'], [{ id: 'm1' }]);
+    await first.runtime.persister.persistNow();
+
+    // main.tsx restores before the router runs: no establishment yet.
+    const second = setup({}, { db, online: { value: false } });
+    await second.runtime.start();
+    expect(second.queryClient.getQueryData(DAY_KEY)).toEqual(day);
+    expect(second.queryClient.getQueryData(['config', EST, 'maps', 'operational'])).toEqual([
+      { id: 'm1' },
+    ]);
+    second.runtime.setEstablishment(EST);
+    expect(second.queryClient.getQueryData(DAY_KEY)).toEqual(day);
+  });
+
+  it('drops the previous user snapshot but keeps the queue when another user signs in', async () => {
     const { runtime, queryClient, db } = setup({}, { online: { value: false } });
     await runtime.start();
     runtime.setEstablishment(EST);
     queryClient.setQueryData(['auth', 'me'], ME('u1'));
+    queryClient.setQueryData(DAY_KEY, day);
     await runtime.enqueue({
-      kind: 'note',
+      kind: 'cash_payment',
       establishmentId: EST,
       bookingId: 'b1',
       label: 'A2',
-      text: 'x',
+      amount: 500,
     });
     await runtime.persister.persistNow();
     await vi.waitFor(async () => expect(await db.store('meta').get('owner')).toBe('u1'));
+    expect(await db.store('cache').get('queries')).toBeDefined();
 
     queryClient.setQueryData(['auth', 'me'], ME('u2'));
-    await vi.waitFor(() => expect(runtime.queue.getSnapshot()).toEqual([]));
     await vi.waitFor(async () => expect(await db.store('meta').get('owner')).toBe('u2'));
+    // Cash collected at the desk is never discarded silently: the new session sends it.
+    expect(runtime.queue.getSnapshot()).toEqual([
+      expect.objectContaining({ kind: 'cash_payment', status: 'pending' }),
+    ]);
+    await vi.waitFor(async () => expect(await db.store('cache').get('queries')).toBeUndefined());
   });
 
   it('clearAll removes queue, snapshot, metadata and runtime caches (logout)', async () => {

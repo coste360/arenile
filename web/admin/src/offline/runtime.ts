@@ -115,11 +115,14 @@ export function createOfflineRuntime(options: OfflineRuntimeOptions): OfflineRun
     return undefined;
   };
 
+  // The snapshot is restored before the router knows the establishment:
+  // during the restore the policy accepts the (single) establishment it holds.
+  let restoring = false;
   const persister = createQueryPersister({
     queryClient,
     store: db.store<PersistedSnapshot>('cache'),
     shouldPersist: createPersistPolicy({
-      currentEstablishmentId: () => establishmentId,
+      currentEstablishmentId: () => (restoring ? '*' : establishmentId),
       timezoneOf,
       now,
     }),
@@ -138,15 +141,19 @@ export function createOfflineRuntime(options: OfflineRuntimeOptions): OfflineRun
     return result;
   };
 
-  /** A different user signed in on this browser: drop the previous one's data. */
+  /**
+   * A different user signed in on this browser: drop the previous one's
+   * snapshot (personal data of the day). The operation queue is kept: it
+   * holds cash really collected and check-ins really made at the desk
+   * (booking ids, labels and amounts, no personal data), and dropping it
+   * silently would leave the cash ledger short. The new session sends it;
+   * the indicator shows the pending count until then.
+   */
   const onUser = async (me: Me | undefined) => {
     const id = userIdOf(me);
     if (!id) return;
     const owner = await meta.get('owner');
-    if (owner && owner !== id) {
-      await queue.clear();
-      await persister.clear();
-    }
+    if (owner && owner !== id) await persister.clear();
     if (owner !== id) await meta.set('owner', id);
     if (queue.isPaused()) {
       queue.resume();
@@ -166,7 +173,9 @@ export function createOfflineRuntime(options: OfflineRuntimeOptions): OfflineRun
     persister,
     persistent: db.persistent,
     async start() {
+      restoring = true;
       const savedAt = await persister.restore().catch(() => undefined);
+      restoring = false;
       // The restored user is the owner of what was restored.
       if (savedAt !== undefined) await onUser(queryClient.getQueryData<Me>(queryKeys.me));
       await queue.init().catch(() => undefined);
@@ -196,6 +205,15 @@ export function createOfflineRuntime(options: OfflineRuntimeOptions): OfflineRun
       void persister.persistNow().catch(() => undefined);
     },
     async enqueue(input) {
+      // A check-in queued behind other operations on the same booking
+      // cannot know the version the server will have when its turn comes
+      // (an earlier one may be refused): the state transition guards it
+      // (confirmed -> checked_in, 409 otherwise), so If-Match is dropped.
+      if (input.kind === 'check_in' && input.ifMatch) {
+        const { ifMatch, ...rest } = input;
+        const queued = queue.getSnapshot().some((o) => o.bookingId === input.bookingId);
+        input = queued ? rest : { ...rest, ifMatch };
+      }
       const op = await queue.enqueue(input);
       applyOptimistic(queryClient, op);
       // Lie-fi: the browser says online but the request failed; try again now.

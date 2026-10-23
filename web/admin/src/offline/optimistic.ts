@@ -13,12 +13,19 @@ function isOperationsDay(v: unknown): v is OperationsDay {
  * Pure: the operations day as it will look once `op` is applied, so that a
  * queued action is visible on the map and in the Oggi lists while offline.
  * The server answer replaces it after the replay (queries are invalidated).
+ *
+ * Every queued operation makes the server raise bookings.version by exactly
+ * one (check-in and note through booking.Service.mutate, the cash payment
+ * through store.ApplyBookingPayment), so the cached version is raised too:
+ * a check-in queued after a cash payment on the same booking then carries
+ * the version the server will have once the payment is replayed.
  */
 export function applyToDay(day: OperationsDay, op: OfflineOperation): OperationsDay {
   let checkedIn = 0;
   const spots = day.spots.map((spot): OperationalSpot => {
     const b = spot.booking;
     if (!b || b.booking_id !== op.bookingId) return spot;
+    const version = b.version + 1;
     switch (op.kind) {
       case 'check_in': {
         if (b.status !== 'confirmed') return spot;
@@ -30,11 +37,11 @@ export function applyToDay(day: OperationsDay, op: OfflineOperation): Operations
           status: swap(spot.status) ?? spot.status,
           am_status: swap(spot.am_status),
           pm_status: swap(spot.pm_status),
-          booking: { ...b, status: 'checked_in' },
+          booking: { ...b, status: 'checked_in', version },
         };
       }
       case 'note':
-        return { ...spot, booking: { ...b, has_notes: true } };
+        return { ...spot, booking: { ...b, has_notes: true, version } };
       case 'cash_payment': {
         const paid = b.paid_amount + op.amount;
         return {
@@ -43,6 +50,7 @@ export function applyToDay(day: OperationsDay, op: OfflineOperation): Operations
             ...b,
             paid_amount: paid,
             balance_due: Math.max(0, b.total_amount - paid),
+            version,
           },
         };
       }

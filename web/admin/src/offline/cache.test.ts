@@ -49,6 +49,20 @@ describe('createPersistPolicy_Allowlist', () => {
     expect(keep(['est', 'e1', 'bookings', 'detail', 'b1'], data)).toBe(expected);
   });
 
+  it("accepts the establishment of the snapshot at restore time ('*')", () => {
+    const any = createPersistPolicy({
+      currentEstablishmentId: () => '*',
+      timezoneOf: () => undefined,
+      now: () => NOW,
+    });
+    expect(any({ queryKey: ['config', 'e2', 'maps'], state: {} })).toBe(true);
+    expect(
+      any({ queryKey: ['est', 'e2', 'operations', 'day', { date: '2026-07-14' }], state: {} }),
+    ).toBe(true);
+    expect(any({ queryKey: ['est', 'e2', 'customers', 'list', {}], state: {} })).toBe(false);
+    expect(any({ queryKey: ['config', 'e2', 'team'], state: {} })).toBe(false);
+  });
+
   it('keeps nothing establishment-scoped when no establishment is shown', () => {
     const none = createPersistPolicy({
       currentEstablishmentId: () => undefined,

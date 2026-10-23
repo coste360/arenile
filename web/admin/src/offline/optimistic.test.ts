@@ -36,6 +36,21 @@ describe('applyToDay', () => {
     expect(day.spots[1]?.status).toBe('booked'); // pure
   });
 
+  it('raises the cached booking version by one for every kind (server bumps it once)', () => {
+    const before = day.spots[1]?.booking?.version ?? 0;
+    const ops: OfflineOperation[] = [
+      { ...base, kind: 'check_in' },
+      { ...base, kind: 'note', text: 'x' },
+      { ...base, kind: 'cash_payment', amount: 100 },
+    ];
+    for (const op of ops) {
+      expect(applyToDay(day, op).spots[1]?.booking?.version, op.kind).toBe(before + 1);
+    }
+    // Two queued operations: the second sees the version left by the first.
+    const after = applyToDay(applyToDay(day, ops[2]!), ops[0]!);
+    expect(after.spots[1]?.booking).toMatchObject({ version: before + 2, status: 'checked_in' });
+  });
+
   it('check-in of a booking that is not confirmed changes nothing', () => {
     const op: OfflineOperation = { ...base, kind: 'check_in', bookingId: 'b2' };
     const cancelled = opDay([

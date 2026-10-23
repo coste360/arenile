@@ -162,6 +162,7 @@
     "released": "Freigegebene Plätze",
     "releasedHint": "Wieder verkaufte Saisontage",
     "takings": "Einnahmen heute",
+    "takingsOffline": "Offline nicht verfügbar",
     "balanceDue": "Offene Salden: {{amount}}",
     "balanceDueTitle": "Offene Salden"
   }

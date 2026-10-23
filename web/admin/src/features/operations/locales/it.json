@@ -162,6 +162,7 @@
     "released": "Postazioni rilasciate",
     "releasedHint": "Giorni di abbonati rimessi in vendita",
     "takings": "Incassi di oggi",
+    "takingsOffline": "Non disponibile offline",
     "balanceDue": "Saldi aperti: {{amount}}",
     "balanceDueTitle": "Saldi aperti"
   }

@@ -4,8 +4,11 @@ import { login } from "./helpers";
 /**
  * M5A offline queue (spec 21.2) against the real binary: a check-in made
  * while the browser is offline is queued with its Idempotency-Key and sent
- * exactly once on reconnect. The demo season is in the future, so the test
- * builds its own establishment with a season open today and one booking.
+ * exactly once on reconnect; a cash payment followed by a check-in on the
+ * same booking (the usual arrival) both go through; after an offline reload
+ * the map and today's booking are readable from the saved copy. The demo
+ * season is in the future, so the tests build their own establishment with
+ * a season open today and one booking.
  */
 
 const TZ = "Europe/Rome";
@@ -154,4 +157,88 @@ test("an offline check-in is queued and replayed once on reconnect", async ({
   expect(booking.status).toBe("checked_in");
   // One state change only: the version moved by exactly one.
   expect(booking.version).toBe(seeded.version + 1);
+});
+
+test("offline after a reload: the map and today's booking are readable, a cash payment then a check-in on the same booking are both applied", async ({
+  page,
+  context,
+}) => {
+  test.setTimeout(150_000);
+  await login(page);
+  const seeded = await seedTodayBooking(page);
+  const E = `/api/admin/v1/establishments/${seeded.establishmentId}`;
+  const base = `/admin/e/${seeded.establishmentId}`;
+  // The queued cash payment needs an open cash session when it is replayed.
+  await send(page, "POST", `${E}/cash-sessions`, { opening_float: 0 });
+
+  await page.goto(`${base}/oggi`);
+  await expect(page.getByRole("heading", { name: "Oggi", level: 1 })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Postazione B3:/ })).toBeVisible();
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+  await page.reload();
+  await expect
+    .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
+    .toBe(true);
+  await expect(page.getByRole("button", { name: /^Postazione B3:/ })).toBeVisible();
+  // The throttled snapshot (1 s) must hold the day before the network goes.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          (name) =>
+            new Promise<boolean>((resolve) => {
+              const open = indexedDB.open(name);
+              open.onerror = () => resolve(false);
+              open.onsuccess = () => {
+                const db = open.result;
+                const get = db.transaction("cache").objectStore("cache").get("queries");
+                get.onsuccess = () => {
+                  const snap = get.result as { state: { queries: { queryKey: unknown[] }[] } };
+                  resolve(
+                    !!snap &&
+                      snap.state.queries.some((q) =>
+                        JSON.stringify(q.queryKey).includes('"operations","day"'),
+                      ),
+                  );
+                  db.close();
+                };
+                get.onerror = () => resolve(false);
+              };
+            }),
+          "arenile-admin-offline",
+        ),
+      { timeout: 15_000 },
+    )
+    .toBe(true);
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByText("Sei offline")).toBeVisible();
+  // Readable from the saved copy: the map with its spots and the booking of today.
+  await expect(page.getByRole("group", { name: /^Mappa con \d+ postazioni$/ })).toBeVisible();
+  const checkInRow = page.getByRole("button", { name: `Registra il check-in di ${seeded.customer}` });
+  await expect(checkInRow).toBeVisible();
+
+  // The arrival: the balance in cash, then the check-in, from the spot sheet.
+  await page.getByRole("button", { name: /^Postazione B3:/ }).click();
+  const sheet = page.getByRole("dialog", { name: /Postazione B3/ });
+  await sheet.getByRole("button", { name: "Incasso in contanti" }).click();
+  const cash = page.getByRole("dialog", { name: "Incasso in contanti offline" });
+  await cash.getByRole("button", { name: "Metti in coda" }).click();
+  await expect(page.getByText(/^Incasso di .* in coda: sarà inviato alla riconnessione\.$/)).toBeVisible();
+  await sheet.getByRole("button", { name: "Check-in" }).click();
+  await expect(
+    page.getByText(`Check-in di ${seeded.code} in coda: sarà inviato alla riconnessione.`),
+  ).toBeVisible();
+  await expect(page.getByText("2 in coda").first()).toBeVisible();
+
+  // Both applied in order: the check-in must not fail on a stale If-Match (412).
+  await context.setOffline(false);
+  await expect(page.getByText("2 operazioni offline inviate.")).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText(/da rivedere/)).toHaveCount(0);
+  const detail = await getJSON(page.request, `${E}/bookings/${seeded.bookingId}`);
+  const booking = detail.booking ?? detail;
+  expect(booking.status).toBe("checked_in");
+  expect(booking.paid_amount).toBe(booking.total_amount);
+  expect(booking.version).toBe(seeded.version + 2);
 });

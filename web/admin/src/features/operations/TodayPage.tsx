@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useRequiredEstablishmentId } from '../../establishment';
 import { useQueueableCheckIn } from '../../offline/useQueueableCheckIn';
+import { useOnlineStatus } from '../../lib/online';
 import { useDayTakings, useOperationsDay } from './api/operations';
 import { DayToolbar } from './components/DayToolbar';
 import { OperationalMapView } from './components/OperationalMapView';
@@ -99,7 +100,8 @@ export function TodayPage() {
     slot,
     options.length > 1 ? mapId : undefined,
   );
-  const takings = useDayTakings(establishmentId, date, permissions.canSeeTakings);
+  const online = useOnlineStatus();
+  const takings = useDayTakings(establishmentId, date, permissions.canSeeTakings && online);
   const checkIn = useQueueableCheckIn(establishmentId);
   const problemText = useProblemText();
   const [newBooking, setNewBooking] = useState(false);
@@ -240,12 +242,17 @@ export function TodayPage() {
             <Kpi
               title={t('kpi.takings')}
               value={
-                takings.isLoading ? (
+                takings.data !== undefined ? (
+                  formatCents(takings.data)
+                ) : !online ? (
+                  // Payments are never kept on the device (spec 21.2).
+                  <span className="text-base font-normal text-muted-foreground">
+                    {t('kpi.takingsOffline')}
+                  </span>
+                ) : takings.isLoading ? (
                   <Skeleton className="h-8 w-28" />
-                ) : takings.error ? (
-                  '—'
                 ) : (
-                  formatCents(takings.data ?? 0)
+                  '—'
                 )
               }
               icon={<WalletIcon aria-hidden="true" />}
@@ -278,7 +285,7 @@ export function TodayPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="checkin">
-                <TabsList className="flex-wrap group-data-[orientation=horizontal]/tabs:h-auto">
+                <TabsList wrap>
                   <TabsTrigger value="checkin">
                     {t('today.toCheckIn')} <Badge variant="secondary">{toCheckIn.length}</Badge>
                   </TabsTrigger>
