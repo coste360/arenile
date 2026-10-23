@@ -3,8 +3,11 @@ name: Desktop packages
 # Builds the desktop edition (spec 29.1) on the native runner of each OS:
 # Windows installer (Inno Setup), macOS universal .app in a .dmg, Linux AppImage.
 #
-# - Pull requests touching the desktop code: unsigned packages, to keep the
-#   packaging green (artifacts kept 7 days, for testers only).
+# - Pull requests touching the desktop code: the packages are built and smoke
+#   tested but NOT uploaded (a public repository: an Actions artifact would be
+#   downloadable by anyone with a GitHub account, against the distribution
+#   rule of spec 29.1 "packages only from the Coste360 portal").
+# - workflow_dispatch (maintainers): unsigned packages kept 3 days, for a test.
 # - Release (called by release.yml with the tag): signed packages when the
 #   signing secrets are configured, unsigned and labelled "-unsigned" otherwise.
 #   They feed the portal-bundle-<tag> artifact of the Coste360 download portal;
@@ -59,7 +62,9 @@ env:
   # VERSION empty on pull requests: the scripts fall back to `git describe`.
   VERSION: ${{ inputs.version }}
   SKIP_WEB_BUILD: "1"
-  RETENTION_DAYS: ${{ inputs.retention-days || 7 }}
+  RETENTION_DAYS: ${{ inputs.retention-days || 3 }}
+  # Packages leave the runner only outside pull requests (see the header).
+  UPLOAD: ${{ github.event_name != 'pull_request' }}
 
 jobs:
   web:
@@ -136,6 +141,7 @@ jobs:
           "$app" -version
 
       - uses: actions/upload-artifact@v7
+        if: env.UPLOAD == 'true'
         with:
           name: desktop-macos
           path: |
@@ -244,6 +250,7 @@ jobs:
           dist/desktop/bin/windows_amd64/arenile-desktop.exe -version
 
       - uses: actions/upload-artifact@v7
+        if: env.UPLOAD == 'true'
         with:
           name: desktop-windows
           path: |
@@ -303,6 +310,7 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN=1 "$appimage" -version
 
       - uses: actions/upload-artifact@v7
+        if: env.UPLOAD == 'true'
         with:
           name: desktop-linux
           path: |

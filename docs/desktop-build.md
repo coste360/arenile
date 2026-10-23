@@ -4,9 +4,11 @@ The desktop edition (spec 29.1, milestone M6) is the launcher `cmd/arenile-deskt
 same core as `arenile serve`, with the admin panel and the public page embedded, plus a tray
 icon. This page explains how to build its packages locally and in CI, and how signing works.
 
-Distribution rule: the packages are **never** uploaded as GitHub release assets. The release
-workflow puts them in the `portal-bundle-<tag>` artifact, which feeds the Coste360 download
-portal (login required). GitHub carries the source code and these instructions only.
+Distribution rule: the packages are **never** uploaded as GitHub release assets, and pull
+requests never upload them as Actions artifacts either. The release workflow puts them in
+the short-lived `portal-bundle-<tag>` artifact (and pushes it to the portal when its secrets
+are configured), which feeds the Coste360 download portal (login required). GitHub carries
+the source code and these instructions only.
 
 | OS | Package | Tool | Runner |
 | --- | --- | --- | --- |
@@ -98,10 +100,18 @@ Smoke test: `dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop -vers
    is CGO-free, so the runner's glibc is irrelevant and the AppImage runs on any current
    distribution (Ubuntu 22.04/24.04, Debian 12/13, Fedora) without extra libraries.
 
-On pull requests the packages are unsigned and kept for 7 days, so testers can download them.
-In a release, `release.yml` calls the workflow with `secrets: inherit`, and the `portal-bundle`
-job merges the `desktop-{windows,macos,linux}` artifacts with the server binaries before it
-writes `checksums.txt`. The `release` job still publishes only the notes and `openapi.yaml`.
+On pull requests the packages are built and smoke tested but not uploaded: on a public
+repository an Actions artifact can be downloaded by anyone with a GitHub account, which
+would make GitHub a download channel. A maintainer who needs a test package runs the
+workflow by hand (`workflow_dispatch`, unsigned, kept 3 days). In a release, `release.yml`
+calls the workflow with `secrets: inherit`, and the `portal-bundle` job merges the
+`desktop-{windows,macos,linux}` artifacts with the server binaries before it writes
+`checksums.txt`. The bundle is kept 7 days as the hand-off to the portal and, when the
+`PORTAL_UPLOAD_URL` and `PORTAL_UPLOAD_TOKEN` secrets exist, pushed to the portal intake
+endpoint (one `multipart/form-data` POST per file, `version` and `file` fields, Bearer token).
+A failed desktop job does not block the server bundle or the release: the bundle then carries
+the server binaries only, with a warning in the job summary, and `desktop.yml` can be re-run
+with the same tag. The `release` job still publishes only the notes and `openapi.yaml`.
 
 ## Signing
 
