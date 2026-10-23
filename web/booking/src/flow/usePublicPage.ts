@@ -2,7 +2,7 @@ import { usePublicEstablishment } from '@arenile/shared/api';
 import { resolveLocale } from '@arenile/shared/i18n';
 import { changePublicLocale } from '../i18n';
 import { applyTheme, resolveTheme, type Theme } from '@arenile/shared/theme';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { connectParent, observeHeight } from '../embed/parent';
 import { listenPreviewTheme } from '../embed/preview';
@@ -35,8 +35,14 @@ export function usePublicPage(location: BookingLocation, win: Window, now: () =>
   useColorScheme(win, location.colorScheme);
 
   // Language: ?lang, then browser, then establishment default (spec 20).
+  // Resolved once per establishment and ?lang: a later choice in the
+  // language picker must not be undone when this effect runs again.
+  const resolvedFor = useRef<string | null>(null);
   useEffect(() => {
     if (!establishment) return;
+    const key = `${establishment.slug}|${location.lang ?? ''}`;
+    if (resolvedFor.current === key) return;
+    resolvedFor.current = key;
     const desired = resolveLocale({
       param: location.lang,
       browser: win.navigator.languages,
