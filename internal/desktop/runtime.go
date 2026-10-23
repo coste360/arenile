@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/desktop/control"
@@ -40,7 +41,6 @@ var _ BackupStore = (*Backuper)(nil)
 type RuntimeDeps struct {
 	DataDir  string
 	Backuper BackupStore
-	Certs    CertStore
 	Setup    *SetupToken // nil when users already exist
 	Clock    clock.Clock
 	Log      *slog.Logger
@@ -62,11 +62,12 @@ type RuntimeDeps struct {
 type Runtime struct {
 	d RuntimeDeps
 
-	mu       sync.Mutex
-	mode     meta.DesktopMode
-	lanURL   string
-	lanFP    string
-	restarts chan string
+	mu          sync.Mutex
+	mode        meta.DesktopMode
+	lanURL      string
+	lanFP       string
+	lanRenewsAt time.Time
+	restarts    chan string
 
 	// settingsMu serialises UpdateSettings (side effects + file write).
 	settingsMu sync.Mutex
@@ -94,19 +95,28 @@ func NewRuntime(d RuntimeDeps) *Runtime {
 func (r *Runtime) Runtime() meta.Runtime {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	return meta.Runtime{Edition: meta.EditionDesktop, Desktop: &meta.Desktop{Mode: r.mode, LANURL: r.lanURL, LANFingerprint: r.lanFP}}
+	return meta.Runtime{Edition: meta.EditionDesktop, Desktop: &meta.Desktop{
+		Mode: r.mode, LANURL: r.lanURL, LANFingerprint: r.lanFP, LANCertRenewsAt: r.lanRenewsAt,
+	}}
 }
 
 // SetLAN records the LAN listener state (called when the LAN listener is
-// opened or closed).
-func (r *Runtime) SetLAN(url, fingerprint string) {
+// opened or closed). renewsAt is when the certificate will be regenerated
+// (zero when unknown).
+func (r *Runtime) SetLAN(url, fingerprint string, renewsAt time.Time) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if url == "" {
-		r.mode, r.lanURL, r.lanFP = meta.DesktopLocal, "", ""
+		r.mode, r.lanURL, r.lanFP, r.lanRenewsAt = meta.DesktopLocal, "", "", time.Time{}
 		return
 	}
-	r.mode, r.lanURL, r.lanFP = meta.DesktopLAN, url, fingerprint
+	r.mode, r.lanURL, r.lanFP, r.lanRenewsAt = meta.DesktopLAN, url, fingerprint, renewsAt
+}
+
+// certRenewalReporter is the optional capability of a LANMode that knows
+// when its certificate will be regenerated (lan.Mode).
+type certRenewalReporter interface {
+	CertRenewsAt() time.Time
 }
 
 // SetSetupToken installs the first-run token of this start (nil once an
@@ -224,7 +234,11 @@ func (r *Runtime) StartLAN(ctx context.Context, port int) error {
 	if err != nil {
 		return fmt.Errorf("desktop: LAN mode: %w", err)
 	}
-	r.SetLAN(url, fp)
+	var renewsAt time.Time
+	if c, ok := r.d.LAN.(certRenewalReporter); ok {
+		renewsAt = c.CertRenewsAt()
+	}
+	r.SetLAN(url, fp, renewsAt)
 	return nil
 }
 
@@ -234,7 +248,7 @@ func (r *Runtime) StopLAN(ctx context.Context) error {
 		return nil
 	}
 	err := r.d.LAN.Disable(ctx)
-	r.SetLAN("", "")
+	r.SetLAN("", "", time.Time{})
 	return err
 }
 

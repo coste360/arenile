@@ -28,6 +28,10 @@
     "copy": "Copia impronta",
     "aria": "Impronta SHA-256 del certificato"
   },
+  "renewal": {
+    "title": "Il certificato sarà rinnovato il {{date}}",
+    "description": "Da quel giorno l'impronta cambia: le app abbinate (telefoni, PC in modalità remota) vanno abbinate di nuovo e i browser chiederanno di accettare il nuovo certificato. Pianifica il rinnovo in un giorno di chiusura e tieni a portata di mano questa pagina."
+  },
   "browser": {
     "title": "Primo accesso da un browser",
     "description": "Il browser mostra un avviso la prima volta, perché il certificato non è rilasciato da un'autorità pubblica. È normale nella rete del lido.",

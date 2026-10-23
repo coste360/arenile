@@ -360,6 +360,8 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 		if err := l.rt.StartLAN(ctx, settings.LANPort); err != nil {
 			log.Warn("desktop LAN mode not started", slog.String("error", err.Error()))
 			l.ui.Notify("Arenile", "Modalità rete locale non avviata: controlla le impostazioni.")
+		} else {
+			l.warnCertRenewal()
 		}
 	}
 	if err := l.ui.OpenURL(l.panelURL()); err != nil {
@@ -612,6 +614,9 @@ func (l *Launcher) menu() []MenuItem {
 		label := "Modalità rete locale"
 		if d := l.rt.Runtime().Desktop; d != nil && d.LANURL != "" {
 			label += " (" + d.LANURL + ")"
+			if soon, at := l.certRenewalSoon(); soon {
+				label += " — certificato in rinnovo il " + at
+			}
 		}
 		items = append(items, MenuItem{
 			ID: MenuLAN, Label: label, Checkbox: true, Checked: s.LANEnabled,
@@ -630,6 +635,33 @@ func (l *Launcher) menu() []MenuItem {
 }
 
 func (l *Launcher) refreshMenu() { l.ui.SetMenu(l.menu()) }
+
+// CertRenewWarnBefore mirrors lan.RenewWarnBefore (the launcher does not
+// import the adapter): how long before the LAN certificate regeneration
+// the tray and a notification warn the operator.
+const CertRenewWarnBefore = 60 * 24 * time.Hour
+
+// certRenewalSoon reports whether the LAN certificate will be regenerated
+// within CertRenewWarnBefore and the local date of that renewal.
+func (l *Launcher) certRenewalSoon() (bool, string) {
+	d := l.rt.Runtime().Desktop
+	if d == nil || d.LANCertRenewsAt.IsZero() {
+		return false, ""
+	}
+	if d.LANCertRenewsAt.Sub(l.o.Clock.Now()) > CertRenewWarnBefore {
+		return false, ""
+	}
+	return true, d.LANCertRenewsAt.Local().Format("02/01/2006")
+}
+
+// warnCertRenewal notifies once per start when the LAN certificate is
+// about to be regenerated: paired devices and browsers must then accept
+// the new one, so the operator plans it (spec 29.1).
+func (l *Launcher) warnCertRenewal() {
+	if soon, at := l.certRenewalSoon(); soon {
+		l.ui.Notify("Arenile", "Il certificato della rete locale sarà rinnovato il "+at+": dopo quel giorno riabbina le app e riaccetta il certificato nei browser.")
+	}
+}
 
 func (l *Launcher) backupNow() {
 	b, err := l.rt.BackupNow(context.Background(), control.BackupManual)

@@ -28,6 +28,10 @@
     "copy": "Fingerabdruck kopieren",
     "aria": "SHA-256-Fingerabdruck des Zertifikats"
   },
+  "renewal": {
+    "title": "Das Zertifikat wird am {{date}} erneuert",
+    "description": "Ab diesem Tag ändert sich der Fingerabdruck: gekoppelte Apps (Telefone, PCs im Remote-Modus) müssen neu gekoppelt werden und Browser fragen erneut nach der Annahme des Zertifikats. Planen Sie die Erneuerung an einem Ruhetag und halten Sie diese Seite bereit."
+  },
   "browser": {
     "title": "Erster Zugriff mit einem Browser",
     "description": "Der Browser zeigt beim ersten Mal eine Warnung, weil das Zertifikat nicht von einer öffentlichen Stelle ausgestellt ist. Das ist im Netzwerk des Strandbads normal.",

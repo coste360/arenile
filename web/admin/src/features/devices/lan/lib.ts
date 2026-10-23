@@ -32,3 +32,19 @@ export function hostOf(lanUrl: string): string {
     return lanUrl;
   }
 }
+
+/** The panel warns this many days before the certificate is regenerated (lan.RenewWarnBefore). */
+export const CERT_RENEWAL_WARN_DAYS = 60;
+
+/**
+ * True when the self-signed certificate will be regenerated within
+ * CERT_RENEWAL_WARN_DAYS (meta desktop.lan_cert_renews_at): paired devices
+ * must then be paired again and browsers accept the new certificate, so the
+ * page says so ahead of time. Pure: `now` is injected for tests.
+ */
+export function certRenewalSoon(renewsAt: string | undefined, now: number = Date.now()): boolean {
+  if (!renewsAt) return false;
+  const at = new Date(renewsAt).getTime();
+  if (Number.isNaN(at)) return false;
+  return at - now <= CERT_RENEWAL_WARN_DAYS * 86_400_000;
+}

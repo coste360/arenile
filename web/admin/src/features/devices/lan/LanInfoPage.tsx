@@ -10,8 +10,10 @@ import {
   CardTitle,
 } from '@arenile/shared/ui/card';
 import { PageHeader, QueryState } from '@arenile/shared/ui/patterns';
+import { formatInstantDate } from '@arenile/shared/lib/dates';
 import { Link } from '@tanstack/react-router';
 import {
+  CalendarClockIcon,
   CopyIcon,
   GlobeLockIcon,
   QrCodeIcon,
@@ -26,7 +28,7 @@ import { useRequiredEstablishmentId } from '../../../establishment';
 import { panelMode, useInstanceMeta } from '../../../lib/meta';
 import { useDevices } from '../api';
 import { PairDeviceDialog } from '../PairDeviceDialog';
-import { fingerprintLines, hostOf, panelAddress } from './lib';
+import { certRenewalSoon, fingerprintLines, hostOf, panelAddress } from './lib';
 
 /**
  * Configurazione → Dispositivi → Rete locale (spec 29.1): on the desktop
@@ -44,6 +46,7 @@ export function LanInfoPage() {
   const lanUrl = meta.data?.desktop?.lan_url;
   const fingerprint = meta.data?.desktop?.lan_cert_fingerprint ?? '';
   const qrSvg = meta.data?.desktop?.lan_qr_svg;
+  const renewsAt = meta.data?.desktop?.lan_cert_renews_at;
   const header = <PageHeader title={t('title')} description={t('description')} />;
 
   if (meta.isPending || meta.error) {
@@ -92,6 +95,7 @@ export function LanInfoPage() {
       lanUrl={lanUrl}
       fingerprint={fingerprint}
       qrSvg={qrSvg}
+      renewsAt={renewsAt}
     />
   );
 }
@@ -102,9 +106,11 @@ interface LanDetailsProps {
   fingerprint: string;
   /** QR (SVG) of the panel address for phone cameras (meta lan_qr_svg). */
   qrSvg?: string;
+  /** When the certificate will be regenerated (meta lan_cert_renews_at). */
+  renewsAt?: string;
 }
 
-function LanDetails({ establishmentId, lanUrl, fingerprint, qrSvg }: LanDetailsProps) {
+function LanDetails({ establishmentId, lanUrl, fingerprint, qrSvg, renewsAt }: LanDetailsProps) {
   const { t } = useTranslation('devicesLan');
   const [pairOpen, setPairOpen] = useState(false);
   const me = useMe();
@@ -203,6 +209,14 @@ function LanDetails({ establishmentId, lanUrl, fingerprint, qrSvg }: LanDetailsP
           </div>
         </CardContent>
       </Card>
+
+      {certRenewalSoon(renewsAt) && (
+        <Alert role="note" data-testid="lan-cert-renewal">
+          <CalendarClockIcon aria-hidden="true" />
+          <AlertTitle>{t('renewal.title', { date: formatInstantDate(renewsAt) })}</AlertTitle>
+          <AlertDescription>{t('renewal.description')}</AlertDescription>
+        </Alert>
+      )}
 
       <Card>
         <CardHeader>

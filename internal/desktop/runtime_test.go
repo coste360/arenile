@@ -102,6 +102,9 @@ func (l *fakeLAN) Enable(_ context.Context, port int) (string, string, error) {
 
 func (l *fakeLAN) Disable(context.Context) error { l.enabled = false; return nil }
 
+// CertRenewsAt implements the optional renewal capability (lan.Mode).
+func (l *fakeLAN) CertRenewsAt() time.Time { return time.Date(2029, 9, 1, 0, 0, 0, 0, time.UTC) }
+
 func newTestRuntime(t *testing.T, mut func(*RuntimeDeps)) (*Runtime, *fakeBackups, *clock.Fake) {
 	t.Helper()
 	clk := clock.NewFake(time.Date(2027, 7, 1, 8, 0, 0, 0, time.UTC))
@@ -135,7 +138,8 @@ func TestRuntime_UpdateSettings_SideEffects(t *testing.T) {
 	if !auto.on || !lan.enabled || lan.port != DefaultLANPort || got.BackupRetention != 7 || len(notified) != 1 {
 		t.Fatalf("side effects: auto=%v lan=%v port=%d %+v", auto.on, lan.enabled, lan.port, got)
 	}
-	if m := rt.Runtime(); m.Edition != meta.EditionDesktop || m.Desktop.Mode != meta.DesktopLAN || m.Desktop.LANURL == "" {
+	if m := rt.Runtime(); m.Edition != meta.EditionDesktop || m.Desktop.Mode != meta.DesktopLAN || m.Desktop.LANURL == "" ||
+		!m.Desktop.LANCertRenewsAt.Equal(lan.CertRenewsAt()) {
 		t.Fatalf("meta runtime %+v", m.Desktop)
 	}
 	reloaded, _ := rt.Settings(ctx)
@@ -147,7 +151,7 @@ func TestRuntime_UpdateSettings_SideEffects(t *testing.T) {
 	if _, err := rt.UpdateSettings(ctx, got); err != nil {
 		t.Fatal(err)
 	}
-	if auto.calls != 1 || lan.enabled || rt.Runtime().Desktop.Mode != meta.DesktopLocal {
+	if auto.calls != 1 || lan.enabled || rt.Runtime().Desktop.Mode != meta.DesktopLocal || !rt.Runtime().Desktop.LANCertRenewsAt.IsZero() {
 		t.Fatalf("second update: calls=%d lan=%v", auto.calls, lan.enabled)
 	}
 	// The OS state wins over desktop.json (entry removed by hand).

@@ -28,6 +28,10 @@
     "copy": "Copier l'empreinte",
     "aria": "Empreinte SHA-256 du certificat"
   },
+  "renewal": {
+    "title": "Le certificat sera renouvelé le {{date}}",
+    "description": "À partir de ce jour, l'empreinte change : les applications appairées (téléphones, PC en mode distant) doivent être appairées à nouveau et les navigateurs demanderont d'accepter le nouveau certificat. Prévoyez-le un jour de fermeture et gardez cette page sous la main."
+  },
   "browser": {
     "title": "Premier accès depuis un navigateur",
     "description": "Le navigateur affiche un avertissement la première fois, car le certificat n'est pas délivré par une autorité publique. C'est normal sur le réseau de la plage.",

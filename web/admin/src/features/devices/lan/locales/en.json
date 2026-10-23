@@ -28,6 +28,10 @@
     "copy": "Copy fingerprint",
     "aria": "SHA-256 fingerprint of the certificate"
   },
+  "renewal": {
+    "title": "The certificate will be renewed on {{date}}",
+    "description": "From that day the fingerprint changes: paired apps (phones, PCs in remote mode) must be paired again and browsers will ask to accept the new certificate. Plan it on a closing day and keep this page at hand."
+  },
   "browser": {
     "title": "First access from a browser",
     "description": "The browser shows a warning the first time, because the certificate is not issued by a public authority. This is expected on the beach network.",

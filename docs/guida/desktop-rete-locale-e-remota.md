@@ -30,7 +30,8 @@ Cosa sapere:
   inoltra la porta per errore o il PC ha un indirizzo IPv6 pubblico. Il controllo è ripetuto su ogni richiesta.
 - **Certificato.** È un certificato ECDSA valido 825 giorni, conservato nella cartella dati (`lan/`). Non cambia ai
   riavvii né se cambia l'indirizzo IP; viene rinnovato 30 giorni prima della scadenza (bisogna allora riabbinare le
-  app e riaccettarlo nei browser).
+  app e riaccettarlo nei browser). Da 60 giorni prima del rinnovo la pagina *Rete locale*, il menu nella barra di
+  sistema e una notifica all'avvio indicano la data, così il rinnovo si pianifica in un giorno di chiusura.
 - **Indirizzo fisso.** Riserva nel router un indirizzo IP fisso per il PC della cassa: l'indirizzo del pannello
   resta lo stesso. Il nome `<nome-pc>.local` funziona sulle reti dove il sistema operativo lo annuncia (macOS,
   Windows 10 e successivi); Arenile non installa un servizio mDNS proprio.

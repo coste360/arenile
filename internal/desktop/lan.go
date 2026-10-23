@@ -11,9 +11,6 @@ import (
 	"strings"
 )
 
-// ErrNotImplemented: scaffolding, not built yet.
-var ErrNotImplemented = errors.New("desktop: not implemented")
-
 // IsPrivateAddr reports whether a peer address belongs to a local network:
 // loopback, RFC 1918 (10/8, 172.16/12, 192.168/16), RFC 6598 is excluded
 // (carrier-grade NAT is not the lido Wi-Fi), IPv6 ULA (fc00::/7) and
@@ -65,20 +62,17 @@ func Fingerprint(der []byte) string {
 	return b.String()
 }
 
-// CertStore provides the self-signed LAN certificate.
+// CertStore provides the self-signed LAN certificate (implementation:
+// internal/desktop/lan.CertStore).
 type CertStore interface {
 	// LoadOrCreate returns the certificate in <data dir>/lan/ (ECDSA P-256,
-	// 10 years, SANs: the current LAN IPs and "arenile.local"), creating or
-	// renewing it when the SANs no longer match the LAN addresses.
+	// 825 days, SANs: hostname.local, arenile.local, localhost and the
+	// private addresses at creation time), creating it when missing or
+	// corrupted and regenerating it 30 days before expiry (lan.RenewBefore).
+	// The fingerprint is stable across restarts and address changes: a
+	// changed address is not a reason to renew (clients pin the
+	// fingerprint, browsers remember the exception).
 	LoadOrCreate(ctx context.Context) (tls.Certificate, error)
-}
-
-// FileCertStore is the CertStore in the data directory.
-type FileCertStore struct{ Dir string }
-
-// LoadOrCreate implements CertStore.
-func (FileCertStore) LoadOrCreate(context.Context) (tls.Certificate, error) {
-	return tls.Certificate{}, ErrNotImplemented
 }
 
 // LANAddress picks the address shown in the QR: the first private IPv4 of

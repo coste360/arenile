@@ -41,6 +41,9 @@ type Desktop struct {
 	Mode           DesktopMode
 	LANURL         string
 	LANFingerprint string
+	// LANCertRenewsAt is when the self-signed certificate will be
+	// regenerated (fingerprint change); zero when unknown or off.
+	LANCertRenewsAt time.Time
 }
 
 // Runtime is the edition and, for the desktop edition, its state.

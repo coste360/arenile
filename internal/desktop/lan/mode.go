@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/desktop"
@@ -33,6 +34,9 @@ type Info struct {
 	Port        int
 	Addresses   []netip.Addr
 	Hostname    string
+	// CertNotAfter is the expiry of the certificate in use; it is
+	// regenerated RenewBefore earlier (CertRenewsAt).
+	CertNotAfter time.Time
 	// Rejected counts the connections closed because the peer was not on
 	// the local network (since Enable).
 	Rejected int64
@@ -127,7 +131,7 @@ func (m *Mode) Enable(ctx context.Context, port int) (string, string, error) {
 		return "", "", errors.New("lan: no app to serve")
 	}
 	m.stop = m.d.Serve(ln)
-	m.info = Info{Enabled: true, Fingerprint: cert.Fingerprint, Port: port}
+	m.info = Info{Enabled: true, Fingerprint: cert.Fingerprint, Port: port, CertNotAfter: cert.Leaf.NotAfter}
 	m.refreshAddrs()
 	m.d.Log.Info("lan mode enabled", slog.String("url", m.info.URL), slog.Int("port", port))
 	return m.info.URL, m.info.Fingerprint, nil
@@ -161,6 +165,24 @@ func (m *Mode) disableLocked(ctx context.Context) error {
 	m.stop, m.info = nil, Info{}
 	m.d.Log.Info("lan mode disabled")
 	return err
+}
+
+// RenewWarnBefore: the panel and the tray warn this long before the
+// certificate is regenerated (paired devices must then be paired again
+// and browsers accept the new certificate).
+const RenewWarnBefore = 60 * 24 * time.Hour
+
+// CertRenewsAt returns when the certificate in use will be regenerated
+// (CertStore.Load renews it RenewBefore before expiry), or zero when the
+// listener is off. It is the desktop.Runtime capability behind
+// /meta desktop.lan_cert_renews_at.
+func (m *Mode) CertRenewsAt() time.Time {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if !m.info.Enabled {
+		return time.Time{}
+	}
+	return m.info.CertNotAfter.Add(-RenewBefore)
 }
 
 // Info returns the state of the listener.

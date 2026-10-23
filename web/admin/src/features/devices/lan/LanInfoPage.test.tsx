@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { EST_ID, baseRoutes, json, list, renderApp } from '../../configuration/testing';
+import { certRenewalSoon } from './lib';
 
 const PATH = `/admin/e/${EST_ID}/config/devices/lan`;
 const FP = Array.from({ length: 32 }, (_, i) => (i + 160).toString(16).toUpperCase()).join(':');
@@ -54,6 +55,28 @@ describe('LanInfoPage', () => {
     expect(screen.getByText(/Confronta l'impronta SHA-256/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Abbina un dispositivo' }));
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('warns ahead of the certificate renewal, not when it is far away', async () => {
+    const day = 86_400_000;
+    const soon = new Date(Date.now() + 20 * day).toISOString();
+    renderApp(PATH, {
+      ...baseRoutes('owner'),
+      'GET /api/admin/v1/meta': meta({
+        mode: 'lan',
+        lan_url: 'https://192.168.1.20:8443',
+        lan_cert_fingerprint: FP,
+        lan_cert_renews_at: soon,
+      }),
+      [`GET /api/admin/v1/establishments/${EST_ID}/devices`]: () => list([]),
+    });
+    const alert = await screen.findByTestId('lan-cert-renewal');
+    expect(alert).toHaveTextContent(/Il certificato sarà rinnovato il \d{2}\/\d{2}\/\d{4}/);
+    expect(alert).toHaveTextContent(/vanno abbinate di nuovo/);
+    expect(certRenewalSoon(soon)).toBe(true);
+    expect(certRenewalSoon(new Date(Date.now() + 200 * day).toISOString())).toBe(false);
+    expect(certRenewalSoon(undefined)).toBe(false);
+    expect(certRenewalSoon('not a date')).toBe(false);
   });
 
   it('explains how to turn the LAN mode on in local mode', async () => {

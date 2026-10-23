@@ -3463,6 +3463,9 @@ type DesktopRuntime struct {
 	// LanCertFingerprint SHA-256 del certificato TLS autogenerato, esadecimale maiuscolo separato da `:` (solo `mode=lan`).
 	LanCertFingerprint *string `json:"lan_cert_fingerprint,omitempty"`
 
+	// LanCertRenewsAt Istante in cui il certificato autogenerato verrà rigenerato (30 giorni prima della scadenza, solo `mode=lan`): da quel momento cambia l'impronta, i dispositivi abbinati vanno riabbinati e i browser devono riaccettare il certificato. Il pannello avvisa quando mancano meno di 60 giorni.
+	LanCertRenewsAt *time.Time `json:"lan_cert_renews_at,omitempty"`
+
 	// LanQrSvg QR code (SVG) dell'indirizzo del pannello sulla rete locale (`lan_url` + `/admin/`), da inquadrare con la fotocamera di un telefono o tablet per aprirlo nel browser (solo `mode=lan`). Non contiene codici di abbinamento: per l'app si usa il QR di Configurazione → Dispositivi.
 	LanQrSvg *string `json:"lan_qr_svg,omitempty"`
 

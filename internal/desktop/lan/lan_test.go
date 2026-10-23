@@ -293,9 +293,17 @@ func TestMode_TLSListener(t *testing.T) {
 	if !info.Enabled || info.Fingerprint != fp || info.Hostname != "cassa.local" || len(info.Addresses) != 1 {
 		t.Fatalf("info %+v", info)
 	}
+	// The renewal date (for /meta and the tray warning) is the expiry minus
+	// RenewBefore; zero while the listener is off.
+	if !info.CertNotAfter.Equal(t0.Add(CertValidity)) || !m.CertRenewsAt().Equal(t0.Add(CertValidity-RenewBefore)) {
+		t.Fatalf("renewal %v %v", info.CertNotAfter, m.CertRenewsAt())
+	}
 
 	if err := m.Disable(ctx); err != nil {
 		t.Fatal(err)
+	}
+	if !m.CertRenewsAt().IsZero() {
+		t.Fatal("renewal date while off")
 	}
 	if err := m.Disable(ctx); err != nil {
 		t.Fatalf("Disable is not idempotent: %v", err)

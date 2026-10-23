@@ -48,6 +48,10 @@ func MetaToAPI(m meta.Meta) api.Meta {
 			if svg, err := device.RenderQRSVG(LANPanelAddress(d.LANURL)); err == nil {
 				rt.LanQrSvg = &svg
 			}
+			if !d.LANCertRenewsAt.IsZero() {
+				at := d.LANCertRenewsAt.UTC()
+				rt.LanCertRenewsAt = &at
+			}
 		}
 		out.Desktop = rt
 	}

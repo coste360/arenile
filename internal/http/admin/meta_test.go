@@ -3,6 +3,7 @@ package admin
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/coste360/arenile/internal/domain/meta"
 )
@@ -17,9 +18,12 @@ func TestMetaToAPI_DesktopModes(t *testing.T) {
 		{name: "server edition", desktop: nil},
 		{name: "desktop local", desktop: &meta.Desktop{Mode: meta.DesktopLocal}},
 		{
-			name:    "desktop lan",
-			desktop: &meta.Desktop{Mode: meta.DesktopLAN, LANURL: "https://192.168.1.20:8443", LANFingerprint: "AB:CD"},
-			wantQR:  true, wantURL: "https://192.168.1.20:8443",
+			name: "desktop lan",
+			desktop: &meta.Desktop{
+				Mode: meta.DesktopLAN, LANURL: "https://192.168.1.20:8443", LANFingerprint: "AB:CD",
+				LANCertRenewsAt: time.Date(2029, 9, 1, 0, 0, 0, 0, time.UTC),
+			},
+			wantQR: true, wantURL: "https://192.168.1.20:8443",
 		},
 	}
 	for _, tc := range tests {
@@ -37,6 +41,9 @@ func TestMetaToAPI_DesktopModes(t *testing.T) {
 			if tc.wantQR {
 				if *out.Desktop.LanUrl != tc.wantURL || !strings.HasPrefix(*out.Desktop.LanQrSvg, "<svg") {
 					t.Fatalf("lan fields: %v %.40q", *out.Desktop.LanUrl, *out.Desktop.LanQrSvg)
+				}
+				if out.Desktop.LanCertRenewsAt == nil || !out.Desktop.LanCertRenewsAt.Equal(tc.desktop.LANCertRenewsAt) {
+					t.Fatalf("lan_cert_renews_at: %v", out.Desktop.LanCertRenewsAt)
 				}
 			}
 		})
