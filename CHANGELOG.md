@@ -13,6 +13,36 @@ offline).
 
 ### Added
 
+- Marchio ufficiale **Arenile — Coste360.it** e dominio **arenile.app** ([ADR 0018](docs/adr/0018-marchio.md)):
+  brand kit v1.0 e logo Coste360 in `assets/brand/` (tutti i diritti riservati, esclusi dalla licenza del
+  codice, `NOTICE.md` e `TRADEMARK.md` aggiornati), testo dei logotipi in tracciati e PNG derivati con
+  `scripts/brand/build-brand.mjs` (Titillium Web, OFL-1.1, usato solo per generare i tracciati: nessuna nuova
+  dipendenza di runtime, nessun font caricato dalle app).
+- Pannello: tema shadcn sui colori del marchio (navy primario in chiaro, oceano per focus e link, ciano su
+  superfici blu notte in scuro, grafici e sidebar coerenti, contrasto AA verificato da un test), icona e
+  scritta Arenile nella sidebar, logo orizzontale in accesso e primo avvio con "Un prodotto di" + logo
+  Coste360, firma Coste360 discreta nel piè della sidebar, favicon SVG con PNG, icone PWA (192, 512,
+  maschera), apple-touch-icon, `theme_color` navy e titoli delle schede "Pagina · Stabilimento · Arenile".
+  Componenti condivisi `BrandLogo`, `MadeByCoste360`, `Coste360Signature`.
+- Pagina pubblica: colore predefinito oceano `#0D79AC` (il tema dello stabilimento resta prioritario),
+  favicon e immagine social Arenile come default (nel browser sostituiti dal logo dello stabilimento, se c'è;
+  i crawler dei social vedono il default), piè "powered by Arenile" con link a https://arenile.app.
+- Email: in fondo a ogni messaggio una firma discreta "Arenile — Coste360.it" con il marchio Arenile come
+  immagine inline (cid:, nessuna immagine remota né tracciamento) e link a https://arenile.app, anche nella
+  parte di testo; il marchio dello stabilimento resta in primo piano. Il colore predefinito delle email senza
+  tema è l'oceano di Arenile, lo stesso della pagina pubblica.
+- Edizione desktop con il marchio ufficiale: icone per macOS (.icns sulla griglia di macOS), Windows (.ico
+  16–256 px) e Linux (PNG 512 e SVG) generate da `scripts/desktop/gen-icons.sh`; nella barra dei menu di
+  macOS la "A" monocromatica (immagine template), nella tray di Windows e Linux la tile a colori. "Informazioni
+  su Arenile" (macOS) mostra "Arenile — Coste360.it", la versione e la licenza; installer e metadati AppStream indicano
+  https://arenile.app.
+- Versione di build reale (`scripts/version.sh`): il tag se il commit è taggato, altrimenti una versione di
+  sviluppo semver come `0.6.0-dev.187+835d645`, mai `0.0.0` (anche in `/meta`); su macOS CFBundleVersion è il
+  numero di commit. Il controllo aggiornamenti considera una pre-release inferiore alla release corrispondente.
+- Documentazione: logo Arenile chiaro/scuro, favicon, immagine social, piè "Arenile — Coste360.it" con logo
+  Coste360 e riquadri nei colori del marchio; indirizzo predefinito `https://docs.arenile.app` (configurabile
+  con `ARENILE_DOCS_SITE`). Contatto e documentazione nel contratto OpenAPI, link su docs.arenile.app in
+  README, CONTRIBUTING e nei template Docker, Coolify e CapRover.
 - M5 parte A, report completi (spec 15.3): riepilogo, occupazione per giorno/zona/fila/fascia, ricavi incassati o
   venduti per periodo/canale/pack/extra/metodo/aliquota, prenotazioni per canale/anticipo/formula, cancellazioni e
   no-show, abbonamenti con rilasci e rivendite, clienti migliori (solo nome), saldi aperti e confronto con l'anno
@@ -228,6 +258,9 @@ offline).
 
 ### Fixed
 
+- Schede e barre di navigazione a schede (`ResponsiveTabsList`, `NavTabs`) diventano un menu a tendina anche
+  quando non entrano nella larghezza disponibile (sidebar aperta su tablet a 768 e 1024 px), non solo sotto
+  `sm`; il breadcrumb del pannello mostra il percorso completo solo da `lg` e non va più a capo.
 - `seed demo` non fa più partire, al primo `serve`, le email di conferma delle prenotazioni dimostrative.
 - Revisione di sicurezza M4: la pagina pubblica non collega più una prenotazione a un cliente esistente con la
   stessa email o telefono (chi conosceva un recapito ne leggeva nome, email e telefono dalla sessione e
