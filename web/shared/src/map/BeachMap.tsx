@@ -16,7 +16,7 @@ import {
   type ViewBox,
 } from './geometry';
 import { decorationKindIcon } from './icons';
-import { labelFontSize, useUnitsPerPixel } from './labels';
+import { labelFontSize, padViewBox, useUnitsPerPixel } from './labels';
 import { INDICATOR_CLASSES, type SpotIndicator } from './indicators';
 import { MapGlyph } from './MapGlyph';
 import { MapLegend } from './MapLegend';
@@ -287,7 +287,8 @@ export function BeachMap({
   const legendId = useId();
   const [view, setView] = useState<Transform>(IDENTITY);
 
-  const vb = useMemo(() => computeViewBox(geometry), [geometry]);
+  // Padded so that labels on the edges (decorations at x = 0) are never clipped.
+  const vb = useMemo(() => padViewBox(computeViewBox(geometry), 8), [geometry]);
   const sea = useMemo(() => seaRect(geometry), [geometry]);
   const selected = useMemo(() => new Set(selectedIds ?? []), [selectedIds]);
   const highlighted = useMemo(
@@ -375,7 +376,7 @@ export function BeachMap({
   const accessibleTitle = title ?? geometry.name ?? t('map.title');
 
   return (
-    <div className={cn('relative', className)} data-testid="beach-map">
+    <div className={cn('flex flex-col', className)} data-testid="beach-map">
       <svg
         ref={svgRef}
         viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
@@ -459,7 +460,7 @@ export function BeachMap({
         </g>
       </svg>
       <MapZoomControls
-        className="absolute top-2 right-2"
+        className="order-first mb-2 ml-auto w-fit"
         scale={view.scale}
         min={MIN_SCALE}
         max={MAX_SCALE}

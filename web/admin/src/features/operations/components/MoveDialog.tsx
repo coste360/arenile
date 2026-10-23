@@ -66,6 +66,7 @@ export function MoveDialog({
     lineId: booking?.line_id ?? '',
     spotId: target.spotId,
     from: date > (booking?.starts_on ?? date) ? date : undefined,
+    version: booking?.version,
   };
   const preview = useQuery<BookingChangeResult, ApiProblem>({
     // Outside the SSE-invalidated areas: applying the move must not re-run the preview.

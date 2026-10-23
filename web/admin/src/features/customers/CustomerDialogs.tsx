@@ -19,6 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { TriangleAlertIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { formatInstantDate } from '@arenile/shared/lib/dates';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { describeProblem, type ProblemText } from '../bookings/problem';
@@ -72,7 +73,7 @@ function CustomerForm({
   onReload,
   onDone,
 }: Omit<CustomerFormDialogProps, 'open' | 'onOpenChange'> & { onDone: () => void }) {
-  const { t } = useTranslation('customers');
+  const { t, i18n } = useTranslation('customers');
   const create = useCreateCustomer(establishmentId);
   const update = useUpdateCustomer(establishmentId);
   const [failure, setFailure] = useState<ProblemText | null>(null);
@@ -165,7 +166,9 @@ function CustomerForm({
           description={
             customer?.marketing_consent
               ? t('consent.given', {
-                  at: new Date(customer.marketing_consent.given_at).toLocaleDateString('it-IT'),
+                  at: formatInstantDate(customer.marketing_consent.given_at, {
+                    locale: i18n.language,
+                  }),
                   source: customer.marketing_consent.source,
                 })
               : t('fields.marketingHelp')

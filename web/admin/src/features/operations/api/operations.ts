@@ -19,7 +19,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { configKey } from '../../configuration/api/resource';
 import { localized } from '../../map-editor/model/document';
-import { newIdempotencyKey } from '../../configuration/lib/validation';
+import { ifMatch, newIdempotencyKey } from '../../configuration/lib/validation';
 import { netTakings } from '../lib/kpis';
 import type { OperationsDay, SlotChoice } from '../lib/status';
 
@@ -202,15 +202,22 @@ export function invalidateOperational(qc: QueryClient, establishmentId: string):
   }
 }
 
-/** Check-in of a confirmed booking (operations.run). */
+/**
+ * Check-in of a confirmed booking (operations.run). `version` is sent as
+ * If-Match: a booking changed since the map was read answers 412 instead
+ * of being checked in blindly.
+ */
 export function useCheckIn(establishmentId: string) {
   const client = useApiClient();
   const qc = useQueryClient();
-  return useMutation<BookingDetail, ApiProblem, { bookingId: string }>({
-    mutationFn: ({ bookingId }) =>
+  return useMutation<BookingDetail, ApiProblem, { bookingId: string; version?: number }>({
+    mutationFn: ({ bookingId, version }) =>
       call(() =>
         client.POST(`${EST}/bookings/{bookingId}/check-in`, {
-          params: { path: { establishmentId, bookingId } },
+          params: {
+            path: { establishmentId, bookingId },
+            ...(version !== undefined ? { header: { 'If-Match': ifMatch(version) } } : {}),
+          },
           body: {},
         }),
       ),
@@ -266,13 +273,25 @@ export interface MoveLineVars {
   /** First day moved (default: the whole line). */
   from?: string;
   dryRun?: boolean;
+  /** Booking version read with the preview, sent as If-Match on the apply. */
+  version?: number;
 }
 
-/** Moves a booking line to another spot (POST /move); dryRun previews conflicts and price. */
+/**
+ * Moves a booking line to another spot (POST /move); dryRun previews
+ * conflicts and price. With `version` the apply carries If-Match, so a
+ * booking changed between the preview and the apply answers 412 instead of
+ * moving with a price difference other than the one shown.
+ */
 export function moveLine(client: ApiClient, establishmentId: string, vars: MoveLineVars) {
   return call(() =>
     client.POST(`${EST}/bookings/{bookingId}/move`, {
-      params: { path: { establishmentId, bookingId: vars.bookingId } },
+      params: {
+        path: { establishmentId, bookingId: vars.bookingId },
+        ...(vars.version !== undefined && !vars.dryRun
+          ? { header: { 'If-Match': ifMatch(vars.version) } }
+          : {}),
+      },
       body: {
         line_id: vars.lineId,
         spot_id: vars.spotId,

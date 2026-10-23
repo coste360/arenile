@@ -115,7 +115,7 @@ export function SpotSheet({
     if (!b) return;
     setError(null);
     checkIn.mutate(
-      { bookingId: b.booking_id },
+      { bookingId: b.booking_id, version: b.version },
       {
         onSuccess: () => {
           toast.success(t('sheet.checkedIn', { code: b.code }));

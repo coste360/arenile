@@ -383,6 +383,7 @@
         "completed": "Terminée"
       },
       "payment": {
+        "recorded": "Paiement enregistré",
         "succeeded": "Paiement enregistré",
         "refunded": "Remboursement enregistré"
       }

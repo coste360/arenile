@@ -121,7 +121,7 @@ export function TodayPage() {
 
   const doCheckIn = (b: OperationalBooking) =>
     checkIn.mutate(
-      { bookingId: b.booking_id },
+      { bookingId: b.booking_id, version: b.version },
       {
         onSuccess: () => toast.success(t('sheet.checkedIn', { code: b.code })),
         onError: (e) => toast.error(problemText(e)),

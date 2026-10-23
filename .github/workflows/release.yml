@@ -161,13 +161,13 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-  release:
-    name: GitHub release
-    needs: [image, binaries]
+  portal-bundle:
+    # Ready-made binaries are distributed through the Coste360 download portal (login required),
+    # never as GitHub release assets: GitHub carries the source and the instructions only.
+    name: Portal bundle
+    needs: binaries
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      contents: write
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -179,8 +179,25 @@ jobs:
         working-directory: dist
         run: sha256sum * > checksums.txt
 
+      - uses: actions/upload-artifact@v7
+        with:
+          name: portal-bundle-${{ github.ref_name }}
+          path: dist/*
+          retention-days: 30
+          if-no-files-found: error
+
+  release:
+    name: GitHub release (notes and API contract, no binaries)
+    needs: [image, portal-bundle]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
       - uses: softprops/action-gh-release@v3
         with:
-          files: dist/*
+          files: api/openapi.yaml
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}

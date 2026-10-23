@@ -22,6 +22,7 @@ export function opBooking(overrides: Partial<OperationalBooking> = {}): Operatio
     balance_due: 0,
     has_notes: false,
     has_extras: false,
+    version: 1,
     ...overrides,
   };
 }

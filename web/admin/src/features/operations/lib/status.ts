@@ -14,11 +14,16 @@ export const VIP_TAG = 'vip';
  * Colour status of a spot in the operational view (spec 11.3 table), from
  * the server status of the slot plus the booking summary:
  *
- *   free → free; held → hold; checked_in → present; pass_holder → season;
+ *   free → free; held → hold; checked_in → present;
+ *   pass_holder → to_collect when the pass has an open balance, else season;
  *   released → season_released; renewal_offer → renewal_hold;
  *   blocked → blocked; closed / inactive → unavailable;
  *   booked → to_collect when the balance is open, else booked_online
  *   (channel online/api) or booked_desk.
+ *
+ * "Da incassare" (spec 11.3) is defined on the money, paid_amount <
+ * total_amount, so it takes precedence over the season colour: the map
+ * then shows the same open balances the Oggi page counts.
  *
  * Pure function: the single place that maps API statuses onto the shared
  * palette (STATUS_CLASSES / --status-* tokens), so map, legend and lists agree.
@@ -35,7 +40,7 @@ export function toSpotStatus(
     case 'checked_in':
       return 'present';
     case 'pass_holder':
-      return 'season';
+      return booking && booking.balance_due > 0 ? 'to_collect' : 'season';
     case 'released':
       return 'season_released';
     case 'renewal_offer':

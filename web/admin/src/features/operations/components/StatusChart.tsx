@@ -7,7 +7,7 @@ import {
 } from '@arenile/shared/ui/chart';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bar, BarChart, Cell, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from 'recharts';
 import { chartRows } from '../lib/kpis';
 
 export interface StatusChartProps {
@@ -16,8 +16,9 @@ export interface StatusChartProps {
 
 /**
  * Spots per status of the day as horizontal bars in the map colours
- * (--status-* tokens, same as the legend), with the counts also listed
- * as text for screen readers.
+ * (--status-* tokens, same as the legend). The count is printed at the end
+ * of each bar (no hover on the tablets the panel targets) and the list is
+ * repeated as text for screen readers.
  */
 export function StatusChart({ byStatus }: StatusChartProps) {
   const { t } = useTranslation('operations');
@@ -46,7 +47,7 @@ export function StatusChart({ byStatus }: StatusChartProps) {
         className="aspect-auto h-64 w-full"
         aria-hidden="true"
       >
-        <BarChart data={rows} layout="vertical" margin={{ left: 8, right: 16 }}>
+        <BarChart data={rows} layout="vertical" margin={{ left: 8, right: 40 }}>
           <XAxis type="number" allowDecimals={false} hide />
           <YAxis type="category" dataKey="label" width={140} tickLine={false} axisLine={false} />
           <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel={false} />} />
@@ -54,6 +55,12 @@ export function StatusChart({ byStatus }: StatusChartProps) {
             {rows.map((r) => (
               <Cell key={r.status} fill={`var(${STATUS_CLASSES[r.status].cssVar})`} />
             ))}
+            <LabelList
+              dataKey="count"
+              position="right"
+              offset={8}
+              className="fill-foreground text-xs font-medium tabular-nums"
+            />
           </Bar>
         </BarChart>
       </ChartContainer>

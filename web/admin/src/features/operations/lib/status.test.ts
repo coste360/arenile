@@ -18,6 +18,7 @@ describe('toSpotStatus', () => {
     ['held', undefined, 'hold'],
     ['checked_in', opBooking(), 'present'],
     ['pass_holder', opBooking({ is_season_pass: true }), 'season'],
+    ['pass_holder', opBooking({ is_season_pass: true, balance_due: 210000 }), 'to_collect'],
     ['released', undefined, 'season_released'],
     ['renewal_offer', undefined, 'renewal_hold'],
     ['blocked', undefined, 'blocked'],

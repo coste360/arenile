@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { EST_ID, baseRoutes, callsTo, json, renderApp } from '../configuration/testing';
 import { opBooking, opDay, opSpot } from './testing/fixtures';
 import { API, operationsRoutes } from './testing/routes';
@@ -29,6 +29,15 @@ function setup(extra: Parameters<typeof operationsRoutes>[1] = {}) {
 }
 
 describe('OperationalMapPage', () => {
+  // The map shows 2026-07-14: check-in is offered only when that day is today.
+  beforeAll(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-07-14T10:00:00'));
+  });
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
   it('colours spots by status with the full legend and accessible names', async () => {
     const { fetchMock } = setup();
     const a2 = await screen.findByRole('button', { name: /Postazione A2: Prenotato in cassa/ });

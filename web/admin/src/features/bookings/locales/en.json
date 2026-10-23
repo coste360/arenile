@@ -383,6 +383,7 @@
         "completed": "Completed"
       },
       "payment": {
+        "recorded": "Payment recorded",
         "succeeded": "Payment recorded",
         "refunded": "Refund recorded"
       }

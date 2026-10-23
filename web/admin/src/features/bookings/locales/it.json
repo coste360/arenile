@@ -383,6 +383,7 @@
         "completed": "Conclusa"
       },
       "payment": {
+        "recorded": "Incasso registrato",
         "succeeded": "Incasso registrato",
         "refunded": "Rimborso registrato"
       }

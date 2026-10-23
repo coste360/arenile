@@ -61,3 +61,59 @@ export function daysInclusive(from: string, to: string): number {
 export function maxIso(a: string, b: string): string {
   return a > b ? a : b;
 }
+
+/** Options of the instant formatters: UI language and establishment time zone. */
+export interface InstantFormatOptions {
+  locale?: string;
+  /** IANA time zone of the establishment; the browser zone when omitted. */
+  timeZone?: string;
+}
+
+function instantFormatter(opts: InstantFormatOptions, withTime: boolean): Intl.DateTimeFormat {
+  const locale = opts.locale && opts.locale !== 'it' ? opts.locale : 'it-IT';
+  return new Intl.DateTimeFormat(locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    ...(withTime ? { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' } : {}),
+    ...(opts.timeZone ? { timeZone: opts.timeZone } : {}),
+  });
+}
+
+/**
+ * RFC 3339 instant → "dd/MM/yyyy, HH:mm" in the establishment time zone
+ * (four-digit year, as every date of the UI; never `dateStyle: 'short'`).
+ * Empty string for a missing or malformed instant.
+ */
+export function formatInstant(iso: string | null | undefined, opts: InstantFormatOptions = {}): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : instantFormatter(opts, true).format(d);
+}
+
+/** RFC 3339 instant → "dd/MM/yyyy" (the calendar day in the establishment time zone). */
+export function formatInstantDate(
+  iso: string | null | undefined,
+  opts: InstantFormatOptions = {},
+): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : instantFormatter(opts, false).format(d);
+}
+
+/** RFC 3339 instant → "HH:mm" in the establishment time zone. */
+export function formatInstantTime(
+  iso: string | null | undefined,
+  opts: InstantFormatOptions = {},
+): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const locale = opts.locale && opts.locale !== 'it' ? opts.locale : 'it-IT';
+  return new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    ...(opts.timeZone ? { timeZone: opts.timeZone } : {}),
+  }).format(d);
+}

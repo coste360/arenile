@@ -47,7 +47,7 @@ import { useState, type ReactNode } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { useRequiredEstablishmentId } from '../../establishment';
+import { useInstantFormat, useRequiredEstablishmentId } from '../../establishment';
 import {
   useAddBookingNote,
   useBooking,
@@ -90,6 +90,7 @@ export function BookingDetailPage() {
   const { bookingId } = useParams({ strict: false }) as { bookingId?: string };
   const query = useBooking(establishmentId, bookingId);
   const inventory = useEstablishmentSpots(establishmentId, i18n.language);
+  const fmt = useInstantFormat();
   const perms = useOperationalPermissions();
   const transition = useBookingTransition(establishmentId);
   const [dialog, setDialog] = useState<DialogName>(null);
@@ -219,7 +220,7 @@ export function BookingDetailPage() {
       {b.hold_expires_at && (
         <p className="text-sm text-muted-foreground">
           {t('detail.holdExpires', {
-            at: new Date(b.hold_expires_at).toLocaleString(i18n.language),
+            at: fmt.dateTime(b.hold_expires_at),
           })}
         </p>
       )}
@@ -428,7 +429,8 @@ function PaymentsCard({
   onPay: () => void;
   onRefund: () => void;
 }) {
-  const { t, i18n } = useTranslation('bookings');
+  const { t } = useTranslation('bookings');
+  const fmt = useInstantFormat();
   return (
     <SectionCard
       title={t('payments.title')}
@@ -465,10 +467,7 @@ function PaymentsCard({
             {booking.payments.map((p) => (
               <TableRow key={p.id}>
                 <TableCell className="pl-6 tabular-nums">
-                  {new Date(p.created_at).toLocaleString(i18n.language, {
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  })}
+                  {fmt.dateTime(p.created_at)}
                 </TableCell>
                 <TableCell>
                   {t(`method.${p.method}`)}
@@ -629,7 +628,8 @@ function NotesCard({
 }
 
 function HistoryCard({ booking }: { booking: BookingDetail }) {
-  const { t, i18n } = useTranslation('bookings');
+  const { t } = useTranslation('bookings');
+  const fmt = useInstantFormat();
   const entries = [...booking.history].sort((a, b) => b.at.localeCompare(a.at));
   return (
     <SectionCard title={t('history.title')}>
@@ -648,10 +648,7 @@ function HistoryCard({ booking }: { booking: BookingDetail }) {
                   {t(`history.actions.${e.action}`, { defaultValue: e.action })}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(e.at).toLocaleString(i18n.language, {
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  })}
+                  {fmt.dateTime(e.at)}
                   {' · '}
                   {e.actor_name ?? t(`history.actor.${e.actor_type}`)}
                 </p>

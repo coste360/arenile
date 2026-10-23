@@ -26,7 +26,7 @@ Due modi in più per usare Arenile, pensati per chi lavora soprattutto in cassa 
 
 **Passaggio a un'istanza online:** il backup del desktop è lo stesso database SQLite dell'edizione server. `arenile restore --in FILE` su una VPS porta tutto online senza conversioni; da lì si attiva la pagina pubblica.
 
-**Modalità rete locale (opzionale, M7):** il gestore può esporre il server desktop sulla Wi-Fi del lido perché l'app mobile dello staff lo usi senza internet. Si attiva esplicitamente dal menu, usa TLS con certificato autogenerato e abbinamento dei dispositivi tramite QR code che contiene indirizzo, impronta del certificato e codice monouso (sezione 29.2).
+**Modalità rete locale (M6):** il gestore può esporre il server desktop sulla Wi-Fi del lido, così altri PC, tablet e telefoni dello staff lavorano sullo stesso archivio dal browser (e, da M7, dall'app mobile) senza internet. Esiste un solo server, quindi le garanzie contro le doppie prenotazioni restano quelle della sezione 7. Si attiva esplicitamente dal menu e usa TLS con un certificato autogenerato. Le postazioni sono abbinate tramite un QR code che contiene indirizzo, impronta del certificato e codice monouso (sezione 29.2); i browser lo usano per raggiungere il pannello, l'app per ottenere il token del dispositivo. Il menu mostra l'indirizzo locale e il QR code. Le connessioni dall'esterno della rete locale sono rifiutate.
 
 **Modalità remota (client di un'istanza online o privata)**
 
@@ -41,6 +41,7 @@ Al primo avvio, e in seguito dalle impostazioni, il gestore sceglie tra **Locale
 **Architettura e build**
 - Stesso repository e stesso modulo Go: il launcher è `cmd/arenile-desktop` e importa i package `internal/` del core (che Go non consente di importare da un altro modulo). Il core resta senza CGO; solo il launcher può usare CGO per l'icona nella barra di sistema, ed è compilato sui runner nativi di ciascun sistema operativo.
 - Release con lo stesso tag dell'edizione server: binari firmati (Authenticode su Windows; Developer ID e notarizzazione Apple su macOS).
+- Distribuzione: i pacchetti pronti si scaricano dal portale Coste360, previo login, da una pagina dedicata ai download per Windows, macOS e Linux. Non sono pubblicati come asset su GitHub: il repository contiene il codice e le istruzioni per compilarlo.
 - Il pannello rileva la modalità desktop da un flag esposto dall'API (nessun fork del frontend).
 
 ### 29.2 App mobile (si collega a un'istanza Arenile)

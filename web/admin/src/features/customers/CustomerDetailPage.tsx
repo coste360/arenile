@@ -17,7 +17,7 @@ import { ArrowLeftIcon, DownloadIcon, PencilIcon, PlusIcon, UserRoundXIcon } fro
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { useRequiredEstablishmentId } from '../../establishment';
+import { useInstantFormat, useRequiredEstablishmentId } from '../../establishment';
 import { STATUS_TONE, useOperationalPermissions } from '../bookings/model';
 import { describeProblem } from '../bookings/problem';
 import { NewBookingSheet } from '../bookings/NewBookingSheet';
@@ -26,7 +26,8 @@ import { AnonymizeDialog, CustomerFormDialog } from './CustomerDialogs';
 
 /** Scheda cliente: contacts, tags, consent, stats, credits, bookings and passes, GDPR actions. */
 export function CustomerDetailPage() {
-  const { t, i18n } = useTranslation('customers');
+  const { t } = useTranslation('customers');
+  const fmt = useInstantFormat();
   const establishmentId = useRequiredEstablishmentId();
   const navigate = useNavigate();
   const { customerId } = useParams({ strict: false }) as { customerId?: string };
@@ -263,7 +264,7 @@ export function CustomerDetailPage() {
               <Field label={t('fields.marketing')}>
                 {c.marketing_consent
                   ? t('consent.given', {
-                      at: new Date(c.marketing_consent.given_at).toLocaleDateString(i18n.language),
+                      at: fmt.date(c.marketing_consent.given_at),
                       source: c.marketing_consent.source,
                     })
                   : t('consent.no')}
@@ -273,7 +274,7 @@ export function CustomerDetailPage() {
               </Field>
               {c.anonymized_at && (
                 <Field label={t('anonymized')}>
-                  {new Date(c.anonymized_at).toLocaleString(i18n.language)}
+                  {fmt.dateTime(c.anonymized_at)}
                 </Field>
               )}
             </CardContent>
@@ -294,7 +295,7 @@ export function CustomerDetailPage() {
                     <span>
                       {t(`credits.source.${cr.source}`)}
                       <span className="block text-xs text-muted-foreground">
-                        {new Date(cr.created_at).toLocaleDateString(i18n.language)}
+                        {fmt.date(cr.created_at)}
                         {cr.expires_on &&
                           ` · ${t('credits.expires', { date: formatIsoDate(cr.expires_on) })}`}
                       </span>

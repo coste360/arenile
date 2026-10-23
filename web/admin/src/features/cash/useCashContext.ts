@@ -1,4 +1,5 @@
 import { useMe } from '@arenile/shared/api';
+import { formatInstant, formatInstantTime } from '@arenile/shared/lib/dates';
 import { formatCents } from '@arenile/shared/lib/money';
 import { useTranslation } from 'react-i18next';
 import { useCurrentEstablishment, useRequiredEstablishmentId } from '../../establishment';
@@ -24,16 +25,13 @@ export function useCashContext(): CashContext {
   const current = useCurrentEstablishment();
   const est = current.establishment;
   const perms = cashPermissionsFor(me.data, est);
-  const locale = i18n.language === 'it' ? 'it-IT' : i18n.language;
-  const tz = est?.timezone ?? 'Europe/Rome';
-  const fmt = (iso: string | undefined, opts: Intl.DateTimeFormatOptions) =>
-    iso ? new Intl.DateTimeFormat(locale, { timeZone: tz, ...opts }).format(new Date(iso)) : '';
+  const fmt = { locale: i18n.language, timeZone: est?.timezone ?? 'Europe/Rome' };
   return {
     ...perms,
     establishmentId,
     loading: me.isPending || current.isLoading,
     money: (cents) => formatCents(cents, est?.currency ?? 'EUR'),
-    dateTime: (iso) => fmt(iso, { dateStyle: 'short', timeStyle: 'short' }),
-    time: (iso) => fmt(iso, { timeStyle: 'short' }),
+    dateTime: (iso) => formatInstant(iso, fmt),
+    time: (iso) => formatInstantTime(iso, fmt),
   };
 }

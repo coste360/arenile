@@ -72,7 +72,7 @@ describe('BeachMap', () => {
   it('renders a viewBox that includes the sea band', () => {
     const { container } = renderWithI18n(<BeachMap geometry={geometry} />);
     const svg = container.querySelector('svg');
-    expect(svg?.getAttribute('viewBox')).toBe('0 -24 300 224');
+    expect(svg?.getAttribute('viewBox')).toBe('-8 -32 316 240');
     expect(container.querySelector('[data-sea-side="top"]')).toHaveTextContent('Mare');
     expect(screen.getByRole('group', { name: 'Mappa dello stabilimento' })).toBeInTheDocument();
   });
