@@ -260,8 +260,14 @@ type Confirmation struct {
 	EmailMasked    string
 }
 
+// Labels name the packs, extras and zones of a booking summary.
+type Labels struct {
+	Packs, Extras, Zones map[string]store.I18nText
+}
+
 // State is api.CheckoutState.
 type State struct {
+	Labels       Labels
 	Booking      *booking.Detail
 	Session      store.CheckoutSession
 	NextAction   string
@@ -293,6 +299,10 @@ const (
 type PayInput struct {
 	Settlement     string
 	IdempotencyKey string
+	// ReturnTo is the host page of the embedded widget (optional): the
+	// provider returns there with arenile_checkout=<booking id>. Its origin
+	// must be one of the establishment's allowed embed origins.
+	ReturnTo string
 }
 
 // Pay modes (api.PayResult.mode).
@@ -338,6 +348,8 @@ type Actions struct {
 
 // Managed is api.ManageBooking.
 type Managed struct {
+	Labels        Labels
+	Quote         *Quote
 	Booking       *booking.Detail
 	Link          store.MagicLinkToken
 	Allowed       Actions

@@ -73,7 +73,10 @@ func ValidateTimezone(tz string) error {
 
 // NormalizeEmbedOrigin validates an origin allowed to frame the public page
 // (spec 12.2) and returns its canonical form "https://host[:port]". Only
-// HTTPS origins without path, query, fragment or credentials are accepted.
+// HTTPS origins without path, query, fragment or credentials are accepted,
+// plus plain HTTP on loopback hosts (localhost, *.localhost, 127.0.0.0/8,
+// ::1), which browsers treat as secure contexts: a developer can try the
+// widget on a local site before publishing it.
 func NormalizeEmbedOrigin(s string) (string, error) {
 	s = strings.TrimSpace(s)
 	if s == "" || len(s) > MaxURLLength {
@@ -83,7 +86,7 @@ func NormalizeEmbedOrigin(s string) (string, error) {
 	if err != nil {
 		return "", errors.New("malformed origin")
 	}
-	if u.Scheme != "https" || u.Opaque != "" || u.User != nil || u.Host == "" ||
+	if (u.Scheme != "https" && (u.Scheme != "http" || !isLoopbackHost(u.Hostname()))) || u.Opaque != "" || u.User != nil || u.Host == "" ||
 		(u.Path != "" && u.Path != "/") || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" {
 		return "", errors.New("not an https origin")
 	}
@@ -98,17 +101,31 @@ func NormalizeEmbedOrigin(s string) (string, error) {
 			}
 		}
 	}
-	out := "https://" + host
+	scheme, defPort := "https", "443"
+	if u.Scheme == "http" {
+		scheme, defPort = "http", "80"
+	}
+	out := scheme + "://" + host
 	if strings.Contains(host, ":") { // IPv6 literal
-		out = "https://[" + host + "]"
+		out = scheme + "://[" + host + "]"
 	}
 	if p := u.Port(); p != "" {
-		if p == "443" {
+		if p == defPort {
 			return out, nil
 		}
 		out += ":" + p
 	}
 	return out, nil
+}
+
+// isLoopbackHost reports whether host is a loopback name or address.
+func isLoopbackHost(host string) bool {
+	host = strings.ToLower(host)
+	if host == "localhost" || strings.HasSuffix(host, ".localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
 
 // validateEmbedOrigins normalizes and deduplicates origins.

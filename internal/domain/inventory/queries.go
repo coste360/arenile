@@ -56,6 +56,16 @@ type ZoneAvailability struct {
 	Capacity  int
 	Available int
 	Spots     []SpotAvailability // seat and zone zones only
+	// Daily is the units bookable on each open date of the range (minimum
+	// over the requested slots of that date; closed dates are absent): the
+	// public calendar (M4) reads it instead of one query per day.
+	Daily []DayAvailability
+}
+
+// DayAvailability is the availability of a zone on one open date.
+type DayAvailability struct {
+	Date      calendar.Date
+	Available int
 }
 
 // PoolDay is one counter of a pool.
@@ -351,6 +361,25 @@ func (s *Service) availability(ctx context.Context, es store.EstablishmentScope,
 			}
 		}
 		za.Available = max(minAvail, 0)
+		za.Daily = dailyMinimum(open, perHalfDay)
+		if z.AssignmentMode == modeSeat {
+			// A seat stay needs the same spot for every slot of the date.
+			for i := range za.Daily {
+				n := 0
+				for _, sp := range zs {
+					whole := true
+					for _, ds := range open {
+						if ds.Date == za.Daily[i].Date && !free.IsFree(ids[sp.ID], ds.Date, ds.Slot) {
+							whole = false
+						}
+					}
+					if whole {
+						n++
+					}
+				}
+				za.Daily[i].Available = min(za.Daily[i].Available, n)
+			}
+		}
 		if z.AssignmentMode != modeQuantity {
 			za.Spots = make([]SpotAvailability, 0, len(zs))
 			wholeFree := 0
@@ -450,4 +479,21 @@ func (s *Service) onlineCounts(ctx context.Context, es store.EstablishmentScope,
 		out[r.ZoneID+"/"+r.Date.String()+"/"+string(r.Slot)] = r.N
 	}
 	return out, nil
+}
+
+// dailyMinimum folds a per half-day count into one value per date (the
+// minimum over the open half-days of the date), in date order.
+func dailyMinimum(open []availability.DateSlot, perHalfDay map[availability.DateSlot]int) []DayAvailability {
+	out := make([]DayAvailability, 0, len(open))
+	idx := map[calendar.Date]int{}
+	for _, ds := range open {
+		n := max(perHalfDay[ds], 0)
+		if i, ok := idx[ds.Date]; ok {
+			out[i].Available = min(out[i].Available, n)
+			continue
+		}
+		idx[ds.Date] = len(out)
+		out = append(out, DayAvailability{Date: ds.Date, Available: n})
+	}
+	return out
 }

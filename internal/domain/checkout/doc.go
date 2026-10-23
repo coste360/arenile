@@ -11,24 +11,49 @@
 // (online.go), pass (online.go), inventory (public.go), the repository
 // functions in internal/store/checkout.go (model checkout_sessions) and the
 // concurrency test of the acceptance criterion "no double sale between the
-// cash desk and online under parallel load" (TestConcurrency_DeskVsOnline).
+// cash desk and online under parallel load" (TestConcurrency_OnlineVsDesk, with TestConcurrency_ZoneAutoAssign).
 //
 // # Files
 //
 //   - ports.go: interfaces consumed (Settings, Inventory, Pricer, Bookings,
 //     Payments, Notifier, SeasonPasses), asserted in internal/app/m4.go;
+//   - plan.go: the pure core (functional core) with table tests:
+//     validateSelection (what the online channel may sell: slots and
+//     formulas offered, booking window, zones visible online, packs and
+//     extras of channel online, seat/zone/quantity line shapes),
+//     paymentPlan (approval -> at desk -> deposit -> full), deriveState
+//     (session state and next action, never writing), manageActions,
+//     indicators, calendar statuses, quote items;
 //   - token.go: checkout session tokens (256-bit, base64url; SHA-256 hex in
-//     checkout_sessions.token_hash; constant-time comparison never needed
-//     because lookups are by hash);
-//   - browse.go: Calendar, Map, Availability, Catalog, Quote (reads, no
-//     writes; channel online);
+//     checkout_sessions.token_hash; lookups are by hash, so no comparison
+//     can leak timing);
+//   - browse.go, profile.go: Profile, Calendar, Map, Availability, Catalog,
+//     Quote (reads, channel online; "from" prices from the pure pricing
+//     engine on the season price list, cached briefly in cache.go; the
+//     availability counts are never cached);
 //   - session.go: Create, State, UpdateCustomer, Pay, Abandon, Document;
 //   - manage.go: Manage, ManageDocument, ManagePay, ManageModify,
 //     ManageCancel, ManageRelease, RequestLink;
-//   - zone assignment: zone-mode lines stay pending at creation and are
-//     placed by the existing booking auto-assignment at confirmation when the
-//     zone has auto_assign (spec 7.5): the confirmation path calls it in the
-//     same transaction (booking builder hook), never the browser.
+//   - checkouttest/: the flow on a real database for integration tests.
+//
+// # Zone-mode zones (spec 7.5)
+//
+// Zone-mode lines consume the zone pool while held (pending assignment:
+// the conditional pool UPDATE decides the capacity and the online quota)
+// and get their spot at confirmation when the zone has auto_assign: the
+// booking service runs the greedy engine inside the confirmation
+// transaction (manual driver, payment webhook, approval), one savepoint
+// per line, re-planning on a concurrent placement (booking/online.go
+// assignOnline). Never from the browser.
+//
+// # Limits (spec 17.2, 22)
+//
+// The HTTP middleware limits every public call per IP (reads and writes
+// apart, quotes count as reads). The service adds a budget of checkout
+// creations per establishment (Deps.CreatesPerEstablishment) and, for
+// "send me a new link", limits per IP and per email + booking code; the
+// link request itself runs in the background so the response time never
+// tells a match from a miss.
 //
 // # Flow and transactions
 //

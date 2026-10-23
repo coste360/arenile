@@ -59,7 +59,13 @@
 //     (text not copied into the audit log), Cancel (releases; refund or
 //     credit computed on the policy snapshot; dry run).
 //   - Jobs: expiry of booking holds (every 30 s) and completion of past
-//     bookings (hourly).
+//     bookings (hourly). The expiry covers the held / pending_payment
+//     bookings of the public channel too.
+//   - Public channel (online.go, M4): CreateOnline (held, placeholder
+//     customer), AttachCustomer, StartPayment, ConfirmWithoutPayment,
+//     Abandon, ModifyAsCustomer, CancelAsCustomer, DetailIn, with an
+//     audit.Actor instead of a principal; confirmation of an online booking
+//     auto-assigns its pending zone-mode lines (assignOnline, spec 7.5).
 //
 // Dry runs (Update, Move) execute the real change and roll the transaction
 // back (errDryRun), so a preview can never disagree with the outcome.

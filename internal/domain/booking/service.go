@@ -155,6 +155,19 @@ func (s *Service) CreateInTx(ctx context.Context, tx bun.IDB, p *auth.Principal,
 	if err != nil {
 		return nil, err
 	}
+	var createdBy *string
+	if p.Kind == auth.PrincipalUser && p.UserID != "" {
+		u := p.UserID
+		createdBy = &u
+	}
+	return s.createWith(ctx, tx, p.Actor(reqctx.From(ctx).ClientIP), createdBy, es, cust, in)
+}
+
+// createWith is the body of a creation once the actor and the customer are
+// known (shared by the panel, CreateInTx, and the public channel,
+// CreateOnline): catalog, price and policy, status, rows, promo,
+// allocation, audit and outbox in tx.
+func (s *Service) createWith(ctx context.Context, tx bun.IDB, actor audit.Actor, createdBy *string, es store.EstablishmentScope, cust *store.Customer, in CreateInput) (*Detail, error) {
 	est, err := store.GetEstablishment(ctx, tx, es)
 	if err != nil {
 		return nil, fmt.Errorf("booking: establishment: %w", err)
@@ -211,10 +224,7 @@ func (s *Service) CreateInTx(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		a := agreement
 		b.AgreementID = &a
 	}
-	if p.Kind == auth.PrincipalUser && p.UserID != "" {
-		u := p.UserID
-		b.CreatedByUserID = &u
-	}
+	b.CreatedByUserID = createdBy
 	if state.Status == StatusConfirmed {
 		b.ConfirmedAt = &now
 	}
@@ -277,7 +287,7 @@ func (s *Service) CreateInTx(ctx context.Context, tx bun.IDB, p *auth.Principal,
 	if in.IsSeasonPass {
 		diff["season_pass"] = true
 	}
-	if err := s.record(ctx, tx, p, es, b, eventCreated, "", diff, alloc); err != nil {
+	if err := s.recordAs(ctx, tx, actor, es, b, eventCreated, eventCreated, "", diff, alloc); err != nil {
 		return nil, err
 	}
 	if state.Event != "" {
@@ -461,12 +471,8 @@ func (s *Service) unmarkResold(ctx context.Context, tx bun.IDB, es store.Establi
 
 // ---- audit and outbox ---------------------------------------------------------------
 
-// record writes the audit entry and the outbox event of a change in tx
-// (INV-18). action is also the event type unless eventType is set.
-func (s *Service) record(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, b *store.Booking, action, prevStatus string, diff map[string]any, alloc *inventory.Allocation) error {
-	return s.recordAs(ctx, tx, p.Actor(reqctx.From(ctx).ClientIP), es, b, action, action, prevStatus, diff, alloc)
-}
-
+// recordAs writes the audit entry and the outbox event of a change in tx
+// (INV-18) with the given actor (a principal's or the public channel's).
 func (s *Service) recordAs(ctx context.Context, tx bun.IDB, actor audit.Actor, es store.EstablishmentScope, b *store.Booking, action, eventType, prevStatus string, diff map[string]any, alloc *inventory.Allocation) error {
 	if diff == nil {
 		diff = map[string]any{}
@@ -797,6 +803,15 @@ func (s *Service) confirmLocked(ctx context.Context, tx bun.IDB, es store.Establ
 	b.Status = string(StatusConfirmed)
 	b.ConfirmedAt = &now
 	b.HoldExpiresAt = nil
+	if b.Channel != store.ChannelDesk {
+		// Public channel: zone-mode lines get their spot now (spec 7.5,
+		// auto_assign zones; see assignOnline in online.go).
+		assigned, err := s.assignOnline(ctx, tx, es, b, now)
+		if err != nil {
+			return nil, err
+		}
+		alloc = mergeAlloc(alloc, assigned)
+	}
 	diff := map[string]any{"driver": "manual"}
 	if approved {
 		diff["approved"] = true

@@ -12,6 +12,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/configerr"
@@ -37,9 +38,16 @@ func (s *Service) changeInTx(ctx context.Context, p *auth.Principal, establishme
 	if err != nil {
 		return nil, err
 	}
+	return s.changeAs(ctx, p.Actor(reqctx.From(ctx).ClientIP), es, id, expected, dryRun, fn)
+}
+
+// changeAs is changeInTx once the actor and the establishment are resolved
+// (panel principal or public-channel actor).
+func (s *Service) changeAs(ctx context.Context, actor audit.Actor, es store.EstablishmentScope, id string, expected *int64, dryRun bool,
+	fn func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error),
+) (*ChangeResult, error) {
 	res := &ChangeResult{}
-	actor := p.Actor(reqctx.From(ctx).ClientIP)
-	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
+	err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
 		d, err := s.mutateInTx(ctx, tx, actor, es, id, expected, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
 			return fn(ctx, tx, es, b, res)
 		})

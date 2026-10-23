@@ -79,4 +79,6 @@ type Notifier interface {
 // Implemented by *pass.Service (internal/domain/pass/online.go).
 type SeasonPasses interface {
 	ReleaseAsCustomer(ctx context.Context, actor audit.Actor, es store.EstablishmentScope, passID string, in pass.ReleaseInput) ([]store.SeasonRelease, error)
+	// PreviewReleaseAsCustomer runs the release and rolls it back.
+	PreviewReleaseAsCustomer(ctx context.Context, actor audit.Actor, es store.EstablishmentScope, passID string, in pass.ReleaseInput) ([]store.SeasonRelease, error)
 }
