@@ -47,7 +47,10 @@ const (
 // Status follows the state machine of internal/domain/booking/status.go.
 // PriceSnapshot is the pricing.PriceBreakdown and PolicySnapshot the applied
 // policy ({policy_id, rules}) at creation: both are immutable after
-// confirmation (INV-21). PaidAmount = succeeded payments in - refunds (INV-22).
+// confirmation (INV-21). PriceCurrent is the breakdown of the latest
+// re-quote of a booking modified after confirmation (nil until then, ADR
+// 0011): TotalAmount always equals the total of CurrentPrice() (INV-12).
+// PaidAmount = succeeded payments in - refunds (INV-22).
 // Version is the optimistic concurrency version (ETag / If-Match).
 type Booking struct {
 	bun.BaseModel `bun:"table:bookings,alias:bk"`
@@ -66,6 +69,7 @@ type Booking struct {
 	IsSeasonPass       bool           `bun:"is_season_pass,notnull"`
 	RenewalOfBookingID *string        `bun:"renewal_of_booking_id"`
 	PriceSnapshot      JSON           `bun:"price_snapshot,notnull"`
+	PriceCurrent       JSON           `bun:"price_current,nullzero"`
 	TotalAmount        money.Cents    `bun:"total_amount,notnull"`
 	PaidAmount         money.Cents    `bun:"paid_amount,notnull"`
 	DepositDue         money.Cents    `bun:"deposit_due,notnull"`
@@ -90,6 +94,16 @@ type Booking struct {
 
 // BalanceDue is what remains to be collected (never negative).
 func (b *Booking) BalanceDue() money.Cents { return max(b.TotalAmount-b.PaidAmount, 0) }
+
+// CurrentPrice is the breakdown that prices the booking today: PriceCurrent
+// after a modification following the confirmation, PriceSnapshot otherwise
+// (payments split their VAT on it, INV-16).
+func (b *Booking) CurrentPrice() JSON {
+	if len(b.PriceCurrent) > 0 {
+		return b.PriceCurrent
+	}
+	return b.PriceSnapshot
+}
 
 // BookingLine is one pack of a booking on a zone, optionally on a spot.
 // Lines share the dates and slots of their booking.

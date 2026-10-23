@@ -3,6 +3,7 @@
 package booking_test
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"reflect"
@@ -17,6 +18,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/policy"
+	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
@@ -647,4 +649,107 @@ func TestBookingLifecycle_CheckInOutsidePeriod(t *testing.T) {
 			t.Fatal("confirm note not recorded as a flag")
 		}
 	})
+}
+
+// TestBookingSnapshot_RequoteMatchesTotal (INV-12, INV-21, ADR 0011): after
+// a modification of a confirmed booking the original price_snapshot is
+// untouched, price_current holds the re-quote and total_amount equals its
+// total; re-quoting the saved inputs (dates, lines, extras) with the same
+// engine gives the same total. Before the confirmation the snapshot itself
+// is replaced and price_current stays empty.
+func TestBookingSnapshot_RequoteMatchesTotal(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		det := f.MustCreate(f.Input(f.Spots[0], "2027-07-10", "2027-07-12"))
+		id, snap := det.Booking.ID, det.Booking.PriceSnapshot
+		var sn struct {
+			Total int64 `json:"total"`
+		}
+		if json.Unmarshal(snap, &sn) != nil || sn.Total != int64(det.Booking.TotalAmount) || len(det.Booking.PriceCurrent) != 0 {
+			t.Fatalf("created: total %d snapshot %s current %s", det.Booking.TotalAmount, snap, det.Booking.PriceCurrent)
+		}
+		ends := d("2027-07-14")
+		lines := []booking.LineInput{{PackID: f.Base.ID, SpotID: f.Spots[0].ID, Extras: []booking.ExtraInput{{ExtraID: f.Sunbed.ID, Quantity: 2}}}}
+		res, err := f.Svc.Update(f.Ctx, f.Owner, f.Est.ID, id, i64(1), booking.PatchInput{EndsOn: &ends, Lines: lines})
+		if err != nil {
+			t.Fatalf("update: %v", err)
+		}
+		b := res.Detail.Booking
+		var cur struct {
+			Total int64 `json:"total"`
+			VAT   []any `json:"vat"`
+		}
+		if !sameJSON(b.PriceSnapshot, snap) || json.Unmarshal(b.PriceCurrent, &cur) != nil || cur.Total != int64(b.TotalAmount) || len(cur.VAT) == 0 {
+			t.Fatalf("modified: total %d snapshot %s current %s", b.TotalAmount, b.PriceSnapshot, b.PriceCurrent)
+		}
+		if b.TotalAmount != 5*(bookingtest.BasePerDay+2*bookingtest.SunbedPerDay) {
+			t.Fatalf("total %d", b.TotalAmount)
+		}
+		// The saved inputs re-quoted with the same engine give the same total.
+		q, err := f.Svc.Quote(f.Ctx, f.Viewer, f.Est.ID, booking.CreateInput{
+			CustomerID: b.CustomerID, StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, Formula: b.Formula, Lines: lines, Status: booking.StatusDraft,
+		})
+		if err != nil || q.Result.Breakdown.Total != b.TotalAmount {
+			t.Fatalf("re-quote: %v %+v", err, q)
+		}
+		// Payments split their VAT on the current breakdown (CurrentPrice).
+		stored, _ := store.GetBooking(f.Ctx, db, mustScopeOf(t, db, f.Est.ID), id)
+		if !sameJSON(stored.CurrentPrice(), b.PriceCurrent) {
+			t.Fatal("CurrentPrice must be price_current after a confirmed modification")
+		}
+		// A held booking modified before its confirmation replaces the snapshot.
+		in := f.Input(f.Spots[1], "2027-07-20", "2027-07-20")
+		in.Status = booking.StatusHeld
+		held := f.MustCreate(in)
+		ends2 := d("2027-07-21")
+		res, err = f.Svc.Update(f.Ctx, f.Owner, f.Est.ID, held.Booking.ID, nil, booking.PatchInput{EndsOn: &ends2})
+		if err != nil {
+			t.Fatalf("update held: %v", err)
+		}
+		hb := res.Detail.Booking
+		if json.Unmarshal(hb.PriceSnapshot, &sn) != nil || sn.Total != int64(hb.TotalAmount) || len(hb.PriceCurrent) != 0 || sameJSON(hb.PriceSnapshot, held.Booking.PriceSnapshot) {
+			t.Fatalf("held modified: total %d snapshot %s current %s", hb.TotalAmount, hb.PriceSnapshot, hb.PriceCurrent)
+		}
+	})
+}
+
+// TestBookingCreate_NoPriceCreatesNothing (INV-15): a pack without a base
+// price rule fails the creation with pricing.ErrNoPrice and leaves no row
+// behind (booking, lines, customer, allocations, audit, outbox).
+func TestBookingCreate_NoPriceCreatesNothing(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		now := f.Clock.Now()
+		unpriced := &store.Pack{
+			ID: store.NewID(), EstablishmentID: f.Est.ID, Code: "unpriced", Name: store.I18nText{"it": "Senza prezzo"}, Description: store.I18nText{},
+			Composition: map[string]int{"umbrella": 1}, AllowedFormulas: []string{"day", "multi_day"}, Channels: []string{"desk"}, MaxPerBooking: 4, Active: true,
+			Version: 1, CreatedAt: now, UpdatedAt: now,
+		}
+		f.Insert(unpriced)
+		before := map[string]int{}
+		tables := map[string]any{"bookings": (*store.Booking)(nil), "lines": (*store.BookingLine)(nil), "customers": (*store.Customer)(nil), "allocations": (*store.SpotAllocation)(nil), "audit": (*store.AuditEntry)(nil), "outbox": (*store.OutboxEvent)(nil)}
+		for k, m := range tables {
+			before[k] = f.Count(m, "")
+		}
+		in := f.Input(f.Spots[0], "2027-07-10", "2027-07-10")
+		in.Lines[0].PackID = unpriced.ID
+		_, err := f.Svc.Create(f.Ctx, f.Owner, f.Est.ID, in)
+		if !errors.Is(err, pricing.ErrNoPrice) {
+			t.Fatalf("create without price: %v", err)
+		}
+		for k, m := range tables {
+			if n := f.Count(m, ""); n != before[k] {
+				t.Fatalf("%s: %d rows after a refused creation, want %d", k, n, before[k])
+			}
+		}
+	})
+}
+
+func mustScopeOf(t *testing.T, db *store.DB, estID string) store.EstablishmentScope {
+	t.Helper()
+	es, err := store.SystemEstablishmentScope(context.Background(), db, estID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return es
 }

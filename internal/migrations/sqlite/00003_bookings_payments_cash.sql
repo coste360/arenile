@@ -76,6 +76,8 @@ CREATE TABLE bookings (
     is_season_pass        INTEGER NOT NULL DEFAULT 0 CHECK (is_season_pass IN (0, 1)),
     renewal_of_booking_id TEXT REFERENCES bookings (id) ON DELETE SET NULL,
     price_snapshot        TEXT NOT NULL DEFAULT '{}',
+    -- Breakdown of the latest re-quote after confirmation (ADR 0011); NULL = price_snapshot is current.
+    price_current         TEXT,
     total_amount          INTEGER NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
     paid_amount           INTEGER NOT NULL DEFAULT 0,
     deposit_due           INTEGER NOT NULL DEFAULT 0 CHECK (deposit_due >= 0),

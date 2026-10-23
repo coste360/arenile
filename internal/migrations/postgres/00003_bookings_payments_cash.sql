@@ -75,6 +75,8 @@ CREATE TABLE bookings (
     is_season_pass        boolean NOT NULL DEFAULT false,
     renewal_of_booking_id uuid REFERENCES bookings (id) ON DELETE SET NULL,
     price_snapshot        jsonb NOT NULL DEFAULT '{}',
+    -- Breakdown of the latest re-quote after confirmation (ADR 0011); NULL = price_snapshot is current.
+    price_current         jsonb,
     total_amount          bigint NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
     paid_amount           bigint NOT NULL DEFAULT 0,
     deposit_due           bigint NOT NULL DEFAULT 0 CHECK (deposit_due >= 0),

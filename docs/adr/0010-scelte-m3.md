@@ -1,6 +1,6 @@
 # 0010 — Scelte di M3: allocazioni, hold del pannello, abbonamenti, pagamenti e flusso SSE
 
-- **Stato:** accettato
+- **Stato:** accettato (il §4 è sostituito da [0011](0011-revisione-m3.md): la quota online vincola anche `api`)
 - **Data:** 2026-10-23
 - **Sezioni della specifica:** `docs/spec/06-schema-dati.md` (6.5-6.7), `docs/spec/07-motore-di-disponibilita.md`,
   `docs/spec/10-flusso-di-prenotazione-e-ciclo-di-vita.md`, `docs/spec/13-pagamenti.md`, `docs/spec/14-cassa-e-modulo-fiscale.md`,
@@ -29,6 +29,7 @@ nomi dei messaggi SSE. Otto builder lavorano in parallelo sullo stesso contratto
    dell'inventario.
 4. **Quote online sui contatori.** `pool_usage.online_used` conta le unità vendute dal canale `online`, aggiornato con
    lo stesso `UPDATE` condizionale contro il limite della quota (spec 7.6, INV-09); `desk` e `api` lo ignorano.
+   *Sostituito dall'ADR 0011 §1: solo `desk` ignora la quota, `api` la rispetta come `online`.*
 5. **Abbonamenti come prenotazioni.** Come da spec 6.6, un abbonamento è una prenotazione con `is_season_pass = true` e
    formula `season`; l'API `/season-passes` ne è una vista con lo stesso id. I rilasci sono righe di `season_releases`
    per mezza giornata (`revoked_at` per la revoca, indice unico parziale sulle righe attive).

@@ -79,7 +79,7 @@ func LockBooking(ctx context.Context, db bun.IDB, es EstablishmentScope, id stri
 // bookingMutableColumns are the columns rewritten by UpdateBookingVersioned.
 var bookingMutableColumns = []string{
 	"customer_id", "status", "starts_on", "ends_on", "slots", "formula", "season_id",
-	"price_snapshot", "total_amount", "deposit_due", "policy_snapshot", "promo_code_id", "agreement_id",
+	"price_snapshot", "price_current", "total_amount", "deposit_due", "policy_snapshot", "promo_code_id", "agreement_id",
 	"hold_expires_at", "hold_id", "notes_customer", "notes_internal", "confirmed_at", "checked_in_at",
 	"cancelled_at", "cancel_reason", "version", "updated_at",
 }

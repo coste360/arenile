@@ -487,7 +487,7 @@ func (s *Service) RecordPayment(ctx context.Context, p *auth.Principal, ip, esta
 			Method: in.Method, Direction: store.PaymentDirectionIn, Amount: in.Amount, Status: store.PaymentSucceeded,
 			ProviderRef: optional(intent.ProviderRef), IdempotencyKey: optional(in.IdempotencyKey),
 			CashSessionID: session, ReceivedByUserID: userIDOf(p), Description: "Prenotazione " + b.Code, Note: in.Note,
-			VATBreakdown: SplitBySnapshot(b.PriceSnapshot, in.Amount, info.defaultVAT), BusinessDate: info.today,
+			VATBreakdown: SplitBySnapshot(b.CurrentPrice(), in.Amount, info.defaultVAT), BusinessDate: info.today,
 			Metadata: map[string]any{}, CreatedAt: now, UpdatedAt: now,
 		}
 		if err := s.insert(ctx, tx, es, pm); err != nil {
@@ -639,7 +639,7 @@ func (s *Service) refundInTx(ctx context.Context, tx bun.IDB, p *auth.Principal,
 	if req.Amount > totals.Net() {
 		return nil, configerr.Invalid("amount", fmt.Sprintf("Il rimborso supera quanto pagato (massimo %s).", euro(max(totals.Net(), 0))))
 	}
-	weights := rateWeights(b.PriceSnapshot)
+	weights := rateWeights(b.CurrentPrice())
 	var refundOf *string
 	if req.PaymentID != "" {
 		orig, err := store.GetPayment(ctx, tx, es, req.PaymentID)

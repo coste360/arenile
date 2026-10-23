@@ -70,9 +70,9 @@ numero di postazioni attive della zona.
 Verificata da: `TestAutoAssign_NeverExceedsZoneCapacity` (property test `rapid`) e `TestBookingAutoAssign_PendingZoneLines` (`internal/domain/booking`, tag `integration`: solo `booking.Move`, sotto il lock della prenotazione, assegna una riga pending). Stato: partial (le righe `pending` consumano il pool implicito della zona con l'`UPDATE` condizionale; un blocco su una postazione di una zona `zone` non riduce ancora quel pool, quindi una riga pending può restare senza posto assegnabile).
 
 **INV-09 — Quota online rispettata.**
-Per le zone con `online_quota`, le vendite del canale `online` per data e fascia non superano la quota;
-il canale `desk` la ignora.
-Verificata da: `TestAvailability_OnlineQuota` (`internal/domain/availability`), `TestInventory_OnlineQuota`, `TestConcurrency_OnlineQuota` (`internal/domain/inventory`, tag `integration`). Stato: implemented. Nota: il motore applica la quota a ogni canale diverso da `desk` (quindi anche `api`), come la funzione pura `availability`; l'ADR 0010 §4 indica invece che anche `api` la ignora: decisione aperta da allineare.
+Per le zone con `online_quota`, le vendite dei canali diversi da `desk` (`online` e `api`, ADR 0011 §1) per data e
+fascia non superano la quota; solo il canale `desk` la ignora.
+Verificata da: `TestAvailability_OnlineQuota` (`internal/domain/availability`), `TestInventory_OnlineQuota`, `TestConcurrency_OnlineQuota` (`internal/domain/inventory`, tag `integration`). Stato: implemented.
 
 **INV-10 — Rilasci degli abbonati coerenti.**
 Per ogni `season_release` non revocata, non esiste un'allocazione `season` della stessa riga per quella
@@ -90,9 +90,11 @@ importa `store`, `database/sql`, `time.Now` né sorgenti casuali.
 Verificata da: `TestQuoteProperty_Deterministic` (property test `rapid`) e `TestPricing_NoForbiddenImports` (import transitivi del modulo limitati a `money` e `calendar`, niente `database/sql`, `net/http`, `os`, `math/rand`, `bun`, né chiamate a `time.Now`/`Since`/`Until`) in `internal/domain/pricing`. Stato: implemented.
 
 **INV-12 — Snapshot riproducibile.**
-Ricalcolando gli input salvati con la stessa `engine_version`, il totale coincide con `price_snapshot.total`
-e con `bookings.total_amount`.
-Verificata da: `TestQuoteProperty_SnapshotRoundTrip` (property test `rapid`: lo snapshot serializzato si rilegge identico e rispetta INV-13). Stato: partial (il ricalcolo dagli input salvati e il confronto con `bookings.total_amount` arrivano con le prenotazioni, M2).
+Ricalcolando gli input salvati della prenotazione (date, fasce, formula, righe ed extra) con la stessa
+`engine_version`, il totale coincide con il totale del breakdown corrente (`Booking.CurrentPrice()`:
+`price_current` dopo una modifica successiva alla conferma, altrimenti `price_snapshot`, ADR 0011 §2) e con
+`bookings.total_amount`.
+Verificata da: `TestQuoteProperty_SnapshotRoundTrip` (property test `rapid`: lo snapshot serializzato si rilegge identico e rispetta INV-13), `TestBookingSnapshot_RequoteMatchesTotal` (`internal/domain/booking`, tag `integration`: creazione, modifica dopo la conferma con `price_current`, modifica prima della conferma, ricalcolo dagli input salvati). Stato: implemented.
 
 **INV-13 — Totale non negativo e coerente.**
 `total >= 0`; il totale è la somma di righe ed extra, più sconti (negativi) e arrotondamento; ogni
@@ -106,7 +108,7 @@ Verificata da: `TestQuoteProperty_DiscountNeverIncreasesTotal` (property test `r
 **INV-15 — Nessun prezzo, nessuna vendita.**
 Se per un giorno non esiste una regola `base` applicabile, la quotazione fallisce con `ErrNoPrice` e non
 si crea alcuna prenotazione.
-Verificata da: `TestQuote_Errors` (casi `no base rule`, giorno scoperto, extra senza prezzo), `TestQuote_NoPriceErrorDetails`, `TestQuote_HalfDayNoPrice`. Stato: partial (motore implementato; "nessuna prenotazione creata" si verifica con il servizio prenotazioni, M2).
+Verificata da: `TestQuote_Errors` (casi `no base rule`, giorno scoperto, extra senza prezzo), `TestQuote_NoPriceErrorDetails`, `TestQuote_HalfDayNoPrice` (`internal/domain/pricing`) e `TestBookingCreate_NoPriceCreatesNothing` (`internal/domain/booking`, tag `integration`: `ErrNoPrice` e nessuna riga in bookings, righe, clienti, allocazioni, audit, outbox). Stato: implemented.
 
 **INV-16 — Scorporo IVA esatto.**
 Per ogni aliquota, `taxable + tax` è uguale all'importo IVA inclusa attribuito a quell'aliquota.
@@ -133,13 +135,13 @@ Verificata da: `TestPaymentService_ConfirmsOnDeposit` e `TestBookingRealServices
 Prenotazioni `draft`, `expired`, `cancelled`, `rejected` non hanno allocazioni; `held`, `pending_payment`,
 `awaiting_approval` hanno solo allocazioni `hold`; `confirmed`, `checked_in` hanno solo allocazioni `booking`
 (o `season`).
-Verificata da: `TestBookingHeld_ExpiresAndReleases`, `TestBookingCancel_RefundTiersAndCredit`, `TestBookingCreate_ConflictLeavesNoRows`, `TestBookingLifecycle_CheckInNoShowMoveNotes` (`internal/domain/booking`, tag `integration`) e il controllo sul database di `TestAcceptance_SimulatedDay`. Stato: partial (il property test `TestBookingLifecycle_AllocationsMatchStatus` resta planned).
+Verificata da: `TestBookingHeld_ExpiresAndReleases`, `TestBookingCancel_RefundTiersAndCredit`, `TestBookingCreate_ConflictLeavesNoRows`, `TestBookingLifecycle_CheckInNoShowMoveNotes`, `TestBookingLifecycle_CheckInOutsidePeriod` (`internal/domain/booking`), `TestConcurrency_ConfirmVsReclaim` (`internal/domain/inventory`: mai una prenotazione confermata senza allocazioni), `TestConcurrency_RevokeVsCancel` (`internal/domain/pass`: mai un'allocazione di un abbonamento cancellato), tag `integration`, e il controllo sul database di `TestAcceptance_SimulatedDay`. Stato: partial (il property test `TestBookingLifecycle_AllocationsMatchStatus` resta planned).
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-21 — Snapshot immutabili dopo la conferma.**
-`price_snapshot` e `policy_snapshot` non cambiano dopo `confirmed`; una modifica genera un nuovo calcolo e
-una differenza da incassare o rimborsare.
-Verificata da: `TestBookingModify_KeepsOriginalSnapshot` (`internal/domain/booking`, tag `integration`). Stato: implemented.
+`price_snapshot` e `policy_snapshot` non cambiano dopo `confirmed`; una modifica genera un nuovo calcolo, salvato
+in `price_current` (ADR 0011 §2), e una differenza da incassare o rimborsare.
+Verificata da: `TestBookingModify_KeepsOriginalSnapshot`, `TestBookingSnapshot_RequoteMatchesTotal` (`internal/domain/booking`, tag `integration`). Stato: implemented.
 
 ## Pagamenti e cassa (spec 13, 14)
 
@@ -180,7 +182,7 @@ Verificata da: `TestCan_Matrix`, `TestPrincipal_CanCombinesGrants` (`internal/do
 **INV-28 — API pubblica senza dati dei clienti.**
 Le risposte di disponibilità, calendario, mappa e catalogo non contengono dati personali; i dati di una
 prenotazione si leggono solo con il token di sessione o il manage token.
-Verificata da: `TestPublicAPI_NoCustomerData`. Stato: planned (le API pubbliche di disponibilità e prenotazione arrivano in M2).
+Verificata da: `TestPublicAPI_NoCustomerData`. Stato: planned (le API pubbliche di disponibilità e prenotazione arrivano con la pagina pubblica, M4). Nota: la vista operativa del pannello già non trasporta recapiti (la ricerca sulla mappa non cerca per telefono, ADR 0011 §5).
 
 **INV-29 — Segreti mai in chiaro.**
 Credenziali dei provider, segreti dei webhook e TOTP sono salvati cifrati (AES-GCM); email, telefoni e

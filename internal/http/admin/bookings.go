@@ -526,6 +526,13 @@ func BookingDetailToAPI(d *booking.Detail) api.BookingDetail {
 	} else {
 		out.PriceSnapshot = BreakdownToAPI(pricing.PriceBreakdown{})
 	}
+	if len(b.PriceCurrent) > 0 {
+		var cur pricing.PriceBreakdown
+		if err := json.Unmarshal(b.PriceCurrent, &cur); err == nil {
+			pc := BreakdownToAPI(cur)
+			out.PriceCurrent = &pc
+		}
+	}
 	if snap, err := policy.ParseSnapshot(b.PolicySnapshot); err == nil {
 		out.PolicySnapshot = api.PolicySnapshot{Rules: PolicyRulesToAPI(snap.Rules)}
 		if snap.PolicyID != "" {

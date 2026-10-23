@@ -2,6 +2,7 @@ package booking
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -319,8 +320,11 @@ func (s *Service) rewriteRows(ctx context.Context, tx bun.IDB, es store.Establis
 	return rows, nil
 }
 
-// applyTotals sets the new total and deposit; the snapshots are replaced
-// only while the booking has never been confirmed (INV-21).
+// applyTotals sets the new total and deposit. Before the confirmation the
+// snapshots are replaced; after it they stay (INV-21) and the re-quote is
+// stored as price_current, so that total_amount always equals the total of
+// the breakdown that prices the booking (INV-12, ADR 0011) and payments split
+// their VAT on the current rate mix.
 func (s *Service) applyTotals(b *store.Booking, pr *priced, now time.Time) error {
 	b.TotalAmount = pr.res.Breakdown.Total
 	if pr.res.SeasonID != "" {
@@ -329,9 +333,15 @@ func (s *Service) applyTotals(b *store.Booking, pr *priced, now time.Time) error
 	}
 	if b.ConfirmedAt != nil {
 		b.DepositDue = policy.Deposit(b.TotalAmount, snapshotRules(b))
+		cur, err := json.Marshal(pr.res.Breakdown)
+		if err != nil {
+			return fmt.Errorf("booking: price current: %w", err)
+		}
+		b.PriceCurrent = cur
 		return nil
 	}
 	b.DepositDue = pr.res.DepositDue
+	b.PriceCurrent = nil
 	return setSnapshots(b, pr, b.Channel, now)
 }
 

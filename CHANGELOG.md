@@ -11,6 +11,17 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 
 ### Fixed
 
+- Revisione di M3 ([ADR 0011](docs/adr/0011-revisione-m3.md)): la conferma di un hold blocca le sue righe e gli hold
+  scaduti vengono rimossi per intero sotto il lock della prenotazione proprietaria (su PostgreSQL una vendita
+  concorrente poteva lasciare una prenotazione confermata senza allocazioni); rilascio e revoca dei giorni di un
+  abbonamento e redemption del credito cliente serializzano sul lock della prenotazione e del cliente (nuova
+  INV-47: credito mai negativo); check-in solo nei giorni del soggiorno e no-show solo dal primo giorno
+  (`422 booking_outside_period`, pulsanti nascosti nel pannello); le note degli operatori non finiscono più nel
+  registro attività e l'anonimizzazione cancella anche motivo di cancellazione, note dei pagamenti e dei crediti;
+  `price_current` per le prenotazioni modificate dopo la conferma (INV-12 riformulata, IVA dei pagamenti sul prezzo
+  corrente); la quota online vincola anche il canale `api` (sostituisce ADR 0010 §4); `force` e
+  `overpayment_as_credit` dichiarati nel contratto, `existing_customer_id` come estensione del problema;
+  le funzioni `inventory.AutoAssign` / `AssignPendingInTx` (senza lock della prenotazione, inutilizzate) sono rimosse.
 - `calendar.Date` implementa il `Binder` di oapi-codegen: le date nei parametri di query (`from`, `to`, `date`)
   non rispondono più 400 né vengono ignorate.
 - L'anteprima di una prenotazione (`POST /bookings/quote`) verifica la disponibilità anche senza una prenotazione
