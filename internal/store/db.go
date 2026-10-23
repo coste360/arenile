@@ -59,7 +59,9 @@ func Open(ctx context.Context, opts Options) (*DB, error) {
 
 // SQLiteDSN builds the modernc DSN with the pragmas Arenile requires:
 // WAL journal, busy timeout, foreign keys and immediate write transactions
-// (so that concurrent writers wait on busy_timeout instead of failing).
+// (a transaction takes the write lock when it begins, never upgrades to it
+// half-way). Writers of the same process queue on the write gate before
+// that (see sqlitegate.go); busy_timeout covers other processes.
 func SQLiteDSN(path string, memory bool) string {
 	params := url.Values{}
 	for _, p := range []string{"busy_timeout(10000)", "foreign_keys(1)", "synchronous(NORMAL)"} {
@@ -94,10 +96,15 @@ func openSQLite(ctx context.Context, opts Options) (*DB, error) {
 		}
 		dsn = SQLiteDSN(opts.SQLitePath, false)
 	}
-	sqldb, err := sql.Open("sqlite", dsn)
+	probe, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("store: open sqlite: %w", err)
 	}
+	drv := probe.Driver()
+	_ = probe.Close()
+	// Writers queue in-process on one gate per database (see sqlitegate.go)
+	// instead of polling SQLite's lock under busy_timeout.
+	sqldb := sql.OpenDB(&gatedConnector{drv: drv, dsn: dsn, gate: newWriteGate()})
 	// SQLite allows a single writer. One connection for the in-memory database
 	// (each connection would otherwise see a separate database); a small pool
 	// for files, where WAL allows concurrent readers.
