@@ -27,6 +27,9 @@ type LineRequest struct {
 	ZoneID string
 	// SpotID is required for seat zones, optional for zone-mode zones.
 	SpotID string
+	// PoolID consumes Quantity units of a pool directly (panel hold items
+	// on a pool); ZoneID and SpotID are then empty.
+	PoolID string
 	// Quantity is the number of units (quantity zones), default 1.
 	Quantity int
 	// Components are the tracked components consumed from their pools
