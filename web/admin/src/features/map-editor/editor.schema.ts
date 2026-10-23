@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { V, i18nTextField, intField } from '../configuration/lib/validation';
-import type { DraftMapSettings, RowGeneratorRequest, SeaSide, SpotKind } from './model/types';
+import {
+  SPOT_KINDS,
+  type DraftMapSettings,
+  type RowGeneratorRequest,
+  type SeaSide,
+  type SpotKind,
+} from './model/types';
 
 /** Finite number typed as text (dot or comma decimal separator). */
 const numberText = (opts: { min?: number; positive?: boolean } = {}) =>
@@ -34,7 +40,9 @@ export const generatorSchema = z.object({
     .trim()
     .max(32)
     .refine((v) => v === '' || v.includes('{number}'), 'mapEditor:validation.labelFormat'),
-  kind: z.enum(['umbrella', 'gazebo', 'tent', 'palm', 'custom']),
+  kind: z.enum(SPOT_KINDS),
+  /** Kit illustration of the generated spots; '' = default of the kind. */
+  asset: z.string(),
 });
 
 export type GeneratorValues = z.infer<typeof generatorSchema>;
@@ -69,6 +77,7 @@ export function generatorDefaults(
     direction: 'ltr',
     label_format: '',
     kind: 'umbrella',
+    asset: '',
   };
 }
 
@@ -89,6 +98,7 @@ export function toGeneratorRequest(v: GeneratorValues): RowGeneratorRequest {
   };
   if (v.first_row_label) req.first_row_label = v.first_row_label;
   if (v.label_format) req.label_format = v.label_format;
+  if (v.asset) req.asset = v.asset;
   return req;
 }
 

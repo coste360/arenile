@@ -152,7 +152,10 @@
     "zones": "Zonen",
     "noIllustration": "Keine Illustration",
     "defaultOfKind": "Standard des Typs",
-    "useDefault": "Standardillustration verwenden"
+    "useDefault": "Standardillustration verwenden",
+    "illustrationHint": "Die Illustration bestimmt den Platztyp; beim Typwechsel fällt eine Illustration eines anderen Typs auf die Vorgabe zurück.",
+    "kindChanged": "Typ auf {{kind}} geändert: Pakete, die einen anderen Typ verlangen, werden diesem Platz nicht mehr zugewiesen.",
+    "tileHint": "Stegplatten sind 60 Einheiten groß: gerade Stücke sind eine ganze Zahl von Platten lang und rasten bei einem Rasterschritt, der 60 teilt, am Plattenraster ein."
   },
   "tools": {
     "label": "Editor-Werkzeuge",
@@ -201,7 +204,8 @@
     "decorations": "Element",
     "label": "Zur Karte hinzufügen",
     "spotsHint": "Buchbaren Platz mit Illustration hinzufügen",
-    "decorationsHint": "Bauwerk, Service oder Dekoration hinzufügen"
+    "decorationsHint": "Bauwerk, Service oder Dekoration hinzufügen",
+    "spotsDisabledHint": "Legen Sie zuerst eine Zone an: jeder Platz gehört zu einer Zone."
   },
   "renumber": {
     "title": "Reihe neu nummerieren",
@@ -236,7 +240,8 @@
   "picker": {
     "search": "Illustration suchen…",
     "empty": "Keine Illustration gefunden.",
-    "other": "Sonstiges"
+    "other": "Sonstiges",
+    "current": "(aktuelle Illustration)"
   },
   "variants": {
     "green": "Grün",

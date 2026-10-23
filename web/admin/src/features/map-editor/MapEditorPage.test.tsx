@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   EST_ID,
   baseRoutes,
@@ -251,6 +251,63 @@ describe('MapEditorPage', () => {
     await user.click(screen.getByRole('button', { name: 'Salva mappa' }));
     await waitFor(() => expect(sent?.spots).toHaveLength(5));
     expect(sent?.spots.filter((s) => !s.id).map((s) => s.label)).toEqual(['B1', 'B2', 'B3']);
+  });
+
+  it('generates rows of a kit kind with a chosen illustration', async () => {
+    const user = userEvent.setup();
+    Element.prototype.scrollIntoView = vi.fn();
+    let previewBody: Record<string, unknown> | undefined;
+    renderApp(
+      `/admin/e/${EST_ID}/maps/m1`,
+      routes('manager', {
+        [`POST ${API}/maps/m1/generate-rows`]: async (req) => {
+          previewBody = (await req.json()) as Record<string, unknown>;
+          return json(200, { spots: [], conflicting_labels: [], applied: false });
+        },
+      }),
+    );
+    await spotButton('A1');
+    await user.click(screen.getByRole('button', { name: 'Generatore di file' }));
+    const dialog = await screen.findByRole('dialog');
+    // Picking an illustration sets the kind of its family (sdraio: sunbed)…
+    await user.click(within(dialog).getByRole('button', { name: /Illustrazione/ }));
+    fireEvent.click((await screen.findByRole('listbox')).querySelector('[data-asset="sdraio"]')!);
+    await waitFor(() =>
+      expect(within(dialog).getByRole('combobox', { name: 'Tipo' })).toHaveTextContent('Lettino'),
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Anteprima' }));
+    await waitFor(() => expect(previewBody).toMatchObject({ kind: 'sunbed', asset: 'sdraio' }));
+    // …and choosing another kind drops the illustration of the old one.
+    await user.click(within(dialog).getByRole('combobox', { name: 'Tipo' }));
+    await user.click(await screen.findByRole('option', { name: 'Amaca' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Anteprima' }));
+    await waitFor(() => expect(previewBody).toMatchObject({ kind: 'hammock' }));
+    expect(previewBody).not.toHaveProperty('asset');
+  });
+
+  it('explains when an illustration changes the kind, and resets the art on a kind change', async () => {
+    const user = userEvent.setup();
+    Element.prototype.scrollIntoView = vi.fn();
+    let sent: SaveBody | undefined;
+    renderApp(
+      `/admin/e/${EST_ID}/maps/m1`,
+      routes('manager', { [`PUT ${API}/maps/m1`]: echoPut((b) => (sent = b)) }),
+    );
+    const a1 = await spotButton('A1');
+    fireEvent.pointerDown(a1, { button: 0 });
+    await user.click(screen.getByRole('button', { name: /^Illustrazione/ }));
+    fireEvent.click((await screen.findByRole('listbox')).querySelector('[data-asset="lettino"]')!);
+    expect(await screen.findByText(/Tipo aggiornato a Lettino/)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Tipo' })).toHaveTextContent('Lettino');
+    // Back to umbrella: the sunbed art does not fit the kind and goes back to the default.
+    await user.click(screen.getByRole('combobox', { name: 'Tipo' }));
+    await user.click(await screen.findByRole('option', { name: 'Ombrellone' }));
+    expect(screen.queryByText(/Tipo aggiornato a Lettino/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Salva mappa' }));
+    await waitFor(() =>
+      expect(sent?.spots.find((s) => s.label === 'A1')).toMatchObject({ kind: 'umbrella' }),
+    );
+    expect(sent?.spots.find((s) => s.label === 'A1')).not.toHaveProperty('asset');
   });
 
   it('blocks generated labels that clash with the map', async () => {

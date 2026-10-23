@@ -152,7 +152,10 @@
     "zones": "Zones",
     "noIllustration": "No illustration",
     "defaultOfKind": "Default for the type",
-    "useDefault": "Use the default illustration"
+    "useDefault": "Use the default illustration",
+    "illustrationHint": "The illustration sets the spot kind; changing the kind resets an illustration of another kind to the default.",
+    "kindChanged": "Kind changed to {{kind}}: packs that require another kind will no longer be assigned to this spot.",
+    "tileHint": "Walkway tiles are 60 units: straight runs are a whole number of tiles long and, with a grid step that divides 60, they snap to the tile grid."
   },
   "tools": {
     "label": "Editor tools",
@@ -201,7 +204,8 @@
     "decorations": "Element",
     "label": "Add to the map",
     "spotsHint": "Add a bookable spot by choosing its illustration",
-    "decorationsHint": "Add a structure, service or decoration"
+    "decorationsHint": "Add a structure, service or decoration",
+    "spotsDisabledHint": "Create a zone first: every spot belongs to a zone."
   },
   "renumber": {
     "title": "Renumber row",
@@ -236,7 +240,8 @@
   "picker": {
     "search": "Search illustrations…",
     "empty": "No illustration found.",
-    "other": "Other"
+    "other": "Other",
+    "current": "(current illustration)"
   },
   "variants": {
     "green": "Green",

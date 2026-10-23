@@ -1,4 +1,4 @@
-import { SPOT_KIND_ICONS } from '@arenile/shared/map';
+import { KIT_BY_ID, SPOT_KIND_ICONS, spotAsset } from '@arenile/shared/map';
 import {
   Alert,
   AlertDescription,
@@ -26,11 +26,12 @@ import {
 import { FieldRow, FormActions, I18nTextInput } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleAlertIcon, EyeIcon, PlusIcon } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useForm, useWatch, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { problemToFormState, type FormAlertState } from '../configuration/lib/formErrors';
 import { useRowPreview } from './api';
+import { IllustrationField } from './IllustrationField';
 import {
   generatorDefaults,
   generatorSchema,
@@ -53,6 +54,7 @@ import {
   type DraftMapSettings,
   type DraftSpot,
   type RowGeneratorResult,
+  type SpotKind,
 } from './model/types';
 import { FormAlert } from './ui';
 
@@ -136,6 +138,12 @@ export function RowGeneratorForm({
   const preview = useRowPreview(establishmentId, mapId);
   const [result, setResult] = useState<RowGeneratorResult | null>(null);
   const [alert, setAlert] = useState<FormAlertState | null>(null);
+  const kind = useWatch({ control: form.control, name: 'kind' });
+  const asset = useWatch({ control: form.control, name: 'asset' });
+  // The kind is semantic; an explicit illustration of another kind is dropped.
+  useEffect(() => {
+    if (asset && KIT_BY_ID.get(asset)?.spotKind !== kind) form.setValue('asset', '');
+  }, [asset, kind, form]);
 
   const submit = form.handleSubmit(async (values) => {
     setAlert(null);
@@ -194,7 +202,20 @@ export function RowGeneratorForm({
                 };
               })}
             />
-            <div className="hidden sm:block" />
+            <FormItem>
+              <FormLabel htmlFor="generator-asset">{t('fields.illustration')}</FormLabel>
+              <IllustrationField
+                id="generator-asset"
+                family="spots"
+                value={asset}
+                effective={spotAsset({ kind, asset })}
+                onPick={(a) => {
+                  form.setValue('kind', (a.spotKind ?? 'custom') as SpotKind);
+                  form.setValue('asset', a.id);
+                }}
+                onReset={() => form.setValue('asset', '')}
+              />
+            </FormItem>
             {text('rows', t('generator.rows'))}
             {text('spots_per_row', t('generator.spotsPerRow'))}
             <div className="hidden sm:block" />

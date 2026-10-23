@@ -24,6 +24,9 @@ import {
   undo,
   updateSpots,
   normalizeTile,
+  spotKindPatch,
+  decorationKindPatch,
+  tilesSnapToGrid,
   newDecoration,
   updateDecoration,
 } from './editor';
@@ -292,11 +295,10 @@ describe('kit walkway tiles', () => {
   it('pieces other than straight runs are one tile; straight runs are whole tiles long', () => {
     const corner = newDecoration(base, 'walkway', { x: 100, y: 100 }, 'passerella_angolo');
     expect(corner.shape).toMatchObject({ w: 60, h: 60 });
-    const run = normalizeTile({
-      ...corner,
-      asset: 'passerella_verticale',
-      shape: { type: 'rect', w: 40, h: 170 },
-    });
+    const run = normalizeTile(
+      { ...corner, asset: 'passerella_verticale', shape: { type: 'rect', w: 40, h: 170 } },
+      10,
+    );
     expect(run.shape).toMatchObject({ w: 60, h: 180 });
   });
 
@@ -321,6 +323,54 @@ describe('kit walkway tiles', () => {
   it('non-tile decorations are untouched', () => {
     const bar = newDecoration(base, 'bar', { x: 123, y: 77 }, 'bar');
     expect(bar).toMatchObject({ x: 123, y: 77, asset: 'bar' });
-    expect(normalizeTile(bar)).toBe(bar);
+    expect(normalizeTile(bar, 10)).toBe(bar);
+  });
+
+  it('keeps the position when the map grid does not divide the tile, or snapping is off', () => {
+    expect(tilesSnapToGrid(10)).toBe(true);
+    expect(tilesSnapToGrid(20)).toBe(true);
+    expect(tilesSnapToGrid(25)).toBe(false);
+    expect(tilesSnapToGrid(0)).toBe(false);
+    for (const grid of [25, 0]) {
+      const d25 = { ...base, map: { ...base.map, grid_size: grid } };
+      const d = newDecoration(d25, 'walkway', { x: 247, y: 131 });
+      expect(d).toMatchObject({ x: 247, y: 131, shape: { w: 180, h: 60 } });
+      const moved = moveElements({ ...d25, decorations: [d] }, new Set([d.key]), { x: 5, y: 0 });
+      expect(moved.decorations[0]?.x).toBe(252);
+    }
+  });
+});
+
+describe('kind and illustration coupling', () => {
+  it('a change of spot kind drops an illustration of another kind', () => {
+    expect(spotKindPatch('sunbed', 'ombrellone_2_lettini')).toEqual({ kind: 'sunbed', asset: '' });
+    expect(spotKindPatch('umbrella', 'ombrellone_3_lettini')).toEqual({
+      kind: 'umbrella',
+      asset: 'ombrellone_3_lettini',
+    });
+    expect(spotKindPatch('gazebo', '')).toEqual({ kind: 'gazebo', asset: '' });
+  });
+
+  it('a change of decoration kind drops a foreign illustration, a text never has one', () => {
+    expect(decorationKindPatch('text', 'bandiera_mare', 'red')).toEqual({
+      kind: 'text',
+      asset: '',
+      variant: '',
+    });
+    expect(decorationKindPatch('bar', 'bandiera_mare', 'red')).toEqual({
+      kind: 'bar',
+      asset: '',
+      variant: '',
+    });
+    expect(decorationKindPatch('custom', 'bandiera_mare', 'red')).toEqual({
+      kind: 'custom',
+      asset: 'bandiera_mare',
+      variant: 'red',
+    });
+    expect(decorationKindPatch('shower', 'doccia_doppia', '')).toEqual({
+      kind: 'shower',
+      asset: 'doccia_doppia',
+      variant: '',
+    });
   });
 });

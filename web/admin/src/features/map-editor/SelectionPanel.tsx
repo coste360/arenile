@@ -3,6 +3,7 @@ import {
   KIT_BY_ID,
   SPOT_KIND_ICONS,
   decorationAsset,
+  isTileAsset,
   spotAsset,
   type AlignMode,
 } from '@arenile/shared/map';
@@ -50,6 +51,7 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ZoneOption } from './dialogs';
 import { IllustrationField, VariantField } from './IllustrationField';
+import { decorationKindPatch, spotKindPatch } from './model/editor';
 import { ToolButton } from './ui';
 import {
   DECORATION_KINDS,
@@ -279,6 +281,9 @@ function withIcon(Icon: LucideIcon, label: string) {
 export function SelectionPanel(p: SelectionPanelProps) {
   const { t } = useTranslation('mapEditor');
   const { selected, readOnly } = p;
+  // The kind an illustration pick just changed the selection to, if any:
+  // the kind is semantic (packs, assignment), so the change is announced.
+  const [kindNotice, setKindNotice] = useState<SpotKind | null>(null);
   if (selected.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 px-2 py-8 text-center">
@@ -431,7 +436,14 @@ export function SelectionPanel(p: SelectionPanelProps) {
               disabled={readOnly}
               value={sameKind ? (spots[0]?.kind ?? '') : ''}
               placeholder={t('panel.mixed')}
-              onChange={(v) => v && p.onSpotPatch({ kind: v as SpotKind })}
+              onChange={(v) => {
+                if (!v) return;
+                setKindNotice(null);
+                // An explicit illustration of another kind is dropped (bulk: when mixed).
+                p.onSpotPatch(
+                  spotKindPatch(v as SpotKind, sameAsset ? (spots[0]?.asset ?? '') : ''),
+                );
+              }}
               options={SPOT_KINDS.map((k) => ({
                 value: k,
                 label: withIcon(SPOT_KIND_ICONS[k], t(`kinds.${k}`)),
@@ -445,11 +457,19 @@ export function SelectionPanel(p: SelectionPanelProps) {
               disabled={readOnly}
               value={sameAsset ? (spots[0]?.asset ?? '') : undefined}
               effective={sameAsset && spots[0] ? spotAsset(spots[0]) : null}
-              onPick={(a) =>
-                p.onSpotPatch({ asset: a.id, kind: (a.spotKind ?? 'custom') as SpotKind })
-              }
+              onPick={(a) => {
+                const kind = (a.spotKind ?? 'custom') as SpotKind;
+                setKindNotice(spots.some((s) => s.kind !== kind) ? kind : null);
+                p.onSpotPatch({ asset: a.id, kind });
+              }}
               onReset={() => p.onSpotPatch({ asset: '' })}
             />
+            <FieldDescription className="text-xs">{t('panel.illustrationHint')}</FieldDescription>
+            {kindNotice && (
+              <FieldDescription role="status" className="text-xs text-foreground">
+                {t('panel.kindChanged', { kind: t(`kinds.${kindNotice}`) })}
+              </FieldDescription>
+            )}
           </Row>
           <Field orientation="horizontal" className="items-start">
             <Switch
@@ -480,7 +500,12 @@ export function SelectionPanel(p: SelectionPanelProps) {
               id="deco-kind"
               disabled={readOnly}
               value={single.kind}
-              onChange={(v) => p.onDecorationPatch(single.key, { kind: v as DecorationKind })}
+              onChange={(v) =>
+                p.onDecorationPatch(
+                  single.key,
+                  decorationKindPatch(v as DecorationKind, single.asset, single.variant),
+                )
+              }
               options={DECORATION_KINDS.map((k) => ({
                 value: k,
                 label: withIcon(DECORATION_KIND_ICONS[k], t(`decorations.${k}`)),
@@ -504,6 +529,9 @@ export function SelectionPanel(p: SelectionPanelProps) {
                 }
                 onReset={() => p.onDecorationPatch(single.key, { asset: '', variant: '' })}
               />
+              {isTileAsset(decorationAsset(single)) && (
+                <FieldDescription className="text-xs">{t('panel.tileHint')}</FieldDescription>
+              )}
             </Row>
           )}
           {(() => {

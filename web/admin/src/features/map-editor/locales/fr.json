@@ -152,7 +152,10 @@
     "zones": "Zones",
     "noIllustration": "Aucune illustration",
     "defaultOfKind": "Par défaut pour le type",
-    "useDefault": "Utiliser l'illustration par défaut"
+    "useDefault": "Utiliser l'illustration par défaut",
+    "illustrationHint": "L'illustration détermine le type d'emplacement ; en changeant de type, une illustration d'un autre type revient à celle par défaut.",
+    "kindChanged": "Type changé en {{kind}} : les formules qui exigent un autre type ne seront plus affectées à cet emplacement.",
+    "tileHint": "Les dalles de passerelle font 60 unités : les tronçons droits mesurent un nombre entier de dalles et, avec un pas de grille qui divise 60, s'alignent sur la grille des dalles."
   },
   "tools": {
     "label": "Outils de l'éditeur",
@@ -201,7 +204,8 @@
     "decorations": "Élément",
     "label": "Ajouter au plan",
     "spotsHint": "Ajouter un emplacement réservable en choisissant son illustration",
-    "decorationsHint": "Ajouter une structure, un service ou un décor"
+    "decorationsHint": "Ajouter une structure, un service ou un décor",
+    "spotsDisabledHint": "Créez d'abord une zone : chaque emplacement appartient à une zone."
   },
   "renumber": {
     "title": "Renuméroter la rangée",
@@ -236,7 +240,8 @@
   "picker": {
     "search": "Rechercher une illustration…",
     "empty": "Aucune illustration trouvée.",
-    "other": "Autre"
+    "other": "Autre",
+    "current": "(illustration actuelle)"
   },
   "variants": {
     "green": "Vert",

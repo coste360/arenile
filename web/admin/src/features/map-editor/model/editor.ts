@@ -35,14 +35,27 @@ import type {
  */
 
 /**
- * Modular walkway tiles (ADR 0012) keep the kit scale and sit on the tile
- * grid so that pieces join: straight runs are one tile thick and a whole
- * number of tiles long, the other pieces are one tile; edges are aligned to
- * multiples of KIT_TILE. `from` is the previous centre: a small move (arrow
- * nudge, duplicate) then advances one whole tile instead of snapping back.
+ * Whether walkway tiles snap to the 60-unit tile grid on a map with this
+ * grid step: only when the tile grid is a subset of the map grid (the step
+ * divides KIT_TILE), so tiles never fight the grid the spots sit on. With
+ * grid snapping off (step 0) or an incompatible step, tiles keep their
+ * position and only their size is normalised.
+ */
+export function tilesSnapToGrid(gridSize: number): boolean {
+  return gridSize > 0 && KIT_TILE % gridSize === 0;
+}
+
+/**
+ * Modular walkway tiles (ADR 0012) keep the kit scale so that pieces join:
+ * straight runs are one tile thick and a whole number of tiles long, the
+ * other pieces are one tile. When `grid` allows it (tilesSnapToGrid), edges
+ * are aligned to multiples of KIT_TILE; `from` is the previous centre, so a
+ * small move (arrow nudge, duplicate) advances one whole tile instead of
+ * snapping back.
  */
 export function normalizeTile(
   d: DraftDecoration,
+  grid: number,
   from?: { x: number; y: number },
 ): DraftDecoration {
   const asset = decorationAsset(d);
@@ -51,11 +64,38 @@ export function normalizeTile(
   const horizontal = d.shape.w >= d.shape.h;
   const w = straight && horizontal ? snapTileLength(d.shape.w) : KIT_TILE;
   const h = straight && !horizontal ? snapTileLength(d.shape.h) : KIT_TILE;
-  const x = snapTileCentre(d.x, w, from?.x);
-  const y = snapTileCentre(d.y, h, from?.y);
+  const snap = tilesSnapToGrid(grid);
+  const x = snap ? snapTileCentre(d.x, w, from?.x) : d.x;
+  const y = snap ? snapTileCentre(d.y, h, from?.y) : d.y;
   if (x === d.x && y === d.y && w === d.shape.w && h === d.shape.h && d.shape.type === 'rect')
     return d;
   return { ...d, x, y, shape: { type: 'rect', w, h } };
+}
+
+/**
+ * Patch for a change of spot kind: the kind is semantic (packs'
+ * requires_spot_kind, assignment), the illustration only draws it. An
+ * explicit illustration of another kind is dropped, so a gazebo is never
+ * drawn as a hammock; the default art of the new kind takes over.
+ */
+export function spotKindPatch(kind: SpotKind, asset: string): Pick<DraftSpot, 'kind' | 'asset'> {
+  const a = KIT_BY_ID.get(asset);
+  return { kind, asset: a && a.spotKind === kind ? asset : '' };
+}
+
+/**
+ * Patch for a change of decoration kind: a text has no illustration, and an
+ * illustration whose family does not match the new kind (a flag turned into
+ * a bar) is dropped with its variant; `custom` keeps any illustration.
+ */
+export function decorationKindPatch(
+  kind: DecorationKind,
+  asset: string,
+  variant: string,
+): Pick<DraftDecoration, 'kind' | 'asset' | 'variant'> {
+  const a = KIT_BY_ID.get(asset);
+  const keep = kind !== 'text' && !!a && (kind === 'custom' || a.decorationKind === kind);
+  return keep ? { kind, asset, variant } : { kind, asset: '', variant: '' };
 }
 
 function isDecoration(el: DraftElement): el is DraftDecoration {
@@ -108,7 +148,9 @@ export function moveElements(
       doc.map.height,
     );
     const moved = { ...el, x: p.x, y: p.y };
-    return isDecoration(moved) ? normalizeTile(moved, nudge ? el : undefined) : moved;
+    return isDecoration(moved)
+      ? normalizeTile(moved, doc.map.grid_size, nudge ? el : undefined)
+      : moved;
   });
 }
 
@@ -173,7 +215,7 @@ export function updateDecoration(
   return {
     ...doc,
     decorations: doc.decorations.map((d) =>
-      d.key === key ? normalizeTile({ ...d, ...patch }) : d,
+      d.key === key ? normalizeTile({ ...d, ...patch }, doc.map.grid_size) : d,
     ),
   };
 }
@@ -256,7 +298,7 @@ export function newDecoration(
           : { type: 'rect', w: size, h: size },
     label: {},
   };
-  return normalizeTile(d);
+  return normalizeTile(d, doc.map.grid_size);
 }
 
 export function addSpots(doc: DraftDocument, spots: DraftSpot[]): DraftDocument {
@@ -342,7 +384,13 @@ export function duplicateElements(
     });
   const decorations = doc.decorations
     .filter((d) => keys.has(d.key))
-    .map((d) => normalizeTile({ ...place(d), shape: { ...d.shape }, label: { ...d.label } }, d));
+    .map((d) =>
+      normalizeTile(
+        { ...place(d), shape: { ...d.shape }, label: { ...d.label } },
+        doc.map.grid_size,
+        d,
+      ),
+    );
   return {
     doc: {
       ...doc,

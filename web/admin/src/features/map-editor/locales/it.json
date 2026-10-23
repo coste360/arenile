@@ -152,7 +152,10 @@
     "zones": "Zone",
     "noIllustration": "Nessuna illustrazione",
     "defaultOfKind": "Predefinita del tipo",
-    "useDefault": "Usa l'illustrazione predefinita"
+    "useDefault": "Usa l'illustrazione predefinita",
+    "illustrationHint": "L'illustrazione determina il tipo di postazione; cambiando il tipo, un'illustrazione di un altro tipo torna a quella predefinita.",
+    "kindChanged": "Tipo aggiornato a {{kind}}: i pacchetti che richiedono un altro tipo non saranno più assegnati a questa postazione.",
+    "tileHint": "Le tessere delle passerelle misurano 60 unità: i tratti dritti sono lunghi un numero intero di tessere e, con un passo griglia che divide 60, si agganciano alla griglia delle tessere."
   },
   "tools": {
     "label": "Strumenti dell'editor",
@@ -201,7 +204,8 @@
     "decorations": "Elemento",
     "label": "Aggiungi alla mappa",
     "spotsHint": "Aggiungi una postazione prenotabile scegliendo l'illustrazione",
-    "decorationsHint": "Aggiungi una struttura, un servizio o un elemento decorativo"
+    "decorationsHint": "Aggiungi una struttura, un servizio o un elemento decorativo",
+    "spotsDisabledHint": "Crea prima una zona: ogni postazione appartiene a una zona."
   },
   "renumber": {
     "title": "Rinumera fila",
@@ -236,7 +240,8 @@
   "picker": {
     "search": "Cerca un'illustrazione…",
     "empty": "Nessuna illustrazione trovata.",
-    "other": "Altro"
+    "other": "Altro",
+    "current": "(illustrazione attuale)"
   },
   "variants": {
     "green": "Verde",

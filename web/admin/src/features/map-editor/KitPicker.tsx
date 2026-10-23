@@ -17,7 +17,7 @@ import {
   cn,
 } from '@arenile/shared/ui';
 import { CheckIcon, type LucideIcon } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export type KitFamily = 'spots' | 'decorations';
@@ -40,15 +40,42 @@ export interface KitPickerProps {
   label: string;
 }
 
+/** Columns of the thumbnail grid (keep in sync with the grid-cols class). */
+const COLUMNS = 4;
+
+/** Steps of the highlight per arrow key in the grid. */
+const GRID_STEPS: Record<string, number> = {
+  ArrowLeft: -1,
+  ArrowRight: 1,
+  ArrowUp: -COLUMNS,
+  ArrowDown: COLUMNS,
+};
+
 /**
  * Categorised, searchable grid of kit illustrations (shadcn Command): spots
  * list the bookable assets, decorations every structure and decoration
  * asset. Thumbnails are <use> of the shared sprite (MapKitDefs), so the
  * ~100 previews add no drawing copies. Type to filter by name or category;
- * arrows move, Enter picks.
+ * Left/Right move the highlight by one, Up/Down by a row (cmdk alone moves
+ * linearly), Enter picks; the highlight starts on the current illustration,
+ * which is also marked and announced.
  */
 export function KitPicker({ family, value, onPick, extras, onPickExtra, label }: KitPickerProps) {
   const { t } = useTranslation('mapEditor');
+  const [highlighted, setHighlighted] = useState(value ?? '');
+  const gridKeys = (e: KeyboardEvent<HTMLDivElement>) => {
+    const step = GRID_STEPS[e.key];
+    if (!step || e.altKey || e.ctrlKey || e.metaKey || e.nativeEvent.isComposing) return;
+    const items = [
+      ...e.currentTarget.querySelectorAll<HTMLElement>('[cmdk-item]:not([aria-disabled="true"])'),
+    ];
+    if (items.length === 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const at = items.findIndex((i) => i.getAttribute('aria-selected') === 'true');
+    const next = Math.min(items.length - 1, Math.max(0, (at < 0 ? 0 : at) + step));
+    setHighlighted(items[next]?.getAttribute('data-value') ?? '');
+  };
   const assets = useMemo(
     () => kitAssets(family === 'spots' ? isBookableAsset : isDecorationAsset),
     [family],
@@ -62,6 +89,9 @@ export function KitPicker({ family, value, onPick, extras, onPickExtra, label }:
   return (
     <Command
       aria-label={label}
+      value={highlighted}
+      onValueChange={setHighlighted}
+      onKeyDownCapture={gridKeys}
       className="[&_[cmdk-group-items]]:grid [&_[cmdk-group-items]]:grid-cols-4 [&_[cmdk-group-items]]:gap-1"
     >
       <MapKitDefs ids={ids} />
@@ -98,7 +128,7 @@ export function KitPicker({ family, value, onPick, extras, onPickExtra, label }:
                     keywords={[name, a.label, heading]}
                     onSelect={() => onPick(a)}
                     data-asset={a.id}
-                    aria-current={active || undefined}
+                    data-current={active || undefined}
                     className={cn(
                       'relative flex-col gap-1 p-2 text-center',
                       active && 'bg-accent text-accent-foreground',
@@ -107,10 +137,13 @@ export function KitPicker({ family, value, onPick, extras, onPickExtra, label }:
                     <KitThumbnail asset={a.id} className="size-12" />
                     <span className="line-clamp-2 text-xs leading-tight">{name}</span>
                     {active && (
-                      <CheckIcon
-                        aria-hidden="true"
-                        className="absolute top-1 right-1 size-3.5! text-primary"
-                      />
+                      <>
+                        <span className="sr-only">{t('picker.current')}</span>
+                        <CheckIcon
+                          aria-hidden="true"
+                          className="absolute top-1 right-1 size-3.5! text-primary"
+                        />
+                      </>
                     )}
                   </CommandItem>
                 );

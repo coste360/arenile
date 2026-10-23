@@ -19,7 +19,8 @@ export type ShapeDef = Schemas['Shape'];
 export type ComponentQuantities = Schemas['ComponentQuantities'];
 export type I18nText = Record<string, string>;
 
-export const SPOT_KINDS: readonly SpotKind[] = [
+/** Every SpotKind of the API, as a tuple so that zod enums derive from it. */
+export const SPOT_KINDS = [
   'umbrella',
   'gazebo',
   'tent',
@@ -29,7 +30,7 @@ export const SPOT_KINDS: readonly SpotKind[] = [
   'cabana',
   'hammock',
   'custom',
-];
+] as const satisfies readonly SpotKind[];
 export const DECORATION_KINDS: readonly DecorationKind[] = [
   'walkway',
   'shower',

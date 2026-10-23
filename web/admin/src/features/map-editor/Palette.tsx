@@ -20,6 +20,7 @@ function PickerButton({
   text,
   hint,
   disabled,
+  disabledHint,
   children,
 }: {
   family: KitFamily;
@@ -27,28 +28,39 @@ function PickerButton({
   text: string;
   hint: string;
   disabled?: boolean;
+  /** Why the button is disabled; shown in its place of the hint, reachable by keyboard. */
+  disabledHint?: string;
   children: (close: () => void) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const reason = disabled && disabledHint ? disabledHint : hint;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
+        {/* A disabled button gets no pointer or focus events: the focusable
+            wrapper carries the tooltip, so the reason stays reachable. */}
         <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={disabled}
-              data-palette={family}
-              aria-haspopup="dialog"
-            >
-              <Icon aria-hidden="true" />
-              {text}
-              <ChevronDownIcon aria-hidden="true" className="opacity-60" />
-            </Button>
-          </PopoverTrigger>
+          <span
+            className="inline-flex"
+            tabIndex={disabled ? 0 : undefined}
+            aria-label={disabled ? reason : undefined}
+          >
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={disabled}
+                data-palette={family}
+                aria-haspopup="dialog"
+              >
+                <Icon aria-hidden="true" />
+                {text}
+                <ChevronDownIcon aria-hidden="true" className="opacity-60" />
+              </Button>
+            </PopoverTrigger>
+          </span>
         </TooltipTrigger>
-        <TooltipContent>{hint}</TooltipContent>
+        <TooltipContent>{reason}</TooltipContent>
       </Tooltip>
       <PopoverContent align="start" className="w-[min(28rem,calc(100vw-2rem))] p-0">
         {open && children(() => setOpen(false))}
@@ -82,6 +94,7 @@ export function Palette({
         text={t('palette.spots')}
         hint={t('palette.spotsHint')}
         disabled={!canAddSpots}
+        disabledHint={t('palette.spotsDisabledHint')}
       >
         {(close) => (
           <KitPicker
