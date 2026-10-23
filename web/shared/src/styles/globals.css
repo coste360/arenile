@@ -33,8 +33,9 @@
   /* Deep sea blue. */
   --primary: oklch(0.45 0.11 245);
   --primary-foreground: oklch(0.985 0 0);
-  /* Primary used as text/links on surfaces (contrast-adjusted for custom themes). */
-  --primary-on-surface: oklch(0.45 0.11 245);
+  /* Primary used as text/links on surfaces (contrast-adjusted for custom themes:
+     applyTheme() writes the light and dark variants, mapped here and under .dark). */
+  --primary-on-surface: var(--primary-on-surface-light, oklch(0.45 0.11 245));
 
   --secondary: oklch(0.96 0.006 247);
   --secondary-foreground: oklch(0.25 0.02 255);
@@ -141,7 +142,7 @@
 
   --primary: oklch(0.72 0.12 232);
   --primary-foreground: oklch(0.17 0.03 250);
-  --primary-on-surface: oklch(0.78 0.11 232);
+  --primary-on-surface: var(--primary-on-surface-dark, oklch(0.78 0.11 232));
 
   --secondary: oklch(0.27 0.015 255);
   --secondary-foreground: oklch(0.97 0.003 250);
@@ -202,6 +203,16 @@
   --beach-flag-green: #5cbf7d;
   --beach-flag-yellow: #f2c94c;
   --beach-flag-red: #ef6b62;
+}
+
+
+/* Elements themed by applyTheme() outside <html> (the theme preview of the panel). */
+[data-themed] {
+  --primary-on-surface: var(--primary-on-surface-light, oklch(0.45 0.11 245));
+}
+.dark [data-themed],
+[data-themed].dark {
+  --primary-on-surface: var(--primary-on-surface-dark, oklch(0.78 0.11 232));
 }
 
 @theme inline {

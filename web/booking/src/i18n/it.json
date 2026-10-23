@@ -144,7 +144,6 @@
       "at_desk": "Pagamento allo stabilimento",
       "approval": "Su conferma dello stabilimento"
     },
-    "dates": "{{from}} – {{to}}",
     "violation": "Regola dello stabilimento: {{code}}",
     "violations": {
       "lead_time_too_short": "Questa data non è più prenotabile online: serve più anticipo.",

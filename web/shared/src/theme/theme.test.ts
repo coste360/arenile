@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PRIMARY, applyTheme, customText, resolveTheme, themeToCssVars } from './theme';
+import { contrastRatio, parseHexColor, type Rgb } from './contrast';
+import {
+  DARK_SURFACE,
+  DEFAULT_PRIMARY,
+  applyTheme,
+  customText,
+  resolveTheme,
+  themeToCssVars,
+} from './theme';
 
 describe('resolveTheme', () => {
   it('applies defaults to an empty theme', () => {
@@ -41,7 +49,23 @@ describe('themeToCssVars / applyTheme', () => {
     const el = document.createElement('div');
     applyTheme({ primary_color: '#000000' }, el);
     expect(el.style.getPropertyValue('--primary')).toBe('#000000');
+    expect(el.getAttribute('data-themed')).toBe('');
     expect(Object.keys(vars).some((k) => k.startsWith('--ar-'))).toBe(false);
+    // Never the scheme-independent variable: the .dark rule must stay in charge.
+    expect(vars).not.toHaveProperty('--primary-on-surface');
+  });
+
+  it('keeps links and prices AA in both colour schemes (spec 12.6)', () => {
+    const ratio = (a: string, b: string) =>
+      contrastRatio(parseHexColor(a) as Rgb, parseHexColor(b) as Rgb);
+    for (const primary of [DEFAULT_PRIMARY, '#0e6ba8', '#1a1a1a', '#ff6600', '#ffe600', '#2563eb']) {
+      const t = resolveTheme({ primary_color: primary });
+      expect(ratio(t.primaryOnSurface, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(t.primaryOnSurfaceDark, DARK_SURFACE)).toBeGreaterThanOrEqual(4.5);
+      const vars = themeToCssVars(t);
+      expect(vars['--primary-on-surface-light']).toBe(t.primaryOnSurface);
+      expect(vars['--primary-on-surface-dark']).toBe(t.primaryOnSurfaceDark);
+    }
   });
 });
 

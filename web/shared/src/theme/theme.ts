@@ -17,7 +17,10 @@ export interface ResolvedTheme {
   logoUrl: string | null;
   primary: string;
   primaryForeground: string;
+  /** Primary as text/links on the light surfaces (AA against white). */
   primaryOnSurface: string;
+  /** Primary as text/links on the dark surfaces (AA against the dark cards). */
+  primaryOnSurfaceDark: string;
   accent: string;
   accentForeground: string;
   fontFamily: string;
@@ -30,6 +33,8 @@ export interface ResolvedTheme {
 export const DEFAULT_PRIMARY = '#0e6ba8';
 export const DEFAULT_ACCENT = '#f2b134';
 const SURFACE = '#ffffff';
+/** Lightest surface of the dark scheme behind links (muted / accent tokens of globals.css). */
+export const DARK_SURFACE = '#262a31';
 
 const FONT_STACKS: Record<string, string> = {
   Inter:
@@ -70,6 +75,7 @@ export function resolveTheme(theme: Theme | null | undefined): ResolvedTheme {
     primary,
     primaryForeground: readableTextColor(primary),
     primaryOnSurface: ensureContrast(primary, SURFACE),
+    primaryOnSurfaceDark: ensureContrast(primary, DARK_SURFACE),
     accent,
     accentForeground: readableTextColor(accent),
     fontFamily: FONT_STACKS[t.font_family ?? ''] ?? (FONT_STACKS.system as string),
@@ -83,7 +89,9 @@ export function resolveTheme(theme: Theme | null | undefined): ResolvedTheme {
 /**
  * CSS custom properties of the shadcn theme (styles/globals.css) overridden by
  * the establishment theme on the public pages: primary, highlight (= theme
- * accent), radius and font.
+ * accent), radius and font. The on-surface colour comes in a light and a
+ * dark variant: globals.css maps `--primary-on-surface` to the right one
+ * under `.dark`, so an inline value never wins over the colour scheme.
  */
 export function themeToCssVars(
   theme: Theme | ResolvedTheme | null | undefined,
@@ -92,7 +100,8 @@ export function themeToCssVars(
   return {
     '--primary': r.primary,
     '--primary-foreground': r.primaryForeground,
-    '--primary-on-surface': r.primaryOnSurface,
+    '--primary-on-surface-light': r.primaryOnSurface,
+    '--primary-on-surface-dark': r.primaryOnSurfaceDark,
     '--ring': r.primary,
     '--highlight': r.accent,
     '--highlight-foreground': r.accentForeground,
@@ -109,6 +118,8 @@ export function applyTheme(
   for (const [name, value] of Object.entries(themeToCssVars(theme))) {
     element.style.setProperty(name, value);
   }
+  // Lets globals.css map the light/dark on-surface variants on this element.
+  element.setAttribute('data-themed', '');
 }
 
 /** Looks up a manager-provided custom text with fallback to the default locale. */

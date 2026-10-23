@@ -144,7 +144,6 @@
       "at_desk": "Zahlung am Strand",
       "approval": "Nach Bestätigung durch den Strand"
     },
-    "dates": "{{from}} – {{to}}",
     "violation": "Regel des Strandes: {{code}}",
     "violations": {
       "lead_time_too_short": "Dieses Datum ist online nicht mehr buchbar: Es ist mehr Vorlauf nötig.",

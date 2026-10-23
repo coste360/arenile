@@ -1,7 +1,6 @@
-import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { useTranslation } from 'react-i18next';
 import type { CheckoutState } from '../api/public';
-import { formatMoney, localize } from '../flow/format';
+import { formatMoney, formatStay, localize } from '../flow/format';
 import { PUBLIC_NS } from '../i18n';
 
 export interface BookingDetailsProps {
@@ -17,10 +16,7 @@ export function BookingDetails({ summary, fallbackLocale }: BookingDetailsProps)
   return (
     <div className="space-y-3 text-sm">
       <p className="font-medium tabular-nums">
-        {t('summary.dates', {
-          from: formatIsoDate(summary.starts_on),
-          to: formatIsoDate(summary.ends_on),
-        })}
+        {formatStay(summary.starts_on, summary.ends_on)}
         <span className="ml-2 font-normal text-muted-foreground">
           {summary.formula === 'day' || summary.formula === 'half_day'
             ? t(`when.slots.${summary.slots}`)

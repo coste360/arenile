@@ -144,7 +144,6 @@
       "at_desk": "Paiement à la plage",
       "approval": "Sous réserve de confirmation par la plage"
     },
-    "dates": "{{from}} – {{to}}",
     "violation": "Règle de la plage : {{code}}",
     "violations": {
       "lead_time_too_short": "Cette date ne peut plus être réservée en ligne : il faut plus d’anticipation.",

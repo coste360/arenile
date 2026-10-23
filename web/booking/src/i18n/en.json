@@ -144,7 +144,6 @@
       "at_desk": "Pay at the beach",
       "approval": "Subject to confirmation by the beach"
     },
-    "dates": "{{from}} – {{to}}",
     "violation": "Beach rule: {{code}}",
     "violations": {
       "lead_time_too_short": "This date can no longer be booked online: more notice is needed.",

@@ -1,12 +1,11 @@
 import { cn } from '@arenile/shared/lib/utils';
-import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { Separator } from '@arenile/shared/ui/separator';
 import { Spinner } from '@arenile/shared/ui/spinner';
 import { ReceiptTextIcon, TriangleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { PublicQuote } from '../api/public';
-import { formatMoney, localize } from '../flow/format';
+import { formatMoney, formatStay, localize } from '../flow/format';
 import { PUBLIC_NS } from '../i18n';
 
 export interface PriceSummaryProps {
@@ -53,7 +52,7 @@ export function PriceSummary({
         </CardTitle>
         {dates?.to && (
           <p className="text-sm text-muted-foreground tabular-nums">
-            {t('summary.dates', { from: formatIsoDate(dates.from), to: formatIsoDate(dates.to) })}
+            {formatStay(dates.from, dates.to)}
           </p>
         )}
       </CardHeader>

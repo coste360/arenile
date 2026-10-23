@@ -213,15 +213,17 @@ export default function WhoStep({
       {terms && texts && (
         <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
           <Collapsible>
-            <CollapsibleTrigger asChild>
-              <Button type="button" variant="ghost" className="-ml-2 h-11 px-2">
-                <ChevronDownIcon aria-hidden="true" />
-                {t('who.showTerms')}
-                <span className="text-xs font-normal text-muted-foreground">
-                  {t('who.termsVersion', { version: terms.version })}
-                </span>
-              </Button>
-            </CollapsibleTrigger>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+              <CollapsibleTrigger asChild>
+                <Button type="button" variant="ghost" className="-ml-2 h-11 px-2">
+                  <ChevronDownIcon aria-hidden="true" />
+                  {t('who.showTerms')}
+                </Button>
+              </CollapsibleTrigger>
+              <span className="min-w-0 break-words text-xs text-muted-foreground">
+                {t('who.termsVersion', { version: terms.version })}
+              </span>
+            </div>
             <CollapsibleContent>
               <div
                 tabIndex={0}

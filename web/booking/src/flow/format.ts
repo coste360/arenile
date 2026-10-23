@@ -1,3 +1,4 @@
+import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { formatCents } from '@arenile/shared/lib/money';
 
 /** Display helpers of the public page: Intl formats in the page language (spec 20). */
@@ -47,4 +48,15 @@ export function formatCountdown(ms: number): string {
   const m = Math.floor(total / 60);
   const s = total % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/**
+ * Stay dates for the summary, the confirmation and the manage area: one
+ * date for a single day ("16/06/2027"), a range otherwise
+ * ("16/06/2027 – 18/06/2027").
+ */
+export function formatStay(from: string, to?: string | null): string {
+  const start = formatIsoDate(from);
+  if (!to || to === from) return start;
+  return `${start} – ${formatIsoDate(to)}`;
 }
