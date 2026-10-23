@@ -16,11 +16,14 @@
 #   APPLE_CERTIFICATE_PASSWORD   imported into a temporary keychain (CI)
 #   Notarization (App Store Connect API key, optional; needs a signature):
 #   APPLE_API_KEY_ID, APPLE_API_ISSUER_ID, APPLE_API_KEY_P8_BASE64
+#   NOTARY_TIMEOUT               wait for each notarization (default 90m; the first
+#                                submissions of a new team can take longer than 30m)
 #
 # Output in $DIST_DIR: Arenile_<version>_macos_universal[-unsigned|-unnotarized].dmg
 # (+ .sha256) and the bundle itself in $DIST_DIR/macos/Arenile.app.
 # shellcheck source=scripts/desktop/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+NOTARY_TIMEOUT="${NOTARY_TIMEOUT:-90m}"
 
 [ "$(uname -s)" = Darwin ] || die "package-macos.sh runs on macOS only (hdiutil, lipo, codesign)"
 
@@ -111,17 +114,29 @@ sign() { # path
 }
 
 notarize() { # path (zip or dmg)
-	local out status id
-	out="$(xcrun notarytool submit "$1" --key "$work/AuthKey.p8" --key-id "$APPLE_API_KEY_ID" \
-		--issuer "$APPLE_API_ISSUER_ID" --wait --timeout 30m --output-format json)" || true
-	status="$(printf '%s' "$out" | sed -n 's/.*"status" *: *"\([^"]*\)".*/\1/p')"
-	id="$(printf '%s' "$out" | sed -n 's/.*"id" *: *"\([^"]*\)".*/\1/p')"
-	log "notarization of $(basename "$1"): ${status:-unknown} (${id:-no id})"
-	if [ "$status" != Accepted ]; then
-		[ -n "$id" ] && xcrun notarytool log "$id" --key "$work/AuthKey.p8" \
-			--key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID" >&2 || true
+	local auth out status id
+	auth=(--key "$work/AuthKey.p8" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID")
+	# Submit first and wait separately: the submission id is then always known,
+	# also when Apple takes longer than the wait (first submissions of a team
+	# can take hours) and notarytool reports the timeout on stderr.
+	out="$(xcrun notarytool submit "$1" "${auth[@]}" --output-format json 2>&1)" || true
+	id="$(printf '%s' "$out" | sed -n 's/.*"id" *: *"\([^"]*\)".*/\1/p' | head -n1)"
+	[ -n "$id" ] || die "notarization upload of $(basename "$1") failed: $out"
+	log "notarization of $(basename "$1") submitted: $id (waiting up to $NOTARY_TIMEOUT)"
+	xcrun notarytool wait "$id" "${auth[@]}" --timeout "$NOTARY_TIMEOUT" >&2 || true
+	out="$(xcrun notarytool info "$id" "${auth[@]}" --output-format json 2>&1)" || true
+	status="$(printf '%s' "$out" | sed -n 's/.*"status" *: *"\([^"]*\)".*/\1/p' | head -n1)"
+	log "notarization of $(basename "$1"): ${status:-unknown} ($id)"
+	case "$status" in
+	Accepted) ;;
+	"In Progress")
+		die "notarization $id still in progress after $NOTARY_TIMEOUT: check it with 'xcrun notarytool info $id' and rerun the job (or raise NOTARY_TIMEOUT)"
+		;;
+	*)
+		xcrun notarytool log "$id" "${auth[@]}" >&2 || true
 		die "notarization failed"
-	fi
+		;;
+	esac
 }
 
 can_notarize=0

@@ -116,7 +116,10 @@ stage_binary() {
 	# The window/tray build is a GUI app: no console window behind it.
 	[ -n "$DESKTOP_TAGS" ] && extra="-H windowsgui"
 	mkdir -p "$(dirname "$EXE")"
-	go_build_launcher "$EXE" windows "$GOARCH_WIN" "$extra"
+	# go.exe is native too: with MSYS_NO_PATHCONV it would read /d/a/... as
+	# D:\d\a\... and write the .exe outside dist/.
+	go_build_launcher "$(mixpath "$EXE")" windows "$GOARCH_WIN" "$extra"
+	[ -f "$EXE" ] || die "go build did not produce $EXE"
 	rm -f "$SYSO"
 }
 

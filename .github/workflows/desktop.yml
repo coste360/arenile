@@ -97,7 +97,8 @@ jobs:
     name: macOS (universal .dmg)
     needs: web
     runs-on: macos-latest
-    timeout-minutes: 60
+    # Two notarizations (app and dmg), each waited up to NOTARY_TIMEOUT (90m).
+    timeout-minutes: 200
     env:
       APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
       APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
