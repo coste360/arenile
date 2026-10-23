@@ -17,7 +17,7 @@
   "width": 1000,
   "height": 780,
   "grid_size": 10,
-  "sea_side": "bottom",
+  "sea_side": "top",
   "spots": [
    {
     "id": "s-A1",
@@ -27,7 +27,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -44,7 +44,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -61,7 +61,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -78,7 +78,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -95,7 +95,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -112,7 +112,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -129,7 +129,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -146,7 +146,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -163,7 +163,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -180,7 +180,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -197,7 +197,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -214,7 +214,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -231,7 +231,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -248,7 +248,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -265,7 +265,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 640,
+    "y": 140,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -282,7 +282,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -299,7 +299,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -316,7 +316,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -333,7 +333,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -350,7 +350,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -367,7 +367,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -384,7 +384,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -401,7 +401,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -418,7 +418,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -435,7 +435,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -452,7 +452,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -469,7 +469,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -486,7 +486,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -503,7 +503,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -520,7 +520,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 570,
+    "y": 210,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -537,7 +537,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -554,7 +554,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -571,7 +571,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -588,7 +588,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -605,7 +605,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -622,7 +622,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -639,7 +639,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -656,7 +656,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -673,7 +673,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -690,7 +690,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -707,7 +707,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -724,7 +724,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -741,7 +741,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -758,7 +758,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -775,7 +775,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 500,
+    "y": 280,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -792,7 +792,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -809,7 +809,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -826,7 +826,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -843,7 +843,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -860,7 +860,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -877,7 +877,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -894,7 +894,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -911,7 +911,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -928,7 +928,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -945,7 +945,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -962,7 +962,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -979,7 +979,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -996,7 +996,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1013,7 +1013,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1030,7 +1030,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 430,
+    "y": 350,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1047,7 +1047,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1064,7 +1064,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1081,7 +1081,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1098,7 +1098,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1115,7 +1115,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1132,7 +1132,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1149,7 +1149,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1166,7 +1166,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1183,7 +1183,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1200,7 +1200,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1217,7 +1217,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1234,7 +1234,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1251,7 +1251,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1268,7 +1268,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1285,7 +1285,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 360,
+    "y": 420,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1302,7 +1302,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1319,7 +1319,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1336,7 +1336,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1353,7 +1353,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1370,7 +1370,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1387,7 +1387,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1404,7 +1404,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1421,7 +1421,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1438,7 +1438,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1455,7 +1455,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1472,7 +1472,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1489,7 +1489,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1506,7 +1506,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1523,7 +1523,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1540,7 +1540,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 290,
+    "y": 490,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1557,7 +1557,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1574,7 +1574,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1591,7 +1591,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1608,7 +1608,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1625,7 +1625,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1642,7 +1642,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1659,7 +1659,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1676,7 +1676,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1693,7 +1693,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1710,7 +1710,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1727,7 +1727,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1744,7 +1744,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1761,7 +1761,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1778,7 +1778,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1795,7 +1795,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 220,
+    "y": 560,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1812,7 +1812,7 @@
     "kind": "gazebo",
     "asset": "gazebo_lettini",
     "x": 350,
-    "y": 80,
+    "y": 700,
     "rotation": 0,
     "shape": {
      "h": 60,
@@ -1829,7 +1829,7 @@
     "kind": "gazebo",
     "asset": "gazebo_lettini",
     "x": 450,
-    "y": 80,
+    "y": 700,
     "rotation": 0,
     "shape": {
      "h": 60,
@@ -1846,7 +1846,7 @@
     "kind": "gazebo",
     "asset": "gazebo_lettini",
     "x": 550,
-    "y": 80,
+    "y": 700,
     "rotation": 0,
     "shape": {
      "h": 60,
@@ -1863,7 +1863,7 @@
     "kind": "gazebo",
     "asset": "gazebo_lettini",
     "x": 650,
-    "y": 80,
+    "y": 700,
     "rotation": 0,
     "shape": {
      "h": 60,
@@ -1880,7 +1880,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 80,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1897,7 +1897,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 140,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1914,7 +1914,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 200,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1931,7 +1931,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 260,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1948,7 +1948,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 320,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1965,7 +1965,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 380,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1982,7 +1982,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 440,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -1999,7 +1999,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 500,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2016,7 +2016,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 560,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2033,7 +2033,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 620,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2050,7 +2050,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 680,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2067,7 +2067,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 740,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2084,7 +2084,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 800,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2101,7 +2101,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 860,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2118,7 +2118,7 @@
     "kind": "umbrella",
     "asset": "ombrellone_2_lettini",
     "x": 920,
-    "y": 150,
+    "y": 630,
     "rotation": 0,
     "shape": {
      "h": 40,
@@ -2135,7 +2135,7 @@
     "asset": "passerella_ingresso",
     "variant": null,
     "x": 30,
-    "y": 30,
+    "y": 750,
     "rotation": 0,
     "shape": {
      "h": 60,
@@ -2149,7 +2149,7 @@
     "asset": "passerella_verticale",
     "variant": null,
     "x": 30,
-    "y": 420,
+    "y": 360,
     "rotation": 0,
     "shape": {
      "h": 720,
@@ -2163,7 +2163,7 @@
     "asset": "ingresso",
     "variant": null,
     "x": 86,
-    "y": 30,
+    "y": 750,
     "rotation": 0,
     "shape": {
      "h": 44,
@@ -2177,7 +2177,7 @@
     "asset": "bar",
     "variant": null,
     "x": 870,
-    "y": 50,
+    "y": 730,
     "rotation": 0,
     "shape": {
      "h": 84,
@@ -2191,7 +2191,7 @@
     "asset": "doccia_doppia",
     "variant": null,
     "x": 170,
-    "y": 50,
+    "y": 730,
     "rotation": 0,
     "shape": {
      "h": 56,
@@ -2205,7 +2205,7 @@
     "asset": "torretta_bagnino",
     "variant": null,
     "x": 500,
-    "y": 752,
+    "y": 28,
     "rotation": 0,
     "shape": {
      "h": 56,
@@ -2219,7 +2219,7 @@
     "asset": "bandiera_mare",
     "variant": "green",
     "x": 556,
-    "y": 752,
+    "y": 28,
     "rotation": 0,
     "shape": {
      "h": 48,
@@ -2233,7 +2233,7 @@
     "asset": "wc",
     "variant": null,
     "x": 730,
-    "y": 50,
+    "y": 730,
     "rotation": 0,
     "shape": {
      "h": 52,
@@ -2247,7 +2247,7 @@
     "asset": "dae",
     "variant": null,
     "x": 788,
-    "y": 50,
+    "y": 730,
     "rotation": 0,
     "shape": {
      "h": 44,
@@ -2261,7 +2261,7 @@
     "asset": "rampa_accessibile",
     "variant": null,
     "x": 112,
-    "y": 752,
+    "y": 28,
     "rotation": 0,
     "shape": {
      "h": 52,
@@ -2275,7 +2275,7 @@
     "asset": "sedia_job",
     "variant": null,
     "x": 168,
-    "y": 752,
+    "y": 28,
     "rotation": 0,
     "shape": {
      "h": 48,
@@ -2289,8 +2289,8 @@
     "asset": "pattino_salvataggio",
     "variant": null,
     "x": 424,
-    "y": 752,
-    "rotation": 90,
+    "y": 28,
+    "rotation": 270,
     "shape": {
      "h": 56,
      "type": "rect",
@@ -2303,7 +2303,7 @@
     "asset": "palma",
     "variant": null,
     "x": 240,
-    "y": 46,
+    "y": 734,
     "rotation": 0,
     "shape": {
      "h": 64,
@@ -2317,7 +2317,7 @@
     "asset": "palma_piccola",
     "variant": null,
     "x": 960,
-    "y": 56,
+    "y": 724,
     "rotation": 0,
     "shape": {
      "h": 52,
@@ -2331,7 +2331,7 @@
     "asset": "salvagente_palo",
     "variant": null,
     "x": 910,
-    "y": 752,
+    "y": 28,
     "rotation": 0,
     "shape": {
      "h": 44,

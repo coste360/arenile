@@ -24,6 +24,9 @@ export async function applyTheme(page: Page, theme: Theme): Promise<void> {
   await page.addInitScript((t) => {
     try {
       window.localStorage.setItem("arenile-theme", t);
+      // The one-time "ready offline" toast of the panel PWA (M5A) would
+      // cover the corner of every screenshot.
+      window.localStorage.setItem("arenile-admin:offline-ready-shown", "1");
     } catch {
       /* storage disabled: the media emulation still applies */
     }
