@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Defibrillatore DAE"><title>Defibrillatore DAE</title><g stroke-linejoin="round" stroke-linecap="round">
+<rect x="22" y="22" width="76" height="76" rx="14" fill="var(--beach-sage-soft, #DEECE2)" stroke="var(--beach-ink, #263746)" stroke-width="2.3"/>
+<path d="M42 61C42 50 50 42 58 42C64 42 68 46 70 51C72 46 76 42 82 42C90 42 98 50 98 61C98 77 81 86 70 95C59 86 42 77 42 61Z" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-sage, #779C87)" stroke-width="1.8"/>
+<path d="M67 48L58 66H66L61 82L80 58H71L76 48Z" fill="var(--beach-sage, #779C87)" stroke="var(--beach-sage, #779C87)" stroke-width="1"/>
+</g></svg>

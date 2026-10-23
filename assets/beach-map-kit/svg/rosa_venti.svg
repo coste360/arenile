@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Rosa dei venti / nord"><title>Rosa dei venti / nord</title><g stroke-linejoin="round" stroke-linecap="round">
+<circle cx="60" cy="60" r="40" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-ink, #263746)" stroke-width="2.2"/>
+<circle cx="60" cy="60" r="7" fill="var(--beach-sand-soft, #FBF7F0)" stroke="var(--beach-ink, #263746)" stroke-width="1.4"/>
+<path d="M60 18L68 52L60 46L52 52Z" fill="var(--beach-navy, #365B78)" stroke="var(--beach-ink, #263746)" stroke-width="1.5"/>
+<path d="M102 60L68 68L74 60L68 52Z" fill="var(--beach-sand-soft, #FBF7F0)" stroke="var(--beach-ink, #263746)" stroke-width="1.5"/>
+<path d="M60 102L52 68L60 74L68 68Z" fill="var(--beach-sand-soft, #FBF7F0)" stroke="var(--beach-ink, #263746)" stroke-width="1.5"/>
+<path d="M18 60L52 52L46 60L52 68Z" fill="var(--beach-sand-soft, #FBF7F0)" stroke="var(--beach-ink, #263746)" stroke-width="1.5"/>
+<text x="60" y="14" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="800" fill="var(--beach-ink, #263746)">N</text>
+</g></svg>

@@ -22,5 +22,6 @@ paths:
 - Every interactive map element needs a role, an aria-label and keyboard support.
 - All text through i18next keys; add the Italian string and an English one.
 - API types come from `web/shared/api/generated/schema.d.ts` (openapi-typescript) used with
-  openapi-fetch; never edit `web/shared/api/generated/**`, run `make gen` instead.
+  openapi-fetch; never edit `web/shared/api/generated/**` nor `web/shared/src/map/kit/generated/**`
+  (beach map kit, ADR 0012), run `make gen` instead.
 - Amounts are integer cents; format them only at display time with `Intl.NumberFormat`.

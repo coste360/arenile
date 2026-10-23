@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Sedia JOB / sedia mare per disabili"><title>Sedia JOB / sedia mare per disabili</title><g stroke-linejoin="round" stroke-linecap="round">
+<circle cx="29" cy="60" r="15" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-ink, #263746)" stroke-width="2.2"/>
+<circle cx="91" cy="60" r="15" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-ink, #263746)" stroke-width="2.2"/>
+<rect x="40" y="42" width="40" height="36" rx="8" fill="var(--beach-navy-soft, #DBE9F1)" stroke="var(--beach-ink, #263746)" stroke-width="2.1"/>
+<rect x="47" y="30" width="26" height="16" rx="6" fill="var(--beach-sand-soft, #FBF7F0)" stroke="var(--beach-ink, #263746)" stroke-width="1.8"/>
+<path d="M20 60H40M80 60H100M50 78L44 92M70 78L76 92" stroke="var(--beach-ink, #263746)" fill="none" stroke-width="2.1"/>
+<circle cx="44" cy="96" r="3.6" fill="var(--beach-frame, #DCE4E8)" stroke="var(--beach-ink, #263746)" stroke-width="1.2"/>
+<circle cx="76" cy="96" r="3.6" fill="var(--beach-frame, #DCE4E8)" stroke="var(--beach-ink, #263746)" stroke-width="1.2"/>
+</g></svg>

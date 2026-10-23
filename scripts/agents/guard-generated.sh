@@ -3,8 +3,8 @@
 #
 # Reads the hook JSON payload on stdin and blocks (exit 2, reason on stderr)
 # edits to:
-#   - generated Go code:          *.gen.go
-#   - generated TypeScript code:  web/shared/api/generated/**
+#   - generated Go code:          *.gen.go, *_gen.go
+#   - generated TypeScript code:  web/shared/api/generated/**, web/shared/src/map/kit/generated/**
 #   - migrations already merged:  internal/migrations/** present on branch main
 #
 # Any other situation (unparseable input, no file path, not a git repo,
@@ -68,8 +68,14 @@ case "$rel" in
 *.gen.go)
 	block "This is generated Go code. Edit api/openapi.yaml (or the generator config) and run 'make gen' instead."
 	;;
+*_gen.go)
+	block "This is generated Go code (map kit: web/scripts/gen-map-kit.mjs). Edit the source (assets/beach-map-kit or the generator) and run 'make gen' instead."
+	;;
 web/shared/api/generated/*)
 	block "This is the generated TypeScript API client. Edit api/openapi.yaml and run 'make gen' instead."
+	;;
+web/shared/src/map/kit/generated/*)
+	block "This is the generated beach map kit. Edit assets/beach-map-kit (manifest + svg) or web/scripts/gen-map-kit.mjs and run 'make gen' instead."
 	;;
 internal/migrations/*)
 	top="$(git -C "$root" rev-parse --show-toplevel 2>/dev/null || true)"

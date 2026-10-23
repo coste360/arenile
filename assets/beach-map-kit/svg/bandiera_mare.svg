@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Bandiera stato del mare"><title>Bandiera stato del mare</title><g stroke-linejoin="round" stroke-linecap="round">
+<line x1="42" y1="12" x2="42" y2="106" stroke="var(--beach-ink, #263746)" stroke-width="2.5"/>
+<path d="M42 16H93L80 35L93 54H42Z" stroke="var(--beach-ink, #263746)" fill="var(--beach-flag, var(--beach-sage, #779C87))" stroke-width="2"/>
+<circle cx="42" cy="12" r="3.2" fill="var(--beach-ink, #263746)" stroke="none"/>
+<rect x="34" y="106" width="16" height="6" rx="2.5" fill="var(--beach-frame, #DCE4E8)" stroke="var(--beach-ink, #263746)" stroke-width="1.4"/>
+</g></svg>

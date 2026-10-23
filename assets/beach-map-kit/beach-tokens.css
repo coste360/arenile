@@ -1,0 +1,37 @@
+/* Tokens compatible with shadcn/ui. SVGs inherit these only when inlined (e.g. SVGR). */
+:root {
+  --beach-ink: #263746;
+  --beach-muted: #94a3b8;
+  --beach-frame: #dce4e8;
+  --beach-canvas: #ffffff;
+  --beach-sand: #f5ecdd;
+  --beach-sand-soft: #fbf7f0;
+  --beach-navy: #365b78;
+  --beach-navy-soft: #dbe9f1;
+  --beach-sage: #779c87;
+  --beach-sage-soft: #deece2;
+  --beach-clay: #c77c69;
+  --beach-clay-soft: #f6e6df;
+  --beach-wood: #ba9472;
+  --beach-wood-soft: #ebdbc7;
+  --beach-water: #a9d7e4;
+  --beach-water-soft: #e3f4f7;
+}
+.dark {
+  --beach-ink: #b8c9d6;
+  --beach-muted: #8396a6;
+  --beach-frame: #465765;
+  --beach-canvas: #243442;
+  --beach-sand: #695e50;
+  --beach-sand-soft: #504d49;
+  --beach-navy: #b1cbdf;
+  --beach-navy-soft: #415b70;
+  --beach-sage: #a3c3ad;
+  --beach-sage-soft: #3b5d4c;
+  --beach-clay: #d9a493;
+  --beach-clay-soft: #664f4c;
+  --beach-wood: #cfb396;
+  --beach-wood-soft: #615443;
+  --beach-water: #74afc4;
+  --beach-water-soft: #354f5d;
+}

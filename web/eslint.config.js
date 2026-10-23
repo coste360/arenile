@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/dev-dist/**',
       '**/node_modules/**',
       'shared/api/generated/**',
+      'shared/src/map/kit/generated/**',
       'coverage/**',
     ],
   },

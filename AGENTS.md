@@ -34,6 +34,8 @@ The specification (Italian) lives in `docs/spec/`, one file per section; it is a
 ## Generated code (never edit by hand)
 - `internal/http/api/*.gen.go` from `api/openapi.yaml` via oapi-codegen (`api/oapi-codegen.yaml`)
 - `web/shared/api/generated/**` (openapi-typescript `schema.d.ts`, used with openapi-fetch)
+- `web/shared/src/map/kit/generated/**` and `internal/domain/mapping/kitassets_gen.go` from the beach
+  map kit `assets/beach-map-kit` via `web/scripts/gen-map-kit.mjs` (ADR 0012)
 - `make check` regenerates and fails if the generated code differs from what is committed.
 
 ## Non-negotiable rules
@@ -50,7 +52,8 @@ The specification (Italian) lives in `docs/spec/`, one file per section; it is a
   never from the browser return URL.
 - Every operational query is scoped by `establishment_id` from the auth context.
 - API first: change `api/openapi.yaml`, run `make gen`, then implement.
-- Never edit generated files (`*.gen.go`, `web/shared/api/generated/**`).
+- Never edit generated files (`*.gen.go`, `*_gen.go`, `web/shared/api/generated/**`,
+  `web/shared/src/map/kit/generated/**`).
 - Never modify a migration that is already on `main`; add a new one, for both dialects.
 - No new runtime dependency (Go module or npm package) without explaining why in the PR.
 - User-facing strings go through i18n keys; Italian is the source language.

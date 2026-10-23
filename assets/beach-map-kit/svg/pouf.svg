@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Pouf / bean bag"><title>Pouf / bean bag</title><g stroke-linejoin="round" stroke-linecap="round">
+<path d="M35 29C52 18 80 22 89 41C98 59 90 91 63 95C36 99 20 77 24 53C26 43 29 34 35 29Z" fill="var(--beach-sage-soft, #DEECE2)" stroke="var(--beach-ink, #263746)" stroke-width="2.3"/>
+<path d="M42 37C53 30 72 32 79 45C85 58 79 77 62 82C46 86 33 75 32 58C31 49 35 41 42 37Z" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-frame, #DCE4E8)" stroke-width="1.5"/>
+<path d="M42 45C49 51 60 54 73 53" stroke="var(--beach-sage, #779C87)" fill="none" stroke-width="1.6"/>
+</g></svg>

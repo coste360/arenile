@@ -71,7 +71,8 @@ Le regole complete sono in [AGENTS.md](AGENTS.md) e valgono per persone e agenti
 **API-first (OpenAPI)**
 - Il contratto è `api/openapi.yaml` (OpenAPI 3.1), unica fonte di verità.
 - Prima modifica il contratto, poi `make gen`, poi implementa l'handler.
-- Non modificare mai i file generati (`*.gen.go`, `web/shared/api/generated/**`).
+- Non modificare mai i file generati (`*.gen.go`, `*_gen.go`, `web/shared/api/generated/**`,
+  `web/shared/src/map/kit/generated/**`).
 - Errori in formato `application/problem+json` con `type` stabile.
 
 **Migrazioni**

@@ -42,9 +42,10 @@ HAS_WEB_LCK := $(wildcard web/package-lock.json)
 HAS_E2E     := $(wildcard e2e/package.json)
 HAS_E2E_LCK := $(wildcard e2e/package-lock.json)
 HAS_API     := $(wildcard api/openapi.yaml)
+HAS_KIT     := $(wildcard assets/beach-map-kit/manifest.json)
 
-GO_GENERATED  := internal/http/api/api.gen.go
-WEB_GENERATED := web/shared/api/generated
+GO_GENERATED  := internal/http/api/api.gen.go internal/domain/mapping/kitassets_gen.go
+WEB_GENERATED := web/shared/api/generated web/shared/src/map/kit/generated
 STATIC_DIR    := internal/http/static
 
 LDFLAGS := -s -w -X main.version=$(VERSION)
@@ -133,7 +134,7 @@ seed: ## Crea il database locale con lo stabilimento dimostrativo
 # ---------------------------------------------------------------------------
 
 .PHONY: gen
-gen: ## Rigenera server Go e tipi TypeScript da api/openapi.yaml
+gen: ## Rigenera server Go e tipi TypeScript da api/openapi.yaml e il kit della mappa
 ifneq ($(HAS_API),)
 	go tool oapi-codegen -config api/oapi-codegen.yaml api/openapi.yaml
 ifneq ($(HAS_WEB),)
@@ -141,6 +142,9 @@ ifneq ($(HAS_WEB),)
 endif
 else
 	@echo "api/openapi.yaml not present yet: nothing to generate"
+endif
+ifneq ($(HAS_KIT),)
+	node web/scripts/gen-map-kit.mjs
 endif
 
 .PHONY: gen-check
@@ -181,7 +185,7 @@ endif
 .PHONY: fmt
 fmt: ## Formatta Go (gofumpt, goimports) e frontend (Prettier)
 	@set -euo pipefail; \
-	files="$$(find . -type f -name '*.go' ! -name '*.gen.go' \
+	files="$$(find . -type f -name '*.go' ! -name '*.gen.go' ! -name '*_gen.go' \
 		! -path './web/*' ! -path './e2e/*' ! -path './bin/*' ! -path './tmp/*' ! -path '*/node_modules/*' ! -path './.git/*')"; \
 	if [ -n "$$files" ]; then \
 		echo "$$files" | xargs go tool gofumpt -w; \

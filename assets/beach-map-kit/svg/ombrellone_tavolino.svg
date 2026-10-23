@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Ombrellone con tavolino"><title>Ombrellone con tavolino</title><g stroke-linejoin="round" stroke-linecap="round">
+<circle cx="38" cy="38" r="24" fill="var(--beach-sand-soft, #FBF7F0)" stroke="var(--beach-ink, #263746)" stroke-width="2.2"/>
+<line x1="38" y1="38" x2="38" y2="14" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<line x1="38" y1="38" x2="55" y2="21" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<line x1="38" y1="38" x2="62" y2="38" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<line x1="38" y1="38" x2="55" y2="55" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<line x1="38" y1="38" x2="38" y2="62" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<line x1="38" y1="38" x2="21" y2="55" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<line x1="38" y1="38" x2="14" y2="38" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<line x1="38" y1="38" x2="21" y2="21" stroke="var(--beach-ink, #263746)" stroke-width="1.1"/>
+<circle cx="38" cy="38" r="3" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-ink, #263746)" stroke-width="1.2"/>
+<circle cx="80" cy="43" r="12" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-ink, #263746)" stroke-width="1.9"/>
+<circle cx="80" cy="43" r="2.6" fill="var(--beach-ink, #263746)" stroke="none"/>
+<path d="M80 55V68M72 68H88" stroke="var(--beach-ink, #263746)" fill="none" stroke-width="1.9"/>
+<rect x="67" y="76" width="26" height="12" rx="5" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-ink, #263746)" stroke-width="1.8"/>
+<rect x="67" y="92" width="26" height="12" rx="5" fill="var(--beach-canvas, #FFFFFF)" stroke="var(--beach-ink, #263746)" stroke-width="1.8"/>
+<line x1="80" y1="88" x2="80" y2="92" stroke="var(--beach-ink, #263746)" stroke-width="1.4"/>
+</g></svg>

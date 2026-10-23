@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Amaca"><title>Amaca</title><g stroke-linejoin="round" stroke-linecap="round">
+<circle cx="24" cy="28" r="5" fill="var(--beach-wood, #BA9472)" stroke="var(--beach-ink, #263746)" stroke-width="1.4"/>
+<circle cx="96" cy="28" r="5" fill="var(--beach-wood, #BA9472)" stroke="var(--beach-ink, #263746)" stroke-width="1.4"/>
+<line x1="24" y1="28" x2="24" y2="92" stroke="var(--beach-wood, #BA9472)" stroke-width="3"/>
+<line x1="96" y1="28" x2="96" y2="92" stroke="var(--beach-wood, #BA9472)" stroke-width="3"/>
+<path d="M30 39C44 52 76 52 90 39" stroke="var(--beach-ink, #263746)" fill="none" stroke-width="1.8"/>
+<path d="M30 41C44 67 76 67 90 41" fill="var(--beach-clay-soft, #F6E6DF)" stroke="var(--beach-ink, #263746)" stroke-width="2.2"/>
+<path d="M42 46L40 58M50 49L49 62M60 50L60 64M70 49L71 62M78 46L80 58" stroke="var(--beach-clay, #C77C69)" fill="none" stroke-width="1.4"/>
+</g></svg>
