@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "vitest run",
+    "test": "vitest run --maxWorkers=50%",
     "budget": "npm run budget -w @arenile/booking",
     "lint:css": "node scripts/css-guard.mjs"
   },

@@ -86,9 +86,7 @@ async function bookUntilPay(page: Page, widget: FrameLocator): Promise<void> {
   await expect(grid).toBeVisible();
   for (let i = 0; i < 6; i++) {
     if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
-    await widget
-      .getByRole("button", { name: /mese successivo|Next/i })
-      .click();
+    await widget.getByRole("button", { name: /mese successivo|Next/i }).click();
   }
   await expect(grid).toHaveAttribute("aria-label", /giugno/);
   await grid.getByRole("button", { name: /\b16 giugno/ }).click();
@@ -180,12 +178,15 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
     // violation is reported, the frame never renders the page.
     const violations: string[] = [];
     page.on("console", (msg) => {
-      if (/frame-ancestors|Refused to (frame|load|display)/i.test(msg.text())) violations.push(msg.text());
+      if (/frame-ancestors|Refused to (frame|load|display)/i.test(msg.text()))
+        violations.push(msg.text());
     });
     await page.goto(FOREIGN_HOST);
     const iframe = page.locator("[data-arenile] iframe");
     await expect(iframe).toHaveCount(1);
-    await expect.poll(() => violations.length, { timeout: 10_000 }).toBeGreaterThan(0);
+    await expect
+      .poll(() => violations.length, { timeout: 10_000 })
+      .toBeGreaterThan(0);
     const child = page.frames().find((f) => f !== page.mainFrame());
     const text = child
       ? await child
@@ -208,7 +209,9 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
     // The site handled the event: no navigation, the payment URL is in its hands.
     await expect
       .poll(() =>
-        page.evaluate(() => (window as unknown as { __navigate: string | null }).__navigate),
+        page.evaluate(
+          () => (window as unknown as { __navigate: string | null }).__navigate,
+        ),
       )
       .toMatch(new RegExp(`127\\.0\\.0\\.1:${stripePort}/c/pay/`));
     await page.waitForTimeout(500);

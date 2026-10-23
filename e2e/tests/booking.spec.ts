@@ -70,7 +70,10 @@ test("/b/lido-demo has no serious accessibility violations in dark mode", async 
   expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
 });
 
-test("/b/lido-demo works at 320px width through the four steps", async ({ page, request }) => {
+test("/b/lido-demo works at 320px width through the four steps", async ({
+  page,
+  request,
+}) => {
   const { name } = await demoEstablishment(request);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto(`/b/${DEMO_SLUG}`);
@@ -80,9 +83,10 @@ test("/b/lido-demo works at 320px width through the four steps", async ({ page, 
       scroll: document.documentElement.scrollWidth,
       inner: window.innerWidth,
     }));
-    expect(widths.scroll, `${step}: scrollWidth ${widths.scroll} > ${widths.inner}`).toBeLessThanOrEqual(
-      widths.inner,
-    );
+    expect(
+      widths.scroll,
+      `${step}: scrollWidth ${widths.scroll} > ${widths.inner}`,
+    ).toBeLessThanOrEqual(widths.inner);
   };
   await noSidewaysScroll("1 Quando");
 
@@ -95,7 +99,11 @@ test("/b/lido-demo works at 320px width through the four steps", async ({ page, 
     await page.getByRole("button", { name: /mese successivo|Next/i }).click();
   }
   await grid.getByRole("button", { name: /\b16 giugno/ }).click();
-  await page.getByRole("grid").first().getByRole("button", { name: /\b16 giugno/ }).click();
+  await page
+    .getByRole("grid")
+    .first()
+    .getByRole("button", { name: /\b16 giugno/ })
+    .click();
   await page.keyboard.press("Escape");
   await noSidewaysScroll("1 Quando (date chosen)");
   await page.getByRole("button", { name: "Avanti" }).click();
@@ -103,7 +111,10 @@ test("/b/lido-demo works at 320px width through the four steps", async ({ page, 
   // 2. Dove: list view, first free spot.
   await page.getByRole("button", { name: "Mostra come elenco" }).click();
   await noSidewaysScroll("2 Dove");
-  await page.getByRole("button", { name: / – Libero/ }).first().click();
+  await page
+    .getByRole("button", { name: / – Libero/ })
+    .first()
+    .click();
   await page.getByRole("button", { name: "Avanti" }).click();
 
   // 3. Cosa.
@@ -113,7 +124,9 @@ test("/b/lido-demo works at 320px width through the four steps", async ({ page, 
 
   // 4. Chi e pagamento, with the terms opened (the version label and the
   // long texts must wrap).
-  await expect(page.getByRole("textbox", { name: "Nome", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("textbox", { name: "Nome", exact: true }),
+  ).toBeVisible();
   await noSidewaysScroll("4 Chi");
   await page.getByRole("button", { name: "Leggi le condizioni" }).click();
   await noSidewaysScroll("4 Chi (terms open)");
