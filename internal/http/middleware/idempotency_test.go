@@ -30,16 +30,35 @@ func TestIdempotency_ReplayMismatchAndRetry(t *testing.T) {
 		_, _ = fmt.Fprintf(w, `{"booking":%d}`, n)
 	})
 	h := middleware.RequestContext(nil)(middleware.Idempotency(middleware.IdempotencyOptions{DB: db, Clock: c, Skip: []string{"/api/admin/v1/auth/"}})(handler))
-	post := func(path, key, body string) *httptest.ResponseRecorder {
+	postAs := func(path, key, body, checkout string) *httptest.ResponseRecorder {
 		r := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
 		r.RemoteAddr = "1.2.3.4:5"
 		if key != "" {
 			r.Header.Set("Idempotency-Key", key)
 		}
+		if checkout != "" {
+			r.Header.Set("X-Arenile-Checkout", checkout)
+		}
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		return w
 	}
+	post := func(path, key, body string) *httptest.ResponseRecorder { return postAs(path, key, body, "") }
+
+	// The checkout token is part of the request identity: the same key
+	// from the same IP with another (or no) token is not a replay of the
+	// first response (which may carry a payment redirect).
+	withToken := postAs("/api/public/v1/lido/bookings/b1/pay", "key-00000009", `{}`, strings.Repeat("A", 43))
+	if withToken.Code != 201 {
+		t.Fatalf("pay: %d", withToken.Code)
+	}
+	if w := postAs("/api/public/v1/lido/bookings/b1/pay", "key-00000009", `{}`, strings.Repeat("B", 43)); w.Code != 422 {
+		t.Fatalf("same key, other token must not replay: %d %s", w.Code, w.Body.String())
+	}
+	if w := post("/api/public/v1/lido/bookings/b1/pay", "key-00000009", `{}`); w.Code != 422 {
+		t.Fatalf("same key, no token must not replay: %d", w.Code)
+	}
+	calls.Store(0)
 
 	first := post("/api/public/v1/lido/bookings", "key-00000001", `{"a":1}`)
 	if first.Code != 201 || first.Body.String() != `{"booking":1}` {

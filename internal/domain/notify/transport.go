@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/pkg/ext"
 )
 
@@ -42,12 +43,12 @@ const smtpTimeout = 60 * time.Second
 // NewTransport picks the transport from the server configuration:
 // ARENILE_SMTP_URL (smtp:// or smtps://) wins, then ARENILE_MAIL_DIR, then
 // the log transport.
-func NewTransport(smtpURL, mailDir string, log *slog.Logger) Transport {
+func NewTransport(smtpURL, mailDir string, c clock.Clock, log *slog.Logger) Transport {
 	switch {
 	case smtpURL != "":
 		return &SMTPTransport{URL: smtpURL}
 	case mailDir != "":
-		return &FileTransport{Dir: mailDir}
+		return &FileTransport{Dir: mailDir, Clock: c}
 	default:
 		return &LogTransport{Log: log}
 	}
@@ -56,9 +57,10 @@ func NewTransport(smtpURL, mailDir string, log *slog.Logger) Transport {
 // SMTPTransport sends through an SMTP server with net/smtp:
 //
 //   - smtps://user:pass@host[:465]  implicit TLS (RFC 8314);
-//   - smtp://user:pass@host[:587]   STARTTLS when the server offers it,
-//     mandatory when credentials are present (PLAIN auth never travels in
-//     clear, except to localhost as net/smtp allows, e.g. Mailpit);
+//   - smtp://user:pass@host[:587]   STARTTLS, mandatory off localhost (the
+//     messages carry magic links and personal data; PLAIN auth never
+//     travels in clear) unless ?tls=none opts out for a relay on a trusted
+//     network;
 //   - smtp://host:1025              plain local relay (development).
 //
 // TLS is at least 1.2 with certificate verification. The URL carries the
@@ -77,6 +79,9 @@ type smtpTarget struct {
 	host, addr     string
 	implicitTLS    bool
 	user, password string
+	// plainOK: ?tls=none opts out of the STARTTLS requirement (a relay on
+	// a private network that cannot offer TLS).
+	plainOK bool
 }
 
 func parseSMTPURL(raw string) (smtpTarget, error) {
@@ -100,6 +105,7 @@ func parseSMTPURL(raw string) (smtpTarget, error) {
 		return smtpTarget{}, errors.New("notify: ARENILE_SMTP_URL scheme must be smtp or smtps")
 	}
 	t.addr = net.JoinHostPort(t.host, port)
+	t.plainOK = u.Query().Get("tls") == "none"
 	if u.User != nil {
 		t.user = u.User.Username()
 		t.password, _ = u.User.Password()
@@ -145,8 +151,10 @@ func (t *SMTPTransport) Send(ctx context.Context, e Email) (string, error) {
 			if err := c.StartTLS(t.tlsConfig(target.host)); err != nil {
 				return "", classifySMTP("starttls", err)
 			}
-		} else if target.user != "" && !isLocalhost(target.host) {
-			return "", fmt.Errorf("%w: smtp server %s does not offer STARTTLS, refusing to send credentials", ErrPermanent, target.host)
+		} else if !isLocalhost(target.host) && !target.plainOK {
+			// Magic links and personal data would travel in clear (also
+			// to a relay that authenticates by IP): opt out with ?tls=none.
+			return "", fmt.Errorf("%w: smtp server %s does not offer STARTTLS (set ?tls=none on ARENILE_SMTP_URL to send in clear on a trusted network)", ErrPermanent, target.host)
 		}
 	}
 	if target.user != "" {
@@ -216,6 +224,8 @@ func classifySMTP(stage string, err error) error {
 // Files are written atomically (temp file + rename) with mode 0600.
 type FileTransport struct {
 	Dir string
+	// Clock names the file when the email has no date (injected, never time.Now).
+	Clock clock.Clock
 }
 
 // Kind implements Transport.
@@ -235,8 +245,8 @@ func (t *FileTransport) Send(_ context.Context, e Email) (string, error) {
 		name = sanitizeFilename(e.MessageID)
 	}
 	date := e.Date
-	if date.IsZero() {
-		date = time.Now()
+	if date.IsZero() && t.Clock != nil {
+		date = t.Clock.Now()
 	}
 	final := filepath.Join(t.Dir, date.UTC().Format("20060102T150405Z")+"-"+name+".eml")
 	tmp, err := os.CreateTemp(t.Dir, ".tmp-*.eml")

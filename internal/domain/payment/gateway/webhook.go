@@ -65,7 +65,9 @@ func (s *Service) HandleWebhook(ctx context.Context, provider, establishmentID s
 	case errors.Is(err, ext.ErrIgnoredEvent):
 		return &WebhookOutcome{Ignored: true}, nil
 	case errors.Is(err, ext.ErrInvalidSignature):
-		s.d.Log.WarnContext(ctx, "gateway: webhook signature rejected", "provider", provider, "establishment_id", es.ID())
+		// Debug level: anyone can post to the URL, and the HTTP layer
+		// throttles repeated rejections per IP.
+		s.d.Log.DebugContext(ctx, "gateway: webhook signature rejected", "provider", provider, "establishment_id", es.ID())
 		return nil, ErrSignatureInvalid
 	case err != nil:
 		return nil, fmt.Errorf("gateway: parse webhook: %w", err)

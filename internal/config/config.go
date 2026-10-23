@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/mail"
 	"net/netip"
 	"net/url"
@@ -218,8 +219,15 @@ func Parse(lookup Lookup) (Config, error) {
 	}
 	if cfg.StripeAPIURL != "" {
 		u, uerr := url.Parse(cfg.StripeAPIURL)
-		if uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		switch {
+		case uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "":
 			errs = append(errs, fmt.Errorf("%s: must be an absolute http(s) URL", EnvStripeAPIURL))
+		case !isLoopbackHost(u.Hostname()) && !cfg.Dev:
+			// The secret keys of the establishments would be sent to that
+			// host: test doubles only (loopback), or an explicit dev run.
+			errs = append(errs, fmt.Errorf("%s: a Stripe API double is accepted only on a loopback host or with %s=true", EnvStripeAPIURL, EnvDev))
+		case !isLoopbackHost(u.Hostname()) && u.Scheme != "https":
+			errs = append(errs, fmt.Errorf("%s: must use https unless the host is loopback", EnvStripeAPIURL))
 		}
 	}
 	if cfg.MailFrom != "" {
@@ -391,4 +399,15 @@ func parsePrefix(s string) (netip.Prefix, error) {
 		return netip.Prefix{}, err
 	}
 	return netip.PrefixFrom(a, a.BitLen()), nil
+}
+
+// isLoopbackHost reports whether h is localhost, *.localhost or a loopback
+// address.
+func isLoopbackHost(h string) bool {
+	h = strings.ToLower(strings.Trim(h, "[]"))
+	if h == "localhost" || strings.HasSuffix(h, ".localhost") {
+		return true
+	}
+	ip := net.ParseIP(h)
+	return ip != nil && ip.IsLoopback()
 }

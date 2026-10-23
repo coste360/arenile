@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"slices"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -224,61 +222,6 @@ func ValidateEmailConfig(c EmailConfig) (EmailConfig, error) {
 		}
 	}
 	return c, ve.OrNil()
-}
-
-// ContrastTextColor returns the text colour (#000000 or #ffffff) with the
-// higher WCAG contrast ratio on background hex (#RGB or #RRGGBB); white
-// for malformed input (spec 12.6: AA contrast with any primary colour).
-func ContrastTextColor(hex string) string {
-	r, g, b, ok := parseHex(hex)
-	if !ok {
-		return "#ffffff"
-	}
-	l := 0.2126*channel(r) + 0.7152*channel(g) + 0.0722*channel(b)
-	// Contrast with black (l+0.05)/0.05 vs with white 1.05/(l+0.05).
-	if (l+0.05)/0.05 >= 1.05/(l+0.05) {
-		return "#000000"
-	}
-	return "#ffffff"
-}
-
-// ContrastRatio is the WCAG 2.1 contrast ratio between two hex colours
-// (1 for malformed input).
-func ContrastRatio(a, b string) float64 {
-	ar, ag, ab, ok1 := parseHex(a)
-	br, bg, bb, ok2 := parseHex(b)
-	if !ok1 || !ok2 {
-		return 1
-	}
-	la := 0.2126*channel(ar) + 0.7152*channel(ag) + 0.0722*channel(ab)
-	lb := 0.2126*channel(br) + 0.7152*channel(bg) + 0.0722*channel(bb)
-	if la < lb {
-		la, lb = lb, la
-	}
-	return (la + 0.05) / (lb + 0.05)
-}
-
-func parseHex(s string) (r, g, b uint8, ok bool) {
-	s = strings.TrimPrefix(strings.TrimSpace(s), "#")
-	if len(s) == 3 {
-		s = string([]byte{s[0], s[0], s[1], s[1], s[2], s[2]})
-	}
-	if len(s) != 6 {
-		return 0, 0, 0, false
-	}
-	v, err := strconv.ParseUint(s, 16, 32)
-	if err != nil {
-		return 0, 0, 0, false
-	}
-	return uint8(v >> 16), uint8(v >> 8), uint8(v), true
-}
-
-func channel(c uint8) float64 {
-	v := float64(c) / 255
-	if v <= 0.03928 {
-		return v / 12.92
-	}
-	return math.Pow((v+0.055)/1.055, 2.4)
 }
 
 // AAD is the additional authenticated data of the encrypted credentials of

@@ -34,6 +34,7 @@ const (
 	DefaultCreatesPerEstablishment = 300 // per minute
 	DefaultLinkRequestsPerIP       = 5   // per 15 minutes
 	DefaultLinkRequestsPerBooking  = 3   // per hour (email + code)
+	DefaultPromoAttemptsPerIP      = 10  // per 15 minutes (quotes with a promo code)
 	linkRequestWorkers             = 4
 	linkRequestTimeout             = 30 * time.Second
 )
@@ -87,6 +88,11 @@ type Deps struct {
 	// (0 = defaults, negative = off).
 	LinkRequestsPerIP      int
 	LinkRequestsPerBooking int
+	// PromoAttemptsPerIP limits the quotes carrying a promo code per IP and
+	// establishment (0 = DefaultPromoAttemptsPerIP, negative = off): a
+	// quote has no side effect and would otherwise let a code be guessed
+	// within the ordinary read budget.
+	PromoAttemptsPerIP int
 	// PriceCacheTTL caches the "from" prices of availability and catalog
 	// (0 = one minute, negative = off).
 	PriceCacheTTL time.Duration
@@ -99,6 +105,7 @@ type Service struct {
 	createLimit      *auth.RateLimiter
 	linkLimitIP      *auth.RateLimiter
 	linkLimitBooking *auth.RateLimiter
+	promoLimit       *auth.RateLimiter
 
 	prices *priceCache
 
@@ -121,6 +128,7 @@ func NewService(d Deps) *Service {
 		s.createLimit = limiter(d.Clock, d.CreatesPerEstablishment, DefaultCreatesPerEstablishment, time.Minute)
 		s.linkLimitIP = limiter(d.Clock, d.LinkRequestsPerIP, DefaultLinkRequestsPerIP, 15*time.Minute)
 		s.linkLimitBooking = limiter(d.Clock, d.LinkRequestsPerBooking, DefaultLinkRequestsPerBooking, time.Hour)
+		s.promoLimit = limiter(d.Clock, d.PromoAttemptsPerIP, DefaultPromoAttemptsPerIP, 15*time.Minute)
 		ttl := d.PriceCacheTTL
 		if ttl == 0 {
 			ttl = time.Minute
@@ -208,7 +216,28 @@ func (s *Service) session(ctx context.Context, slug, bookingID, token string) (*
 	if err != nil {
 		return nil, nil, fmt.Errorf("checkout: %w", err)
 	}
+	if !sessionAlive(cs, s.now()) {
+		return nil, nil, ErrSessionNotFound
+	}
 	return pe, cs, nil
+}
+
+// SessionGrace is how long a checkout token keeps working after the
+// session ended (confirmation page reloads, late polling): a token that
+// leaks later (shared device, extension) no longer reads the customer's
+// details, QR or .ics. The manage area has its own, longer-lived link.
+const SessionGrace = 24 * time.Hour
+
+// sessionAlive reports whether a stored session still accepts its token:
+// a completed session until SessionGrace after its completion, any other
+// until SessionGrace after the hold it was bound to (abandoned or expired
+// sessions included).
+func sessionAlive(cs *store.CheckoutSession, now time.Time) bool {
+	end := cs.ExpiresAt
+	if cs.State == store.CheckoutCompleted {
+		end = cs.UpdatedAt
+	}
+	return now.Before(end.Add(SessionGrace))
 }
 
 // actor is the audit author of a public request: the customer, identified

@@ -118,20 +118,6 @@ func TestParseConfig_Tolerant(t *testing.T) {
 	}
 }
 
-func TestContrastTextColor_WCAG(t *testing.T) {
-	for _, tc := range []struct{ bg, want string }{
-		{"#0e6ba8", "#ffffff"}, {"#f2b134", "#000000"}, {"#ffffff", "#000000"}, {"#000", "#ffffff"}, {"oops", "#ffffff"},
-	} {
-		got := ContrastTextColor(tc.bg)
-		if got != tc.want {
-			t.Errorf("%s -> %s, want %s", tc.bg, got, tc.want)
-		}
-		if tc.bg != "oops" && ContrastRatio(tc.bg, got) < 4.5 {
-			t.Errorf("%s on %s ratio %.2f below AA", got, tc.bg, ContrastRatio(tc.bg, got))
-		}
-	}
-}
-
 func TestApplyStripe_SecretsWriteOnly(t *testing.T) {
 	creds, pub := ext.Credentials{}, map[string]any{}
 	sk, wh, pk, emb := "sk_test_abcdefghijklmnop1234", "whsec_abcdefghij", "pk_test_abcdefghijklmn", true

@@ -119,6 +119,25 @@ func restoreVars(s string, names []string, vars map[string]string, esc func(stri
 	})
 }
 
+// reHref finds the href attributes written by inlineHTML.
+var reHref = regexp.MustCompile(`href="([^"]*)"`)
+
+// sanitizeHrefs runs after the variables are put back: a link whose target
+// was a template variable ([text]({{var}})) is accepted by safeURL before
+// the value is known, so the final href is checked again and dropped (the
+// text stays, the link points nowhere) when its scheme is not allowed:
+// a value such as "javascript:..." coming from user input never becomes
+// a link.
+func sanitizeHrefs(s string) string {
+	return reHref.ReplaceAllStringFunc(s, func(m string) string {
+		target := html.UnescapeString(reHref.FindStringSubmatch(m)[1])
+		if safeURL(target) && !strings.HasPrefix(target, "\x00") {
+			return m
+		}
+		return `href="#"`
+	})
+}
+
 // safeURL reports whether a link target is allowed (after escaping).
 func safeURL(u string) bool {
 	if reSent.MatchString(u) && strings.HasPrefix(u, "\x00") {
@@ -176,7 +195,7 @@ const (
 func blockHTML(b mdBlock, st mdStyle, vars map[string]string) string {
 	render := func(line string) string {
 		p, names := protectVars(line)
-		return restoreVars(inlineHTML(p, st), names, vars, html.EscapeString)
+		return sanitizeHrefs(restoreVars(inlineHTML(p, st), names, vars, html.EscapeString))
 	}
 	switch b.kind {
 	case "h1", "h2", "h3":

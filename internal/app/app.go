@@ -232,6 +232,9 @@ func (a *App) wire() error {
 		Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
 	}))
 	a.wireConfiguration(aw)
+	if a.cfg.StripeAPIURL != "" {
+		a.log.Warn("ARENILE_STRIPE_API_URL is set: Stripe calls go to a test double, never use in production", slog.String("url", a.cfg.StripeAPIURL))
+	}
 	a.registry = newRegistry(c, x, a.cfg.StripeAPIURL)
 	a.wireOperations(aw)
 	a.wireOnline(aw)

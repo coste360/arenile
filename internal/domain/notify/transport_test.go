@@ -46,7 +46,7 @@ func TestNewTransport_Selection(t *testing.T) {
 		{"", "", TransportLog},
 	}
 	for _, tt := range tests {
-		if got := NewTransport(tt.smtp, tt.dir, nil).Kind(); got != tt.want {
+		if got := NewTransport(tt.smtp, tt.dir, nil, nil).Kind(); got != tt.want {
 			t.Errorf("NewTransport(%q, %q).Kind() = %q, want %q", tt.smtp, tt.dir, got, tt.want)
 		}
 	}
@@ -71,6 +71,7 @@ func TestParseSMTPURL_Scenarios(t *testing.T) {
 		wantErr  bool
 	}{
 		{"smtp://mail.example:2525", "mail.example:2525", false, "", false},
+		{"smtp://relay.lan:25?tls=none", "relay.lan:25", false, "", false},
 		{"smtp://u%40x:p%3Aw@mail.example", "mail.example:587", false, "u@x", false},
 		{"smtps://u:p@mail.example", "mail.example:465", true, "u", false},
 		{"http://mail.example", "", false, "", true},
@@ -364,5 +365,18 @@ func TestBackoff_Exponential(t *testing.T) {
 		if got := Backoff(tt.attempts); got != tt.want {
 			t.Errorf("Backoff(%d) = %v, want %v", tt.attempts, got, tt.want)
 		}
+	}
+}
+
+// TestParseSMTPURL_PlainOptOut: ?tls=none is the only way to send without
+// STARTTLS off localhost (magic links and personal data travel in clear).
+func TestParseSMTPURL_PlainOptOut(t *testing.T) {
+	plain, err := parseSMTPURL("smtp://relay.lan:25?tls=none")
+	if err != nil || !plain.plainOK {
+		t.Fatalf("tls=none: %v %+v", err, plain)
+	}
+	strict, err := parseSMTPURL("smtp://relay.lan:25")
+	if err != nil || strict.plainOK {
+		t.Fatalf("default must require STARTTLS: %v %+v", err, strict)
 	}
 }

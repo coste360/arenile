@@ -190,8 +190,8 @@ type planInput struct {
 	ProviderOnline bool
 	ProviderManual bool
 	Total          money.Cents
-	Deposit          money.Cents
-	Paid             money.Cents
+	Deposit        money.Cents
+	Paid           money.Cents
 }
 
 // paymentPlan decides the payment plan and the amount due now (spec 9

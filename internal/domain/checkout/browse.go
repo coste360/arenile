@@ -20,6 +20,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/money"
+	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -692,6 +693,12 @@ func (s *Service) Quote(ctx context.Context, slug string, in Selection) (*Quote,
 	pe, err := s.establishment(ctx, slug, true)
 	if err != nil {
 		return nil, err
+	}
+	if strings.TrimSpace(in.PromoCode) != "" && pe.Flow.PromoCodesEnabled {
+		// Guessing codes: a few attempts per IP, then 429 (spec 22).
+		if err := allow(s.promoLimit, pe.Scope.ID()+"|"+reqctx.From(ctx).ClientIP); err != nil {
+			return nil, err
+		}
 	}
 	return s.quote(ctx, s.d.DB, pe, in)
 }

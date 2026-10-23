@@ -474,3 +474,58 @@ func TestCheckoutFlow_PayUsesCurrentTotal(t *testing.T) {
 		}
 	})
 }
+
+// TestCheckoutFlow_TokenLifetimeAndPromoLimit: a checkout token stops
+// working SessionGrace after the session ended (a token leaking later
+// reads nothing); quotes with a promo code are limited per IP beyond the
+// ordinary read budget (no code guessing).
+func TestCheckoutFlow_TokenLifetimeAndPromoLimit(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		ctx := e.Ctx
+		s := e.Create(e.Seat(e.F.Spots[0], "2027-07-10"))
+		e.Details(s, "mario@example.org")
+		if _, err := e.Svc.Pay(ctx, slug, s.BookingID, s.Token, checkout.PayInput{}); err != nil {
+			t.Fatal(err)
+		}
+		e.F.Clock.Advance(checkout.SessionGrace - time.Minute)
+		if _, err := e.Svc.State(ctx, slug, s.BookingID, s.Token); err != nil {
+			t.Fatalf("state within the grace: %v", err)
+		}
+		e.F.Clock.Advance(2 * time.Minute)
+		if _, err := e.Svc.State(ctx, slug, s.BookingID, s.Token); !isNotFound(err) {
+			t.Fatalf("state after the grace: %v", err)
+		}
+		if _, err := e.Svc.Document(ctx, slug, s.BookingID, s.Token, checkout.DocQRSVG); !isNotFound(err) {
+			t.Fatalf("qr after the grace: %v", err)
+		}
+		// An abandoned hold: token dead SessionGrace after the hold.
+		s2 := e.Create(e.Seat(e.F.Spots[1], "2027-07-10"))
+		e.F.Clock.Advance(10*time.Minute + checkout.SessionGrace + time.Second)
+		if _, err := e.Svc.State(ctx, slug, s2.BookingID, s2.Token); !isNotFound(err) {
+			t.Fatalf("expired session token: %v", err)
+		}
+
+		sel := e.Seat(e.F.Spots[2], "2027-08-01")
+		sel.PromoCode = "GUESS"
+		var limited bool
+		for i := 0; i < checkout.DefaultPromoAttemptsPerIP+1; i++ {
+			_, err := e.Svc.Quote(ctx, slug, sel)
+			var rl *auth.RateLimitError
+			if errors.As(err, &rl) {
+				limited = i == checkout.DefaultPromoAttemptsPerIP
+				break
+			}
+			if err != nil {
+				t.Fatalf("quote %d: %v", i, err)
+			}
+		}
+		if !limited {
+			t.Fatal("promo guessing not limited")
+		}
+		sel.PromoCode = ""
+		if _, err := e.Svc.Quote(ctx, slug, sel); err != nil {
+			t.Fatalf("quotes without a code are not limited: %v", err)
+		}
+	})
+}

@@ -97,6 +97,8 @@ func TestParse_Invalid(t *testing.T) {
 		{"zero public reads", map[string]string{EnvPublicReadsPerMinute: "0"}},
 		{"bad public creations", map[string]string{EnvPublicCreationsPerMinute: "many"}},
 		{"stripe url not absolute", map[string]string{EnvStripeAPIURL: "localhost:12111"}},
+		{"stripe url off loopback in production", map[string]string{EnvStripeAPIURL: "https://stripe-mock.example.com"}},
+		{"stripe url plain http off loopback", map[string]string{EnvStripeAPIURL: "http://stripe-mock.example.com", EnvDev: "true"}},
 		{"negative ttl", map[string]string{EnvHoldTTL: "-1m"}},
 		{"bad level", map[string]string{EnvLogLevel: "verbose"}},
 		{"bad cidr", map[string]string{EnvTrustedProxies: "10.0.0.0/99"}},

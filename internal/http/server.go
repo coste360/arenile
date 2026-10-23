@@ -178,7 +178,7 @@ func New(d Deps) http.Handler {
 			Establishments: d.Establishments, Online: d.Online, Checkout: d.Checkout,
 			TenantResolver: d.Extensions.TenantResolver, Log: d.Log,
 		},
-		webhookHandlers: &webhooks.Handlers{Gateway: d.Gateway, Log: d.Log},
+		webhookHandlers: webhooks.New(d.Gateway, d.Clock, d.Log),
 		ops:             &ops{readiness: d.Readiness, version: d.Version},
 	}
 	api.HandlerWithOptions(srv, api.ChiServerOptions{

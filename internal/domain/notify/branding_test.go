@@ -1,6 +1,8 @@
 package notify
 
 import (
+	"html"
+	"strings"
 	"testing"
 
 	"github.com/coste360/arenile/internal/calendar"
@@ -117,5 +119,23 @@ func TestMarkdown_ItalicDoesNotTouchVariables(t *testing.T) {
 	want := `<p style="` + styleP + `">A_b_c <em>ok</em> snake_case_word</p>`
 	if got != want {
 		t.Fatalf("got %q", got)
+	}
+}
+
+// TestMarkdown_VariableLinkTargetScheme: a link whose target is a template
+// variable is checked again once the value is known: only http(s), mailto
+// and tel become a link, anything else (user input) points nowhere.
+func TestMarkdown_VariableLinkTargetScheme(t *testing.T) {
+	src, names := protectVars("[Gestisci]({{manage_url}}) e [Nota]({{note}})")
+	block := mdBlock{kind: "p", lines: []string{src}}
+	got := blockHTML(block, mdStyle{Link: "#000"}, nil)
+	got = sanitizeHrefs(restoreVars(got, names, map[string]string{
+		"manage_url": "https://lido.example/b/lido/m/tok", "note": "javascript:alert(1)",
+	}, html.EscapeString))
+	if !strings.Contains(got, `href="https://lido.example/b/lido/m/tok"`) {
+		t.Fatalf("server url must stay a link: %s", got)
+	}
+	if strings.Contains(got, "javascript:") || !strings.Contains(got, `href="#"`) {
+		t.Fatalf("user value with a bad scheme must not be a link: %s", got)
 	}
 }

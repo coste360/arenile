@@ -30,6 +30,10 @@ const bookingCSPBase = "default-src 'self'; script-src 'self' https://js.stripe.
 
 const apiCSP = "default-src 'none'; frame-ancestors 'none'"
 
+// managePathRe matches the customer manage area of the public SPA
+// (/b/{slug}/m and /b/{slug}/m/{token}).
+var managePathRe = regexp.MustCompile(`^/b/[^/]+/m(/|$)`)
+
 var originRe = regexp.MustCompile(`^https?://(\*\.)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*(:[0-9]{1,5})?$`)
 
 // SanitizeOrigins keeps only syntactically safe origins for CSP sources.
@@ -82,6 +86,12 @@ func SecurityHeaders(opts SecurityOptions) Middleware {
 					}
 				}
 				h.Set("Content-Security-Policy", bookingCSPBase+"; frame-ancestors "+ancestors)
+				if managePathRe.MatchString(p) {
+					// The magic link token is in the path: never in a Referer,
+					// never in a shared cache.
+					h.Set("Referrer-Policy", "no-referrer")
+					h.Set("Cache-Control", "no-store")
+				}
 			}
 			next.ServeHTTP(w, r)
 		})

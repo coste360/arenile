@@ -96,6 +96,15 @@ func TestSecurityHeaders_ByArea(t *testing.T) {
 	if admin.Get("Strict-Transport-Security") != "" {
 		t.Fatal("no HSTS over plain http")
 	}
+	for _, path := range []string{"/b/lido-a/m/" + strings.Repeat("t", 43), "/b/lido-a/m", "/b/lido-a/m/"} {
+		m := get(path, false)
+		if m.Get("Referrer-Policy") != "no-referrer" || m.Get("Cache-Control") != "no-store" {
+			t.Fatalf("manage page %s: %v", path, m)
+		}
+	}
+	if pg := get("/b/lido-a", false); pg.Get("Referrer-Policy") != "strict-origin-when-cross-origin" || pg.Get("Cache-Control") != "" {
+		t.Fatalf("public page headers: %v", pg)
+	}
 	b := get("/b/lido-a/checkout", false).Get("Content-Security-Policy")
 	if !strings.HasSuffix(b, "frame-ancestors 'self' https://www.lido-a.it https://*.partner.it") {
 		t.Fatalf("booking csp: %s", b)

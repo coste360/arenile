@@ -176,10 +176,14 @@ func validateLocales(def string, enabled []string, ve *configerr.ValidationError
 // validateName checks a display name.
 func validateName(field, name string, ve *configerr.ValidationError) string {
 	name = strings.TrimSpace(name)
-	if name == "" {
+	switch {
+	case name == "":
 		ve.Add(field, "Obbligatorio.")
-	} else if utf8.RuneCountInString(name) > MaxNameLength {
+	case utf8.RuneCountInString(name) > MaxNameLength:
 		ve.Add(field, fmt.Sprintf("Al massimo %d caratteri.", MaxNameLength))
+	case strings.ContainsFunc(name, func(r rune) bool { return r < 0x20 || r == 0x7f }):
+		// Names end up in .ics parameters and email headers: one line only.
+		ve.Add(field, "Non può contenere caratteri di controllo o a capo.")
 	}
 	return name
 }

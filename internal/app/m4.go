@@ -53,7 +53,7 @@ var (
 func (a *App) wireOnline(aw *audit.Writer) {
 	c := a.opts.clock
 	base := a.cfg.EffectiveBaseURL()
-	transport := notify.NewTransport(a.cfg.SMTPURL, a.cfg.MailDir, a.log)
+	transport := notify.NewTransport(a.cfg.SMTPURL, a.cfg.MailDir, c, a.log)
 	a.Online = online.NewService(online.Deps{
 		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
 		Keys: a.keys, Providers: a.registry, BaseURL: base,

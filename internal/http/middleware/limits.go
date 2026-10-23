@@ -94,6 +94,10 @@ func Idempotency(o IdempotencyOptions) Middleware {
 			r.Body = io.NopCloser(bytes.NewReader(body))
 			h := sha256.New()
 			h.Write([]byte(r.Method + " " + r.URL.Path + "?" + r.URL.RawQuery + "\n"))
+			// The checkout token authenticates public calls: a replay with
+			// another (or no) token is another request, never the stored
+			// response of the first one.
+			h.Write([]byte(r.Header.Get("X-Arenile-Checkout") + "\n"))
 			h.Write(body)
 			hash := hex.EncodeToString(h.Sum(nil))
 			scope := idempotencyScope(r)

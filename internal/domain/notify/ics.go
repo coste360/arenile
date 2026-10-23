@@ -238,9 +238,15 @@ func EscapeICSText(s string) string {
 }
 
 // icsParamValue quotes a parameter value when needed (3.2): DQUOTE is not
-// allowed inside, so it is dropped.
+// allowed inside, so it is dropped, and control characters (CR, LF, ...)
+// are removed so that a value never injects a new content line.
 func icsParamValue(s string) string {
-	s = strings.ReplaceAll(s, `"`, "")
+	s = strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f || r == '"' {
+			return -1
+		}
+		return r
+	}, s)
 	if strings.ContainsAny(s, ":;,") {
 		return `"` + s + `"`
 	}
