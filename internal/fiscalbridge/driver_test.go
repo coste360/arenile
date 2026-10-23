@@ -14,15 +14,51 @@ type fakeQueue struct {
 	done bool
 	kind JobKind
 	key  string
+	est  string
 }
 
-func (f *fakeQueue) Enqueue(_ context.Context, _ string, kind JobKind, key string, _ any) (string, *Result, bool, error) {
-	f.kind, f.key = kind, key
+func (f *fakeQueue) Enqueue(_ context.Context, est string, kind JobKind, key string, _ any) (string, *Result, bool, error) {
+	f.est, f.kind, f.key = est, kind, key
 	return "job-1", f.res, f.done, nil
 }
 
-func (f *fakeQueue) BridgeStatus(context.Context, string) (DeviceStatus, error) {
-	return DeviceStatus{Online: true}, nil
+func (f *fakeQueue) BridgeStatus(_ context.Context, est string) (DeviceStatus, error) {
+	f.est = est
+	return DeviceStatus{Online: true, Message: "ready"}, nil
+}
+
+// TestDriver_VoidAndStatus: Void and Status take the establishment from the
+// context (fiscalbridge.WithEstablishment, wired by the app); without it
+// they fail closed instead of touching another establishment's queue.
+func TestDriver_VoidAndStatus(t *testing.T) {
+	q := &fakeQueue{}
+	d := &Driver{Queue: q, EstablishmentFromContext: EstablishmentFromContext}
+	bg := context.Background()
+	if err := d.Void(bg, "r1"); !errors.Is(err, ErrNoEstablishment) {
+		t.Fatalf("void without establishment: %v", err)
+	}
+	if _, err := d.Status(bg); !errors.Is(err, ErrNoEstablishment) {
+		t.Fatalf("status without establishment: %v", err)
+	}
+	ctx := WithEstablishment(bg, "e1")
+	var de interface{ Deferred() bool }
+	if err := d.Void(ctx, "r1"); !errors.As(err, &de) || q.est != "e1" || q.kind != KindVoid || q.key != "void:r1" {
+		t.Fatalf("void must enqueue a deferred void job: %v %+v", err, q)
+	}
+	if err := d.Void(ctx, ""); err == nil || errors.As(err, &de) {
+		t.Fatalf("void without ref: %v", err)
+	}
+	q.res, q.done = &Result{Outcome: OutcomeSucceeded, Ref: "r1"}, true
+	if err := d.Void(ctx, "r1"); err != nil {
+		t.Fatalf("void done: %v", err)
+	}
+	st, err := d.Status(ctx)
+	if err != nil || !st.Online || st.Message != "ready" || q.est != "e1" {
+		t.Fatalf("status %+v %v", st, err)
+	}
+	if _, err := (&Driver{Queue: q}).Status(ctx); !errors.Is(err, ErrNoEstablishment) {
+		t.Fatalf("driver without resolver must fail closed: %v", err)
+	}
 }
 
 func TestDriver_Issue(t *testing.T) {

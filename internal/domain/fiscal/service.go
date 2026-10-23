@@ -182,9 +182,6 @@ func sequenceNumber(d calendar.Date, seq int) string {
 	return fmt.Sprintf("%04d%02d%02d-%04d", d.Year(), int(d.Month()), d.Day(), seq)
 }
 
-// applyOutcome stores the driver answer on doc: issued with the driver
-// number (or the internal sequence number when the driver has none), or
-// failed with the error text.
 // isDeferred reports whether a driver error means "accepted, outcome not
 // known yet" (capability interface implemented by fiscalbridge.DeferredError).
 func isDeferred(err error) bool {
@@ -192,6 +189,9 @@ func isDeferred(err error) bool {
 	return errors.As(err, &d) && d.Deferred()
 }
 
+// applyOutcome stores the driver answer on doc: issued with the driver
+// number (or the internal sequence number when the driver has none), or
+// failed with the error text.
 func applyOutcome(doc *store.FiscalDocument, fallbackNumber string, res *ext.FiscalDocumentResult, err error) {
 	if err != nil {
 		msg := err.Error()
