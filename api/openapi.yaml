@@ -3277,6 +3277,9 @@ paths:
       operationId: createCustomer
       tags: [customers]
       summary: "Crea cliente"
+      description: >-
+        Un cliente con la stessa email o telefono risponde 409 `conflict` con `existing_customer_id`;
+        `force=true` lo crea comunque (registrato nell'audit).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -3284,6 +3287,12 @@ paths:
         - $ref: "#/components/parameters/EstablishmentID"
         - $ref: "#/components/parameters/IdempotencyKey"
         - $ref: "#/components/parameters/CSRFToken"
+        - name: force
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Crea il cliente anche se esiste un duplicato per email o telefono.
       requestBody:
         required: true
         content:
@@ -4156,7 +4165,8 @@ paths:
       tags: [payments]
       summary: "Registra un rimborso manuale"
       description: >-
-        Permesso refunds.issue. La somma dei rimborsi non supera il pagato (INV-24, 422 validation).
+        Permesso refunds.issue. La somma dei rimborsi non supera il pagato (INV-24): un importo oltre il pagato
+        (o oltre il pagamento scelto) risponde 400 `validation_failed` sul campo `amount`, come un incasso oltre il saldo.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -5740,6 +5750,7 @@ components:
         - invalid_transition
         - cash_session_closed
         - cash_session_already_open
+        - booking_outside_period
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -5785,6 +5796,22 @@ components:
             $ref: "#/components/schemas/AllocationConflict"
         current_status:
           $ref: "#/components/schemas/BookingStatus"
+        existing_customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Cliente già presente con la stessa email o telefono (solo per `conflict` su createCustomer).
+        period:
+          type: object
+          description: Periodo del soggiorno e data odierna dello stabilimento (solo per `booking_outside_period`).
+          required: [today, starts_on, ends_on]
+          properties:
+            today:
+              $ref: "#/components/schemas/Date"
+            starts_on:
+              $ref: "#/components/schemas/Date"
+            ends_on:
+              $ref: "#/components/schemas/Date"
     FieldError:
       type: object
       required: [field, message]
@@ -9730,6 +9757,13 @@ components:
             $ref: "#/components/schemas/BookingHistoryEntry"
         price_snapshot:
           $ref: "#/components/schemas/PriceBreakdown"
+        price_current:
+          allOf:
+            - $ref: "#/components/schemas/PriceBreakdown"
+          description: >-
+            Scomposizione corrente del prezzo dopo una modifica successiva alla conferma (ADR 0011):
+            `total_amount` coincide con il suo totale. Assente finché la prenotazione non è stata modificata
+            dopo la conferma (vale `price_snapshot`, immutabile, INV-21).
         policy_snapshot:
           $ref: "#/components/schemas/PolicySnapshot"
         promo_code:
@@ -10843,6 +10877,11 @@ components:
         note:
           type: string
           maxLength: 500
+        overpayment_as_credit:
+          type: boolean
+          description: >-
+            Accetta un importo superiore al saldo dovuto: l'eccedenza viene accreditata subito al cliente
+            (spec 13.4, movimento di `customer_credits`). Senza, un importo oltre il saldo è 400 validation_failed.
     RefundInput:
       type: object
       required: [amount, method]

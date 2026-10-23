@@ -583,3 +583,67 @@ func TestLedger_ApplyPayment(t *testing.T) {
 		}
 	})
 }
+
+// TestBookingLifecycle_CheckInOutsidePeriod: check-in only on a day of the
+// stay and no-show never before it (establishment timezone, spec 10.2); a
+// refusal is typed (422 booking_outside_period) and writes nothing. Operator
+// notes of confirm / reject never reach the audit log (spec 23, INV-30).
+func TestBookingLifecycle_CheckInOutsidePeriod(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db) // today 2027-06-01 in Europe/Rome
+		future := f.MustCreate(f.Input(f.Spots[0], "2027-06-10", "2027-06-12"))
+		audits := f.Count((*store.AuditEntry)(nil), "")
+		var ope *booking.OutsidePeriodError
+		_, err := f.Svc.CheckIn(f.Ctx, f.Staff, f.Est.ID, future.Booking.ID, booking.ActionInput{})
+		if !errors.As(err, &ope) || !errors.Is(err, booking.ErrOutsidePeriod) || ope.Action != "check_in" || ope.Today.String() != "2027-06-01" {
+			t.Fatalf("early check-in: %v", err)
+		}
+		_, err = f.Svc.MarkNoShow(f.Ctx, f.Staff, f.Est.ID, future.Booking.ID, booking.ActionInput{})
+		if !errors.As(err, &ope) || ope.Action != "no_show" {
+			t.Fatalf("early no-show: %v", err)
+		}
+		got, _ := f.Svc.Get(f.Ctx, f.Owner, f.Est.ID, future.Booking.ID)
+		if got.Booking.Status != string(booking.StatusConfirmed) || got.Booking.Version != 1 || len(got.SpotAllocations) != 6 || f.Count((*store.AuditEntry)(nil), "") != audits {
+			t.Fatal("a refused check-in or no-show changed the booking")
+		}
+		// The first day of the stay (Rome): check-in accepted; the day after
+		// the stay: refused again (the completion job closes it).
+		f.Clock.Advance(9 * 24 * time.Hour)
+		if _, err := f.Svc.CheckIn(f.Ctx, f.Staff, f.Est.ID, future.Booking.ID, booking.ActionInput{}); err != nil {
+			t.Fatalf("check-in on the first day: %v", err)
+		}
+		late := f.MustCreate(f.Input(f.Spots[1], "2027-06-10", "2027-06-10"))
+		f.Clock.Advance(24 * time.Hour)
+		if _, err := f.Svc.CheckIn(f.Ctx, f.Staff, f.Est.ID, late.Booking.ID, booking.ActionInput{}); !errors.Is(err, booking.ErrOutsidePeriod) {
+			t.Fatalf("late check-in: %v", err)
+		}
+		// No-show after the start releases from today, with the note kept
+		// out of the audit diff.
+		if _, err := f.Svc.MarkNoShow(f.Ctx, f.Staff, f.Est.ID, late.Booking.ID, booking.ActionInput{}); err != nil {
+			t.Fatalf("no-show after the stay: %v", err)
+		}
+
+		// Confirm and reject with a note: the text is not in audit_log.
+		in := f.Input(f.Spots[2], "2027-07-01", "2027-07-01")
+		in.Status = booking.StatusHeld
+		held := f.MustCreate(in)
+		if _, err := f.Svc.Confirm(f.Ctx, f.Cashier, f.Est.ID, held.Booking.ID, booking.ActionInput{Note: "telefono segreto 3339998877"}); err != nil {
+			t.Fatalf("confirm: %v", err)
+		}
+		vip := f.Input(f.Spots[3], "2027-07-01", "2027-07-01")
+		vip.Lines[0].PackID = f.VIP.ID
+		awaiting := f.MustCreate(vip)
+		if awaiting.Booking.Status != string(booking.StatusAwaitingApproval) {
+			t.Fatalf("vip status %s", awaiting.Booking.Status)
+		}
+		if _, err := f.Svc.Reject(f.Ctx, f.Manager, f.Est.ID, awaiting.Booking.ID, booking.ActionInput{Note: "motivo riservato 3339998877"}); err != nil {
+			t.Fatalf("reject: %v", err)
+		}
+		if f.Count((*store.AuditEntry)(nil), "CAST(diff AS TEXT) LIKE ?", "%3339998877%") != 0 {
+			t.Fatal("operator note copied into the audit log")
+		}
+		if f.Count((*store.AuditEntry)(nil), "entity_id = ? AND action = ? AND CAST(diff AS TEXT) LIKE ?", held.Booking.ID, event.BookingConfirmed, "%note_length%") != 1 {
+			t.Fatal("confirm note not recorded as a flag")
+		}
+	})
+}

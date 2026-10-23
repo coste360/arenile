@@ -63,6 +63,7 @@ import {
   ACTIVE_STATUSES,
   availableActions,
   STATUS_TONE,
+  todayIso,
   useOperationalPermissions,
   type BookingAction,
 } from './model';
@@ -124,7 +125,11 @@ export function BookingDetailPage() {
   }
 
   const b = query.data;
-  const actions = availableActions(b.status, b.next_statuses).filter((a) =>
+  const actions = availableActions(b.status, b.next_statuses, {
+    startsOn: b.starts_on,
+    endsOn: b.ends_on,
+    today: todayIso(),
+  }).filter((a) =>
     a === 'check-in' || a === 'no-show' ? perms.canOperate : perms.canWrite,
   );
   const active = ACTIVE_STATUSES.includes(b.status);

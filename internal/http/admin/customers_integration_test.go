@@ -91,7 +91,13 @@ func TestCustomersHTTP_Flow(t *testing.T) {
 		a := e.estA.ID
 		create := func(p *auth.Principal, target string, in api.CustomerInput) (int, http.Header, map[string]any) {
 			return callTarget(t, p, http.MethodPost, target, in, func(w http.ResponseWriter, r *http.Request) {
-				e.h.CreateCustomer(w, r, a, api.CreateCustomerParams{})
+				// The generated wrapper binds ?force into the params.
+				params := api.CreateCustomerParams{}
+				if r.URL.Query().Get("force") == "true" {
+					f := true
+					params.Force = &f
+				}
+				e.h.CreateCustomer(w, r, a, params)
 			})
 		}
 		email := "Mario.Rossi@Example.it"
@@ -105,7 +111,7 @@ func TestCustomersHTTP_Flow(t *testing.T) {
 
 		// Dedupe hint: 409 with the existing id, force=true creates anyway.
 		status, _, body = create(e.cashier, "/", api.CustomerInput{LastName: "Rossi", Phone: strp("+39 333 123 4567")})
-		if status != 409 || body["type"] != "conflict" || !strings.Contains(body["detail"].(string), id) {
+		if status != 409 || body["type"] != "conflict" || body["existing_customer_id"] != id || !strings.Contains(body["detail"].(string), id) {
 			t.Fatalf("duplicate: %d %v", status, body)
 		}
 		status, _, _ = create(e.cashier, "/?force=true", api.CustomerInput{LastName: "Rossi", FirstName: strp("Lucia"), Phone: strp("+39 333 123 4567")})

@@ -280,13 +280,14 @@ func (s *Service) Anonymize(ctx context.Context, p *auth.Principal, ip, establis
 		if !ok {
 			return s.lostRace(ctx, tx, es, id)
 		}
-		wiped, err := store.CustomerWipeBookingNotes(ctx, tx, es, id, now)
+		wiped, err := store.CustomerWipeFreeText(ctx, tx, es, id, now)
 		if err != nil {
 			return fmt.Errorf("customer: anonymize: %w", err)
 		}
 		out = &next
 		return s.record(ctx, tx, p, ip, es, "customer.anonymized", event.CustomerAnonymized, &next, map[string]any{
-			"fields": changedFields(cur, &next), "bookings_notes_wiped": wiped,
+			"fields": changedFields(cur, &next), "bookings_notes_wiped": wiped.Bookings,
+			"payment_notes_wiped": wiped.Payments, "credit_notes_wiped": wiped.Credits,
 		})
 	})
 	return out, err

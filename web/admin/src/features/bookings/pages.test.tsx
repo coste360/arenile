@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   baseRoutes,
   callsTo,
@@ -238,6 +238,15 @@ describe('BookingsPage', () => {
 });
 
 describe('BookingDetailPage', () => {
+  // The fixture stay is 14-16/07/2026: check-in is offered only on those days.
+  beforeAll(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-07-15T10:00:00'));
+  });
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
   it('shows status, amounts, lines and history; checks in with If-Match', async () => {
     const detail = bookingDetail();
     let current: Record<string, unknown> = detail;

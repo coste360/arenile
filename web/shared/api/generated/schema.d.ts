@@ -926,7 +926,10 @@ export interface paths {
         /** Elenco e ricerca clienti */
         get: operations["listCustomers"];
         put?: never;
-        /** Crea cliente */
+        /**
+         * Crea cliente
+         * @description Un cliente con la stessa email o telefono risponde 409 `conflict` con `existing_customer_id`; `force=true` lo crea comunque (registrato nell'audit).
+         */
         post: operations["createCustomer"];
         delete?: never;
         options?: never;
@@ -1263,7 +1266,7 @@ export interface paths {
         put?: never;
         /**
          * Registra un rimborso manuale
-         * @description Permesso refunds.issue. La somma dei rimborsi non supera il pagato (INV-24, 422 validation).
+         * @description Permesso refunds.issue. La somma dei rimborsi non supera il pagato (INV-24): un importo oltre il pagato (o oltre il pagamento scelto) risponde 400 `validation_failed` sul campo `amount`, come un incasso oltre il saldo.
          */
         post: operations["recordBookingRefund"];
         delete?: never;
@@ -1697,7 +1700,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -1721,6 +1724,17 @@ export interface components {
             /** @description Mezze giornate non disponibili (solo per `spot_unavailable`, `pool_exhausted`, `quota_exceeded`). */
             conflicts?: components["schemas"]["AllocationConflict"][];
             current_status?: components["schemas"]["BookingStatus"];
+            /**
+             * Format: uuid
+             * @description Cliente già presente con la stessa email o telefono (solo per `conflict` su createCustomer).
+             */
+            existing_customer_id?: string;
+            /** @description Periodo del soggiorno e data odierna dello stabilimento (solo per `booking_outside_period`). */
+            period?: {
+                today: components["schemas"]["Date"];
+                starts_on: components["schemas"]["Date"];
+                ends_on: components["schemas"]["Date"];
+            };
         };
         FieldError: {
             field: string;
@@ -3414,6 +3428,8 @@ export interface components {
             payments: components["schemas"]["Payment"][];
             history: components["schemas"]["BookingHistoryEntry"][];
             price_snapshot: components["schemas"]["PriceBreakdown"];
+            /** @description Scomposizione corrente del prezzo dopo una modifica successiva alla conferma (ADR 0011): `total_amount` coincide con il suo totale. Assente finché la prenotazione non è stata modificata dopo la conferma (vale `price_snapshot`, immutabile, INV-21). */
+            price_current?: components["schemas"]["PriceBreakdown"];
             policy_snapshot: components["schemas"]["PolicySnapshot"];
             promo_code?: string;
             /** Format: uuid */
@@ -3962,6 +3978,8 @@ export interface components {
              */
             cash_session_id?: string;
             note?: string;
+            /** @description Accetta un importo superiore al saldo dovuto: l'eccedenza viene accreditata subito al cliente (spec 13.4, movimento di `customer_credits`). Senza, un importo oltre il saldo è 400 validation_failed. */
+            overpayment_as_credit?: boolean;
         };
         RefundInput: {
             /** Format: int64 */
@@ -7616,7 +7634,10 @@ export interface operations {
     };
     createCustomer: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Crea il cliente anche se esiste un duplicato per email o telefono. */
+                force?: boolean;
+            };
             header?: {
                 /**
                  * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una

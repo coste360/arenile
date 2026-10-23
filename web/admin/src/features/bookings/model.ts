@@ -72,24 +72,36 @@ export const ACTIVE_STATUSES: readonly BookingStatus[] = [
 /** Lifecycle action of the detail page, enabled by `next_statuses` (server state machine). */
 export type BookingAction = 'confirm' | 'approve' | 'reject' | 'check-in' | 'no-show' | 'cancel';
 
+/** The stay of a booking and the current day, all ISO dates (lexicographic order is chronological). */
+export interface StayPeriod {
+  startsOn: string;
+  endsOn: string;
+  today: string;
+}
+
 /**
  * Actions offered for a booking. The server is authoritative (it answers
- * 409 invalid_transition otherwise): this only reads its `next_statuses`.
+ * 409 invalid_transition or 422 booking_outside_period otherwise): this
+ * reads its `next_statuses` and, when the period is known, offers check-in
+ * only on a day of the stay and no-show only from its first day (spec 10.2).
  */
 export function availableActions(
   status: BookingStatus,
   nextStatuses: readonly BookingStatus[],
+  period?: StayPeriod,
 ): BookingAction[] {
   const next = new Set(nextStatuses);
   const out: BookingAction[] = [];
+  const started = !period || period.today >= period.startsOn;
+  const ongoing = started && (!period || period.today <= period.endsOn);
   if (status === 'awaiting_approval') {
     if (next.has('confirmed')) out.push('approve');
     if (next.has('rejected')) out.push('reject');
   } else if (next.has('confirmed')) {
     out.push('confirm');
   }
-  if (next.has('checked_in')) out.push('check-in');
-  if (next.has('no_show')) out.push('no-show');
+  if (next.has('checked_in') && ongoing) out.push('check-in');
+  if (next.has('no_show') && started) out.push('no-show');
   if (next.has('cancelled')) out.push('cancel');
   return out;
 }

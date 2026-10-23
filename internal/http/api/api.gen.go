@@ -1002,6 +1002,7 @@ func (e PricingUnit) Valid() bool {
 // Defines values for ProblemType.
 const (
 	ProblemTypeBadRequest               ProblemType = "bad_request"
+	ProblemTypeBookingOutsidePeriod     ProblemType = "booking_outside_period"
 	ProblemTypeCashSessionAlreadyOpen   ProblemType = "cash_session_already_open"
 	ProblemTypeCashSessionClosed        ProblemType = "cash_session_closed"
 	ProblemTypeConflict                 ProblemType = "conflict"
@@ -1038,6 +1039,8 @@ const (
 func (e ProblemType) Valid() bool {
 	switch e {
 	case ProblemTypeBadRequest:
+		return true
+	case ProblemTypeBookingOutsidePeriod:
 		return true
 	case ProblemTypeCashSessionAlreadyOpen:
 		return true
@@ -1946,6 +1949,9 @@ type BookingDetail struct {
 
 	// PolicySnapshot Policy applicata al momento della creazione (spec 9), base di rimborsi e modifiche.
 	PolicySnapshot PolicySnapshot `json:"policy_snapshot"`
+
+	// PriceCurrent Scomposizione corrente del prezzo dopo una modifica successiva alla conferma (ADR 0011): `total_amount` coincide con il suo totale. Assente finché la prenotazione non è stata modificata dopo la conferma (vale `price_snapshot`, immutabile, INV-21).
+	PriceCurrent *PriceBreakdown `json:"price_current,omitempty"`
 
 	// PriceSnapshot Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo.
 	PriceSnapshot PriceBreakdown `json:"price_snapshot"`
@@ -2999,6 +3005,9 @@ type ManualPaymentInput struct {
 	// Method Metodo di pagamento (spec 6.7); credit = uso del saldo crediti del cliente (spec 13.4).
 	Method PaymentMethod `json:"method"`
 	Note   *string       `json:"note,omitempty"`
+
+	// OverpaymentAsCredit Accetta un importo superiore al saldo dovuto: l'eccedenza viene accreditata subito al cliente (spec 13.4, movimento di `customer_credits`). Senza, un importo oltre il saldo è 400 validation_failed.
+	OverpaymentAsCredit *bool `json:"overpayment_as_credit,omitempty"`
 }
 
 // Map defines model for Map.
@@ -3802,8 +3811,23 @@ type Problem struct {
 	CurrentVersion *int64        `json:"current_version,omitempty"`
 	Detail         *string       `json:"detail,omitempty"`
 	Errors         *[]FieldError `json:"errors,omitempty"`
-	Instance       *string       `json:"instance,omitempty"`
-	RequestId      *string       `json:"request_id,omitempty"`
+
+	// ExistingCustomerId Cliente già presente con la stessa email o telefono (solo per `conflict` su createCustomer).
+	ExistingCustomerId *string `json:"existing_customer_id,omitempty"`
+	Instance           *string `json:"instance,omitempty"`
+
+	// Period Periodo del soggiorno e data odierna dello stabilimento (solo per `booking_outside_period`).
+	Period *struct {
+		// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+		EndsOn Date `json:"ends_on"`
+
+		// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+		StartsOn Date `json:"starts_on"`
+
+		// Today Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+		Today Date `json:"today"`
+	} `json:"period,omitempty"`
+	RequestId *string `json:"request_id,omitempty"`
 
 	// RetryAfter Secondi da attendere (solo per `rate_limited`).
 	RetryAfter *int `json:"retry_after,omitempty"`
@@ -5347,6 +5371,9 @@ type ListCustomersParams struct {
 
 // CreateCustomerParams defines parameters for CreateCustomer.
 type CreateCustomerParams struct {
+	// Force Crea il cliente anche se esiste un duplicato per email o telefono.
+	Force *bool `form:"force,omitempty" json:"force,omitempty"`
+
 	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
 	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
@@ -10962,6 +10989,19 @@ func (siw *ServerInterfaceWrapper) CreateCustomer(w http.ResponseWriter, r *http
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params CreateCustomerParams
+
+	// ------------- Optional query parameter "force" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "force", r.URL.Query(), &params.Force, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "force"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
+		}
+		return
+	}
 
 	headers := r.Header
 

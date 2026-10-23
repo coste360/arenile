@@ -30,6 +30,7 @@ import {
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { todayIso } from '../../bookings/model';
 import { usePackName } from '../../bookings/usePackName';
 import { useCheckIn, useReleaseDay, useRevokeRelease } from '../api/operations';
 import type { OperationsPermissions } from '../lib/permissions';
@@ -107,7 +108,7 @@ export function SpotSheet({
   const status = slotStatus(spot, slot);
   const colour = toSpotStatus(status, spot.booking);
   const b = spot.booking;
-  const actions = spotActions(spot, slot, permissions);
+  const actions = spotActions(spot, slot, permissions, { date, today: todayIso() });
   const vip = b?.customer_tags.some((tag) => tag.toLowerCase() === VIP_TAG);
 
   const doCheckIn = () => {

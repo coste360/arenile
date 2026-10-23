@@ -225,6 +225,8 @@ export function describeProblem(
       };
     case 'cash_session_closed':
       return { title: t('bookings:problem.cashSessionClosed'), details: [], reload: false };
+    case 'booking_outside_period':
+      return { title: t('bookings:problem.outsidePeriod'), details: [], reload: true };
     case 'validation_failed':
       return {
         title: t('common.errors.validation', { ns: 'translation' }),

@@ -3,6 +3,7 @@
 package admin_test
 
 import (
+	"time"
 	"bytes"
 	"encoding/json"
 	"log/slog"
@@ -127,6 +128,15 @@ func TestBookingsHTTP_FlowAndErrors(t *testing.T) {
 		if body["current_status"] != "confirmed" {
 			t.Fatalf("current_status %v", body)
 		}
+		// Check-in before the stay: 422 booking_outside_period with the period.
+		status, _, body = bkCall(t, f.Staff, nil, "", func(w http.ResponseWriter, r *http.Request) {
+			h.CheckInBooking(w, r, est, id, api.CheckInBookingParams{})
+		})
+		bkExpect(t, "check-in early", status, body, 422, "booking_outside_period")
+		if p, _ := body["period"].(map[string]any); p["today"] != "2027-06-01" || p["starts_on"] != "2027-07-10" {
+			t.Fatalf("period %v", body)
+		}
+		f.Clock.Advance(39 * 24 * time.Hour) // 2027-07-10 in Rome
 		// Check-in with a stale If-Match: 412; with the right one: 200.
 		stale, cur := `"1"`, `"2"`
 		status, _, body = bkCall(t, f.Staff, nil, "", func(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +164,9 @@ func TestBookingsHTTP_FlowAndErrors(t *testing.T) {
 			t.Fatalf("list %v", body)
 		}
 
-		// Cancel preview on a second booking (100 % refund tier, nothing paid).
+		// Cancel preview on a second booking (100 % refund tier, nothing paid):
+		// back to 2027-06-01, more than 14 days before the stay.
+		f.Clock.Set(time.Date(2027, 6, 1, 8, 0, 0, 0, time.UTC))
 		create["lines"] = []map[string]any{{"pack_id": f.Base.ID, "spot_id": f.Spots[1].ID}}
 		_, _, body = bkCall(t, f.Cashier, create, "", createFn)
 		id2 := body["id"].(string)

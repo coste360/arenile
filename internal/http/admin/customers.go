@@ -39,16 +39,14 @@ func (h *Handlers) ListCustomers(w http.ResponseWriter, r *http.Request, establi
 }
 
 // CreateCustomer implements POST /api/admin/v1/establishments/{establishmentId}/customers.
-// A customer with the same email or phone answers 409 conflict with the
-// existing id in detail ("existing_customer_id=<id>"); the query parameter
-// force=true creates it anyway (see the integrator note in the customer
-// package doc: force is not yet declared in api/openapi.yaml).
-func (h *Handlers) CreateCustomer(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, _ api.CreateCustomerParams) {
+// A customer with the same email or phone answers 409 conflict with
+// existing_customer_id; the query parameter force=true creates it anyway.
+func (h *Handlers) CreateCustomer(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, params api.CreateCustomerParams) {
 	var req api.CustomerInput
 	if !decode(w, r, &req) {
 		return
 	}
-	force := r.URL.Query().Get("force") == "true"
+	force := params.Force != nil && *params.Force
 	c, err := h.Customers.Create(r.Context(), principalOf(r), customerClientIP(r), establishmentID, customerInputFromAPI(&req), force)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)

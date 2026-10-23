@@ -185,10 +185,10 @@ func CustomerAgreementExists(ctx context.Context, db bun.IDB, es EstablishmentSc
 	return n > 0, nil
 }
 
-// CustomerWipeBookingNotes clears the free-text notes and the manage token
-// of every booking of a customer being anonymized (they may contain
-// personal data) and bumps their version. Amounts, dates, lines and
-// payments are untouched (accounting, spec 23).
+// CustomerWipeBookingNotes clears the free texts of every booking of a
+// customer being anonymized (notes, cancel reason: they may contain personal
+// data) and the manage token, bumping their version. Amounts, dates, lines
+// and payments are untouched (accounting, spec 23).
 func CustomerWipeBookingNotes(ctx context.Context, db bun.IDB, es EstablishmentScope, customerID string, now time.Time) (int, error) {
 	if err := es.mustBeValid(); err != nil {
 		return 0, err
@@ -196,18 +196,66 @@ func CustomerWipeBookingNotes(ctx context.Context, db bun.IDB, es EstablishmentS
 	res, err := db.NewUpdate().Model((*Booking)(nil)).
 		Set("notes_customer = ''").
 		Set("notes_internal = ''").
+		Set("cancel_reason = NULL").
 		Set("manage_token_hash = NULL").
 		Set("version = version + 1").
 		Set("updated_at = ?", now).
 		Where("establishment_id = ?", es.ID()).
 		Where("customer_id = ?", customerID).
-		Where("(notes_customer <> '' OR notes_internal <> '' OR manage_token_hash IS NOT NULL)").
+		Where("(notes_customer <> '' OR notes_internal <> '' OR cancel_reason IS NOT NULL OR manage_token_hash IS NOT NULL)").
 		Exec(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("store: wipe booking notes: %w", err)
 	}
 	n, _ := res.RowsAffected()
 	return int(n), nil
+}
+
+// WipedFreeText counts the rows cleared by CustomerWipeFreeText per table.
+type WipedFreeText struct {
+	Bookings int
+	Payments int
+	Credits  int
+}
+
+// CustomerWipeFreeText clears every free text linked to a customer being
+// anonymized: booking notes and cancel reasons (CustomerWipeBookingNotes),
+// the notes of its payments and refunds (directly or through its bookings)
+// and the notes of its credit movements. Amounts, dates, VAT splits and
+// links are untouched (spec 23: the accounts stay, the person disappears).
+func CustomerWipeFreeText(ctx context.Context, db bun.IDB, es EstablishmentScope, customerID string, now time.Time) (WipedFreeText, error) {
+	var out WipedFreeText
+	var err error
+	if out.Bookings, err = CustomerWipeBookingNotes(ctx, db, es, customerID, now); err != nil {
+		return out, err
+	}
+	res, err := db.NewUpdate().Model((*Payment)(nil)).
+		Set("note = ''").
+		Set("updated_at = ?", now).
+		Where("establishment_id = ?", es.ID()).
+		Where("note <> ''").
+		WhereGroup(" AND ", func(q *bun.UpdateQuery) *bun.UpdateQuery {
+			return q.Where("customer_id = ?", customerID).
+				WhereOr("booking_id IN (SELECT b2.id FROM bookings AS b2 WHERE b2.establishment_id = ? AND b2.customer_id = ?)", es.ID(), customerID)
+		}).
+		Exec(ctx)
+	if err != nil {
+		return out, fmt.Errorf("store: wipe payment notes: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	out.Payments = int(n)
+	res, err = db.NewUpdate().Model((*CustomerCredit)(nil)).
+		Set("note = ''").
+		Where("establishment_id = ?", es.ID()).
+		Where("customer_id = ?", customerID).
+		Where("note <> ''").
+		Exec(ctx)
+	if err != nil {
+		return out, fmt.Errorf("store: wipe credit notes: %w", err)
+	}
+	n, _ = res.RowsAffected()
+	out.Credits = int(n)
+	return out, nil
 }
 
 // ---- credits -------------------------------------------------------------------

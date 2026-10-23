@@ -30,8 +30,9 @@
 //     first name) with a keyset cursor on (search_text, id);
 //   - dedupe hint: Create refuses a customer whose email or phone matches a
 //     non-anonymized customer of the same establishment with
-//     *DuplicateError (409, detail "existing_customer_id=<id>") unless force
-//     is set. Inline creation from a booking (Resolve) never blocks;
+//     *DuplicateError (409 conflict with the Problem extension
+//     existing_customer_id) unless force is set (?force=true on
+//     createCustomer). Inline creation from a booking (Resolve) never blocks;
 //   - updates use optimistic concurrency (customers.version, If-Match) and
 //     PUT semantics (an empty field clears it, a missing consent withdraws
 //     it; an unchanged consent keeps its timestamp);
@@ -55,9 +56,11 @@
 //   - payment.Credits and pass.Credits: GrantCredit / CreditBalance on the
 //     customer_credits ledger (balance = sum of the non-expired movements).
 //
-// Integrator notes: the "force" flag of the dedupe hint is read from the
-// query string (?force=true) and the existing id is only in the problem
-// detail; both should be declared in api/openapi.yaml (createCustomer
-// parameter and a Problem extension existing_customer_id). Automatic
-// anonymization after N years (spec 23, retention) is not implemented yet.
+// Anonymization (spec 23) rewrites the customer row and clears every free
+// text that may carry personal data in the same transaction: booking notes,
+// cancel reasons and manage tokens, payment notes and credit notes
+// (store.CustomerWipeFreeText). Amounts, dates and lines stay for the
+// accounts; the audit log is insert-only (INV-30), so no use case ever copies
+// a free text into it. Integrator note: automatic anonymization after N years
+// (spec 23, retention) is not implemented yet.
 package customer

@@ -200,6 +200,7 @@
     "policyViolation": "The request breaks the booking rules.",
     "noPrice": "No price for the chosen dates or pack.",
     "cashSessionClosed": "The cash desk is closed: open it to record cash payments.",
+    "outsidePeriod": "Check-in and no-show are possible only on the days of the stay (establishment date).",
     "conflictLine": "{{label}}: {{days}}",
     "more_one": "and {{count}} more day",
     "more_other": "and {{count}} more days",

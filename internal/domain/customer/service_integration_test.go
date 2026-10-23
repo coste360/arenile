@@ -112,6 +112,7 @@ func (e *env) accounting(t *testing.T, customerID string) (*store.Booking, *stor
 		StartsOn: calendar.MustParse("2027-07-01"), EndsOn: calendar.MustParse("2027-07-02"), Slots: calendar.SlotsFull, Formula: "multi_day",
 		PriceSnapshot: store.JSON(`{"total":7000}`), TotalAmount: 7000, PaidAmount: 5000, PolicySnapshot: store.JSON(`{"rules":{}}`),
 		NotesCustomer: "chiamare al 3331234567", NotesInternal: "cliente abituale", ManageTokenHash: &token, Version: 1, CreatedAt: t0, UpdatedAt: t0,
+		CancelReason: ptr("motivo-riservato-rossi"),
 	}
 	e.insert(t, b)
 	e.insert(t, &store.BookingLine{
@@ -122,6 +123,7 @@ func (e *env) accounting(t *testing.T, customerID string) (*store.Booking, *stor
 		ID: store.NewID(), EstablishmentID: est, BookingID: &b.ID, Provider: "manual", Method: store.PaymentMethodCash,
 		Direction: store.PaymentDirectionIn, Amount: 5000, Status: store.PaymentSucceeded, BusinessDate: calendar.MustParse("2027-06-01"),
 		VATBreakdown: []store.VATShare{{RateBP: 2200, Gross: 5000, Taxable: 4098, Tax: 902}}, Metadata: map[string]any{}, CreatedAt: t0, UpdatedAt: t0,
+		Note: "nota-incasso-rossi",
 	}
 	e.insert(t, p)
 	return b, p
@@ -340,7 +342,7 @@ func TestCustomerService_AnonymizeKeepsAccounting(t *testing.T) {
 			MarketingConsent: &store.MarketingConsent{Source: "desk", TextVersion: "v1"},
 		})
 		b, p := e.accounting(t, c.ID)
-		if err := e.svc.GrantCredit(e.ctx, db, mustScope(t, e), &store.CustomerCredit{CustomerID: c.ID, Amount: 1500, Source: store.CreditSourceManual}); err != nil {
+		if err := e.svc.GrantCredit(e.ctx, db, mustScope(t, e), &store.CustomerCredit{CustomerID: c.ID, Amount: 1500, Source: store.CreditSourceManual, Note: "nota-credito-rossi"}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -372,8 +374,17 @@ func TestCustomerService_AnonymizeKeepsAccounting(t *testing.T) {
 			t.Fatal(err)
 		}
 		if gotB.CustomerID != c.ID || gotB.TotalAmount != 7000 || gotB.PaidAmount != 5000 || gotB.Status != "confirmed" ||
-			gotB.NotesCustomer != "" || gotB.NotesInternal != "" || gotB.ManageTokenHash != nil || gotB.Version != 2 {
+			gotB.NotesCustomer != "" || gotB.NotesInternal != "" || gotB.CancelReason != nil || gotB.ManageTokenHash != nil || gotB.Version != 2 {
 			t.Fatalf("booking after anonymize %+v", gotB)
+		}
+		// Every free text written by the desk is gone (spec 23): cancel
+		// reason, payment note, credit note; the audit log never held them.
+		for _, needle := range []string{"motivo-riservato-rossi", "nota-incasso-rossi", "nota-credito-rossi", "3331234567", "abituale"} {
+			for _, table := range []string{"bookings", "payments", "customer_credits", "audit_log", "outbox_events"} {
+				if n := e.count(t, table, "CAST("+textOf(table)+" AS TEXT) LIKE ?", "%"+needle+"%"); n != 0 {
+					t.Fatalf("%q still in %s", needle, table)
+				}
+			}
 		}
 		if n := e.count(t, "payments", "id = ? AND amount = ? AND booking_id = ?", p.ID, 5000, b.ID); n != 1 {
 			t.Fatal("payment changed by anonymization")
@@ -414,7 +425,11 @@ func textOf(table string) string {
 	case "customers":
 		return "search_text || COALESCE(email, '') || notes"
 	case "bookings":
-		return "notes_customer || notes_internal"
+		return "notes_customer || notes_internal || COALESCE(cancel_reason, '')"
+	case "payments":
+		return "note || description"
+	case "customer_credits":
+		return "note"
 	case "audit_log":
 		return "diff"
 	}
@@ -500,3 +515,5 @@ func mustScope(t *testing.T, e *env) store.EstablishmentScope {
 	}
 	return es
 }
+
+func ptr[T any](v T) *T { return &v }

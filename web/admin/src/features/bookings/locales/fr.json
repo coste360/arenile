@@ -200,6 +200,7 @@
     "policyViolation": "La demande enfreint les règles de réservation.",
     "noPrice": "Aucun prix pour les dates ou la formule choisies.",
     "cashSessionClosed": "La caisse est fermée : ouvrez-la pour enregistrer des espèces.",
+    "outsidePeriod": "L'arrivée et la non-présentation ne sont possibles que les jours du séjour (date de l'établissement).",
     "conflictLine": "{{label}} : {{days}}",
     "more_one": "et {{count}} autre jour",
     "more_other": "et {{count}} autres jours",

@@ -200,6 +200,7 @@
     "policyViolation": "Die Anfrage verletzt die Buchungsregeln.",
     "noPrice": "Kein Preis für die gewählten Daten oder das Paket.",
     "cashSessionClosed": "Die Kasse ist geschlossen: öffnen, um Barzahlungen zu erfassen.",
+    "outsidePeriod": "Check-in und Nichterscheinen sind nur an den Tagen des Aufenthalts möglich (Datum des Betriebs).",
     "conflictLine": "{{label}}: {{days}}",
     "more_one": "und {{count}} weiterer Tag",
     "more_other": "und {{count}} weitere Tage",

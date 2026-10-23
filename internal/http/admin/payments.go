@@ -42,6 +42,9 @@ func (h *Handlers) RecordBookingPayment(w http.ResponseWriter, r *http.Request, 
 	if req.Note != nil {
 		in.Note = *req.Note
 	}
+	if req.OverpaymentAsCredit != nil {
+		in.OverpaymentAsCredit = *req.OverpaymentAsCredit
+	}
 	res, err := h.Payments.RecordPayment(r.Context(), principalOf(r), paymentClientIP(r), establishmentID, bookingID, in)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)

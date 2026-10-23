@@ -11,11 +11,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
@@ -60,6 +62,7 @@ const (
 	InvalidTransition     = api.ProblemType("invalid_transition")
 	CashSessionClosed     = api.ProblemType("cash_session_closed")
 	CashSessionOpen       = api.ProblemType("cash_session_already_open")
+	BookingOutsidePeriod  = api.ProblemType("booking_outside_period")
 )
 
 type meta struct {
@@ -101,6 +104,7 @@ var catalog = map[api.ProblemType]meta{
 	InvalidTransition:     {http.StatusConflict, "Operazione non ammessa nello stato attuale della prenotazione"},
 	CashSessionClosed:     {http.StatusConflict, "La sessione di cassa è chiusa"},
 	CashSessionOpen:       {http.StatusConflict, "C'è già una sessione di cassa aperta"},
+	BookingOutsidePeriod:  {http.StatusUnprocessableEntity, "Operazione possibile solo nei giorni del soggiorno"},
 }
 
 // Option customises a problem.
@@ -147,6 +151,23 @@ func CurrentStatus(s string) Option {
 		st := api.BookingStatus(s)
 		p.CurrentStatus = &st
 	}
+}
+
+// Period sets period (booking_outside_period): today in the establishment
+// timezone and the stay.
+func Period(today, startsOn, endsOn calendar.Date) Option {
+	return func(p *api.Problem) {
+		p.Period = &struct {
+			EndsOn   api.Date `json:"ends_on"`
+			StartsOn api.Date `json:"starts_on"`
+			Today    api.Date `json:"today"`
+		}{EndsOn: endsOn, StartsOn: startsOn, Today: today}
+	}
+}
+
+// ExistingCustomerID sets existing_customer_id (conflict on createCustomer).
+func ExistingCustomerID(id string) Option {
+	return func(p *api.Problem) { p.ExistingCustomerId = &id }
 }
 
 // RetryAfter sets retry_after (seconds) and the Retry-After header.
@@ -210,6 +231,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		ce  *availability.ConflictError
 		sue *availability.SpotUnavailableError
 		te  *booking.TransitionError
+		ope *booking.OutsidePeriodError
+		dup *customer.DuplicateError
 	)
 	switch {
 	case errors.As(err, &rl):
@@ -256,6 +279,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, SpotHasFutureAllocs)
 	case errors.Is(err, configerr.ErrNotFound):
 		Write(w, r, NotFound)
+	case errors.As(err, &dup):
+		Write(w, r, Conflict, Detail(dup.Error()), ExistingCustomerID(dup.ExistingID))
 	case errors.Is(err, configerr.ErrConflict):
 		Write(w, r, Conflict, Detail(err.Error()))
 	case errors.Is(err, pricing.ErrNoPrice):
@@ -299,6 +324,10 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, InvalidTransition, CurrentStatus(string(te.From)))
 	case errors.Is(err, booking.ErrInvalidTransition):
 		Write(w, r, InvalidTransition)
+	case errors.As(err, &ope):
+		Write(w, r, BookingOutsidePeriod, Period(ope.Today, ope.StartsOn, ope.EndsOn))
+	case errors.Is(err, booking.ErrOutsidePeriod):
+		Write(w, r, BookingOutsidePeriod)
 	case errors.Is(err, cash.ErrSessionClosed):
 		Write(w, r, CashSessionClosed)
 	case errors.Is(err, cash.ErrSessionAlreadyOpen):

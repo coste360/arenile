@@ -797,10 +797,20 @@ func (s *Service) confirmLocked(ctx context.Context, tx bun.IDB, es store.Establ
 	if approved {
 		diff["approved"] = true
 	}
-	if note != "" {
-		diff["note"] = note
-	}
+	noteDiff(diff, note)
 	return &outcome{action: eventConfirmed, diff: diff, alloc: alloc}, nil
+}
+
+// noteDiff records that an operator note accompanied an action without
+// copying its text into the insert-only audit log (it may contain personal
+// data that a GDPR anonymization could never remove, INV-30): only the
+// presence and the length are kept, as AddNote does.
+func noteDiff(diff map[string]any, note string) {
+	if note == "" {
+		return
+	}
+	diff["note"] = true
+	diff["note_length"] = len(note)
 }
 
 // Reject refuses a booking awaiting approval and releases its resources
@@ -817,40 +827,48 @@ func (s *Service) Reject(ctx context.Context, p *auth.Principal, establishmentID
 		b.Status = string(StatusRejected)
 		b.HoldExpiresAt = nil
 		diff := map[string]any{}
-		if in.Note != "" {
-			diff["note"] = in.Note
-		}
+		noteDiff(diff, in.Note)
 		return &outcome{action: eventRejected, diff: diff, alloc: alloc}, nil
 	})
 }
 
 // CheckIn records the arrival (confirmed -> checked_in, auth.PermOperationsRun).
+// Only on a day of the stay in the establishment timezone (spec 10.2, 11.3):
+// otherwise *OutsidePeriodError.
 func (s *Service) CheckIn(ctx context.Context, p *auth.Principal, establishmentID, id string, in ActionInput) (*Detail, error) {
-	return s.mutate(ctx, p, establishmentID, id, auth.PermOperationsRun, in.ExpectedVersion, func(_ context.Context, _ bun.IDB, _ store.EstablishmentScope, b *store.Booking) (*outcome, error) {
+	return s.mutate(ctx, p, establishmentID, id, auth.PermOperationsRun, in.ExpectedVersion, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
 		if err := Transition(Status(b.Status), StatusCheckedIn); err != nil {
 			return nil, err
+		}
+		today, err := s.today(ctx, tx, es)
+		if err != nil {
+			return nil, err
+		}
+		if today.Before(b.StartsOn) || today.After(b.EndsOn) {
+			return nil, &OutsidePeriodError{Action: "check_in", Today: today, StartsOn: b.StartsOn, EndsOn: b.EndsOn}
 		}
 		now := s.now()
 		b.Status = string(StatusCheckedIn)
 		b.CheckedInAt = &now
-		return &outcome{action: eventCheckedIn}, nil
+		return &outcome{action: eventCheckedIn, diff: map[string]any{"day": today.String()}}, nil
 	})
 }
 
 // MarkNoShow marks a confirmed booking as not shown and releases the
-// allocations from today on (auth.PermOperationsRun).
+// allocations from today on (auth.PermOperationsRun). Not before the stay
+// starts (*OutsidePeriodError): a future booking is cancelled, with the
+// refund of its policy, not marked as no-show.
 func (s *Service) MarkNoShow(ctx context.Context, p *auth.Principal, establishmentID, id string, in ActionInput) (*Detail, error) {
 	return s.mutate(ctx, p, establishmentID, id, auth.PermOperationsRun, in.ExpectedVersion, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
 		if err := Transition(Status(b.Status), StatusNoShow); err != nil {
 			return nil, err
 		}
-		loc, err := s.location(ctx, tx, es)
+		from, err := s.today(ctx, tx, es)
 		if err != nil {
 			return nil, err
 		}
-		from := calendar.In(s.now(), loc)
 		if from.Before(b.StartsOn) {
-			from = b.StartsOn
+			return nil, &OutsidePeriodError{Action: "no_show", Today: from, StartsOn: b.StartsOn, EndsOn: b.EndsOn}
 		}
 		var alloc *inventory.Allocation
 		if !from.After(b.EndsOn) {
@@ -914,6 +932,15 @@ func (s *Service) releaseAll(ctx context.Context, tx bun.IDB, es store.Establish
 		return nil, err
 	}
 	return alloc, nil
+}
+
+// today is the current date in the establishment timezone.
+func (s *Service) today(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (calendar.Date, error) {
+	loc, err := s.location(ctx, db, es)
+	if err != nil {
+		return calendar.Date{}, err
+	}
+	return calendar.In(s.now(), loc), nil
 }
 
 // location loads the establishment timezone.
