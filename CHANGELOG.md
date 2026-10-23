@@ -31,10 +31,11 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
   impronta, istruzioni per accettare il certificato nel browser e abbinamento.
 - M6, modalità remota dell'app desktop (`internal/desktop/remote`): abbinamento a un'istanza con QR o codice
   (controllo di `/meta` e della versione minima, https obbligatorio, impronta del certificato verificata), token per
-  dispositivo nel portachiavi, finestra dedicata con il webview di sistema (tag `desktop`) o il browser
-  predefinito, opzione kiosk, avvio automatico, proxy locale verificato per le istanze con certificato autofirmato,
-  scollegamento e gestione della revoca. Nuova dipendenza `github.com/webview/webview_go` (MIT), compilata solo con
-  il tag `desktop` e CGO.
+  dispositivo nel portachiavi, finestra dedicata con il webview di sistema (tag `desktop`, macOS e Windows) o il
+  browser predefinito (Linux e build headless), opzione kiosk, avvio automatico, proxy locale verificato per le
+  istanze con certificato autofirmato, scollegamento e gestione della revoca. Nuova dipendenza
+  `github.com/webview/webview_go` (MIT), compilata solo con il tag `desktop` e CGO su macOS e Windows: su Linux il
+  launcher resta senza CGO (nessuna dipendenza da WebKitGTK, AppImage statica).
 - M6, ponte fiscale (spec 29.1, 14.2, `internal/fiscalbridge`): coda dei lavori con lease, long polling risvegliato
   all'accodamento, esiti idempotenti, ritentativi con attesa crescente per gli errori temporanei, rilascio dei lease
   scaduti e dei dispositivi revocati; agente sul PC della cassa con registro dei driver locali (driver `noop`) ed

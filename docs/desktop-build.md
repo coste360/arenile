@@ -12,7 +12,7 @@ portal (login required). GitHub carries the source code and these instructions o
 | --- | --- | --- | --- |
 | Windows 10/11 x64 | `Arenile_<tag>_windows_amd64_setup.exe` | Inno Setup 6 | `windows-latest` |
 | macOS 13+ (Apple Silicon and Intel) | `Arenile_<tag>_macos_universal.dmg` | `lipo`, `hdiutil`, `codesign`, `notarytool` | `macos-latest` |
-| Linux x86_64 | `Arenile_<tag>_linux_x86_64.AppImage` | `appimagetool` (pinned) | `ubuntu-22.04` |
+| Linux x86_64 | `Arenile_<tag>_linux_x86_64.AppImage` | `appimagetool` (pinned) | `ubuntu-latest` |
 
 Each package has a `.sha256` file next to it, and the portal bundle has a `checksums.txt` file
 that covers every file. A package without a valid publisher signature always has `-unsigned` in
@@ -53,9 +53,11 @@ DESKTOP_TAGS=desktop make desktop-package-macos   # tray build (CGO), as in CI
 
 - **Build tags.** With `DESKTOP_TAGS` empty, the launcher has no CGO and no tray (it is
   headless). It cross-compiles from any OS, so it is handy for testing the packaging. The
-  packages for the portal use `DESKTOP_TAGS=desktop`, which turns CGO on, and must be built
-  on the native OS. On macOS, the host clang builds both slices (`clang -arch x86_64` and
-  `-arch arm64`), and `lipo` merges them into one universal binary.
+  packages for the portal use `DESKTOP_TAGS=desktop`: on macOS and Windows this turns CGO on
+  (tray and remote-mode webview) and the build must run on the native OS; on Linux the tray
+  build stays CGO-free (tray over D-Bus, no webview) and cross-compiles. On macOS, the host
+  clang builds both slices (`clang -arch x86_64` and `-arch arm64`), and `lipo` merges them
+  into one universal binary.
 - **macOS.** You need only the Xcode command line tools. Without a Developer ID, the `.app`
   gets an ad-hoc signature (it runs on the Mac that built it) and the `.dmg` is named
   `-unsigned`. Gatekeeper blocks it on other Macs: right click, then *Open*.
@@ -63,9 +65,9 @@ DESKTOP_TAGS=desktop make desktop-package-macos   # tray build (CGO), as in CI
   resources and for CGO) and Inno Setup 6 (`choco install innosetup`). Without `windres` the
   `.exe` has no icon, and the script prints a warning. The stages can be run one at a time:
   `scripts/desktop/package-windows.sh binary|sign FILE|installer|checksums`.
-- **Linux.** Any glibc distribution with `curl`. FUSE is not needed (the script sets
-  `APPIMAGE_EXTRACT_AND_RUN=1`). The tray build needs the system libraries listed in
-  `packaging/desktop/linux/apt-packages.txt`.
+- **Linux.** Any distribution with `curl`, `file` and `sha256sum`. FUSE is not needed (the
+  script sets `APPIMAGE_EXTRACT_AND_RUN=1`). No system library: the Linux launcher is a
+  static binary (`packaging/desktop/linux/apt-packages.txt` is empty on purpose).
 - **Icons.** Run `scripts/desktop/gen-icons.sh` (ImageMagick 7 and macOS `iconutil`) only
   when the brand mark changes, then commit the outputs.
 
@@ -92,9 +94,9 @@ Smoke test: `dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop -vers
    signs and notarizes when the secrets are present, then runs `lipo -archs` and `-version`.
 2. `windows` (`windows-latest`) builds the exe with its resources, signs it (PFX or Azure),
    builds the Inno Setup installer, signs it, writes the checksums and runs `-version`.
-3. `linux` (`ubuntu-22.04`) builds the AppImage and runs it with `-version`. It uses the
-   oldest LTS runner so that the glibc the CGO build links against is old enough for the
-   distributions it must run on.
+3. `linux` (`ubuntu-latest`) builds the AppImage and runs it with `-version`. The binary
+   is CGO-free, so the runner's glibc is irrelevant and the AppImage runs on any current
+   distribution (Ubuntu 22.04/24.04, Debian 12/13, Fedora) without extra libraries.
 
 On pull requests the packages are unsigned and kept for 7 days, so testers can download them.
 In a release, `release.yml` calls the workflow with `secrets: inherit`, and the `portal-bundle`
@@ -194,9 +196,12 @@ the next launch opens the remote panel and starts the fiscal bridge.
 
 ## Linux runtime requirements
 
-The tray build links GTK 3 and WebKitGTK 4.0 dynamically (remote-mode window):
-the host needs `libgtk-3-0` and `libwebkit2gtk-4.0-37` (Ubuntu 22.04, Debian 12,
-Fedora with `webkit2gtk4.0`). The headless build has no system requirement.
+None: the Linux launcher (headless or tray) is a static binary. The tray icon needs a
+StatusNotifierItem host (GNOME with the AppIndicator extension, KDE Plasma, XFCE); without
+one the app still runs and the panel opens in the browser. The remote-mode window is the
+default browser (or Chrome/Chromium/Edge in kiosk mode) rather than a WebKitGTK webview:
+`webview_go` links WebKitGTK 4.0, which Ubuntu 24.04, Debian 13 and Fedora no longer ship.
+Pair a Linux PC in remote mode with `arenile-desktop -pair <QR|URL> -pair-code <code>`.
 
 ## M6 acceptance on a Mac (Collaudo M6)
 

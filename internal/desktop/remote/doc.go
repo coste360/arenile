@@ -25,9 +25,10 @@
 // # Window
 //
 // Window is a port: the system webview through github.com/webview/webview_go
-// (MIT) behind the "desktop" build tag and CGO (window_webview.go), else
-// BrowserWindow (default browser, or a Chromium-family browser in --kiosk
-// --app mode for the kiosk option). The webview gets InitScript, which sets
+// (MIT) behind the "desktop" build tag and CGO on macOS and Windows
+// (window_webview.go; not on Linux, where WebKitGTK 4.0 is no longer
+// shipped by current distributions), else BrowserWindow (default browser,
+// or a Chromium-family browser in --kiosk --app mode for the kiosk option). The webview gets InitScript, which sets
 // window.arenileDesktop = {mode: "remote"} for the panel (lib/meta.ts) and
 // routes links to other origins to the default browser. For an instance
 // with a self-signed certificate the window loads the panel through Proxy,

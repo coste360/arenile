@@ -5,8 +5,10 @@
 #   scripts/desktop/package-linux.sh
 #
 # Environment (besides common.sh):
-#   LINUX_GOARCH       amd64 (default on x86_64 hosts) or arm64; a tagged (CGO)
-#                      build must run on a host of the same architecture
+#   LINUX_GOARCH       amd64 (default on x86_64 hosts) or arm64; the Linux
+#                      launcher is CGO-free (tray over D-Bus, no webview) and
+#                      cross-compiles, but appimagetool needs a host of the
+#                      target architecture
 #   APPIMAGETOOL       path to an appimagetool binary; otherwise the pinned release
 #                      (APPIMAGETOOL_VERSION) is downloaded into $DIST_DIR/.tools and
 #                      verified against the sha256 below; the AppImage runtime is

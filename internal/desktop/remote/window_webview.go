@@ -1,4 +1,4 @@
-//go:build desktop && cgo
+//go:build desktop && cgo && !linux
 
 package remote
 
@@ -10,10 +10,15 @@ import (
 	webview "github.com/webview/webview_go"
 )
 
-// The native panel window of the remote mode: the system webview (WebKit
-// on macOS, WebView2 on Windows, WebKitGTK on Linux) through
-// github.com/webview/webview_go (MIT), compiled only with the "desktop"
-// build tag and CGO on the native runner of each OS. webview_go locks the
+// The native panel window of the remote mode: the system webview (WKWebView
+// on macOS, WebView2 on Windows) through github.com/webview/webview_go
+// (MIT), compiled only with the "desktop" build tag and CGO on the native
+// runner of each OS. Not on Linux: webview_go links WebKitGTK 4.0, which
+// Ubuntu 24.04, Debian 13 and Fedora no longer ship (they have 4.1 only),
+// and a dynamically linked AppImage would fail in the loader even in local
+// mode. The Linux tray build is CGO-free (fyne.io/systray speaks D-Bus in
+// pure Go) and the remote mode uses BrowserWindow plus the tray menu
+// there; pairing happens with `arenile-desktop -pair`. webview_go locks the
 // main goroutine to the main thread in its init; the launcher calls
 // Mode.Run on the main goroutine, so Open runs the event loop there.
 

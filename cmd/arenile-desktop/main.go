@@ -9,7 +9,9 @@
 //	    no CGO, headless UI (opens the browser, logs the panel URL):
 //	    what `go build ./...` and CI compile.
 //	CGO_ENABLED=1 go build -tags desktop ./cmd/arenile-desktop
-//	    tray icon (fyne.io/systray), built on the native runner of each OS;
+//	    tray icon (fyne.io/systray) and remote-mode webview, built on the
+//	    native runner of macOS and Windows; on Linux the same tag builds
+//	    with CGO_ENABLED=0 (tray over D-Bus, browser window, no WebKitGTK);
 //	    packaging and signing in the release workflow (portal-bundle-<tag>
 //	    artifact, never a GitHub release asset).
 //

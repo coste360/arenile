@@ -4,8 +4,9 @@
 #   scripts/desktop/build.sh [GOOS [GOARCH]]     default: the host platform
 #
 # Output: $DIST_DIR/bin/<goos>_<goarch>/arenile-desktop[.exe]. CGO is enabled
-# only when DESKTOP_TAGS is set (tray build), so a tagged build must run on
-# the native runner of the target OS. See scripts/desktop/common.sh.
+# only when DESKTOP_TAGS is set (tray build) and the target is macOS or
+# Windows, so those tagged builds must run on the native runner; the Linux
+# tray build is CGO-free and cross-compiles. See scripts/desktop/common.sh.
 # shellcheck source=scripts/desktop/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 

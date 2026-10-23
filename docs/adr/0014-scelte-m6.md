@@ -72,10 +72,13 @@ Decisioni prese durante l'implementazione, a complemento dei punti sopra.
    `internal/desktop/lan` e `internal/desktop/remote` le implementano e `main.go` le collega
    (`NewLAN: lan.New`, `Remote: remote.New(...)`), così `desktop` non importa gli adattatori.
 9. **Tag di build e librerie native.** Senza tag: UI headless, nessun CGO (CI, `go build ./...`). Con
-   `-tags desktop` e CGO: icona nella barra di sistema `fyne.io/systray` (Apache-2.0) e finestra della modalità
-   remota con il webview di sistema `github.com/webview/webview_go` (MIT; WebView2 su Windows, WKWebView su macOS,
-   WebKitGTK su Linux). Il pacchetto macOS pubblicato oggi usa la build headless universale; la build tray si
-   compila sui runner nativi (`desktop.yml`).
+   `-tags desktop`: icona nella barra di sistema `fyne.io/systray` (Apache-2.0) e, su macOS e Windows (CGO,
+   runner nativi), finestra della modalità remota con il webview di sistema `github.com/webview/webview_go`
+   (MIT; WKWebView, WebView2). Su Linux il webview è escluso (`!linux`): collegherebbe WebKitGTK 4.0, che Ubuntu
+   24.04, Debian 13 e Fedora non distribuiscono più, e l'AppImage fallirebbe nel loader anche in modalità locale;
+   la build tray Linux è quindi senza CGO (binario statico), la modalità remota usa il browser e l'abbinamento
+   avviene con `-pair`. I pacchetti del portale usano la build tray su tutti e tre i sistemi (`desktop.yml`,
+   `DESKTOP_TAGS=desktop`).
 10. **Chiave segreta nel portachiavi del sistema** (`github.com/zalando/go-keyring`, MIT; Keychain, Credential
     Manager, Secret Service) con account derivato dalla cartella dati e fallback su file 0600. Con un archivio
     esistente e nessuna chiave l'avvio si ferma invece di generarne una nuova (INV-53).

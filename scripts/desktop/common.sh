@@ -52,9 +52,13 @@ go_ldflags() {
 	printf '%s' "-s -w -buildid= -X main.version=$VERSION${1:+ $1}"
 }
 
-# cgo_flag prints 1 when the launcher is built with tags (tray needs CGO).
+# cgo_flag GOOS prints 1 when the launcher is built with tags on macOS or
+# Windows (tray and webview need CGO there). On Linux the tray build is
+# CGO-free (fyne.io/systray over D-Bus; no webview, see
+# internal/desktop/remote/window_webview.go), so the AppImage is a static
+# binary that runs on any glibc or musl distribution.
 cgo_flag() {
-	if [ -n "$DESKTOP_TAGS" ]; then printf 1; else printf 0; fi
+	if [ -n "$DESKTOP_TAGS" ] && [ "${1:-}" != linux ]; then printf 1; else printf 0; fi
 }
 
 # ensure_web embeds the SPAs (the bundle must include the admin panel).
@@ -73,10 +77,10 @@ go_build_launcher() {
 	local out="$1" goos="$2" goarch="$3" extra="${4:-}"
 	local tags=()
 	[ -n "$DESKTOP_TAGS" ] && tags=(-tags "$DESKTOP_TAGS")
-	log "go build $goos/$goarch tags=[${DESKTOP_TAGS}] cgo=$(cgo_flag) -> ${out#"$DESKTOP_ROOT"/}"
+	log "go build $goos/$goarch tags=[${DESKTOP_TAGS}] cgo=$(cgo_flag "$goos") -> ${out#"$DESKTOP_ROOT"/}"
 	(
 		cd "$DESKTOP_ROOT"
-		GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="$(cgo_flag)" GOFLAGS="${GOFLAGS:-} -buildvcs=false" \
+		GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="$(cgo_flag "$goos")" GOFLAGS="${GOFLAGS:-} -buildvcs=false" \
 			go build -trimpath ${tags[@]+"${tags[@]}"} -ldflags "$(go_ldflags "$extra")" -o "$out" ./cmd/arenile-desktop
 	)
 }
