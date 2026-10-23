@@ -313,6 +313,12 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 	_, statErr := os.Stat(dbPath)
 	key, source, err := ResolveSecretKey(ctx, statErr == nil, l.secretStores()...)
 	if err != nil {
+		switch {
+		case errors.Is(err, ErrSecretStoreUnavailable):
+			l.ui.Notify("Arenile", "Portachiavi del sistema non disponibile o bloccato: sbloccalo (o consenti l'accesso) e riapri Arenile. I dati non sono stati toccati.")
+		case errors.Is(err, ErrSecretKeyMissing):
+			l.ui.Notify("Arenile", "Chiave segreta dell'archivio non trovata: Arenile non riparte con una chiave nuova. Dettagli nella cartella dati (logs).")
+		}
 		return err
 	}
 	log.Info("arenile desktop: secret key ready", slog.String("store", source))
