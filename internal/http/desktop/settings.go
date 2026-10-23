@@ -32,7 +32,12 @@ func (h *Handlers) UpdateDesktopSettings(w http.ResponseWriter, r *http.Request,
 	if !decode(w, r, &req) {
 		return
 	}
-	s, err := h.Control.UpdateSettings(r.Context(), settingsFromAPI(req))
+	current, err := h.Control.Settings(r.Context())
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
+	s, err := h.Control.UpdateSettings(r.Context(), settingsFromAPI(req, current))
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
@@ -86,19 +91,24 @@ func (h *Handlers) RestoreDesktopBackup(w http.ResponseWriter, r *http.Request, 
 }
 
 func settingsToAPI(s control.Settings) api.DesktopSettings {
-	port := s.LANPort
+	port, keep := s.LANPort, s.KeepRunningInTray
 	return api.DesktopSettings{
 		BackupDir: s.BackupDir, BackupRetention: s.BackupRetention, BackupDaily: s.BackupDaily,
 		BackupOnExit: s.BackupOnExit, UpdateCheck: s.UpdateCheck, Autostart: s.Autostart,
-		LanEnabled: s.LANEnabled, LanPort: &port,
+		LanEnabled: s.LANEnabled, LanPort: &port, KeepRunningInTray: &keep,
 	}
 }
 
-func settingsFromAPI(a api.DesktopSettings) control.Settings {
+// settingsFromAPI maps the request; an omitted keep_running_in_tray keeps
+// the current value (clients older than the window shell).
+func settingsFromAPI(a api.DesktopSettings, current control.Settings) control.Settings {
 	s := control.Settings{
 		BackupDir: a.BackupDir, BackupRetention: a.BackupRetention, BackupDaily: a.BackupDaily,
 		BackupOnExit: a.BackupOnExit, UpdateCheck: a.UpdateCheck, Autostart: a.Autostart,
-		LANEnabled: a.LanEnabled,
+		LANEnabled: a.LanEnabled, KeepRunningInTray: current.KeepRunningInTray,
+	}
+	if a.KeepRunningInTray != nil {
+		s.KeepRunningInTray = *a.KeepRunningInTray
 	}
 	if a.LanPort != nil {
 		s.LANPort = *a.LanPort

@@ -15124,6 +15124,12 @@ components:
           minimum: 1024
           maximum: 65535
           description: Porta del listener sulla rete locale (default 8443).
+        keep_running_in_tray:
+          type: boolean
+          description: >-
+            Alla chiusura della finestra l'app resta attiva nella barra di sistema invece di chiudersi
+            (Windows; default falso). Su macOS la finestra si nasconde sempre e l'app resta nella barra dei
+            menu finché non si sceglie Esci. Se omesso nella richiesta resta il valore attuale.
     DesktopBackupReason:
       type: string
       enum: [manual, daily, exit, pre_restore]

@@ -21,6 +21,8 @@
     "description": "Arenile does not connect to the internet unless you enable it.",
     "autostart": "Start Arenile when the computer starts",
     "autostartHint": "Only for the current operating system user.",
+    "keepRunningInTray": "Keep running in the system tray when the window is closed",
+    "keepRunningInTrayHint": "On Windows the window is hidden and Arenile keeps serving the panel (also to the local network); quit it from the tray icon. On macOS the app always stays in the menu bar until you choose Quit.",
     "updateCheck": "Check for a new version",
     "updateCheckHint": "Once a day it reads the latest version number from the Coste360 website, without sending any data of the beach."
   },

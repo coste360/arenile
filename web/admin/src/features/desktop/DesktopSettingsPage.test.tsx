@@ -32,6 +32,7 @@ const SETTINGS = {
   backup_on_exit: true,
   update_check: false,
   autostart: false,
+  keep_running_in_tray: false,
   lan_enabled: false,
   lan_port: 8443,
 };
@@ -74,9 +75,19 @@ describe('DesktopSettingsPage', () => {
     await user.click(
       screen.getByRole('switch', { name: "Avvia Arenile all'accensione del computer" }),
     );
+    await user.click(
+      screen.getByRole('switch', {
+        name: 'Alla chiusura della finestra resta attivo nella barra di sistema',
+      }),
+    );
     await user.click(screen.getByRole('button', { name: 'Salva impostazioni' }));
     await waitFor(() => expect(body).toBeDefined());
-    expect(body).toEqual({ ...SETTINGS, backup_dir: '/Volumes/USB/Arenile', autostart: true });
+    expect(body).toEqual({
+      ...SETTINGS,
+      backup_dir: '/Volumes/USB/Arenile',
+      autostart: true,
+      keep_running_in_tray: true,
+    });
   });
 
   it('lists the backups, makes one now and restores one after confirmation', async () => {

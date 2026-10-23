@@ -21,6 +21,8 @@
     "description": "Arenile verbindet sich nur mit dem Internet, wenn Sie es erlauben.",
     "autostart": "Arenile beim Einschalten des Computers starten",
     "autostartHint": "Nur für den aktuellen Benutzer des Betriebssystems.",
+    "keepRunningInTray": "Beim Schließen des Fensters im Infobereich weiterlaufen",
+    "keepRunningInTrayHint": "Unter Windows wird das Fenster ausgeblendet und Arenile stellt das Panel weiter bereit (auch im lokalen Netzwerk); beenden über das Symbol im Infobereich. Unter macOS bleibt die App immer in der Menüleiste, bis Sie Beenden wählen.",
     "updateCheck": "Nach einer neuen Version suchen",
     "updateCheckHint": "Einmal täglich wird die Nummer der neuesten Version von der Coste360-Website gelesen, ohne Daten des Strandbads zu senden."
   },

@@ -3492,6 +3492,9 @@ type DesktopSettings struct {
 	// BackupRetention Numero di backup automatici conservati (i manuali non vengono eliminati).
 	BackupRetention int `json:"backup_retention"`
 
+	// KeepRunningInTray Alla chiusura della finestra l'app resta attiva nella barra di sistema invece di chiudersi (Windows; default falso). Su macOS la finestra si nasconde sempre e l'app resta nella barra dei menu finché non si sceglie Esci. Se omesso nella richiesta resta il valore attuale.
+	KeepRunningInTray *bool `json:"keep_running_in_tray,omitempty"`
+
 	// LanEnabled Modalità rete locale (TLS con certificato autogenerato).
 	LanEnabled bool `json:"lan_enabled"`
 

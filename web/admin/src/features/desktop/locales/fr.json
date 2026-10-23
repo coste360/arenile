@@ -21,6 +21,8 @@
     "description": "Arenile ne se connecte à internet que si vous l'activez.",
     "autostart": "Lancer Arenile au démarrage de l'ordinateur",
     "autostartHint": "Uniquement pour l'utilisateur actuel du système.",
+    "keepRunningInTray": "Rester actif dans la zone de notification à la fermeture de la fenêtre",
+    "keepRunningInTrayHint": "Sous Windows, la fenêtre est masquée et Arenile continue de servir le panneau (y compris sur le réseau local) ; quittez-le depuis l'icône. Sous macOS, l'application reste toujours dans la barre des menus jusqu'à ce que vous choisissiez Quitter.",
     "updateCheck": "Rechercher une nouvelle version",
     "updateCheckHint": "Une fois par jour, il lit le numéro de la dernière version sur le site Coste360, sans envoyer de données de la plage."
   },

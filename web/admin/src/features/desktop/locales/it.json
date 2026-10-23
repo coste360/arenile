@@ -21,6 +21,8 @@
     "description": "Arenile non si collega a internet se non lo abiliti tu.",
     "autostart": "Avvia Arenile all'accensione del computer",
     "autostartHint": "Solo per l'utente del sistema operativo attuale.",
+    "keepRunningInTray": "Alla chiusura della finestra resta attivo nella barra di sistema",
+    "keepRunningInTrayHint": "Su Windows la finestra si nasconde e Arenile continua a servire il pannello (anche alla rete locale); per chiuderlo usa Esci dall'icona. Su macOS l'app resta sempre nella barra dei menu finché non scegli Esci.",
     "updateCheck": "Controlla se esiste una nuova versione",
     "updateCheckHint": "Una volta al giorno legge il numero dell'ultima versione dal sito Coste360, senza inviare dati del lido."
   },

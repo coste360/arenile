@@ -44,6 +44,9 @@ type Settings struct {
 	Autostart       bool   `json:"autostart"`
 	LANEnabled      bool   `json:"lan_enabled"`
 	LANPort         int    `json:"lan_port"`
+	// KeepRunningInTray: closing the panel window hides it instead of
+	// quitting (Windows; macOS always hides, spec 29.1).
+	KeepRunningInTray bool `json:"keep_running_in_tray"`
 }
 
 // BackupReason tells why a backup was made (api.DesktopBackupReason).

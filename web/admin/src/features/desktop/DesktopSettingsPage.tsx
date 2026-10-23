@@ -55,6 +55,7 @@ const settingsSchema = z.object({
   backup_on_exit: z.boolean(),
   update_check: z.boolean(),
   autostart: z.boolean(),
+  keep_running_in_tray: z.boolean(),
   lan_enabled: z.boolean(),
   lan_port: z
     .number()
@@ -73,7 +74,11 @@ const REASON_TONE: Record<DesktopBackup['reason'], StatusTone> = {
 };
 
 function toValues(s: DesktopSettings): SettingsValues {
-  return { ...s, lan_port: s.lan_port ?? 8443 };
+  return {
+    ...s,
+    lan_port: s.lan_port ?? 8443,
+    keep_running_in_tray: s.keep_running_in_tray ?? false,
+  };
 }
 
 /**
@@ -81,8 +86,9 @@ function toValues(s: DesktopSettings): SettingsValues {
  * backup folder (any absolute path, e.g. a USB stick: chosen here instead
  * of a native dialog), retention, daily and on-exit backups, "Backup ora",
  * the list of backups with "Ripristina" (the launcher restarts the server
- * on the restored file and the page reloads), start at login, the opt-in
- * update check and the LAN mode.
+ * on the restored file and the page reloads), start at login, what closing
+ * the app window does (keep running in the tray), the opt-in update check
+ * and the LAN mode.
  */
 export function DesktopSettingsPage() {
   const { t } = useTranslation('desktop');
@@ -175,6 +181,14 @@ function SettingsForm({ initial }: { initial: DesktopSettings }) {
             name="autostart"
             label={t('system.autostart')}
             description={t('system.autostartHint')}
+          >
+            {(field) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
+          </FieldRow>
+          <FieldRow
+            control={form.control}
+            name="keep_running_in_tray"
+            label={t('system.keepRunningInTray')}
+            description={t('system.keepRunningInTrayHint')}
           >
             {(field) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
           </FieldRow>
