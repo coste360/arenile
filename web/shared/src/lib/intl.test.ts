@@ -3,7 +3,7 @@ import { formatInstantDate } from './dates';
 import { intlLocaleOf, uiIntlLocale } from './intl';
 import { formatBasisPoints, formatCents } from './money';
 
-const nbsp = (s: string) => s.replace(/[  ]/g, ' ');
+const nbsp = (s: string) => s.replace(/[\u00a0\u202f]/g, ' ');
 
 describe('intlLocaleOf', () => {
   it.each([
