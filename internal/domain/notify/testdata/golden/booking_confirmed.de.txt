@@ -7,8 +7,8 @@ Hallo Mario, vielen Dank, dass Sie sich für Lido Delfino entschieden haben. Hie
 
 Code: LD-2027-000001
 Gebucht von: Mario Rossi
-Datum: Von Samstag, 10. Juli 2027 bis Montag, 12. Juli 2027
-Zeitfenster: Ganzer Tag
+Zeitraum: Vom Samstag, 10. Juli 2027 bis Montag, 12. Juli 2027
+Tageszeit: Ganzer Tag
 Bereich: Erste Reihe
 Plätze: A1
 Paket: Ombrellone e 2 lettini
@@ -16,7 +16,7 @@ Extras: Zusätzliche Liege × 2
 Gesamt: 1.234,50 €
 Bezahlt: 300,00 €
 Fällige Anzahlung: 70,00 €
-Offener Betrag: 934,50 €
+Offener Restbetrag: 934,50 €
 
 Zeigen Sie diesen Code bei Ihrer Ankunft an der Kasse vor.
 LD-2027-000001

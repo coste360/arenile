@@ -1,6 +1,6 @@
 {
   "title": "Abonnements",
-  "description": "Abonnements saisonniers par zone et rangée, libérations et avoirs.",
+  "description": "Abonnements saisonniers par zone et rangée, libérations journalières et avoirs.",
   "columns": {
     "spot": "Emplacement",
     "customer": "Abonné",
@@ -24,8 +24,8 @@
   "fields": {
     "customer": "Abonné",
     "season": "Saison",
-    "pack": "Formule",
-    "packPlaceholder": "Choisir la formule",
+    "pack": "Forfait",
+    "packPlaceholder": "Choisir le forfait",
     "slots": "Créneau",
     "spot": "Emplacement",
     "spotPick": "Choisir un emplacement libre",
@@ -40,7 +40,7 @@
     "customer": "Choisissez l'abonné.",
     "season": "Choisissez la saison.",
     "spot": "Choisissez l'emplacement.",
-    "pack": "Choisissez la formule.",
+    "pack": "Choisissez le forfait.",
     "dates": "La date de fin précède la date de début.",
     "note": "500 caractères maximum."
   },
@@ -48,9 +48,9 @@
     "title": "Nouvel abonnement",
     "description": "L'emplacement reste réservé à l'abonné toute la saison.",
     "price": "Prix catalogue",
-    "priceHint": "Choisissez saison, formule et emplacement pour voir le prix.",
+    "priceHint": "Choisissez la saison, le forfait et l'emplacement pour voir le prix.",
     "deposit": "Acompte demandé : {{amount}}",
-    "overrideHint": "Le prix vient du catalogue (formule saison). Pour un prix convenu, utilisez une convention ou une règle de prix dédiée.",
+    "overrideHint": "Le prix provient de la grille tarifaire (formule saison). Pour un prix convenu, utilisez une convention ou une règle de prix dédiée.",
     "submit": "Créer l'abonnement",
     "done": "Abonnement {{code}} créé."
   },

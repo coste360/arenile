@@ -8,4 +8,4 @@ Hi {{customer.first_name}}, booking **{{booking.code}}** ({{booking.period}}) ha
 
 {{> summary}}
 
-If you are entitled to a refund or a credit, you will receive a separate message with the amount. For any question, reply to this email or contact the establishment.
+If you are entitled to a refund or a credit, you will receive a separate message with the amount. For any question, reply to this email or contact the beach club.

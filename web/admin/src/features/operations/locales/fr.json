@@ -20,7 +20,7 @@
   },
   "map": {
     "title": "Plan",
-    "description": "Plan opérationnel pour toute date et tranche, coloré par statut.",
+    "description": "Plan opérationnel pour toute date et tout créneau, coloré par statut.",
     "noMapsTitle": "Aucun plan",
     "noMapsDescription": "Dessinez le plan de l'établissement pour voir l'état des emplacements.",
     "openEditor": "Ouvrir l'éditeur de plans",
@@ -43,7 +43,7 @@
     "pass_holder": "Abonné",
     "released": "Abonné absent aujourd’hui",
     "held": "En attente",
-    "renewal_offer": "Priorité de renouvellement",
+    "renewal_offer": "Réservé pour renouvellement",
     "blocked": "Bloqué",
     "closed": "Fermé",
     "inactive": "Inactif"
@@ -62,16 +62,16 @@
     "rejected": "Refusée"
   },
   "toolbar": {
-    "label": "Jour et tranche",
+    "label": "Jour et créneau",
     "previousDay": "Jour précédent",
     "nextDay": "Jour suivant",
     "today": "Aujourd'hui",
     "date": "Date",
-    "slot": "Tranche",
+    "slot": "Créneau",
     "map": "Plan"
   },
   "search": {
-    "placeholder": "Rechercher client, code ou emplacement",
+    "placeholder": "Client, code ou emplacement",
     "label": "Rechercher sur le plan",
     "clear": "Effacer la recherche",
     "results_one": "{{count}} emplacement trouvé",
@@ -90,8 +90,8 @@
     "seasonPass": "Abonnement",
     "code": "Code",
     "period": "Période",
-    "slots": "Tranche",
-    "packs": "Formules",
+    "slots": "Créneau",
+    "packs": "Forfaits",
     "bookingStatus": "Statut",
     "total": "Total",
     "paid": "Payé",
@@ -99,7 +99,7 @@
     "holdExpires": "Blocage temporaire jusqu'à {{time}}.",
     "blocked": "Emplacement bloqué manuellement.",
     "blockedReason": "Bloqué : {{reason}}",
-    "free": "Aucune allocation pour cette tranche.",
+    "free": "Aucune allocation pour ce créneau.",
     "checkedIn": "Check-in enregistré pour {{code}}.",
     "readOnly": "Accès en lecture seule."
   },
@@ -115,12 +115,12 @@
   },
   "release": {
     "title": "Libérer l'emplacement {{label}} ?",
-    "description": "{{customer}} ne viendra pas le {{date}} ({{slot}}) : l'emplacement devient réservable. S'il est revendu, l'abonné reçoit le crédit prévu.",
+    "description": "{{customer}} ne viendra pas le {{date}} ({{slot}}) : l'emplacement devient réservable. S'il est revendu, l'abonné reçoit l'avoir prévu.",
     "done": "Emplacement {{label}} libéré."
   },
   "revoke": {
     "title": "Annuler la libération de {{label}} ?",
-    "description": "L'emplacement revient à {{customer}} pour cette tranche.",
+    "description": "L'emplacement revient à {{customer}} pour ce créneau.",
     "done": "Libération de {{label}} annulée."
   },
   "move": {

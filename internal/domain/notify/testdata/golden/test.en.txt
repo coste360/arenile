@@ -5,7 +5,7 @@ Test email
 
 If you are reading this message, email delivery for Lido Delfino works.
 
-Sender, reply-to address and notifications are set in Settings › Email.
+Sender, reply-to address and notifications are configured in Settings › Email and notifications.
 
 -- 
 Lido Delfino

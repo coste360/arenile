@@ -8,13 +8,13 @@
     "status": "Status",
     "released": "Freigaben",
     "credit": "Guthaben",
-    "balance": "Offen"
+    "balance": "Restbetrag"
   },
   "list": {
     "count_one": "{{count}} Saisonabo",
     "count_other": "{{count}} Saisonabos",
     "empty": "Keine Saisonabos in dieser Saison.",
-    "emptyHint": "Lege das erste mit „Neues Saisonabo“ an.",
+    "emptyHint": "Legen Sie das erste mit „Neues Saisonabo“ an.",
     "noSeasons": "Keine Saison eingerichtet.",
     "otherZone": "Weitere Plätze",
     "row": "Reihe {{row}}",
@@ -26,7 +26,7 @@
     "season": "Saison",
     "pack": "Paket",
     "packPlaceholder": "Paket wählen",
-    "slots": "Zeitfenster",
+    "slots": "Tageszeit",
     "spot": "Platz",
     "spotPick": "Freien Platz wählen",
     "spotLoading": "Verfügbarkeit wird geladen…",
@@ -50,7 +50,7 @@
     "price": "Listenpreis",
     "priceHint": "Saison, Paket und Platz wählen, um den Preis zu sehen.",
     "deposit": "Anzahlung: {{amount}}",
-    "overrideHint": "Der Preis stammt aus der Preisliste (Saisontarif). Für einen vereinbarten Preis eine Vereinbarung oder eigene Preisregel verwenden.",
+    "overrideHint": "Der Preis stammt aus der Preisliste (Dauer Saison). Für einen vereinbarten Preis verwenden Sie eine Vereinbarung oder eine eigene Preisregel.",
     "submit": "Saisonabo anlegen",
     "done": "Saisonabo {{code}} angelegt."
   },
@@ -73,8 +73,8 @@
     "note": "Notiz (optional)",
     "submit_one": "{{count}} Tag freigeben",
     "submit_other": "{{count}} Tage freigeben",
-    "done_one": "{{count}} Tag freigegeben: der Platz ist buchbar.",
-    "done_other": "{{count}} Tage freigegeben: der Platz ist buchbar.",
+    "done_one": "{{count}} Tag freigegeben: Der Platz ist buchbar.",
+    "done_other": "{{count}} Tage freigegeben: Der Platz ist buchbar.",
     "list": "Freigegebene Tage",
     "empty": "Keine freigegebenen Tage.",
     "status": {

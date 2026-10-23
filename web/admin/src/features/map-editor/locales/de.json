@@ -14,22 +14,22 @@
     "deleteAria": "Plan {{name}} löschen",
     "deleteConfirm_one": "Plan {{name}} und sein {{count}} Platz werden zusammen mit den Zonen des Plans gelöscht.",
     "deleteConfirm_other": "Plan {{name}} und seine {{count}} Plätze werden zusammen mit den Zonen des Plans gelöscht.",
-    "searchPlaceholder": "Karte suchen…",
-    "deleteTitle": "Karte {{name}} löschen?",
-    "emptyTitle": "Keine Karten",
+    "searchPlaceholder": "Plan suchen…",
+    "deleteTitle": "Plan {{name}} löschen?",
+    "emptyTitle": "Keine Pläne",
     "delete": "Löschen"
   },
   "editor": {
-    "title": "Plan-Editor",
-    "titleNamed": "Plan-Editor: {{name}}",
-    "description": "Plätze ziehen, Reihengenerator nutzen und speichern: Speichern erfolgt atomar mit Versionsprüfung.",
+    "title": "Planeditor",
+    "titleNamed": "Planeditor: {{name}}",
+    "description": "Ziehen Sie Plätze, nutzen Sie den Reihengenerator und speichern Sie: Gespeichert wird in einem Schritt mit Versionsprüfung.",
     "backToList": "Alle Pläne",
     "count_one": "{{count}} Platz",
     "count_other": "{{count}} Plätze",
     "unsaved": "ungespeicherte Änderungen",
     "saved": "gespeichert",
-    "noZones": "Legen Sie zuerst eine Zone (Platz- oder Zonenmodus) für diesen Plan an (Konfiguration → Zonen).",
-    "conflict": "Jemand anderes hat diesen Plan inzwischen gespeichert. Neu laden (Ihre Änderungen gehen verloren) oder mit Ihrer Version überschreiben.",
+    "noZones": "Legen Sie zuerst eine Zone (Platz- oder Zonenmodus) für diesen Plan an (Einstellungen → Zonen).",
+    "conflict": "Jemand anderes hat diesen Plan inzwischen gespeichert. Laden Sie neu, um diese Version zu sehen (Ihre Änderungen gehen verloren), oder überschreiben Sie sie mit Ihrer Version.",
     "reload": "Gespeicherte Version laden",
     "overwrite": "Mit meiner überschreiben",
     "allocated_one": "{{count}} Platz kann nicht gelöscht werden: Er hat zukünftige Buchungen.",
@@ -46,7 +46,7 @@
     "spot": "Platz {{label}}, {{zone}} {{state}}",
     "inactive": "(deaktiviert)",
     "decoration": "Element: {{name}}",
-    "roleDescription": "Karteneditor",
+    "roleDescription": "Planeditor",
     "sea": "Meer"
   },
   "fields": {
@@ -86,7 +86,7 @@
     "daybed": "Daybed",
     "cabana": "Cabana",
     "hammock": "Hängematte",
-    "custom": "Andere"
+    "custom": "Sonstiges"
   },
   "decorations": {
     "walkway": "Steg",
@@ -96,7 +96,7 @@
     "entrance": "Eingang",
     "cabin_block": "Kabinen",
     "text": "Text",
-    "custom": "Andere"
+    "custom": "Sonstiges"
   },
   "generator": {
     "title": "Reihengenerator",
@@ -124,7 +124,7 @@
     "preview": "Vorschau",
     "previewCount_one": "{{count}} Platz: {{first}}.",
     "previewCount_other": "{{count}} Plätze, von {{first}} bis {{last}}.",
-    "conflicts": "Bereits vorhandene Bezeichnungen: {{labels}}. Erste Reihe oder Format ändern.",
+    "conflicts": "Bereits vorhandene Bezeichnungen: {{labels}}. Ändern Sie die erste Reihe oder das Format.",
     "add_one": "{{count}} Platz hinzufügen",
     "add_other": "{{count}} Plätze hinzufügen",
     "layout": "Anordnung",
@@ -138,9 +138,9 @@
     "selected_other": "{{count}} Elemente ausgewählt",
     "mixed": "— gemischt —",
     "noZone": "ohne Zone",
-    "deactivateHint": "Ein Platz mit künftigen Buchungen kann nicht gelöscht werden: deaktivieren Sie ihn.",
+    "deactivateHint": "Ein Platz mit künftigen Buchungen kann nicht gelöscht werden: Deaktivieren Sie ihn.",
     "keyboardHint": "Tastatur: Tab betritt und verlässt den Plan, Bild↑/Bild↓ oder Pos1/Ende wechseln zwischen Elementen, Enter wählt aus, Pfeile verschieben (Umschalt ×5, Alt um 1), Entf löscht, Strg/Cmd+Z rückgängig, Umschalt+Strg/Cmd+Z wiederholen, Strg/Cmd+D duplizieren, Strg/Cmd+A alles auswählen, Esc hebt die Auswahl auf. Auf dem Sand ziehen, um einen Bereich auszuwählen.",
-    "noComponents": "Keine Komponenten im Katalog: Füge sie unter Konfiguration → Katalog hinzu, um die Kapazität festzulegen.",
+    "noComponents": "Keine Komponenten im Katalog: Fügen Sie sie unter Einstellungen → Katalog hinzu, um die Kapazität festzulegen.",
     "quantities": "Kapazität und maximale Extras pro Komponente",
     "component": "Komponente",
     "attributesHint": "Durch Komma getrennt, z. B.: schatten, nahe_bar.",
@@ -193,7 +193,7 @@
   },
   "settings": {
     "apply": "Übernehmen",
-    "description": "Name, Größe in Karteneinheiten, Rasterabstand und Meerseite."
+    "description": "Name, Größe in Planeinheiten, Rasterabstand und Meerseite."
   },
   "validation": {
     "number": "Geben Sie eine gültige Zahl ein.",
@@ -202,10 +202,10 @@
   "palette": {
     "spots": "Platz",
     "decorations": "Element",
-    "label": "Zur Karte hinzufügen",
+    "label": "Zum Plan hinzufügen",
     "spotsHint": "Buchbaren Platz mit Illustration hinzufügen",
     "decorationsHint": "Bauwerk, Service oder Dekoration hinzufügen",
-    "spotsDisabledHint": "Legen Sie zuerst eine Zone an: jeder Platz gehört zu einer Zone."
+    "spotsDisabledHint": "Legen Sie zuerst eine Zone an: Jeder Platz gehört zu einer Zone."
   },
   "renumber": {
     "title": "Reihe neu nummerieren",
@@ -216,8 +216,8 @@
     "apply": "Neu nummerieren"
   },
   "conflict": {
-    "title": "Karte von einem anderen Benutzer geändert",
-    "yours": "Deine Änderungen",
+    "title": "Plan von einem anderen Benutzer geändert",
+    "yours": "Ihre Änderungen",
     "theirs": "Inzwischen gespeichert",
     "theirsVersion": "Inzwischen gespeichert (Version {{version}})",
     "unknown": "Gespeicherte Version wird geladen…",
@@ -232,7 +232,7 @@
     "changed_other": "{{count}} geändert:",
     "decorations_one": "{{count}} Dekorationselement geändert.",
     "decorations_other": "{{count}} Dekorationselemente geändert.",
-    "settings": "Karteneinstellungen geändert.",
+    "settings": "Planeinstellungen geändert.",
     "more_one": "und {{count}} weiterer",
     "more_other": "und {{count}} weitere",
     "keepEditing": "Weiter bearbeiten"
@@ -294,7 +294,7 @@
       "pedana_legno": "Holzplattform",
       "rampa_accessibile": "Barrierefreie Rampe",
       "gradini": "Stufen",
-      "pontile": "Steg am Wasser",
+      "pontile": "Bootssteg",
       "staccionata": "Zaun",
       "bar": "Bar / Kiosk",
       "ristorante": "Restaurant",
@@ -373,18 +373,18 @@
   },
   "seaChange": {
     "title": "Meer verschieben?",
-    "description": "Das Meer wechselt von „{{from}}“ nach „{{to}}“. Wähle, ob die ganze Anordnung gespiegelt oder nur das Meer verschoben wird.",
+    "description": "Das Meer wechselt von „{{from}}“ nach „{{to}}“. Wählen Sie, ob die ganze Anordnung gespiegelt oder nur das Meer verschoben wird.",
     "flip": "Anordnung spiegeln",
-    "flipHint": "Plätze, Dekorationen und Stege werden gespiegelt oder gedreht, sodass jede Reihe denselben Abstand zum Meer behält. Bezeichnungen, Reihen, Zonen und Buchungen ändern sich nicht. Wird sofort als neue Version gespeichert.",
+    "flipHint": "Plätze, Dekorationen und Stege werden gespiegelt oder gedreht, sodass jede Reihe denselben Abstand zum Meer behält. Bezeichnungen, Reihen, Zonen und Buchungen ändern sich nicht. Die Änderung wird sofort als neue Version gespeichert.",
     "onlySea": "Nur das Meer",
-    "onlySeaHint": "nur die Meerseite ändert sich, die Elemente bleiben an ihrem Platz. Speichere die Karte, um es zu übernehmen.",
+    "onlySeaHint": "nur die Meerseite ändert sich, die Elemente bleiben an ihrem Platz. Speichern Sie den Plan, um die Änderung zu übernehmen.",
     "checking": "Künftige Buchungen werden geprüft…",
-    "futureTitle": "Künftige Buchungen auf der Karte",
-    "future_one": "{{count}} Buchung, Saisonkarte oder Sperre ab heute betrifft {{spots}} Plätze dieser Karte. Nur die Zeichnung ändert sich: zugewiesene Plätze bleiben gleich.",
-    "future_other": "{{count}} Buchungen, Saisonkarten oder Sperren ab heute betreffen {{spots}} Plätze dieser Karte. Nur die Zeichnung ändert sich: zugewiesene Plätze bleiben gleich.",
+    "futureTitle": "Künftige Buchungen auf dem Plan",
+    "future_one": "{{count}} Buchung, Saisonabo oder Sperre ab heute betrifft {{spots}} Plätze dieses Plans. Nur die Zeichnung ändert sich: Zugewiesene Plätze bleiben gleich.",
+    "future_other": "{{count}} Buchungen, Saisonabos oder Sperren ab heute betreffen {{spots}} Plätze dieses Plans. Nur die Zeichnung ändert sich: Zugewiesene Plätze bleiben gleich.",
     "blocked": {
-      "dirty": "Es gibt ungespeicherte Änderungen: speichere oder verwirf sie, bevor du die Anordnung spiegelst.",
-      "resized": "Du hast auch die Größe geändert: übernimm und speichere sie zuerst, dann verschiebe das Meer."
+      "dirty": "Es gibt ungespeicherte Änderungen: Speichern oder verwerfen Sie sie, bevor Sie die Anordnung spiegeln.",
+      "resized": "Sie haben auch die Größe geändert: Übernehmen und speichern Sie sie zuerst, dann verschieben Sie das Meer."
     }
   }
 }

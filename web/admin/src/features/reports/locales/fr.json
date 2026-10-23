@@ -158,7 +158,7 @@
     "resold": "Créneaux revendus",
     "resaleRate": "% revendus",
     "resaleRevenue": "Revenus de revente",
-    "credits": "Crédits émis"
+    "credits": "Avoirs émis"
   },
   "customers": {
     "help": "Nom uniquement : les coordonnées restent dans la fiche client.",

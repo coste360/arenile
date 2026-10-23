@@ -69,7 +69,7 @@
     "available_one": "{{count}} disponible",
     "available_other": "{{count}} disponibles",
     "nothing": "Rien de disponible en ligne pour ces dates : essayez une autre période ou un autre créneau.",
-    "noZones": "La plage n'a pas encore publié de zones réservables en ligne.",
+    "noZones": "L'établissement n'a pas encore publié de zones réservables en ligne.",
     "dropped": "Certains emplacements choisis ne sont plus disponibles et ont été retirés.",
     "mapLoading": "Chargement du plan…"
   },
@@ -87,7 +87,7 @@
     "lineZone": "{{zone}}",
     "lineQuantity": "{{zone}} × {{count}}",
     "noPacks": "Aucun forfait réservable en ligne pour ce choix.",
-    "requiresApproval": "Sous réserve de confirmation par la plage",
+    "requiresApproval": "Sous réserve de confirmation par l'établissement",
     "composition": "Comprend",
     "perUnit": "{{price}} l'unité",
     "perDay": "{{price}} par jour",
@@ -120,8 +120,8 @@
     "paymentBlocked": "Le site qui héberge ce formulaire n'autorise pas l'ouverture du paiement : utilisez le bouton ci-dessous.",
     "securePayment": "Paiement sécurisé avec {{provider}} : vous serez redirigé puis ramené ici.",
     "testMode": "Mode test : aucun débit réel.",
-    "atDesk": "Vous paierez directement à la plage.",
-    "approval": "La demande sera confirmée par la plage.",
+    "atDesk": "Vous paierez directement sur place.",
+    "approval": "La demande sera confirmée par l'établissement.",
     "validation": {
       "required": "Champ obligatoire",
       "email": "Saisissez une adresse e-mail valide",
@@ -141,10 +141,10 @@
     "plan": {
       "online_full": "Paiement en ligne du montant total",
       "online_deposit": "Acompte en ligne, solde plus tard",
-      "at_desk": "Paiement à la plage",
-      "approval": "Sous réserve de confirmation par la plage"
+      "at_desk": "Paiement sur place",
+      "approval": "Sous réserve de confirmation par l'établissement"
     },
-    "violation": "Règle de la plage : {{code}}",
+    "violation": "Règle de l'établissement : {{code}}",
     "violations": {
       "lead_time_too_short": "Cette date ne peut plus être réservée en ligne : il faut plus d’anticipation.",
       "cutoff_passed": "Les réservations en ligne pour cette date sont fermées.",
@@ -154,7 +154,7 @@
       "duration_too_short": "Le séjour est trop court pour cette période.",
       "duration_too_long": "Le séjour est trop long pour cette période.",
       "start_weekday_not_allowed": "Sur cette période, le séjour doit commencer un autre jour de la semaine.",
-      "too_many_spots": "Trop de places pour une seule réservation."
+      "too_many_spots": "Vous avez choisi trop d'emplacements pour une seule réservation."
     }
   },
   "confirmation": {
@@ -167,9 +167,9 @@
     "waiting": "En attente de la confirmation du paiement…",
     "waitingHint": "Ne fermez pas la page : cela prend généralement quelques secondes.",
     "slow": "La confirmation prend plus de temps que prévu. Vous recevrez un e-mail dès que le paiement sera confirmé.",
-    "approval": "Demande envoyée : la plage vous répondra rapidement.",
+    "approval": "Demande envoyée : l'établissement vous répondra rapidement.",
     "approvalTitle": "Demande envoyée",
-    "failedTitle": "Paiement refusé",
+    "failedTitle": "Échec du paiement",
     "failed": "Le paiement n'a pas abouti. L'emplacement est toujours réservé : vous pouvez réessayer.",
     "cancelledTitle": "Paiement non finalisé",
     "cancelled": "Le paiement n'a pas été finalisé. L'emplacement est toujours réservé : vous pouvez réessayer.",
@@ -177,7 +177,7 @@
     "expiredTitle": "Réservation expirée",
     "expired": "Le temps pour finaliser la réservation est écoulé et l'emplacement a été libéré.",
     "rejectedTitle": "Demande non acceptée",
-    "rejected": "La plage n'a pas pu accepter la demande.",
+    "rejected": "L'établissement n'a pas pu accepter la demande.",
     "unknownTitle": "Paiement en cours de traitement",
     "unknown": "Si vous avez finalisé le paiement, vous recevrez bientôt un e-mail avec la confirmation et le lien de gestion de la réservation.",
     "newBooking": "Nouvelle réservation",
@@ -232,7 +232,7 @@
       "none": "Aucun remboursement.",
       "provider_pending": "Remboursement lancé : il arrivera sur votre moyen de paiement sous quelques jours.",
       "provider_succeeded": "Remboursement effectué.",
-      "manual_due": "La plage effectuera le remboursement prochainement.",
+      "manual_due": "L'établissement effectuera le remboursement prochainement.",
       "credited": "Avoir enregistré pour votre prochaine réservation."
     },
     "releaseDays": "Libérer des jours",
@@ -251,7 +251,7 @@
     "send": "Envoyer le lien",
     "requestLinkSent": "Si les données correspondent à une réservation, vous recevrez un nouveau lien par e-mail.",
     "linkInvalid": "Le lien n'est pas valide ou a expiré.",
-    "noActions": "Pour toute modification, contactez directement la plage.",
+    "noActions": "Pour toute modification, contactez directement l'établissement.",
     "back": "Retour à la réservation"
   },
   "errors": {
@@ -259,11 +259,11 @@
     "spot_unavailable": "L'emplacement vient d'être réservé par quelqu'un d'autre.",
     "quota_exceeded": "Plus de places en ligne pour ces dates.",
     "pool_exhausted": "Quantité non disponible pour ces dates.",
-    "policy_violation": "La demande ne respecte pas les règles de réservation de la plage.",
+    "policy_violation": "La demande ne respecte pas les règles de réservation de l'établissement.",
     "checkout_not_found": "Session de réservation introuvable : recommencez depuis le début.",
     "payment_provider_unavailable": "Le service de paiement ne répond pas : réessayez dans un instant.",
     "rate_limited": "Trop de demandes : patientez quelques secondes.",
-    "invalid_transition": "Opération plus possible pour cette réservation.",
+    "invalid_transition": "Cette opération n'est plus possible pour cette réservation.",
     "version_conflict": "La réservation a été mise à jour entre-temps : rechargez la page.",
     "conflict": "Les conditions ont été mises à jour : relisez-les et acceptez-les à nouveau.",
     "validation_failed": "Certaines données ne sont pas valides : vérifiez les champs."

@@ -6,4 +6,4 @@ preheader: Wir können die Anfrage {{booking.code}} nicht bestätigen.
 
 Hallo {{customer.first_name}}, leider kann **{{establishment.name}}** die Anfrage **{{booking.code}}** ({{booking.period}}) nicht bestätigen.
 
-Bereits gezahlte Beträge werden Ihnen zurückerstattet. Sie können auf der Buchungsseite andere Daten wählen oder den Betrieb kontaktieren.
+Bereits gezahlte Beträge werden Ihnen zurückerstattet. Sie können auf der Buchungsseite andere Daten wählen oder sich an das Strandbad wenden.

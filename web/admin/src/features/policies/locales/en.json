@@ -72,7 +72,7 @@
     "max_lead_time_days": "Maximum lead time (days)",
     "same_day": "Same-day booking",
     "same_day_until": "Same day until",
-    "allowed_formulas": "Allowed formulas",
+    "allowed_formulas": "Allowed durations",
     "min_days": "Minimum days",
     "max_days": "Maximum days",
     "fixed_start_weekday": "Required start weekday",

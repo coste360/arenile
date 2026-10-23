@@ -1,11 +1,11 @@
 {
   "title": "Berichte",
   "page": {
-    "description": "Auslastung, Umsatz, Kanäle, Stornierungen, Saisonabos, Top-Kunden, offene Salden und Vorjahresvergleich, mit CSV-Export."
+    "description": "Auslastung, Umsatz, Kanäle, Stornierungen, Saisonabos, Top-Kunden, offene Beträge und Vorjahresvergleich, mit CSV-Export."
   },
   "forbidden": {
     "title": "Zugriff nicht erlaubt",
-    "description": "Deine Rolle hat keinen Zugriff auf Berichte und Exporte."
+    "description": "Ihre Rolle hat keinen Zugriff auf Berichte und Exporte."
   },
   "period": {
     "label": "Zeitraum",
@@ -22,10 +22,10 @@
     "compareWith": "Mit {{year}} vergleichen",
     "showing": "Daten vom {{from}} bis {{to}} (einschließlich).",
     "error": {
-      "incomplete": "Wähle auch den letzten Tag des Zeitraums.",
+      "incomplete": "Wählen Sie auch den letzten Tag des Zeitraums.",
       "reversed": "Der letzte Tag liegt vor dem ersten Tag.",
       "tooLong": "Der Zeitraum darf höchstens 400 Tage dauern.",
-      "noSeason": "Wähle eine Saison oder wechsle zu Monat oder benutzerdefiniertem Zeitraum."
+      "noSeason": "Wählen Sie eine Saison oder wechseln Sie zu Monat oder benutzerdefiniertem Zeitraum."
     }
   },
   "tabs": {
@@ -37,7 +37,7 @@
     "cancellations": "Stornierungen und No-Shows",
     "passes": "Saisonabos und Freigaben",
     "customers": "Top-Kunden",
-    "balances": "Offene Salden"
+    "balances": "Offene Beträge"
   },
   "csv": {
     "label": "CSV exportieren",
@@ -49,7 +49,7 @@
   "summary": {
     "kpis": "Kennzahlen des Zeitraums",
     "unitsHint": "{{occupied}} von {{capacity}} Zeitfenstern belegt",
-    "openBalanceHint": "Buchungen mit Saldo: {{n}}",
+    "openBalanceHint": "Buchungen mit offenem Betrag: {{n}}",
     "new": "Neu",
     "vs": "{{year}}: {{value}}",
     "basis": {
@@ -68,7 +68,7 @@
     "season_passes_sold": "Verkaufte Saisonabos",
     "released_units": "Freigegebene Zeitfenster",
     "resold_units": "Weiterverkaufte Zeitfenster",
-    "open_balance": "Offene Salden"
+    "open_balance": "Offene Beträge"
   },
   "comparison": {
     "title": "Vergleich mit {{year}}",
@@ -94,14 +94,14 @@
     "month": "Monat",
     "zone": "Zone",
     "row": "Reihe",
-    "slot": "Zeitfenster",
+    "slot": "Tageszeit",
     "channel": "Kanal",
     "pack": "Paket",
     "extra": "Extra",
     "payment_method": "Zahlungsart",
     "vat_rate": "MwSt.-Satz",
     "lead_time": "Vorlaufzeit",
-    "formula": "Formel"
+    "formula": "Dauer"
   },
   "occupancy": {
     "rate": "Auslastung",
@@ -161,7 +161,7 @@
     "credits": "Ausgegebene Gutschriften"
   },
   "customers": {
-    "help": "Nur der Name: Kontaktdaten bleiben in der Kundenkarte.",
+    "help": "Nur der Name: Kontaktdaten bleiben im Kundendatensatz.",
     "rank": "#",
     "name": "Kunde",
     "bookings": "Buchungen",
@@ -177,13 +177,13 @@
   },
   "balances": {
     "help": "Buchungen des Zeitraums mit noch offenem Betrag.",
-    "totalDue": "Offen: {{amount}} aus {{n}} Buchungen.",
+    "totalDue": "Offen: {{amount}} bei {{n}} Buchungen.",
     "code": "Code",
     "customer": "Kunde",
     "status": "Status",
-    "dates": "Daten",
+    "dates": "Zeitraum",
     "total": "Gesamt",
     "paid": "Bezahlt",
-    "due": "Saldo"
+    "due": "Restbetrag"
   }
 }

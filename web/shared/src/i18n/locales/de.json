@@ -18,18 +18,18 @@
       "forbidden": "Sie haben keine Berechtigung für diese Aktion.",
       "tooManyRequests": "Zu viele Anfragen. Bitte warten Sie einen Moment.",
       "title": "Etwas ist schiefgelaufen",
-      "validation": "Einige Angaben sind ungültig: Bitte die markierten Felder prüfen.",
+      "validation": "Einige Angaben sind ungültig: Bitte prüfen Sie die markierten Felder.",
       "conflict": "Der Vorgang steht im Konflikt mit vorhandenen Daten (z. B. ein bereits verwendeter Code).",
-      "versionConflict": "Ein anderer Benutzer hat diese Daten geändert. Neu laden, um die aktuelle Version zu sehen.",
+      "versionConflict": "Ein anderer Benutzer hat diese Daten geändert. Laden Sie neu, um die aktuelle Version zu sehen.",
       "notImplemented": "Funktion noch nicht verfügbar.",
       "spotHasFutureAllocations": "Der Platz hat zukünftige Buchungen: Er kann nur deaktiviert werden.",
       "noPrice": "Für die gewählten Daten fehlt ein Preis.",
       "spotUnavailable": "Der Platz ist für die gewählten Daten nicht verfügbar.",
       "poolExhausted": "Menge für die gewählten Daten nicht verfügbar.",
       "quotaExceeded": "Das Online-Kontingent ist für die gewählten Daten ausgeschöpft.",
-      "holdExpired": "Die vorläufige Reservierung ist abgelaufen: bitte erneut auswählen.",
+      "holdExpired": "Die vorläufige Reservierung ist abgelaufen: Bitte wählen Sie erneut.",
       "invalidTransition": "Diese Aktion ist im aktuellen Buchungsstatus nicht erlaubt.",
-      "cashSessionClosed": "Die Kassensitzung ist geschlossen: öffne eine, um Barzahlungen zu erfassen.",
+      "cashSessionClosed": "Die Kassensitzung ist geschlossen: Öffnen Sie eine, um Barzahlungen zu erfassen.",
       "cashSessionAlreadyOpen": "Es ist bereits eine Kassensitzung geöffnet.",
       "policyViolation": "Die Anfrage entspricht nicht den Buchungsregeln."
     },
@@ -79,14 +79,14 @@
     "decoration": {
       "walkway": "Steg",
       "shower": "Dusche",
-      "lifeguard": "Rettungsschwimmer",
+      "lifeguard": "Rettungsturm",
       "bar": "Bar",
       "entrance": "Eingang",
       "cabin_block": "Kabinen",
       "text": "Text",
       "custom": "Element"
     },
-    "zoomHint": "Vergrößern Sie die Karte, um die Beschriftungen zu lesen, oder nutzen Sie die Liste.",
+    "zoomHint": "Vergrößern Sie den Plan, um die Beschriftungen zu lesen, oder nutzen Sie die Liste.",
     "flag": {
       "green": "grün",
       "yellow": "gelb",
@@ -95,7 +95,7 @@
   },
   "auth": {
     "loginTitle": "Im Verwaltungsbereich anmelden",
-    "loginSubtitle": "Gib E-Mail und Passwort ein, um fortzufahren.",
+    "loginSubtitle": "Geben Sie E-Mail und Passwort ein, um fortzufahren.",
     "email": "E-Mail",
     "password": "Passwort",
     "submit": "Anmelden",
@@ -109,7 +109,7 @@
     "errors": {
       "invalidCredentials": "E-Mail oder Passwort falsch.",
       "tooManyAttempts": "Zu viele Anmeldeversuche. Versuchen Sie es in einigen Minuten erneut.",
-      "totpRequired": "Ein Bestätigungscode ist erforderlich.",
+      "totpRequired": "Ein Code der Zwei-Faktor-Authentifizierung ist erforderlich.",
       "generic": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
       "invalidTotp": "Ungültiger Bestätigungscode."
     },
@@ -134,19 +134,19 @@
     "configuration": "Einstellungen des Betriebs",
     "config": {
       "establishment": "Betrieb",
-      "seasons": "Saisons und Zeiträume",
+      "seasons": "Saisons und Perioden",
       "closures": "Schließtage",
       "maps": "Pläne",
       "zones": "Zonen",
-      "pools": "Kontingente",
+      "pools": "Bestände",
       "catalog": "Katalog",
       "pricing": "Preise",
-      "policies": "Regeln",
+      "policies": "Richtlinien",
       "setup": "Geführte Einrichtung",
       "team": "Benutzer",
       "online": "Öffentliche Seite",
       "payments": "Online-Zahlungen",
-      "email": "E-Mail und Benachrichtigungen",
+      "email": "Benachrichtigungen",
       "devices": "Geräte",
       "devicesLan": "Lokales Netzwerk",
       "desktop": "Desktop-App",
@@ -154,18 +154,18 @@
       "webhooks": "Webhooks",
       "seasonRollover": "Neue Saison"
     },
-    "operations": "Betrieb",
+    "operations": "Tagesgeschäft",
     "configGroup": "Konfiguration",
     "establishments": "Alle Betriebe",
-    "goTo": "Gehe zu…",
+    "goTo": "Wechseln zu…",
     "search": "Suchen",
     "searchPlaceholder": "Seite suchen…"
   },
   "admin": {
     "placeholder": {
       "title": "Bereich in Vorbereitung",
-      "today": "Tagesplan, Ankünfte, offene Beträge und zuzuweisende Zeilen.",
-      "map": "Betriebsansicht des Plans für jedes Datum, nach Status eingefärbt.",
+      "today": "Tagesplan, Ankünfte, offene Beträge und noch zuzuweisende Buchungen.",
+      "map": "Operative Planansicht für jedes Datum, nach Status eingefärbt.",
       "bookings": "Filterbare Buchungsliste, Details und Erstellung.",
       "calendar": "Planungsraster Plätze × Tage für lange Aufenthalte.",
       "customers": "Kundendaten, Verlauf, Guthaben und Saisonabos.",
@@ -174,11 +174,11 @@
       "waitlist": "Anfragen ohne Verfügbarkeit und automatische Angebote bei frei werdenden Plätzen.",
       "cash": "Kassensitzung, Zahlungen und Abschlüsse.",
       "reports": "Auslastung, Umsatz, Kanäle und Exporte.",
-      "settings": "Saisons, Pläne, Zonen, Katalog, Preise, Regeln, öffentliche Seite und Zahlungen."
+      "settings": "Saisons, Pläne, Zonen, Katalog, Preise, Richtlinien, öffentliche Seite und Zahlungen."
     },
     "establishments": {
       "title": "Alle Betriebe",
-      "empty": "Kein Strandbad konfiguriert.",
+      "empty": "Kein Betrieb konfiguriert.",
       "name": "Name",
       "slug": "Öffentliche Adresse",
       "locale": "Standardsprache",
@@ -190,11 +190,11 @@
     },
     "demoMap": {
       "title": "Demo-Plan",
-      "note": "Beispielgeometrie, nur lesend. Der Editor kommt mit Meilenstein M1, die Betriebsansicht mit M3.",
+      "note": "Beispielgeometrie, nur lesend. Der Planeditor kommt mit Meilenstein M1, die operative Ansicht mit M3.",
       "selected": "Sie haben Platz {{label}} ausgewählt."
     },
     "user": "Angemeldeter Benutzer",
-    "totpEnrolmentRequired": "Um fortzufahren, aktivieren Sie die Zwei-Faktor-Bestätigung in Ihrem Profil.",
+    "totpEnrolmentRequired": "Um fortzufahren, aktivieren Sie in Ihrem Profil die Zwei-Faktor-Authentifizierung.",
     "skipToContent": "Zum Inhalt springen",
     "switcher": {
       "label": "Betrieb",
@@ -216,7 +216,7 @@
       "who": "Daten und Zahlung"
     },
     "stepText": {
-      "when": "Wähle den ersten und den letzten Tag deines Aufenthalts.",
+      "when": "Wählen Sie den ersten und den letzten Tag Ihres Aufenthalts.",
       "where": "Wählen Sie einen Platz auf dem Plan oder Ihre bevorzugte Zone.",
       "what": "Wählen Sie Paket und Extras; die Preisübersicht wird laufend aktualisiert.",
       "who": "Geben Sie Ihre Daten ein und bestätigen Sie. Kein Konto, keine Gebühren."
@@ -231,10 +231,10 @@
       "dates": "Aufenthaltsdaten",
       "days_one": "{{count}} Tag ausgewählt",
       "days_other": "{{count}} Tage ausgewählt",
-      "pickHint": "Wähle den ersten und letzten Tag: Für einen einzelnen Tag tippe zweimal auf denselben Tag."
+      "pickHint": "Wählen Sie den ersten und den letzten Tag: Für einen einzelnen Tag tippen Sie zweimal auf denselben Tag."
     },
     "season": "Saison {{year}}: vom {{from}} bis {{to}}",
-    "nextStepsSoon": "Platz, Paket und Online-Zahlung folgen in Kürze: bis dahin kontaktiere das Strandbad."
+    "nextStepsSoon": "Platz, Paket und Online-Zahlung folgen in Kürze: Bis dahin wenden Sie sich bitte an das Strandbad."
   },
   "ui": {
     "close": "Schließen",

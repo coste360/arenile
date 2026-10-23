@@ -101,7 +101,7 @@
     "payment_method": "Payment method",
     "vat_rate": "VAT rate",
     "lead_time": "Lead time",
-    "formula": "Formula"
+    "formula": "Duration"
   },
   "occupancy": {
     "rate": "Occupancy",

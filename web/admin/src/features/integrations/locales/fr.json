@@ -1,5 +1,5 @@
 {
-  "ownerOnly": "Seul le titulaire peut gérer les intégrations.",
+  "ownerOnly": "Seul le propriétaire peut gérer les intégrations.",
   "never": "Jamais",
   "actions": "Actions",
   "saved": "Modifications enregistrées",
@@ -21,7 +21,7 @@
     "establishment": {
       "configure": {
         "label": "Configuration",
-        "description": "Établissement, plans, tarifs et règles."
+        "description": "Établissement, plans, tarifs et politiques."
       }
     },
     "payments": {
@@ -172,7 +172,7 @@
     "allocation": "Emplacements",
     "season": "Abonnements",
     "waitlist": "Liste d'attente",
-    "credit": "Crédits",
+    "credit": "Avoirs",
     "payment": "Paiements",
     "customer": "Clients",
     "cash_session": "Caisse",
@@ -211,9 +211,9 @@
         "converted": "Réservation depuis la liste d'attente"
       },
       "credit": {
-        "issued": "Crédit accordé",
-        "consumed": "Crédit utilisé",
-        "expired": "Crédit expiré"
+        "issued": "Avoir accordé",
+        "consumed": "Avoir utilisé",
+        "expired": "Avoir expiré"
       },
       "payment": {
         "succeeded": "Paiement réussi",

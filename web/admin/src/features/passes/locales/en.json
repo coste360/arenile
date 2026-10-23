@@ -3,7 +3,7 @@
   "description": "Season passes by zone and row, day releases and credits.",
   "columns": {
     "spot": "Spot",
-    "customer": "Subscriber",
+    "customer": "Pass holder",
     "period": "Period",
     "status": "Status",
     "released": "Releases",
@@ -22,7 +22,7 @@
     "loadMore": "Load more"
   },
   "fields": {
-    "customer": "Subscriber",
+    "customer": "Pass holder",
     "season": "Season",
     "pack": "Pack",
     "packPlaceholder": "Choose the pack",
@@ -37,7 +37,7 @@
     "notes": "Internal notes"
   },
   "validation": {
-    "customer": "Choose the subscriber.",
+    "customer": "Choose the pass holder.",
     "season": "Choose the season.",
     "spot": "Choose the spot.",
     "pack": "Choose the pack.",
@@ -46,11 +46,11 @@
   },
   "create": {
     "title": "New season pass",
-    "description": "The spot stays reserved to the subscriber for the whole season.",
+    "description": "The spot stays reserved for the pass holder for the whole season.",
     "price": "List price",
     "priceHint": "Choose season, pack and spot to see the price.",
     "deposit": "Deposit due: {{amount}}",
-    "overrideHint": "The price comes from the price list (season formula). For an agreed price use an agreement or a dedicated price rule.",
+    "overrideHint": "The price comes from the price list (season duration). For an agreed price, use an agreement or a dedicated price rule.",
     "submit": "Create season pass",
     "done": "Season pass {{code}} created."
   },
@@ -84,7 +84,7 @@
     },
     "revoke": "Revoke",
     "revokeTitle": "Revoke the release of {{date}}?",
-    "revokeText": "The spot goes back to the subscriber. Not possible if the day was already resold.",
+    "revokeText": "The spot goes back to the pass holder. Not possible if the day has already been resold.",
     "revokeAria": "Revoke the release of {{date}} ({{slot}})"
   }
 }

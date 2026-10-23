@@ -34,9 +34,9 @@
     "use": "Utiliser ce modèle",
     "selected": "Choisi : continuer",
     "layout": "Disposition",
-    "rowsBySpots": "{{rows}} rangées × {{spots}} places",
+    "rowsBySpots": "{{rows}} rangées × {{spots}} emplacements",
     "zones": "Zones",
-    "packs": "Formules",
+    "packs": "Forfaits",
     "periods": "Périodes",
     "codes": {
       "classic_rows": {
@@ -59,9 +59,9 @@
     "current": "Actuel"
   },
   "rows": {
-    "intro": "Modèle choisi : {{template}}. Indiquez le nombre de rangées et de places par rangée : les emplacements sont créés sur le plan avec une numérotation automatique.",
+    "intro": "Modèle choisi : {{template}}. Indiquez le nombre de rangées et d'emplacements par rangée : les emplacements sont créés sur le plan avec une numérotation automatique.",
     "rows": "Rangées",
-    "spotsPerRow": "Places par rangée",
+    "spotsPerRow": "Emplacements par rangée",
     "total_one": "{{count}} emplacement",
     "total_other": "{{count}} emplacements",
     "noRows": "Ce modèle n'utilise pas de plan en rangées : des zones et des équipements en quantité seront créés.",
@@ -72,7 +72,7 @@
     "apply": "Créer la saison et le plan",
     "applying": "Création en cours…",
     "applied": "Configuration créée.",
-    "appliedSummary": "Emplacements : {{spots}} · zones : {{zones}} · formules : {{packs}} · périodes : {{periods}}.",
+    "appliedSummary": "Emplacements : {{spots}} · zones : {{zones}} · forfaits : {{packs}} · périodes : {{periods}}.",
     "alreadyConfigured": "Cet établissement a déjà une saison ou un plan ({{spots}} emplacements) : vous pouvez continuer ou les modifier dans l'éditeur.",
     "openMap": "Ouvrir le plan",
     "openMaps": "Aller aux plans",

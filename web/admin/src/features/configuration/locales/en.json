@@ -1,5 +1,5 @@
 {
-  "readOnly": "Your role can only view this page: changes are reserved to owners and managers.",
+  "readOnly": "Your role can only view this page: changes are reserved for owners and managers.",
   "actions": "Actions",
   "choose": "Choose…",
   "fields": {
@@ -149,14 +149,14 @@
   },
   "new": {
     "title": "New establishment",
-    "description": "Create another establishment of your organization.",
+    "description": "Create another establishment of your organisation.",
     "ownerOnly": "Only owners can create new establishments.",
-    "organization": "Organization {{index}}",
-    "organizationWith": "Organization {{index}} ({{names}})",
+    "organization": "Organisation {{index}}",
+    "organizationWith": "Organisation {{index}} ({{names}})",
     "afterCreate": "The guided setup opens after creation.",
     "submit": "Create establishment",
     "fields": {
-      "organization": "Organization"
+      "organization": "Organisation"
     }
   },
   "seasons": {
@@ -328,8 +328,8 @@
     "noZone": "No zone",
     "overrides": "Capacity by period",
     "overridesHint": "Optional: a different capacity on some dates (e.g. extra sunbeds in August).",
-    "addOverride": "Add change",
-    "removeOverride": "Remove change {{index}}",
+    "addOverride": "Add exception",
+    "removeOverride": "Remove exception {{index}}",
     "editTitle": "Edit pool",
     "editAria": "Edit pool {{name}}",
     "deleteAria": "Delete pool {{name}}",
@@ -339,8 +339,8 @@
       "zone_id": "Quantity zone",
       "capacity": "Capacity"
     },
-    "overrideRange": "Dates of change {{index}}",
-    "overrideCapacity": "Capacity of change {{index}}"
+    "overrideRange": "Dates of exception {{index}}",
+    "overrideCapacity": "Capacity of exception {{index}}"
   },
   "catalog": {
     "title": "Catalogue",
@@ -385,7 +385,7 @@
       "tracked": "Stock tracked",
       "pool_id": "Pool",
       "composition": "Composition",
-      "allowed_formulas": "Allowed formulas",
+      "allowed_formulas": "Allowed durations",
       "channels": "Sales channels",
       "requires_spot_kind": "Compatible spot types",
       "allowed_zone_ids": "Allowed zones",
@@ -448,7 +448,7 @@
   "team": {
     "title": "Users",
     "description": "Users and roles of the establishment.",
-    "ownerOnly": "Managing users and roles is reserved to owners.",
+    "ownerOnly": "Managing users and roles is reserved for owners.",
     "invite": "Invite user",
     "inviteHint": "If the email already exists, the user only gets the new role.",
     "inviteSubmit": "Add user",
@@ -479,7 +479,7 @@
     },
     "scopes": {
       "establishment": "This establishment",
-      "organization": "Whole organization"
+      "organization": "Whole organisation"
     }
   },
   "toast": {

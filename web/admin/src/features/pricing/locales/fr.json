@@ -44,9 +44,9 @@
     "day": "par jour"
   },
   "targets": {
-    "pack": "Formules",
+    "pack": "Forfaits",
     "extra": "Suppléments",
-    "all_pack": "Toutes les formules",
+    "all_pack": "Tous les forfaits",
     "all_extra": "Tous les suppléments"
   },
   "channels": {
@@ -110,7 +110,7 @@
     "date_to": "Au",
     "min_days": "Jours minimum",
     "max_days": "Jours maximum",
-    "pack": "Formule",
+    "pack": "Forfait",
     "formula": "Formule",
     "price_category": "Catégorie",
     "rate_period": "Période",
@@ -183,8 +183,8 @@
     "editAria": "Modifier {{name}}",
     "deleteAria": "Supprimer {{name}}",
     "deleteConfirm": "Le prix {{name}} sera supprimé.",
-    "noPacks": "Créez d’abord au moins un pack dans le catalogue.",
-    "noCategories": "Aucune catégorie de prix : attribuez-la aux zones ou ajoutez un prix fixe.",
+    "noPacks": "Créez d’abord au moins un forfait dans le catalogue.",
+    "noCategories": "Aucune catégorie de prix : attribuez-la aux zones ou ajoutez un prix forfaitaire.",
     "addAria": "Ajouter un prix pour {{name}}",
     "caption": "Prix à durée fixe · {{formula}}"
   },
@@ -235,8 +235,8 @@
     "description": "Devis avec détail étape par étape.",
     "formLabel": "Données de simulation",
     "run": "Calculer",
-    "hint": "Choisissez formule, zone et dates puis Calculer : chaque règle appliquée s'affiche jour par jour.",
-    "missingCatalog": "Il faut au moins une formule active et une zone.",
+    "hint": "Choisissez le forfait, la zone et les dates, puis cliquez sur Calculer : chaque règle appliquée s'affiche jour par jour.",
+    "missingCatalog": "Il faut au moins un forfait actif et une zone.",
     "noExtra": "Aucun supplément",
     "noAgreement": "Aucune",
     "noPrice": "Un prix manque pour les dates demandées.",
@@ -258,15 +258,15 @@
     "chartTitle": "Total par jour",
     "vatTitle": "Récapitulatif TVA",
     "vatRate": "Taux et base imposable",
-    "vatTax": "Taxe",
+    "vatTax": "Montant TVA",
     "showAll": "Afficher les {{count}} jours",
     "showLess": "Afficher moins de jours",
-    "adjustments": "Extras et remises"
+    "adjustments": "Suppléments et remises"
   },
   "matrix": {
     "title": "Matrice tarifaire",
-    "description": "Prix par formule, catégorie et période.",
-    "empty": "Rien à afficher : il faut des formules actives, des zones et des périodes.",
+    "description": "Prix par forfait, catégorie et période.",
+    "empty": "Rien à afficher : il faut des forfaits actifs, des zones et des périodes.",
     "noPrice": "sans prix",
     "note": "Chaque cellule est le prix du moteur pour un jour ouvré représentatif de la période (survolez pour la date).",
     "exportCsv": "Exporter en CSV"
@@ -274,7 +274,7 @@
   "coverage": {
     "title": "Vérification de couverture",
     "description": "Jours de la saison sans prix.",
-    "complete": "Grille complète : chaque formule active a un prix pour chaque catégorie du {{from}} au {{to}}.",
+    "complete": "Grille complète : chaque forfait actif a un prix pour chaque catégorie du {{from}} au {{to}}.",
     "gaps_one": "{{count}} intervalle sans prix",
     "gaps_other": "{{count}} intervalles sans prix",
     "days": "Jours",

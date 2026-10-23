@@ -13,6 +13,11 @@ offline).
 
 ### Added
 
+- M5, traduzioni inglese, tedesco e francese (spec 20): revisione completa di pannello, pagina pubblica ed email
+  con un glossario unico ([docs/i18n-glossary.md](docs/i18n-glossary.md)), registro formale (Sie / vous) e
+  controllo automatico `web/scripts/i18n-check.mjs` in `npm run lint` (chiavi mancanti o in più rispetto
+  all'italiano, variabili non usate, plurali CLDR, sintassi ICU, registro informale, template email). Importi,
+  percentuali e date del pannello seguono la lingua dell'interfaccia (`shared/src/lib/intl.ts`).
 - M5 parte B, contratto e schema (in corso, [ADR 0017](docs/adr/0017-scelte-m5b.md)): API per passaggio di
   stagione, campagne di rinnovo con diritto di prelazione, lista d'attesa con offerte e crediti dei clienti (pannello
   e link magico); migrazione 00008 (`season_rollovers`, `renewal_campaigns`, `renewal_proposals`, `waitlist_*`,

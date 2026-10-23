@@ -1,6 +1,6 @@
 {
   "title": "Geräte",
-  "description": "Verbinde Telefone, Tablets und die Desktop-App per QR-Code: Jedes Gerät hat einen eigenen Zugang, den du jederzeit widerrufen kannst.",
+  "description": "Verbinden Sie Telefone, Tablets und die Desktop-App per QR-Code: Jedes Gerät hat einen eigenen Zugang, den Sie jederzeit widerrufen können.",
   "actions": "Aktionen",
   "current": "Dieses Gerät",
   "neverUsed": "Nie verwendet",
@@ -33,17 +33,17 @@
   },
   "empty": {
     "title": "Keine gekoppelten Geräte",
-    "description": "Kopple dein Telefon oder die Desktop-App mit der Schaltfläche „Gerät koppeln“.",
-    "descriptionOwner": "Kopple die Telefone des Personals oder die Desktop-App der Kasse mit der Schaltfläche „Gerät koppeln“."
+    "description": "Koppeln Sie Ihr Telefon oder die Desktop-App mit der Schaltfläche „Gerät koppeln“.",
+    "descriptionOwner": "Koppeln Sie die Telefone des Personals oder die Desktop-App der Kasse mit der Schaltfläche „Gerät koppeln“."
   },
   "lan": {
     "title": "Lokalen Netzwerkmodus aktivieren",
-    "description": "Im lokalen Modus ist die Desktop-App für andere Geräte nicht erreichbar. Aktiviere den lokalen Netzwerkmodus im App-Menü (Symbol in der Taskleiste) und kehre dann hierher zurück, um Telefone und andere PCs zu koppeln."
+    "description": "Im lokalen Modus ist die Desktop-App für andere Geräte nicht erreichbar. Aktivieren Sie den lokalen Netzwerkmodus im App-Menü (Symbol in der Taskleiste) und kehren Sie dann hierher zurück, um Telefone und andere PCs zu koppeln."
   },
   "pair": {
     "open": "Gerät koppeln",
     "title": "Gerät koppeln",
-    "description": "Scanne den QR-Code mit der Arenile-App (Telefon oder Desktop-App im Fernmodus). Der Code gilt einmal und läuft nach 5 Minuten ab.",
+    "description": "Scannen Sie den QR-Code mit der Arenile-App (Telefon oder Desktop-App im Remote-Modus). Der Code gilt einmal und läuft nach 5 Minuten ab.",
     "user": "Gerät von",
     "userSelf": "Mir selbst",
     "userHint": "Das Gerät erhält die Berechtigungen der Rolle dieses Benutzers, nur in diesem Betrieb.",
@@ -51,17 +51,17 @@
     "regenerate": "Neuen Code erzeugen",
     "generating": "Code wird erzeugt",
     "qrAlt": "QR-Code zum Koppeln",
-    "qrUnavailable": "QR-Code nicht verfügbar: Gib den Code von Hand ein.",
+    "qrUnavailable": "QR-Code nicht verfügbar: Geben Sie den Code von Hand ein.",
     "codeLabel": "Kopplungscode",
     "copy": "Code kopieren",
     "copied": "Code kopiert",
     "address": "Adresse: {{url}}",
     "expiresIn": "Läuft ab in",
     "expiredTitle": "Code abgelaufen",
-    "expiredDescription": "Aus Sicherheitsgründen gilt der Code 5 Minuten. Erzeuge einen neuen.",
-    "step1": "Öffne die Arenile-App auf dem Gerät.",
-    "step2": "Wähle „Mit einer Instanz verbinden“ und scanne den QR-Code.",
-    "step3": "Oder gib die Adresse und den Code oben ein.",
+    "expiredDescription": "Aus Sicherheitsgründen gilt der Code 5 Minuten. Erzeugen Sie einen neuen.",
+    "step1": "Öffnen Sie die Arenile-App auf dem Gerät.",
+    "step2": "Wählen Sie „Mit einer Instanz verbinden“ und scannen Sie den QR-Code.",
+    "step3": "Oder geben Sie die Adresse und den Code oben ein.",
     "pairedTitle": "Gerät gekoppelt",
     "pairedDescription": "{{name}} kann jetzt auf diesen Betrieb zugreifen.",
     "pairedToast": "{{name}} gekoppelt",
@@ -72,7 +72,7 @@
     "aria": "{{name}} widerrufen",
     "title": "{{name}} widerrufen?",
     "message": "Das Gerät verliert sofort den Zugang. Um es wieder zu verwenden, muss es mit einem neuen Code gekoppelt werden.",
-    "messageBridge": "Das Gerät verliert sofort den Zugang und ist keine Fiskalbrücke mehr: Fiskaldokumente bleiben ausstehend, bis du eine andere Brücke registrierst.",
+    "messageBridge": "Das Gerät verliert sofort den Zugang und ist keine Fiskalbrücke mehr: Fiskaldokumente bleiben ausstehend, bis Sie eine andere Brücke registrieren.",
     "done": "{{name}} widerrufen"
   }
 }

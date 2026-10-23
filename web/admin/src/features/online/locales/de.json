@@ -5,7 +5,7 @@
   "unsaved": "Ungespeicherte Änderungen",
   "settings": {
     "title": "Öffentliche Seite",
-    "description": "Design, Sprachen, Online-Angebote, Bedingungen und der Code zum Einbetten des Widgets in Ihre Website.",
+    "description": "Design, Sprachen, Online-Buchungsdauern, Bedingungen und der Code zum Einbetten des Widgets in Ihre Website.",
     "tabsLabel": "Bereiche der öffentlichen Seite",
     "tabs": {
       "flow": "Online-Buchungen",
@@ -19,14 +19,14 @@
       "enabled": "Online-Buchungen annehmen",
       "enabledHint": "Aus: Die Seite bleibt mit den Kontakten sichtbar, aber Buchungen sind nicht möglich.",
       "origins": "Websites, die die Seite einbetten dürfen",
-      "originsHint": "Eine Origin pro Zeile, z. B. https://www.beispielstrand.de. Leer: nur direkter Link."
+      "originsHint": "Ein Ursprung pro Zeile, z. B. https://www.beispielstrand.de. Leer: nur direkter Link."
     },
     "flow": {
       "title": "Buchungsablauf",
       "description": "Was Kunden auf der öffentlichen Seite wählen können.",
-      "formulas": "Online angebotene Angebotsarten",
+      "formulas": "Online angebotene Buchungsdauern",
       "formulasHint": "Keine Auswahl: alle, die die online verkauften Pakete erlauben.",
-      "slots": "Online buchbare Zeitfenster",
+      "slots": "Online buchbare Tageszeiten",
       "slot": {
         "FULL": "Ganzer Tag",
         "AM": "Vormittag",
@@ -59,13 +59,13 @@
     "previewHint": "In der Vorschau können Sie alle Schritte testen: Es wird keine Buchung erstellt.",
     "embed": {
       "title": "Code zum Einbetten",
-      "description": "Direkter Link und Code zum Einfügen in die Website des Strandes.",
+      "description": "Direkter Link und Code zum Einfügen in die Website des Strandbads.",
       "pageUrl": "Link der öffentlichen Seite",
-      "script": "Empfohlener Code (Script: regelt Höhe, Sprache und Daten)",
+      "script": "Empfohlener Code (Skript: regelt Höhe, Sprache und Daten)",
       "iframe": "Alternativ: iframe",
       "originsList": "Erlaubte Websites: {{origins}}. Auf anderen Websites blockiert der Browser das Einbetten.",
-      "originsNone": "Keine Website erlaubt: Die Seite funktioniert nur als direkter Link. Fügen Sie Ihre Website unter \"Online-Buchungen\" hinzu.",
-      "events": "Das Script gibt die Ereignisse arenile:booked (nur Buchungscode), arenile:resize und arenile:navigate auf der Website weiter, nützlich für das Conversion-Tracking. Optionale Parameter: data-lang, data-from, data-to, data-pack."
+      "originsNone": "Keine Website erlaubt: Die Seite funktioniert nur als direkter Link. Fügen Sie Ihre Website unter „Online-Buchungen“ hinzu.",
+      "events": "Das Skript gibt die Ereignisse arenile:booked (nur Buchungscode), arenile:resize und arenile:navigate an die einbettende Seite weiter, nützlich für das Conversion-Tracking. Optionale Parameter: data-lang, data-from, data-to, data-pack."
     }
   },
   "terms": {
@@ -113,7 +113,7 @@
     "webhookConfigured": "Webhook-Geheimnis konfiguriert",
     "webhookMissing": "Webhook-Geheimnis fehlt",
     "verifiedAt": "Geprüft am {{date}}",
-    "manualHint": "Online-Buchungen werden am Strand bezahlt oder gemäß der Online-Richtlinie bestätigt.",
+    "manualHint": "Online-Buchungen werden im Strandbad bezahlt oder gemäß der Online-Richtlinie bestätigt.",
     "incomplete": "Für Online-Zahlungen sind der geheime Schlüssel und das Webhook-Geheimnis nötig.",
     "test": "Zugangsdaten prüfen",
     "testOk": "Zugangsdaten gültig",
@@ -142,7 +142,7 @@
       "events": "Zu sendende Ereignisse",
       "step1": "Öffnen Sie in Stripe Entwickler → Webhooks und fügen Sie einen Endpunkt mit dieser URL hinzu.",
       "step2": "Wählen Sie die oben aufgeführten Ereignisse und speichern Sie.",
-      "step3": "Kopieren Sie das Signaturgeheimnis (whsec_…) in das Feld oben und klicken Sie auf \"Zugangsdaten prüfen\"."
+      "step3": "Kopieren Sie das Signaturgeheimnis (whsec_…) in das Feld oben und klicken Sie auf „Zugangsdaten prüfen“."
     },
     "validation": {
       "publishable": "Der veröffentlichbare Schlüssel beginnt mit pk_test_ oder pk_live_",
@@ -172,7 +172,7 @@
       "replyTo": "Antwort an",
       "replyToHint": "Antworten der Kunden kommen hier an.",
       "managerEmail": "E-Mail des Betreibers",
-      "managerEmailHint": "Erhält die Benachrichtigungen für den Strand.",
+      "managerEmailHint": "Erhält die Benachrichtigungen für den Betrieb.",
       "customer": "An den Kunden",
       "manager": "An den Betreiber"
     },
@@ -195,7 +195,7 @@
       "description": "Prüfen Sie, dass E-Mails versendet werden und nicht im Spam landen.",
       "to": "Empfänger",
       "send": "Test senden",
-      "queued": "Test-E-Mail eingereiht: prüfen Sie das Protokoll unten.",
+      "queued": "Test-E-Mail eingereiht: Prüfen Sie das Protokoll unten.",
       "failed": "Die Test-E-Mail konnte nicht eingereiht werden."
     },
     "log": {

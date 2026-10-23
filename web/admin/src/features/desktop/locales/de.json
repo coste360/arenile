@@ -63,7 +63,7 @@
     "message": "Die Daten kehren zum Stand vom {{date}} zurück. Das aktuelle Archiv wird vorher als Sicherung „Vor der Wiederherstellung“ gespeichert, der Vorgang ist also umkehrbar. Arenile startet für einige Sekunden neu.",
     "confirm": "Wiederherstellen und neu starten",
     "inProgressTitle": "Wiederherstellung läuft",
-    "inProgress": "Arenile startet mit der gewählten Sicherung neu: die Seite lädt sich von selbst neu."
+    "inProgress": "Arenile startet mit der gewählten Sicherung neu: Die Seite lädt sich von selbst neu."
   },
   "validation": {
     "backupDir": "Geben Sie den Sicherungsordner an.",
@@ -83,7 +83,7 @@
     },
     "move": {
       "title": "Wechsel zu einer Online-Instanz",
-      "description": "Die Sicherung der Desktop-App ist dasselbe Archiv wie bei der Server-Edition: der Umzug erfolgt ohne Umwandlung.",
+      "description": "Die Sicherung der Desktop-App ist dasselbe Archiv wie bei der Server-Edition: Der Umzug erfolgt ohne Umwandlung.",
       "step1": "Erstellen Sie eine Sicherung.",
       "step1Link": "Sicherungen öffnen",
       "step2": "Installieren Sie Arenile auf einem VPS, einem Hosting oder einem Server mit Docker (Anleitung „Installationsart wählen“).",

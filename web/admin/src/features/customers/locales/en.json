@@ -102,8 +102,8 @@
   "credits": {
     "title": "Credits",
     "balance": "Balance: {{amount}}",
-    "empty": "No movements.",
-    "movement": "Movement",
+    "empty": "No transactions.",
+    "movement": "Transaction",
     "amount": "Amount",
     "expires": "expires on {{date}}",
     "source": {

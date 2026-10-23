@@ -5,7 +5,7 @@
   },
   "corrispettivi": {
     "title": "Daily takings",
-    "description": "Daily or monthly takings by VAT rate and method, as CSV or JSON.",
+    "description": "Daily or monthly takings (Italian corrispettivi) by VAT rate and method, as CSV or JSON.",
     "period": "Period",
     "day": "Day",
     "month": "Month",
@@ -19,7 +19,7 @@
     "grandTotal": "Total takings · {{period}}",
     "byVat": "By VAT rate",
     "rate": "Rate",
-    "taxable": "Taxable",
+    "taxable": "Net",
     "tax": "Tax",
     "gross": "Total",
     "total": "Total",

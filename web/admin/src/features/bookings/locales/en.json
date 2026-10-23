@@ -43,7 +43,7 @@
   "fields": {
     "period": "Period",
     "slots": "Time slot",
-    "formula": "Formula",
+    "formula": "Duration",
     "pack": "Pack",
     "packPlaceholder": "Choose the pack",
     "zone": "Zone",
@@ -316,7 +316,7 @@
     "date": "Date",
     "slot": "Slot",
     "resource": "Resource",
-    "kind": "Kind",
+    "kind": "Type",
     "pool_one": "{{count}} unit from the pool",
     "pool_other": "{{count}} units from the pool",
     "kinds": {
@@ -336,7 +336,7 @@
     "refund": "Refund",
     "refundTitle": "Record refund",
     "refundDescription": "Paid so far: {{paid}}. The refund cannot exceed it.",
-    "refundAs": "Form",
+    "refundAs": "Type",
     "reason": "Reason",
     "refunded": "Refund of {{amount}} recorded.",
     "refundBadge": "refund",

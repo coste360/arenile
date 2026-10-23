@@ -5,7 +5,7 @@
   },
   "corrispettivi": {
     "title": "Recettes journalières",
-    "description": "Recettes journalières ou mensuelles par taux de TVA et moyen de paiement, en CSV ou JSON.",
+    "description": "Recettes journalières ou mensuelles (corrispettivi) par taux de TVA et moyen de paiement, en CSV ou JSON.",
     "period": "Période",
     "day": "Jour",
     "month": "Mois",
@@ -32,7 +32,7 @@
     "cash": "Espèces",
     "card": "Carte",
     "bank_transfer": "Virement",
-    "wallet": "Wallet",
+    "wallet": "Portefeuille",
     "credit": "Avoir",
     "other": "Autre"
   },
@@ -140,7 +140,7 @@
     "closedTitle": "Session clôturée",
     "balanced": "Équilibrée",
     "surplus": "Excédent",
-    "shortfall": "Manque"
+    "shortfall": "Manquant"
   },
   "z": {
     "title": "Ticket Z",

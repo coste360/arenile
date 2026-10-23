@@ -1,6 +1,6 @@
 ---
 subject: We received your request {{booking.code}} – {{establishment.name}}
-preheader: The establishment will confirm your request shortly.
+preheader: The beach club will confirm your request shortly.
 ---
 # Request received
 

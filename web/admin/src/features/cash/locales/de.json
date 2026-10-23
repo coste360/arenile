@@ -5,7 +5,7 @@
   },
   "corrispettivi": {
     "title": "Tageseinnahmen",
-    "description": "Tägliche oder monatliche Einnahmen nach MwSt.-Satz und Zahlungsart, als CSV oder JSON.",
+    "description": "Tägliche oder monatliche Einnahmen (Corrispettivi) nach MwSt.-Satz und Zahlungsart, als CSV oder JSON.",
     "period": "Zeitraum",
     "day": "Tag",
     "month": "Monat",
@@ -58,8 +58,8 @@
   },
   "open": {
     "title": "Kasse öffnen",
-    "description": "Keine offene Sitzung. Zählen Sie das Wechselgeld und öffnen Sie die Sitzung, um Einnahmen zu erfassen.",
-    "float": "Wechselgeld",
+    "description": "Keine offene Sitzung. Zählen Sie den Anfangsbestand und öffnen Sie die Sitzung, um Einnahmen zu erfassen.",
+    "float": "Anfangsbestand",
     "floatHint": "Bargeld in der Schublade bei Öffnung.",
     "submit": "Sitzung öffnen",
     "opened": "Kassensitzung geöffnet",
@@ -67,11 +67,11 @@
   },
   "current": {
     "badge": "{{register}} offen seit {{time}}",
-    "float": "Wechselgeld",
+    "float": "Anfangsbestand",
     "totalTakings": "Einnahmen gesamt",
     "netMovements": "Einlagen − Entnahmen",
     "expectedCash": "Erwartetes Bargeld in der Kasse",
-    "expectedCashHint": "Wechselgeld + Bareinnahmen + Einlagen − Entnahmen",
+    "expectedCashHint": "Anfangsbestand + Bareinnahmen + Einlagen − Entnahmen",
     "takings": "Einnahmen nach Zahlungsart",
     "noTakings": "Noch keine Einnahmen in dieser Sitzung.",
     "activity": "Aktivität der Sitzung"
@@ -89,7 +89,7 @@
       "pending": "Ausstehend",
       "succeeded": "Erfolgreich",
       "failed": "Fehlgeschlagen",
-      "cancelled": "Storniert"
+      "cancelled": "Abgebrochen"
     }
   },
   "movement": {
@@ -106,13 +106,13 @@
   },
   "quickPay": {
     "title": "Buchung kassieren",
-    "description": "Suchen Sie die Buchung nach Code: Der vorgeschlagene Betrag ist der offene Saldo.",
+    "description": "Suchen Sie die Buchung nach Code: Der vorgeschlagene Betrag ist der offene Restbetrag.",
     "search": "Buchungscode oder Kunde",
     "searchPlaceholder": "z. B. AR-7K3Q9",
     "minChars": "Mindestens 2 Zeichen eingeben.",
     "noResults": "Keine Buchung gefunden.",
     "results": "Gefundene Buchungen",
-    "balance": "Saldo {{amount}}",
+    "balance": "Restbetrag {{amount}}",
     "paid": "Bezahlt",
     "select": "Auswählen",
     "selectAria": "Buchung {{code}} auswählen",
@@ -120,7 +120,7 @@
     "customer": "Kunde",
     "total": "Gesamt",
     "paidAmount": "Bezahlt",
-    "balanceDue": "Offener Saldo",
+    "balanceDue": "Offener Restbetrag",
     "change": "Ändern",
     "submit": "Zahlung erfassen",
     "recorded": "Zahlung von {{amount}} auf {{code}} erfasst"
@@ -146,9 +146,9 @@
     "title": "Z-Bericht",
     "register": "Kasse",
     "status": "Status",
-    "openedAt": "Öffnung",
-    "closedAt": "Schließung",
-    "float": "Wechselgeld",
+    "openedAt": "Geöffnet",
+    "closedAt": "Geschlossen",
+    "float": "Anfangsbestand",
     "movementsIn": "Einlagen",
     "movementsOut": "Entnahmen",
     "takings": "Einnahmen",
@@ -158,8 +158,8 @@
   "history": {
     "title": "Sitzungsverlauf",
     "empty": "Keine Kassensitzungen.",
-    "openedAt": "Öffnung",
-    "closedAt": "Schließung",
+    "openedAt": "Geöffnet",
+    "closedAt": "Geschlossen",
     "register": "Kasse",
     "statusLabel": "Status",
     "status": {

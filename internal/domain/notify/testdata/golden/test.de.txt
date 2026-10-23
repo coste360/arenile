@@ -5,7 +5,7 @@ Test-E-Mail
 
 Wenn Sie diese Nachricht lesen, funktioniert der E-Mail-Versand von Lido Delfino.
 
-Absender, Antwortadresse und Benachrichtigungen werden unter Konfiguration › E-Mail eingestellt.
+Absender, Antwortadresse und Benachrichtigungen werden unter Einstellungen › E-Mail und Benachrichtigungen festgelegt.
 
 -- 
 Lido Delfino

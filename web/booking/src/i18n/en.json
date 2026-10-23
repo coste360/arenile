@@ -15,7 +15,7 @@
     "full": "Full",
     "closed": "Closed",
     "ratePeriods": "Rate periods",
-    "formula": "Package type",
+    "formula": "Duration",
     "slot": "Time of day",
     "slots": {
       "FULL": "Full day",
@@ -31,7 +31,7 @@
       "month": "Month",
       "season": "Whole season"
     },
-    "noFormula": "No online package for these dates: try another period.",
+    "noFormula": "No duration can be booked online for these dates: try another period.",
     "rangeLimited": "Last spots on some days of the period.",
     "rangeFull": "Some days of the period are full or closed: choose other dates.",
     "rangeAvailable": "Spots available for the whole period.",
@@ -69,7 +69,7 @@
     "available_one": "{{count}} available",
     "available_other": "{{count}} available",
     "nothing": "Nothing available online for these dates: try another period or time of day.",
-    "noZones": "This beach has not published any areas bookable online yet.",
+    "noZones": "This beach club has not published any areas bookable online yet.",
     "dropped": "Some of the chosen spots are no longer available and have been removed.",
     "mapLoading": "Loading the map…"
   },
@@ -87,7 +87,7 @@
     "lineZone": "{{zone}}",
     "lineQuantity": "{{zone}} × {{count}}",
     "noPacks": "No package can be booked online for this choice.",
-    "requiresApproval": "Subject to confirmation by the beach",
+    "requiresApproval": "Subject to confirmation by the beach club",
     "composition": "Includes",
     "perUnit": "{{price}} each",
     "perDay": "{{price}} per day",
@@ -120,8 +120,8 @@
     "paymentBlocked": "The website hosting this form does not allow opening the payment: use the button below.",
     "securePayment": "Secure payment with {{provider}}: you will be redirected and then brought back here.",
     "testMode": "Test mode: no real charge.",
-    "atDesk": "You will pay directly at the beach.",
-    "approval": "The request will be confirmed by the beach.",
+    "atDesk": "You will pay directly at the beach club.",
+    "approval": "The request will be confirmed by the beach club.",
     "validation": {
       "required": "Required field",
       "email": "Enter a valid email address",
@@ -141,20 +141,20 @@
     "plan": {
       "online_full": "Full amount paid online",
       "online_deposit": "Deposit online, balance later",
-      "at_desk": "Pay at the beach",
-      "approval": "Subject to confirmation by the beach"
+      "at_desk": "Pay at the beach club",
+      "approval": "Subject to confirmation by the beach club"
     },
-    "violation": "Beach rule: {{code}}",
+    "violation": "Beach club rule: {{code}}",
     "violations": {
       "lead_time_too_short": "This date can no longer be booked online: more notice is needed.",
       "cutoff_passed": "Online bookings for this date are closed.",
       "lead_time_too_long": "This date cannot be booked online yet: please try again later.",
       "same_day_closed": "Online bookings for today are closed.",
-      "formula_not_allowed": "The chosen option is not available online in this period.",
+      "formula_not_allowed": "The chosen duration is not available online in this period.",
       "duration_too_short": "The stay is too short for this period.",
       "duration_too_long": "The stay is too long for this period.",
       "start_weekday_not_allowed": "In this period the stay must start on a different day of the week.",
-      "too_many_spots": "Too many spots for a single booking."
+      "too_many_spots": "You have chosen too many spots for a single booking."
     }
   },
   "confirmation": {
@@ -167,7 +167,7 @@
     "waiting": "Waiting for the payment confirmation…",
     "waitingHint": "Do not close the page: it usually takes a few seconds.",
     "slow": "The confirmation is taking longer than expected. You will receive an email as soon as the payment is confirmed.",
-    "approval": "Request sent: the beach will reply shortly.",
+    "approval": "Request sent: the beach club will reply shortly.",
     "approvalTitle": "Request sent",
     "failedTitle": "Payment failed",
     "failed": "The payment did not go through. Your spot is still held: you can try again.",
@@ -177,7 +177,7 @@
     "expiredTitle": "Booking expired",
     "expired": "The time to complete the booking is over and the spot has been released.",
     "rejectedTitle": "Request not accepted",
-    "rejected": "The beach could not accept the request.",
+    "rejected": "The beach club could not accept the request.",
     "unknownTitle": "Payment being processed",
     "unknown": "If you completed the payment you will shortly receive an email with the confirmation and the link to manage the booking.",
     "newBooking": "New booking",
@@ -232,7 +232,7 @@
       "none": "No refund.",
       "provider_pending": "Refund started: it will reach your payment method within a few days.",
       "provider_succeeded": "Refund completed.",
-      "manual_due": "The beach will process the refund shortly.",
+      "manual_due": "The beach club will process the refund shortly.",
       "credited": "Credit saved for your next booking."
     },
     "releaseDays": "Release days",
@@ -251,7 +251,7 @@
     "send": "Send the link",
     "requestLinkSent": "If the details match a booking, you will receive a new link by email.",
     "linkInvalid": "The link is invalid or has expired.",
-    "noActions": "For changes please contact the beach directly.",
+    "noActions": "For changes, please contact the beach club directly.",
     "back": "Back to the booking"
   },
   "errors": {
@@ -259,7 +259,7 @@
     "spot_unavailable": "The spot has just been booked by someone else.",
     "quota_exceeded": "No more online spots for these dates.",
     "pool_exhausted": "Quantity not available for these dates.",
-    "policy_violation": "The request does not meet the beach's booking rules.",
+    "policy_violation": "The request does not meet the beach club's booking rules.",
     "checkout_not_found": "Booking session not found: please start again.",
     "payment_provider_unavailable": "The payment service is not responding: try again shortly.",
     "rate_limited": "Too many requests: please wait a few seconds.",

@@ -5,7 +5,7 @@ E-mail de test
 
 Si vous lisez ce message, l'envoi des e-mails de Lido Delfino fonctionne.
 
-L'expéditeur, l'adresse de réponse et les notifications se règlent dans Configuration › E-mail.
+L'expéditeur, l'adresse de réponse et les notifications se règlent dans Configuration › E-mails et notifications.
 
 -- 
 Lido Delfino

@@ -6,4 +6,4 @@ preheader: Ihre E-Mail-Einstellungen funktionieren.
 
 Wenn Sie diese Nachricht lesen, funktioniert der E-Mail-Versand von **{{establishment.name}}**.
 
-Absender, Antwortadresse und Benachrichtigungen werden unter Konfiguration › E-Mail eingestellt.
+Absender, Antwortadresse und Benachrichtigungen werden unter Einstellungen › E-Mail und Benachrichtigungen festgelegt.

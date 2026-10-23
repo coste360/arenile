@@ -7,24 +7,24 @@
   },
   "off": {
     "title": "Der Modus lokales Netzwerk ist aus",
-    "description": "Schalte ihn in den Einstellungen der Desktop-App (oder im Menü der Taskleiste) ein: andere Geräte im WLAN des Strandbads können dann das Panel öffnen. Verbindungen von außerhalb des lokalen Netzwerks bleiben abgelehnt.",
+    "description": "Schalten Sie ihn in den Einstellungen der Desktop-App (oder im Menü der Taskleiste) ein: Andere Geräte im WLAN des Strandbads können dann das Panel öffnen. Verbindungen von außerhalb des lokalen Netzwerks bleiben abgelehnt.",
     "action": "Einstellungen der Desktop-App öffnen"
   },
   "server": {
     "title": "Diese Seite betrifft die Desktop-App",
-    "description": "Den Modus lokales Netzwerk gibt es nur in der Desktop-Edition. Diese Instanz ist bereits unter ihrer Adresse erreichbar: verbinde Telefone und PCs über die Seite Geräte.",
+    "description": "Den Modus lokales Netzwerk gibt es nur in der Desktop-Edition. Diese Instanz ist bereits unter ihrer Adresse erreichbar: Verbinden Sie Telefone und PCs über die Seite Geräte.",
     "action": "Zu Geräte"
   },
   "address": {
     "title": "Adresse des Panels",
-    "description": "Öffne diese Adresse im Browser der anderen Geräte im selben WLAN.",
+    "description": "Öffnen Sie diese Adresse im Browser der anderen Geräte im selben WLAN.",
     "copy": "Adresse kopieren",
     "qrAlt": "QR-Code der Adresse {{address}}",
-    "qrHint": "Auf Smartphone oder Tablet kannst du auch den QR-Code mit der Kamera scannen."
+    "qrHint": "Auf Smartphone oder Tablet können Sie auch den QR-Code mit der Kamera scannen."
   },
   "fingerprint": {
     "title": "Fingerabdruck des Zertifikats",
-    "description": "Die Verbindung ist mit einem von diesem PC erstellten Zertifikat verschlüsselt. Prüfe vor dem Akzeptieren im Browser, dass der SHA-256-Fingerabdruck identisch ist.",
+    "description": "Die Verbindung ist mit einem von diesem PC erstellten Zertifikat verschlüsselt. Prüfen Sie vor dem Akzeptieren im Browser, dass der SHA-256-Fingerabdruck identisch ist.",
     "copy": "Fingerabdruck kopieren",
     "aria": "SHA-256-Fingerabdruck des Zertifikats"
   },
@@ -35,17 +35,17 @@
   "browser": {
     "title": "Erster Zugriff mit einem Browser",
     "description": "Der Browser zeigt beim ersten Mal eine Warnung, weil das Zertifikat nicht von einer öffentlichen Stelle ausgestellt ist. Das ist im Netzwerk des Strandbads normal.",
-    "step1": "Verbinde das Gerät mit demselben WLAN wie diesen PC.",
-    "step2": "Öffne {{address}} im Browser.",
-    "step3": "Öffne bei der Warnung \"Dies ist keine sichere Verbindung\" die Details des Zertifikats.",
-    "step4": "Vergleiche den SHA-256-Fingerabdruck mit dem oben angezeigten: jedes Zeichen muss übereinstimmen.",
-    "step5": "Wenn er übereinstimmt, wähle \"Erweitert\" und dann \"Weiter\" (Safari: \"Diese Website besuchen\"). Sonst brich ab und informiere die Leitung.",
-    "hint": "Das Zertifikat ändert sich bei Neustarts nicht: die Warnung erscheint erst wieder, wenn es erneuert wird. Reserviere im Router eine feste IP-Adresse für diesen PC, damit die Adresse gleich bleibt."
+    "step1": "Verbinden Sie das Gerät mit demselben WLAN wie diesen PC.",
+    "step2": "Öffnen Sie {{address}} im Browser.",
+    "step3": "Öffnen Sie bei der Warnung „Dies ist keine sichere Verbindung“ die Details des Zertifikats.",
+    "step4": "Vergleichen Sie den SHA-256-Fingerabdruck mit dem oben angezeigten: Jedes Zeichen muss übereinstimmen.",
+    "step5": "Wenn er übereinstimmt, wählen Sie „Erweitert“ und dann „Weiter“ (Safari: „Diese Website besuchen“). Andernfalls brechen Sie ab und informieren Sie die Leitung.",
+    "hint": "Das Zertifikat ändert sich bei Neustarts nicht: Die Warnung erscheint erst wieder, wenn es erneuert wird. Reservieren Sie im Router eine feste IP-Adresse für diesen PC, damit die Adresse gleich bleibt."
   },
   "apps": {
     "title": "Mobile App und Desktop-App im Remote-Modus",
-    "description": "Mit \"Gerät koppeln\" enthält der QR-Code die Adresse, den Fingerabdruck des Zertifikats und einen Einmalcode.",
-    "security": "Die Apps prüfen den Fingerabdruck selbst und zeigen daher keine Warnung: gäbe sich jemand als dieser PC aus, würde die Verbindung abgelehnt.",
+    "description": "Mit „Gerät koppeln“ enthält der QR-Code die Adresse, den Fingerabdruck des Zertifikats und einen Einmalcode.",
+    "security": "Die Apps prüfen den Fingerabdruck selbst und zeigen daher keine Warnung: Gäbe sich jemand als dieser PC aus, würde die Verbindung abgelehnt.",
     "guarantee": "Es bleibt ein einziger Server: Buchungen und Einnahmen der anderen Geräte landen im selben Datenbestand, mit denselben Garantien gegen Doppelbuchungen."
   }
 }

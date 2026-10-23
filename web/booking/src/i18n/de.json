@@ -5,7 +5,7 @@
     "previewNotice": "Vorschau des Designs: Sie können den Ablauf testen, es wird aber keine Buchung erstellt.",
     "previewBadge": "Vorschau",
     "stepUnavailable": "Schließen Sie zuerst die vorherigen Schritte ab",
-    "resumeExpired": "Ihre laufende Buchung ist abgelaufen: bitte erneut auswählen.",
+    "resumeExpired": "Ihre laufende Buchung ist abgelaufen: Bitte wählen Sie erneut.",
     "startOver": "Neu beginnen"
   },
   "when": {
@@ -15,7 +15,7 @@
     "full": "Ausgebucht",
     "closed": "Geschlossen",
     "ratePeriods": "Tarifzeiträume",
-    "formula": "Angebotsart",
+    "formula": "Dauer",
     "slot": "Tageszeit",
     "slots": {
       "FULL": "Ganzer Tag",
@@ -31,7 +31,7 @@
       "month": "Monat",
       "season": "Ganze Saison"
     },
-    "noFormula": "Kein Online-Angebot für diese Daten: versuchen Sie einen anderen Zeitraum.",
+    "noFormula": "Für diese Daten ist online keine Buchungsdauer verfügbar: Versuchen Sie einen anderen Zeitraum.",
     "rangeLimited": "An einigen Tagen des Zeitraums nur noch wenige Plätze.",
     "rangeFull": "Einige Tage des Zeitraums sind ausgebucht oder geschlossen: wählen Sie andere Daten.",
     "rangeAvailable": "Plätze für den ganzen Zeitraum verfügbar.",
@@ -41,7 +41,7 @@
   },
   "where": {
     "title": "Wo möchten Sie liegen?",
-    "map": "Karte",
+    "map": "Plan",
     "zones": "Bereiche",
     "quantity": "Anzahl",
     "legend": "Preislegende",
@@ -54,10 +54,10 @@
     "fewUnits": "Wenige Plätze",
     "plenty": "Verfügbar",
     "soldOut": "Ausgebucht",
-    "pickSpot": "Tippen Sie auf einen freien Platz auf der Karte.",
+    "pickSpot": "Tippen Sie auf dem Plan auf einen freien Platz.",
     "tapToZoom": "Tippen Sie auf einen Platz zum Vergrößern und dann erneut, um ihn zu wählen.",
     "showList": "Als Liste anzeigen",
-    "showMap": "Karte anzeigen",
+    "showMap": "Plan anzeigen",
     "selected_one": "{{count}} Platz gewählt",
     "selected_other": "{{count}} Plätze gewählt",
     "autoAssign": "Der Platz im Bereich wird bei der Bestätigung automatisch zugewiesen.",
@@ -69,9 +69,9 @@
     "available_one": "{{count}} verfügbar",
     "available_other": "{{count}} verfügbar",
     "nothing": "Für diese Daten ist online nichts verfügbar: versuchen Sie einen anderen Zeitraum oder eine andere Tageszeit.",
-    "noZones": "Der Strand hat noch keine online buchbaren Bereiche veröffentlicht.",
+    "noZones": "Das Strandbad hat noch keine online buchbaren Bereiche veröffentlicht.",
     "dropped": "Einige gewählte Plätze sind nicht mehr verfügbar und wurden entfernt.",
-    "mapLoading": "Karte wird geladen…"
+    "mapLoading": "Plan wird geladen…"
   },
   "what": {
     "packs": "Pakete",
@@ -87,7 +87,7 @@
     "lineZone": "{{zone}}",
     "lineQuantity": "{{zone}} × {{count}}",
     "noPacks": "Für diese Auswahl ist kein Paket online buchbar.",
-    "requiresApproval": "Nach Bestätigung durch den Strand",
+    "requiresApproval": "Nach Bestätigung durch das Strandbad",
     "composition": "Enthält",
     "perUnit": "{{price}} pro Stück",
     "perDay": "{{price}} pro Tag",
@@ -120,8 +120,8 @@
     "paymentBlocked": "Die Website, die dieses Formular einbettet, erlaubt das Öffnen der Zahlung nicht: nutzen Sie die Schaltfläche unten.",
     "securePayment": "Sichere Zahlung mit {{provider}}: Sie werden weitergeleitet und dann hierher zurückgebracht.",
     "testMode": "Testmodus: keine echte Belastung.",
-    "atDesk": "Sie bezahlen direkt am Strand.",
-    "approval": "Die Anfrage wird vom Strand bestätigt.",
+    "atDesk": "Sie bezahlen direkt im Strandbad.",
+    "approval": "Die Anfrage wird vom Strandbad bestätigt.",
     "validation": {
       "required": "Pflichtfeld",
       "email": "Geben Sie eine gültige E-Mail-Adresse ein",
@@ -137,24 +137,24 @@
     "updating": "Preis wird aktualisiert…",
     "empty": "Wählen Sie Daten, Platz und Paket, um den Preis zu sehen.",
     "details": "Preisdetails",
-    "unavailable": "Die Auswahl ist nicht mehr verfügbar: bitte ändern.",
+    "unavailable": "Die Auswahl ist nicht mehr verfügbar: Bitte ändern Sie sie.",
     "plan": {
-      "online_full": "Gesamtbetrag online",
+      "online_full": "Online-Zahlung des Gesamtbetrags",
       "online_deposit": "Anzahlung online, Restbetrag später",
-      "at_desk": "Zahlung am Strand",
-      "approval": "Nach Bestätigung durch den Strand"
+      "at_desk": "Zahlung im Strandbad",
+      "approval": "Nach Bestätigung durch das Strandbad"
     },
-    "violation": "Regel des Strandes: {{code}}",
+    "violation": "Regel des Strandbads: {{code}}",
     "violations": {
       "lead_time_too_short": "Dieses Datum ist online nicht mehr buchbar: Es ist mehr Vorlauf nötig.",
       "cutoff_passed": "Online-Buchungen für dieses Datum sind geschlossen.",
-      "lead_time_too_long": "Dieses Datum ist online noch nicht buchbar: Bitte später erneut versuchen.",
+      "lead_time_too_long": "Dieses Datum ist online noch nicht buchbar: Bitte versuchen Sie es später erneut.",
       "same_day_closed": "Für heute werden keine Online-Buchungen mehr angenommen.",
-      "formula_not_allowed": "Die gewählte Option ist in diesem Zeitraum online nicht verfügbar.",
+      "formula_not_allowed": "Die gewählte Dauer ist in diesem Zeitraum online nicht verfügbar.",
       "duration_too_short": "Der Aufenthalt ist für diesen Zeitraum zu kurz.",
       "duration_too_long": "Der Aufenthalt ist für diesen Zeitraum zu lang.",
       "start_weekday_not_allowed": "In diesem Zeitraum muss der Aufenthalt an einem anderen Wochentag beginnen.",
-      "too_many_spots": "Zu viele Plätze für eine einzelne Buchung."
+      "too_many_spots": "Sie haben zu viele Plätze für eine einzelne Buchung gewählt."
     }
   },
   "confirmation": {
@@ -165,9 +165,9 @@
     "emailSent": "Wir haben den Link zur Verwaltung der Buchung an {{email}} gesendet.",
     "emailSentGeneric": "Wir haben Ihnen den Link zur Verwaltung der Buchung per E-Mail gesendet.",
     "waiting": "Warten auf die Zahlungsbestätigung…",
-    "waitingHint": "Schließen Sie die Seite nicht: es dauert meist nur wenige Sekunden.",
+    "waitingHint": "Schließen Sie die Seite nicht: Es dauert meist nur wenige Sekunden.",
     "slow": "Die Bestätigung dauert länger als erwartet. Sie erhalten eine E-Mail, sobald die Zahlung bestätigt ist.",
-    "approval": "Anfrage gesendet: der Strand antwortet in Kürze.",
+    "approval": "Anfrage gesendet: Das Strandbad antwortet Ihnen in Kürze.",
     "approvalTitle": "Anfrage gesendet",
     "failedTitle": "Zahlung fehlgeschlagen",
     "failed": "Die Zahlung war nicht erfolgreich. Der Platz ist weiterhin reserviert: Sie können es erneut versuchen.",
@@ -177,7 +177,7 @@
     "expiredTitle": "Buchung abgelaufen",
     "expired": "Die Zeit zum Abschließen der Buchung ist abgelaufen und der Platz wurde freigegeben.",
     "rejectedTitle": "Anfrage nicht angenommen",
-    "rejected": "Der Strand konnte die Anfrage nicht annehmen.",
+    "rejected": "Das Strandbad konnte die Anfrage nicht annehmen.",
     "unknownTitle": "Zahlung wird verarbeitet",
     "unknown": "Wenn Sie die Zahlung abgeschlossen haben, erhalten Sie in Kürze eine E-Mail mit der Bestätigung und dem Link zur Verwaltung der Buchung.",
     "newBooking": "Neue Buchung",
@@ -226,13 +226,13 @@
     "cancelConfirm": "Stornierung bestätigen",
     "cancelQuestion": "Möchten Sie die Buchung {{code}} wirklich stornieren?",
     "settlementRefund": "Erstattung auf das Zahlungsmittel",
-    "settlementCredit": "Gutschrift für eine nächste Buchung",
+    "settlementCredit": "Gutschrift für eine künftige Buchung",
     "cancelled": "Buchung storniert.",
     "refundStatus": {
       "none": "Keine Erstattung.",
-      "provider_pending": "Erstattung eingeleitet: sie erreicht Ihr Zahlungsmittel in wenigen Tagen.",
+      "provider_pending": "Erstattung eingeleitet: Sie wird Ihrem Zahlungsmittel in wenigen Tagen gutgeschrieben.",
       "provider_succeeded": "Erstattung durchgeführt.",
-      "manual_due": "Der Strand führt die Erstattung in Kürze durch.",
+      "manual_due": "Das Strandbad führt die Erstattung in Kürze durch.",
       "credited": "Gutschrift für Ihre nächste Buchung gespeichert."
     },
     "releaseDays": "Tage freigeben",
@@ -251,21 +251,21 @@
     "send": "Link senden",
     "requestLinkSent": "Wenn die Daten zu einer Buchung passen, erhalten Sie einen neuen Link per E-Mail.",
     "linkInvalid": "Der Link ist ungültig oder abgelaufen.",
-    "noActions": "Für Änderungen wenden Sie sich bitte direkt an den Strand.",
+    "noActions": "Für Änderungen wenden Sie sich bitte direkt an das Strandbad.",
     "back": "Zurück zur Buchung"
   },
   "errors": {
-    "hold_expired": "Die Zeit zum Abschließen der Buchung ist abgelaufen: bitte erneut auswählen.",
+    "hold_expired": "Die Zeit zum Abschließen der Buchung ist abgelaufen: Bitte wählen Sie erneut.",
     "spot_unavailable": "Der Platz wurde gerade von jemand anderem gebucht.",
     "quota_exceeded": "Für diese Daten sind keine Online-Plätze mehr verfügbar.",
     "pool_exhausted": "Anzahl für diese Daten nicht verfügbar.",
-    "policy_violation": "Die Anfrage entspricht nicht den Buchungsregeln des Strandes.",
-    "checkout_not_found": "Buchungssitzung nicht gefunden: bitte von vorne beginnen.",
+    "policy_violation": "Die Anfrage entspricht nicht den Buchungsregeln des Strandbads.",
+    "checkout_not_found": "Buchungssitzung nicht gefunden: Bitte beginnen Sie von vorn.",
     "payment_provider_unavailable": "Der Zahlungsdienst antwortet nicht: versuchen Sie es gleich noch einmal.",
-    "rate_limited": "Zu viele Anfragen: bitte einige Sekunden warten.",
+    "rate_limited": "Zu viele Anfragen: Bitte warten Sie einige Sekunden.",
     "invalid_transition": "Für diese Buchung nicht mehr möglich.",
-    "version_conflict": "Die Buchung wurde inzwischen aktualisiert: laden Sie die Seite neu.",
-    "conflict": "Die Bedingungen wurden aktualisiert: lesen und akzeptieren Sie sie erneut.",
-    "validation_failed": "Einige Angaben sind ungültig: prüfen Sie die Felder."
+    "version_conflict": "Die Buchung wurde inzwischen aktualisiert: Bitte laden Sie die Seite neu.",
+    "conflict": "Die Bedingungen wurden aktualisiert: Bitte lesen und akzeptieren Sie sie erneut.",
+    "validation_failed": "Einige Angaben sind ungültig: Bitte prüfen Sie die Felder."
   }
 }

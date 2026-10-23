@@ -6,4 +6,4 @@ preheader: Vos réglages e-mail fonctionnent.
 
 Si vous lisez ce message, l'envoi des e-mails de **{{establishment.name}}** fonctionne.
 
-L'expéditeur, l'adresse de réponse et les notifications se règlent dans Configuration › E-mail.
+L'expéditeur, l'adresse de réponse et les notifications se règlent dans Configuration › E-mails et notifications.

@@ -73,7 +73,7 @@
       "to_collect": "Balance due",
       "present": "Checked in",
       "blocked": "Blocked",
-      "renewal_hold": "Renewal reserved",
+      "renewal_hold": "Held for renewal",
       "unavailable": "Unavailable"
     },
     "decoration": {
@@ -164,7 +164,7 @@
   "admin": {
     "placeholder": {
       "title": "Section in progress",
-      "today": "Today's operational map, arrivals, balances due and rows to assign.",
+      "today": "Today's operational map, arrivals, balances due and bookings to assign.",
       "map": "Operational map view for any date, coloured by status.",
       "bookings": "Filterable booking list, details and creation.",
       "calendar": "Spots × days planning grid for long stays.",

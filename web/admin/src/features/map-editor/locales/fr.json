@@ -14,9 +14,9 @@
     "deleteAria": "Supprimer le plan {{name}}",
     "deleteConfirm_one": "Le plan {{name}} et son {{count}} emplacement seront supprimés, avec les zones du plan.",
     "deleteConfirm_other": "Le plan {{name}} et ses {{count}} emplacements seront supprimés, avec les zones du plan.",
-    "searchPlaceholder": "Rechercher une carte…",
-    "deleteTitle": "Supprimer la carte {{name}} ?",
-    "emptyTitle": "Aucune carte",
+    "searchPlaceholder": "Rechercher un plan…",
+    "deleteTitle": "Supprimer le plan {{name}} ?",
+    "emptyTitle": "Aucun plan",
     "delete": "Supprimer"
   },
   "editor": {
@@ -154,7 +154,7 @@
     "defaultOfKind": "Par défaut pour le type",
     "useDefault": "Utiliser l'illustration par défaut",
     "illustrationHint": "L'illustration détermine le type d'emplacement ; en changeant de type, une illustration d'un autre type revient à celle par défaut.",
-    "kindChanged": "Type changé en {{kind}} : les formules qui exigent un autre type ne seront plus affectées à cet emplacement.",
+    "kindChanged": "Type changé en {{kind}} : les forfaits qui exigent un autre type ne seront plus affectés à cet emplacement.",
     "tileHint": "Les dalles de passerelle font 60 unités : les tronçons droits mesurent un nombre entier de dalles et, avec un pas de grille qui divise 60, s'alignent sur la grille des dalles."
   },
   "tools": {
@@ -193,7 +193,7 @@
   },
   "settings": {
     "apply": "Appliquer",
-    "description": "Nom, dimensions en unités de carte, pas de la grille et côté de la mer."
+    "description": "Nom, dimensions en unités du plan, pas de la grille et côté de la mer."
   },
   "validation": {
     "number": "Saisissez un nombre valide.",
@@ -271,12 +271,12 @@
       "ombrellone_3_lettini": "Parasol + 3 transats",
       "ombrellone_4_lettini": "Parasol + 4 transats",
       "ombrellone_2_sdraio": "Parasol + 2 chaises longues",
-      "ombrellone_2_sedie": "Parasol + 2 fauteuils metteur en scène",
+      "ombrellone_2_sedie": "Parasol + 2 fauteuils de réalisateur",
       "ombrellone_chiuso": "Parasol fermé",
       "lettino": "Transat",
       "lettino_orizzontale": "Transat horizontal",
       "sdraio": "Chaise longue",
-      "sedia_regista": "Fauteuil metteur en scène",
+      "sedia_regista": "Fauteuil de réalisateur",
       "lettino_matrimoniale": "Transat double",
       "daybed": "Daybed",
       "gazebo": "Gazebo",
@@ -314,7 +314,7 @@
       "lavapiedi": "Lave-pieds",
       "primo_soccorso": "Premiers secours",
       "torretta_bagnino": "Poste de maître-nageur",
-      "pattino_salvataggio": "Pédalo de sauvetage",
+      "pattino_salvataggio": "Barque de sauvetage",
       "gommone_salvataggio": "Canot de sauvetage",
       "salvagente": "Bouée de sauvetage",
       "salvagente_palo": "Bouée sur poteau",
@@ -375,13 +375,13 @@
     "title": "Déplacer la mer ?",
     "description": "La mer passe de « {{from}} » à « {{to}} ». Choisissez de retourner toute la disposition ou de déplacer seulement la mer.",
     "flip": "Retourner la disposition",
-    "flipHint": "places, décorations et passerelles sont retournées ou pivotées pour que chaque rang garde sa distance à la mer. Libellés, rangs, zones et réservations ne changent pas. C'est enregistré tout de suite comme nouvelle version.",
+    "flipHint": "emplacements, décorations et passerelles sont retournés ou pivotés pour que chaque rangée garde sa distance à la mer. Libellés, rangées, zones et réservations ne changent pas. L'enregistrement est immédiat, comme nouvelle version.",
     "onlySea": "Seulement la mer",
     "onlySeaHint": "seul le côté de la mer change, les éléments restent en place. Enregistrez le plan pour l'appliquer.",
     "checking": "Vérification des réservations futures…",
     "futureTitle": "Réservations futures sur le plan",
-    "future_one": "{{count}} réservation, abonnement ou blocage à partir d'aujourd'hui concerne {{spots}} places de ce plan. Seul le dessin change : les places attribuées restent les mêmes.",
-    "future_other": "{{count}} réservations, abonnements ou blocages à partir d'aujourd'hui concernent {{spots}} places de ce plan. Seul le dessin change : les places attribuées restent les mêmes.",
+    "future_one": "{{count}} réservation, abonnement ou blocage à partir d'aujourd'hui concerne {{spots}} emplacements de ce plan. Seul le dessin change : les emplacements attribués restent les mêmes.",
+    "future_other": "{{count}} réservations, abonnements ou blocages à partir d'aujourd'hui concernent {{spots}} emplacements de ce plan. Seul le dessin change : les emplacements attribués restent les mêmes.",
     "blocked": {
       "dirty": "Il y a des modifications non enregistrées : enregistrez-les ou annulez-les avant de retourner la disposition.",
       "resized": "Vous avez aussi changé les dimensions : appliquez-les et enregistrez d'abord, puis déplacez la mer."

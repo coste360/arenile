@@ -3,7 +3,7 @@ Subject: Eine E-Mail wurde nicht zugestellt
 E-Mail nicht zugestellt
 =======================
 
-Die Nachricht „booking_confirmed" der Buchung LD-2027-000001 wurde nach 8 Versuchen nicht zugestellt. Prüfen Sie die Adresse des Kunden und die SMTP-Einstellungen und senden Sie die Bestätigung dann aus der Buchung erneut.
+Die Nachricht „booking_confirmed“ der Buchung LD-2027-000001 wurde nach 8 Versuchen nicht zugestellt. Prüfen Sie die Adresse des Kunden und die SMTP-Einstellungen und senden Sie die Bestätigung dann aus der Buchung erneut.
 
 -- 
 Lido Delfino

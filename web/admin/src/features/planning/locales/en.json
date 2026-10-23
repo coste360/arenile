@@ -1,6 +1,6 @@
 {
   "title": "Planning",
-  "description": "Spots × days planning to place long stays.",
+  "description": "Spots × days planning grid to place long stays.",
   "newBooking": "New booking",
   "emptyTitle": "No spots",
   "emptyDescription": "Create a map with spots to use the planning.",

@@ -1,9 +1,9 @@
 {
   "title": "Belegungsplan",
-  "description": "Plätze × Tage, um lange Aufenthalte einzuplanen.",
+  "description": "Raster Plätze × Tage, um lange Aufenthalte einzuplanen.",
   "newBooking": "Neue Buchung",
   "emptyTitle": "Keine Plätze",
-  "emptyDescription": "Erstellen Sie eine Karte mit Plätzen, um den Belegungsplan zu nutzen.",
+  "emptyDescription": "Erstellen Sie einen Plan mit Plätzen, um den Belegungsplan zu nutzen.",
   "toolbar": {
     "label": "Zeitraum des Belegungsplans",
     "previous_one": "{{count}} Tag früher",
@@ -33,11 +33,11 @@
   "move": {
     "title": "Buchung {{code}} ändern?",
     "spot": "von {{from}} nach {{to}}",
-    "dates": "Daten: {{from}} → {{to}}",
+    "dates": "Zeitraum: {{from}} → {{to}}",
     "previewing": "Verfügbarkeit und Preis werden geprüft…",
     "notApplicable": "Diese Buchung kann so nicht verschoben werden.",
     "staleTitle": "Buchung von einem anderen Benutzer geändert",
-    "staleDescription": "Neu laden, um die aktuelle Version zu sehen und die Verschiebung neu zu berechnen.",
+    "staleDescription": "Laden Sie neu, um die aktuelle Version zu sehen und die Verschiebung neu zu berechnen.",
     "reload": "Neu laden",
     "conflicts_one": "{{count}} Konflikt",
     "conflicts_other": "{{count}} Konflikte",
@@ -50,7 +50,7 @@
   },
   "conflict": {
     "spot_unavailable": "Platz belegt",
-    "pool_exhausted": "Kontingent erschöpft",
+    "pool_exhausted": "Bestand erschöpft",
     "quota_exceeded": "Online-Kontingent erschöpft",
     "closed": "Betrieb geschlossen",
     "inactive": "Platz inaktiv"

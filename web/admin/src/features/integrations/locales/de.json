@@ -5,17 +5,17 @@
   "saved": "Änderungen gespeichert",
   "secret": {
     "copied": "In die Zwischenablage kopiert",
-    "copyFailed": "Kopieren fehlgeschlagen: Text markieren und manuell kopieren.",
-    "once": "Kopiere ihn jetzt und bewahre ihn sicher auf: Aus Sicherheitsgründen wird er nicht erneut angezeigt.",
+    "copyFailed": "Kopieren fehlgeschlagen: Markieren Sie den Text und kopieren Sie ihn manuell.",
+    "once": "Kopieren Sie ihn jetzt und bewahren Sie ihn sicher auf: Aus Sicherheitsgründen wird er nicht erneut angezeigt.",
     "copy": "Kopieren",
     "done": "Gespeichert, schließen"
   },
   "validation": {
     "required": "Pflichtfeld.",
-    "scopes": "Wähle mindestens eine Berechtigung.",
+    "scopes": "Wählen Sie mindestens eine Berechtigung.",
     "expiryPast": "Das Ablaufdatum muss heute oder später sein.",
     "url": "Vollständige https-Adresse (http nur für localhost).",
-    "events": "Wähle mindestens ein Ereignis."
+    "events": "Wählen Sie mindestens ein Ereignis."
   },
   "scopes": {
     "establishment": {
@@ -54,8 +54,8 @@
     },
     "operations": {
       "run": {
-        "label": "Betrieb",
-        "description": "Check-in, Umzüge und Tagesansicht."
+        "label": "Tagesgeschäft",
+        "description": "Check-in, Platzwechsel und Tagesansicht."
       }
     },
     "reports": {
@@ -74,10 +74,10 @@
     "usage": "Externe Dienste senden den Schlüssel bei jeder Anfrage im Header",
     "showRevoked": "Widerrufene anzeigen",
     "empty": "Keine API-Schlüssel",
-    "emptyHint": "Erstelle einen Schlüssel pro externem System, nur mit den nötigen Berechtigungen.",
+    "emptyHint": "Erstellen Sie einen Schlüssel pro externem System, nur mit den nötigen Berechtigungen.",
     "formHint": "Ein Schlüssel wirkt nur für diesen Betrieb und nur mit den gewählten Berechtigungen.",
     "nameHint": "Zum Wiedererkennen, z. B. der Name des Systems.",
-    "expiryHint": "Optional: nach diesem Tag funktioniert der Schlüssel nicht mehr.",
+    "expiryHint": "Optional: Nach diesem Tag funktioniert der Schlüssel nicht mehr.",
     "scopesHint": "Benutzerverwaltung wird Schlüsseln nie gewährt.",
     "editAria": "Schlüssel {{name}} bearbeiten",
     "revoke": "Widerrufen",
@@ -107,13 +107,13 @@
   },
   "webhooks": {
     "title": "Webhooks",
-    "description": "Signierte Benachrichtigungen an deine Systeme bei Änderungen an Buchungen, Zahlungen und Konfiguration, mit Zustellprotokoll.",
+    "description": "Signierte Benachrichtigungen an Ihre Systeme bei Änderungen an Buchungen, Zahlungen und Konfiguration, mit Zustellprotokoll.",
     "new": "Neuer Endpunkt",
     "edit": "Endpunkt bearbeiten",
     "create": "Endpunkt erstellen",
     "formHint": "Arenile sendet für jedes gewählte Ereignis eine signierte POST-Anfrage an diese Adresse.",
     "urlHint": "Muss https sein; http nur für localhost zum Testen.",
-    "eventsHint": "Wähle einzelne Ereignisse, eine ganze Gruppe oder alle Ereignisse.",
+    "eventsHint": "Wählen Sie einzelne Ereignisse, eine ganze Gruppe oder alle Ereignisse.",
     "eventsPlaceholder": "Ereignisse wählen",
     "activeHint": "Pausiert werden keine Ereignisse gesendet (der Test funktioniert trotzdem).",
     "moreEvents": "+{{n}}",
@@ -140,14 +140,14 @@
       "h168": "7 Tage"
     },
     "rotatedTitle": "Neues Signaturgeheimnis",
-    "rotatedDescription": "Aktualisiere das empfangende System innerhalb der Übergangszeit.",
+    "rotatedDescription": "Aktualisieren Sie das empfangende System innerhalb der Übergangszeit.",
     "createdTitle": "Endpunkt erstellt",
     "createdDescription": "Hier ist das Geheimnis zur Prüfung der Signatur.",
     "signatureTitle": "Signaturprüfung",
     "signatureHelp": "Jede Zustellung enthält den Header",
     "signatureHow": "v1 ist der HMAC-SHA256 mit dem Endpunkt-Geheimnis über \"<t>.<body>\"; während einer Erneuerung erscheinen zwei v1-Werte.",
     "empty": "Keine Endpunkte",
-    "emptyHint": "Füge die Adresse deines Systems hinzu, um Arenile-Ereignisse zu empfangen.",
+    "emptyHint": "Fügen Sie die Adresse Ihres Systems hinzu, um Arenile-Ereignisse zu empfangen.",
     "testOk": "Testereignis an {{url}} zugestellt",
     "testFailed": "Testereignis an {{url}} nicht zugestellt",
     "testCode": "HTTP-Antwort {{code}}",

@@ -1,6 +1,6 @@
 ---
 subject: Wir haben Ihre Anfrage {{booking.code}} erhalten – {{establishment.name}}
-preheader: Der Betrieb bestätigt Ihre Anfrage in Kürze.
+preheader: Das Strandbad bestätigt Ihre Anfrage in Kürze.
 ---
 # Anfrage erhalten
 

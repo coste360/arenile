@@ -6,6 +6,7 @@
  * Pure string/Date arithmetic on purpose: this module is in the first-paint
  * bundle of the booking page, date-fns stays in the lazily loaded calendar.
  */
+import { uiIntlLocale } from './intl';
 
 export const DISPLAY_DATE_FORMAT = 'dd/MM/yyyy';
 const ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -70,7 +71,7 @@ export interface InstantFormatOptions {
 }
 
 function instantFormatter(opts: InstantFormatOptions, withTime: boolean): Intl.DateTimeFormat {
-  const locale = opts.locale && opts.locale !== 'it' ? opts.locale : 'it-IT';
+  const locale = opts.locale && opts.locale !== 'it' ? opts.locale : uiIntlLocale();
   return new Intl.DateTimeFormat(locale, {
     day: '2-digit',
     month: '2-digit',
@@ -112,7 +113,7 @@ export function formatInstantTime(
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  const locale = opts.locale && opts.locale !== 'it' ? opts.locale : 'it-IT';
+  const locale = opts.locale && opts.locale !== 'it' ? opts.locale : uiIntlLocale();
   return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
