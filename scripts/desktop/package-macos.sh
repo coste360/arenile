@@ -6,7 +6,9 @@
 #   scripts/desktop/package-macos.sh
 #
 # Environment (besides common.sh):
-#   MACOS_ARCHS                  default "arm64 amd64" (one value = thin binary)
+#   MACOS_ARCHS                  default "arm64 amd64" (universal); one value builds a
+#                                thin package: "arm64" -> _macos_arm64.dmg,
+#                                "amd64" -> _macos_x86_64.dmg (smaller downloads)
 #   MACOS_MIN_VERSION            LSMinimumSystemVersion / deployment target (default 13.0,
 #                                the minimum of the Go toolchain in go.mod)
 #   Signing (all optional; without them the build is ad-hoc signed and named -unsigned):
@@ -19,8 +21,12 @@
 #   NOTARY_TIMEOUT               wait for each notarization (default 90m; the first
 #                                submissions of a new team can take longer than 30m)
 #
-# Output in $DIST_DIR: Arenile_<version>_macos_universal[-unsigned|-unnotarized].dmg
-# (+ .sha256) and the bundle itself in $DIST_DIR/macos/Arenile.app.
+# Output in $DIST_DIR: Arenile_<version>_macos_<universal|arm64|x86_64>[-unsigned|-unnotarized|
+# -notarization-pending].dmg (+ .sha256) and the bundle itself in $DIST_DIR/macos/Arenile.app.
+# When Apple has not finished within NOTARY_TIMEOUT the signed dmg is still written, named
+# -notarization-pending, with a .notarization.txt file next to it holding the submission ids
+# and how to check and staple them later (docs/desktop-build.md); the script then exits 0 so the
+# caller can keep the artifact and fail afterwards (desktop.yml does).
 # shellcheck source=scripts/desktop/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 NOTARY_TIMEOUT="${NOTARY_TIMEOUT:-90m}"
@@ -59,6 +65,8 @@ if [ "${#thin[@]}" -gt 1 ]; then
 else
 	cp "${thin[0]}" "$bin"
 	arch_label="$MACOS_ARCHS"
+	# Apple's name for the Intel slice, as in the Linux AppImage (x86_64).
+	[ "$arch_label" = amd64 ] && arch_label=x86_64
 fi
 log "binary: $(lipo -archs "$bin")"
 
@@ -113,8 +121,15 @@ sign() { # path
 	fi
 }
 
-notarize() { # path (zip or dmg)
-	local auth out status id
+# Submission ids of notarizations Apple had not finished within NOTARY_TIMEOUT
+# ("<file> <id>" lines), written next to the dmg at the end.
+pending=()
+
+# notarize PATH [WAIT]: submits PATH (zip or dmg) and, unless WAIT is "nowait",
+# waits up to NOTARY_TIMEOUT. Returns 0 when Accepted, 2 when still in progress
+# (the id is recorded in $pending); a rejection prints the log and fails.
+notarize() {
+	local auth out status id wait="${2:-wait}"
 	auth=(--key "$work/AuthKey.p8" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID")
 	# Submit first and wait separately: the submission id is then always known,
 	# also when Apple takes longer than the wait (first submissions of a team
@@ -122,19 +137,26 @@ notarize() { # path (zip or dmg)
 	out="$(xcrun notarytool submit "$1" "${auth[@]}" --output-format json 2>&1)" || true
 	id="$(printf '%s' "$out" | sed -n 's/.*"id" *: *"\([^"]*\)".*/\1/p' | head -n1)"
 	[ -n "$id" ] || die "notarization upload of $(basename "$1") failed: $out"
-	log "notarization of $(basename "$1") submitted: $id (waiting up to $NOTARY_TIMEOUT)"
-	xcrun notarytool wait "$id" "${auth[@]}" --timeout "$NOTARY_TIMEOUT" >&2 || true
+	if [ "$wait" = nowait ]; then
+		log "notarization of $(basename "$1") submitted: $id (not waited for)"
+	else
+		log "notarization of $(basename "$1") submitted: $id (waiting up to $NOTARY_TIMEOUT)"
+		xcrun notarytool wait "$id" "${auth[@]}" --timeout "$NOTARY_TIMEOUT" >&2 || true
+	fi
 	out="$(xcrun notarytool info "$id" "${auth[@]}" --output-format json 2>&1)" || true
 	status="$(printf '%s' "$out" | sed -n 's/.*"status" *: *"\([^"]*\)".*/\1/p' | head -n1)"
 	log "notarization of $(basename "$1"): ${status:-unknown} ($id)"
 	case "$status" in
-	Accepted) ;;
-	"In Progress")
-		die "notarization $id still in progress after $NOTARY_TIMEOUT: check it with 'xcrun notarytool info $id' and rerun the job (or raise NOTARY_TIMEOUT)"
+	Accepted) return 0 ;;
+	"In Progress" | "")
+		# Unknown status (network hiccup on `info`) is treated as pending: the
+		# id is kept and can be checked later, the signed artifact is not lost.
+		pending+=("$(basename "$1") $id")
+		return 2
 		;;
 	*)
 		xcrun notarytool log "$id" "${auth[@]}" >&2 || true
-		die "notarization failed"
+		die "notarization $id: $status"
 		;;
 	esac
 }
@@ -158,32 +180,68 @@ sign "$app"
 codesign --verify --deep --strict --verbose=2 "$app" >&2
 
 # Notarize and staple the .app too, so it opens offline once copied out of the dmg.
+app_notarized=0
 if [ "$can_notarize" = 1 ]; then
-	ditto -c -k --keepParent "$app" "$work/app.zip"
-	notarize "$work/app.zip"
-	xcrun stapler staple "$app" >&2
-	xcrun stapler validate "$app" >&2
-	spctl --assess --type execute -vvv "$app" >&2
+	ditto -c -k --keepParent "$app" "$work/Arenile.app.zip"
+	if notarize "$work/Arenile.app.zip"; then
+		app_notarized=1
+		xcrun stapler staple "$app" >&2
+		xcrun stapler validate "$app" >&2
+		spctl --assess --type execute -vvv "$app" >&2
+	else
+		log "the .app notarization is still pending: the dmg is built and signed anyway"
+	fi
 fi
 
 # --- 4. dmg -------------------------------------------------------------------
-dmg="$DIST_DIR/${APP_NAME}_${VERSION_SAFE}_macos_${arch_label}${label}.dmg"
-rm -f "$DIST_DIR/${APP_NAME}_${VERSION_SAFE}_macos_"*.dmg "$DIST_DIR/${APP_NAME}_${VERSION_SAFE}_macos_"*.dmg.sha256
+# Built under a temporary name: the final label is known only after notarization
+# (the signature and the notarization ticket do not depend on the file name).
 stage="$work/dmg"
 mkdir -p "$stage"
 ditto "$app" "$stage/$APP_NAME.app"
 ln -s /Applications "$stage/Applications"
+tmp_dmg="$work/${APP_NAME}_${VERSION_SAFE}_macos_${arch_label}.dmg"
 hdiutil create -volname "$APP_NAME" -srcfolder "$stage" -fs HFS+ -format UDZO \
-	-imagekey zlib-level=9 -ov "$dmg" >&2
+	-imagekey zlib-level=9 -ov "$tmp_dmg" >&2
+hdiutil verify "$tmp_dmg" >/dev/null
 if [ -n "$identity" ]; then
-	codesign --force --timestamp --sign "$identity" "$dmg"
+	codesign --force --timestamp --sign "$identity" "$tmp_dmg"
 fi
 if [ "$can_notarize" = 1 ]; then
-	notarize "$dmg"
-	xcrun stapler staple "$dmg" >&2
-	xcrun stapler validate "$dmg" >&2
-	spctl --assess --type open --context context:primary-signature -vvv "$dmg" >&2
+	# When the .app is still pending, the dmg is submitted without waiting
+	# (another NOTARY_TIMEOUT would only exceed the job timeout).
+	wait_dmg=wait
+	[ "$app_notarized" = 1 ] || wait_dmg=nowait
+	if notarize "$tmp_dmg" "$wait_dmg"; then
+		xcrun stapler staple "$tmp_dmg" >&2
+		xcrun stapler validate "$tmp_dmg" >&2
+		spctl --assess --type open --context context:primary-signature -vvv "$tmp_dmg" >&2
+	fi
+	[ "${#pending[@]}" -eq 0 ] || label="-notarization-pending"
 fi
-hdiutil verify "$dmg" >/dev/null
+
+# Remove only earlier outputs of this architecture: the universal and the thin
+# packages can sit side by side in $DIST_DIR.
+prefix="$DIST_DIR/${APP_NAME}_${VERSION_SAFE}_macos_${arch_label}"
+rm -f "$prefix".dmg "$prefix"-*.dmg "$prefix"*.dmg.sha256 "$prefix"*.notarization.txt
+dmg="$prefix$label.dmg"
+mv "$tmp_dmg" "$dmg"
 sha256_sidecar "$dmg"
+
+if [ "${#pending[@]}" -gt 0 ]; then
+	note="$dmg.notarization.txt"
+	{
+		echo "Notarization of $(basename "$dmg") still in progress after $NOTARY_TIMEOUT."
+		echo "Submissions (file id):"
+		printf '  %s\n' "${pending[@]}"
+		echo
+		echo "Check (App Store Connect API key, see docs/desktop-build.md):"
+		echo "  xcrun notarytool info <id> --key AuthKey_<KEY_ID>.p8 --key-id <KEY_ID> --issuer <ISSUER_ID>"
+		echo "  xcrun notarytool history --key AuthKey_<KEY_ID>.p8 --key-id <KEY_ID> --issuer <ISSUER_ID>"
+		echo "When the dmg submission is Accepted (stapling needs no signing key):"
+		echo "  xcrun stapler staple <dmg> && xcrun stapler validate <dmg>"
+		echo "  then drop -notarization-pending from the name and regenerate the .sha256."
+	} >"$note"
+	log "notarization pending, see $(basename "$note")"
+fi
 printf '%s\n' "$dmg"

@@ -1,8 +1,8 @@
 name: Desktop packages
 
 # Builds the desktop edition (spec 29.1) on the native runner of each OS:
-# Windows installers (Inno Setup) for x64 and arm64, macOS universal .app in a
-# .dmg, Linux AppImage.
+# Windows installers (Inno Setup) for x64 and arm64, macOS .app in a .dmg
+# (universal, plus thin arm64 and x86_64 ones for smaller downloads), Linux AppImage.
 #
 # - Pull requests touching the desktop code: the packages are built and smoke
 #   tested but NOT uploaded (a public repository: an Actions artifact would be
@@ -94,12 +94,28 @@ jobs:
           if-no-files-found: error
 
   macos:
-    name: macOS (universal .dmg)
+    name: macOS ${{ matrix.label }} (.dmg)
     needs: web
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Universal (arm64 + x86_64): one download for every Mac.
+          - label: universal
+            archs: arm64 amd64
+            artifact: desktop-macos
+          # Thin packages, about half the size, for the portal and for sending.
+          - label: arm64
+            archs: arm64
+            artifact: desktop-macos-arm64
+          - label: x86_64
+            archs: amd64
+            artifact: desktop-macos-x86_64
     runs-on: macos-latest
     # Two notarizations (app and dmg), each waited up to NOTARY_TIMEOUT (90m).
     timeout-minutes: 200
     env:
+      MACOS_ARCHS: ${{ matrix.archs }}
       APPLE_CERTIFICATE_P12_BASE64: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
       APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
       APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
@@ -132,25 +148,55 @@ jobs:
             cp -R "web/$app/dist/." "$dest/"
           done
 
-      - name: Package (universal binary, .app, .dmg, signing and notarization when configured)
+      - name: Package (${{ matrix.label }} binary, .app, .dmg, signing and notarization when configured)
         run: make desktop-package-macos
 
       - name: Smoke test
         run: |
           app="dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop"
-          lipo -archs "$app" | grep -q x86_64
-          lipo -archs "$app" | grep -q arm64
-          "$app" -version
+          archs="$(lipo -archs "$app")"
+          echo "slices: $archs"
+          case "${{ matrix.label }}" in
+            universal) [ "$archs" = "x86_64 arm64" ] || [ "$archs" = "arm64 x86_64" ] ;;
+            *) [ "$archs" = "${{ matrix.label }}" ] ;;
+          esac || { echo "::error::unexpected slices: $archs"; exit 1; }
+          if [ "${{ matrix.label }}" = x86_64 ]; then
+            # The runner is Apple Silicon: the Intel build runs under Rosetta 2 when present.
+            if arch -x86_64 /usr/bin/true 2>/dev/null; then arch -x86_64 "$app" -version; else echo "::notice::no Rosetta 2 on the runner, -version skipped"; fi
+          else
+            "$app" -version
+          fi
+          ls -l dist/desktop/*.dmg
+          size="$(stat -f %z dist/desktop/*.dmg)"
+          echo "dmg size: $((size / 1024 / 1024)) MiB"
 
+      # Kept also when notarization is still pending at Apple (signed dmg named
+      # -notarization-pending, submission ids in .notarization.txt).
       - uses: actions/upload-artifact@v7
         if: env.UPLOAD == 'true'
         with:
-          name: desktop-macos
+          name: ${{ matrix.artifact }}
           path: |
             dist/desktop/*.dmg
             dist/desktop/*.dmg.sha256
+            dist/desktop/*.notarization.txt
           retention-days: ${{ fromJSON(env.RETENTION_DAYS) }}
           if-no-files-found: error
+
+      - name: Fail when notarization is still pending
+        run: |
+          shopt -s nullglob
+          notes=(dist/desktop/*.notarization.txt)
+          [ "${#notes[@]}" -eq 0 ] && exit 0
+          cat "${notes[@]}"
+          {
+            echo "### Notarization pending (${{ matrix.label }})"
+            echo '```'
+            cat "${notes[@]}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::notarization still in progress at Apple; the signed dmg is in the ${{ matrix.artifact }} artifact, see docs/desktop-build.md (Notarization pending)"
+          exit 1
 
   windows:
     name: Windows ${{ matrix.arch }} (installer .exe)

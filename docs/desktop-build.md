@@ -15,12 +15,16 @@ the source code and these instructions only.
 | Windows 10/11 x64 | `Arenile_<tag>_windows_amd64_setup.exe` | Inno Setup 6 | `windows-latest` |
 | Windows 11 on Arm (Snapdragon, Surface Pro) | `Arenile_<tag>_windows_arm64_setup.exe` | Inno Setup 6, llvm-mingw | `windows-11-arm` |
 | macOS 13+ (Apple Silicon and Intel) | `Arenile_<tag>_macos_universal.dmg` | `lipo`, `hdiutil`, `codesign`, `notarytool` | `macos-latest` |
+| macOS 13+ Apple Silicon only | `Arenile_<tag>_macos_arm64.dmg` (about half the size) | same | `macos-latest` |
+| macOS 13+ Intel only | `Arenile_<tag>_macos_x86_64.dmg` (about half the size) | same | `macos-latest` |
 | Linux x86_64 | `Arenile_<tag>_linux_x86_64.AppImage` | `appimagetool` (pinned) | `ubuntu-latest` |
 
 Each package has a `.sha256` file next to it, and the portal bundle has a `checksums.txt` file
 that covers every file. A package without a valid publisher signature always has `-unsigned` in
-its name. On macOS, a signed package that was not notarized has `-unnotarized` instead. Neither
-kind may be published on the portal as a stable release.
+its name. On macOS, a signed package that was not notarized has `-unnotarized` instead, and one
+whose notarization Apple had not finished within `NOTARY_TIMEOUT` has `-notarization-pending`
+(see [Notarization pending](#notarization-pending)). None of these may be published on the
+portal as a stable release.
 
 ## Files
 
@@ -48,6 +52,8 @@ when `internal/http/static/{admin,booking}` are already filled. Everything is wr
 ```bash
 make desktop-build                    # launcher for this machine -> dist/desktop/bin/<os>_<arch>/
 make desktop-package-macos            # macOS: universal Arenile.app + .dmg
+MACOS_ARCHS=arm64 make desktop-package-macos   # thin Apple Silicon .dmg (_macos_arm64)
+MACOS_ARCHS=amd64 make desktop-package-macos   # thin Intel .dmg (_macos_x86_64)
 make desktop-package-linux            # Linux: AppImage (downloads the pinned appimagetool, checks sha256)
 make desktop-package-windows          # Windows, in Git Bash: exe + Inno Setup installer
 VERSION=v1.4.0 make desktop-package-macos     # version label (default: scripts/version.sh, e.g. 0.6.0-dev.187+835d645)
@@ -125,8 +131,14 @@ With the `desktop` tag on macOS and Windows (`internal/desktop/shell`, ADR 0015 
 
 `desktop.yml` runs four native jobs after a shared frontend build:
 
-1. `macos` (`macos-latest`, arm64) builds the universal binary, the `.app` and the `.dmg`,
-   signs and notarizes when the secrets are present, then runs `lipo -archs` and `-version`.
+1. `macos` (`macos-latest`, arm64) is a matrix of three packages: `universal`
+   (`MACOS_ARCHS="arm64 amd64"`, artifact `desktop-macos`), `arm64` (`desktop-macos-arm64`)
+   and `x86_64` (`desktop-macos-x86_64`). The thin ones are about half the size of the
+   universal one, for the portal and for sending by hand. Each builds the binary, the `.app`
+   and the `.dmg`, signs, notarizes and staples when the secrets are present, then checks the
+   slices with `lipo -archs` and runs `-version` (the Intel build under Rosetta 2 when the
+   runner has it). When notarization is still pending, the signed dmg is uploaded anyway and
+   a last step fails the job (see [Notarization pending](#notarization-pending)).
 2. `windows` is a matrix: `amd64` on `windows-latest` (MinGW gcc of the image) and `arm64`
    on the GitHub-hosted `windows-11-arm` runner, where it downloads llvm-mingw (version and
    sha256 pinned in the workflow) for CGO. Each builds the exe with its resources, signs it
@@ -142,7 +154,7 @@ repository an Actions artifact can be downloaded by anyone with a GitHub account
 would make GitHub a download channel. A maintainer who needs a test package runs the
 workflow by hand (`workflow_dispatch`, unsigned, kept 3 days). In a release, `release.yml`
 calls the workflow with `secrets: inherit`, and the `portal-bundle` job merges the
-`desktop-{windows-amd64,windows-arm64,macos,linux}` artifacts with the server binaries before it writes
+`desktop-{windows-amd64,windows-arm64,macos,macos-arm64,macos-x86_64,linux}` artifacts with the server binaries before it writes
 `checksums.txt`. The bundle is kept 7 days as the hand-off to the portal and, when the
 `PORTAL_UPLOAD_URL` and `PORTAL_UPLOAD_TOKEN` secrets exist, pushed to the portal intake
 endpoint (one `multipart/form-data` POST per file, `version` and `file` fields, Bearer token).
@@ -172,13 +184,47 @@ The flow in `package-macos.sh`:
 2. Run `codesign --options runtime --timestamp --entitlements entitlements.plist` on the
    `.app`. The hardened runtime is required for notarization, and the entitlements are empty
    because a Go binary needs no exceptions.
-3. Zip the `.app` with `ditto`, submit it with `notarytool submit --wait`, then
+3. Zip the `.app` with `ditto`, submit it with `notarytool submit`, wait for it up to
+   `NOTARY_TIMEOUT` (default 90m) with `notarytool wait`, then
    `stapler staple Arenile.app`. The `.app` is stapled on its own so that it opens offline
    once it has been copied out of the `.dmg`, as in the acceptance test on a PC with no
    connection.
 4. Run `hdiutil create` on the `.dmg`, sign it, notarize it and staple it.
 
 If notarization is rejected, the script prints the `notarytool log` and the job fails.
+
+#### Notarization pending
+
+The first submissions of a new Apple team can take hours. When Apple has not answered within
+`NOTARY_TIMEOUT`, `package-macos.sh` does not throw the build away: it still writes the
+signed dmg, named `-notarization-pending` (if the `.app` was still pending, the dmg is
+submitted without waiting), and a `<dmg>.notarization.txt` file with the submission ids.
+`desktop.yml` uploads both in the job artifact, writes the ids in the job summary and then
+fails the job, so that nobody publishes the package by mistake.
+
+To finish by hand on a Mac, with the App Store Connect API key (`AuthKey_<KEY_ID>.p8`: keep it
+outside the repository, never print or commit it):
+
+```bash
+KEY=/path/to/AuthKey_<KEY_ID>.p8
+xcrun notarytool history --key "$KEY" --key-id <KEY_ID> --issuer <ISSUER_ID>   # recent submissions and status
+xcrun notarytool info <submission-id> --key "$KEY" --key-id <KEY_ID> --issuer <ISSUER_ID>
+xcrun notarytool log  <submission-id> --key "$KEY" --key-id <KEY_ID> --issuer <ISSUER_ID>   # if Invalid
+```
+
+Once the dmg submission is `Accepted`, staple the ticket (stapling needs no signing key), check
+it, drop `-notarization-pending` from the name and write the checksum again:
+
+```bash
+xcrun stapler staple Arenile_<tag>_macos_arm64-notarization-pending.dmg
+xcrun stapler validate Arenile_<tag>_macos_arm64-notarization-pending.dmg
+spctl -a -vvv -t open --context context:primary-signature Arenile_<tag>_macos_arm64-notarization-pending.dmg
+mv Arenile_<tag>_macos_arm64-notarization-pending.dmg Arenile_<tag>_macos_arm64.dmg
+shasum -a 256 Arenile_<tag>_macos_arm64.dmg > Arenile_<tag>_macos_arm64.dmg.sha256
+```
+
+The `.app` inside such a dmg is not stapled itself: Gatekeeper checks its ticket online the
+first time it opens. Re-running the job after Apple has accepted gives fully stapled packages.
 
 ### Windows: Authenticode
 

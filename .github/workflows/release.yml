@@ -196,12 +196,12 @@ jobs:
 
       # Taken also when one desktop job failed (e.g. only Windows arm64): the packages
       # that were built still reach the bundle, with the warning below.
-      - name: Desktop packages (Windows x64/arm64 installers, macOS dmg, Linux AppImage)
+      - name: Desktop packages (Windows x64/arm64 installers, macOS universal/arm64/x86_64 dmg, Linux AppImage)
         if: needs.desktop.result == 'success' || needs.desktop.result == 'failure'
         continue-on-error: true
         uses: actions/download-artifact@v8
         with:
-          pattern: desktop-{windows-amd64,windows-arm64,macos,linux}
+          pattern: desktop-{windows-amd64,windows-arm64,macos,macos-arm64,macos-x86_64,linux}
           path: dist
           merge-multiple: true
 

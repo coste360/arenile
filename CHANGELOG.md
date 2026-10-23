@@ -13,6 +13,11 @@ offline).
 
 ### Added
 
+- App desktop per macOS: oltre al `.dmg` universale, la CI produce i `.dmg` **solo Apple Silicon**
+  (`_macos_arm64`) e **solo Intel** (`_macos_x86_64`), circa metà dimensione, ognuno firmato, notarizzato e
+  graffettato, tutti nel bundle per il portale. Se la notarizzazione Apple non finisce entro `NOTARY_TIMEOUT`, il
+  dmg firmato resta comunque nell'artefatto (nome `-notarization-pending`, id della richiesta in
+  `.notarization.txt`) e il job fallisce; come verificare e graffettare a mano in `docs/desktop-build.md`.
 - Mappa operativa (Mappa e Oggi): **etichetta dell'occupante** sotto le postazioni occupate, cioè il cognome del
   cliente (il nome se manca il cognome; titolare per gli abbonamenti, cliente principale per i gruppi; "Anonimo"
   per i clienti anonimizzati; mai email o telefono), troncata allo spazio tra le postazioni vicine e nascosta,
