@@ -59,20 +59,21 @@ Hard-coded English strings in generated code must go through `t('ui.…')`.
 
 Use the semantic Tailwind classes, never raw palette colours (`slate-*`, hex):
 
-| Token                         | Classes                                                                                                                    | Use                                                               |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| background / foreground       | `bg-background text-foreground`                                                                                            | page                                                              |
-| card, popover                 | `bg-card text-card-foreground`                                                                                             | surfaces                                                          |
-| primary (deep sea blue)       | `bg-primary text-primary-foreground`                                                                                       | main actions, selection                                           |
-| primary-on-surface            | `text-primary-on-surface`                                                                                                  | links / brand text on surfaces (contrast-safe with custom themes) |
-| highlight (warm sand)         | `bg-highlight text-highlight-foreground`                                                                                   | badges, "presto", highlights                                      |
-| secondary, muted, accent      | `bg-muted text-muted-foreground`, `hover:bg-accent`                                                                        | secondary text, hover                                             |
-| destructive, success, warning | `text-destructive`, `bg-success/15`, `bg-warning/20`                                                                       | states                                                            |
-| border, input, ring           | `border`, `border-input`, `ring-ring`                                                                                      |                                                                   |
-| chart-1…5                     | `var(--chart-1)` in `ChartConfig`                                                                                          | charts                                                            |
-| sidebar-*                     | sidebar internals                                                                                                          |                                                                   |
-| map surfaces                  | `fill-map-sand`, `fill-map-sea`, `fill-map-decoration`, `stroke-map-spot-stroke`                                           | map                                                               |
-| spot statuses                 | `STATUS_CLASSES[status].fill / .labelFill / .bg` from `@arenile/shared/map` (`--status-free`, `--status-booked-online`, …) | map, legends, badges                                              |
+| Token                         | Classes                                                                                                                      | Use                                                               |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| background / foreground       | `bg-background text-foreground`                                                                                              | page                                                              |
+| card, popover                 | `bg-card text-card-foreground`                                                                                               | surfaces                                                          |
+| primary (deep sea blue)       | `bg-primary text-primary-foreground`                                                                                         | main actions, selection                                           |
+| primary-on-surface            | `text-primary-on-surface`                                                                                                    | links / brand text on surfaces (contrast-safe with custom themes) |
+| highlight (warm sand)         | `bg-highlight text-highlight-foreground`                                                                                     | badges, "presto", highlights                                      |
+| secondary, muted, accent      | `bg-muted text-muted-foreground`, `hover:bg-accent`                                                                          | secondary text, hover                                             |
+| destructive, success, warning | `text-destructive`, `bg-success/15`, `bg-warning/20`                                                                         | states                                                            |
+| border, input, ring           | `border`, `border-input`, `ring-ring`                                                                                        |                                                                   |
+| chart-1…5                     | `var(--chart-1)` in `ChartConfig`                                                                                            | charts                                                            |
+| sidebar-*                     | sidebar internals                                                                                                            |                                                                   |
+| map surfaces                  | `fill-map-sand`, `fill-map-sea`, `fill-map-decoration`, `stroke-map-spot-stroke`                                             | map                                                               |
+| beach map kit                 | `fill-beach-sand-soft`, `fill-beach-water-soft`, `stroke-beach-water`, `beach-flag-green/yellow/red` (`--beach-*`, ADR 0012) | kit art, map backdrop, sea flag (see `shared/src/map/README.md`)  |
+| spot statuses                 | `STATUS_CLASSES[status].fill / .labelFill / .bg` from `@arenile/shared/map` (`--status-free`, `--status-booked-online`, …)   | map, legends, badges                                              |
 
 Radius: `--radius: 0.75rem` (`rounded-lg` = radius, `rounded-md`/`rounded-sm` smaller).
 Font: Inter Variable (`@fontsource-variable/inter`, `font-sans`). Dark mode: `.dark` on

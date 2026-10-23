@@ -9,6 +9,29 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa**, **M2 — Prezzi e policy** e **M3 — Prenotazioni dal
 pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubblica e pagamenti online**.
 
+### Added
+
+- Kit di illustrazioni della mappa ([ADR 0012](docs/adr/0012-kit-mappa.md)): le 107 illustrazioni originali di
+  Coste360 (`assets/beach-map-kit`, provenienza in `NOTICE.md`) sostituiscono pallini e rettangoli in editor,
+  mappa operativa e mini mappa delle prenotazioni. Un solo sprite `<symbol>` per pagina con i soli disegni usati,
+  caricato in modo pigro, e un `<use>` per elemento (1.000 postazioni restano fluide); lo stato è un alone
+  sotto il disegno più un badge con glifo (presente, abbonato, assente oggi, in attesa, bloccato, da incassare,
+  prelazione), leggibile in chiaro, scuro e senza colori; sabbia, mare e battigia nello stile del kit.
+- API: `SpotKind` aggiunge `sunbed`, `daybed`, `cabana`, `hammock`; `asset` opzionale su postazioni, decorazioni e
+  generatore di file (id del kit, validato dal backend), `variant` sulle decorazioni (colore della bandiera
+  `green|yellow|red`). Migrazione `00004_map_kit_assets` (SQLite e PostgreSQL).
+- Editor: tavolozza con ricerca e categorie per postazioni ed elementi, proprietà "Illustrazione" e
+  "Colore della bandiera", passerelle modulari su griglia di 60 unità che si raccordano, rotazione per ogni asset.
+- `make gen` rigenera anche il kit (`web/scripts/gen-map-kit.mjs`: sanifica gli SVG e fallisce su contenuti non
+  ammessi) in `web/shared/src/map/kit/generated/` e `internal/domain/mapping/kitassets_gen.go`.
+- Modello "Lido classico" e demo con il kit (ombrelloni con lettini, gazebo, passerella, bar, docce, WC, DAE,
+  torretta, bandiera, sedia JOB, rampa, palme); `seed demo` aggiorna una demo esistente una sola volta.
+
+### Note di aggiornamento
+
+- La migrazione `00004` su SQLite ricostruisce la tabella `spots` (pochi secondi anche con migliaia di
+  postazioni); fate un backup prima dell'aggiornamento come per ogni migrazione.
+
 ### Fixed
 
 - Revisione di M3 ([ADR 0011](docs/adr/0011-revisione-m3.md)): la conferma di un hold blocca le sue righe e gli hold

@@ -256,6 +256,16 @@ creati a mano, non si elimina né da sola né con la sua mappa: la richiesta fal
 elenca i riferimenti.
 Verificata da: `TestMappingIntegration_ReferencedZoneCannotBeDeleted`, `TestMappingIntegration_DeleteMapRefusesBoundPools` (`internal/domain/mapping`, tag `integration`). Stato: implemented.
 
+**INV-48 — Illustrazioni della mappa solo dal kit, sanificate al build.**
+`asset` di una postazione è vuoto o un id prenotabile del kit (`KitBookableAssets`), `asset` di una decorazione
+è vuoto o un id del kit, `variant` è ammessa solo se l'illustrazione la prevede (`KitAssetVariants`); le liste
+sono generate da `assets/beach-map-kit/manifest.json`, quindi backend e renderer conoscono lo stesso catalogo.
+Il frontend inietta solo i corpi `<symbol>` generati, che il generatore ha già filtrato con una allowlist (la
+generazione fallisce su script, handler, riferimenti esterni). ADR 0012.
+Verificata da: `TestValidateDocument_Cases`, `TestKitAssets_GeneratedListsAreSortedAndDisjoint`,
+`TestMappingIntegration_KitAssets` (`internal/domain/mapping`), `web/scripts/gen-map-kit.test.mjs` e `gen-check`
+in `make check`. Stato: implemented.
+
 ## Operatività del pannello e cassa (spec 14, 21, 28 — M3)
 
 **INV-43 — Giornata simulata coerente.**

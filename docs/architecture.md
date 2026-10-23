@@ -58,7 +58,7 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/domain/establishment` | Organizzazioni e stabilimenti: creazione (solo owner dell'organizzazione), impostazioni con `If-Match`, tema, archiviazione | `store`, `audit`, `event` |
 | `internal/domain/season` | Stagioni, periodi tariffari (senza sovrapposizioni, lock sulla riga della stagione), giorni di chiusura, copia delle date di stagione | `store`, `audit`, `event` |
 | `internal/domain/team` | Utenti e membership dello stabilimento (solo owner), password temporanea, disattivazione; protezione dell'ultimo owner | `auth`, `store`, `audit` |
-| `internal/domain/mapping` | Documento mappa versionato (postazioni, decorazioni), zone, pool e pool implicito delle zone `zone`, generatore di file puro (`generator.go`), verifica delle allocazioni future (`AllocationChecker`, implementato da `inventory`) | `store`, `audit`, `event` |
+| `internal/domain/mapping` | Documento mappa versionato (postazioni, decorazioni con `asset`/`variant` del kit, validati su `kitassets_gen.go`, ADR 0012), zone, pool e pool implicito delle zone `zone`, generatore di file puro (`generator.go`), verifica delle allocazioni future (`AllocationChecker`, implementato da `inventory`) | `store`, `audit`, `event` |
 | `internal/domain/catalog` | Componenti, pack, extra; `LoadPricingCatalog` costruisce il `pricing.Catalog` | `store`, `pricing` |
 | `internal/domain/pricingconfig` | Persistenza di regole di prezzo, prezzi fissi, promo, convenzioni e policy; `LoadPriceList` per i motori; simulatore, matrice, copertura, copia del listino | `pricing`, `policy`, `store` |
 | `internal/domain/setup` | Configurazione guidata: modelli, applicazione in una transazione, listino rapido, stato, `seed demo` | `mapping`, `pricingconfig`, `store` |
@@ -83,7 +83,7 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/calendar` | `Date` (`YYYY-MM-DD`), intervalli, fasce `AM`/`PM`/`FULL` | — |
 | `pkg/ext` | Interfacce pubbliche stabili: `PaymentProvider`, `FiscalDriver`, `EventSink`, `ConcessionDataProvider`, `TenantResolver`, `AuthProvider`, `Notifier`, `BotProtection`, `EventBus`, `Extensions` | — |
 | `api/openapi.yaml` | Contratto API OpenAPI 3.1, fonte di verità (ADR 0005) | — |
-| `web/admin`, `web/booking`, `web/shared` | SPA del pannello, pagina pubblica (budget 150 KB gzip), pacchetto condiviso con client generato in `web/shared/api/generated/` | — |
+| `web/admin`, `web/booking`, `web/shared` | SPA del pannello, pagina pubblica (budget 150 KB gzip), pacchetto condiviso con client generato in `web/shared/api/generated/` e renderer della mappa con il kit di illustrazioni (`web/shared/src/map`, sprite `<symbol>` generato in `map/kit/generated/` da `assets/beach-map-kit`, ADR 0012) | — |
 
 Regole di dipendenza:
 - `internal/domain/*` non importa `net/http`, `internal/http/*` né driver SQL (usa `bun.IDB` per partecipare alle transazioni; l'IP per l'audit arriva da `internal/reqctx`).
@@ -239,6 +239,8 @@ totale:   5 sconti (convenzione → promo → automatici)
 ```
 api/openapi.yaml ──make gen──► internal/http/api/api.gen.go
                          └───► web/shared/api/generated/schema.d.ts
+assets/beach-map-kit ──make gen (web/scripts/gen-map-kit.mjs)──► web/shared/src/map/kit/generated/
+                                                          └───► internal/domain/mapping/kitassets_gen.go
 web/ ──npm --prefix web run build──► web/admin/dist, web/booking/dist (+ embed.js)
      ──copia──► internal/http/static/{admin,booking}
 go build ./cmd/arenile ──► binario unico ──► immagine distroless (deploy/Dockerfile)
