@@ -11,6 +11,7 @@ import {
   DataTableColumnHeader,
   EmptyState,
   QueryState,
+  SectionCard,
   StatusBadge,
   type ColumnDef,
 } from '@arenile/shared/ui/patterns';
@@ -85,54 +86,48 @@ export function SessionHistory({
     },
     {
       id: 'expected',
-      meta: { label: t('close.expected') },
-      header: () => <span className="block text-right">{t('close.expected')}</span>,
-      cell: ({ row }) => (
-        <span className="block text-right tabular-nums">
-          {row.original.status === 'closed'
-            ? ctx.money(sumTotals(normalizeTotals(row.original.expected_totals)))
-            : '—'}
-        </span>
-      ),
+      meta: { label: t('close.expected'), align: 'right' },
+      header: t('close.expected'),
+      cell: ({ row }) =>
+        row.original.status === 'closed'
+          ? ctx.money(sumTotals(normalizeTotals(row.original.expected_totals)))
+          : '—',
     },
     {
       id: 'counted',
-      meta: { label: t('close.counted') },
-      header: () => <span className="block text-right">{t('close.counted')}</span>,
-      cell: ({ row }) => (
-        <span className="block text-right tabular-nums">
-          {row.original.counted_totals
-            ? ctx.money(sumTotals(normalizeTotals(row.original.counted_totals)))
-            : '—'}
-        </span>
-      ),
+      meta: { label: t('close.counted'), align: 'right' },
+      header: t('close.counted'),
+      cell: ({ row }) =>
+        row.original.counted_totals
+          ? ctx.money(sumTotals(normalizeTotals(row.original.counted_totals)))
+          : '—',
     },
     {
       id: 'difference',
-      meta: { label: t('close.difference') },
-      header: () => <span className="block text-right">{t('close.difference')}</span>,
+      meta: { label: t('close.difference'), align: 'right' },
+      header: t('close.difference'),
       cell: ({ row }) =>
         row.original.difference === undefined ? (
-          <span className="block text-right text-muted-foreground">—</span>
+          <span className="text-muted-foreground">—</span>
         ) : (
-          <DifferenceAmount cents={row.original.difference} money={ctx.money} className="w-full" />
+          <DifferenceAmount cents={row.original.difference} money={ctx.money} />
         ),
     },
   ];
 
   return (
-    <section aria-labelledby="cash-history-title" className="space-y-3">
-      <h2 id="cash-history-title" className="text-lg font-semibold">
-        {t('history.title')}
-      </h2>
+    <SectionCard title={t('history.title')} titleId="cash-history-title" flush={!history.error}>
       {history.error ? (
-        <QueryState
-          isLoading={false}
-          error={history.error}
-          onRetry={() => void history.refetch()}
-        />
+        <div className="px-6">
+          <QueryState
+            isLoading={false}
+            error={history.error}
+            onRetry={() => void history.refetch()}
+          />
+        </div>
       ) : (
         <DataTable
+          embedded
           caption={t('history.title')}
           columns={columns}
           data={history.data ?? []}
@@ -150,7 +145,7 @@ export function SessionHistory({
         onOpenChange={(o) => !o && onSelect(undefined)}
         onPrint={onPrint}
       />
-    </section>
+    </SectionCard>
   );
 }
 

@@ -79,7 +79,7 @@ export function DayToolbar({
         aria-label={t('toolbar.slot')}
       >
         {SLOTS.map((s) => (
-          <ToggleGroupItem key={s} value={s} className="px-3">
+          <ToggleGroupItem key={s} value={s}>
             {t(`slot.${s}`)}
           </ToggleGroupItem>
         ))}

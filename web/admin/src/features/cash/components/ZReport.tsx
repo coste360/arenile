@@ -1,13 +1,5 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@arenile/shared/ui/table';
 import { Separator } from '@arenile/shared/ui/separator';
+import { DataTable, type ColumnDef } from '@arenile/shared/ui/patterns';
 import { useTranslation } from 'react-i18next';
 import type { CashSessionDetail } from '../api';
 import {
@@ -43,6 +35,58 @@ export function ZReport({
   const diff = difference(counted, expected);
   const mv = netMovements(detail.movements);
   const methods = methodsShown(takings, expected, counted);
+  type Method = (typeof methods)[number];
+
+  const columns: ColumnDef<Method>[] = [
+    {
+      id: 'method',
+      meta: { label: t('close.method') },
+      header: t('close.method'),
+      cell: ({ row }) => t(`method.${row.original}`),
+      footer: t('close.total'),
+    },
+    {
+      id: 'takings',
+      meta: { label: t('z.takings'), align: 'right' },
+      header: t('z.takings'),
+      cell: ({ row }) => ctx.money(takings[row.original] ?? 0),
+      footer: ctx.money(sumTotals(takings)),
+    },
+    {
+      id: 'expected',
+      meta: { label: t('close.expected'), align: 'right' },
+      header: t('close.expected'),
+      cell: ({ row }) => ctx.money(expected[row.original] ?? 0),
+      footer: ctx.money(sumTotals(expected)),
+    },
+    ...(closed
+      ? ([
+          {
+            id: 'counted',
+            meta: { label: t('close.counted'), align: 'right' },
+            header: t('close.counted'),
+            cell: ({ row }) =>
+              counted[row.original] === undefined ? '—' : ctx.money(counted[row.original] ?? 0),
+            footer: ctx.money(sumTotals(counted)),
+          },
+          {
+            id: 'difference',
+            meta: { label: t('close.difference'), align: 'right' },
+            header: t('close.difference'),
+            cell: ({ row }) => (
+              <DifferenceAmount
+                cents={diff.byMethod[row.original] ?? 0}
+                money={ctx.money}
+                badge={false}
+              />
+            ),
+            footer: () => (
+              <DifferenceAmount cents={session.difference ?? diff.total} money={ctx.money} />
+            ),
+          },
+        ] satisfies ColumnDef<Method>[])
+      : []),
+  ];
 
   return (
     <article aria-label={t('z.title')} className="space-y-4 text-sm print:text-xs print:text-black">
@@ -74,61 +118,14 @@ export function ZReport({
           <dd className="font-medium tabular-nums">{ctx.money(mv.out)}</dd>
         </div>
       </dl>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('close.method')}</TableHead>
-            <TableHead className="text-right">{t('z.takings')}</TableHead>
-            <TableHead className="text-right">{t('close.expected')}</TableHead>
-            {closed && <TableHead className="text-right">{t('close.counted')}</TableHead>}
-            {closed && <TableHead className="text-right">{t('close.difference')}</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {methods.map((m) => (
-            <TableRow key={m}>
-              <TableCell>{t(`method.${m}`)}</TableCell>
-              <TableCell className="text-right tabular-nums">
-                {ctx.money(takings[m] ?? 0)}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {ctx.money(expected[m] ?? 0)}
-              </TableCell>
-              {closed && (
-                <TableCell className="text-right tabular-nums">
-                  {counted[m] === undefined ? '—' : ctx.money(counted[m])}
-                </TableCell>
-              )}
-              {closed && (
-                <TableCell className="text-right">
-                  <DifferenceAmount cents={diff.byMethod[m] ?? 0} money={ctx.money} badge={false} />
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell>{t('close.total')}</TableCell>
-            <TableCell className="text-right tabular-nums">
-              {ctx.money(sumTotals(takings))}
-            </TableCell>
-            <TableCell className="text-right tabular-nums">
-              {ctx.money(sumTotals(expected))}
-            </TableCell>
-            {closed && (
-              <TableCell className="text-right tabular-nums">
-                {ctx.money(sumTotals(counted))}
-              </TableCell>
-            )}
-            {closed && (
-              <TableCell className="text-right">
-                <DifferenceAmount cents={session.difference ?? diff.total} money={ctx.money} />
-              </TableCell>
-            )}
-          </TableRow>
-        </TableFooter>
-      </Table>
+      <DataTable
+        caption={t('z.title')}
+        columns={columns}
+        data={methods}
+        getRowId={(m) => m}
+        pageSize={0}
+        columnToggle={false}
+      />
       {session.notes && (
         <p>
           <span className="text-muted-foreground print:text-black">{t('z.notes')}: </span>

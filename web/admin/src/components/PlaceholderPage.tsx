@@ -1,5 +1,4 @@
-import { Badge } from '@arenile/shared/ui/badge';
-import { EmptyState, PageHeader } from '@arenile/shared/ui/patterns';
+import { EmptyState, PageHeader, StatusBadge } from '@arenile/shared/ui/patterns';
 import { ConstructionIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,9 +29,9 @@ export function PlaceholderPage({
         title={t('admin.placeholder.title')}
         description={t(descriptionKey)}
       >
-        <Badge variant="outline" className="border-highlight bg-highlight/20 text-foreground">
+        <StatusBadge tone="highlight" dot={false}>
           {t('common.comingSoon', { milestone })}
-        </Badge>
+        </StatusBadge>
       </EmptyState>
     </section>
   );

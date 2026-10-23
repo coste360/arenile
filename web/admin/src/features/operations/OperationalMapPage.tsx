@@ -1,4 +1,4 @@
-import { EmptyState, PageHeader, QueryState } from '@arenile/shared/ui/patterns';
+import { EmptyState, Page, QueryState } from '@arenile/shared/ui/patterns';
 import { Button } from '@arenile/shared/ui/button';
 import { Link } from '@tanstack/react-router';
 import { MapIcon } from 'lucide-react';
@@ -26,8 +26,7 @@ export function OperationalMapPage() {
   const day = useOperationsDay(establishmentId, date, slot, options.length > 1 ? mapId : undefined);
 
   return (
-    <div className="space-y-4">
-      <PageHeader title={t('map.title')} description={t('map.description')} />
+    <Page title={t('map.title')} description={t('map.description')}>
       <DayToolbar
         date={date}
         slot={slot}
@@ -76,6 +75,6 @@ export function OperationalMapPage() {
           )}
         </>
       )}
-    </div>
+    </Page>
   );
 }

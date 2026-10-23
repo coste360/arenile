@@ -1,7 +1,7 @@
 import { MapLegend } from '@arenile/shared/map';
 import { Button } from '@arenile/shared/ui/button';
 import { ButtonGroup } from '@arenile/shared/ui/button-group';
-import { DatePicker, EmptyState, PageHeader, QueryState } from '@arenile/shared/ui/patterns';
+import { DatePicker, EmptyState, Page, QueryState } from '@arenile/shared/ui/patterns';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import { useNavigate } from '@tanstack/react-router';
@@ -88,19 +88,18 @@ export function PlanningPage() {
     });
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-        actions={
-          permissions.canWriteBookings && (
-            <Button onClick={() => setNewBooking({ none: true })}>
-              <PlusIcon aria-hidden="true" />
-              {t('newBooking')}
-            </Button>
-          )
-        }
-      />
+    <Page
+      title={t('title')}
+      description={t('description')}
+      actions={
+        permissions.canWriteBookings && (
+          <Button onClick={() => setNewBooking({ none: true })}>
+            <PlusIcon aria-hidden="true" />
+            {t('newBooking')}
+          </Button>
+        )
+      }
+    >
       <div
         role="toolbar"
         aria-label={t('toolbar.label')}
@@ -141,7 +140,7 @@ export function PlanningPage() {
           aria-label={t('toolbar.length')}
         >
           {RANGE_LENGTHS.map((n) => (
-            <ToggleGroupItem key={n} value={String(n)} className="px-3">
+            <ToggleGroupItem key={n} value={String(n)}>
               {t('toolbar.days', { count: n })}
             </ToggleGroupItem>
           ))}
@@ -205,7 +204,7 @@ export function PlanningPage() {
           />
         </Suspense>
       )}
-    </div>
+    </Page>
   );
 }
 

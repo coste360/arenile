@@ -1,8 +1,13 @@
 import { ApiProblem } from '@arenile/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/card';
-import { EmptyState, PageHeader, QueryState, StatusBadge } from '@arenile/shared/ui/patterns';
+import {
+  EmptyState,
+  Page,
+  QueryState,
+  SectionCard,
+  StatusBadge,
+} from '@arenile/shared/ui/patterns';
 import { Link } from '@tanstack/react-router';
 import {
   ArrowLeftRightIcon,
@@ -55,14 +60,13 @@ export function CashPage() {
   }
   if (!ctx.canRead) {
     return (
-      <section aria-labelledby="page-title" className="space-y-6">
-        <PageHeader title={t('session.title')} description={t('session.description')} />
+      <Page title={t('session.title')} description={t('session.description')}>
         <Alert>
           <LockIcon aria-hidden="true" />
           <AlertTitle>{t('perm.forbiddenTitle')}</AlertTitle>
           <AlertDescription>{t('perm.forbidden')}</AlertDescription>
         </Alert>
-      </section>
+      </Page>
     );
   }
 
@@ -110,30 +114,31 @@ export function CashPage() {
   );
 
   return (
-    <section aria-labelledby="page-title" className="space-y-8">
-      <div className="space-y-8 print:hidden">
-        <PageHeader
-          title={t('session.title')}
-          description={t('session.description')}
-          actions={actions}
-          eyebrow={
-            detail ? (
-              <StatusBadge tone="success">
-                {t('current.badge', {
-                  register: registerLabel(t, detail.session.register),
-                  time: ctx.dateTime(detail.session.opened_at),
-                })}
-              </StatusBadge>
-            ) : undefined
-          }
-        />
-        {!ctx.canOperate && (
-          <Alert>
-            <EyeIcon aria-hidden="true" />
-            <AlertDescription>{t('perm.readOnly')}</AlertDescription>
-          </Alert>
-        )}
-
+    <>
+      <Page
+        className="print:hidden"
+        title={t('session.title')}
+        description={t('session.description')}
+        actions={actions}
+        eyebrow={
+          detail ? (
+            <StatusBadge tone="success">
+              {t('current.badge', {
+                register: registerLabel(t, detail.session.register),
+                time: ctx.dateTime(detail.session.opened_at),
+              })}
+            </StatusBadge>
+          ) : undefined
+        }
+        notice={
+          !ctx.canOperate && (
+            <Alert>
+              <EyeIcon aria-hidden="true" />
+              <AlertDescription>{t('perm.readOnly')}</AlertDescription>
+            </Alert>
+          )
+        }
+      >
         {forbidden ? null : current.isPending || current.error ? (
           <QueryState
             isLoading={current.isPending}
@@ -144,7 +149,7 @@ export function CashPage() {
         ) : detail ? (
           <SessionView detail={detail} ctx={ctx} />
         ) : (
-          <div className="grid items-start gap-6 lg:grid-cols-2">
+          <div className="grid items-start gap-6 lg:grid-cols-2 *:min-w-0">
             {closedId && <ClosedSummary ctx={ctx} sessionId={closedId} onPrint={print} />}
             {ctx.canOperate ? (
               <OpenSessionCard establishmentId={ctx.establishmentId} />
@@ -155,7 +160,7 @@ export function CashPage() {
         )}
 
         <SessionHistory ctx={ctx} selectedId={historyId} onSelect={setHistoryId} onPrint={print} />
-      </div>
+      </Page>
 
       <div className="hidden print:block" data-testid="print-area">
         {printDetail && <ZReport detail={printDetail} ctx={ctx} />}
@@ -184,7 +189,7 @@ export function CashPage() {
           />
         </>
       )}
-    </section>
+    </>
   );
 }
 
@@ -201,20 +206,20 @@ function ClosedSummary({
   const { t } = useTranslation('cash');
   const detail = useSession(ctx.establishmentId, sessionId);
   return (
-    <Card aria-labelledby="closed-summary-title">
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle id="closed-summary-title">{t('close.closedTitle')}</CardTitle>
-        {detail.data && (
+    <SectionCard
+      title={t('close.closedTitle')}
+      titleId="closed-summary-title"
+      actions={
+        detail.data && (
           <Button variant="outline" size="sm" onClick={() => onPrint(detail.data)}>
             <PrinterIcon aria-hidden="true" />
             {t('actions.printZ')}
           </Button>
-        )}
-      </CardHeader>
-      <CardContent>
-        <QueryState isLoading={detail.isPending} error={detail.error} />
-        {detail.data && <ZReport detail={detail.data} ctx={ctx} />}
-      </CardContent>
-    </Card>
+        )
+      }
+    >
+      <QueryState isLoading={detail.isPending} error={detail.error} />
+      {detail.data && <ZReport detail={detail.data} ctx={ctx} />}
+    </SectionCard>
   );
 }
