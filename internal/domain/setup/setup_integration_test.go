@@ -478,17 +478,18 @@ func TestApply_Permissions(t *testing.T) {
 
 // TestApply_ClassicTiming is the timing sanity check of the M1 acceptance
 // (the manager flow must take minutes, the server part well under a second).
+// Enforced: the template is written in a bounded number of statements
+// (measured 43 for 124 spots: batched inserts, not one per spot); the 1s budget applies only with
+// ARENILE_PERF_BUDGETS=1 (storetest.Perf), the time is always logged.
 func TestApply_ClassicTiming(t *testing.T) {
-	db := storetest.SQLite(t)
+	db, qc := storetest.CountQueries(storetest.SQLite(t))
 	f := newFixture(t, db, "timing")
-	start := time.Now()
-	res, err := f.svc.Apply(context.Background(), f.owner(), f.est.ID, ApplyInput{Template: CodeClassicRows})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if d := time.Since(start); d > time.Second {
-		t.Fatalf("classic template took %s (%d spots)", d, res.SpotsCreated)
-	}
+	var res *ApplyResult
+	storetest.Perf(t, qc, "classic template", 60, time.Second, func() (err error) {
+		res, err = f.svc.Apply(context.Background(), f.owner(), f.est.ID, ApplyInput{Template: CodeClassicRows})
+		return err
+	})
+	t.Logf("%d spots", res.SpotsCreated)
 }
 
 func TestApply_Validation(t *testing.T) {

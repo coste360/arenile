@@ -16,15 +16,16 @@ import (
 
 // TestQueries_Performance500Spots measures the operational queries on 500
 // spots x 30 days with 60% occupancy on SQLite (target < 150 ms each, spec
-// 25 / task M3). The hard limit is generous (race detector, slow CI); the
-// measured times are logged. A per-spot or per-day query pattern (N+1)
-// would blow far past it.
+// 25 / task M3). What is enforced does not depend on the machine: each query
+// issues a bounded number of SQL statements, which a per-spot or per-day
+// pattern (N+1) would multiply by hundreds. The measured times are logged;
+// the 2s limit applies only with ARENILE_PERF_BUDGETS=1 (storetest.Perf).
 func TestQueries_Performance500Spots(t *testing.T) {
 	if testing.Short() {
 		t.Skip("short mode")
 	}
 	ctx := context.Background()
-	db := storetest.SQLiteFile(t)
+	db, qc := storetest.CountQueries(storetest.SQLiteFile(t))
 	f := newFixture(t, db)
 	var spots []store.Spot
 	for i := 0; i < 500; i++ {
@@ -53,32 +54,27 @@ func TestQueries_Performance500Spots(t *testing.T) {
 	if n != len(rows) {
 		t.Fatalf("inserted %d of %d", n, len(rows))
 	}
-	measure := func(name string, fn func() error) {
+	// Query limits: measured 7, 8 and 12, plus headroom.
+	measure := func(name string, maxQueries int, fn func() error) {
 		t.Helper()
 		must(t, fn()) // warm up
-		start := time.Now()
-		must(t, fn())
-		el := time.Since(start)
-		t.Logf("%s: %v (%d allocation rows)", name, el, len(rows))
-		if el > 2*time.Second {
-			t.Fatalf("%s too slow: %v", name, el)
-		}
+		storetest.Perf(t, qc, name, maxQueries, 2*time.Second, fn)
 	}
-	measure("planning 30 days", func() error {
+	measure("planning 30 days", 10, func() error {
 		pl, err := f.svc.GetPlanning(ctx, f.viewer, f.est.ID, inventory.PlanningQuery{From: from, To: to})
 		if err == nil && len(pl.Rows) != 300 {
 			err = fmt.Errorf("rows = %d", len(pl.Rows))
 		}
 		return err
 	})
-	measure("availability 30 days", func() error {
+	measure("availability 30 days", 12, func() error {
 		res, err := f.svc.GetAvailability(ctx, f.viewer, f.est.ID, inventory.AvailabilityQuery{From: from, To: to})
 		if err == nil && res.Zones[0].Available != 205 {
 			err = fmt.Errorf("available = %d", res.Zones[0].Available)
 		}
 		return err
 	})
-	measure("operations day", func() error {
+	measure("operations day", 16, func() error {
 		_, err := f.svc.GetOperationsDay(ctx, f.viewer, f.est.ID, inventory.OperationsQuery{Date: d("2027-07-15")})
 		return err
 	})

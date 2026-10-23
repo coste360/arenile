@@ -266,6 +266,15 @@ offline).
 
 ### Fixed
 
+- SQLite: le scritture concorrenti si mettono in coda nel processo (una coda FIFO per database, davanti a
+  ogni transazione di scrittura e scrittura autocommit) invece di contendersi il lock di SQLite con
+  `busy_timeout`: sotto un picco di scrittori (webhook, scadenza dei blocchi, cassa) un'attesa poteva
+  superare i 10 secondi e fallire con `SQLITE_BUSY` (CI rossa su `TestConcurrency_RevokeVsCancel` e
+  `TestConcurrency_WebhookVsHoldExpiry`).
+- Test di prestazioni (report di stagione, query operative, template classico): verificano il numero di query
+  (niente N+1) invece di un limite di tempo fisso, che ora vale solo con `ARENILE_PERF_BUDGETS=1`.
+- Sito della documentazione: `ARENILE_DOCS_SITE` e `ARENILE_DOCS_BASE` vuote (variabili del repository non
+  impostate in CI) valgono come non impostate invece di rompere la build con "Invalid URL".
 - Schede e barre di navigazione a schede (`ResponsiveTabsList`, `NavTabs`) diventano un menu a tendina anche
   quando non entrano nella larghezza disponibile (sidebar aperta su tablet a 768 e 1024 px), non solo sotto
   `sm`; il breadcrumb del pannello mostra il percorso completo solo da `lg` e non va più a capo.

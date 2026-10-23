@@ -776,7 +776,8 @@ func TestReportService_ReconcilesWithLedger(t *testing.T) {
 
 // TestReportService_SeasonPerformance seeds a 300-spot lido for a whole
 // season (about 20k bookings and 60k allocations) and checks that the
-// heaviest reports stay under budget and still reconcile.
+// heaviest reports run a bounded number of queries (no N+1) and still
+// reconcile; their elapsed time is logged (enforced with ARENILE_PERF_BUDGETS=1).
 func TestReportService_SeasonPerformance(t *testing.T) {
 	if testing.Short() {
 		t.Skip("season fixture")
@@ -789,38 +790,37 @@ func TestReportService_SeasonPerformance(t *testing.T) {
 		l.closure("2027-07-20", calendar.SlotsFull)
 		l.generate(2026, "2026-06-01", "2026-09-15", 20)
 		l.generate(2027, "2027-06-01", "2027-09-15", 20)
-		svc := report.NewService(report.Deps{DB: db, Clock: clock.NewFake(t0)})
+		qdb, qc := storetest.CountQueries(db)
+		svc := report.NewService(report.Deps{DB: qdb, Clock: clock.NewFake(t0)})
 		p := owner(l)
 		season := report.Period{From: dt("2027-06-01"), To: dt("2027-09-15")}
 
-		const budget = 1500 * time.Millisecond // per report; measured about 0.3s on SQLite, 0.15s on PostgreSQL
-		timed := func(name string, fn func() error) {
+		// Statements per report are a property of the code, not of the data
+		// (about 20k bookings here): a per-row pattern would multiply them.
+		// The wall-clock budget (measured about 0.3s on SQLite, 0.15s on
+		// PostgreSQL on a developer machine) is enforced only with
+		// ARENILE_PERF_BUDGETS=1, see storetest.Perf.
+		// Query limits: measured 12, 20, 8, 3 and 4, plus headroom.
+		const budget = 1500 * time.Millisecond
+		timed := func(name string, maxQueries int, fn func() error) {
 			t.Helper()
-			start := time.Now()
-			if err := fn(); err != nil {
-				t.Fatalf("%s: %v", name, err)
-			}
-			el := time.Since(start)
-			t.Logf("%s: %s", name, el)
-			if el > budget {
-				t.Fatalf("%s took %s (budget %s)", name, el, budget)
-			}
+			storetest.Perf(t, qc, name, maxQueries, budget, fn)
 		}
 		var sum *report.Summary
-		timed("summary", func() (err error) { sum, err = svc.Summary(ctx, p, l.est.ID, season); return err })
-		timed("comparison", func() error {
+		timed("summary", 16, func() (err error) { sum, err = svc.Summary(ctx, p, l.est.ID, season); return err })
+		timed("comparison", 28, func() error {
 			_, err := svc.Comparison(ctx, p, l.est.ID, report.ComparisonQuery{Period: season, Granularity: report.GranularityWeek})
 			return err
 		})
-		timed("occupancy by row", func() error {
+		timed("occupancy by row", 12, func() error {
 			_, err := svc.Occupancy(ctx, p, l.est.ID, report.OccupancyQuery{Period: season, GroupBy: report.OccupancyByRow})
 			return err
 		})
-		timed("revenue booked by vat", func() error {
+		timed("revenue booked by vat", 6, func() error {
 			_, err := svc.Revenue(ctx, p, l.est.ID, report.RevenueQuery{Period: season, GroupBy: report.RevenueByVATRate, Basis: report.BasisBooked})
 			return err
 		})
-		timed("top customers", func() error {
+		timed("top customers", 6, func() error {
 			_, err := svc.TopCustomers(ctx, p, l.est.ID, season, report.SortByRevenue, 100)
 			return err
 		})
