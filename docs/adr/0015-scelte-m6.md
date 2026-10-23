@@ -99,6 +99,10 @@ Decisioni prese durante l'implementazione, a complemento dei punti sopra.
 14. **Abbinamento della modalità remota anche da riga di comando**: `arenile-desktop -pair <QR|URL>
     [-pair-code ...] [-pair-fingerprint ...]` salva token e configurazione e passa la cartella dati in modalità
     remota (utile per installazioni gestite e per i PC senza fotocamera).
+15. **Pacchetti**: macOS `.app` + `.dmg` universale, Windows Inno Setup (per utente, senza amministratore),
+    Linux AppImage su `ubuntu-22.04` (glibc vecchia). Firme solo se i segreti esistono, altrimenti suffisso
+    `-unsigned`; tutto nell'artefatto `portal-bundle-<tag>`, mai come asset di una release GitHub
+    (`docs/desktop-build.md`).
 16. **Durata del token per dispositivo.** Il token non ha scadenza assoluta (un telefono della cassa resta abbinato
     per la stagione) ma scade dopo **90 giorni senza uso** (`device.IdleExpiry`, contati da `last_used_at` o
     dall'abbinamento): un dispositivo dimenticato in un cassetto non conserva i permessi del titolare per sempre.
@@ -107,7 +111,14 @@ Decisioni prese durante l'implementazione, a complemento dei punti sopra.
     non sono per ora ristrette ai dispositivi: le mitigazioni sono il restringimento allo stabilimento, la scadenza
     per inattività e la revoca immediata dal pannello. Un eventuale restringimento si deciderà con M7, quando l'app
     mobile definirà quali operazioni le servono davvero.
-15. **Pacchetti**: macOS `.app` + `.dmg` universale, Windows Inno Setup (per utente, senza amministratore),
-    Linux AppImage su `ubuntu-22.04` (glibc vecchia). Firme solo se i segreti esistono, altrimenti suffisso
-    `-unsigned`; tutto nell'artefatto `portal-bundle-<tag>`, mai come asset di una release GitHub
-    (`docs/desktop-build.md`).
+17. **Modalità remota: deviazioni dalla sezione 29.1 (da sanare in M7).** La finestra del pannello si autentica con
+    la **sessione utente** dell'istanza (login con password e, se attivo, TOTP) attraverso il proxy loopback; il token
+    per dispositivo serve all'abbinamento, al ponte fiscale e allo scollegamento, non sostituisce la sessione della
+    finestra. La **coda offline** della modalità remota (29.1 e 21.2) non è implementata: senza connessione la
+    finestra non funziona e i lavori fiscali restano sul server. Il proxy riscrive `Origin` e `Referer` verso
+    l'origine dell'istanza (così i controlli CSRF e di origine dell'istanza vedono il pannello come proprio) e
+    riporta `Location` sull'origine del proxy. La guida utente lo dichiara.
+18. **Numerazione e ordine di integrazione.** La migrazione di M6 è `00006_devices_fiscal_bridge`; `m5-season` usa
+    `00007`. M6 va unita e rilasciata **prima** di M5A: un database già a `00007` incontrerebbe la migrazione
+    mancante `00006` (errore di goose); in alternativa M6 va rinumerata al momento del merge. ADR: 0013 = M4,
+    0014 = M5A, 0015 = M6. Invarianti M6: INV-49..54 (INV-48 è del kit mappa, su `main`).

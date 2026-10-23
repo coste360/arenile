@@ -43,8 +43,16 @@ Cosa sapere:
 2. Nell'app desktop scegli **Remota** e inserisci l'indirizzo dell'istanza e il codice (oppure incolla il testo
    del QR). L'app verifica l'istanza, riceve un **token per dispositivo** e lo conserva nel portachiavi del sistema
    operativo (o, se non disponibile, in un file con permessi ristretti nella cartella dati).
-3. Il pannello si apre in una finestra dedicata. Opzioni nel file `remote.json` della cartella dati: `kiosk`
-   (schermo intero su Edge/Chrome), `autostart`, `fiscal_bridge`, `fiscal_driver`.
+3. Il pannello si apre in una finestra dedicata (su Linux: nel browser predefinito) e chiede l'**accesso con le
+   credenziali del pannello**, codice TOTP compreso se attivo: il token per dispositivo serve all'abbinamento, al
+   ponte fiscale e allo scollegamento, non sostituisce la sessione dell'utente nella finestra. Opzioni nel file
+   `remote.json` della cartella dati: `kiosk` (schermo intero su Edge/Chrome), `autostart`, `fiscal_bridge`,
+   `fiscal_driver`.
+
+Senza connessione la finestra non funziona: la coda offline della modalità remota (sezione 21.2) non è ancora
+disponibile; i lavori del ponte fiscale restano sul server e ripartono alla riconnessione. Il proxy locale riscrive
+le intestazioni `Origin` e `Referer` verso l'istanza, così il pannello funziona come se fosse aperto al suo indirizzo.
+Su Linux l'abbinamento si fa da riga di comando: `arenile-desktop -pair <QR|URL> -pair-code <codice>`.
 
 L'indirizzo deve usare `https`. Se l'istanza usa un certificato autofirmato (per esempio un'altra app desktop in
 modalità rete locale), il QR ne porta l'impronta e l'app la verifica; la finestra passa da un proxy locale su
