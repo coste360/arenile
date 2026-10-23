@@ -71,7 +71,7 @@ const geometry: MapGeometry = {
 describe('BeachMap', () => {
   it('renders a viewBox that includes the sea band', () => {
     const { container } = renderWithI18n(<BeachMap geometry={geometry} />);
-    const svg = container.querySelector('svg');
+    const svg = container.querySelector('svg[role="group"]');
     expect(svg?.getAttribute('viewBox')).toBe('-8 -32 316 240');
     expect(container.querySelector('[data-sea-side="top"]')).toHaveTextContent('Mare');
     expect(screen.getByRole('group', { name: 'Mappa dello stabilimento' })).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('BeachMap', () => {
 
   it('is one tab stop: a roving tabindex moved with arrows, PageUp/PageDown and Home/End', () => {
     const { container } = renderWithI18n(<BeachMap geometry={geometry} selectedIds={['s2']} />);
-    const svg = container.querySelector('svg') as SVGSVGElement;
+    const svg = container.querySelector('svg[role="group"]') as SVGSVGElement;
     const a1 = screen.getByRole('button', { name: 'Postazione A1: Libero' });
     const a2 = screen.getByRole('button', { name: 'Postazione A2: Libero' });
     const b1 = screen.getByRole('button', { name: 'Postazione B1: Libero' });

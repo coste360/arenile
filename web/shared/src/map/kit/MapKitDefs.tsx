@@ -1,4 +1,5 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { KIT_VIEWBOX } from './generated/manifest';
 import { kitSymbolId } from './assets';
 import { kitIdsSnapshot, registerKitIds, subscribeKitIds, unregisterKitIds } from './registry';
@@ -12,6 +13,9 @@ export interface MapKitDefsProps {
 
 /** Paths of the status badge glyphs, on a 24-unit grid, drawn with currentColor. */
 const BADGE_GLYPHS: Record<BadgeGlyph, string> = {
+  globe:
+    'M12 4.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 1 0 0-15M4.5 12h15M12 4.5c-3 2.6-3 12.4 0 15M12 4.5c3 2.6 3 12.4 0 15',
+  desk: 'M4.5 10.5h15M4.5 10.5l2.5-5h10l2.5 5M6 10.5V19h12v-8.5M9.5 15h5',
   check: 'M5.5 12.5l4.2 4.2L18.5 8',
   star: 'M12 4.2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8z',
   released: 'M7.5 16.5l9-9M9.5 7.5h7v7',
@@ -72,6 +76,11 @@ function useKitBodies(): KitSymbolBodies | null {
  * registry.ts) plus the status badge glyphs. Maps draw each element with
  * `<use href="#ark-<id>">`, so a map of 1,000 umbrellas holds the umbrella
  * drawing once. The symbol bodies load lazily (symbols.ts).
+ *
+ * The leader renders the sprite through a portal on <body>, outside its own
+ * subtree: a leader inside a hidden tab panel, a collapsed responsive
+ * column or a popover never hides the drawings of the other maps, and the
+ * handover when the leader unmounts keeps the sprite at the same place.
  */
 export function MapKitDefs({ ids }: MapKitDefsProps) {
   const [token] = useState(() => Symbol('map-kit-defs'));
@@ -90,8 +99,8 @@ export function MapKitDefs({ ids }: MapKitDefsProps) {
   );
   const bodies = useKitBodies();
 
-  if (leader !== token) return null;
-  return (
+  if (leader !== token || typeof document === 'undefined') return null;
+  return createPortal(
     <svg
       aria-hidden="true"
       focusable="false"
@@ -108,6 +117,7 @@ export function MapKitDefs({ ids }: MapKitDefsProps) {
             return body ? <KitSymbol key={id} id={id} body={body} /> : null;
           })}
       </defs>
-    </svg>
+    </svg>,
+    document.body,
   );
 }

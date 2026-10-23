@@ -15,6 +15,7 @@ import {
 import { decorationKindIcon } from './icons';
 import {
   DecorationArt,
+  KIT_BY_ID,
   MapBackdrop,
   MapKitDefs,
   MapLabel,
@@ -25,7 +26,13 @@ import {
   spotArtSize,
   spotAsset,
 } from './kit';
-import { MIN_LABEL_PX, labelFontSize, padViewBox, useUnitsPerPixel } from './labels';
+import {
+  MIN_LABEL_PX,
+  labelFontSize,
+  padViewBox,
+  quantiseUnitsPerPixel,
+  useUnitsPerPixel,
+} from './labels';
 import { INDICATOR_CLASSES, type SpotIndicator } from './indicators';
 import { MapGlyph } from './MapGlyph';
 import { MapLegend } from './MapLegend';
@@ -60,7 +67,11 @@ export interface BeachMapProps {
   /** Accessible name of the map; defaults to the translated "map.title". */
   title?: string;
   className?: string;
-  /** CSS height of the drawing area (default 60vh). */
+  /**
+   * Maximum CSS height of the drawing area (default 60vh). The drawing keeps
+   * the aspect ratio of the map, so a landscape map on a phone takes only
+   * the height it needs instead of leaving empty space above and below.
+   */
   height?: string;
 }
 
@@ -219,9 +230,11 @@ const Decoration = memo(function Decoration({
   const h = shape.type === 'circle' ? shape.w : shape.h;
   const asset = decorationAsset(decoration);
   const fontSize = Math.max(Math.min(w, h) * 0.2, MIN_LABEL_PX * unitsPerPixel);
+  // Named decorations are exposed as images; unnamed ones stay decorative.
+  const a11y = name ? { role: 'img', 'aria-label': name } : { 'aria-hidden': true as const };
   if (asset) {
     return (
-      <g aria-hidden="true" data-decoration={decoration.kind}>
+      <g {...a11y} data-decoration={decoration.kind}>
         <title>{name}</title>
         <DecorationArt
           asset={asset}
@@ -243,7 +256,7 @@ const Decoration = memo(function Decoration({
   return (
     <g
       transform={decoration.rotation ? `rotate(${decoration.rotation} ${x} ${y})` : undefined}
-      aria-hidden="true"
+      {...a11y}
       data-decoration={decoration.kind}
     >
       {decoration.kind !== 'text' && (
@@ -330,7 +343,8 @@ export function BeachMap({
     () => (highlightedIds && highlightedIds.length > 0 ? new Set(highlightedIds) : null),
     [highlightedIds],
   );
-  const unitsPerPixel = useUnitsPerPixel(svgRef, vb) / view.scale;
+  // Quantised: a wheel step must not re-render every memoised spot.
+  const unitsPerPixel = quantiseUnitsPerPixel(useUnitsPerPixel(svgRef, vb) / view.scale);
 
   // Roving tabindex: one focusable spot, moved with the keyboard.
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -409,8 +423,40 @@ export function BeachMap({
   const center = { x: vb.x + vb.width / 2, y: vb.y + vb.height / 2 };
   const accessibleTitle = title ?? geometry.name ?? t('map.title');
 
+  // Labels are dropped under 9 px on screen: say so, with the way out.
+  const first = geometry.spots[0];
+  const labelsHidden =
+    !!first && labelFontSize(spotArtSize(first.shape), 0.2, unitsPerPixel, 0.42) === 0;
+
+  /** Name of a decoration: its label, the kit asset or the kind, plus the flag colour. */
+  const decorationName = (d: MapDecoration): string => {
+    const asset = decorationAsset(d);
+    const base =
+      d.label ||
+      (d.kind === 'custom' && asset ? (KIT_BY_ID.get(asset)?.label ?? '') : '') ||
+      (d.kind === 'text' ? '' : t(`map.decoration.${d.kind}`, { defaultValue: '' }));
+    const variants = asset ? KIT_BY_ID.get(asset)?.variants : undefined;
+    if (!d.variant || !variants?.includes(d.variant)) return base;
+    const flag = t(`map.flag.${d.variant}`, { defaultValue: d.variant });
+    return base ? `${base}: ${flag}` : flag;
+  };
+
   return (
     <div className={cn('flex flex-col', className)} data-testid="beach-map">
+      {/* Legend and zoom controls above the drawing: visible without scrolling past the map. */}
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+        {showLegend && <MapLegend id={legendId} statuses={legend} statusColors={statusColors} />}
+        <MapZoomControls
+          className="ml-auto w-fit"
+          scale={view.scale}
+          min={MIN_SCALE}
+          max={MAX_SCALE}
+          onZoomIn={() => setView((v) => zoomAt(v, center, 1.25))}
+          onZoomOut={() => setView((v) => zoomAt(v, center, 0.8))}
+          onFit={() => setView(IDENTITY)}
+          onScaleChange={(scale) => setView((v) => zoomAt(v, center, scale / v.scale))}
+        />
+      </div>
       <svg
         ref={svgRef}
         viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
@@ -418,9 +464,10 @@ export function BeachMap({
         role="group"
         aria-labelledby={titleId}
         aria-describedby={showLegend ? legendId : undefined}
-        className="block w-full touch-none rounded-lg bg-muted/40 select-none"
-        // Height is a caller-provided CSS length (dynamic geometry).
-        style={{ height }}
+        className="block h-auto w-full touch-none rounded-lg bg-muted/40 select-none"
+        // Dynamic geometry: the drawing keeps the map's aspect ratio up to the
+        // caller-provided maximum CSS height.
+        style={{ aspectRatio: `${vb.width} / ${vb.height}`, maxHeight: height }}
         onKeyDown={onKeyDown}
       >
         <title id={titleId}>{accessibleTitle}</title>
@@ -431,11 +478,15 @@ export function BeachMap({
               key={d.id}
               decoration={d}
               unitsPerPixel={unitsPerPixel}
-              label={d.label ?? ''}
-              name={
-                d.label ||
-                (d.kind === 'text' ? '' : t(`map.decoration.${d.kind}`, { defaultValue: '' }))
+              // A flag without a label is captioned with its colour, so the
+              // sea state never relies on the colour alone.
+              label={
+                d.label ??
+                (d.variant && KIT_BY_ID.get(decorationAsset(d) ?? '')?.variants?.includes(d.variant)
+                  ? t(`map.flag.${d.variant}`, { defaultValue: d.variant })
+                  : '')
               }
+              name={decorationName(d)}
             />
           ))}
           {geometry.spots.map((spot) => {
@@ -463,18 +514,10 @@ export function BeachMap({
           })}
         </g>
       </svg>
-      <MapZoomControls
-        className="order-first mb-2 ml-auto w-fit"
-        scale={view.scale}
-        min={MIN_SCALE}
-        max={MAX_SCALE}
-        onZoomIn={() => setView((v) => zoomAt(v, center, 1.25))}
-        onZoomOut={() => setView((v) => zoomAt(v, center, 0.8))}
-        onFit={() => setView(IDENTITY)}
-        onScaleChange={(scale) => setView((v) => zoomAt(v, center, scale / v.scale))}
-      />
-      {showLegend && (
-        <MapLegend id={legendId} statuses={legend} statusColors={statusColors} className="mt-2" />
+      {labelsHidden && (
+        <p className="mt-1 text-xs text-muted-foreground" data-testid="beach-map-zoom-hint">
+          {t('map.zoomHint')}
+        </p>
       )}
       <MapKitDefs ids={kitIds} />
     </div>

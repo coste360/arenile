@@ -85,6 +85,12 @@
       "cabin_block": "Cabins",
       "text": "Text",
       "custom": "Element"
+    },
+    "zoomHint": "Zoom in to read the labels, or use the list.",
+    "flag": {
+      "green": "green",
+      "yellow": "yellow",
+      "red": "red"
     }
   },
   "auth": {

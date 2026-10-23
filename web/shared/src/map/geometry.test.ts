@@ -35,3 +35,15 @@ describe('zoomAt', () => {
     expect(zoomAt(IDENTITY, { x: 0, y: 0 }, 1000).scale).toBe(MAX_SCALE);
   });
 });
+
+describe('quantiseUnitsPerPixel', () => {
+  it('rounds to quarter powers of two so small zoom steps keep the same value', async () => {
+    const { quantiseUnitsPerPixel } = await import('./labels');
+    expect(quantiseUnitsPerPixel(1)).toBe(1);
+    expect(quantiseUnitsPerPixel(1.05)).toBe(1);
+    expect(quantiseUnitsPerPixel(2)).toBe(2);
+    expect(quantiseUnitsPerPixel(1.19)).toBeCloseTo(2 ** 0.25, 6);
+    expect(quantiseUnitsPerPixel(0)).toBe(1);
+    expect(quantiseUnitsPerPixel(Number.NaN)).toBe(1);
+  });
+});

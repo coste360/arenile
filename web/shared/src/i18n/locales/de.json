@@ -85,6 +85,12 @@
       "cabin_block": "Kabinen",
       "text": "Text",
       "custom": "Element"
+    },
+    "zoomHint": "Vergrößern Sie die Karte, um die Beschriftungen zu lesen, oder nutzen Sie die Liste.",
+    "flag": {
+      "green": "grün",
+      "yellow": "gelb",
+      "red": "rot"
     }
   },
   "auth": {

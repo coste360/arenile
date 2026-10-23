@@ -9,7 +9,13 @@ export { ShapeElement, shapeSize, type ShapeElementProps } from './shapes';
 export { MapLegend, type MapLegendProps } from './MapLegend';
 export { MapZoomControls, type MapZoomControlsProps } from './MapZoomControls';
 export { MapGlyph, type MapGlyphProps } from './MapGlyph';
-export { MIN_LABEL_PX, labelFontSize, padViewBox, useUnitsPerPixel } from './labels';
+export {
+  MIN_LABEL_PX,
+  labelFontSize,
+  padViewBox,
+  quantiseUnitsPerPixel,
+  useUnitsPerPixel,
+} from './labels';
 export { DECORATION_KIND_ICONS, SPOT_KIND_ICONS, decorationKindIcon, spotKindIcon } from './icons';
 export { INDICATOR_CLASSES, SPOT_INDICATORS, type SpotIndicator } from './indicators';
 export * from './kit';

@@ -123,7 +123,8 @@
   --beach-wood-soft: #ebdbc7;
   --beach-water: #a9d7e4;
   --beach-water-soft: #e3f4f7;
-  /* Sea-state flag (bandiera_mare): green by default, per element via beach-flag-* utilities. */
+  /* Sea-state flag (bandiera_mare): green by default; an element overrides --beach-flag
+     with the Tailwind arbitrary property [--beach-flag:var(--beach-flag-red)] (KitArt.tsx). */
   --beach-flag-green: #3f9c5f;
   --beach-flag-yellow: #e5b20b;
   --beach-flag-red: #d6453d;
@@ -285,17 +286,6 @@
   --color-beach-wood: var(--beach-wood);
   --color-beach-water: var(--beach-water);
   --color-beach-water-soft: var(--beach-water-soft);
-}
-
-/* Sea-state flag colour of one map element (kit asset bandiera_mare, decoration variant). */
-@utility beach-flag-green {
-  --beach-flag: var(--beach-flag-green);
-}
-@utility beach-flag-yellow {
-  --beach-flag: var(--beach-flag-yellow);
-}
-@utility beach-flag-red {
-  --beach-flag: var(--beach-flag-red);
 }
 
 @layer base {

@@ -202,19 +202,7 @@ export function OperationalMapView({
           <TabsTrigger value="list">{t('map.viewList')}</TabsTrigger>
         </TabsList>
         <TabsContent value="map" className="space-y-2">
-          <BeachMap
-            geometry={geometry}
-            statuses={statuses}
-            selectedIds={selectedIds}
-            highlightedIds={matches}
-            spotIndicators={indicators}
-            onSpotActivate={activate}
-            spotDescription={spotDescription}
-            legendStatuses={OPERATIONAL_LEGEND}
-            showLegend={false}
-            title={t('map.aria', { name: geometry.name ?? '', date, slot: t(`slot.${slot}`) })}
-            height={height}
-          />
+          {/* Legend first: readable before scrolling past the drawing (spec 11.3). */}
           <div className="flex flex-wrap items-start gap-x-6 gap-y-2">
             <MapLegend statuses={OPERATIONAL_LEGEND} />
             <div className="space-y-1.5">
@@ -232,6 +220,19 @@ export function OperationalMapView({
               </ul>
             </div>
           </div>
+          <BeachMap
+            geometry={geometry}
+            statuses={statuses}
+            selectedIds={selectedIds}
+            highlightedIds={matches}
+            spotIndicators={indicators}
+            onSpotActivate={activate}
+            spotDescription={spotDescription}
+            legendStatuses={OPERATIONAL_LEGEND}
+            showLegend={false}
+            title={t('map.aria', { name: geometry.name ?? '', date, slot: t(`slot.${slot}`) })}
+            height={height}
+          />
         </TabsContent>
         <TabsContent value="list">
           <SpotList

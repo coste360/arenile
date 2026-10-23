@@ -29,6 +29,16 @@ export function useUnitsPerPixel(svgRef: RefObject<SVGSVGElement | null>, vb: Vi
 }
 
 /**
+ * Rounds map units per pixel to a step of about 19% (quarter powers of two):
+ * label and badge sizes change in visible steps only, so a wheel or pinch
+ * zoom step does not re-render every memoised spot of a 1,000-spot map.
+ */
+export function quantiseUnitsPerPixel(upp: number): number {
+  if (!(upp > 0) || !Number.isFinite(upp)) return 1;
+  return 2 ** (Math.round(Math.log2(upp) * 4) / 4);
+}
+
+/**
  * Font size (map units) of a label inside a shape of `size` units: the
  * proportional size, raised to MIN_LABEL_PX on screen; 0 when even that
  * would not fit the shape (the label stays in the accessible name and tooltip).

@@ -85,6 +85,12 @@
       "cabin_block": "Cabines",
       "text": "Texte",
       "custom": "Élément"
+    },
+    "zoomHint": "Agrandissez la carte pour lire les étiquettes, ou utilisez la liste.",
+    "flag": {
+      "green": "vert",
+      "yellow": "jaune",
+      "red": "rouge"
     }
   },
   "auth": {

@@ -6,11 +6,15 @@ import { kitSymbolId } from './assets';
 import { isTileAsset, spotArtSize, tileLayout } from './geometry';
 import { STATUS_BADGES, badgeSymbolId } from './status';
 
-/** Flag colour utilities (globals.css @utility), written out for Tailwind. */
+/**
+ * Flag colour of one element: sets the `--beach-flag` variable the kit art
+ * reads (Tailwind arbitrary property on a theme token, no custom CSS).
+ * Written out literally so Tailwind can see every class.
+ */
 const FLAG_CLASSES: Record<string, string> = {
-  green: 'beach-flag-green',
-  yellow: 'beach-flag-yellow',
-  red: 'beach-flag-red',
+  green: '[--beach-flag:var(--beach-flag-green)]',
+  yellow: '[--beach-flag:var(--beach-flag-yellow)]',
+  red: '[--beach-flag:var(--beach-flag-red)]',
 };
 
 export function flagClass(variant: string | null | undefined): string | undefined {
@@ -66,10 +70,18 @@ export interface SpotArtProps {
 }
 
 /**
+ * How much larger than the art box the status halo is: the ring and the
+ * tint stay visible around the illustration, not only under it.
+ */
+export const HALO_SCALE = 1.08;
+
+/**
  * The art of a spot over its status halo. The halo (first child, so focus
  * styles of the parent can target it) is a tinted disc or rounded square
- * slightly larger than the footprint: booking status lives here, never in
- * the illustration, so the art stays the same and readable in every state.
+ * larger than the art itself (HALO_SCALE x the art box, which is already
+ * SPOT_ART_SCALE x the footprint): booking status lives in this ring and
+ * tint, never in the illustration, so the art stays the same and the status
+ * reads around it in every state.
  */
 export const SpotArt = memo(function SpotArt({
   x,
@@ -97,18 +109,18 @@ export const SpotArt = memo(function SpotArt({
   const strokeWidth = emphasis ? S * 0.07 : tint === 'faint' ? 0 : S * 0.035;
   const dash = muted ? `${S * 0.06} ${S * 0.05}` : undefined;
   const isRect = shape.type === 'rect';
-  const haloW = (isRect ? shape.w : shape.w) * 1.12;
-  const haloH = (isRect ? shape.h : shape.w) * 1.12;
+  // The art is drawn in an S x S box whatever the footprint, so the halo is too.
+  const halo = S * HALO_SCALE;
   return (
     <>
       {isRect ? (
         <rect
           data-halo=""
-          x={x - haloW / 2}
-          y={y - haloH / 2}
-          width={haloW}
-          height={haloH}
-          rx={Math.min(haloW, haloH) * 0.22}
+          x={x - halo / 2}
+          y={y - halo / 2}
+          width={halo}
+          height={halo}
+          rx={halo * 0.22}
           transform={rotate(rotation, x, y)}
           className={haloClass}
           fill={color}
@@ -122,7 +134,7 @@ export const SpotArt = memo(function SpotArt({
           data-halo=""
           cx={x}
           cy={y}
-          r={haloW / 2}
+          r={halo / 2}
           className={haloClass}
           fill={color}
           stroke={emphasis ? undefined : color}
