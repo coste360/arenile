@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <rect width="1400" height="900" fill="#f6f8fb"/>
+  <text x="70" y="90" font-family="Titillium Web, Arial, sans-serif" font-size="58" font-weight="700" fill="#0B305F">Arenile</text>
+  <text x="74" y="132" font-family="Titillium Web, Arial, sans-serif" font-size="28" font-weight="600" fill="#277D9F">Coste360.it</text>
+  <text x="70" y="180" font-family="Titillium Web, Arial, sans-serif" font-size="22" fill="#425466">Set SVG aggiornato · simbolo A · app icon · logo orizzontale · logo stacked</text>
+  <rect x="60" y="230" width="1280" height="590" rx="26" fill="#ffffff" stroke="#d7e1ea"/>
+  <image href="arenile-symbol-color.svg" x="130" y="310" width="220" height="220"/>
+  <image href="arenile-app-icon.svg" x="420" y="290" width="250" height="250"/>
+  <image href="arenile-logo-horizontal.svg" x="760" y="340" width="500" height="156"/>
+  <image href="arenile-logo-stacked.svg" x="170" y="560" width="260" height="198"/>
+  <image href="arenile-wordmark.svg" x="540" y="610" width="320" height="150"/>
+  <text x="70" y="860" font-family="Titillium Web, Arial, sans-serif" font-size="18" fill="#718096">Dicitura aggiornata: Coste360.it · Font: Titillium Web</text>
+</svg>

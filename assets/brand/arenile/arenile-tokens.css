@@ -1,0 +1,10 @@
+/* Place after Tailwind/shadcn theme CSS */
+:root {
+  --arenile-navy: #092D62;
+  --arenile-ocean: #0D79AC;
+  --arenile-cyan: #16CDE1;
+  --arenile-sand: #FFF0D1;
+  --arenile-text: #0B305F;
+}
+/* Load the font in your Next.js app via next/font/google, or in CSS via Google Fonts. */
+.arenile-brand { font-family: 'Titillium Web', Arial, sans-serif; }

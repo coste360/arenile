@@ -2,15 +2,18 @@
 
 Il codice di Arenile è disponibile con la [Business Source License 1.1](LICENSE) (BSL 1.1), che ogni versione converte in AGPL-3.0 tre anni dopo il rilascio: puoi usarlo, modificarlo e ridistribuirlo secondo i termini della licenza. **Né la BSL 1.1 né la AGPL-3.0 concedono alcun diritto sul nome e sul logo del progetto: nome e logo restano riservati a Coste360 SRL.** Questa politica spiega come usare il marchio in modo corretto.
 
-> Nota: "Arenile" è il nome provvisorio del progetto. Coste360 SRL intende registrare il nome definitivo e il logo come marchi; questa politica si applica al nome e al logo in uso, e a quelli definitivi una volta scelti.
+> Il nome **Arenile** è confermato. Il sito ufficiale del progetto è [arenile.app](https://arenile.app) (documentazione su [docs.arenile.app](https://docs.arenile.app)). Coste360 SRL intende registrare nome e logo come marchi; questa politica si applica fin d'ora al nome, al logo e al dominio in uso.
 
 ## Il marchio
 
 Sono marchi di **Coste360 SRL** ("i Marchi"):
 
 - il nome **Arenile** usato in relazione a software per la gestione di stabilimenti balneari;
-- il logo e gli elementi grafici distintivi del progetto;
-- il nome e il logo **Coste360**.
+- il logo di Arenile (il simbolo "A" con sabbia e onda, l'icona dell'app e i logotipi), la dicitura ufficiale **"Arenile — Coste360.it"** e gli elementi grafici distintivi del progetto (colori e composizione del marchio);
+- il dominio **arenile.app** e i suoi sottodomini;
+- il nome e il logo **Coste360** / **Coste360.it**.
+
+I file ufficiali dei marchi sono in [`assets/brand/`](assets/brand/) (`arenile/` per Arenile, `coste360/` per Coste360): sono di Coste360 SRL, tutti i diritti riservati, e **non** sono coperti dalla licenza del codice (vedi i rispettivi `NOTICE.md`). Il repository li include perché il software ufficiale li mostra (pannello, pagina di prenotazione, email, app desktop, documentazione); usali solo come descritto in questa politica.
 
 Lo scopo è semplice: chi vede il nome Arenile deve poter essere certo che si tratti del progetto ufficiale, o di una sua copia non modificata.
 
@@ -28,7 +31,7 @@ Lo scopo è semplice: chi vede il nome Arenile deve poter essere certo che si tr
 
 1. usare un nome che non contenga "Arenile" e non sia confondibile con esso;
 2. rimuovere o sostituire il logo e gli elementi grafici distintivi;
-3. sostituire i riferimenti al marchio nell'interfaccia, nella pagina di prenotazione pubblica, nelle email e nella documentazione rivolta agli utenti finali;
+3. sostituire i riferimenti al marchio nell'interfaccia, nella pagina di prenotazione pubblica (dicitura "powered by Arenile"), nelle email (dicitura "Arenile — Coste360.it"), nelle icone dell'app desktop e nella documentazione rivolta agli utenti finali, rimuovendo i file di `assets/brand/` dalla tua distribuzione;
 4. puoi (e ti incoraggiamo a) indicare l'origine in modo descrittivo: "basato su Arenile, di Coste360 SRL".
 
 Restano obbligatori gli avvisi di copyright e di licenza: la BSL 1.1 richiede di mostrare la licenza su ogni copia, originale o modificata; per le versioni convertite, la AGPL-3.0 richiede anche di rendere disponibile il codice sorgente.
@@ -37,7 +40,8 @@ Restano obbligatori gli avvisi di copyright e di licenza: la BSL 1.1 richiede di
 
 - Usare i Marchi per suggerire una sponsorizzazione, un'approvazione o una partnership con Coste360 SRL che non esiste.
 - Usare i Marchi come parte del nome di un'azienda, di un prodotto o servizio commerciale diverso, o di un dominio (ad esempio `arenile-cloud.it`) senza autorizzazione scritta.
-- Modificare il logo o combinarlo con altri marchi.
+- Modificare il logo (proporzioni, colori, dicitura) o combinarlo con altri marchi.
+- Usare il logo o l'icona di Arenile per prodotti, siti o app diversi dal software ufficiale.
 - Usare i Marchi in modo ingannevole, denigratorio o per software che contiene codice malevolo.
 
 ## Richieste di autorizzazione

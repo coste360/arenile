@@ -1,0 +1,64 @@
+{
+  "brand": "Arenile",
+  "by": "Coste360",
+  "font": "Titillium Web",
+  "version": "1.0",
+  "note": "Creative vector reinterpretation of approved A mark; no PNGs embedded",
+  "assets": [
+    {
+      "file": "arenile-symbol-color.svg",
+      "label": "Marchio A — a colori",
+      "variant": "transparent"
+    },
+    {
+      "file": "arenile-symbol-navy.svg",
+      "label": "Marchio A — navy monocromatico",
+      "variant": "transparent"
+    },
+    {
+      "file": "arenile-symbol-white.svg",
+      "label": "Marchio A — bianco monocromatico",
+      "variant": "transparent"
+    },
+    {
+      "file": "arenile-app-icon.svg",
+      "label": "Icona app — sfondo navy sfumato",
+      "variant": "app"
+    },
+    {
+      "file": "arenile-app-icon-flat.svg",
+      "label": "Icona app — sfondo navy flat",
+      "variant": "app"
+    },
+    {
+      "file": "arenile-logo-horizontal.svg",
+      "label": "Logo orizzontale — sfondo chiaro",
+      "variant": "logo"
+    },
+    {
+      "file": "arenile-logo-horizontal-dark.svg",
+      "label": "Logo orizzontale — sfondo scuro",
+      "variant": "logo"
+    },
+    {
+      "file": "arenile-logo-stacked.svg",
+      "label": "Logo verticale",
+      "variant": "logo"
+    },
+    {
+      "file": "arenile-logo-header.svg",
+      "label": "Logo compatto per sidebar/header",
+      "variant": "logo"
+    },
+    {
+      "file": "arenile-wordmark.svg",
+      "label": "Scritta Arenile Coste360.it",
+      "variant": "logo"
+    },
+    {
+      "file": "arenile-favicon.svg",
+      "label": "Favicon semplificata",
+      "variant": "favicon"
+    }
+  ]
+}
