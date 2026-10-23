@@ -370,5 +370,21 @@
       "bandiera_mare": "Badeflagge",
       "rosa_venti": "Windrose / Norden"
     }
+  },
+  "seaChange": {
+    "title": "Meer verschieben?",
+    "description": "Das Meer wechselt von „{{from}}“ nach „{{to}}“. Wähle, ob die ganze Anordnung gespiegelt oder nur das Meer verschoben wird.",
+    "flip": "Anordnung spiegeln",
+    "flipHint": "Plätze, Dekorationen und Stege werden gespiegelt oder gedreht, sodass jede Reihe denselben Abstand zum Meer behält. Bezeichnungen, Reihen, Zonen und Buchungen ändern sich nicht. Wird sofort als neue Version gespeichert.",
+    "onlySea": "Nur das Meer",
+    "onlySeaHint": "nur die Meerseite ändert sich, die Elemente bleiben an ihrem Platz. Speichere die Karte, um es zu übernehmen.",
+    "checking": "Künftige Buchungen werden geprüft…",
+    "futureTitle": "Künftige Buchungen auf der Karte",
+    "future_one": "{{count}} Buchung, Saisonkarte oder Sperre ab heute betrifft {{spots}} Plätze dieser Karte. Nur die Zeichnung ändert sich: zugewiesene Plätze bleiben gleich.",
+    "future_other": "{{count}} Buchungen, Saisonkarten oder Sperren ab heute betreffen {{spots}} Plätze dieser Karte. Nur die Zeichnung ändert sich: zugewiesene Plätze bleiben gleich.",
+    "blocked": {
+      "dirty": "Es gibt ungespeicherte Änderungen: speichere oder verwirf sie, bevor du die Anordnung spiegelst.",
+      "resized": "Du hast auch die Größe geändert: übernimm und speichere sie zuerst, dann verschiebe das Meer."
+    }
   }
 }

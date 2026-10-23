@@ -370,5 +370,21 @@
       "bandiera_mare": "Sea-state flag",
       "rosa_venti": "Compass rose / north"
     }
+  },
+  "seaChange": {
+    "title": "Move the sea?",
+    "description": "The sea moves from “{{from}}” to “{{to}}”. Choose whether to flip the whole layout or move only the sea.",
+    "flip": "Flip the layout",
+    "flipHint": "spots, decorations and walkways are flipped or rotated so that every row keeps its distance from the sea. Labels, rows, zones and bookings do not change. It is saved right away as a new version.",
+    "onlySea": "Only the sea",
+    "onlySeaHint": "only the sea side changes, elements stay where they are. Save the map to apply it.",
+    "checking": "Checking future bookings…",
+    "futureTitle": "Future bookings on the map",
+    "future_one": "{{count}} booking, season pass or block from today on involves {{spots}} spots of this map. Only the drawing changes: assigned spots stay the same.",
+    "future_other": "{{count}} bookings, season passes or blocks from today on involve {{spots}} spots of this map. Only the drawing changes: assigned spots stay the same.",
+    "blocked": {
+      "dirty": "There are unsaved changes: save or discard them before flipping the layout.",
+      "resized": "You also changed the size: apply and save it first, then move the sea."
+    }
   }
 }

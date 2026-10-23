@@ -370,5 +370,21 @@
       "bandiera_mare": "Bandiera stato del mare",
       "rosa_venti": "Rosa dei venti / nord"
     }
+  },
+  "seaChange": {
+    "title": "Spostare il mare?",
+    "description": "Il mare passa da «{{from}}» a «{{to}}». Scegli se ribaltare tutta la disposizione o spostare solo il mare.",
+    "flip": "Ribalta la disposizione",
+    "flipHint": "postazioni, decorazioni e passerelle vengono ribaltate o ruotate così che ogni fila resti alla stessa distanza dal mare. Etichette, file, zone e prenotazioni non cambiano. Viene salvato subito come nuova versione.",
+    "onlySea": "Solo il mare",
+    "onlySeaHint": "cambia solo il lato del mare, gli elementi restano dove sono. Salva la mappa per applicare.",
+    "checking": "Controllo delle prenotazioni future…",
+    "futureTitle": "Prenotazioni future sulla mappa",
+    "future_one": "{{count}} prenotazione, abbonamento o blocco da oggi in poi riguarda {{spots}} postazioni di questa mappa. Cambia solo il disegno: le postazioni assegnate restano le stesse.",
+    "future_other": "{{count}} prenotazioni, abbonamenti o blocchi da oggi in poi riguardano {{spots}} postazioni di questa mappa. Cambia solo il disegno: le postazioni assegnate restano le stesse.",
+    "blocked": {
+      "dirty": "Ci sono modifiche non salvate: salvale o annullale prima di ribaltare la disposizione.",
+      "resized": "Hai cambiato anche le dimensioni: applica e salva prima quelle, poi sposta il mare."
+    }
   }
 }

@@ -28,6 +28,12 @@
 // the year and its rate periods are reused when they exist; components,
 // packs and extras are reused by code; zone codes get a numeric suffix.
 //
+// Sea side (M5A, spec 11.2): template maps have the sea at the top, row A
+// nearest to it, and the kit decorations follow (walkway from the shore,
+// entrance away from it). `seed demo` on an existing demo moves the sea of
+// its template maps to the top once (demo_seatop.go: geometry only through
+// mapping.ReorientLayout, version bump, audit and config.map_changed).
+//
 // Ownership (M1): the "setup" builder owns this package, the handlers in
 // internal/http/admin/setup.go and the `seed demo` wiring in
 // cmd/arenile/commands.go.

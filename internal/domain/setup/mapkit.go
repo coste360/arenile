@@ -9,6 +9,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/coste360/arenile/internal/domain/audit"
+	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -71,8 +72,12 @@ type kitItem struct {
 }
 
 // kitDecorations lays out the kit decorations of a map with the sea at the
-// bottom. occupied are the drawn areas of the spots.
-func kitDecorations(establishmentID, mapID string, width, height float64, occupied []kitRect, now time.Time) []store.MapDecoration {
+// top (spec 11 default) or at the bottom (pre-M5 maps; any other side is
+// laid out as bottom). occupied are the drawn areas of the spots. The
+// layout is written for a sea at the bottom and mirrored for the top, except
+// the walkway, which starts at the sea and stays on the 60-unit tile grid.
+func kitDecorations(establishmentID, mapID string, width, height float64, seaSide string, occupied []kitRect, now time.Time) []store.MapDecoration {
+	seaTop := seaSide == mapping.SeaTop
 	var out []store.MapDecoration
 	add := func(asset, kind, variant string, x, y, w, h, rotation float64) {
 		d := store.MapDecoration{
@@ -88,20 +93,39 @@ func kitDecorations(establishmentID, mapID string, width, height float64, occupi
 		out = append(out, d)
 	}
 	placed := append([]kitRect(nil), occupied...)
-	// Walkway along the left edge, from the entrance (top) down to the sea:
-	// one entrance tile and one straight run drawn as repeated tiles.
+	// Walkway along the left edge, from the entrance (away from the sea) to
+	// the sea: one entrance tile and one straight run drawn as repeated
+	// tiles. With the sea at the top the run starts at the shore (y = 0).
+	entranceY := kitTile / 2
 	if width >= 3*kitTile && height >= 3*kitTile {
-		add("passerella_ingresso", "walkway", "", kitTile/2, kitTile/2, kitTile, kitTile, 0)
 		n := math.Floor((height - kitTile) / kitTile)
 		run := n * kitTile
-		add("passerella_verticale", "walkway", "", kitTile/2, kitTile+run/2, kitTile, run, 0)
+		runY := kitTile + run/2
+		if seaTop {
+			runY, entranceY = run/2, run+kitTile/2
+		}
+		add("passerella_ingresso", "walkway", "", kitTile/2, entranceY, kitTile, kitTile, 0)
+		add("passerella_verticale", "walkway", "", kitTile/2, runY, kitTile, run, 0)
 		placed = append(placed, kitRect{0, 0, kitTile, height})
+	} else if seaTop {
+		entranceY = height - kitTile/2
 	}
 	// The sign of the entrance sits beside the head of the walkway; the
-	// shore row stays inside the map (items at most 56 units tall).
-	top, shore := 50.0, height-28
+	// shore row stays inside the map (items at most 56 units tall). Items
+	// are written for a sea at the bottom; seaY mirrors them for the top.
+	seaY := func(y float64) float64 {
+		if seaTop {
+			return height - y
+		}
+		return y
+	}
+	top, shore := seaY(50.0), seaY(height-28)
+	boat := 90.0 // the rescue boat lies along the shore, mirrored with the map
+	if seaTop {
+		boat = 270
+	}
 	items := []kitItem{
-		{asset: "ingresso", kind: "entrance", x: kitTile + 26, y: kitTile / 2, size: 44},
+		{asset: "ingresso", kind: "entrance", x: kitTile + 26, y: entranceY, size: 44},
 		{asset: "bar", kind: "bar", x: width - 130, y: top, size: 84},
 		{asset: "doccia_doppia", kind: "shower", x: 170, y: top, size: 56},
 		{asset: "torretta_bagnino", kind: "lifeguard", x: width / 2, y: shore, size: 56},
@@ -110,9 +134,9 @@ func kitDecorations(establishmentID, mapID string, width, height float64, occupi
 		{asset: "dae", kind: "custom", x: width - 212, y: top, size: 44},
 		{asset: "rampa_accessibile", kind: "custom", x: 112, y: shore, size: kitUnit}, //nolint:misspell // kit asset id (Italian)
 		{asset: "sedia_job", kind: "custom", x: 168, y: shore, size: 48},
-		{asset: "pattino_salvataggio", kind: "custom", x: width/2 - 76, y: shore, size: 56, rotation: 90},
-		{asset: "palma", kind: "custom", x: 240, y: top - 4, size: 64},
-		{asset: "palma_piccola", kind: "custom", x: width - 40, y: top + 6, size: kitUnit},
+		{asset: "pattino_salvataggio", kind: "custom", x: width/2 - 76, y: shore, size: 56, rotation: boat},
+		{asset: "palma", kind: "custom", x: 240, y: seaY(50 - 4), size: 64},
+		{asset: "palma_piccola", kind: "custom", x: width - 40, y: seaY(50 + 6), size: kitUnit},
 		{asset: "fioriera_rotonda", kind: "custom", x: 300, y: top, size: 40},
 		{asset: "fioriera_rotonda", kind: "custom", x: width - 320, y: top, size: 40},
 		{asset: "salvagente_palo", kind: "custom", x: width - 90, y: shore, size: 44},
@@ -224,7 +248,7 @@ func (s *Service) upgradeDemoMapKit(ctx context.Context, tx bun.Tx, es store.Est
 					return up, err
 				}
 			}
-			fresh = kitDecorations(es.ID(), m.ID, width, height, occupied, now)
+			fresh = kitDecorations(es.ID(), m.ID, width, height, m.SeaSide, occupied, now)
 			if len(fresh) > 0 {
 				if err := store.InsertDecorations(ctx, tx, es, fresh); err != nil {
 					return up, err

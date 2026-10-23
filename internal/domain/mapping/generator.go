@@ -38,7 +38,8 @@ const (
 // RowLabelStyle letters, FirstRowLabel "A" (or "1"), NumberStart 1,
 // Numbering per_row, Direction ltr, LabelFormat "{row}{number}", Kind
 // umbrella, Shape a circle of 80% of the smaller spacing, Rotation along the
-// shore, SeaSide bottom.
+// shore, SeaSide top (Italian lidos usually draw the sea at the top; the
+// service always passes the side of the map).
 //
 // Geometry is sea side aware: row 1 (A) is the row closest to the sea and
 // (OriginX, OriginY) is the centre of its first spot. Rows move away from
@@ -224,7 +225,7 @@ func applyGenerateDefaults(p *GenerateParams) {
 		p.Kind = "umbrella"
 	}
 	if p.SeaSide == "" {
-		p.SeaSide = SeaBottom
+		p.SeaSide = SeaTop
 	}
 	if p.Capacity == nil {
 		p.Capacity = map[string]int{}
@@ -235,14 +236,14 @@ func applyGenerateDefaults(p *GenerateParams) {
 // (away from the sea).
 func generatorAxes(seaSide string, sx, sy float64) (along, across [2]float64) {
 	switch seaSide {
-	case SeaTop:
-		return [2]float64{sx, 0}, [2]float64{0, sy}
 	case SeaLeft:
 		return [2]float64{0, sx}, [2]float64{sy, 0}
 	case SeaRight:
 		return [2]float64{0, sx}, [2]float64{-sy, 0}
-	default: // bottom
+	case SeaBottom:
 		return [2]float64{sx, 0}, [2]float64{0, -sy}
+	default: // top
+		return [2]float64{sx, 0}, [2]float64{0, sy}
 	}
 }
 

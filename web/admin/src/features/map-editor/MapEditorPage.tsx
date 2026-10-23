@@ -41,6 +41,7 @@ import { MapSaveProblem, useMapDocument, useSaveMap } from './api';
 import { ConflictDialog, type ConflictInfo } from './ConflictDialog';
 import { MapSettingsForm, RenumberRowForm, RowGeneratorForm, type ZoneOption } from './dialogs';
 import { MapCanvas } from './MapCanvas';
+import { SeaSideDialog } from './SeaSideDialog';
 import { draftFromApi, toSaveRequest, validateDraft } from './model/document';
 import {
   addDecoration,
@@ -73,6 +74,8 @@ import {
 import {
   isSpot,
   type ApiMapDocument,
+  type DraftMapSettings,
+  type MapReorientResult,
   type DecorationKind,
   type DraftDocument,
   type DraftSpot,
@@ -213,6 +216,8 @@ function Editor(props: EditorProps) {
   const [conflict, setConflict] = useState<ConflictInfo | null>(null);
   const [overwriting, setOverwriting] = useState(false);
   const [dialog, setDialog] = useState<DialogKind>(null);
+  // Settings whose sea side change waits for "flip the layout" or "only the sea".
+  const [seaChange, setSeaChange] = useState<DraftMapSettings | null>(null);
   const doc = history.present;
   const dirty = doc !== savedDoc;
 
@@ -344,6 +349,28 @@ function Editor(props: EditorProps) {
       setSaveState({ kind: 'error', messages: [t(problemMessageKey(err), { ns: 'translation' })] });
     } finally {
       setOverwriting(false);
+    }
+  };
+
+  /**
+   * The server flipped or rotated the saved layout (new version): it becomes
+   * the saved draft; name and grid edited in the same dialog stay as
+   * unsaved changes on top of it.
+   */
+  const onFlipped = (res: MapReorientResult, settings: DraftMapSettings) => {
+    const next = draftFromApi(res.document);
+    setHistory(initHistory(next));
+    setSavedDoc(next);
+    setVersion(res.document.map.version);
+    setSelection(new Set());
+    setConflict(null);
+    setSaveState({ kind: 'saved' });
+    const { name, grid_size } = settings;
+    if (
+      grid_size !== next.map.grid_size ||
+      JSON.stringify(name) !== JSON.stringify(next.map.name)
+    ) {
+      setHistory((h) => pushHistory(h, updateMapSettings(next, { name, grid_size })));
     }
   };
 
@@ -714,12 +741,37 @@ function Editor(props: EditorProps) {
             submitLabel={t('settings.apply')}
             onCancel={() => setDialog(null)}
             onSubmit={(v) => {
-              commit(updateMapSettings(doc, v));
               setDialog(null);
+              // A new sea side on a map with elements: offer to flip the layout.
+              if (v.sea_side !== doc.map.sea_side && elements(doc).length > 0) {
+                setSeaChange({ ...doc.map, ...v });
+                return;
+              }
+              commit(updateMapSettings(doc, v));
             }}
           />
         )}
       </FormDialog>
+      {seaChange && (
+        <SeaSideDialog
+          open
+          onOpenChange={(o) => !o && setSeaChange(null)}
+          establishmentId={establishmentId}
+          mapId={mapId}
+          version={version}
+          from={doc.map.sea_side}
+          to={seaChange.sea_side}
+          block={
+            dirty
+              ? 'dirty'
+              : seaChange.width !== doc.map.width || seaChange.height !== doc.map.height
+                ? 'resized'
+                : null
+          }
+          onOnlySea={() => commit(updateMapSettings(doc, seaChange))}
+          onFlipped={(res) => onFlipped(res, seaChange)}
+        />
+      )}
       <ConflictDialog
         conflict={conflict}
         busy={overwriting || save.isPending}

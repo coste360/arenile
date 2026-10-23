@@ -48,6 +48,18 @@
 // deleted, alone or with its map: ZoneReferencedError lists the references
 // (409 conflict).
 //
+// Sea side (M5A, spec 11.2): "top" is the default of new maps and of the
+// row generator (row A nearest to the sea). ReorientLayout is the pure
+// geometry of a sea side change (mirror for opposite sides, quarter turn
+// with width and height swapped for adjacent ones; distances from the sea,
+// ids, labels, rows and zones preserved, walkway tiles kept on their
+// 60-unit grid, round trip = identity) and ReorientMap persists it through
+// the same transactional save as SaveMap (If-Match, one version, audit
+// "map.reoriented", config.map_changed with change "reoriented"); spots
+// with booking, season or block allocations from today on need an explicit
+// acknowledgement (configerr.SpotsAllocatedError otherwise). Dry runs
+// return the preview and the counts without writing.
+//
 // Composition: Service.WithDB(tx) lets the guided setup run these use cases
 // inside its own transaction (they become savepoints).
 package mapping

@@ -32,17 +32,17 @@ func TestGenerate_Layouts(t *testing.T) {
 		rotation float64
 	}{
 		{
-			name:     "defaults sea bottom: rows go up, A is closest to the sea",
+			name:     "defaults sea top: rows go down, A is closest to the sea",
 			mod:      func(*GenerateParams) {},
 			labels:   []string{"A1", "A2", "A3", "B1", "B2", "B3"},
-			pos:      []pos{{10, 100}, {15, 100}, {20, 100}, {10, 92}, {15, 92}, {20, 92}},
+			pos:      []pos{{10, 100}, {15, 100}, {20, 100}, {10, 108}, {15, 108}, {20, 108}},
 			rowLabel: []string{"A", "A", "A", "B", "B", "B"},
 		},
 		{
-			name:   "sea top: rows go down",
-			mod:    func(p *GenerateParams) { p.SeaSide = SeaTop },
+			name:   "sea bottom: rows go up",
+			mod:    func(p *GenerateParams) { p.SeaSide = SeaBottom },
 			labels: []string{"A1", "A2", "A3", "B1", "B2", "B3"},
-			pos:    []pos{{10, 100}, {15, 100}, {20, 100}, {10, 108}, {15, 108}, {20, 108}},
+			pos:    []pos{{10, 100}, {15, 100}, {20, 100}, {10, 92}, {15, 92}, {20, 92}},
 		},
 		{
 			name:     "sea left: rows are columns moving right, rotated 90",
@@ -62,7 +62,7 @@ func TestGenerate_Layouts(t *testing.T) {
 			name:   "rtl direction",
 			mod:    func(p *GenerateParams) { p.Direction = DirectionRTL; p.OriginX = 50 },
 			labels: []string{"A1", "A2", "A3", "B1", "B2", "B3"},
-			pos:    []pos{{50, 100}, {45, 100}, {40, 100}, {50, 92}, {45, 92}, {40, 92}},
+			pos:    []pos{{50, 100}, {45, 100}, {40, 100}, {50, 108}, {45, 108}, {40, 108}},
 		},
 		{
 			name: "numbers, continuous numbering, custom format and start",
@@ -140,7 +140,7 @@ func TestGenerate_LettersBeyondZ(t *testing.T) {
 
 func TestGenerate_EightRowsOfFifteen(t *testing.T) {
 	got, err := Generate(GenerateParams{
-		ZoneID: "z", Rows: 8, SpotsPerRow: 15, OriginX: 20, OriginY: 380, SpacingX: 40, SpacingY: 45,
+		ZoneID: "z", Rows: 8, SpotsPerRow: 15, OriginX: 20, OriginY: 60, SpacingX: 40, SpacingY: 45,
 		Kind: "umbrella", Capacity: map[string]int{"umbrella": 1, "sunbed": 2},
 	})
 	if err != nil {
@@ -150,7 +150,7 @@ func TestGenerate_EightRowsOfFifteen(t *testing.T) {
 		t.Fatalf("got %d spots", len(got))
 	}
 	last := got[len(got)-1]
-	if last.Label != "H15" || last.X != 20+14*40 || last.Y != 380-7*45 || last.Number != 15 {
+	if last.Label != "H15" || last.X != 20+14*40 || last.Y != 60+7*45 || last.Number != 15 {
 		t.Fatalf("last spot %+v", last)
 	}
 	if last.Shape != (store.Shape{Type: ShapeCircle, W: 32, H: 32}) {

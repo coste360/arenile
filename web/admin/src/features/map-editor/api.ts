@@ -5,6 +5,8 @@ import { ifMatch } from '../configuration/lib/validation';
 import type {
   ApiMapDocument,
   ApiMapSaveRequest,
+  MapReorientRequest,
+  MapReorientResult,
   RowGeneratorRequest,
   RowGeneratorResult,
 } from './model/types';
@@ -107,5 +109,48 @@ export function useRowPreview(establishmentId: string, mapId: string) {
           body: { ...body, apply: false },
         }),
       ),
+  });
+}
+
+export interface ReorientMapVars {
+  version: number;
+  body: MapReorientRequest;
+}
+
+/**
+ * Moves the sea side of the saved map and flips or rotates the whole layout
+ * (POST /maps/{id}/reorient, spec 11). With `dry_run` it is a preview that
+ * writes nothing (future allocation counts); otherwise one versioned save
+ * (If-Match, 412 on a stale version, 409 spot_has_future_allocations
+ * without the acknowledgement).
+ */
+export function useReorientMap(establishmentId: string, mapId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<MapReorientResult, ApiProblem, ReorientMapVars>({
+    mutationFn: async ({ version, body }) => {
+      let raw: unknown;
+      try {
+        return await call(async () => {
+          const res = await client.POST(`${MAP_PATH}/reorient`, {
+            params: { path: { establishmentId, mapId }, header: { 'If-Match': ifMatch(version) } },
+            body,
+          });
+          raw = res.error;
+          return res;
+        });
+      } catch (err) {
+        const problem = err instanceof ApiProblem ? err : toApiProblem(err, undefined);
+        throw new MapSaveProblem(problem, raw);
+      }
+    },
+    onSuccess: (res) => {
+      if (!res.applied) return;
+      qc.setQueryData(mapDocumentKey(establishmentId, mapId), res.document);
+      void qc.invalidateQueries({
+        queryKey: configKey(establishmentId),
+        predicate: (q) => !(q.queryKey.includes('document') && q.queryKey.includes(mapId)),
+      });
+    },
   });
 }

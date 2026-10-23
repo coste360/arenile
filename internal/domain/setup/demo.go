@@ -31,6 +31,9 @@ type DemoResult struct {
 	SpotsIllustrated   int
 	DecorationsRemoved int
 	DecorationsAdded   int
+	// MapsReoriented counts the template maps of an already configured demo
+	// moved to the sea at the top (upgradeDemoSeaTop, spec 11 default).
+	MapsReoriented int
 }
 
 // DemoDayPrices are the day prices of the demo price list (cents) by price
@@ -74,7 +77,8 @@ var policyAugustWeeks = PolicySpec{
 // code and an agreement. It is idempotent: when the establishment already
 // has maps it only gives the map kit illustrations to maps seeded before
 // the kit (upgradeDemoMapKit: spots without illustration and the four plain
-// template decorations; hand-made decorations are kept), which is itself
+// template decorations; hand-made decorations are kept) and moves the sea of
+// the template maps to the top (upgradeDemoSeaTop, geometry only), both
 // idempotent and audited. It runs as the system actor (CLI).
 // Customers and bookings arrive with M3.
 func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoResult, error) {
@@ -93,6 +97,11 @@ func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoRe
 			up, err := s.upgradeDemoMapKit(ctx, tx, es, s.d.Clock.Now())
 			res.MapsUpgraded, res.SpotsIllustrated = up.Maps, up.SpotsIllustrated
 			res.DecorationsRemoved, res.DecorationsAdded = up.DecorationsRemoved, up.DecorationsAdded
+			if err != nil {
+				return err
+			}
+			// Then move the sea of the template maps to the top.
+			res.MapsReoriented, err = s.upgradeDemoSeaTop(ctx, tx, es, s.d.Clock.Now())
 			return err
 		}
 		e, err := store.GetEstablishment(ctx, tx, es)
