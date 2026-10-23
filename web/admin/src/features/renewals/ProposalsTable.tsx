@@ -517,6 +517,7 @@ export function ProposalsTable({
         }
         getRowId={(p) => p.id}
         pageSize={0}
+        searchable
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder={t('filters.search')}

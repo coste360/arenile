@@ -366,6 +366,7 @@ export function WaitlistPage() {
         getRowId={(e) => e.id}
         pageSize={0}
         initialColumnVisibility={{ channel: false }}
+        searchable
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder={t('filters.search')}
