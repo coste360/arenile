@@ -548,7 +548,6 @@ func TestConcurrency_CreditRedemption_NeverNegative(t *testing.T) {
 	})
 }
 
-
 // TestConcurrency_PayWithCredit_RealLedger (INV-47 / INV-70 / INV-71): 100
 // parallel credit payments from the magic link (credit.ApplyFromLink, 10.00
 // each on ten bookings) against a balance of 50.00: exactly five succeed,

@@ -211,7 +211,6 @@ func TestAllocate_BalanceInvariant(t *testing.T) {
 	})
 }
 
-
 // TestAllocate_LocalDay: the day of a debit is the establishment's business
 // day, not the UTC day. A debit at 22:30 UTC on the expiry day of a lot is
 // already the next day in Rome: the lot is expired for it and stays

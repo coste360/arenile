@@ -356,7 +356,6 @@ func containsAny(s string, subs ...string) bool {
 	return false
 }
 
-
 // TestCreditLedger_ExpireAllSkipsConsumedGrants (INV-70): a grant fully
 // used before its expiry never gets an expiry row, so more than one batch
 // of such customers must not starve the real expiries that sort after
