@@ -1,16 +1,10 @@
-import { StatusBadge } from '@arenile/shared/ui/patterns';
-import { useTranslation } from 'react-i18next';
-import { useOnlineStatus } from '../lib/online';
+import { ConnectionIndicator } from '../offline/ConnectionIndicator';
 
-/** Connection status, always visible in the top bar (spec 21.2). */
+/**
+ * Connection status, always visible in the top bar (spec 21.2). Kept as the
+ * shell's entry point; the implementation (offline, syncing, queued and
+ * refused operations) lives in ../offline.
+ */
 export function OfflineIndicator() {
-  const { t } = useTranslation();
-  const online = useOnlineStatus();
-  return (
-    <span role="status" aria-live="polite">
-      <StatusBadge tone={online ? 'success' : 'warning'}>
-        {online ? t('common.online') : t('common.offline')}
-      </StatusBadge>
-    </span>
-  );
+  return <ConnectionIndicator />;
 }

@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import { vi } from 'vitest';
 import { App } from '../../App';
 import { createAdminTestI18n } from '../../i18n';
+import type { QueryClient } from '@tanstack/react-query';
 import { createQueryClient } from '../../lib/queryClient';
 
 /** Test helpers for the configuration and setup-wizard features (not shipped: tests only). */
@@ -100,7 +101,11 @@ export function baseRoutes(role: TestRole, est = establishment()): Record<string
 }
 
 /** Renders the whole admin app at `path` with a fetch double routing "METHOD /path". */
-export function renderApp(path: string, routes: Record<string, Handler>) {
+export function renderApp(
+  path: string,
+  routes: Record<string, Handler>,
+  queryClient: QueryClient = createQueryClient(),
+) {
   const fetchMock = vi.fn(async (req: Request) => {
     const url = new URL(req.url);
     const handler = routes[`${req.method} ${url.pathname}`];
@@ -113,12 +118,7 @@ export function renderApp(path: string, routes: Record<string, Handler>) {
   });
   const history = createMemoryHistory({ initialEntries: [path] });
   const utils = render(
-    <App
-      api={api}
-      i18n={createAdminTestI18n()}
-      queryClient={createQueryClient()}
-      history={history}
-    />,
+    <App api={api} i18n={createAdminTestI18n()} queryClient={queryClient} history={history} />,
   );
   return { fetchMock, history, ...utils };
 }

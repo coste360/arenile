@@ -437,3 +437,87 @@ backup automatici.
 Verificata da: `TestResolveSecretKey_NeverForksAnExistingDatabase`, `TestKeyringSecretStore_FallbackToFile`,
 `TestInstanceLock_SingleInstance`, `TestBackuper_BackupValidateRestore_SQLite`, `TestPruneCandidates_KeepsManualAndNewest`,
 `TestSmoke_DesktopLauncherHeadless` (`internal/desktop`). Stato: implemented.
+
+## Report, integrazioni e pannello offline (spec 15.3, 17, 18.2, 21.2 — M5 parte A)
+
+**INV-61 — Report riconciliati con il registro dei pagamenti e i corrispettivi.**
+Il ricavo incassato di un periodo (report ricavi `basis=collected`, riepilogo, confronto) è uguale al totale
+dell'export dei corrispettivi dello stesso periodo; il riferimento è l'**export giornaliero** (`group_by=day`): lo
+scorporo del report avviene sempre per cella (giorno, aliquota, metodo), quindi imponibile e imposta per aliquota
+coincidono al centesimo con quell'export qualunque sia il raggruppamento del report (giorno, settimana, mese, metodo,
+aliquota), mentre l'export dei corrispettivi raggruppato per mese scorpora per cella mensile e può differire di
+qualche centesimo nell'imponibile e nell'imposta (il lordo coincide sempre). Occupazione = unità (postazione, giorno, fascia) allocate a prenotazioni e
+abbonamenti sui mezzi giorni aperti diviso le unità disponibili (postazioni attive meno blocchi, esclusi giorni di
+chiusura e fuori stagione); i report sono sempre filtrati per stabilimento e non espongono mai contatti dei clienti.
+Verificata da: `TestBuildRevenueCollected_ReconcilesWithCorrispettivi` (property test), `TestReportService_ReconcilesWithLedger`
+e `TestReportsHTTP_Flow` (tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-62 — Chiavi API: canale `api`, scope limitati, scadenza.**
+Una prenotazione o un hold creati con una chiave API sono sempre del canale `api` (`auth.ChannelFor`), qualunque
+canale chieda la richiesta, quindi consumano e rispettano la quota online (ADR 0011 §1). Una chiave non riceve mai
+`users.manage` e non gestisce chiavi né webhook (sempre `403`); vale solo per il suo stabilimento; una chiave scaduta
+(`expires_at <= now`) o revocata non autentica; il segreto è salvato solo come SHA-256 e mostrato una volta
+(`Cache-Control: no-store`); ogni chiave ha un budget di richieste al minuto.
+Verificata da: `TestInventory_APIKeyCannotBypassQuota` (`internal/domain/inventory`), `TestAPIKeyService_Lifecycle`,
+`TestAPIKeyService_ExpiredKeyRejected`, `TestAPIKeyService_PermissionsAndTenancy` (`internal/domain/apikey`),
+`TestIntegrationsHTTP_APIKeys` (`internal/http/admin`), tutti con tag `integration`, `TestChannelFor_APIKeyAlwaysAPI`,
+`TestAPIKeyRateLimit_PerKey`. Stato: implemented.
+
+**INV-63 — Webhook in uscita mai verso la rete interna.**
+Le consegne passano dal client di `event.NewEgressClient`: l'host è risolto una volta, ogni indirizzo è controllato
+da `event.EgressPolicy` e la connessione va all'IP controllato (nessun DNS rebinding); link-local, metadati cloud,
+multicast e intervalli riservati sono sempre bloccati, loopback e reti private salvo
+`ARENILE_WEBHOOKS_ALLOW_PRIVATE`; i redirect non sono seguiti, nessun proxy d'ambiente.
+Verificata da: `TestEgressPolicy_Check`, `TestEgressDialer_PinsResolvedAddress`,
+`TestEgressClient_BlocksLoopbackAndRedirects` (`internal/domain/event`), `TestDeliverer_DefaultClientRefusesLoopback`
+(tag `integration`), `TestValidateURL_Scenarios` (`internal/domain/webhook`). Stato: implemented.
+
+**INV-64 — Una consegna webhook alla volta, firmata, con segreti mai in chiaro.**
+Ogni tentativo di consegna è preso con un lease (`ClaimWebhookDelivery`, `ClaimWebhookDeliveryNow`), quindi più
+istanze e il test sincrono del pannello non inviano mai due volte lo stesso tentativo; il corpo è l'envelope
+dell'outbox, firmato `t=<ts>,v1=<HMAC-SHA256>` con il segreto corrente e, nel periodo di grazia di una rotazione,
+anche con il precedente. I segreti sono cifrati con il portachiavi (AAD `<id>` e `<id>:previous`), mostrati solo alla
+creazione e alla rotazione, mai nel registro attività né nei log; l'URL entra nel registro attività e nell'elenco del
+pannello senza query string (`webhook.RedactURL`, `redactWebhookUrl`), dove spesso viaggia un token del ricevitore;
+una risposta `Cache-Control: no-store` non viene mai salvata da `Idempotency-Key`
+(`TestIdempotency_NeverStoresNoStoreResponses`). Scostamento dichiarato (ADR 0016): la disattivazione automatica
+dopo 20 errori consecutivi scrive registro attività e log ma non invia ancora l'email al proprietario prevista da
+18.2.
+Verificata da: `TestConcurrency_WebhookDelivery` (100 worker, SQLite e PostgreSQL),
+`TestDeliverer_SignsWithPreviousSecretDuringGrace`, `TestDeliverer_RetryBackoffAndDeadLetter`,
+`TestDeliverer_AttemptNowTestEvent` (`internal/domain/event`), `TestWebhookService_Flow` (`internal/domain/webhook`),
+tutti con tag `integration`, `TestSignAll_VerifiesWithEitherSecret`, `TestSignature_DocumentedVector` (il vettore
+di [`docs/guida/webhook-verifica-firma.md`](guida/webhook-verifica-firma.md)) e `e2e/tests/integrations.spec.ts`
+(consegna di prova firmata verificata da un ricevitore locale). Stato: implemented.
+
+**INV-65 — Pannello offline: niente disponibilità senza server, repliche idempotenti, nessun dato personale oltre la 21.2.**
+Offline si accodano solo check-in, nota e incasso in contanti su una prenotazione esistente; creazione e spostamento
+non partono mai senza connessione. La coda è inviata in ordine, ognuna con la `Idempotency-Key` generata all'accodamento
+(la stessa anche per la richiesta online non arrivata al server), quindi una replica non applica mai due volte
+un'operazione; 409/412/422 diventano conflitti mostrati all'utente, 401 sospende la coda. Un check-in accodato dietro
+un'altra operazione sulla stessa prenotazione non invia `If-Match` (ogni operazione alza la versione; la versione in
+cache segue). Il service worker precarica solo shell e risorse statiche e non mette mai in cache `/api/`; sul
+dispositivo restano solo le chiavi dell'allowlist (`admin/src/offline/cache.ts`) dello stabilimento corrente, per 48
+ore, cancellate all'uscita e al cambio utente; la coda invece sopravvive al cambio utente (incassi davvero riscossi,
+nessun dato personale) e la invia la nuova sessione.
+Verificata da: `OperationQueue_Flush` e `OperationQueue_RetryDiscard` (`web/shared/src/offline/queue.test.ts`),
+`createPersistPolicy_Allowlist` (`web/admin/src/offline/cache.test.ts`), `OfflineRuntime_Queue` e
+`OfflineRuntime_Cache` (`web/admin/src/offline/runtime.test.ts`), `offline-ui.test.tsx` e
+`e2e/tests/offline.spec.ts` (Chromium reale: avvio offline dalla copia salvata, cancellazione all'uscita) e
+`e2e/tests/offline-queue.spec.ts` (check-in offline inviato una sola volta alla riconnessione, versione della
+prenotazione +1; mappa e prenotazione di oggi leggibili dopo un ricaricamento offline; incasso in contanti seguito da
+check-in sulla stessa prenotazione, entrambi applicati). Stato: implemented.
+
+**INV-66 — Spostare il lato del mare cambia solo la geometria.**
+Ribaltare o ruotare una mappa al cambio del lato del mare (`mapping.ReorientLayout`, `POST .../maps/{id}/reorient`)
+conserva id, etichette, file e zone di postazioni e decorazioni: allocazioni, prenotazioni e abbonamenti non cambiano.
+Ogni fila resta alla stessa distanza dal mare e l'ordine delle file è conservato (la fila A resta la più vicina); il
+passaggio inverso ricostruisce la disposizione originale; le passerelle restano sulla griglia di 60 unità. Il
+salvataggio è unico e versionato (If-Match, versione +1, audit `map.reoriented` ed evento `config.map_changed` con
+`reoriented` nella stessa transazione); con allocazioni future serve la conferma esplicita (`409` altrimenti).
+Lati opposti sono uno specchio e lati adiacenti una rotazione, quindi percorsi diversi tra gli stessi due lati danno
+disposizioni diverse (scelta documentata in ADR 0016, `TestReorientLayout_PathsDoNotCompose`).
+Verificata da: `TestReorientLayout_PropertyRoundTripIsIdentity`, `TestReorientLayout_PropertyDistanceFromTheSea`,
+`TestReorientLayout_AllSideCombinations`, `TestReorientLayout_TilesKeepTheTileGrid` (`internal/domain/mapping`),
+`TestMappingIntegration_ReorientMap`, `TestMapsHTTP_Reorient`, `TestSeedDemo_UpgradesSeaToTop` (tag `integration`,
+SQLite e PostgreSQL) e `e2e/tests/map-sea.spec.ts`. Stato: implemented.

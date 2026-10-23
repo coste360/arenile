@@ -1,0 +1,189 @@
+{
+  "title": "Reports",
+  "page": {
+    "description": "Occupancy, revenue, channels, cancellations, season passes, top customers, open balances and year-over-year comparison, with CSV export."
+  },
+  "forbidden": {
+    "title": "Access not allowed",
+    "description": "Your role has no access to reports and exports."
+  },
+  "period": {
+    "label": "Period",
+    "season": "Season",
+    "month": "Month",
+    "custom": "Custom",
+    "seasonLabel": "Season",
+    "noSeasons": "No season configured",
+    "seasonOption": "{{year}} ({{from}} – {{to}})",
+    "range": "From – to",
+    "monthLabel": "Month",
+    "year": "Year",
+    "compare": "Compare with previous year",
+    "compareWith": "Compare with {{year}}",
+    "showing": "Data from {{from}} to {{to}} (inclusive).",
+    "error": {
+      "incomplete": "Choose the last day of the period too.",
+      "reversed": "The last day comes before the first day.",
+      "tooLong": "The period can last at most 400 days.",
+      "noSeason": "Choose a season or switch to month or custom period."
+    }
+  },
+  "tabs": {
+    "label": "Available reports",
+    "summary": "Summary",
+    "occupancy": "Occupancy",
+    "revenue": "Revenue",
+    "bookings": "Bookings",
+    "cancellations": "Cancellations and no-shows",
+    "passes": "Season passes and releases",
+    "customers": "Top customers",
+    "balances": "Open balances"
+  },
+  "csv": {
+    "label": "Export CSV",
+    "aria": "Export CSV: {{report}}"
+  },
+  "chart": {
+    "caption": "Chart of the data listed in the following table."
+  },
+  "summary": {
+    "kpis": "Period indicators",
+    "unitsHint": "{{occupied}} slots occupied out of {{capacity}}",
+    "openBalanceHint": "Bookings with a balance: {{n}}",
+    "new": "New",
+    "vs": "{{year}}: {{value}}",
+    "basis": {
+      "stay": "By first day of stay",
+      "cash": "By payment date"
+    }
+  },
+  "metric": {
+    "occupancy_bp": "Occupancy",
+    "revenue_collected": "Collected",
+    "revenue_booked": "Booked",
+    "bookings": "Bookings",
+    "average_booking_value": "Average booking value",
+    "cancellations": "Cancellations",
+    "no_shows": "No-shows",
+    "season_passes_sold": "Season passes sold",
+    "released_units": "Released slots",
+    "resold_units": "Resold slots",
+    "open_balance": "Open balances"
+  },
+  "comparison": {
+    "title": "Comparison with {{year}}",
+    "description": "From {{currentFrom}} to {{currentTo}} compared with the same days of the previous year ({{previousFrom}} – {{previousTo}}).",
+    "bucket": "Period",
+    "revenueOf": "Collected {{year}}",
+    "bookingsOf": "Bookings {{year}}",
+    "occupancyOf": "Occupancy {{year}}",
+    "metric": "Indicator",
+    "delta": "Change",
+    "metricsCaption": "Indicators compared with the previous year",
+    "seriesCaption": "Trend compared with the previous year",
+    "align": "Alignment",
+    "alignOption": {
+      "calendar": "Same calendar dates",
+      "weekday": "Same weekday"
+    }
+  },
+  "groupBy": {
+    "label": "Group by",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "zone": "Zone",
+    "row": "Row",
+    "slot": "Time slot",
+    "channel": "Channel",
+    "pack": "Pack",
+    "extra": "Extra",
+    "payment_method": "Payment method",
+    "vat_rate": "VAT rate",
+    "lead_time": "Lead time",
+    "formula": "Formula"
+  },
+  "occupancy": {
+    "rate": "Occupancy",
+    "occupied": "Occupied",
+    "capacity": "Capacity",
+    "season": "Season pass holders",
+    "released": "Released",
+    "blocked": "Blocked",
+    "total": "Period total: {{rate}} ({{occupied}} slots occupied out of {{capacity}}).",
+    "help": "Slots (spot × day × morning/afternoon) occupied over the capacity of open days."
+  },
+  "revenue": {
+    "basis": "Basis",
+    "basisOption": {
+      "collected": "Collected",
+      "booked": "Booked"
+    },
+    "basisHelp": {
+      "collected": "Successful payments in the period, net of refunds.",
+      "booked": "Value of bookings for the days of the period, regardless of payment."
+    },
+    "movements": "Movements",
+    "lines": "Lines",
+    "gross": "Gross",
+    "taxable": "Taxable",
+    "tax": "VAT",
+    "refunds": "Refunds",
+    "total": "Gross total: {{gross}}, of which VAT {{tax}}."
+  },
+  "bookings": {
+    "count": "Bookings",
+    "share": "Share",
+    "value": "Value",
+    "average": "Average value",
+    "lead": "Average lead time (days)",
+    "total": "Bookings: {{n}}, value {{value}}, average {{average}}."
+  },
+  "cancellations": {
+    "bookings": "Bookings",
+    "cancelled": "Cancelled",
+    "cancelledRate": "% cancelled",
+    "noShows": "No-shows",
+    "noShowRate": "% no-show",
+    "lost": "Lost value",
+    "refunded": "Refunded",
+    "total": "Cancellations {{cancelled}}, no-shows {{noShows}}, lost value {{lost}}."
+  },
+  "passes": {
+    "help": "Days released by season pass holders and how many were resold.",
+    "sold": "Season passes sold",
+    "value": "Season pass value",
+    "renewals": "Renewals",
+    "released": "Released slots",
+    "resold": "Resold slots",
+    "resaleRate": "% resold",
+    "resaleRevenue": "Resale revenue",
+    "credits": "Credits issued"
+  },
+  "customers": {
+    "help": "Name only: contact details stay in the customer record.",
+    "rank": "#",
+    "name": "Customer",
+    "bookings": "Bookings",
+    "spotDays": "Spot-days",
+    "revenue": "Value",
+    "last": "Last booking",
+    "sort": "Sort by",
+    "sortOption": {
+      "revenue": "Value",
+      "bookings": "Number of bookings"
+    },
+    "limit": "Customers"
+  },
+  "balances": {
+    "help": "Bookings of the period with an amount still to collect.",
+    "totalDue": "To collect: {{amount}} over {{n}} bookings.",
+    "code": "Code",
+    "customer": "Customer",
+    "status": "Status",
+    "dates": "Dates",
+    "total": "Total",
+    "paid": "Paid",
+    "due": "Balance"
+  }
+}

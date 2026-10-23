@@ -1,0 +1,253 @@
+{
+  "ownerOnly": "Solo il titolare può gestire le integrazioni.",
+  "never": "Mai",
+  "actions": "Azioni",
+  "saved": "Modifiche salvate",
+  "secret": {
+    "copied": "Copiato negli appunti",
+    "copyFailed": "Copia non riuscita: seleziona il testo e copialo a mano.",
+    "once": "Copialo ora e conservalo in un posto sicuro: per sicurezza non verrà mostrato di nuovo.",
+    "copy": "Copia",
+    "done": "Ho salvato, chiudi"
+  },
+  "validation": {
+    "required": "Campo obbligatorio.",
+    "scopes": "Scegli almeno un permesso.",
+    "expiryPast": "La scadenza deve essere oggi o in futuro.",
+    "url": "Indirizzo https completo (http solo verso localhost).",
+    "events": "Scegli almeno un evento."
+  },
+  "scopes": {
+    "establishment": {
+      "configure": {
+        "label": "Configurazione",
+        "description": "Stabilimento, mappe, listini e policy."
+      }
+    },
+    "payments": {
+      "configure": {
+        "label": "Pagamenti",
+        "description": "Configurazione dei metodi di pagamento."
+      }
+    },
+    "bookings": {
+      "write": {
+        "label": "Prenotazioni (scrittura)",
+        "description": "Creare, modificare e cancellare prenotazioni e clienti."
+      },
+      "read": {
+        "label": "Prenotazioni (lettura)",
+        "description": "Leggere prenotazioni, disponibilità e clienti."
+      }
+    },
+    "cash": {
+      "operate": {
+        "label": "Cassa",
+        "description": "Sessioni di cassa e incassi."
+      }
+    },
+    "refunds": {
+      "issue": {
+        "label": "Rimborsi",
+        "description": "Emettere rimborsi."
+      }
+    },
+    "operations": {
+      "run": {
+        "label": "Operatività",
+        "description": "Check-in, spostamenti e vista del giorno."
+      }
+    },
+    "reports": {
+      "read": {
+        "label": "Report",
+        "description": "Report ed esportazioni."
+      }
+    }
+  },
+  "apiKeys": {
+    "title": "Chiavi API",
+    "description": "Chiavi per collegare gestionali e servizi esterni all'API di Arenile, con permessi limitati e scadenza facoltativa.",
+    "new": "Nuova chiave",
+    "edit": "Modifica chiave",
+    "create": "Crea chiave",
+    "usage": "I servizi esterni inviano la chiave in ogni richiesta con l'intestazione",
+    "showRevoked": "Mostra revocate",
+    "empty": "Nessuna chiave API",
+    "emptyHint": "Crea una chiave per ogni sistema esterno, con i soli permessi che gli servono.",
+    "formHint": "Una chiave agisce solo su questo stabilimento e solo con i permessi scelti.",
+    "nameHint": "Per riconoscerla, ad esempio il nome del gestionale.",
+    "expiryHint": "Facoltativa: dopo questo giorno la chiave smette di funzionare.",
+    "scopesHint": "La gestione degli utenti non è mai concessa alle chiavi.",
+    "editAria": "Modifica la chiave {{name}}",
+    "revoke": "Revoca",
+    "revokeAria": "Revoca la chiave {{name}}",
+    "revokeTitle": "Revocare la chiave {{name}}?",
+    "revokeConfirm": "Le richieste fatte con questa chiave verranno rifiutate da subito. L'operazione non si può annullare.",
+    "revoked": "Chiave revocata",
+    "revokedOn": "Revocata il {{date}}",
+    "noExpiry": "Nessuna",
+    "createdTitle": "Chiave creata",
+    "createdDescription": "Ecco la chiave completa da inserire nel servizio esterno.",
+    "createdHint": "Usala come: Authorization: Bearer <chiave>",
+    "fields": {
+      "name": "Nome",
+      "scopes": "Permessi",
+      "status": "Stato",
+      "created": "Creata",
+      "lastUsed": "Ultimo uso",
+      "expires": "Scadenza",
+      "key": "Chiave API"
+    },
+    "status": {
+      "active": "Attiva",
+      "expired": "Scaduta",
+      "revoked": "Revocata"
+    }
+  },
+  "webhooks": {
+    "title": "Webhook",
+    "description": "Notifiche firmate verso i tuoi sistemi quando cambiano prenotazioni, pagamenti e configurazione, con registro delle consegne.",
+    "new": "Nuovo endpoint",
+    "edit": "Modifica endpoint",
+    "create": "Crea endpoint",
+    "formHint": "Arenile invia una richiesta POST firmata a questo indirizzo per ogni evento scelto.",
+    "urlHint": "Deve essere https; http è ammesso solo verso localhost per le prove.",
+    "eventsHint": "Scegli eventi singoli, un gruppo intero o tutti gli eventi.",
+    "eventsPlaceholder": "Scegli gli eventi",
+    "activeHint": "In pausa, gli eventi non vengono inviati (il test funziona comunque).",
+    "moreEvents": "+{{n}}",
+    "failures": "Errori consecutivi: {{n}}",
+    "editAria": "Modifica l'endpoint {{url}}",
+    "delete": "Elimina endpoint",
+    "deleteTitle": "Eliminare l'endpoint {{url}}?",
+    "deleted": "Endpoint eliminato",
+    "deleteConfirm": "L'endpoint e il suo registro delle consegne verranno eliminati.",
+    "log": "Registro consegne",
+    "logAria": "Registro consegne di {{url}}",
+    "moreAria": "Altre azioni per {{url}}",
+    "test": "Invia evento di prova",
+    "rotate": "Ruota segreto",
+    "rotateHint": "Genera un nuovo segreto di firma. Per il periodo di grazia le consegne sono firmate con entrambi.",
+    "rotateSubmit": "Genera nuovo segreto",
+    "grace": "Periodo di grazia",
+    "graceHint": "Tempo per aggiornare il segreto nel sistema che riceve.",
+    "graceOption": {
+      "h0": "Nessuno (il vecchio smette subito)",
+      "h1": "1 ora",
+      "h24": "24 ore",
+      "h72": "3 giorni",
+      "h168": "7 giorni"
+    },
+    "rotatedTitle": "Nuovo segreto di firma",
+    "rotatedDescription": "Aggiorna il sistema che riceve entro il periodo di grazia.",
+    "createdTitle": "Endpoint creato",
+    "createdDescription": "Ecco il segreto per verificare la firma delle consegne.",
+    "signatureTitle": "Verifica della firma",
+    "signatureHelp": "Ogni consegna porta l'intestazione",
+    "signatureHow": "v1 è l'HMAC-SHA256, con il segreto dell'endpoint, di \"<t>.<corpo>\"; durante una rotazione compaiono due valori v1.",
+    "empty": "Nessun endpoint",
+    "emptyHint": "Aggiungi l'indirizzo del tuo sistema per ricevere gli eventi di Arenile.",
+    "testOk": "Evento di prova consegnato a {{url}}",
+    "testFailed": "Evento di prova non consegnato a {{url}}",
+    "testCode": "Risposta HTTP {{code}}",
+    "testNoResponse": "Nessuna risposta dal sistema che riceve",
+    "fields": {
+      "url": "Indirizzo (URL)",
+      "description": "Descrizione",
+      "events": "Eventi",
+      "status": "Stato",
+      "lastDelivery": "Ultima consegna",
+      "active": "Attivo",
+      "secret": "Segreto di firma"
+    },
+    "status": {
+      "active": "Attivo",
+      "paused": "In pausa",
+      "disabled": "Disattivato per errori"
+    }
+  },
+  "groups": {
+    "booking": "Prenotazioni",
+    "allocation": "Postazioni",
+    "season": "Abbonamenti",
+    "payment": "Pagamenti",
+    "customer": "Clienti",
+    "cash_session": "Cassa",
+    "config": "Configurazione"
+  },
+  "events": {
+    "all": "Tutti gli eventi",
+    "group": "{{group}}: tutti",
+    "types": {
+      "booking": {
+        "created": "Prenotazione creata",
+        "held": "Prenotazione in attesa",
+        "confirmed": "Prenotazione confermata",
+        "modified": "Prenotazione modificata",
+        "cancelled": "Prenotazione cancellata",
+        "checked_in": "Cliente arrivato",
+        "no_show": "Cliente non presentato",
+        "completed": "Prenotazione conclusa",
+        "approval_requested": "Approvazione richiesta"
+      },
+      "allocation": {
+        "released": "Postazione liberata"
+      },
+      "season": {
+        "day_released": "Giorno rilasciato dall'abbonato",
+        "renewal_offered": "Rinnovo proposto"
+      },
+      "payment": {
+        "succeeded": "Pagamento riuscito",
+        "failed": "Pagamento fallito",
+        "refunded": "Pagamento rimborsato"
+      },
+      "customer": {
+        "created": "Cliente creato",
+        "anonymized": "Cliente anonimizzato"
+      },
+      "cash_session": {
+        "closed": "Cassa chiusa"
+      },
+      "config": {
+        "pricing_changed": "Prezzi modificati",
+        "map_changed": "Mappa modificata"
+      },
+      "webhook": {
+        "test": "Evento di prova"
+      }
+    }
+  },
+  "deliveries": {
+    "title": "Registro consegne",
+    "event": "Evento",
+    "status": "Esito",
+    "attempts": "Tentativi",
+    "code": "HTTP",
+    "when": "Quando",
+    "created": "Creato",
+    "detail": "Dettaglio consegna",
+    "detailAria": "Dettaglio della consegna {{event}}",
+    "redeliver": "Reinvia",
+    "redeliverAria": "Reinvia la consegna {{event}}",
+    "redelivered": "Consegna rimessa in coda",
+    "deliveredAt": "Consegnato {{at}}",
+    "failedAt": "Fallito {{at}}",
+    "nextAt": "Prossimo tentativo {{at}}",
+    "filter": "Esito",
+    "allStatuses": "Tutti",
+    "statusOption": {
+      "pending": "In corso",
+      "delivered": "Consegnato",
+      "failed": "Fallito"
+    },
+    "empty": "Nessuna consegna",
+    "more": "Carica altre",
+    "loading": "Caricamento…",
+    "lastError": "Ultimo errore",
+    "body": "Corpo inviato",
+    "response": "Risposta (estratto)",
+    "noResponse": "Nessuna risposta"
+  }
+}

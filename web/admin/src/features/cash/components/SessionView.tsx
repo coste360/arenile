@@ -85,7 +85,7 @@ export function SessionView({
         ))}
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
         <SectionCard title={t('current.takings')} flush className="min-w-0">
           <DataTable
             embedded

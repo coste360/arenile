@@ -29,6 +29,14 @@ const tabsListVariants = cva(
         default: 'bg-muted',
         line: 'gap-1 bg-transparent',
       },
+      /**
+       * Many tabs on a narrow screen: the list wraps on several rows instead
+       * of overflowing the page sideways (the only sanctioned way to make a
+       * horizontal TabsList fit 390px; pages never restyle it).
+       */
+      wrap: {
+        true: 'flex-wrap group-data-[orientation=horizontal]/tabs:h-auto',
+      },
     },
     defaultVariants: {
       variant: 'default',
@@ -39,13 +47,14 @@ const tabsListVariants = cva(
 function TabsList({
   className,
   variant = 'default',
+  wrap,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
       data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
+      className={cn(tabsListVariants({ variant, wrap }), className)}
       {...props}
     />
   );

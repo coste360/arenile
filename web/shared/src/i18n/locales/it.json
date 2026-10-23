@@ -147,7 +147,9 @@
       "email": "Email e notifiche",
       "devices": "Dispositivi",
       "devicesLan": "Rete locale",
-      "desktop": "App desktop"
+      "desktop": "App desktop",
+      "apiKeys": "Chiavi API",
+      "webhooks": "Webhook"
     },
     "operations": "Operatività",
     "configGroup": "Configurazione",

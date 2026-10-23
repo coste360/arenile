@@ -84,6 +84,8 @@ export default defineConfig({
             ARENILE_SECRET_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
             ARENILE_LOG_LEVEL: 'warn',
             ARENILE_TELEMETRY: 'false',
+            // Outgoing webhooks may reach the local test receiver (spec 22: off in production).
+            ARENILE_WEBHOOKS_ALLOW_PRIVATE: 'true',
             // Password of the demo owner created by `seed demo` (test-only value).
             ARENILE_ADMIN_PASSWORD: DEMO_OWNER_PASSWORD,
             // Emails as .eml files (magic link of the manage area).

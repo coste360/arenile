@@ -23,6 +23,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0013](0013-scelte-m4.md) | Scelte di M4: percorsi pubblici e sessione di checkout, webhook, cliente provvisorio, link magici, `payment_intents`, capacità facoltative dei driver, Stripe senza SDK, email | accettato |
 | [0014](0014-pagamenti-online-m4.md) | Pagamenti online di M4: SDK Stripe ufficiale, webhook unico percorso di conferma, pagamenti tardivi e doppi rimborsati, rimborsi prenotati e registrati alla conferma, riconciliazione per intent | accettato |
 | [0015](0015-scelte-m6.md) | Scelte di M6: `/meta` pubblico, token per dispositivo ristretti allo stabilimento, abbinamento con QR, API desktop solo da loopback, ponte fiscale con long polling, launcher headless senza tag e tray con il tag `desktop` (CGO solo su macOS e Windows) | accettato |
+| [0016](0016-scelte-m5a.md) | Scelte di M5 (parte A): report come query e confronto anni, chiavi API con scadenza, webhook configurabili con rotazione del segreto, PWA offline senza nuove dipendenze, mare in alto e riorientamento della mappa | accettato |
 
 ## Come aggiungere un ADR
 

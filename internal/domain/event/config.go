@@ -10,7 +10,8 @@ package event
 // promo_code, agreement, booking_policy, season_copy, season, rate_period,
 // establishment_settings, pack, extra, setup. Entity values of
 // config.map_changed: map, zone, pool, setup. Change values: created,
-// updated, deleted, archived, copied, saved, rows_generated, applied.
+// updated, deleted, archived, copied, saved, rows_generated, applied,
+// reoriented.
 type ConfigChange struct {
 	Entity   string `json:"entity"`
 	EntityID string `json:"entity_id,omitempty"`
@@ -44,6 +45,9 @@ const (
 	ChangeSaved         = "saved"
 	ChangeRowsGenerated = "rows_generated"
 	ChangeApplied       = "applied"
+	// ChangeReoriented: the sea side of a map moved and the layout was
+	// mirrored or rotated (M5A, config.map_changed only).
+	ChangeReoriented = "reoriented"
 )
 
 // Entity values of ConfigChange shared across packages.

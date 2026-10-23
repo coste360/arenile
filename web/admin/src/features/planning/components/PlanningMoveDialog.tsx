@@ -18,6 +18,7 @@ import { CircleAlertIcon, RotateCwIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { OnlineOnlyNotice } from '../../../offline/OnlineOnlyNotice';
 import { addDays } from '../../operations/lib/dates';
 import { useBookingDetail, usePatchBooking, usePatchPreview, type PatchBookingVars } from '../api';
 import { buildMovePatch } from '../lib/move';
@@ -116,6 +117,7 @@ export function PlanningMoveDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-3 text-sm">
+          <OnlineOnlyNotice />
           {d && move.dayDelta !== 0 && newStart && newEnd && (
             <p data-testid="move-dates">
               {t('move.dates', {

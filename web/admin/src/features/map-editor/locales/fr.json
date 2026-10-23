@@ -370,5 +370,21 @@
       "bandiera_mare": "Drapeau état de la mer",
       "rosa_venti": "Rose des vents / nord"
     }
+  },
+  "seaChange": {
+    "title": "Déplacer la mer ?",
+    "description": "La mer passe de « {{from}} » à « {{to}} ». Choisissez de retourner toute la disposition ou de déplacer seulement la mer.",
+    "flip": "Retourner la disposition",
+    "flipHint": "places, décorations et passerelles sont retournées ou pivotées pour que chaque rang garde sa distance à la mer. Libellés, rangs, zones et réservations ne changent pas. C'est enregistré tout de suite comme nouvelle version.",
+    "onlySea": "Seulement la mer",
+    "onlySeaHint": "seul le côté de la mer change, les éléments restent en place. Enregistrez le plan pour l'appliquer.",
+    "checking": "Vérification des réservations futures…",
+    "futureTitle": "Réservations futures sur le plan",
+    "future_one": "{{count}} réservation, abonnement ou blocage à partir d'aujourd'hui concerne {{spots}} places de ce plan. Seul le dessin change : les places attribuées restent les mêmes.",
+    "future_other": "{{count}} réservations, abonnements ou blocages à partir d'aujourd'hui concernent {{spots}} places de ce plan. Seul le dessin change : les places attribuées restent les mêmes.",
+    "blocked": {
+      "dirty": "Il y a des modifications non enregistrées : enregistrez-les ou annulez-les avant de retourner la disposition.",
+      "resized": "Vous avez aussi changé les dimensions : appliquez-les et enregistrez d'abord, puis déplacez la mer."
+    }
   }
 }

@@ -124,7 +124,8 @@ export function mapSettingsDefaults(
     width: String(m?.width ?? 1200),
     height: String(m?.height ?? 800),
     grid_size: String(m?.grid_size ?? 10),
-    sea_side: m?.sea_side ?? 'bottom',
+    // Italian lidos usually draw the sea at the top (spec 11 default).
+    sea_side: m?.sea_side ?? 'top',
   };
 }
 

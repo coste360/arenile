@@ -147,7 +147,9 @@
       "email": "E-Mail und Benachrichtigungen",
       "devices": "Geräte",
       "devicesLan": "Lokales Netzwerk",
-      "desktop": "Desktop-App"
+      "desktop": "Desktop-App",
+      "apiKeys": "API-Schlüssel",
+      "webhooks": "Webhooks"
     },
     "operations": "Betrieb",
     "configGroup": "Konfiguration",

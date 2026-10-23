@@ -149,7 +149,10 @@ func Idempotency(o IdempotencyOptions) Middleware {
 			if status == 0 {
 				status = http.StatusOK
 			}
-			if status >= 500 || rec.overflow {
+			// A no-store response carries a credential shown once (API key,
+			// webhook secret, initial password): never persist it for replay.
+			// The key is released, so a retry executes the request again.
+			if status >= 500 || rec.overflow || noStore(rec.Header()) {
 				return
 			}
 			if err := store.CompleteIdempotencyKey(context.WithoutCancel(ctx), o.DB, scope, key, status, rec.Header().Get("Content-Type"), rec.buf.Bytes()); err != nil {
@@ -159,6 +162,17 @@ func Idempotency(o IdempotencyOptions) Middleware {
 			completed = true
 		})
 	}
+}
+
+func noStore(h http.Header) bool {
+	for _, v := range h.Values("Cache-Control") {
+		for _, d := range strings.Split(v, ",") {
+			if strings.EqualFold(strings.TrimSpace(d), "no-store") {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func skipped(path string, prefixes []string) bool {

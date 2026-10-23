@@ -87,6 +87,27 @@ func (e AmountPer) Valid() bool {
 	}
 }
 
+// Defines values for ApiKeyStatus.
+const (
+	ApiKeyStatusActive  ApiKeyStatus = "active"
+	ApiKeyStatusExpired ApiKeyStatus = "expired"
+	ApiKeyStatusRevoked ApiKeyStatus = "revoked"
+)
+
+// Valid indicates whether the value is a known member of the ApiKeyStatus enum.
+func (e ApiKeyStatus) Valid() bool {
+	switch e {
+	case ApiKeyStatusActive:
+		return true
+	case ApiKeyStatusExpired:
+		return true
+	case ApiKeyStatusRevoked:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AssignmentMode.
 const (
 	AssignmentModeQuantity AssignmentMode = "quantity"
@@ -285,6 +306,51 @@ func (e BookingStatus) Valid() bool {
 	}
 }
 
+// Defines values for BookingsReportGroupBy.
+const (
+	BookingsReportGroupByChannel  BookingsReportGroupBy = "channel"
+	BookingsReportGroupByDay      BookingsReportGroupBy = "day"
+	BookingsReportGroupByFormula  BookingsReportGroupBy = "formula"
+	BookingsReportGroupByLeadTime BookingsReportGroupBy = "lead_time"
+)
+
+// Valid indicates whether the value is a known member of the BookingsReportGroupBy enum.
+func (e BookingsReportGroupBy) Valid() bool {
+	switch e {
+	case BookingsReportGroupByChannel:
+		return true
+	case BookingsReportGroupByDay:
+		return true
+	case BookingsReportGroupByFormula:
+		return true
+	case BookingsReportGroupByLeadTime:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CancellationsGroupBy.
+const (
+	CancellationsGroupByChannel CancellationsGroupBy = "channel"
+	CancellationsGroupByDay     CancellationsGroupBy = "day"
+	CancellationsGroupByMonth   CancellationsGroupBy = "month"
+)
+
+// Valid indicates whether the value is a known member of the CancellationsGroupBy enum.
+func (e CancellationsGroupBy) Valid() bool {
+	switch e {
+	case CancellationsGroupByChannel:
+		return true
+	case CancellationsGroupByDay:
+		return true
+	case CancellationsGroupByMonth:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CashMovementKind.
 const (
 	CashMovementKindIn  CashMovementKind = "in"
@@ -429,6 +495,108 @@ func (e CheckoutSessionState) Valid() bool {
 	case CheckoutSessionStateOpen:
 		return true
 	case CheckoutSessionStatePaying:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ComparisonAlign.
+const (
+	ComparisonAlignCalendar ComparisonAlign = "calendar"
+	ComparisonAlignWeekday  ComparisonAlign = "weekday"
+)
+
+// Valid indicates whether the value is a known member of the ComparisonAlign enum.
+func (e ComparisonAlign) Valid() bool {
+	switch e {
+	case ComparisonAlignCalendar:
+		return true
+	case ComparisonAlignWeekday:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ComparisonGranularity.
+const (
+	ComparisonGranularityDay   ComparisonGranularity = "day"
+	ComparisonGranularityMonth ComparisonGranularity = "month"
+	ComparisonGranularityWeek  ComparisonGranularity = "week"
+)
+
+// Valid indicates whether the value is a known member of the ComparisonGranularity enum.
+func (e ComparisonGranularity) Valid() bool {
+	switch e {
+	case ComparisonGranularityDay:
+		return true
+	case ComparisonGranularityMonth:
+		return true
+	case ComparisonGranularityWeek:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ComparisonMetricKey.
+const (
+	ComparisonMetricKeyAverageBookingValue ComparisonMetricKey = "average_booking_value"
+	ComparisonMetricKeyBookings            ComparisonMetricKey = "bookings"
+	ComparisonMetricKeyCancellations       ComparisonMetricKey = "cancellations"
+	ComparisonMetricKeyNoShows             ComparisonMetricKey = "no_shows"
+	ComparisonMetricKeyOccupancyBp         ComparisonMetricKey = "occupancy_bp"
+	ComparisonMetricKeyReleasedUnits       ComparisonMetricKey = "released_units"
+	ComparisonMetricKeyResoldUnits         ComparisonMetricKey = "resold_units"
+	ComparisonMetricKeyRevenueBooked       ComparisonMetricKey = "revenue_booked"
+	ComparisonMetricKeyRevenueCollected    ComparisonMetricKey = "revenue_collected"
+	ComparisonMetricKeySeasonPassesSold    ComparisonMetricKey = "season_passes_sold"
+)
+
+// Valid indicates whether the value is a known member of the ComparisonMetricKey enum.
+func (e ComparisonMetricKey) Valid() bool {
+	switch e {
+	case ComparisonMetricKeyAverageBookingValue:
+		return true
+	case ComparisonMetricKeyBookings:
+		return true
+	case ComparisonMetricKeyCancellations:
+		return true
+	case ComparisonMetricKeyNoShows:
+		return true
+	case ComparisonMetricKeyOccupancyBp:
+		return true
+	case ComparisonMetricKeyReleasedUnits:
+		return true
+	case ComparisonMetricKeyResoldUnits:
+		return true
+	case ComparisonMetricKeyRevenueBooked:
+		return true
+	case ComparisonMetricKeyRevenueCollected:
+		return true
+	case ComparisonMetricKeySeasonPassesSold:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ComparisonUnit.
+const (
+	ComparisonUnitBasisPoints ComparisonUnit = "basis_points"
+	ComparisonUnitCents       ComparisonUnit = "cents"
+	ComparisonUnitCount       ComparisonUnit = "count"
+)
+
+// Valid indicates whether the value is a known member of the ComparisonUnit enum.
+func (e ComparisonUnit) Valid() bool {
+	switch e {
+	case ComparisonUnitBasisPoints:
+		return true
+	case ComparisonUnitCents:
+		return true
+	case ComparisonUnitCount:
 		return true
 	default:
 		return false
@@ -858,6 +1026,39 @@ func (e HoldStatus) Valid() bool {
 	}
 }
 
+// Defines values for LeadTimeBucket.
+const (
+	D13     LeadTimeBucket = "d1_3"
+	D1530   LeadTimeBucket = "d15_30"
+	D3160   LeadTimeBucket = "d31_60"
+	D47     LeadTimeBucket = "d4_7"
+	D61Plus LeadTimeBucket = "d61_plus"
+	D814    LeadTimeBucket = "d8_14"
+	SameDay LeadTimeBucket = "same_day"
+)
+
+// Valid indicates whether the value is a known member of the LeadTimeBucket enum.
+func (e LeadTimeBucket) Valid() bool {
+	switch e {
+	case D13:
+		return true
+	case D1530:
+		return true
+	case D3160:
+		return true
+	case D47:
+		return true
+	case D61Plus:
+		return true
+	case D814:
+		return true
+	case SameDay:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ManageCancelRequestSettlement.
 const (
 	ManageCancelRequestSettlementCredit ManageCancelRequestSettlement = "credit"
@@ -921,6 +1122,33 @@ func (e MapBackgroundType) Valid() bool {
 	}
 }
 
+// Defines values for MapTransform.
+const (
+	MapTransformMirrorX   MapTransform = "mirror_x"
+	MapTransformMirrorY   MapTransform = "mirror_y"
+	MapTransformNone      MapTransform = "none"
+	MapTransformRotateCcw MapTransform = "rotate_ccw"
+	MapTransformRotateCw  MapTransform = "rotate_cw"
+)
+
+// Valid indicates whether the value is a known member of the MapTransform enum.
+func (e MapTransform) Valid() bool {
+	switch e {
+	case MapTransformMirrorX:
+		return true
+	case MapTransformMirrorY:
+		return true
+	case MapTransformNone:
+		return true
+	case MapTransformRotateCcw:
+		return true
+	case MapTransformRotateCw:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for MePrincipalType.
 const (
 	MePrincipalTypeApiKey MePrincipalType = "api_key"
@@ -975,6 +1203,30 @@ const (
 func (e MetaProduct) Valid() bool {
 	switch e {
 	case Arenile:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for OccupancyGroupBy.
+const (
+	OccupancyGroupByDay  OccupancyGroupBy = "day"
+	OccupancyGroupByRow  OccupancyGroupBy = "row"
+	OccupancyGroupBySlot OccupancyGroupBy = "slot"
+	OccupancyGroupByZone OccupancyGroupBy = "zone"
+)
+
+// Valid indicates whether the value is a known member of the OccupancyGroupBy enum.
+func (e OccupancyGroupBy) Valid() bool {
+	switch e {
+	case OccupancyGroupByDay:
+		return true
+	case OccupancyGroupByRow:
+		return true
+	case OccupancyGroupBySlot:
+		return true
+	case OccupancyGroupByZone:
 		return true
 	default:
 		return false
@@ -1791,6 +2043,78 @@ func (e RefundPreviewAs) Valid() bool {
 	}
 }
 
+// Defines values for ReportFormat.
+const (
+	ReportFormatCSV  ReportFormat = "csv"
+	ReportFormatJSON ReportFormat = "json"
+)
+
+// Valid indicates whether the value is a known member of the ReportFormat enum.
+func (e ReportFormat) Valid() bool {
+	switch e {
+	case ReportFormatCSV:
+		return true
+	case ReportFormatJSON:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RevenueBasis.
+const (
+	RevenueBasisBooked    RevenueBasis = "booked"
+	RevenueBasisCollected RevenueBasis = "collected"
+)
+
+// Valid indicates whether the value is a known member of the RevenueBasis enum.
+func (e RevenueBasis) Valid() bool {
+	switch e {
+	case RevenueBasisBooked:
+		return true
+	case RevenueBasisCollected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RevenueGroupBy.
+const (
+	RevenueGroupByChannel       RevenueGroupBy = "channel"
+	RevenueGroupByDay           RevenueGroupBy = "day"
+	RevenueGroupByExtra         RevenueGroupBy = "extra"
+	RevenueGroupByMonth         RevenueGroupBy = "month"
+	RevenueGroupByPack          RevenueGroupBy = "pack"
+	RevenueGroupByPaymentMethod RevenueGroupBy = "payment_method"
+	RevenueGroupByVatRate       RevenueGroupBy = "vat_rate"
+	RevenueGroupByWeek          RevenueGroupBy = "week"
+)
+
+// Valid indicates whether the value is a known member of the RevenueGroupBy enum.
+func (e RevenueGroupBy) Valid() bool {
+	switch e {
+	case RevenueGroupByChannel:
+		return true
+	case RevenueGroupByDay:
+		return true
+	case RevenueGroupByExtra:
+		return true
+	case RevenueGroupByMonth:
+		return true
+	case RevenueGroupByPack:
+		return true
+	case RevenueGroupByPaymentMethod:
+		return true
+	case RevenueGroupByVatRate:
+		return true
+	case RevenueGroupByWeek:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for Role.
 const (
 	BeachStaff Role = "beach_staff"
@@ -1911,6 +2235,27 @@ func (e SeaSide) Valid() bool {
 	case Right:
 		return true
 	case Top:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SeasonPassesGroupBy.
+const (
+	SeasonPassesGroupByDay   SeasonPassesGroupBy = "day"
+	SeasonPassesGroupByMonth SeasonPassesGroupBy = "month"
+	SeasonPassesGroupByZone  SeasonPassesGroupBy = "zone"
+)
+
+// Valid indicates whether the value is a known member of the SeasonPassesGroupBy enum.
+func (e SeasonPassesGroupBy) Valid() bool {
+	switch e {
+	case SeasonPassesGroupByDay:
+		return true
+	case SeasonPassesGroupByMonth:
+		return true
+	case SeasonPassesGroupByZone:
 		return true
 	default:
 		return false
@@ -2193,6 +2538,141 @@ func (e ThemeRadius) Valid() bool {
 	}
 }
 
+// Defines values for TopCustomersSort.
+const (
+	TopCustomersSortBookings TopCustomersSort = "bookings"
+	TopCustomersSortRevenue  TopCustomersSort = "revenue"
+)
+
+// Valid indicates whether the value is a known member of the TopCustomersSort enum.
+func (e TopCustomersSort) Valid() bool {
+	switch e {
+	case TopCustomersSortBookings:
+		return true
+	case TopCustomersSortRevenue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookDeliveryStatus.
+const (
+	WebhookDeliveryStatusDelivered WebhookDeliveryStatus = "delivered"
+	WebhookDeliveryStatusFailed    WebhookDeliveryStatus = "failed"
+	WebhookDeliveryStatusPending   WebhookDeliveryStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the WebhookDeliveryStatus enum.
+func (e WebhookDeliveryStatus) Valid() bool {
+	switch e {
+	case WebhookDeliveryStatusDelivered:
+		return true
+	case WebhookDeliveryStatusFailed:
+		return true
+	case WebhookDeliveryStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookEndpointStatus.
+const (
+	WebhookEndpointStatusActive   WebhookEndpointStatus = "active"
+	WebhookEndpointStatusDisabled WebhookEndpointStatus = "disabled"
+	WebhookEndpointStatusPaused   WebhookEndpointStatus = "paused"
+)
+
+// Valid indicates whether the value is a known member of the WebhookEndpointStatus enum.
+func (e WebhookEndpointStatus) Valid() bool {
+	switch e {
+	case WebhookEndpointStatusActive:
+		return true
+	case WebhookEndpointStatusDisabled:
+		return true
+	case WebhookEndpointStatusPaused:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookEventType.
+const (
+	WebhookEventTypeAllocationReleased       WebhookEventType = "allocation.released"
+	WebhookEventTypeBookingApprovalRequested WebhookEventType = "booking.approval_requested"
+	WebhookEventTypeBookingCancelled         WebhookEventType = "booking.cancelled"
+	WebhookEventTypeBookingCheckedIn         WebhookEventType = "booking.checked_in"
+	WebhookEventTypeBookingCompleted         WebhookEventType = "booking.completed"
+	WebhookEventTypeBookingConfirmed         WebhookEventType = "booking.confirmed"
+	WebhookEventTypeBookingCreated           WebhookEventType = "booking.created"
+	WebhookEventTypeBookingHeld              WebhookEventType = "booking.held"
+	WebhookEventTypeBookingModified          WebhookEventType = "booking.modified"
+	WebhookEventTypeBookingNoShow            WebhookEventType = "booking.no_show"
+	WebhookEventTypeCashSessionClosed        WebhookEventType = "cash_session.closed"
+	WebhookEventTypeConfigMapChanged         WebhookEventType = "config.map_changed"
+	WebhookEventTypeConfigPricingChanged     WebhookEventType = "config.pricing_changed"
+	WebhookEventTypeCustomerAnonymized       WebhookEventType = "customer.anonymized"
+	WebhookEventTypeCustomerCreated          WebhookEventType = "customer.created"
+	WebhookEventTypePaymentFailed            WebhookEventType = "payment.failed"
+	WebhookEventTypePaymentRefunded          WebhookEventType = "payment.refunded"
+	WebhookEventTypePaymentSucceeded         WebhookEventType = "payment.succeeded"
+	WebhookEventTypeSeasonDayReleased        WebhookEventType = "season.day_released"
+	WebhookEventTypeSeasonRenewalOffered     WebhookEventType = "season.renewal_offered"
+	WebhookEventTypeWebhookTest              WebhookEventType = "webhook.test"
+)
+
+// Valid indicates whether the value is a known member of the WebhookEventType enum.
+func (e WebhookEventType) Valid() bool {
+	switch e {
+	case WebhookEventTypeAllocationReleased:
+		return true
+	case WebhookEventTypeBookingApprovalRequested:
+		return true
+	case WebhookEventTypeBookingCancelled:
+		return true
+	case WebhookEventTypeBookingCheckedIn:
+		return true
+	case WebhookEventTypeBookingCompleted:
+		return true
+	case WebhookEventTypeBookingConfirmed:
+		return true
+	case WebhookEventTypeBookingCreated:
+		return true
+	case WebhookEventTypeBookingHeld:
+		return true
+	case WebhookEventTypeBookingModified:
+		return true
+	case WebhookEventTypeBookingNoShow:
+		return true
+	case WebhookEventTypeCashSessionClosed:
+		return true
+	case WebhookEventTypeConfigMapChanged:
+		return true
+	case WebhookEventTypeConfigPricingChanged:
+		return true
+	case WebhookEventTypeCustomerAnonymized:
+		return true
+	case WebhookEventTypeCustomerCreated:
+		return true
+	case WebhookEventTypePaymentFailed:
+		return true
+	case WebhookEventTypePaymentRefunded:
+		return true
+	case WebhookEventTypePaymentSucceeded:
+		return true
+	case WebhookEventTypeSeasonDayReleased:
+		return true
+	case WebhookEventTypeSeasonRenewalOffered:
+		return true
+	case WebhookEventTypeWebhookTest:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for QrFormat.
 const (
 	QrFormatPng QrFormat = "png"
@@ -2374,6 +2854,42 @@ type AllocationKind string
 // AmountPer defines model for AmountPer.
 type AmountPer string
 
+// ApiKey defines model for ApiKey.
+type ApiKey struct {
+	CreatedAt time.Time `json:"created_at"`
+
+	// CreatedByName Nome dell'utente che l'ha creata (vuoto se l'utente non esiste più).
+	CreatedByName   *string    `json:"created_by_name,omitempty"`
+	CreatedByUserId *string    `json:"created_by_user_id,omitempty"`
+	EstablishmentId string     `json:"establishment_id"`
+	ExpiresAt       *time.Time `json:"expires_at,omitempty"`
+	Id              string     `json:"id"`
+	LastUsedAt      *time.Time `json:"last_used_at,omitempty"`
+	Name            string     `json:"name"`
+
+	// Prefix Parte visibile della chiave, per riconoscerla (`ar_live_abcd2345`).
+	Prefix    string       `json:"prefix"`
+	RevokedAt *time.Time   `json:"revoked_at,omitempty"`
+	Scopes    []Permission `json:"scopes"`
+	Status    ApiKeyStatus `json:"status"`
+}
+
+// ApiKeyCreate defines model for ApiKeyCreate.
+type ApiKeyCreate struct {
+	// ExpiresAt Scadenza facoltativa, nel futuro.
+	ExpiresAt *time.Time   `json:"expires_at,omitempty"`
+	Name      string       `json:"name"`
+	Scopes    []Permission `json:"scopes"`
+}
+
+// ApiKeyCreated defines model for ApiKeyCreated.
+type ApiKeyCreated struct {
+	ApiKey ApiKey `json:"api_key"`
+
+	// Secret Chiave completa `ar_live_<prefix>_<secret>`, mostrata solo ora.
+	Secret string `json:"secret"`
+}
+
 // ApiKeyInfo defines model for ApiKeyInfo.
 type ApiKeyInfo struct {
 	EstablishmentId string       `json:"establishment_id"`
@@ -2381,6 +2897,25 @@ type ApiKeyInfo struct {
 	Name            string       `json:"name"`
 	Prefix          string       `json:"prefix"`
 	Scopes          []Permission `json:"scopes"`
+}
+
+// ApiKeyList defines model for ApiKeyList.
+type ApiKeyList struct {
+	Items []ApiKey `json:"items"`
+}
+
+// ApiKeyStatus defines model for ApiKeyStatus.
+type ApiKeyStatus string
+
+// ApiKeyUpdate defines model for ApiKeyUpdate.
+type ApiKeyUpdate struct {
+	// ClearExpiry true rimuove la scadenza (incompatibile con expires_at).
+	ClearExpiry *bool `json:"clear_expiry,omitempty"`
+
+	// ExpiresAt Nuova scadenza, nel futuro.
+	ExpiresAt *time.Time    `json:"expires_at,omitempty"`
+	Name      *string       `json:"name,omitempty"`
+	Scopes    *[]Permission `json:"scopes,omitempty"`
 }
 
 // AppliedRule defines model for AppliedRule.
@@ -2886,6 +3421,70 @@ type BookingSummary struct {
 	Version Version `json:"version"`
 }
 
+// BookingsReport defines model for BookingsReport.
+type BookingsReport struct {
+	GroupBy BookingsReportGroupBy `json:"group_by"`
+	Period  ReportPeriod          `json:"period"`
+	Rows    []BookingsReportRow   `json:"rows"`
+	Totals  BookingsReportRow     `json:"totals"`
+}
+
+// BookingsReportGroupBy defines model for BookingsReportGroupBy.
+type BookingsReportGroupBy string
+
+// BookingsReportRow defines model for BookingsReportRow.
+type BookingsReportRow struct {
+	// AverageLeadDays Anticipo medio in giorni (arrotondato per difetto).
+	AverageLeadDays int `json:"average_lead_days"`
+
+	// AverageValue Importo in centesimi di euro (IVA inclusa).
+	AverageValue Money `json:"average_value"`
+	Bookings     int   `json:"bookings"`
+
+	// Key Canale, LeadTimeBucket, formula o YYYY-MM-DD.
+	Key   string `json:"key"`
+	Label string `json:"label"`
+
+	// ShareBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	ShareBp RatioBP `json:"share_bp"`
+
+	// Value Importo in centesimi di euro (IVA inclusa).
+	Value Money `json:"value"`
+}
+
+// CancellationsGroupBy defines model for CancellationsGroupBy.
+type CancellationsGroupBy string
+
+// CancellationsReport defines model for CancellationsReport.
+type CancellationsReport struct {
+	GroupBy CancellationsGroupBy `json:"group_by"`
+	Period  ReportPeriod         `json:"period"`
+	Rows    []CancellationsRow   `json:"rows"`
+	Totals  CancellationsRow     `json:"totals"`
+}
+
+// CancellationsRow defines model for CancellationsRow.
+type CancellationsRow struct {
+	// Bookings Prenotazioni del gruppo (denominatore dei tassi).
+	Bookings  int `json:"bookings"`
+	Cancelled int `json:"cancelled"`
+
+	// CancelledBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	CancelledBp RatioBP `json:"cancelled_bp"`
+	Key         string  `json:"key"`
+	Label       string  `json:"label"`
+
+	// LostValue Valore delle prenotazioni cancellate meno quanto trattenuto (penali).
+	LostValue Money `json:"lost_value"`
+
+	// NoShowBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	NoShowBp RatioBP `json:"no_show_bp"`
+	NoShows  int     `json:"no_shows"`
+
+	// Refunded Importo in centesimi di euro (IVA inclusa).
+	Refunded Money `json:"refunded"`
+}
+
 // CapacityOverride defines model for CapacityOverride.
 type CapacityOverride struct {
 	Capacity int `json:"capacity"`
@@ -3099,6 +3698,62 @@ type ClosureDayList struct {
 	// NextCursor Presente se esistono altri elementi.
 	NextCursor *string `json:"next_cursor,omitempty"`
 }
+
+// ComparisonAlign calendar = stesso giorno e mese (29 febbraio → 28 febbraio); weekday = stessa durata, inizio spostato al giorno della settimana uguale più vicino (scarto massimo 3 giorni).
+type ComparisonAlign string
+
+// ComparisonGranularity defines model for ComparisonGranularity.
+type ComparisonGranularity string
+
+// ComparisonMetric defines model for ComparisonMetric.
+type ComparisonMetric struct {
+	Current int64 `json:"current"`
+
+	// Delta current − previous.
+	Delta int64 `json:"delta"`
+
+	// DeltaBp Variazione relativa (current − previous) × 10000 / previous, troncata; assente se previous = 0.
+	DeltaBp  *int64              `json:"delta_bp,omitempty"`
+	Metric   ComparisonMetricKey `json:"metric"`
+	Previous int64               `json:"previous"`
+
+	// Unit Unità del valore: cents (Money), count, basis_points.
+	Unit ComparisonUnit `json:"unit"`
+}
+
+// ComparisonMetricKey defines model for ComparisonMetricKey.
+type ComparisonMetricKey string
+
+// ComparisonPoint defines model for ComparisonPoint.
+type ComparisonPoint struct {
+	CurrentBookings int `json:"current_bookings"`
+
+	// CurrentFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	CurrentFrom Date `json:"current_from"`
+
+	// CurrentOccupancyBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	CurrentOccupancyBp RatioBP `json:"current_occupancy_bp"`
+
+	// CurrentRevenue Importo in centesimi di euro (IVA inclusa).
+	CurrentRevenue Money `json:"current_revenue"`
+
+	// Key Chiave del bucket nel periodo corrente (YYYY-MM-DD, YYYY-Www, YYYY-MM).
+	Key              string `json:"key"`
+	Label            string `json:"label"`
+	PreviousBookings int    `json:"previous_bookings"`
+
+	// PreviousFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	PreviousFrom Date `json:"previous_from"`
+
+	// PreviousOccupancyBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	PreviousOccupancyBp RatioBP `json:"previous_occupancy_bp"`
+
+	// PreviousRevenue Importo in centesimi di euro (IVA inclusa).
+	PreviousRevenue Money `json:"previous_revenue"`
+}
+
+// ComparisonUnit Unità del valore: cents (Money), count, basis_points.
+type ComparisonUnit string
 
 // Component Componente fisico di inventario.
 type Component struct {
@@ -4127,6 +4782,9 @@ type IntRange struct {
 // KitAsset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 type KitAsset = string
 
+// LeadTimeBucket Fasce di anticipo: stesso giorno, 1-3, 4-7, 8-14, 15-30, 31-60, oltre 60 giorni.
+type LeadTimeBucket string
+
 // LineBreakdown defines model for LineBreakdown.
 type LineBreakdown struct {
 	Days   []DayBreakdown   `json:"days"`
@@ -4409,12 +5067,43 @@ type MapList struct {
 	NextCursor *string `json:"next_cursor,omitempty"`
 }
 
+// MapReorientRequest defines model for MapReorientRequest.
+type MapReorientRequest struct {
+	// AcknowledgeFutureAllocations Conferma esplicita quando ci sono allocazioni future (solo la geometria cambia).
+	AcknowledgeFutureAllocations *bool `json:"acknowledge_future_allocations,omitempty"`
+
+	// DryRun Calcola l'anteprima senza salvare.
+	DryRun  *bool   `json:"dry_run,omitempty"`
+	SeaSide SeaSide `json:"sea_side"`
+}
+
+// MapReorientResult defines model for MapReorientResult.
+type MapReorientResult struct {
+	// Applied false con dry_run (document è l'anteprima, versione invariata).
+	Applied bool `json:"applied"`
+
+	// Document Documento completo della mappa; la versione è anche nell'header ETag.
+	Document    MapDocument `json:"document"`
+	FromSeaSide SeaSide     `json:"from_sea_side"`
+
+	// FutureAllocations Allocazioni (booking, season, block) da oggi in avanti sulle postazioni della mappa.
+	FutureAllocations          int     `json:"future_allocations"`
+	SpotsWithFutureAllocations int     `json:"spots_with_future_allocations"`
+	ToSeaSide                  SeaSide `json:"to_sea_side"`
+
+	// Transform Trasformazione applicata: none (stesso lato), mirror_y (top↔bottom), mirror_x (left↔right), rotate_cw / rotate_ccw (lati adiacenti, 90°, width e height scambiati).
+	Transform MapTransform `json:"transform"`
+}
+
 // MapSaveRequest Salvataggio transazionale dell'intero documento: postazioni e decorazioni assenti vengono eliminate (rifiutato con spot_has_future_allocations se una postazione eliminata ha allocazioni future: va disattivata).
 type MapSaveRequest struct {
 	Decorations []DecorationInput `json:"decorations"`
 	Map         MapInput          `json:"map"`
 	Spots       []SpotInput       `json:"spots"`
 }
+
+// MapTransform Trasformazione applicata: none (stesso lato), mirror_y (top↔bottom), mirror_x (left↔right), rotate_cw / rotate_ccw (lati adiacenti, 90°, width e height scambiati).
+type MapTransform string
 
 // MarketingConsent Consenso marketing separato e facoltativo (spec 23).
 type MarketingConsent struct {
@@ -4548,6 +5237,43 @@ type Money = int64
 // MonthDay Ricorrenza annuale `MM-DD`.
 type MonthDay = string
 
+// OccupancyGroupBy defines model for OccupancyGroupBy.
+type OccupancyGroupBy string
+
+// OccupancyReport defines model for OccupancyReport.
+type OccupancyReport struct {
+	GroupBy OccupancyGroupBy `json:"group_by"`
+	Period  ReportPeriod     `json:"period"`
+	Rows    []OccupancyRow   `json:"rows"`
+	Totals  OccupancyRow     `json:"totals"`
+}
+
+// OccupancyRow defines model for OccupancyRow.
+type OccupancyRow struct {
+	// BlockedUnits Unità bloccate (già escluse dalla capacità).
+	BlockedUnits  int64 `json:"blocked_units"`
+	CapacityUnits int64 `json:"capacity_units"`
+
+	// Key Chiave stabile del gruppo: YYYY-MM-DD, id zona, `<zone_id>:<row_label>`, AM o PM.
+	Key string `json:"key"`
+
+	// Label Etichetta leggibile (giorno, nome zona, `Zona · Fila A`, Mattina/Pomeriggio).
+	Label string `json:"label"`
+
+	// OccupancyBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	OccupancyBp RatioBP `json:"occupancy_bp"`
+
+	// OccupiedUnits Unità occupate (booking + season non rilasciate + rivendite).
+	OccupiedUnits int64 `json:"occupied_units"`
+
+	// ReleasedUnits Unità rilasciate dagli abbonati e non rivendute (libere).
+	ReleasedUnits int64 `json:"released_units"`
+
+	// SeasonUnits Delle occupate, quelle degli abbonati.
+	SeasonUnits int64   `json:"season_units"`
+	ZoneId      *string `json:"zone_id,omitempty"`
+}
+
 // OnlineFlowConfig Opzioni del flusso pubblico.
 type OnlineFlowConfig struct {
 	// Formulas Formule proposte online (vuoto = tutte quelle ammesse dai pack online).
@@ -4601,6 +5327,40 @@ type OnlineSettingsInput struct {
 
 	// Theme Tema della pagina pubblica (specifica 12.5).
 	Theme Theme `json:"theme"`
+}
+
+// OpenBalanceRow defines model for OpenBalanceRow.
+type OpenBalanceRow struct {
+	// BalanceDue Importo in centesimi di euro (IVA inclusa).
+	BalanceDue  Money  `json:"balance_due"`
+	BookingId   string `json:"booking_id"`
+	Code        string `json:"code"`
+	CustomerId  string `json:"customer_id"`
+	DisplayName string `json:"display_name"`
+
+	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	EndsOn Date `json:"ends_on"`
+
+	// PaidAmount Importo in centesimi di euro (IVA inclusa).
+	PaidAmount Money `json:"paid_amount"`
+
+	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	StartsOn Date `json:"starts_on"`
+
+	// Status Stato della prenotazione (spec 10.2).
+	Status BookingStatus `json:"status"`
+
+	// TotalAmount Importo in centesimi di euro (IVA inclusa).
+	TotalAmount Money `json:"total_amount"`
+}
+
+// OpenBalancesReport defines model for OpenBalancesReport.
+type OpenBalancesReport struct {
+	Period ReportPeriod     `json:"period"`
+	Rows   []OpenBalanceRow `json:"rows"`
+
+	// TotalBalance Importo in centesimi di euro (IVA inclusa).
+	TotalBalance Money `json:"total_balance"`
 }
 
 // OperationalBooking defines model for OperationalBooking.
@@ -6006,6 +6766,9 @@ type RatePeriodList struct {
 	NextCursor *string `json:"next_cursor,omitempty"`
 }
 
+// RatioBP Rapporto in punti base (10000 = 100%). Intero, mai float.
+type RatioBP = int64
+
 // ReadinessStatus defines model for ReadinessStatus.
 type ReadinessStatus struct {
 	Checks map[string]string     `json:"checks"`
@@ -6100,6 +6863,93 @@ type RefundPreview struct {
 
 // RefundPreviewAs defines model for RefundPreview.As.
 type RefundPreviewAs string
+
+// ReportFormat defines model for ReportFormat.
+type ReportFormat string
+
+// ReportPeriod defines model for ReportPeriod.
+type ReportPeriod struct {
+	// Days Giorni di calendario del periodo (inclusi gli estremi).
+	Days int `json:"days"`
+
+	// From Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	From Date `json:"from"`
+
+	// To Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	To Date `json:"to"`
+}
+
+// ReportSummary defines model for ReportSummary.
+type ReportSummary struct {
+	// AverageBookingValue Valore medio delle `bookings` (divisione intera).
+	AverageBookingValue Money `json:"average_booking_value"`
+
+	// Bookings Prenotazioni vendute con primo giorno di soggiorno nel periodo (cancellate e no-show incluse).
+	Bookings int `json:"bookings"`
+
+	// Cancellations Prenotazioni cancellate con primo giorno di soggiorno nel periodo.
+	Cancellations int       `json:"cancellations"`
+	CapacityUnits int64     `json:"capacity_units"`
+	GeneratedAt   time.Time `json:"generated_at"`
+
+	// NoShows No-show con primo giorno di soggiorno nel periodo.
+	NoShows int `json:"no_shows"`
+
+	// OccupancyBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	OccupancyBp         RatioBP `json:"occupancy_bp"`
+	OccupiedUnits       int64   `json:"occupied_units"`
+	OpenBalanceBookings int     `json:"open_balance_bookings"`
+
+	// OpenBalanceTotal Importo in centesimi di euro (IVA inclusa).
+	OpenBalanceTotal Money        `json:"open_balance_total"`
+	Period           ReportPeriod `json:"period"`
+
+	// RevenueBooked Totale delle prenotazioni in stato prenotato con primo giorno di soggiorno nel periodo.
+	RevenueBooked Money `json:"revenue_booked"`
+
+	// RevenueCollected Pagamenti riusciti per `business_date` nel periodo, rimborsi negativi (base incasso).
+	RevenueCollected Money `json:"revenue_collected"`
+
+	// SeasonPassesSold Abbonamenti in stato prenotato con primo giorno di soggiorno nel periodo.
+	SeasonPassesSold int `json:"season_passes_sold"`
+}
+
+// RevenueBasis defines model for RevenueBasis.
+type RevenueBasis string
+
+// RevenueGroupBy defines model for RevenueGroupBy.
+type RevenueGroupBy string
+
+// RevenueReport defines model for RevenueReport.
+type RevenueReport struct {
+	Basis   RevenueBasis   `json:"basis"`
+	GroupBy RevenueGroupBy `json:"group_by"`
+	Period  ReportPeriod   `json:"period"`
+	Rows    []RevenueRow   `json:"rows"`
+	Totals  RevenueRow     `json:"totals"`
+}
+
+// RevenueRow defines model for RevenueRow.
+type RevenueRow struct {
+	// Count Movimenti (collected) o prenotazioni/righe (booked).
+	Count int `json:"count"`
+
+	// Gross Importo in centesimi di euro (IVA inclusa).
+	Gross Money `json:"gross"`
+
+	// Key Chiave stabile: YYYY-MM-DD, settimana ISO `YYYY-Www`, `YYYY-MM`, canale (desk, online, api, counter), codice pack o extra, metodo di pagamento, aliquota in punti base (`1000`).
+	Key   string `json:"key"`
+	Label string `json:"label"`
+
+	// Refunds Rimborsi già sottratti da gross (solo collected; 0 per booked).
+	Refunds Money `json:"refunds"`
+
+	// Tax Importo in centesimi di euro (IVA inclusa).
+	Tax Money `json:"tax"`
+
+	// Taxable Importo in centesimi di euro (IVA inclusa).
+	Taxable Money `json:"taxable"`
+}
 
 // Role defines model for Role.
 type Role string
@@ -6327,6 +7177,42 @@ type SeasonPassList struct {
 type SeasonPassUpdate struct {
 	NotesCustomer *string `json:"notes_customer,omitempty"`
 	NotesInternal *string `json:"notes_internal,omitempty"`
+}
+
+// SeasonPassesGroupBy defines model for SeasonPassesGroupBy.
+type SeasonPassesGroupBy string
+
+// SeasonPassesReport defines model for SeasonPassesReport.
+type SeasonPassesReport struct {
+	GroupBy    SeasonPassesGroupBy `json:"group_by"`
+	PassesSold int                 `json:"passes_sold"`
+
+	// PassesValue Importo in centesimi di euro (IVA inclusa).
+	PassesValue Money        `json:"passes_value"`
+	Period      ReportPeriod `json:"period"`
+
+	// Renewals Abbonamenti venduti come rinnovo (renewal_of_booking_id valorizzato).
+	Renewals int               `json:"renewals"`
+	Rows     []SeasonPassesRow `json:"rows"`
+	Totals   SeasonPassesRow   `json:"totals"`
+}
+
+// SeasonPassesRow defines model for SeasonPassesRow.
+type SeasonPassesRow struct {
+	// CreditsIssued Importo in centesimi di euro (IVA inclusa).
+	CreditsIssued Money  `json:"credits_issued"`
+	Key           string `json:"key"`
+	Label         string `json:"label"`
+
+	// ReleasedUnits Unità (giorno × fascia) rilasciate dagli abbonati, non revocate.
+	ReleasedUnits int64 `json:"released_units"`
+
+	// ResaleBp Rapporto in punti base (10000 = 100%). Intero, mai float.
+	ResaleBp RatioBP `json:"resale_bp"`
+
+	// ResaleRevenue Importo in centesimi di euro (IVA inclusa).
+	ResaleRevenue Money `json:"resale_revenue"`
+	ResoldUnits   int64 `json:"resold_units"`
 }
 
 // SeasonRelease defines model for SeasonRelease.
@@ -6788,6 +7674,35 @@ type ThemeFontFamily string
 // ThemeRadius defines model for Theme.Radius.
 type ThemeRadius string
 
+// TopCustomerRow defines model for TopCustomerRow.
+type TopCustomerRow struct {
+	Bookings   int    `json:"bookings"`
+	CustomerId string `json:"customer_id"`
+
+	// DisplayName Nome e cognome (mai email, telefono o altri dati).
+	DisplayName string `json:"display_name"`
+
+	// LastBookingOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	LastBookingOn *Date `json:"last_booking_on,omitempty"`
+	Rank          int   `json:"rank"`
+
+	// Revenue Importo in centesimi di euro (IVA inclusa).
+	Revenue Money `json:"revenue"`
+
+	// SpotDays Giorni-postazione prenotati nel periodo.
+	SpotDays int `json:"spot_days"`
+}
+
+// TopCustomersReport defines model for TopCustomersReport.
+type TopCustomersReport struct {
+	Period ReportPeriod     `json:"period"`
+	Rows   []TopCustomerRow `json:"rows"`
+	Sort   TopCustomersSort `json:"sort"`
+}
+
+// TopCustomersSort defines model for TopCustomersSort.
+type TopCustomersSort string
+
 // TotpConfirmRequest defines model for TotpConfirmRequest.
 type TotpConfirmRequest struct {
 	Code string `json:"code"`
@@ -6831,6 +7746,153 @@ type Version = int64
 type WebhookAck struct {
 	Duplicate *bool `json:"duplicate,omitempty"`
 	Received  bool  `json:"received"`
+}
+
+// WebhookDelivery defines model for WebhookDelivery.
+type WebhookDelivery struct {
+	Attempts    int        `json:"attempts"`
+	CreatedAt   time.Time  `json:"created_at"`
+	DeliveredAt *time.Time `json:"delivered_at,omitempty"`
+	EndpointId  string     `json:"endpoint_id"`
+
+	// EventId Id dell'evento nell'envelope (`evt_<uuid>`), uguale all'header Arenile-Event-Id.
+	EventId       string     `json:"event_id"`
+	EventType     string     `json:"event_type"`
+	FailedAt      *time.Time `json:"failed_at,omitempty"`
+	Id            string     `json:"id"`
+	LastError     *string    `json:"last_error,omitempty"`
+	NextAttemptAt *time.Time `json:"next_attempt_at,omitempty"`
+
+	// Status pending (in coda o in attesa di ripetizione), delivered (2xx), failed (definitivamente).
+	Status WebhookDeliveryStatus `json:"status"`
+
+	// StatusCode Codice HTTP dell'ultimo tentativo (assente se nessuna risposta).
+	StatusCode *int      `json:"status_code,omitempty"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+// WebhookDeliveryDetail defines model for WebhookDeliveryDetail.
+type WebhookDeliveryDetail struct {
+	Attempts    int        `json:"attempts"`
+	CreatedAt   time.Time  `json:"created_at"`
+	DeliveredAt *time.Time `json:"delivered_at,omitempty"`
+	EndpointId  string     `json:"endpoint_id"`
+
+	// EventId Id dell'evento nell'envelope (`evt_<uuid>`), uguale all'header Arenile-Event-Id.
+	EventId       string     `json:"event_id"`
+	EventType     string     `json:"event_type"`
+	FailedAt      *time.Time `json:"failed_at,omitempty"`
+	Id            string     `json:"id"`
+	LastError     *string    `json:"last_error,omitempty"`
+	NextAttemptAt *time.Time `json:"next_attempt_at,omitempty"`
+
+	// RequestBody Envelope JSON inviato (spec 18.1), uguale per ogni tentativo.
+	RequestBody map[string]interface{} `json:"request_body"`
+
+	// ResponseExcerpt Primi 1024 byte della risposta dell'ultimo tentativo.
+	ResponseExcerpt *string `json:"response_excerpt,omitempty"`
+
+	// Status pending (in coda o in attesa di ripetizione), delivered (2xx), failed (definitivamente).
+	Status WebhookDeliveryStatus `json:"status"`
+
+	// StatusCode Codice HTTP dell'ultimo tentativo (assente se nessuna risposta).
+	StatusCode *int      `json:"status_code,omitempty"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+// WebhookDeliveryList defines model for WebhookDeliveryList.
+type WebhookDeliveryList struct {
+	Items      []WebhookDelivery `json:"items"`
+	NextCursor *string           `json:"next_cursor,omitempty"`
+}
+
+// WebhookDeliveryStatus pending (in coda o in attesa di ripetizione), delivered (2xx), failed (definitivamente).
+type WebhookDeliveryStatus string
+
+// WebhookEndpoint defines model for WebhookEndpoint.
+type WebhookEndpoint struct {
+	Active              bool                 `json:"active"`
+	ConsecutiveFailures int                  `json:"consecutive_failures"`
+	CreatedAt           time.Time            `json:"created_at"`
+	Description         string               `json:"description"`
+	DisabledAt          *time.Time           `json:"disabled_at,omitempty"`
+	DisabledReason      *string              `json:"disabled_reason,omitempty"`
+	Events              []WebhookEventFilter `json:"events"`
+	Id                  string               `json:"id"`
+
+	// LastDeliveryAt Ultimo tentativo di consegna (qualsiasi esito).
+	LastDeliveryAt *time.Time `json:"last_delivery_at,omitempty"`
+
+	// PreviousSecretExpiresAt Fine del periodo di grazia del segreto precedente, se in corso.
+	PreviousSecretExpiresAt *time.Time `json:"previous_secret_expires_at,omitempty"`
+
+	// Status active; paused (disattivato dal gestore); disabled (disattivato automaticamente dopo errori ripetuti).
+	Status    WebhookEndpointStatus `json:"status"`
+	UpdatedAt time.Time             `json:"updated_at"`
+	Url       string                `json:"url"`
+}
+
+// WebhookEndpointCreate defines model for WebhookEndpointCreate.
+type WebhookEndpointCreate struct {
+	Active      *bool                `json:"active,omitempty"`
+	Description *string              `json:"description,omitempty"`
+	Events      []WebhookEventFilter `json:"events"`
+	Url         string               `json:"url"`
+}
+
+// WebhookEndpointCreated defines model for WebhookEndpointCreated.
+type WebhookEndpointCreated struct {
+	Endpoint WebhookEndpoint `json:"endpoint"`
+
+	// Secret Segreto di firma `whsec_…`, mostrato solo ora.
+	Secret string `json:"secret"`
+}
+
+// WebhookEndpointList defines model for WebhookEndpointList.
+type WebhookEndpointList struct {
+	Items []WebhookEndpoint `json:"items"`
+}
+
+// WebhookEndpointStatus active; paused (disattivato dal gestore); disabled (disattivato automaticamente dopo errori ripetuti).
+type WebhookEndpointStatus string
+
+// WebhookEndpointUpdate defines model for WebhookEndpointUpdate.
+type WebhookEndpointUpdate struct {
+	Active      *bool                 `json:"active,omitempty"`
+	Description *string               `json:"description,omitempty"`
+	Events      *[]WebhookEventFilter `json:"events,omitempty"`
+	Url         *string               `json:"url,omitempty"`
+}
+
+// WebhookEventFilter Un WebhookEventType, un gruppo `<prefisso>.*` (es. `booking.*`) o `*` (tutti).
+type WebhookEventFilter = string
+
+// WebhookEventType Tipi di evento sottoscrivibili (spec 18.1) più `webhook.test`, inviato solo dal test.
+type WebhookEventType string
+
+// WebhookSecretRotate defines model for WebhookSecretRotate.
+type WebhookSecretRotate struct {
+	// GraceHours Ore in cui anche il segreto precedente firma le consegne.
+	GraceHours *int `json:"grace_hours,omitempty"`
+}
+
+// WebhookSecretRotated defines model for WebhookSecretRotated.
+type WebhookSecretRotated struct {
+	Endpoint WebhookEndpoint `json:"endpoint"`
+
+	// Secret Nuovo segreto `whsec_…`, mostrato solo ora.
+	Secret string `json:"secret"`
+}
+
+// YearComparisonReport defines model for YearComparisonReport.
+type YearComparisonReport struct {
+	// Align calendar = stesso giorno e mese (29 febbraio → 28 febbraio); weekday = stessa durata, inizio spostato al giorno della settimana uguale più vicino (scarto massimo 3 giorni).
+	Align       *ComparisonAlign      `json:"align,omitempty"`
+	Current     ReportPeriod          `json:"current"`
+	Granularity ComparisonGranularity `json:"granularity"`
+	Metrics     []ComparisonMetric    `json:"metrics"`
+	Previous    ReportPeriod          `json:"previous"`
+	Series      []ComparisonPoint     `json:"series"`
 }
 
 // Zone Raggruppamento logico di postazioni. Le zone `zone` hanno un pool implicito gestito dal sistema (spec 7.5).
@@ -6914,6 +7976,9 @@ type ZoneList struct {
 
 // AgreementID defines model for AgreementID.
 type AgreementID = string
+
+// ApiKeyID defines model for ApiKeyID.
+type ApiKeyID = string
 
 // BackupName defines model for BackupName.
 type BackupName = string
@@ -7005,6 +8070,12 @@ type RatePeriodID = string
 // ReleaseID defines model for ReleaseID.
 type ReleaseID = string
 
+// ReportFrom Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+type ReportFrom = Date
+
+// ReportTo Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+type ReportTo = Date
+
 // SeasonID defines model for SeasonID.
 type SeasonID = string
 
@@ -7019,6 +8090,12 @@ type SpotBlockID = string
 
 // TeamUserID defines model for TeamUserID.
 type TeamUserID = string
+
+// WebhookDeliveryID defines model for WebhookDeliveryID.
+type WebhookDeliveryID = string
+
+// WebhookEndpointID defines model for WebhookEndpointID.
+type WebhookEndpointID = string
 
 // ZoneID defines model for ZoneID.
 type ZoneID = string
@@ -7155,6 +8232,33 @@ type UpdateAgreementParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListAPIKeysParams defines parameters for ListAPIKeys.
+type ListAPIKeysParams struct {
+	// IncludeRevoked Include anche le chiavi revocate (default false).
+	IncludeRevoked *bool `form:"include_revoked,omitempty" json:"include_revoked,omitempty"`
+}
+
+// CreateAPIKeyParams defines parameters for CreateAPIKey.
+type CreateAPIKeyParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RevokeAPIKeyParams defines parameters for RevokeAPIKey.
+type RevokeAPIKeyParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateAPIKeyParams defines parameters for UpdateAPIKey.
+type UpdateAPIKeyParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // AutoAssignParams defines parameters for AutoAssign.
 type AutoAssignParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -7279,6 +8383,11 @@ type CheckInBookingParams struct {
 	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
@@ -7323,6 +8432,11 @@ type MarkBookingNoShowParams struct {
 
 // AddBookingNoteParams defines parameters for AddBookingNote.
 type AddBookingNoteParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
@@ -7812,6 +8926,16 @@ type GenerateMapRowsParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ReorientMapParams defines parameters for ReorientMap.
+type ReorientMapParams struct {
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
+	IfMatch IfMatchRequired `json:"If-Match"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListMessagesParams defines parameters for ListMessages.
 type ListMessagesParams struct {
 	BookingId *string        `form:"booking_id,omitempty" json:"booking_id,omitempty"`
@@ -8234,6 +9358,153 @@ type UpdateRatePeriodParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// GetBookingsReportParams defines parameters for GetBookingsReport.
+type GetBookingsReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// GroupBy Raggruppamento (default channel).
+	GroupBy *BookingsReportGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetCancellationsReportParams defines parameters for GetCancellationsReport.
+type GetCancellationsReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// GroupBy Raggruppamento (default month).
+	GroupBy *CancellationsGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetYearComparisonReportParams defines parameters for GetYearComparisonReport.
+type GetYearComparisonReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// CompareYear Anno di confronto (default: anno di from − 1); deve precedere l'anno di from.
+	CompareYear *int `form:"compare_year,omitempty" json:"compare_year,omitempty"`
+
+	// Granularity Granularità della serie (default week).
+	Granularity *ComparisonGranularity `form:"granularity,omitempty" json:"granularity,omitempty"`
+
+	// Align Allineamento del periodo di confronto (default calendar).
+	Align *ComparisonAlign `form:"align,omitempty" json:"align,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetOccupancyReportParams defines parameters for GetOccupancyReport.
+type GetOccupancyReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// GroupBy Raggruppamento (default day).
+	GroupBy *OccupancyGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
+
+	// ZoneId Limita a una zona.
+	ZoneId *string `form:"zone_id,omitempty" json:"zone_id,omitempty"`
+
+	// MapId Limita a una mappa.
+	MapId *string `form:"map_id,omitempty" json:"map_id,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetOpenBalancesReportParams defines parameters for GetOpenBalancesReport.
+type GetOpenBalancesReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetRevenueReportParams defines parameters for GetRevenueReport.
+type GetRevenueReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// GroupBy Raggruppamento (default day).
+	GroupBy *RevenueGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
+
+	// Basis Base di calcolo (default collected).
+	Basis *RevenueBasis `form:"basis,omitempty" json:"basis,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetSeasonPassesReportParams defines parameters for GetSeasonPassesReport.
+type GetSeasonPassesReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// GroupBy Raggruppamento delle righe dei rilasci (default month).
+	GroupBy *SeasonPassesGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetReportSummaryParams defines parameters for GetReportSummary.
+type GetReportSummaryParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// GetTopCustomersReportParams defines parameters for GetTopCustomersReport.
+type GetTopCustomersReportParams struct {
+	// From Primo giorno del periodo (incluso).
+	From ReportFrom `form:"from" json:"from"`
+
+	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
+	To ReportTo `form:"to" json:"to"`
+
+	// Sort Ordinamento (default revenue).
+	Sort *TopCustomersSort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// Limit Numero di clienti (default 20).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
 // ListSeasonPassesParams defines parameters for ListSeasonPasses.
 type ListSeasonPassesParams struct {
 	// SeasonId Stagione.
@@ -8452,6 +9723,60 @@ type PublishTermsVersionParams struct {
 	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CreateWebhookEndpointParams defines parameters for CreateWebhookEndpoint.
+type CreateWebhookEndpointParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteWebhookEndpointParams defines parameters for DeleteWebhookEndpoint.
+type DeleteWebhookEndpointParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateWebhookEndpointParams defines parameters for UpdateWebhookEndpoint.
+type UpdateWebhookEndpointParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListWebhookDeliveriesParams defines parameters for ListWebhookDeliveries.
+type ListWebhookDeliveriesParams struct {
+	// Status Filtra per stato.
+	Status *WebhookDeliveryStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// RedeliverWebhookParams defines parameters for RedeliverWebhook.
+type RedeliverWebhookParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RotateWebhookSecretParams defines parameters for RotateWebhookSecret.
+type RotateWebhookSecretParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// SendWebhookTestParams defines parameters for SendWebhookTest.
+type SendWebhookTestParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
@@ -8687,6 +10012,12 @@ type CreateAgreementJSONRequestBody = AgreementInput
 // UpdateAgreementJSONRequestBody defines body for UpdateAgreement for application/json ContentType.
 type UpdateAgreementJSONRequestBody = AgreementInput
 
+// CreateAPIKeyJSONRequestBody defines body for CreateAPIKey for application/json ContentType.
+type CreateAPIKeyJSONRequestBody = ApiKeyCreate
+
+// UpdateAPIKeyJSONRequestBody defines body for UpdateAPIKey for application/json ContentType.
+type UpdateAPIKeyJSONRequestBody = ApiKeyUpdate
+
 // AutoAssignJSONRequestBody defines body for AutoAssign for application/json ContentType.
 type AutoAssignJSONRequestBody = AutoAssignRequest
 
@@ -8792,6 +10123,9 @@ type SaveMapJSONRequestBody = MapSaveRequest
 // GenerateMapRowsJSONRequestBody defines body for GenerateMapRows for application/json ContentType.
 type GenerateMapRowsJSONRequestBody = RowGeneratorRequest
 
+// ReorientMapJSONRequestBody defines body for ReorientMap for application/json ContentType.
+type ReorientMapJSONRequestBody = MapReorientRequest
+
 // UpdateOnlineSettingsJSONRequestBody defines body for UpdateOnlineSettings for application/json ContentType.
 type UpdateOnlineSettingsJSONRequestBody = OnlineSettingsInput
 
@@ -8875,6 +10209,15 @@ type UpdateTeamMemberJSONRequestBody = TeamMemberUpdate
 
 // PublishTermsVersionJSONRequestBody defines body for PublishTermsVersion for application/json ContentType.
 type PublishTermsVersionJSONRequestBody = TermsVersionInput
+
+// CreateWebhookEndpointJSONRequestBody defines body for CreateWebhookEndpoint for application/json ContentType.
+type CreateWebhookEndpointJSONRequestBody = WebhookEndpointCreate
+
+// UpdateWebhookEndpointJSONRequestBody defines body for UpdateWebhookEndpoint for application/json ContentType.
+type UpdateWebhookEndpointJSONRequestBody = WebhookEndpointUpdate
+
+// RotateWebhookSecretJSONRequestBody defines body for RotateWebhookSecret for application/json ContentType.
+type RotateWebhookSecretJSONRequestBody = WebhookSecretRotate
 
 // CreateZoneJSONRequestBody defines body for CreateZone for application/json ContentType.
 type CreateZoneJSONRequestBody = ZoneInput
@@ -8968,6 +10311,21 @@ type ServerInterface interface {
 	// UpdateAgreement Sostituisce convenzione
 	// (PUT /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
 	UpdateAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID, params UpdateAgreementParams)
+	// ListAPIKeys Chiavi API dello stabilimento (mai il segreto)
+	// (GET /api/admin/v1/establishments/{establishmentId}/api-keys)
+	ListAPIKeys(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListAPIKeysParams)
+	// CreateAPIKey Crea una chiave API (il segreto è restituito una sola volta)
+	// (POST /api/admin/v1/establishments/{establishmentId}/api-keys)
+	CreateAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateAPIKeyParams)
+	// RevokeAPIKey Revoca una chiave (immediata e definitiva; la riga resta per l'audit)
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId})
+	RevokeAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, apiKeyId ApiKeyID, params RevokeAPIKeyParams)
+	// GetAPIKey Dettaglio di una chiave API
+	// (GET /api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId})
+	GetAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, apiKeyId ApiKeyID)
+	// UpdateAPIKey Rinomina, cambia scope o scadenza di una chiave attiva
+	// (PATCH /api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId})
+	UpdateAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, apiKeyId ApiKeyID, params UpdateAPIKeyParams)
 	// AutoAssign Assegnazione automatica delle righe in attesa (modalità zone)
 	// (POST /api/admin/v1/establishments/{establishmentId}/assignments/auto)
 	AutoAssign(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params AutoAssignParams)
@@ -9178,6 +10536,9 @@ type ServerInterface interface {
 	// GenerateMapRows Generatore di file: anteprima o applicazione
 	// (POST /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/generate-rows)
 	GenerateMapRows(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params GenerateMapRowsParams)
+	// ReorientMap Sposta il lato mare ribaltando o ruotando l'intera disposizione
+	// (POST /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/reorient)
+	ReorientMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params ReorientMapParams)
 	// ListMessages Registro dei messaggi inviati (message_log)
 	// (GET /api/admin/v1/establishments/{establishmentId}/messages)
 	ListMessages(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMessagesParams)
@@ -9313,6 +10674,33 @@ type ServerInterface interface {
 	// UpdateRatePeriod Sostituisce periodo tariffario
 	// (PUT /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
 	UpdateRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID, params UpdateRatePeriodParams)
+	// GetBookingsReport Prenotazioni per canale, anticipo di prenotazione, formula o giorno
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/bookings)
+	GetBookingsReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetBookingsReportParams)
+	// GetCancellationsReport Cancellazioni e mancate presentazioni
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/cancellations)
+	GetCancellationsReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetCancellationsReportParams)
+	// GetYearComparisonReport Confronto con l'anno precedente sullo stesso intervallo di calendario
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/comparison)
+	GetYearComparisonReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetYearComparisonReportParams)
+	// GetOccupancyReport Occupazione per giorno, zona, fila o fascia
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/occupancy)
+	GetOccupancyReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetOccupancyReportParams)
+	// GetOpenBalancesReport Saldi aperti (prenotazioni con importo ancora da incassare)
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/open-balances)
+	GetOpenBalancesReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetOpenBalancesReportParams)
+	// GetRevenueReport Ricavi per periodo, canale, pack, extra, metodo di pagamento o aliquota IVA
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/revenue)
+	GetRevenueReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetRevenueReportParams)
+	// GetSeasonPassesReport Abbonamenti stagionali, rilasci e rivendite
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/season-passes)
+	GetSeasonPassesReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetSeasonPassesReportParams)
+	// GetReportSummary Indicatori principali del periodo (occupazione, ricavi, prenotazioni, saldi aperti)
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/summary)
+	GetReportSummary(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetReportSummaryParams)
+	// GetTopCustomersReport Migliori clienti del periodo (solo nome visualizzato, nessun contatto)
+	// (GET /api/admin/v1/establishments/{establishmentId}/reports/top-customers)
+	GetTopCustomersReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetTopCustomersReportParams)
 	// ListSeasonPasses Elenco abbonamenti stagionali
 	// (GET /api/admin/v1/establishments/{establishmentId}/season-passes)
 	ListSeasonPasses(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonPassesParams)
@@ -9391,6 +10779,36 @@ type ServerInterface interface {
 	// PublishTermsVersion Pubblica una nuova versione delle condizioni (immutabile)
 	// (POST /api/admin/v1/establishments/{establishmentId}/terms-versions)
 	PublishTermsVersion(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PublishTermsVersionParams)
+	// ListWebhookEndpoints Endpoint dei webhook in uscita (mai il segreto)
+	// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints)
+	ListWebhookEndpoints(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// CreateWebhookEndpoint Registra un endpoint (il segreto di firma è restituito una sola volta)
+	// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints)
+	CreateWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateWebhookEndpointParams)
+	// DeleteWebhookEndpoint Elimina un endpoint e il suo registro delle consegne
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId})
+	DeleteWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params DeleteWebhookEndpointParams)
+	// GetWebhookEndpoint Dettaglio di un endpoint
+	// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId})
+	GetWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID)
+	// UpdateWebhookEndpoint Modifica URL, descrizione, eventi o stato attivo
+	// (PATCH /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId})
+	UpdateWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params UpdateWebhookEndpointParams)
+	// ListWebhookDeliveries Registro delle consegne dell'endpoint (più recenti prima)
+	// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries)
+	ListWebhookDeliveries(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params ListWebhookDeliveriesParams)
+	// GetWebhookDelivery Dettaglio di una consegna con corpo inviato ed estratto della risposta
+	// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId})
+	GetWebhookDelivery(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID)
+	// RedeliverWebhook Rimette in coda una consegna (fallita o già consegnata) per un nuovo invio
+	// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/redeliver)
+	RedeliverWebhook(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID, params RedeliverWebhookParams)
+	// RotateWebhookSecret Ruota il segreto di firma (il nuovo è restituito una sola volta)
+	// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/rotate-secret)
+	RotateWebhookSecret(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params RotateWebhookSecretParams)
+	// SendWebhookTest Invia subito un evento di prova `webhook.test` a questo solo endpoint
+	// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/test)
+	SendWebhookTest(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params SendWebhookTestParams)
 	// ListZones Elenco zone
 	// (GET /api/admin/v1/establishments/{establishmentId}/zones)
 	ListZones(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListZonesParams)
@@ -9613,6 +11031,36 @@ func (_ Unimplemented) GetAgreement(w http.ResponseWriter, r *http.Request, esta
 // UpdateAgreement Sostituisce convenzione
 // (PUT /api/admin/v1/establishments/{establishmentId}/agreements/{agreementId})
 func (_ Unimplemented) UpdateAgreement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, agreementId AgreementID, params UpdateAgreementParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListAPIKeys Chiavi API dello stabilimento (mai il segreto)
+// (GET /api/admin/v1/establishments/{establishmentId}/api-keys)
+func (_ Unimplemented) ListAPIKeys(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListAPIKeysParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateAPIKey Crea una chiave API (il segreto è restituito una sola volta)
+// (POST /api/admin/v1/establishments/{establishmentId}/api-keys)
+func (_ Unimplemented) CreateAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateAPIKeyParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RevokeAPIKey Revoca una chiave (immediata e definitiva; la riga resta per l'audit)
+// (DELETE /api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId})
+func (_ Unimplemented) RevokeAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, apiKeyId ApiKeyID, params RevokeAPIKeyParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetAPIKey Dettaglio di una chiave API
+// (GET /api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId})
+func (_ Unimplemented) GetAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, apiKeyId ApiKeyID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateAPIKey Rinomina, cambia scope o scadenza di una chiave attiva
+// (PATCH /api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId})
+func (_ Unimplemented) UpdateAPIKey(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, apiKeyId ApiKeyID, params UpdateAPIKeyParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -10036,6 +11484,12 @@ func (_ Unimplemented) GenerateMapRows(w http.ResponseWriter, r *http.Request, e
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ReorientMap Sposta il lato mare ribaltando o ruotando l'intera disposizione
+// (POST /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/reorient)
+func (_ Unimplemented) ReorientMap(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, mapId MapID, params ReorientMapParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListMessages Registro dei messaggi inviati (message_log)
 // (GET /api/admin/v1/establishments/{establishmentId}/messages)
 func (_ Unimplemented) ListMessages(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMessagesParams) {
@@ -10306,6 +11760,60 @@ func (_ Unimplemented) UpdateRatePeriod(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// GetBookingsReport Prenotazioni per canale, anticipo di prenotazione, formula o giorno
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/bookings)
+func (_ Unimplemented) GetBookingsReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetBookingsReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetCancellationsReport Cancellazioni e mancate presentazioni
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/cancellations)
+func (_ Unimplemented) GetCancellationsReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetCancellationsReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetYearComparisonReport Confronto con l'anno precedente sullo stesso intervallo di calendario
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/comparison)
+func (_ Unimplemented) GetYearComparisonReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetYearComparisonReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetOccupancyReport Occupazione per giorno, zona, fila o fascia
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/occupancy)
+func (_ Unimplemented) GetOccupancyReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetOccupancyReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetOpenBalancesReport Saldi aperti (prenotazioni con importo ancora da incassare)
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/open-balances)
+func (_ Unimplemented) GetOpenBalancesReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetOpenBalancesReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetRevenueReport Ricavi per periodo, canale, pack, extra, metodo di pagamento o aliquota IVA
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/revenue)
+func (_ Unimplemented) GetRevenueReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetRevenueReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetSeasonPassesReport Abbonamenti stagionali, rilasci e rivendite
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/season-passes)
+func (_ Unimplemented) GetSeasonPassesReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetSeasonPassesReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetReportSummary Indicatori principali del periodo (occupazione, ricavi, prenotazioni, saldi aperti)
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/summary)
+func (_ Unimplemented) GetReportSummary(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetReportSummaryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetTopCustomersReport Migliori clienti del periodo (solo nome visualizzato, nessun contatto)
+// (GET /api/admin/v1/establishments/{establishmentId}/reports/top-customers)
+func (_ Unimplemented) GetTopCustomersReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetTopCustomersReportParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListSeasonPasses Elenco abbonamenti stagionali
 // (GET /api/admin/v1/establishments/{establishmentId}/season-passes)
 func (_ Unimplemented) ListSeasonPasses(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListSeasonPassesParams) {
@@ -10459,6 +11967,66 @@ func (_ Unimplemented) ListTermsVersions(w http.ResponseWriter, r *http.Request,
 // PublishTermsVersion Pubblica una nuova versione delle condizioni (immutabile)
 // (POST /api/admin/v1/establishments/{establishmentId}/terms-versions)
 func (_ Unimplemented) PublishTermsVersion(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PublishTermsVersionParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListWebhookEndpoints Endpoint dei webhook in uscita (mai il segreto)
+// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints)
+func (_ Unimplemented) ListWebhookEndpoints(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateWebhookEndpoint Registra un endpoint (il segreto di firma è restituito una sola volta)
+// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints)
+func (_ Unimplemented) CreateWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateWebhookEndpointParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteWebhookEndpoint Elimina un endpoint e il suo registro delle consegne
+// (DELETE /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId})
+func (_ Unimplemented) DeleteWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params DeleteWebhookEndpointParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetWebhookEndpoint Dettaglio di un endpoint
+// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId})
+func (_ Unimplemented) GetWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateWebhookEndpoint Modifica URL, descrizione, eventi o stato attivo
+// (PATCH /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId})
+func (_ Unimplemented) UpdateWebhookEndpoint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params UpdateWebhookEndpointParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListWebhookDeliveries Registro delle consegne dell'endpoint (più recenti prima)
+// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries)
+func (_ Unimplemented) ListWebhookDeliveries(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params ListWebhookDeliveriesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetWebhookDelivery Dettaglio di una consegna con corpo inviato ed estratto della risposta
+// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId})
+func (_ Unimplemented) GetWebhookDelivery(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RedeliverWebhook Rimette in coda una consegna (fallita o già consegnata) per un nuovo invio
+// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/redeliver)
+func (_ Unimplemented) RedeliverWebhook(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID, params RedeliverWebhookParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RotateWebhookSecret Ruota il segreto di firma (il nuovo è restituito una sola volta)
+// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/rotate-secret)
+func (_ Unimplemented) RotateWebhookSecret(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params RotateWebhookSecretParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SendWebhookTest Invia subito un evento di prova `webhook.test` a questo solo endpoint
+// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/test)
+func (_ Unimplemented) SendWebhookTest(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, params SendWebhookTestParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -11421,6 +12989,251 @@ func (siw *ServerInterfaceWrapper) UpdateAgreement(w http.ResponseWriter, r *htt
 	handler.ServeHTTP(w, r)
 }
 
+// ListAPIKeys operation middleware
+func (siw *ServerInterfaceWrapper) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListAPIKeysParams
+
+	// ------------- Optional query parameter "include_revoked" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "include_revoked", r.URL.Query(), &params.IncludeRevoked, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "include_revoked"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "include_revoked", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListAPIKeys(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateAPIKey operation middleware
+func (siw *ServerInterfaceWrapper) CreateAPIKey(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateAPIKeyParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateAPIKey(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RevokeAPIKey operation middleware
+func (siw *ServerInterfaceWrapper) RevokeAPIKey(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "apiKeyId" -------------
+	var apiKeyId ApiKeyID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "apiKeyId", chi.URLParam(r, "apiKeyId"), &apiKeyId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "apiKeyId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RevokeAPIKeyParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RevokeAPIKey(w, r, establishmentId, apiKeyId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAPIKey operation middleware
+func (siw *ServerInterfaceWrapper) GetAPIKey(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "apiKeyId" -------------
+	var apiKeyId ApiKeyID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "apiKeyId", chi.URLParam(r, "apiKeyId"), &apiKeyId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "apiKeyId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAPIKey(w, r, establishmentId, apiKeyId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateAPIKey operation middleware
+func (siw *ServerInterfaceWrapper) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "apiKeyId" -------------
+	var apiKeyId ApiKeyID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "apiKeyId", chi.URLParam(r, "apiKeyId"), &apiKeyId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "apiKeyId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateAPIKeyParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateAPIKey(w, r, establishmentId, apiKeyId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // AutoAssign operation middleware
 func (siw *ServerInterfaceWrapper) AutoAssign(w http.ResponseWriter, r *http.Request) {
 
@@ -12216,6 +14029,25 @@ func (siw *ServerInterfaceWrapper) CheckInBooking(w http.ResponseWriter, r *http
 
 	}
 
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
 	// ------------- Optional header parameter "X-CSRF-Token" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
 		var XCSRFToken CSRFToken
@@ -12567,6 +14399,25 @@ func (siw *ServerInterfaceWrapper) AddBookingNote(w http.ResponseWriter, r *http
 	var params AddBookingNoteParams
 
 	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
 
 	// ------------- Optional header parameter "X-CSRF-Token" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
@@ -16145,6 +17996,88 @@ func (siw *ServerInterfaceWrapper) GenerateMapRows(w http.ResponseWriter, r *htt
 	handler.ServeHTTP(w, r)
 }
 
+// ReorientMap operation middleware
+func (siw *ServerInterfaceWrapper) ReorientMap(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "mapId" -------------
+	var mapId MapID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "mapId", chi.URLParam(r, "mapId"), &mapId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "mapId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ReorientMapParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatchRequired
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = IfMatch
+
+	} else {
+		err := fmt.Errorf("Header parameter If-Match is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
+		return
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReorientMap(w, r, establishmentId, mapId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListMessages operation middleware
 func (siw *ServerInterfaceWrapper) ListMessages(w http.ResponseWriter, r *http.Request) {
 
@@ -19141,6 +21074,787 @@ func (siw *ServerInterfaceWrapper) UpdateRatePeriod(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// GetBookingsReport operation middleware
+func (siw *ServerInterfaceWrapper) GetBookingsReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetBookingsReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "group_by" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "group_by", r.URL.Query(), &params.GroupBy, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "group_by"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "group_by", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetBookingsReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetCancellationsReport operation middleware
+func (siw *ServerInterfaceWrapper) GetCancellationsReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCancellationsReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "group_by" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "group_by", r.URL.Query(), &params.GroupBy, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "group_by"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "group_by", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetCancellationsReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetYearComparisonReport operation middleware
+func (siw *ServerInterfaceWrapper) GetYearComparisonReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetYearComparisonReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "compare_year" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "compare_year", r.URL.Query(), &params.CompareYear, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "compare_year"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "compare_year", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "granularity" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "granularity", r.URL.Query(), &params.Granularity, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "granularity"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "granularity", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "align" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "align", r.URL.Query(), &params.Align, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "align"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "align", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetYearComparisonReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetOccupancyReport operation middleware
+func (siw *ServerInterfaceWrapper) GetOccupancyReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetOccupancyReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "group_by" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "group_by", r.URL.Query(), &params.GroupBy, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "group_by"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "group_by", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "zone_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "zone_id", r.URL.Query(), &params.ZoneId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "zone_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zone_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "map_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "map_id", r.URL.Query(), &params.MapId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "map_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "map_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetOccupancyReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetOpenBalancesReport operation middleware
+func (siw *ServerInterfaceWrapper) GetOpenBalancesReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetOpenBalancesReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetOpenBalancesReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetRevenueReport operation middleware
+func (siw *ServerInterfaceWrapper) GetRevenueReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRevenueReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "group_by" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "group_by", r.URL.Query(), &params.GroupBy, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "group_by"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "group_by", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "basis" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "basis", r.URL.Query(), &params.Basis, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "basis"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "basis", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetRevenueReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetSeasonPassesReport operation middleware
+func (siw *ServerInterfaceWrapper) GetSeasonPassesReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSeasonPassesReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "group_by" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "group_by", r.URL.Query(), &params.GroupBy, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "group_by"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "group_by", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSeasonPassesReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetReportSummary operation middleware
+func (siw *ServerInterfaceWrapper) GetReportSummary(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetReportSummaryParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetReportSummary(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetTopCustomersReport operation middleware
+func (siw *ServerInterfaceWrapper) GetTopCustomersReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTopCustomersReportParams
+
+	// ------------- Required query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Required query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "sort" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "sort", r.URL.Query(), &params.Sort, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "sort"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "sort", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetTopCustomersReport(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListSeasonPasses operation middleware
 func (siw *ServerInterfaceWrapper) ListSeasonPasses(w http.ResponseWriter, r *http.Request) {
 
@@ -20744,6 +23458,542 @@ func (siw *ServerInterfaceWrapper) PublishTermsVersion(w http.ResponseWriter, r 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.PublishTermsVersion(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListWebhookEndpoints operation middleware
+func (siw *ServerInterfaceWrapper) ListWebhookEndpoints(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListWebhookEndpoints(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateWebhookEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) CreateWebhookEndpoint(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateWebhookEndpointParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateWebhookEndpoint(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteWebhookEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) DeleteWebhookEndpoint(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteWebhookEndpointParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteWebhookEndpoint(w, r, establishmentId, endpointId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWebhookEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) GetWebhookEndpoint(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWebhookEndpoint(w, r, establishmentId, endpointId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateWebhookEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) UpdateWebhookEndpoint(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateWebhookEndpointParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateWebhookEndpoint(w, r, establishmentId, endpointId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListWebhookDeliveries operation middleware
+func (siw *ServerInterfaceWrapper) ListWebhookDeliveries(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListWebhookDeliveriesParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListWebhookDeliveries(w, r, establishmentId, endpointId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWebhookDelivery operation middleware
+func (siw *ServerInterfaceWrapper) GetWebhookDelivery(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "deliveryId" -------------
+	var deliveryId WebhookDeliveryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "deliveryId", chi.URLParam(r, "deliveryId"), &deliveryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deliveryId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWebhookDelivery(w, r, establishmentId, endpointId, deliveryId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RedeliverWebhook operation middleware
+func (siw *ServerInterfaceWrapper) RedeliverWebhook(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "deliveryId" -------------
+	var deliveryId WebhookDeliveryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "deliveryId", chi.URLParam(r, "deliveryId"), &deliveryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deliveryId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RedeliverWebhookParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RedeliverWebhook(w, r, establishmentId, endpointId, deliveryId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RotateWebhookSecret operation middleware
+func (siw *ServerInterfaceWrapper) RotateWebhookSecret(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RotateWebhookSecretParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RotateWebhookSecret(w, r, establishmentId, endpointId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SendWebhookTest operation middleware
+func (siw *ServerInterfaceWrapper) SendWebhookTest(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SendWebhookTestParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SendWebhookTest(w, r, establishmentId, endpointId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -23399,6 +26649,81 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/payments/reconciliation", wrapper.RunReconciliation)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/summary", wrapper.GetReportSummary)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/occupancy", wrapper.GetOccupancyReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/revenue", wrapper.GetRevenueReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/bookings", wrapper.GetBookingsReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/cancellations", wrapper.GetCancellationsReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/season-passes", wrapper.GetSeasonPassesReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/top-customers", wrapper.GetTopCustomersReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/open-balances", wrapper.GetOpenBalancesReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/reports/comparison", wrapper.GetYearComparisonReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/api-keys", wrapper.ListAPIKeys)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/api-keys", wrapper.CreateAPIKey)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId}", wrapper.RevokeAPIKey)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId}", wrapper.GetAPIKey)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId}", wrapper.UpdateAPIKey)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints", wrapper.ListWebhookEndpoints)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints", wrapper.CreateWebhookEndpoint)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}", wrapper.DeleteWebhookEndpoint)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}", wrapper.GetWebhookEndpoint)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}", wrapper.UpdateWebhookEndpoint)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/rotate-secret", wrapper.RotateWebhookSecret)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/test", wrapper.SendWebhookTest)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries", wrapper.ListWebhookDeliveries)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}", wrapper.GetWebhookDelivery)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/redeliver", wrapper.RedeliverWebhook)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/maps/{mapId}/reorient", wrapper.ReorientMap)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/meta", wrapper.GetMeta)

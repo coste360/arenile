@@ -35,6 +35,15 @@
 - **Passerelle modulari:** tessere di 60 unità (il viewBox del kit a scala 0,5; le assi disegnate sono più
   strette del lato), tratti dritti lunghi un numero intero di tessere; si agganciano alla griglia delle tessere
   solo quando il passo della griglia divide 60, altrimenti tengono la posizione.
+- **Lato del mare** (`maps.sea_side`: `top`, `bottom`, `left`, `right`): sui lidi italiani il mare è di solito in
+  alto, quindi `top` è il predefinito delle nuove mappe, del generatore di file, del modello classico e della demo,
+  con la fila A più vicina al mare. Se cambia il lato del mare di una mappa con elementi, l'editor propone
+  "Ribalta la disposizione" oppure "Solo il mare". Ribaltare (`POST /maps/{id}/reorient`, `If-Match`) sposta
+  postazioni, elementi e passerelle così che ogni fila resti alla stessa distanza dal mare: lati opposti a
+  specchio (l'ordine lungo la riva non cambia), lati adiacenti con una rotazione di 90° e scambio di larghezza e
+  altezza; le tessere delle passerelle restano sulla loro griglia. Solo geometria (id, etichette, file, zone e
+  allocazioni invariati), in un unico salvataggio versionato; un'anteprima conta le allocazioni future, che
+  vanno confermate esplicitamente. Con modifiche non salvate si può spostare solo il mare.
 - Rinumerazione automatica di una fila selezionata.
 - Annulla e ripeti (stack di comandi lato client), con salvataggio esplicito.
 - **Salvataggio transazionale con controllo di versione:** `PUT /maps/{id}` con `If-Match` sulla versione; in caso di conflitto viene mostrata la differenza.

@@ -1,0 +1,76 @@
+{
+  "indicator": {
+    "online": "Online",
+    "offline": "Offline",
+    "syncing": "Synchronisierung",
+    "pending_one": "{{count}} in Warteschlange",
+    "pending_other": "{{count}} in Warteschlange",
+    "rejected_one": "{{count}} zu prüfen",
+    "rejected_other": "{{count}} zu prüfen",
+    "open": "Offline-Vorgänge öffnen"
+  },
+  "banner": {
+    "offlineTitle": "Sie sind offline",
+    "savedAt": "Sie sehen die um {{time}} gespeicherten Daten.",
+    "noData": "Auf diesem Gerät sind keine Daten dieses Betriebs gespeichert.",
+    "allowed": "Sie können einchecken, Notizen hinzufügen und Barzahlungen erfassen: sie werden gesendet, sobald die Verbindung zurück ist. Neue Buchungen und Verschiebungen sind nicht verfügbar.",
+    "rejectedTitle": "Offline-Vorgänge zu prüfen",
+    "rejected_one": "{{count}} offline erfasster Vorgang wurde vom Server nicht angenommen.",
+    "rejected_other": "{{count}} offline erfasste Vorgänge wurden vom Server nicht angenommen.",
+    "paused": "Sitzung abgelaufen: Melden Sie sich erneut an, um die Vorgänge zu senden.",
+    "review": "Prüfen"
+  },
+  "queue": {
+    "title": "Offline-Vorgänge",
+    "description": "Ohne Verbindung erfasst und bei Wiederverbindung der Reihe nach gesendet, jeder nur einmal.",
+    "empty": "Keine Vorgänge in der Warteschlange.",
+    "sendNow": "Jetzt senden",
+    "retry": "Erneut versuchen",
+    "discard": "Verwerfen",
+    "discardTitle": "Vorgang verwerfen?",
+    "discardDescription": "„{{kind}}“ für {{label}} wird nicht an den Server gesendet.",
+    "queuedAt": "Erfasst um {{time}}",
+    "kind": {
+      "check_in": "Check-in",
+      "note": "Notiz",
+      "cash_payment": "Barzahlung über {{amount}}"
+    },
+    "status": {
+      "pending": "In Warteschlange",
+      "sending": "Wird gesendet",
+      "conflict": "Konflikt",
+      "failed": "Abgelehnt"
+    }
+  },
+  "onlineOnly": {
+    "title": "Offline nicht verfügbar",
+    "body": "Buchungen anlegen oder verschieben erfordert die Verbindung: nur der Server garantiert, dass der Platz frei ist."
+  },
+  "actions": {
+    "unavailable": "Offline: neue Buchungen und Verschiebungen sind nicht verfügbar.",
+    "note": "Notiz hinzufügen",
+    "cash": "Barzahlung",
+    "noteTitle": "Offline-Notiz",
+    "noteDescription": "Die Notiz wird {{label}} bei Wiederverbindung hinzugefügt.",
+    "noteLabel": "Notiz",
+    "noteRequired": "Geben Sie den Text der Notiz ein.",
+    "cashTitle": "Offline-Barzahlung",
+    "cashDescription": "Offener Saldo {{balance}}. Die Zahlung wird bei Wiederverbindung erfasst und erfordert eine offene Kassensitzung.",
+    "amount": "Betrag",
+    "amountInvalid": "Geben Sie einen Betrag größer als null und nicht über dem Saldo ein.",
+    "submit": "In Warteschlange",
+    "queuedNote": "Notiz in der Warteschlange: sie wird bei Wiederverbindung gesendet.",
+    "queuedCash": "Zahlung über {{amount}} in der Warteschlange: sie wird bei Wiederverbindung gesendet.",
+    "queuedCheckIn": "Check-in von {{code}} in der Warteschlange: er wird bei Wiederverbindung gesendet."
+  },
+  "sync": {
+    "sent_one": "{{count}} Offline-Vorgang gesendet.",
+    "sent_other": "{{count}} Offline-Vorgänge gesendet."
+  },
+  "update": {
+    "available": "Eine neue Version des Panels ist verfügbar.",
+    "reload": "Aktualisieren",
+    "later": "Später",
+    "offlineReady": "Das Panel ist bereit, auch offline zu funktionieren."
+  }
+}

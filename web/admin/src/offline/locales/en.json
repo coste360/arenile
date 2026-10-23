@@ -1,0 +1,76 @@
+{
+  "indicator": {
+    "online": "Online",
+    "offline": "Offline",
+    "syncing": "Syncing",
+    "pending_one": "{{count}} queued",
+    "pending_other": "{{count}} queued",
+    "rejected_one": "{{count}} to review",
+    "rejected_other": "{{count}} to review",
+    "open": "Open offline operations"
+  },
+  "banner": {
+    "offlineTitle": "You are offline",
+    "savedAt": "You are viewing the data saved at {{time}}.",
+    "noData": "There is no saved data of this establishment on this device.",
+    "allowed": "You can check in, add notes and record cash payments: they will be sent when the connection is back. New bookings and moves are not available.",
+    "rejectedTitle": "Offline operations to review",
+    "rejected_one": "{{count}} operation recorded offline was not accepted by the server.",
+    "rejected_other": "{{count}} operations recorded offline were not accepted by the server.",
+    "paused": "Session expired: sign in again to send the queued operations.",
+    "review": "Review"
+  },
+  "queue": {
+    "title": "Offline operations",
+    "description": "Recorded without a connection and sent in order when it is back, each only once.",
+    "empty": "No queued operations.",
+    "sendNow": "Send now",
+    "retry": "Retry",
+    "discard": "Discard",
+    "discardTitle": "Discard the operation?",
+    "discardDescription": "\"{{kind}}\" on {{label}} will not be sent to the server.",
+    "queuedAt": "Recorded at {{time}}",
+    "kind": {
+      "check_in": "Check-in",
+      "note": "Note",
+      "cash_payment": "Cash payment of {{amount}}"
+    },
+    "status": {
+      "pending": "Queued",
+      "sending": "Sending",
+      "conflict": "Conflict",
+      "failed": "Refused"
+    }
+  },
+  "onlineOnly": {
+    "title": "Not available offline",
+    "body": "Creating or moving bookings needs the connection: only the server guarantees that the spot is free."
+  },
+  "actions": {
+    "unavailable": "Offline: new bookings and moves are not available.",
+    "note": "Add note",
+    "cash": "Cash payment",
+    "noteTitle": "Offline note",
+    "noteDescription": "The note will be added to {{label}} when the connection is back.",
+    "noteLabel": "Note",
+    "noteRequired": "Write the text of the note.",
+    "cashTitle": "Offline cash payment",
+    "cashDescription": "Balance due {{balance}}. The payment will be recorded when the connection is back and needs an open cash session.",
+    "amount": "Amount",
+    "amountInvalid": "Enter an amount greater than zero and not above the balance.",
+    "submit": "Queue",
+    "queuedNote": "Note queued: it will be sent when the connection is back.",
+    "queuedCash": "Payment of {{amount}} queued: it will be sent when the connection is back.",
+    "queuedCheckIn": "Check-in of {{code}} queued: it will be sent when the connection is back."
+  },
+  "sync": {
+    "sent_one": "{{count}} offline operation sent.",
+    "sent_other": "{{count}} offline operations sent."
+  },
+  "update": {
+    "available": "A new version of the panel is available.",
+    "reload": "Update",
+    "later": "Later",
+    "offlineReady": "The panel is ready to work offline too."
+  }
+}

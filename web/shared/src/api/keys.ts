@@ -21,7 +21,10 @@ export type EstablishmentArea =
   | 'season-passes'
   | 'payments'
   | 'cash'
-  | 'fiscal';
+  | 'fiscal'
+  // M5A: reports (invalidated by booking/cash topics) and integrations.
+  | 'reports'
+  | 'integrations';
 
 export const establishmentKeys = {
   /** Every operational query of one establishment. */

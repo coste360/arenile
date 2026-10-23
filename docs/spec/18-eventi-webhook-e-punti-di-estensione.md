@@ -56,7 +56,8 @@ stabilimento": `entity` e `change` sono sempre presenti, gli altri campi solo qu
 - `entity` di `config.pricing_changed`: `price_rule`, `fixed_price`, `promo_code`, `agreement`,
   `booking_policy`, `season_copy`, `season`, `rate_period`, `establishment_settings`, `pack`, `extra`,
   `setup`; di `config.map_changed`: `map`, `zone`, `pool`, `setup`.
-- `change`: `created`, `updated`, `deleted`, `archived`, `copied`, `saved`, `rows_generated`, `applied`.
+- `change`: `created`, `updated`, `deleted`, `archived`, `copied`, `saved`, `rows_generated`, `applied`,
+  `reoriented` (lato del mare cambiato con la disposizione, 11.2).
 - `season_id` per le entità legate a una stagione; `map_id` per mappa, zone e pool; `code` per pack ed
   extra; `version` è la nuova versione dell'entità.
 - `reason` (`setup_template`, `quick_pricelist`), `template`, `map_ids`, `zone_ids` e `counts` descrivono

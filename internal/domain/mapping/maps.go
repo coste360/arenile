@@ -237,6 +237,12 @@ type saveSummary struct {
 // applyDocument writes in over the current map cur (already version
 // checked) inside tx. in has passed validateDocument.
 func (s *Service) applyDocument(ctx context.Context, tx bun.Tx, p *auth.Principal, es store.EstablishmentScope, cur *store.Map, in SaveInput, action string) (*Document, error) {
+	return s.applyDocumentAs(ctx, tx, p, es, cur, in, action, nil)
+}
+
+// applyDocumentAs is applyDocument with an audit diff built by auditDiff
+// from the save summary (nil: the summary itself).
+func (s *Service) applyDocumentAs(ctx context.Context, tx bun.Tx, p *auth.Principal, es store.EstablishmentScope, cur *store.Map, in SaveInput, action string, auditDiff func(saveSummary) any) (*Document, error) {
 	oldSpots, err := store.ListMapSpots(ctx, tx, es, cur.ID)
 	if err != nil {
 		return nil, err
@@ -432,7 +438,11 @@ func (s *Service) applyDocument(ctx context.Context, tx bun.Tx, p *auth.Principa
 	}
 
 	data := event.ConfigChange{Entity: "map", EntityID: cur.ID, Change: action, MapID: cur.ID, Version: next.Version}
-	if err := s.record(ctx, tx, p, es, "map."+action, data, sum); err != nil {
+	var diff any = sum
+	if auditDiff != nil {
+		diff = auditDiff(sum)
+	}
+	if err := s.record(ctx, tx, p, es, "map."+action, data, diff); err != nil {
 		return nil, err
 	}
 	return s.loadDocument(ctx, tx, es, cur.ID)

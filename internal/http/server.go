@@ -13,6 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coste360/arenile/internal/domain/apikey"
+	"github.com/coste360/arenile/internal/domain/report"
+	"github.com/coste360/arenile/internal/domain/webhook"
+
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/uptrace/bun"
@@ -87,10 +91,14 @@ type Deps struct {
 	Cash      *cash.Service
 	Fiscal    *fiscal.Service
 	// M4 services (public page, online payments, notifications).
-	Online         *online.Service
-	Checkout       *checkout.Service
-	Notify         *notify.Service
-	Gateway        *gateway.Service
+	Online   *online.Service
+	Checkout *checkout.Service
+	Notify   *notify.Service
+	Gateway  *gateway.Service
+	// M5A services (reports, API keys, outgoing webhooks).
+	Reports        *report.Service
+	APIKeys        *apikey.Service
+	Webhooks       *webhook.Service
 	Bus            ext.EventBus
 	Readiness      ReadinessChecker
 	TrustedProxies []netip.Prefix
@@ -118,6 +126,9 @@ type Deps struct {
 	// API limits (defaults 60 and 10, spec 17.2).
 	PublicReadsPerMinute     int
 	PublicCreationsPerMinute int
+	// APIKeyRequestsPerMinute overrides the per API key budget on the admin
+	// API (default middleware.DefaultAPIKeyRequestsPerMinute, M5A).
+	APIKeyRequestsPerMinute int
 }
 
 // Paths that do not require authentication under /api/admin/,
@@ -179,6 +190,7 @@ func New(d Deps) http.Handler {
 		middleware.OnPrefix("/api/", middleware.LimitBody(1<<20), middleware.RequireJSON),
 		middleware.OnPrefix("/api/admin/",
 			middleware.Authenticate(adminAuthenticator(d), d.Log),
+			middleware.APIKeyRateLimit(auth.NewRateLimiter(d.Clock, apiKeyBudget(d.APIKeyRequestsPerMinute), time.Minute)),
 			middleware.RequireAuth([]string{loginPath, metaPath}, authPathPrefix),
 			middleware.CSRF(d.SecureCookies, sessionTTL),
 		),
@@ -210,6 +222,7 @@ func New(d Deps) http.Handler {
 			Payments: d.Payments, Cash: d.Cash, Fiscal: d.Fiscal,
 			Online: d.Online, Notify: d.Notify, Gateway: d.Gateway,
 			Meta: d.Meta, Devices: d.Devices, FiscalBridge: d.FiscalBridge,
+			Reports: d.Reports, APIKeys: d.APIKeys, Webhooks: d.Webhooks,
 			Stream: &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
 		},
 		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
@@ -382,4 +395,12 @@ func bindErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 	problem.Write(w, r, problem.BadRequest, problem.Detail(err.Error()))
+}
+
+// apiKeyBudget applies the default per API key request budget.
+func apiKeyBudget(n int) int {
+	if n <= 0 {
+		return middleware.DefaultAPIKeyRequestsPerMinute
+	}
+	return n
 }

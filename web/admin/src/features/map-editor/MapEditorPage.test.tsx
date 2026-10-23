@@ -1,6 +1,8 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { createQueryClient } from '../../lib/queryClient';
+import { configKey } from '../configuration/api/resource';
 import {
   EST_ID,
   baseRoutes,
@@ -99,6 +101,33 @@ const spotButton = (label: string) =>
   screen.findByRole('button', { name: new RegExp(`^Postazione ${label},`) });
 
 describe('MapEditorPage', () => {
+  it('never seeds the draft from the restored offline copy: waits for the first fetch', async () => {
+    // The offline runtime restores the document invalidated (a copy). The
+    // server has since moved the sea to the top: the editor must open on that.
+    const qc = createQueryClient();
+    const copy = {
+      ...DOC,
+      map: { ...MAP, sea_side: 'bottom', version: 2 },
+      spots: [spot('s1', 'A1', 100, 100), spot('s2', 'A2', 160, 100)],
+    };
+    qc.setQueryData([...configKey(EST_ID), 'maps', 'document', 'm1'], copy);
+    await qc.invalidateQueries({ refetchType: 'none' });
+    const fresh = { ...DOC, map: { ...MAP, sea_side: 'top', version: 3 } };
+    const { fetchMock } = renderApp(
+      `/e/${EST_ID}/maps/m1`,
+      routes('manager', { [`GET ${API}/maps/m1`]: () => json(200, fresh, { ETag: '"3"' }) }),
+      qc,
+    );
+    await screen.findByRole('group', { name: /Mappa con 2 postazioni/ });
+    expect(callsTo(fetchMock, 'GET', `${API}/maps/m1`)).toHaveLength(1);
+    // The draft comes from the fresh document (A1 at y 200), not from the copy (y 100).
+    const a1 = screen.getByRole('button', { name: /^Postazione A1,/ });
+    expect(a1).toHaveAttribute('data-y', '200');
+    expect(
+      qc.getQueryData<typeof fresh>([...configKey(EST_ID), 'maps', 'document', 'm1'])?.map.sea_side,
+    ).toBe('top');
+  });
+
   it('moves a spot with the keyboard and saves the whole document with If-Match', async () => {
     const user = userEvent.setup();
     let sent: SaveBody | undefined;

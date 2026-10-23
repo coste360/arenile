@@ -516,7 +516,8 @@ type zoneSpots struct {
 }
 
 // layoutMap computes a map with its spots (by zone code) and decorations.
-// Rows are listed from the sea outwards; the sea is at the bottom.
+// Rows are listed from the sea outwards: row A is the nearest to the sea,
+// which is at the top (the default, spec 11) or at the bottom of the map.
 func (a *applier) layoutMap(ms MapSpec, sortOrder int) (*store.Map, map[string]*zoneSpots, []store.MapDecoration) {
 	var blocks []layoutBlock
 	if ms.Grid {
@@ -552,6 +553,12 @@ func (a *applier) layoutMap(ms MapSpec, sortOrder int) (*store.Map, map[string]*
 	}
 	width := 2*layoutMargin + maxW
 	height := 2*layoutMargin + layoutSeaBand + float64(max(totalRows-1, 0))*layoutSpacingY
+	// Templates draw the sea at the top or at the bottom; anything else
+	// falls back to the top, the default.
+	seaSide := mapping.SeaTop
+	if ms.SeaSide == mapping.SeaBottom {
+		seaSide = mapping.SeaBottom
+	}
 	now := a.s.d.Clock.Now()
 	name := cloneText(ms.Name)
 	if ms.Grid && len(a.in.MapName) > 0 {
@@ -559,20 +566,25 @@ func (a *applier) layoutMap(ms MapSpec, sortOrder int) (*store.Map, map[string]*
 	}
 	m := &store.Map{
 		ID: store.NewID(), EstablishmentID: a.es.ID(), Name: name, Width: int(width), Height: int(height),
-		GridSize: layoutGridSize, SeaSide: ms.SeaSide, SortOrder: sortOrder, Version: 1, CreatedAt: now, UpdatedAt: now,
+		GridSize: layoutGridSize, SeaSide: seaSide, SortOrder: sortOrder, Version: 1, CreatedAt: now, UpdatedAt: now,
 	}
 	out := map[string]*zoneSpots{}
 	k := 0 // index of the first row of the block, from the sea
 	for _, b := range blocks {
-		// The shared mapping generator lays out the block with the sea at
-		// the bottom: row A is the nearest to the sea, rows move upwards.
+		// The shared mapping generator lays out the block from the sea
+		// outwards: row A is the nearest to the sea, behind the sea band.
+		fromSea := layoutMargin + layoutSeaBand + float64(k)*layoutSpacingY
+		originY := fromSea
+		if seaSide == mapping.SeaBottom {
+			originY = height - fromSea
+		}
 		gen, err := mapping.Generate(mapping.GenerateParams{
 			ZoneID: "template", Rows: b.rows, SpotsPerRow: b.spots, // zones are assigned per row below
 			OriginX:  layoutMargin + (maxW-float64(b.spots-1)*b.spacingX)/2,
-			OriginY:  height - layoutMargin - layoutSeaBand - float64(k)*layoutSpacingY,
+			OriginY:  originY,
 			SpacingX: b.spacingX, SpacingY: layoutSpacingY,
 			RowLabelStyle: mapping.RowLabelsLetters, FirstRowLabel: b.firstRow,
-			Kind: b.kind, SeaSide: mapping.SeaBottom,
+			Kind: b.kind, SeaSide: seaSide,
 		})
 		if err != nil {
 			k += b.rows
@@ -596,7 +608,7 @@ func (a *applier) layoutMap(ms MapSpec, sortOrder int) (*store.Map, map[string]*
 			occupied = append(occupied, kitSpotRect(sp.X, sp.Y, shape))
 		}
 	}
-	decos := kitDecorations(a.es.ID(), m.ID, width, height, occupied, now)
+	decos := kitDecorations(a.es.ID(), m.ID, width, height, seaSide, occupied, now)
 	return m, out, decos
 }
 

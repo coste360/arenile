@@ -82,6 +82,10 @@ tags:
     description: Ponte fiscale verso il FiscalDriver locale dell'app desktop in modalità remota (spec 29.1, 14.2)
   - name: desktop
     description: Edizione desktop, solo da 127.0.0.1 (primo avvio, impostazioni, backup e ripristino, spec 29.1)
+  - name: reports
+    description: Report, esportazioni CSV e confronto con l'anno precedente
+  - name: integrations
+    description: Chiavi API e webhook in uscita
 
 paths:
   /healthz:
@@ -3783,6 +3787,7 @@ paths:
       summary: "Registra il check-in"
       description: >-
         Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition.
+        Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -3790,6 +3795,7 @@ paths:
         - $ref: "#/components/parameters/EstablishmentID"
         - $ref: "#/components/parameters/BookingID"
         - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/IdempotencyKey"
         - $ref: "#/components/parameters/CSRFToken"
       requestBody:
         required: false
@@ -4041,12 +4047,14 @@ paths:
       operationId: addBookingNote
       tags: [bookings]
       summary: "Aggiunge una nota"
+      description: Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
       security:
         - cookieAuth: []
         - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/EstablishmentID"
         - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IdempotencyKey"
         - $ref: "#/components/parameters/CSRFToken"
       requestBody:
         required: true
@@ -6689,6 +6697,969 @@ paths:
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
 
+  # ---- M5A: reports (spec 15.3) ------------------------------------------------
+  # Every report is a GET with from/to (inclusive calendar span, establishment
+  # timezone, at most 400 days), JSON by default and CSV with format=csv or
+  # Accept: text/csv (UTF-8 with BOM, ';' separator, decimal comma, Italian
+  # headers, CRLF; same convention as the corrispettivi export). Permission
+  # reports.read. Test bookings (spec 15.4) are excluded once that flag exists.
+  /api/admin/v1/establishments/{establishmentId}/reports/summary:
+    get:
+      operationId: getReportSummary
+      tags: [reports]
+      summary: Indicatori principali del periodo (occupazione, ricavi, prenotazioni, saldi aperti)
+      description: >-
+        KPI del periodo per le schede del cruscotto dei report. Due sole basi di data, così le schede di uno
+        stesso periodo non si contraddicono: base **soggiorno** per occupazione (giorno di soggiorno) e, per primo
+        giorno di soggiorno (`starts_on`), prenotazioni, valore medio, prenotato, abbonamenti, cancellazioni e
+        no-show; base **incasso** (`business_date` del pagamento, rimborsi negativi) per l'incassato. I report di
+        dettaglio prenotazioni (data di vendita) e ricavi `basis=booked` (data di conferma) mantengono le loro
+        basi. Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Indicatori
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSummary"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/occupancy:
+    get:
+      operationId: getOccupancyReport
+      tags: [reports]
+      summary: Occupazione per giorno, zona, fila o fascia
+      description: >-
+        Unità = (postazione, giorno, fascia AM/PM). Capacità = postazioni attive delle mappe dello
+        stabilimento × giorni aperti (esclusi i giorni di chiusura e quelli fuori stagione) × 2 fasce,
+        meno le unità bloccate (spot_blocks). Occupate = allocazioni booking e season, esclusi i giorni
+        rilasciati dagli abbonati e non rivenduti (contati in released_units); gli hold non contano.
+        occupancy_bp = occupied_units * 10000 / capacity_units (0 se capacità 0). Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: group_by
+          in: query
+          required: false
+          description: "Raggruppamento (default day)."
+          schema:
+            $ref: "#/components/schemas/OccupancyGroupBy"
+        - name: zone_id
+          in: query
+          required: false
+          description: "Limita a una zona."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: map_id
+          in: query
+          required: false
+          description: "Limita a una mappa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Occupazione
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OccupancyReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/revenue:
+    get:
+      operationId: getRevenueReport
+      tags: [reports]
+      summary: Ricavi per periodo, canale, pack, extra, metodo di pagamento o aliquota IVA
+      description: >-
+        Due basi di calcolo. `collected` (incassato, default): pagamenti riusciti per business_date,
+        rimborsi in negativo; IVA da payments.vat_breakdown; il canale è quello della prenotazione
+        collegata (`counter` per le vendite al banco senza prenotazione). `booked` (venduto): valore
+        delle prenotazioni confermate (confirmed, checked_in, completed, no_show) per giorno di conferma
+        (confirmed_at nel fuso dello stabilimento), dallo snapshot del prezzo corrente. group_by
+        payment_method richiede collected; pack ed extra richiedono booked (altrimenti 400
+        validation_failed). Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: group_by
+          in: query
+          required: false
+          description: "Raggruppamento (default day)."
+          schema:
+            $ref: "#/components/schemas/RevenueGroupBy"
+        - name: basis
+          in: query
+          required: false
+          description: "Base di calcolo (default collected)."
+          schema:
+            $ref: "#/components/schemas/RevenueBasis"
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Ricavi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/bookings:
+    get:
+      operationId: getBookingsReport
+      tags: [reports]
+      summary: Prenotazioni per canale, anticipo di prenotazione, formula o giorno
+      description: >-
+        Prenotazioni vendute nel periodo (giorno di creazione nel fuso dello stabilimento), esclusi
+        draft, held, expired e rejected. Anticipo (lead time) = starts_on − giorno di creazione, in
+        fasce. Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: group_by
+          in: query
+          required: false
+          description: "Raggruppamento (default channel)."
+          schema:
+            $ref: "#/components/schemas/BookingsReportGroupBy"
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Prenotazioni
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingsReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/cancellations:
+    get:
+      operationId: getCancellationsReport
+      tags: [reports]
+      summary: Cancellazioni e mancate presentazioni
+      description: >-
+        Prenotazioni con primo giorno (starts_on) nel periodo: totale, cancellate, no-show, valore
+        perso e rimborsato, tassi in punti base. Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: group_by
+          in: query
+          required: false
+          description: "Raggruppamento (default month)."
+          schema:
+            $ref: "#/components/schemas/CancellationsGroupBy"
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Cancellazioni e no-show
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancellationsReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/season-passes:
+    get:
+      operationId: getSeasonPassesReport
+      tags: [reports]
+      summary: Abbonamenti stagionali, rilasci e rivendite
+      description: >-
+        Abbonamenti venduti nel periodo (giorno di conferma) e rinnovi; rilasci con data nel periodo
+        (unità giorno×fascia), quante rivendute, ricavo delle rivendite (valore delle righe rivendute)
+        e crediti riconosciuti agli abbonati. Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: group_by
+          in: query
+          required: false
+          description: "Raggruppamento delle righe dei rilasci (default month)."
+          schema:
+            $ref: "#/components/schemas/SeasonPassesGroupBy"
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Abbonamenti e rilasci
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonPassesReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/top-customers:
+    get:
+      operationId: getTopCustomersReport
+      tags: [reports]
+      summary: Migliori clienti del periodo (solo nome visualizzato, nessun contatto)
+      description: >-
+        Classifica per incassato (pagamenti netti delle loro prenotazioni nel periodo) o per numero di
+        prenotazioni. Mai email, telefono o altri dati personali oltre al nome; i clienti anonimizzati
+        compaiono come "Cliente anonimizzato". Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: sort
+          in: query
+          required: false
+          description: "Ordinamento (default revenue)."
+          schema:
+            $ref: "#/components/schemas/TopCustomersSort"
+        - name: limit
+          in: query
+          required: false
+          description: "Numero di clienti (default 20)."
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Migliori clienti
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopCustomersReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/open-balances:
+    get:
+      operationId: getOpenBalancesReport
+      tags: [reports]
+      summary: Saldi aperti (prenotazioni con importo ancora da incassare)
+      description: >-
+        Prenotazioni in stato confirmed, checked_in, completed o no_show con balance_due > 0 e primo
+        giorno nel periodo. Solo nome visualizzato del cliente. Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Saldi aperti
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenBalancesReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/reports/comparison:
+    get:
+      operationId: getYearComparisonReport
+      tags: [reports]
+      summary: Confronto con l'anno precedente sullo stesso intervallo di calendario
+      description: >-
+        Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e
+        mese; il 29 febbraio diventa 28 febbraio) o di `compare_year` (che deve precedere l'anno di from).
+        Per ogni metrica: valore corrente, precedente, differenza assoluta e relativa in punti base (assente
+        se il precedente è 0); stesse basi di data del riepilogo (soggiorno e incasso). La serie sovrappone
+        l'anno precedente a quello corrente per giorno di calendario (un 29 febbraio precedente si somma al
+        28 febbraio; un 29 febbraio corrente non ha riscontro), quindi un valore non finisce mai nel mese
+        sbagliato. Con `align=weekday` il periodo di confronto ha la stessa durata ma inizia nel giorno
+        della settimana uguale più vicino alla data di calendario corrispondente (es. sabato con sabato:
+        364 giorni prima per l'anno precedente) e la serie allinea giorno per giorno. Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ReportFrom"
+        - $ref: "#/components/parameters/ReportTo"
+        - name: compare_year
+          in: query
+          required: false
+          description: "Anno di confronto (default: anno di from − 1); deve precedere l'anno di from."
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 2999
+        - name: granularity
+          in: query
+          required: false
+          description: "Granularità della serie (default week)."
+          schema:
+            $ref: "#/components/schemas/ComparisonGranularity"
+        - name: align
+          in: query
+          required: false
+          description: "Allineamento del periodo di confronto (default calendar)."
+          schema:
+            $ref: "#/components/schemas/ComparisonAlign"
+        - $ref: "#/components/parameters/ReportFormat"
+      responses:
+        "200":
+          description: Confronto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/YearComparisonReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  # ---- M5A: API keys (spec 16, 17) --------------------------------------------
+  # Managed only by users with users.manage (owner); requests authenticated
+  # with an API key get 403 forbidden on every api-keys/webhook-endpoints
+  # operation (a key never manages keys or webhooks).
+  /api/admin/v1/establishments/{establishmentId}/api-keys:
+    get:
+      operationId: listAPIKeys
+      tags: [integrations]
+      summary: Chiavi API dello stabilimento (mai il segreto)
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: include_revoked
+          in: query
+          required: false
+          description: "Include anche le chiavi revocate (default false)."
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Chiavi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createAPIKey
+      tags: [integrations]
+      summary: Crea una chiave API (il segreto è restituito una sola volta)
+      description: >-
+        Il segreto `ar_live_<prefix>_<secret>` compare solo in questa risposta (Cache-Control: no-store)
+        ed è salvato come hash. Niente Idempotency-Key: la risposta conterrebbe il segreto e verrebbe
+        memorizzata. Gli scope sono permessi (Permission) tranne users.manage. Audit api_key.created.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiKeyCreate"
+      responses:
+        "201":
+          description: Chiave creata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyCreated"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId}:
+    get:
+      operationId: getAPIKey
+      tags: [integrations]
+      summary: Dettaglio di una chiave API
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ApiKeyID"
+      responses:
+        "200":
+          description: Chiave
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKey"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updateAPIKey
+      tags: [integrations]
+      summary: Rinomina, cambia scope o scadenza di una chiave attiva
+      description: >-
+        Campi assenti invariati; `clear_expiry: true` rimuove la scadenza. Una chiave revocata non si
+        modifica (409 conflict). Audit api_key.updated.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ApiKeyID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiKeyUpdate"
+      responses:
+        "200":
+          description: Chiave aggiornata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKey"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: revokeAPIKey
+      tags: [integrations]
+      summary: Revoca una chiave (immediata e definitiva; la riga resta per l'audit)
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ApiKeyID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Revocata (idempotente)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  # ---- M5A: outgoing webhooks (spec 18.2) ---------------------------------------
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints:
+    get:
+      operationId: listWebhookEndpoints
+      tags: [integrations]
+      summary: Endpoint dei webhook in uscita (mai il segreto)
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Endpoint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookEndpointList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createWebhookEndpoint
+      tags: [integrations]
+      summary: Registra un endpoint (il segreto di firma è restituito una sola volta)
+      description: >-
+        URL https (http solo verso localhost/127.0.0.1/::1, per sviluppo), senza credenziali nella URL,
+        massimo 2048 caratteri. Eventi: tipi di WebhookEventType, `<gruppo>.*` o `*`. Il segreto
+        `whsec_…` è cifrato a riposo (AES-GCM, ARENILE_SECRET_KEY) e compare solo in questa risposta.
+        Niente Idempotency-Key (la risposta contiene il segreto). Audit webhook.created.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookEndpointCreate"
+      responses:
+        "201":
+          description: Endpoint creato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookEndpointCreated"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}:
+    get:
+      operationId: getWebhookEndpoint
+      tags: [integrations]
+      summary: Dettaglio di un endpoint
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+      responses:
+        "200":
+          description: Endpoint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookEndpoint"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updateWebhookEndpoint
+      tags: [integrations]
+      summary: Modifica URL, descrizione, eventi o stato attivo
+      description: >-
+        Campi assenti invariati. `active: true` riattiva anche un endpoint disattivato automaticamente
+        (azzera consecutive_failures, disabled_at e disabled_reason); `active: false` lo mette in pausa
+        (le consegne pendenti falliscono con "endpoint disabled"). Audit webhook.updated.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookEndpointUpdate"
+      responses:
+        "200":
+          description: Endpoint aggiornato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookEndpoint"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: deleteWebhookEndpoint
+      tags: [integrations]
+      summary: Elimina un endpoint e il suo registro delle consegne
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Eliminato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/rotate-secret:
+    post:
+      operationId: rotateWebhookSecret
+      tags: [integrations]
+      summary: Ruota il segreto di firma (il nuovo è restituito una sola volta)
+      description: >-
+        Durante il periodo di grazia ogni consegna porta due firme v1 nello stesso header
+        (`t=…,v1=<nuovo>,v1=<precedente>`), così il ricevente può aggiornare il segreto senza perdere
+        eventi. grace_hours 0 revoca subito il precedente. Audit webhook.secret_rotated.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookSecretRotate"
+      responses:
+        "200":
+          description: Segreto ruotato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookSecretRotated"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/test:
+    post:
+      operationId: sendWebhookTest
+      tags: [integrations]
+      summary: Invia subito un evento di prova `webhook.test` a questo solo endpoint
+      description: >-
+        Scrive un evento `webhook.test` già marcato come distribuito (non arriva ad altri endpoint né ai
+        sink) e ne tenta la consegna in modo sincrono, un solo tentativo senza ripetizioni (timeout come
+        le consegne normali). Funziona anche con endpoint in pausa. Risponde con la consegna e il suo
+        esito; il tentativo compare nel registro.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Esito del tentativo (anche se il ricevente ha risposto con errore)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookDelivery"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries:
+    get:
+      operationId: listWebhookDeliveries
+      tags: [integrations]
+      summary: Registro delle consegne dell'endpoint (più recenti prima)
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - name: status
+          in: query
+          required: false
+          description: "Filtra per stato."
+          schema:
+            $ref: "#/components/schemas/WebhookDeliveryStatus"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di consegne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookDeliveryList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}:
+    get:
+      operationId: getWebhookDelivery
+      tags: [integrations]
+      summary: Dettaglio di una consegna con corpo inviato ed estratto della risposta
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - $ref: "#/components/parameters/WebhookDeliveryID"
+      responses:
+        "200":
+          description: Consegna
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookDeliveryDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/redeliver:
+    post:
+      operationId: redeliverWebhook
+      tags: [integrations]
+      summary: Rimette in coda una consegna (fallita o già consegnata) per un nuovo invio
+      description: >-
+        Azzera failed_at/delivered_at/last_error e pianifica il tentativo subito (next_attempt_at = ora);
+        il contatore attempts prosegue e il limite di 24 ore riparte da ora. Rifiutato con 409 se la
+        consegna è già in attesa o l'endpoint è disattivato. Audit webhook.redelivered.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - $ref: "#/components/parameters/WebhookDeliveryID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "202":
+          description: Consegna rimessa in coda
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookDelivery"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  # ---- M5A: map sea side (spec 11) -----------------------------------------------
+  /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/reorient:
+    post:
+      operationId: reorientMap
+      tags: [maps]
+      summary: Sposta il lato mare ribaltando o ruotando l'intera disposizione
+      description: >-
+        Cambia sea_side e trasforma la geometria (postazioni, decorazioni, tessere della passerella)
+        così che ogni fila mantenga la sua distanza dal mare. Lati opposti: specchio parallelo alla
+        riva (top↔bottom ribalta y, left↔right ribalta x; l'ordine lungo la riva resta invariato).
+        Lati adiacenti: rotazione di 90° (orario o antiorario, quella che porta il vecchio lato mare sul
+        nuovo) con scambio di width e height. Solo geometria: id, etichette, file, zone e allocazioni
+        invariati. Un unico salvataggio versionato (If-Match obbligatorio, versione +1, evento
+        config.map_changed con change "reoriented"). Se esistono allocazioni future sulle postazioni
+        della mappa serve acknowledge_future_allocations=true, altrimenti 409
+        spot_has_future_allocations con spot_ids. dry_run=true restituisce l'anteprima senza salvare
+        (nessun 409, solo i conteggi). Permesso establishment.configure.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/MapID"
+        - $ref: "#/components/parameters/IfMatchRequired"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MapReorientRequest"
+      responses:
+        "200":
+          description: Mappa riorientata (o anteprima con dry_run)
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapReorientResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
   # ---- M6/M7: meta, devices, device API, fiscal bridge, desktop --------------
 
   /api/admin/v1/meta:
@@ -7251,6 +8222,7 @@ paths:
         "501":
           $ref: "#/components/responses/NotImplemented"
 
+
 components:
   securitySchemes:
     cookieAuth:
@@ -7586,6 +8558,53 @@ components:
         type: string
         format: uuid
         x-go-type: string
+    # ---- M5A ----
+    ReportFrom:
+      name: from
+      in: query
+      required: true
+      description: "Primo giorno del periodo (incluso)."
+      schema:
+        $ref: "#/components/schemas/Date"
+    ReportTo:
+      name: to
+      in: query
+      required: true
+      description: "Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from)."
+      schema:
+        $ref: "#/components/schemas/Date"
+    ReportFormat:
+      name: format
+      in: query
+      required: false
+      description: "Formato (default json; in alternativa Accept: text/csv)."
+      schema:
+        $ref: "#/components/schemas/ReportFormat"
+    ApiKeyID:
+      name: apiKeyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    WebhookEndpointID:
+      name: endpointId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    WebhookDeliveryID:
+      name: deliveryId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+
 
   responses:
     BadRequest:
@@ -14600,6 +15619,819 @@ components:
         finished_at:
           type: string
           format: date-time
+
+    # ---- M5A: reports (spec 15.3) ----------------------------------------------------
+    ReportFormat:
+      type: string
+      enum: [json, csv]
+      x-enum-varnames: [ReportFormatJSON, ReportFormatCSV]
+    RatioBP:
+      type: integer
+      format: int64
+      description: "Rapporto in punti base (10000 = 100%). Intero, mai float."
+    ReportPeriod:
+      type: object
+      required: [from, to, days]
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        days:
+          type: integer
+          description: Giorni di calendario del periodo (inclusi gli estremi).
+    ReportSummary:
+      type: object
+      required:
+        [period, occupancy_bp, occupied_units, capacity_units, revenue_collected, revenue_booked, bookings,
+         average_booking_value, cancellations, no_shows, season_passes_sold, open_balance_total,
+         open_balance_bookings, generated_at]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        occupancy_bp:
+          $ref: "#/components/schemas/RatioBP"
+        occupied_units:
+          type: integer
+          format: int64
+        capacity_units:
+          type: integer
+          format: int64
+        revenue_collected:
+          allOf: [{ $ref: "#/components/schemas/Money" }]
+          description: Pagamenti riusciti per `business_date` nel periodo, rimborsi negativi (base incasso).
+        revenue_booked:
+          allOf: [{ $ref: "#/components/schemas/Money" }]
+          description: Totale delle prenotazioni in stato prenotato con primo giorno di soggiorno nel periodo.
+        bookings:
+          type: integer
+          description: Prenotazioni vendute con primo giorno di soggiorno nel periodo (cancellate e no-show incluse).
+        average_booking_value:
+          allOf: [{ $ref: "#/components/schemas/Money" }]
+          description: Valore medio delle `bookings` (divisione intera).
+        cancellations:
+          type: integer
+          description: Prenotazioni cancellate con primo giorno di soggiorno nel periodo.
+        no_shows:
+          type: integer
+          description: No-show con primo giorno di soggiorno nel periodo.
+        season_passes_sold:
+          type: integer
+          description: Abbonamenti in stato prenotato con primo giorno di soggiorno nel periodo.
+        open_balance_total:
+          $ref: "#/components/schemas/Money"
+        open_balance_bookings:
+          type: integer
+        generated_at:
+          type: string
+          format: date-time
+    OccupancyGroupBy:
+      type: string
+      enum: [day, zone, row, slot]
+    OccupancyRow:
+      type: object
+      required: [key, label, capacity_units, occupied_units, season_units, released_units, blocked_units, occupancy_bp]
+      properties:
+        key:
+          type: string
+          description: "Chiave stabile del gruppo: YYYY-MM-DD, id zona, `<zone_id>:<row_label>`, AM o PM."
+        label:
+          type: string
+          description: "Etichetta leggibile (giorno, nome zona, `Zona · Fila A`, Mattina/Pomeriggio)."
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        capacity_units:
+          type: integer
+          format: int64
+        occupied_units:
+          type: integer
+          format: int64
+          description: Unità occupate (booking + season non rilasciate + rivendite).
+        season_units:
+          type: integer
+          format: int64
+          description: Delle occupate, quelle degli abbonati.
+        released_units:
+          type: integer
+          format: int64
+          description: Unità rilasciate dagli abbonati e non rivendute (libere).
+        blocked_units:
+          type: integer
+          format: int64
+          description: Unità bloccate (già escluse dalla capacità).
+        occupancy_bp:
+          $ref: "#/components/schemas/RatioBP"
+    OccupancyReport:
+      type: object
+      required: [period, group_by, rows, totals]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        group_by:
+          $ref: "#/components/schemas/OccupancyGroupBy"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/OccupancyRow"
+        totals:
+          $ref: "#/components/schemas/OccupancyRow"
+    RevenueGroupBy:
+      type: string
+      enum: [day, week, month, channel, pack, extra, payment_method, vat_rate]
+    RevenueBasis:
+      type: string
+      enum: [collected, booked]
+    RevenueRow:
+      type: object
+      required: [key, label, count, gross, taxable, tax, refunds]
+      properties:
+        key:
+          type: string
+          description: >-
+            Chiave stabile: YYYY-MM-DD, settimana ISO `YYYY-Www`, `YYYY-MM`, canale (desk, online, api,
+            counter), codice pack o extra, metodo di pagamento, aliquota in punti base (`1000`).
+        label:
+          type: string
+        count:
+          type: integer
+          description: Movimenti (collected) o prenotazioni/righe (booked).
+        gross:
+          $ref: "#/components/schemas/Money"
+        taxable:
+          $ref: "#/components/schemas/Money"
+        tax:
+          $ref: "#/components/schemas/Money"
+        refunds:
+          $ref: "#/components/schemas/Money"
+          description: Rimborsi già sottratti da gross (solo collected; 0 per booked).
+    RevenueReport:
+      type: object
+      required: [period, group_by, basis, rows, totals]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        group_by:
+          $ref: "#/components/schemas/RevenueGroupBy"
+        basis:
+          $ref: "#/components/schemas/RevenueBasis"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueRow"
+        totals:
+          $ref: "#/components/schemas/RevenueRow"
+    BookingsReportGroupBy:
+      type: string
+      enum: [channel, lead_time, formula, day]
+    LeadTimeBucket:
+      type: string
+      description: "Fasce di anticipo: stesso giorno, 1-3, 4-7, 8-14, 15-30, 31-60, oltre 60 giorni."
+      enum: [same_day, d1_3, d4_7, d8_14, d15_30, d31_60, d61_plus]
+    BookingsReportRow:
+      type: object
+      required: [key, label, bookings, value, average_value, share_bp, average_lead_days]
+      properties:
+        key:
+          type: string
+          description: "Canale, LeadTimeBucket, formula o YYYY-MM-DD."
+        label:
+          type: string
+        bookings:
+          type: integer
+        value:
+          $ref: "#/components/schemas/Money"
+        average_value:
+          $ref: "#/components/schemas/Money"
+        share_bp:
+          $ref: "#/components/schemas/RatioBP"
+        average_lead_days:
+          type: integer
+          description: Anticipo medio in giorni (arrotondato per difetto).
+    BookingsReport:
+      type: object
+      required: [period, group_by, rows, totals]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        group_by:
+          $ref: "#/components/schemas/BookingsReportGroupBy"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingsReportRow"
+        totals:
+          $ref: "#/components/schemas/BookingsReportRow"
+    CancellationsGroupBy:
+      type: string
+      enum: [day, month, channel]
+    CancellationsRow:
+      type: object
+      required: [key, label, bookings, cancelled, no_shows, cancelled_bp, no_show_bp, lost_value, refunded]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        bookings:
+          type: integer
+          description: Prenotazioni del gruppo (denominatore dei tassi).
+        cancelled:
+          type: integer
+        no_shows:
+          type: integer
+        cancelled_bp:
+          $ref: "#/components/schemas/RatioBP"
+        no_show_bp:
+          $ref: "#/components/schemas/RatioBP"
+        lost_value:
+          $ref: "#/components/schemas/Money"
+          description: Valore delle prenotazioni cancellate meno quanto trattenuto (penali).
+        refunded:
+          $ref: "#/components/schemas/Money"
+    CancellationsReport:
+      type: object
+      required: [period, group_by, rows, totals]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        group_by:
+          $ref: "#/components/schemas/CancellationsGroupBy"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/CancellationsRow"
+        totals:
+          $ref: "#/components/schemas/CancellationsRow"
+    SeasonPassesGroupBy:
+      type: string
+      enum: [day, month, zone]
+    SeasonPassesRow:
+      type: object
+      required: [key, label, released_units, resold_units, resale_bp, resale_revenue, credits_issued]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        released_units:
+          type: integer
+          format: int64
+          description: Unità (giorno × fascia) rilasciate dagli abbonati, non revocate.
+        resold_units:
+          type: integer
+          format: int64
+        resale_bp:
+          $ref: "#/components/schemas/RatioBP"
+        resale_revenue:
+          $ref: "#/components/schemas/Money"
+        credits_issued:
+          $ref: "#/components/schemas/Money"
+    SeasonPassesReport:
+      type: object
+      required: [period, group_by, passes_sold, passes_value, renewals, rows, totals]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        group_by:
+          $ref: "#/components/schemas/SeasonPassesGroupBy"
+        passes_sold:
+          type: integer
+        passes_value:
+          $ref: "#/components/schemas/Money"
+        renewals:
+          type: integer
+          description: Abbonamenti venduti come rinnovo (renewal_of_booking_id valorizzato).
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeasonPassesRow"
+        totals:
+          $ref: "#/components/schemas/SeasonPassesRow"
+    TopCustomersSort:
+      type: string
+      enum: [revenue, bookings]
+    TopCustomerRow:
+      type: object
+      required: [rank, customer_id, display_name, bookings, spot_days, revenue]
+      properties:
+        rank:
+          type: integer
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        display_name:
+          type: string
+          description: Nome e cognome (mai email, telefono o altri dati).
+        bookings:
+          type: integer
+        spot_days:
+          type: integer
+          description: Giorni-postazione prenotati nel periodo.
+        revenue:
+          $ref: "#/components/schemas/Money"
+        last_booking_on:
+          $ref: "#/components/schemas/Date"
+    TopCustomersReport:
+      type: object
+      required: [period, sort, rows]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        sort:
+          $ref: "#/components/schemas/TopCustomersSort"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopCustomerRow"
+    OpenBalanceRow:
+      type: object
+      required: [booking_id, code, customer_id, display_name, status, starts_on, ends_on, total_amount, paid_amount, balance_due]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        display_name:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        balance_due:
+          $ref: "#/components/schemas/Money"
+    OpenBalancesReport:
+      type: object
+      required: [period, rows, total_balance]
+      properties:
+        period:
+          $ref: "#/components/schemas/ReportPeriod"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenBalanceRow"
+        total_balance:
+          $ref: "#/components/schemas/Money"
+    ComparisonGranularity:
+      type: string
+      enum: [day, week, month]
+    ComparisonAlign:
+      type: string
+      description: >-
+        calendar = stesso giorno e mese (29 febbraio → 28 febbraio); weekday = stessa durata, inizio
+        spostato al giorno della settimana uguale più vicino (scarto massimo 3 giorni).
+      enum: [calendar, weekday]
+      x-enum-varnames: [ComparisonAlignCalendar, ComparisonAlignWeekday]
+    ComparisonMetricKey:
+      type: string
+      enum:
+        [occupancy_bp, revenue_collected, revenue_booked, bookings, average_booking_value, cancellations, no_shows,
+         season_passes_sold, released_units, resold_units]
+    ComparisonUnit:
+      type: string
+      description: "Unità del valore: cents (Money), count, basis_points."
+      enum: [cents, count, basis_points]
+    ComparisonMetric:
+      type: object
+      required: [metric, unit, current, previous, delta]
+      properties:
+        metric:
+          $ref: "#/components/schemas/ComparisonMetricKey"
+        unit:
+          $ref: "#/components/schemas/ComparisonUnit"
+        current:
+          type: integer
+          format: int64
+        previous:
+          type: integer
+          format: int64
+        delta:
+          type: integer
+          format: int64
+          description: current − previous.
+        delta_bp:
+          type: integer
+          format: int64
+          description: "Variazione relativa (current − previous) × 10000 / previous, troncata; assente se previous = 0."
+    ComparisonPoint:
+      type: object
+      required: [key, label, current_from, previous_from, current_revenue, previous_revenue, current_occupancy_bp, previous_occupancy_bp, current_bookings, previous_bookings]
+      properties:
+        key:
+          type: string
+          description: "Chiave del bucket nel periodo corrente (YYYY-MM-DD, YYYY-Www, YYYY-MM)."
+        label:
+          type: string
+        current_from:
+          $ref: "#/components/schemas/Date"
+        previous_from:
+          $ref: "#/components/schemas/Date"
+        current_revenue:
+          $ref: "#/components/schemas/Money"
+        previous_revenue:
+          $ref: "#/components/schemas/Money"
+        current_occupancy_bp:
+          $ref: "#/components/schemas/RatioBP"
+        previous_occupancy_bp:
+          $ref: "#/components/schemas/RatioBP"
+        current_bookings:
+          type: integer
+        previous_bookings:
+          type: integer
+    YearComparisonReport:
+      type: object
+      required: [current, previous, granularity, metrics, series]
+      properties:
+        current:
+          $ref: "#/components/schemas/ReportPeriod"
+        previous:
+          $ref: "#/components/schemas/ReportPeriod"
+        granularity:
+          $ref: "#/components/schemas/ComparisonGranularity"
+        align:
+          $ref: "#/components/schemas/ComparisonAlign"
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComparisonMetric"
+        series:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComparisonPoint"
+
+    # ---- M5A: API keys -------------------------------------------------------------
+    ApiKeyStatus:
+      type: string
+      enum: [active, expired, revoked]
+    ApiKey:
+      type: object
+      required: [id, name, prefix, establishment_id, scopes, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        prefix:
+          type: string
+          description: "Parte visibile della chiave, per riconoscerla (`ar_live_abcd2345`)."
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        scopes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Permission"
+        status:
+          $ref: "#/components/schemas/ApiKeyStatus"
+        created_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        created_by_name:
+          type: string
+          description: Nome dell'utente che l'ha creata (vuoto se l'utente non esiste più).
+        created_at:
+          type: string
+          format: date-time
+        last_used_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+    ApiKeyList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApiKey"
+    ApiKeyCreate:
+      type: object
+      required: [name, scopes]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        scopes:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Permission"
+        expires_at:
+          type: string
+          format: date-time
+          description: Scadenza facoltativa, nel futuro.
+    ApiKeyUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        scopes:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Permission"
+        expires_at:
+          type: string
+          format: date-time
+          description: Nuova scadenza, nel futuro.
+        clear_expiry:
+          type: boolean
+          description: true rimuove la scadenza (incompatibile con expires_at).
+    ApiKeyCreated:
+      type: object
+      required: [api_key, secret]
+      properties:
+        api_key:
+          $ref: "#/components/schemas/ApiKey"
+        secret:
+          type: string
+          description: "Chiave completa `ar_live_<prefix>_<secret>`, mostrata solo ora."
+
+    # ---- M5A: outgoing webhooks ----------------------------------------------------------
+    WebhookEventType:
+      type: string
+      description: "Tipi di evento sottoscrivibili (spec 18.1) più `webhook.test`, inviato solo dal test."
+      enum:
+        - booking.created
+        - booking.held
+        - booking.confirmed
+        - booking.modified
+        - booking.cancelled
+        - booking.checked_in
+        - booking.no_show
+        - booking.completed
+        - booking.approval_requested
+        - allocation.released
+        - season.day_released
+        - season.renewal_offered
+        - payment.succeeded
+        - payment.failed
+        - payment.refunded
+        - customer.created
+        - customer.anonymized
+        - cash_session.closed
+        - config.pricing_changed
+        - config.map_changed
+        - webhook.test
+    WebhookEventFilter:
+      type: string
+      description: "Un WebhookEventType, un gruppo `<prefisso>.*` (es. `booking.*`) o `*` (tutti)."
+      pattern: "^(\\*|[a-z][a-z0-9_]*\\.(\\*|[a-z][a-z0-9_]*))$"
+      maxLength: 64
+    WebhookEndpointStatus:
+      type: string
+      description: "active; paused (disattivato dal gestore); disabled (disattivato automaticamente dopo errori ripetuti)."
+      enum: [active, paused, disabled]
+    WebhookEndpoint:
+      type: object
+      required: [id, url, description, events, active, status, consecutive_failures, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        url:
+          type: string
+        description:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookEventFilter"
+        active:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/WebhookEndpointStatus"
+        consecutive_failures:
+          type: integer
+        disabled_at:
+          type: string
+          format: date-time
+        disabled_reason:
+          type: string
+        previous_secret_expires_at:
+          type: string
+          format: date-time
+          description: Fine del periodo di grazia del segreto precedente, se in corso.
+        last_delivery_at:
+          type: string
+          format: date-time
+          description: Ultimo tentativo di consegna (qualsiasi esito).
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    WebhookEndpointList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookEndpoint"
+    WebhookEndpointCreate:
+      type: object
+      required: [url, events]
+      properties:
+        url:
+          type: string
+          minLength: 8
+          maxLength: 2048
+        description:
+          type: string
+          maxLength: 200
+        events:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/WebhookEventFilter"
+        active:
+          type: boolean
+          default: true
+    WebhookEndpointUpdate:
+      type: object
+      properties:
+        url:
+          type: string
+          minLength: 8
+          maxLength: 2048
+        description:
+          type: string
+          maxLength: 200
+        events:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/WebhookEventFilter"
+        active:
+          type: boolean
+    WebhookEndpointCreated:
+      type: object
+      required: [endpoint, secret]
+      properties:
+        endpoint:
+          $ref: "#/components/schemas/WebhookEndpoint"
+        secret:
+          type: string
+          description: "Segreto di firma `whsec_…`, mostrato solo ora."
+    WebhookSecretRotate:
+      type: object
+      properties:
+        grace_hours:
+          type: integer
+          minimum: 0
+          maximum: 168
+          default: 24
+          description: Ore in cui anche il segreto precedente firma le consegne.
+    WebhookSecretRotated:
+      type: object
+      required: [endpoint, secret]
+      properties:
+        endpoint:
+          $ref: "#/components/schemas/WebhookEndpoint"
+        secret:
+          type: string
+          description: "Nuovo segreto `whsec_…`, mostrato solo ora."
+    WebhookDeliveryStatus:
+      type: string
+      description: "pending (in coda o in attesa di ripetizione), delivered (2xx), failed (definitivamente)."
+      enum: [pending, delivered, failed]
+    WebhookDelivery:
+      type: object
+      required: [id, endpoint_id, event_id, event_type, status, attempts, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        endpoint_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        event_id:
+          type: string
+          description: "Id dell'evento nell'envelope (`evt_<uuid>`), uguale all'header Arenile-Event-Id."
+        event_type:
+          type: string
+        status:
+          $ref: "#/components/schemas/WebhookDeliveryStatus"
+        attempts:
+          type: integer
+        status_code:
+          type: integer
+          description: Codice HTTP dell'ultimo tentativo (assente se nessuna risposta).
+        last_error:
+          type: string
+        next_attempt_at:
+          type: string
+          format: date-time
+        delivered_at:
+          type: string
+          format: date-time
+        failed_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    WebhookDeliveryDetail:
+      allOf:
+        - $ref: "#/components/schemas/WebhookDelivery"
+        - type: object
+          required: [request_body]
+          properties:
+            request_body:
+              type: object
+              additionalProperties: true
+              description: Envelope JSON inviato (spec 18.1), uguale per ogni tentativo.
+            response_excerpt:
+              type: string
+              description: Primi 1024 byte della risposta dell'ultimo tentativo.
+    WebhookDeliveryList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookDelivery"
+        next_cursor:
+          type: string
+
+    # ---- M5A: map sea side ----------------------------------------------------------
+    MapTransform:
+      type: string
+      description: >-
+        Trasformazione applicata: none (stesso lato), mirror_y (top↔bottom), mirror_x (left↔right),
+        rotate_cw / rotate_ccw (lati adiacenti, 90°, width e height scambiati).
+      enum: [none, mirror_y, mirror_x, rotate_cw, rotate_ccw]
+    MapReorientRequest:
+      type: object
+      required: [sea_side]
+      properties:
+        sea_side:
+          $ref: "#/components/schemas/SeaSide"
+        dry_run:
+          type: boolean
+          default: false
+          description: Calcola l'anteprima senza salvare.
+        acknowledge_future_allocations:
+          type: boolean
+          default: false
+          description: Conferma esplicita quando ci sono allocazioni future (solo la geometria cambia).
+    MapReorientResult:
+      type: object
+      required: [document, from_sea_side, to_sea_side, transform, applied, future_allocations, spots_with_future_allocations]
+      properties:
+        document:
+          $ref: "#/components/schemas/MapDocument"
+        from_sea_side:
+          $ref: "#/components/schemas/SeaSide"
+        to_sea_side:
+          $ref: "#/components/schemas/SeaSide"
+        transform:
+          $ref: "#/components/schemas/MapTransform"
+        applied:
+          type: boolean
+          description: false con dry_run (document è l'anteprima, versione invariata).
+        future_allocations:
+          type: integer
+          description: Allocazioni (booking, season, block) da oggi in avanti sulle postazioni della mappa.
+        spots_with_future_allocations:
+          type: integer
     Meta:
       type: object
       description: >-

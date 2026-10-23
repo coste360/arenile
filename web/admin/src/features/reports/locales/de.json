@@ -1,0 +1,189 @@
+{
+  "title": "Berichte",
+  "page": {
+    "description": "Auslastung, Umsatz, Kanäle, Stornierungen, Saisonabos, Top-Kunden, offene Salden und Vorjahresvergleich, mit CSV-Export."
+  },
+  "forbidden": {
+    "title": "Zugriff nicht erlaubt",
+    "description": "Deine Rolle hat keinen Zugriff auf Berichte und Exporte."
+  },
+  "period": {
+    "label": "Zeitraum",
+    "season": "Saison",
+    "month": "Monat",
+    "custom": "Benutzerdefiniert",
+    "seasonLabel": "Saison",
+    "noSeasons": "Keine Saison eingerichtet",
+    "seasonOption": "{{year}} ({{from}} – {{to}})",
+    "range": "Von – bis",
+    "monthLabel": "Monat",
+    "year": "Jahr",
+    "compare": "Mit dem Vorjahr vergleichen",
+    "compareWith": "Mit {{year}} vergleichen",
+    "showing": "Daten vom {{from}} bis {{to}} (einschließlich).",
+    "error": {
+      "incomplete": "Wähle auch den letzten Tag des Zeitraums.",
+      "reversed": "Der letzte Tag liegt vor dem ersten Tag.",
+      "tooLong": "Der Zeitraum darf höchstens 400 Tage dauern.",
+      "noSeason": "Wähle eine Saison oder wechsle zu Monat oder benutzerdefiniertem Zeitraum."
+    }
+  },
+  "tabs": {
+    "label": "Verfügbare Berichte",
+    "summary": "Übersicht",
+    "occupancy": "Auslastung",
+    "revenue": "Umsatz",
+    "bookings": "Buchungen",
+    "cancellations": "Stornierungen und No-Shows",
+    "passes": "Saisonabos und Freigaben",
+    "customers": "Top-Kunden",
+    "balances": "Offene Salden"
+  },
+  "csv": {
+    "label": "CSV exportieren",
+    "aria": "CSV exportieren: {{report}}"
+  },
+  "chart": {
+    "caption": "Diagramm der Daten aus der folgenden Tabelle."
+  },
+  "summary": {
+    "kpis": "Kennzahlen des Zeitraums",
+    "unitsHint": "{{occupied}} von {{capacity}} Zeitfenstern belegt",
+    "openBalanceHint": "Buchungen mit Saldo: {{n}}",
+    "new": "Neu",
+    "vs": "{{year}}: {{value}}",
+    "basis": {
+      "stay": "Nach erstem Aufenthaltstag",
+      "cash": "Nach Zahlungsdatum"
+    }
+  },
+  "metric": {
+    "occupancy_bp": "Auslastung",
+    "revenue_collected": "Eingenommen",
+    "revenue_booked": "Gebucht",
+    "bookings": "Buchungen",
+    "average_booking_value": "Durchschnittlicher Buchungswert",
+    "cancellations": "Stornierungen",
+    "no_shows": "No-Shows",
+    "season_passes_sold": "Verkaufte Saisonabos",
+    "released_units": "Freigegebene Zeitfenster",
+    "resold_units": "Weiterverkaufte Zeitfenster",
+    "open_balance": "Offene Salden"
+  },
+  "comparison": {
+    "title": "Vergleich mit {{year}}",
+    "description": "Vom {{currentFrom}} bis {{currentTo}} im Vergleich zu denselben Tagen des Vorjahres ({{previousFrom}} – {{previousTo}}).",
+    "bucket": "Zeitraum",
+    "revenueOf": "Eingenommen {{year}}",
+    "bookingsOf": "Buchungen {{year}}",
+    "occupancyOf": "Auslastung {{year}}",
+    "metric": "Kennzahl",
+    "delta": "Veränderung",
+    "metricsCaption": "Kennzahlen im Vergleich zum Vorjahr",
+    "seriesCaption": "Verlauf im Vergleich zum Vorjahr",
+    "align": "Ausrichtung",
+    "alignOption": {
+      "calendar": "Gleiche Kalenderdaten",
+      "weekday": "Gleicher Wochentag"
+    }
+  },
+  "groupBy": {
+    "label": "Gruppieren nach",
+    "day": "Tag",
+    "week": "Woche",
+    "month": "Monat",
+    "zone": "Zone",
+    "row": "Reihe",
+    "slot": "Zeitfenster",
+    "channel": "Kanal",
+    "pack": "Paket",
+    "extra": "Extra",
+    "payment_method": "Zahlungsart",
+    "vat_rate": "MwSt.-Satz",
+    "lead_time": "Vorlaufzeit",
+    "formula": "Formel"
+  },
+  "occupancy": {
+    "rate": "Auslastung",
+    "occupied": "Belegt",
+    "capacity": "Kapazität",
+    "season": "Abonnenten",
+    "released": "Freigegeben",
+    "blocked": "Gesperrt",
+    "total": "Gesamt: {{rate}} ({{occupied}} von {{capacity}} Zeitfenstern belegt).",
+    "help": "Belegte Zeitfenster (Platz × Tag × Vormittag/Nachmittag) im Verhältnis zur Kapazität der Öffnungstage."
+  },
+  "revenue": {
+    "basis": "Berechnungsgrundlage",
+    "basisOption": {
+      "collected": "Eingenommen",
+      "booked": "Gebucht"
+    },
+    "basisHelp": {
+      "collected": "Erfolgreiche Zahlungen im Zeitraum, abzüglich Erstattungen.",
+      "booked": "Wert der Buchungen für die Tage des Zeitraums, unabhängig von der Zahlung."
+    },
+    "movements": "Bewegungen",
+    "lines": "Positionen",
+    "gross": "Brutto",
+    "taxable": "Netto",
+    "tax": "MwSt.",
+    "refunds": "Erstattungen",
+    "total": "Brutto gesamt: {{gross}}, davon MwSt. {{tax}}."
+  },
+  "bookings": {
+    "count": "Buchungen",
+    "share": "Anteil",
+    "value": "Wert",
+    "average": "Durchschnittswert",
+    "lead": "Durchschnittliche Vorlaufzeit (Tage)",
+    "total": "Buchungen: {{n}}, Wert {{value}}, Durchschnitt {{average}}."
+  },
+  "cancellations": {
+    "bookings": "Buchungen",
+    "cancelled": "Storniert",
+    "cancelledRate": "% storniert",
+    "noShows": "No-Shows",
+    "noShowRate": "% No-Show",
+    "lost": "Verlorener Wert",
+    "refunded": "Erstattet",
+    "total": "Stornierungen {{cancelled}}, No-Shows {{noShows}}, verlorener Wert {{lost}}."
+  },
+  "passes": {
+    "help": "Von Abonnenten freigegebene Tage und wie viele davon weiterverkauft wurden.",
+    "sold": "Verkaufte Saisonabos",
+    "value": "Wert der Saisonabos",
+    "renewals": "Verlängerungen",
+    "released": "Freigegebene Zeitfenster",
+    "resold": "Weiterverkaufte Zeitfenster",
+    "resaleRate": "% weiterverkauft",
+    "resaleRevenue": "Umsatz aus Weiterverkauf",
+    "credits": "Ausgegebene Gutschriften"
+  },
+  "customers": {
+    "help": "Nur der Name: Kontaktdaten bleiben in der Kundenkarte.",
+    "rank": "#",
+    "name": "Kunde",
+    "bookings": "Buchungen",
+    "spotDays": "Platz-Tage",
+    "revenue": "Wert",
+    "last": "Letzte Buchung",
+    "sort": "Sortieren nach",
+    "sortOption": {
+      "revenue": "Wert",
+      "bookings": "Anzahl der Buchungen"
+    },
+    "limit": "Kunden"
+  },
+  "balances": {
+    "help": "Buchungen des Zeitraums mit noch offenem Betrag.",
+    "totalDue": "Offen: {{amount}} aus {{n}} Buchungen.",
+    "code": "Code",
+    "customer": "Kunde",
+    "status": "Status",
+    "dates": "Daten",
+    "total": "Gesamt",
+    "paid": "Bezahlt",
+    "due": "Saldo"
+  }
+}

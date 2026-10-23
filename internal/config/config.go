@@ -56,6 +56,10 @@ const (
 	// EnvEdition is set by the desktop launcher (never by an operator):
 	// "desktop" is the loopback profile of the core, see Config.Desktop.
 	EnvEdition = "ARENILE_EDITION"
+	// EnvWebhooksAllowPrivate (M5A, spec 22) lets outgoing webhooks reach
+	// loopback and private addresses, for self-hosted LAN receivers.
+	// Default: true with ARENILE_DEV, false otherwise.
+	EnvWebhooksAllowPrivate = "ARENILE_WEBHOOKS_ALLOW_PRIVATE"
 
 	// First-owner bootstrap (ADR 0006): when all four are set and the
 	// database has no users, `serve` creates the owner once at startup.
@@ -107,6 +111,9 @@ type Config struct {
 	// base URL; cookies get Secure per request (TLS LAN listener). It is
 	// not a development switch: Dev stays off on shipped desktop installs.
 	Edition string
+	// WebhooksAllowPrivate disables the private-address part of the SSRF
+	// protection of outgoing webhooks (event.EgressPolicy.AllowPrivate).
+	WebhooksAllowPrivate bool
 
 	// BootstrapOwner is the optional first owner created by `serve` when the
 	// database has no users. Zero value means disabled.
@@ -178,6 +185,9 @@ func Parse(lookup Lookup) (Config, error) {
 	}
 	if cfg.Telemetry, err = parseBool(get(EnvTelemetry, "false")); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvTelemetry, err))
+	}
+	if cfg.WebhooksAllowPrivate, err = parseBool(get(EnvWebhooksAllowPrivate, strconv.FormatBool(cfg.Dev))); err != nil {
+		errs = append(errs, fmt.Errorf("%s: %w", EnvWebhooksAllowPrivate, err))
 	}
 	if cfg.HoldTTL, err = time.ParseDuration(get(EnvHoldTTL, "10m")); err != nil || cfg.HoldTTL <= 0 {
 		errs = append(errs, fmt.Errorf("%s: must be a positive duration like 10m", EnvHoldTTL))

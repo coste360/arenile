@@ -25,6 +25,7 @@ import { CircleAlertIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { OnlineOnlyNotice } from '../../../offline/OnlineOnlyNotice';
 import { moveLine, useMoveLine } from '../api/operations';
 import type { OperationalSpot } from '../lib/status';
 
@@ -112,6 +113,7 @@ export function MoveDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-3">
+          <OnlineOnlyNotice />
           {preview.isLoading && (
             <div role="status">
               <span className="sr-only">{t('move.previewing')}</span>

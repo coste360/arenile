@@ -30,7 +30,9 @@ import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useRequiredEstablishmentId } from '../../establishment';
-import { useCheckIn, useDayTakings, useOperationsDay } from './api/operations';
+import { useQueueableCheckIn } from '../../offline/useQueueableCheckIn';
+import { useOnlineStatus } from '../../lib/online';
+import { useDayTakings, useOperationsDay } from './api/operations';
 import { DayToolbar } from './components/DayToolbar';
 import { OperationalMapView } from './components/OperationalMapView';
 import { StatusChart } from './components/StatusChart';
@@ -68,8 +70,9 @@ export function TodayPage() {
     slot,
     options.length > 1 ? mapId : undefined,
   );
-  const takings = useDayTakings(establishmentId, date, permissions.canSeeTakings);
-  const checkIn = useCheckIn(establishmentId);
+  const online = useOnlineStatus();
+  const takings = useDayTakings(establishmentId, date, permissions.canSeeTakings && online);
+  const checkIn = useQueueableCheckIn(establishmentId);
   const problemText = useProblemText();
   const [newBooking, setNewBooking] = useState(false);
 
@@ -91,9 +94,14 @@ export function TodayPage() {
 
   const doCheckIn = (b: OperationalBooking) =>
     checkIn.mutate(
-      { bookingId: b.booking_id, version: b.version },
+      { bookingId: b.booking_id, version: b.version, label: b.code },
       {
-        onSuccess: () => toast.success(t('sheet.checkedIn', { code: b.code })),
+        onSuccess: (res) =>
+          toast.success(
+            res.queued
+              ? t('offline:actions.queuedCheckIn', { code: b.code })
+              : t('sheet.checkedIn', { code: b.code }),
+          ),
         onError: (e) => toast.error(problemText(e)),
       },
     );
@@ -199,15 +207,20 @@ export function TodayPage() {
             <StatCard
               label={t('kpi.takings')}
               value={
-                takings.isLoading ? (
+                takings.data !== undefined ? (
+                  formatCents(takings.data)
+                ) : !online ? (
+                  // Payments are never kept on the device (spec 21.2).
+                  <span className="text-base font-normal text-muted-foreground">
+                    {t('kpi.takingsOffline')}
+                  </span>
+                ) : takings.isLoading ? (
                   <>
                     <span aria-hidden="true">…</span>
                     <span className="sr-only">{t('common.loading', { ns: 'translation' })}</span>
                   </>
-                ) : takings.error ? (
-                  '—'
                 ) : (
-                  formatCents(takings.data ?? 0)
+                  '—'
                 )
               }
               icon={WalletIcon}
@@ -225,7 +238,7 @@ export function TodayPage() {
       )}
 
       {day.data && kpis && (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <SectionCard title={t('today.chartTitle')} description={t('today.chartDescription')}>
             <StatusChart byStatus={kpis.byStatus} />
           </SectionCard>

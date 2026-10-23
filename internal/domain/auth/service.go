@@ -287,11 +287,15 @@ func (s *Service) AuthenticateAPIKey(ctx context.Context, key string) (*Principa
 	if !constantTimeEqual(HashToken(key), k.KeyHash) {
 		return nil, ErrUnauthenticated
 	}
+	now := s.clock.Now()
+	// An expired key (M5A, api_keys.expires_at) authenticates nothing.
+	if k.ExpiresAt != nil && !now.Before(*k.ExpiresAt) {
+		return nil, ErrUnauthenticated
+	}
 	es, err := store.SystemEstablishmentScope(ctx, s.db, k.EstablishmentID)
 	if err != nil {
 		return nil, ErrUnauthenticated
 	}
-	now := s.clock.Now()
 	if k.LastUsedAt == nil || now.Sub(*k.LastUsedAt) > time.Minute {
 		if err := store.TouchAPIKey(ctx, s.db, k.ID, now); err != nil {
 			s.log.WarnContext(ctx, "touch api key", slog.String("error", err.Error()))

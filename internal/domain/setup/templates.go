@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -118,8 +119,10 @@ type PolicySpec struct {
 // by the request (rows x spots per row); extra rows (gazebos, pool area) are
 // fixed.
 type MapSpec struct {
-	Key     string
-	Name    store.I18nText
+	Key  string
+	Name store.I18nText
+	// SeaSide is top (the default of Italian lidos, row A at the top) or
+	// bottom.
 	SeaSide string
 	// Grid is true for the map that holds the configurable rows grid.
 	Grid bool
@@ -279,7 +282,7 @@ var templates = []Template{
 			{Code: "gazebo", Name: i18n("Gazebo", "Gazebos", "Pavillons", "Gazebos"), AssignmentMode: "seat", PriceCategory: CategoryGazebo, Map: "beach"},
 		},
 		Maps: []MapSpec{{
-			Key: "beach", Name: i18n("Spiaggia", "Beach", "Strand", "Plage"), SeaSide: "bottom", Grid: true,
+			Key: "beach", Name: i18n("Spiaggia", "Beach", "Strand", "Plage"), SeaSide: mapping.SeaTop, Grid: true,
 			// "GZ" cannot collide with the grid rows (A..AZ, at most 52).
 			Fixed: []FixedRows{{Zone: "gazebo", FirstRow: "GZ", Rows: 1, SpotsPerRow: 4, Kind: "gazebo"}},
 		}},
@@ -333,9 +336,9 @@ var templates = []Template{
 			},
 		},
 		Maps: []MapSpec{
-			{Key: "beach", Name: i18n("Spiaggia", "Beach", "Strand", "Plage"), SeaSide: "bottom", Grid: true},
+			{Key: "beach", Name: i18n("Spiaggia", "Beach", "Strand", "Plage"), SeaSide: mapping.SeaTop, Grid: true},
 			{
-				Key: "pool", Name: i18n("Piscina", "Pool", "Pool", "Piscine"), SeaSide: "bottom",
+				Key: "pool", Name: i18n("Piscina", "Pool", "Pool", "Piscine"), SeaSide: mapping.SeaTop,
 				Fixed: []FixedRows{{Zone: "pool", FirstRow: "P", Rows: 2, SpotsPerRow: 10, Kind: "umbrella"}},
 			},
 		},

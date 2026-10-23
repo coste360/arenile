@@ -150,8 +150,8 @@ describe('admin app', () => {
       within(nav)
         .getAllByRole('link')
         .map((a) => a.textContent);
-    // Delivered sections (M3) link to the current establishment; the others
-    // sit in a closed "In arrivo" group.
+    // Every section is delivered (Report since M5A) and links to the current
+    // establishment; the "In arrivo" group is hidden when empty.
     const operations = [
       'Oggi',
       'Mappa',
@@ -160,6 +160,7 @@ describe('admin app', () => {
       'Clienti',
       'Abbonamenti',
       'Cassa',
+      'Report',
     ];
     await waitFor(() =>
       expect(within(nav).getByRole('link', { name: 'Cassa' })).toHaveAttribute(
@@ -169,11 +170,10 @@ describe('admin app', () => {
     );
     expect(labels()).toEqual(operations);
     expect(within(nav).getByRole('link', { name: 'Cassa' })).not.toHaveAttribute('aria-disabled');
-    await userEvent.click(within(nav).getByRole('button', { name: /In arrivo/ }));
-    expect(labels()).toEqual([...operations, 'Report']);
+    expect(within(nav).queryByRole('button', { name: /In arrivo/ })).not.toBeInTheDocument();
     expect(within(nav).getByRole('link', { name: 'Report' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
+      'href',
+      '/admin/e/e1/report',
     );
     expect(await screen.findByRole('cell', { name: 'Lido Demo' })).toBeInTheDocument();
     expect(
@@ -265,6 +265,8 @@ describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
     ['/admin/e/e1/cassa', 'Cassa'],
     ['/admin/e/e1/cassa/corrispettivi', 'Corrispettivi'],
     ['/admin/e/e1/report', 'Report'],
+    ['/admin/e/e1/config/api-keys', 'Chiavi API'],
+    ['/admin/e/e1/config/webhooks', 'Webhook'],
     ['/admin/establishments/new', 'Nuovo stabilimento'],
   ])('%s renders its feature page', async (path, title) => {
     setup(path, routes);

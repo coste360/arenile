@@ -21,6 +21,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/coste360/arenile/internal/domain/apikey"
+	"github.com/coste360/arenile/internal/domain/report"
+	"github.com/coste360/arenile/internal/domain/webhook"
+
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/coste360/arenile/internal/clock"
@@ -132,6 +136,10 @@ type App struct {
 	Notify   *notify.Service
 	Gateway  *gateway.Service
 	Checkout *checkout.Service
+	// M5A services (wired by wireSeason, see m5.go).
+	Reports  *report.Service
+	APIKeys  *apikey.Service
+	Webhooks *webhook.Service
 	Outbox   *event.Outbox
 	Bus      ext.EventBus
 
@@ -252,6 +260,10 @@ func (a *App) wire() error {
 	a.wireOperations(aw)
 	a.wireOnline(aw)
 	a.wireDevices(aw)
+	deliverer := event.NewDeliverer(a.db, c, a.keys, nil, aw, a.log, event.DeliveryOptions{
+		Egress: event.EgressPolicy{AllowPrivate: a.cfg.WebhooksAllowPrivate},
+	})
+	a.wireSeason(aw, deliverer)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -261,7 +273,6 @@ func (a *App) wire() error {
 	a.Bus = sse.NewReplayBus(bus, 0)
 	sinks := append(slices.Clone(x.EventSinks), a.onlineSinks()...)
 	dispatcher := event.NewDispatcher(a.db, c, sinks, a.Bus, a.log)
-	deliverer := event.NewDeliverer(a.db, c, a.keys, nil, aw, a.log, event.DeliveryOptions{})
 
 	a.runner = jobs.NewRunner(a.log)
 	for _, j := range jobs.CoreJobs(jobs.CoreDeps{
@@ -277,7 +288,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs()) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -293,6 +304,7 @@ func (a *App) wire() error {
 		Online: a.Online, Checkout: a.Checkout, Notify: a.Notify, Gateway: a.Gateway,
 		Meta: a.Meta, Devices: a.Devices, FiscalBridge: a.FiscalBridge,
 		Desktop: a.opts.desktop, DesktopUsers: usersCounter{db: a.db},
+		Reports: a.Reports, APIKeys: a.APIKeys, Webhooks: a.Webhooks,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

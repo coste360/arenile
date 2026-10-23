@@ -147,7 +147,9 @@
       "email": "E-mails et notifications",
       "devices": "Appareils",
       "devicesLan": "Réseau local",
-      "desktop": "Application de bureau"
+      "desktop": "Application de bureau",
+      "apiKeys": "Clés API",
+      "webhooks": "Webhooks"
     },
     "operations": "Exploitation",
     "configGroup": "Configuration",

@@ -9,6 +9,7 @@ import (
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/store"
 )
 
 func TestLayoutMap_ClassicGrid(t *testing.T) {
@@ -43,11 +44,12 @@ func TestLayoutMap_ClassicGrid(t *testing.T) {
 	if byZone["row1"].spots[0].Label != "A1" || byZone["row2"].spots[0].Label != "B1" {
 		t.Fatalf("first labels: %s %s", byZone["row1"].spots[0].Label, byZone["row2"].spots[0].Label)
 	}
-	// The sea is at the bottom: row A is the lowest on screen (largest y),
-	// every following row moves away from the sea, the gazebos are last.
+	// The sea is at the top (spec 11 default): row A is the highest on
+	// screen (smallest y), every following row moves away from the sea, the
+	// gazebos are last.
 	order := []string{"A", "B", "C", "D", "E", "F", "G", "H", "GZ"}
 	for i := 1; i < len(order); i++ {
-		if rowY[order[i]] >= rowY[order[i-1]] {
+		if rowY[order[i]] <= rowY[order[i-1]] {
 			t.Fatalf("row %s (y=%v) is not farther from the sea than %s (y=%v)", order[i], rowY[order[i]], order[i-1], rowY[order[i-1]])
 		}
 	}
@@ -251,10 +253,73 @@ func TestLayoutMap_KitDecorations(t *testing.T) {
 			t.Errorf("%s spot without a bookable kit asset", zs.kind)
 		}
 	}
+	checkSeaTopLayout(t, m, byZone, decos)
+}
+
+// checkSeaTopLayout: the classic map has the sea at the top (spec 11
+// default), row A nearest to it, the shore furniture along the top edge,
+// the walkway starting at the shore and the entrance away from the sea.
+func checkSeaTopLayout(t *testing.T, m *store.Map, byZone map[string]*zoneSpots, decos []store.MapDecoration) {
+	t.Helper()
+	if m.SeaSide != mapping.SeaTop {
+		t.Fatalf("classic map sea side %s", m.SeaSide)
+	}
+	rowY := map[string]float64{}
+	for _, zs := range byZone {
+		for _, sp := range zs.spots {
+			rowY[sp.RowLabel] = sp.Y
+		}
+	}
+	if !(rowY["A"] < rowY["B"] && rowY["B"] < rowY["H"] && rowY["H"] < rowY["GZ"]) {
+		t.Fatalf("rows are not ordered from the sea at the top: %v", rowY)
+	}
+	if rowY["A"] != layoutMargin+layoutSeaBand {
+		t.Fatalf("row A at y %v", rowY["A"])
+	}
+	for _, d := range decos {
+		switch *d.Asset {
+		case "torretta_bagnino":
+			if d.Y > float64(m.Height)/4 {
+				t.Errorf("lifeguard tower far from the sea: y %v", d.Y)
+			}
+		case "passerella_verticale":
+			if d.Y-d.Shape.H/2 != 0 {
+				t.Errorf("walkway does not start at the shore: %+v", d)
+			}
+		case "passerella_ingresso", "ingresso":
+			if d.Y < float64(m.Height)/2 {
+				t.Errorf("%s on the sea side: y %v", *d.Asset, d.Y)
+			}
+		}
+	}
+}
+
+func TestLayoutMap_SeaBottomStillSupported(t *testing.T) {
+	tpl, _ := TemplateByCode(CodeClassicRows)
+	ms := tpl.Maps[0]
+	ms.SeaSide = mapping.SeaBottom
+	a := &applier{s: &Service{d: Deps{Clock: clock.NewFake(time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC))}}, rows: 2, perRow: 4}
+	m, byZone, _ := a.layoutMap(ms, 0)
+	if m.SeaSide != mapping.SeaBottom {
+		t.Fatalf("sea side %s", m.SeaSide)
+	}
+	for _, zs := range byZone {
+		for _, sp := range zs.spots {
+			if sp.RowLabel == "A" && sp.Y != float64(m.Height)-layoutMargin-layoutSeaBand {
+				t.Fatalf("row A at y %v of %d", sp.Y, m.Height)
+			}
+		}
+	}
 }
 
 func TestKitDecorations_SmallGridSkipsWhatDoesNotFit(t *testing.T) {
-	decos := kitDecorations("e", "m", 220, 290, nil, time.Now())
+	for _, side := range []string{mapping.SeaTop, mapping.SeaBottom} {
+		t.Run(side, func(t *testing.T) { checkSmallGridKit(t, kitDecorations("e", "m", 220, 290, side, nil, time.Now())) })
+	}
+}
+
+func checkSmallGridKit(t *testing.T, decos []store.MapDecoration) {
+	t.Helper()
 	for i, a := range decos {
 		ra := kitRect{a.X - a.Shape.W/2, a.Y - a.Shape.H/2, a.X + a.Shape.W/2, a.Y + a.Shape.H/2}
 		for _, b := range decos[i+1:] {

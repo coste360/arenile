@@ -1,0 +1,76 @@
+{
+  "indicator": {
+    "online": "Online",
+    "offline": "Offline",
+    "syncing": "Sincronizzazione",
+    "pending_one": "{{count}} in coda",
+    "pending_other": "{{count}} in coda",
+    "rejected_one": "{{count}} da rivedere",
+    "rejected_other": "{{count}} da rivedere",
+    "open": "Apri le operazioni offline"
+  },
+  "banner": {
+    "offlineTitle": "Sei offline",
+    "savedAt": "Stai consultando i dati salvati alle {{time}}.",
+    "noData": "Su questo dispositivo non ci sono dati salvati di questo stabilimento.",
+    "allowed": "Puoi fare check-in, aggiungere note e registrare incassi in contanti: saranno inviati alla riconnessione. Nuove prenotazioni e spostamenti non sono disponibili.",
+    "rejectedTitle": "Operazioni offline da rivedere",
+    "rejected_one": "{{count}} operazione registrata offline non è stata accettata dal server.",
+    "rejected_other": "{{count}} operazioni registrate offline non sono state accettate dal server.",
+    "paused": "Sessione scaduta: accedi di nuovo per inviare le operazioni in coda.",
+    "review": "Rivedi"
+  },
+  "queue": {
+    "title": "Operazioni offline",
+    "description": "Registrate senza connessione e inviate in ordine alla riconnessione, ognuna una sola volta.",
+    "empty": "Nessuna operazione in coda.",
+    "sendNow": "Invia ora",
+    "retry": "Riprova",
+    "discard": "Scarta",
+    "discardTitle": "Scartare l'operazione?",
+    "discardDescription": "«{{kind}}» su {{label}} non sarà inviata al server.",
+    "queuedAt": "Registrata alle {{time}}",
+    "kind": {
+      "check_in": "Check-in",
+      "note": "Nota",
+      "cash_payment": "Incasso in contanti di {{amount}}"
+    },
+    "status": {
+      "pending": "In coda",
+      "sending": "Invio in corso",
+      "conflict": "Conflitto",
+      "failed": "Rifiutata"
+    }
+  },
+  "onlineOnly": {
+    "title": "Non disponibile offline",
+    "body": "Creare o spostare prenotazioni richiede la connessione: solo il server garantisce che la postazione sia libera."
+  },
+  "actions": {
+    "unavailable": "Offline: nuove prenotazioni e spostamenti non sono disponibili.",
+    "note": "Aggiungi nota",
+    "cash": "Incasso in contanti",
+    "noteTitle": "Nota offline",
+    "noteDescription": "La nota sarà aggiunta a {{label}} alla riconnessione.",
+    "noteLabel": "Nota",
+    "noteRequired": "Scrivi il testo della nota.",
+    "cashTitle": "Incasso in contanti offline",
+    "cashDescription": "Saldo da incassare {{balance}}. L'incasso sarà registrato alla riconnessione e richiede una sessione di cassa aperta.",
+    "amount": "Importo",
+    "amountInvalid": "Inserisci un importo maggiore di zero e non superiore al saldo.",
+    "submit": "Metti in coda",
+    "queuedNote": "Nota in coda: sarà inviata alla riconnessione.",
+    "queuedCash": "Incasso di {{amount}} in coda: sarà inviato alla riconnessione.",
+    "queuedCheckIn": "Check-in di {{code}} in coda: sarà inviato alla riconnessione."
+  },
+  "sync": {
+    "sent_one": "{{count}} operazione offline inviata.",
+    "sent_other": "{{count}} operazioni offline inviate."
+  },
+  "update": {
+    "available": "È disponibile una nuova versione del pannello.",
+    "reload": "Aggiorna",
+    "later": "Più tardi",
+    "offlineReady": "Il pannello è pronto per funzionare anche offline."
+  }
+}

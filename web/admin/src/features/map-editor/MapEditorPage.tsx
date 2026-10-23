@@ -27,6 +27,7 @@ import {
   Undo2Icon,
 } from 'lucide-react';
 import { Link, useParams } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -36,10 +37,11 @@ import {
 import { useConfigContext } from '../configuration/api/useConfigContext';
 import { localize } from '../configuration/lib/i18nText';
 import { problemMessageKey } from '@arenile/shared/api';
-import { MapSaveProblem, useMapDocument, useSaveMap } from './api';
+import { MapSaveProblem, mapDocumentKey, useMapDocument, useSaveMap } from './api';
 import { ConflictDialog, type ConflictInfo } from './ConflictDialog';
 import { MapSettingsForm, RenumberRowForm, RowGeneratorForm, type ZoneOption } from './dialogs';
 import { MapCanvas } from './MapCanvas';
+import { SeaSideDialog } from './SeaSideDialog';
 import { draftFromApi, toSaveRequest, validateDraft } from './model/document';
 import {
   addDecoration,
@@ -72,6 +74,8 @@ import {
 import {
   isSpot,
   type ApiMapDocument,
+  type DraftMapSettings,
+  type MapReorientResult,
   type DecorationKind,
   type DraftDocument,
   type DraftSpot,
@@ -97,6 +101,16 @@ export function MapEditorPage() {
   const ctx = useConfigContext();
   const { t } = useTranslation('mapEditor');
   const docQuery = useMapDocument(ctx.establishmentId, mapId);
+  const qc = useQueryClient();
+  // The offline copy restored at startup is invalidated until refetched: it
+  // must never seed the draft (the editor keeps its draft and never refetches
+  // behind the user's back), so a mount that finds the copy waits for the
+  // first fetch; offline, the editor stays on its skeleton (configuration is
+  // not edited offline, spec 21.2).
+  const [startedFromCopy] = useState(
+    () => qc.getQueryState(mapDocumentKey(ctx.establishmentId, mapId))?.isInvalidated === true,
+  );
+  const serverDoc = startedFromCopy && !docQuery.isFetchedAfterMount ? undefined : docQuery.data;
   const zoneList = zonesResource.useList(ctx.establishmentId);
   const componentList = componentsResource.useList(ctx.establishmentId);
   // Bumped after an explicit reload: remounts the editor on the server version.
@@ -128,9 +142,9 @@ export function MapEditorPage() {
           </BackLink>
         }
         title={
-          docQuery.data
+          serverDoc
             ? t('editor.titleNamed', {
-                name: localize(docQuery.data.map.name, ctx.uiLocale, ctx.defaultLocale),
+                name: localize(serverDoc.map.name, ctx.uiLocale, ctx.defaultLocale),
               })
             : t('editor.title')
         }
@@ -144,14 +158,14 @@ export function MapEditorPage() {
             <Skeleton className="h-[60vh] w-full" />
           </>
         }
-        isLoading={docQuery.isPending || zoneList.isPending}
+        isLoading={(!serverDoc && !docQuery.error) || zoneList.isPending}
         error={docQuery.error ?? zoneList.error}
         onRetry={() => void docQuery.refetch()}
       />
-      {docQuery.data && zoneList.data && (
+      {serverDoc && zoneList.data && (
         <Editor
-          key={`${docQuery.data.map.id}:${generation}`}
-          serverDoc={docQuery.data}
+          key={`${serverDoc.map.id}:${generation}`}
+          serverDoc={serverDoc}
           zones={zoneList.data}
           components={components}
           establishmentId={ctx.establishmentId}
@@ -212,6 +226,8 @@ function Editor(props: EditorProps) {
   const [conflict, setConflict] = useState<ConflictInfo | null>(null);
   const [overwriting, setOverwriting] = useState(false);
   const [dialog, setDialog] = useState<DialogKind>(null);
+  // Settings whose sea side change waits for "flip the layout" or "only the sea".
+  const [seaChange, setSeaChange] = useState<DraftMapSettings | null>(null);
   const doc = history.present;
   const dirty = doc !== savedDoc;
 
@@ -343,6 +359,28 @@ function Editor(props: EditorProps) {
       setSaveState({ kind: 'error', messages: [t(problemMessageKey(err), { ns: 'translation' })] });
     } finally {
       setOverwriting(false);
+    }
+  };
+
+  /**
+   * The server flipped or rotated the saved layout (new version): it becomes
+   * the saved draft; name and grid edited in the same dialog stay as
+   * unsaved changes on top of it.
+   */
+  const onFlipped = (res: MapReorientResult, settings: DraftMapSettings) => {
+    const next = draftFromApi(res.document);
+    setHistory(initHistory(next));
+    setSavedDoc(next);
+    setVersion(res.document.map.version);
+    setSelection(new Set());
+    setConflict(null);
+    setSaveState({ kind: 'saved' });
+    const { name, grid_size } = settings;
+    if (
+      grid_size !== next.map.grid_size ||
+      JSON.stringify(name) !== JSON.stringify(next.map.name)
+    ) {
+      setHistory((h) => pushHistory(h, updateMapSettings(next, { name, grid_size })));
     }
   };
 
@@ -713,12 +751,37 @@ function Editor(props: EditorProps) {
             submitLabel={t('settings.apply')}
             onCancel={() => setDialog(null)}
             onSubmit={(v) => {
-              commit(updateMapSettings(doc, v));
               setDialog(null);
+              // A new sea side on a map with elements: offer to flip the layout.
+              if (v.sea_side !== doc.map.sea_side && elements(doc).length > 0) {
+                setSeaChange({ ...doc.map, ...v });
+                return;
+              }
+              commit(updateMapSettings(doc, v));
             }}
           />
         )}
       </FormDialog>
+      {seaChange && (
+        <SeaSideDialog
+          open
+          onOpenChange={(o) => !o && setSeaChange(null)}
+          establishmentId={establishmentId}
+          mapId={mapId}
+          version={version}
+          from={doc.map.sea_side}
+          to={seaChange.sea_side}
+          block={
+            dirty
+              ? 'dirty'
+              : seaChange.width !== doc.map.width || seaChange.height !== doc.map.height
+                ? 'resized'
+                : null
+          }
+          onOnlySea={() => commit(updateMapSettings(doc, seaChange))}
+          onFlipped={(res) => onFlipped(res, seaChange)}
+        />
+      )}
       <ConflictDialog
         conflict={conflict}
         busy={overwriting || save.isPending}

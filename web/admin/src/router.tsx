@@ -10,7 +10,6 @@ import {
   type RouterHistory,
 } from '@tanstack/react-router';
 import { AppShell } from './components/AppShell';
-import { PlaceholderPage } from './components/PlaceholderPage';
 import { RouteError } from './components/RouteError';
 import { EstablishmentLayout, EstablishmentSectionRedirect } from './establishment';
 import { desktopGated } from './features/desktop/desktopGated';
@@ -348,17 +347,24 @@ const corrispettiviRoute = createRoute({
   path: 'cassa/corrispettivi',
   component: lazyRouteComponent(() => import('./features/cash'), 'CorrispettiviPage'),
 });
-const reportsItem = NAV_ITEMS.find((i) => i.section === 'report');
 const reportsRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'report',
-  component: () => (
-    <PlaceholderPage
-      titleKey="nav.reports"
-      descriptionKey="admin.placeholder.reports"
-      milestone={reportsItem?.milestone ?? 'M5'}
-    />
-  ),
+  component: lazyRouteComponent(() => import('./features/reports'), 'ReportsPage'),
+});
+
+// ---- M5A integrations (API keys, outgoing webhooks) -------------------------
+// Configuration pages of the integrations feature (owned by its builder).
+
+const apiKeysRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/api-keys',
+  component: lazyRouteComponent(() => import('./features/integrations'), 'ApiKeysPage'),
+});
+const webhooksRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/webhooks',
+  component: lazyRouteComponent(() => import('./features/integrations'), 'WebhooksPage'),
 });
 
 const routeTree = rootRoute.addChildren([
@@ -405,6 +411,8 @@ const routeTree = rootRoute.addChildren([
       cashRoute,
       corrispettiviRoute,
       reportsRoute,
+      apiKeysRoute,
+      webhooksRoute,
     ]),
   ]),
 ]);

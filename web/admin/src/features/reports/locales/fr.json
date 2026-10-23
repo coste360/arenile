@@ -1,0 +1,189 @@
+{
+  "title": "Rapports",
+  "page": {
+    "description": "Occupation, chiffre d'affaires, canaux, annulations, abonnements, meilleurs clients, soldes ouverts et comparaison avec l'année précédente, avec export CSV."
+  },
+  "forbidden": {
+    "title": "Accès non autorisé",
+    "description": "Votre rôle n'a pas accès aux rapports et aux exports."
+  },
+  "period": {
+    "label": "Période",
+    "season": "Saison",
+    "month": "Mois",
+    "custom": "Personnalisée",
+    "seasonLabel": "Saison",
+    "noSeasons": "Aucune saison configurée",
+    "seasonOption": "{{year}} ({{from}} – {{to}})",
+    "range": "Du – au",
+    "monthLabel": "Mois",
+    "year": "Année",
+    "compare": "Comparer avec l'année précédente",
+    "compareWith": "Comparer avec {{year}}",
+    "showing": "Données du {{from}} au {{to}} (inclus).",
+    "error": {
+      "incomplete": "Choisissez aussi le dernier jour de la période.",
+      "reversed": "Le dernier jour précède le premier.",
+      "tooLong": "La période peut durer au maximum 400 jours.",
+      "noSeason": "Choisissez une saison ou passez au mois ou à une période personnalisée."
+    }
+  },
+  "tabs": {
+    "label": "Rapports disponibles",
+    "summary": "Synthèse",
+    "occupancy": "Occupation",
+    "revenue": "Chiffre d'affaires",
+    "bookings": "Réservations",
+    "cancellations": "Annulations et absences",
+    "passes": "Abonnements et libérations",
+    "customers": "Meilleurs clients",
+    "balances": "Soldes ouverts"
+  },
+  "csv": {
+    "label": "Exporter en CSV",
+    "aria": "Exporter en CSV : {{report}}"
+  },
+  "chart": {
+    "caption": "Graphique des données présentées dans le tableau suivant."
+  },
+  "summary": {
+    "kpis": "Indicateurs de la période",
+    "unitsHint": "{{occupied}} créneaux occupés sur {{capacity}}",
+    "openBalanceHint": "Réservations avec solde : {{n}}",
+    "new": "Nouveau",
+    "vs": "{{year}} : {{value}}",
+    "basis": {
+      "stay": "Par premier jour de séjour",
+      "cash": "Par date d’encaissement"
+    }
+  },
+  "metric": {
+    "occupancy_bp": "Occupation",
+    "revenue_collected": "Encaissé",
+    "revenue_booked": "Réservé",
+    "bookings": "Réservations",
+    "average_booking_value": "Valeur moyenne d'une réservation",
+    "cancellations": "Annulations",
+    "no_shows": "Absences",
+    "season_passes_sold": "Abonnements vendus",
+    "released_units": "Créneaux libérés",
+    "resold_units": "Créneaux revendus",
+    "open_balance": "Soldes ouverts"
+  },
+  "comparison": {
+    "title": "Comparaison avec {{year}}",
+    "description": "Du {{currentFrom}} au {{currentTo}} par rapport aux mêmes jours de l'année précédente ({{previousFrom}} – {{previousTo}}).",
+    "bucket": "Période",
+    "revenueOf": "Encaissé {{year}}",
+    "bookingsOf": "Réservations {{year}}",
+    "occupancyOf": "Occupation {{year}}",
+    "metric": "Indicateur",
+    "delta": "Variation",
+    "metricsCaption": "Indicateurs comparés à l'année précédente",
+    "seriesCaption": "Évolution comparée à l'année précédente",
+    "align": "Alignement",
+    "alignOption": {
+      "calendar": "Mêmes dates du calendrier",
+      "weekday": "Même jour de la semaine"
+    }
+  },
+  "groupBy": {
+    "label": "Regrouper par",
+    "day": "Jour",
+    "week": "Semaine",
+    "month": "Mois",
+    "zone": "Zone",
+    "row": "Rangée",
+    "slot": "Créneau",
+    "channel": "Canal",
+    "pack": "Forfait",
+    "extra": "Extra",
+    "payment_method": "Moyen de paiement",
+    "vat_rate": "Taux de TVA",
+    "lead_time": "Délai de réservation",
+    "formula": "Formule"
+  },
+  "occupancy": {
+    "rate": "Occupation",
+    "occupied": "Occupés",
+    "capacity": "Capacité",
+    "season": "Abonnés",
+    "released": "Libérés",
+    "blocked": "Bloqués",
+    "total": "Total de la période : {{rate}} ({{occupied}} créneaux occupés sur {{capacity}}).",
+    "help": "Créneaux (emplacement × jour × matin/après-midi) occupés par rapport à la capacité des jours d'ouverture."
+  },
+  "revenue": {
+    "basis": "Base de calcul",
+    "basisOption": {
+      "collected": "Encaissé",
+      "booked": "Réservé"
+    },
+    "basisHelp": {
+      "collected": "Paiements réussis sur la période, nets des remboursements.",
+      "booked": "Valeur des réservations pour les jours de la période, indépendamment du paiement."
+    },
+    "movements": "Mouvements",
+    "lines": "Lignes",
+    "gross": "Brut",
+    "taxable": "Hors taxes",
+    "tax": "TVA",
+    "refunds": "Remboursements",
+    "total": "Total brut : {{gross}}, dont TVA {{tax}}."
+  },
+  "bookings": {
+    "count": "Réservations",
+    "share": "Part",
+    "value": "Valeur",
+    "average": "Valeur moyenne",
+    "lead": "Délai moyen (jours)",
+    "total": "Réservations : {{n}}, valeur {{value}}, moyenne {{average}}."
+  },
+  "cancellations": {
+    "bookings": "Réservations",
+    "cancelled": "Annulées",
+    "cancelledRate": "% annulées",
+    "noShows": "Absences",
+    "noShowRate": "% absences",
+    "lost": "Valeur perdue",
+    "refunded": "Remboursé",
+    "total": "Annulations {{cancelled}}, absences {{noShows}}, valeur perdue {{lost}}."
+  },
+  "passes": {
+    "help": "Jours libérés par les abonnés et combien ont été revendus.",
+    "sold": "Abonnements vendus",
+    "value": "Valeur des abonnements",
+    "renewals": "Renouvellements",
+    "released": "Créneaux libérés",
+    "resold": "Créneaux revendus",
+    "resaleRate": "% revendus",
+    "resaleRevenue": "Revenus de revente",
+    "credits": "Crédits émis"
+  },
+  "customers": {
+    "help": "Nom uniquement : les coordonnées restent dans la fiche client.",
+    "rank": "#",
+    "name": "Client",
+    "bookings": "Réservations",
+    "spotDays": "Jours-emplacement",
+    "revenue": "Valeur",
+    "last": "Dernière réservation",
+    "sort": "Trier par",
+    "sortOption": {
+      "revenue": "Valeur",
+      "bookings": "Nombre de réservations"
+    },
+    "limit": "Clients"
+  },
+  "balances": {
+    "help": "Réservations de la période avec un montant encore à encaisser.",
+    "totalDue": "À encaisser : {{amount}} sur {{n}} réservations.",
+    "code": "Code",
+    "customer": "Client",
+    "status": "Statut",
+    "dates": "Dates",
+    "total": "Total",
+    "paid": "Payé",
+    "due": "Solde"
+  }
+}

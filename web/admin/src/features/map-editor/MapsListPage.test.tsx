@@ -76,7 +76,8 @@ describe('MapsListPage', () => {
       width: 1200,
       height: 800,
       grid_size: 10,
-      sea_side: 'bottom',
+      // New maps default to the sea at the top (spec 11).
+      sea_side: 'top',
       sort_order: 2,
     });
     const req = callsTo(fetchMock, 'POST', `${API}/maps`)[0] as Request;
