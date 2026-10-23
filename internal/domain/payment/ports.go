@@ -6,6 +6,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/pkg/ext"
@@ -55,4 +56,17 @@ type Credits interface {
 // Providers resolves payment drivers by code. Implemented by *app.Registry.
 type Providers interface {
 	PaymentProvider(code string) (ext.PaymentProvider, bool)
+}
+
+// BookingConfirmer confirms a booking whose payments reached the threshold
+// of its policy (deposit_due, or the total when no deposit is due). It is
+// the manual driver's confirmation path (spec 13.2, INV-19): the booking
+// service owns the transition (state machine, inventory Confirm, audit and
+// booking.confirmed in the same tx). Optional: set Deps.Confirmer or
+// Service.SetConfirmer, or implement it on the BookingLedger (detected with
+// a type assertion); without it payments never change the booking status.
+type BookingConfirmer interface {
+	// ConfirmFromPayment moves a held/pending_payment booking to confirmed
+	// inside tx. pm is the payment that reached the threshold.
+	ConfirmFromPayment(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, bookingID string, pm *store.Payment) error
 }
