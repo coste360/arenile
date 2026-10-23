@@ -39,6 +39,9 @@ type Options struct {
 	HTTPClient func(fingerprint string) *http.Client
 	// Autostart applies Config.Autostart (default: desktop.NewAutostart).
 	Autostart desktop.Autostart
+	// DataDirFlag is the -data-dir flag of this start ("" = default
+	// folder): the autostart entry repeats it (desktop.AutostartArgs).
+	DataDirFlag string
 }
 
 // PairingForm asks the operator for the pairing input and calls submit
@@ -266,7 +269,7 @@ func (m *Mode) applyAutostart(cfg Config, log *slog.Logger) {
 			return
 		}
 		home, _ := os.UserHomeDir()
-		if a, err = desktop.NewAutostart(m.o.GOOS, home, exe, os.Getenv, nil); err != nil {
+		if a, err = desktop.NewAutostart(m.o.GOOS, home, exe, desktop.AutostartArgs(m.o.DataDirFlag), os.Getenv, nil); err != nil {
 			return
 		}
 	}

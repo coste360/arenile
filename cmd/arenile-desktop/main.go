@@ -76,7 +76,7 @@ func run(args []string, stderr io.Writer) int {
 	log := slog.New(slog.NewTextHandler(stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	rm := remote.New(remote.Options{Version: version})
+	rm := remote.New(remote.Options{Version: version, DataDirFlag: *dataDir})
 	if *pair != "" {
 		return runPair(ctx, rm, *dataDir, pairInput(*pair, *pairCode, *pairFingerprint, *deviceName), stderr)
 	}

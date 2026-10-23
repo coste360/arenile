@@ -37,6 +37,16 @@ func TestAutostart_GoldenPerOS(t *testing.T) {
 	golden(t, "linux.desktop", XDGAutostartEntry("/home/anna/Applicazioni/Arenile.AppImage"))
 	golden(t, "linux-quoted.desktop", XDGAutostartEntry(`/home/anna/My "Apps"/$HOME/100%/arenile`))
 	golden(t, "windows-run.txt", []byte(WindowsRunValue(`C:\Program Files\Arenile\arenile-desktop.exe`)+"\n"))
+	// An install started with -data-dir autostarts on the same folder.
+	golden(t, "darwin-datadir.plist", LaunchAgentPlist("/Applications/Arenile.app/Contents/MacOS/arenile-desktop", "-data-dir", "/Volumes/USB/Arenile & co"))
+	golden(t, "linux-datadir.desktop", XDGAutostartEntry("/home/anna/Arenile.AppImage", "-data-dir", "/media/anna/USB/arenile dati"))
+	golden(t, "windows-run-datadir.txt", []byte(WindowsRunValue(`C:\Program Files\Arenile\arenile-desktop.exe`, "-data-dir", `D:\Arenile dati`)+"\n"))
+	if AutostartArgs("") != nil {
+		t.Fatal("default data dir must add no argument")
+	}
+	if args := AutostartArgs(filepath.Join(t.TempDir(), "d")); len(args) != 2 || args[0] != "-data-dir" || !filepath.IsAbs(args[1]) {
+		t.Fatalf("args %v", args)
+	}
 }
 
 func TestAutostart_FileStrategies(t *testing.T) {
@@ -55,7 +65,7 @@ func TestAutostart_FileStrategies(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a, err := NewAutostart(tt.goos, home, "/opt/arenile", env(tt.env), nil)
+			a, err := NewAutostart(tt.goos, home, "/opt/arenile", []string{"-data-dir", "/srv/arenile"}, env(tt.env), nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -69,8 +79,8 @@ func TestAutostart_FileStrategies(t *testing.T) {
 			if err != nil {
 				t.Fatalf("entry not at %s: %v", tt.wantPath, err)
 			}
-			if !strings.Contains(string(b), tt.wantExe) {
-				t.Fatalf("entry does not start %s:\n%s", tt.wantExe, b)
+			if !strings.Contains(string(b), tt.wantExe) || !strings.Contains(string(b), "-data-dir") || !strings.Contains(string(b), "/srv/arenile") {
+				t.Fatalf("entry does not start %s with its data dir:\n%s", tt.wantExe, b)
 			}
 			if on, _ := a.Enabled(); !on {
 				t.Fatal("not enabled after SetEnabled(true)")
@@ -110,7 +120,7 @@ func (k *fakeRunKey) Delete(name string) error { delete(k.values, name); return 
 
 func TestAutostart_WindowsRegistry(t *testing.T) {
 	key := &fakeRunKey{values: map[string]string{}}
-	a, err := NewAutostart("windows", `C:\Users\anna`, `C:\Program Files\Arenile\arenile-desktop.exe`, os.Getenv, key)
+	a, err := NewAutostart("windows", `C:\Users\anna`, `C:\Program Files\Arenile\arenile-desktop.exe`, nil, os.Getenv, key)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,10 +143,10 @@ func TestAutostart_WindowsRegistry(t *testing.T) {
 	if err := a.SetEnabled(true); err == nil {
 		t.Fatal("registry error swallowed")
 	}
-	if _, err := NewAutostart("darwin", "", "/x", os.Getenv, nil); err == nil {
+	if _, err := NewAutostart("darwin", "", "/x", nil, os.Getenv, nil); err == nil {
 		t.Fatal("macOS without home accepted")
 	}
-	if _, err := NewAutostart("linux", "/h", "", os.Getenv, nil); err == nil {
+	if _, err := NewAutostart("linux", "/h", "", nil, os.Getenv, nil); err == nil {
 		t.Fatal("empty executable accepted")
 	}
 }

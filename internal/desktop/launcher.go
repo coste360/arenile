@@ -301,7 +301,7 @@ func (l *Launcher) autostart() Autostart {
 		exe = r
 	}
 	home, _ := os.UserHomeDir()
-	a, err := NewAutostart(l.o.GOOS, home, exe, os.Getenv, nil)
+	a, err := NewAutostart(l.o.GOOS, home, exe, AutostartArgs(l.o.DataDir), os.Getenv, nil)
 	if err != nil {
 		l.log.Warn("desktop autostart unavailable", slog.String("error", err.Error()))
 		return nil

@@ -28,12 +28,32 @@ type Autostart interface {
 	SetEnabled(on bool) error
 }
 
-// LaunchAgentPlist returns the macOS LaunchAgent that starts exe at login
-// (pure; golden-tested). Inside an .app bundle exe is
+// AutostartArgs returns the launcher arguments an autostart entry must
+// repeat so that the app starts on the same data directory: none for the
+// default folder, "-data-dir <absolute path>" when the install was started
+// with -data-dir (portable or managed install). Otherwise the autostarted
+// app would open a different archive or a fresh first run.
+func AutostartArgs(dataDirFlag string) []string {
+	if dataDirFlag == "" {
+		return nil
+	}
+	abs, err := filepath.Abs(dataDirFlag)
+	if err != nil {
+		abs = dataDirFlag
+	}
+	return []string{"-data-dir", abs}
+}
+
+// LaunchAgentPlist returns the macOS LaunchAgent that starts exe with args
+// at login (pure; golden-tested). Inside an .app bundle exe is
 // Contents/MacOS/<binary>, which is what os.Executable returns.
-func LaunchAgentPlist(exe string) []byte {
-	var esc bytes.Buffer
-	_ = xml.EscapeText(&esc, []byte(exe))
+func LaunchAgentPlist(exe string, args ...string) []byte {
+	var items strings.Builder
+	for _, a := range append([]string{exe}, args...) {
+		var esc bytes.Buffer
+		_ = xml.EscapeText(&esc, []byte(a))
+		items.WriteString("\t\t<string>" + esc.String() + "</string>\n")
+	}
 	return []byte(`<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -42,8 +62,7 @@ func LaunchAgentPlist(exe string) []byte {
 	<string>` + BundleID + `</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>` + esc.String() + `</string>
-	</array>
+` + items.String() + `	</array>
 	<key>RunAtLoad</key>
 	<true/>
 	<key>ProcessType</key>
@@ -56,13 +75,17 @@ func LaunchAgentPlist(exe string) []byte {
 }
 
 // XDGAutostartEntry returns the Linux autostart desktop entry for exe
-// (pure; golden-tested). Exec is quoted per the Desktop Entry spec.
-func XDGAutostartEntry(exe string) []byte {
+// with args (pure; golden-tested). Exec is quoted per the Desktop Entry spec.
+func XDGAutostartEntry(exe string, args ...string) []byte {
+	parts := make([]string, 0, 1+len(args))
+	for _, a := range append([]string{exe}, args...) {
+		parts = append(parts, desktopExecQuote(a))
+	}
 	return []byte(`[Desktop Entry]
 Type=Application
 Name=Arenile
 Comment=Gestionale per stabilimenti balneari
-Exec=` + desktopExecQuote(exe) + `
+Exec=` + strings.Join(parts, " ") + `
 Icon=arenile
 Terminal=false
 X-GNOME-Autostart-enabled=true
@@ -78,15 +101,22 @@ func desktopExecQuote(s string) string {
 	return `"` + strings.ReplaceAll(q, `\`, `\\`) + `"`
 }
 
-// WindowsRunValue is the Run registry value for exe (pure).
-func WindowsRunValue(exe string) string { return `"` + exe + `"` }
+// WindowsRunValue is the Run registry value for exe with args (pure):
+// every argument double-quoted, as the shell command line parser expects.
+func WindowsRunValue(exe string, args ...string) string {
+	parts := make([]string, 0, 1+len(args))
+	for _, a := range append([]string{exe}, args...) {
+		parts = append(parts, `"`+a+`"`)
+	}
+	return strings.Join(parts, " ")
+}
 
-// NewAutostart returns the Autostart of goos for the executable exe.
-// home is the user home, getenv reads XDG_CONFIG_HOME and APPIMAGE (an
-// AppImage must be started from its file, not from its temporary mount).
-// The Windows strategy writes the registry through runKey (nil: the
-// platform registry, available only on Windows).
-func NewAutostart(goos, home, exe string, getenv func(string) string, runKey RunKey) (Autostart, error) {
+// NewAutostart returns the Autostart of goos for the executable exe
+// started with args (AutostartArgs). home is the user home, getenv reads
+// XDG_CONFIG_HOME and APPIMAGE (an AppImage must be started from its file,
+// not from its temporary mount). The Windows strategy writes the registry
+// through runKey (nil: the platform registry, available only on Windows).
+func NewAutostart(goos, home, exe string, args []string, getenv func(string) string, runKey RunKey) (Autostart, error) {
 	if exe == "" {
 		return nil, errors.New("desktop: autostart: unknown executable")
 	}
@@ -97,7 +127,7 @@ func NewAutostart(goos, home, exe string, getenv func(string) string, runKey Run
 		}
 		return fileAutostart{
 			path:    filepath.Join(home, "Library", "LaunchAgents", BundleID+".plist"),
-			content: LaunchAgentPlist(exe),
+			content: LaunchAgentPlist(exe, args...),
 		}, nil
 	case "windows":
 		if runKey == nil {
@@ -106,7 +136,7 @@ func NewAutostart(goos, home, exe string, getenv func(string) string, runKey Run
 		if runKey == nil {
 			return nil, errors.New("desktop: autostart: registry not available")
 		}
-		return registryAutostart{key: runKey, value: WindowsRunValue(exe)}, nil
+		return registryAutostart{key: runKey, value: WindowsRunValue(exe, args...)}, nil
 	default:
 		if p := getenv("APPIMAGE"); p != "" && filepath.IsAbs(p) {
 			exe = p
@@ -118,7 +148,7 @@ func NewAutostart(goos, home, exe string, getenv func(string) string, runKey Run
 			}
 			dir = filepath.Join(home, ".config")
 		}
-		return fileAutostart{path: filepath.Join(dir, "autostart", linuxDesktopFile), content: XDGAutostartEntry(exe)}, nil
+		return fileAutostart{path: filepath.Join(dir, "autostart", linuxDesktopFile), content: XDGAutostartEntry(exe, args...)}, nil
 	}
 }
 
