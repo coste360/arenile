@@ -155,7 +155,9 @@ CREATE TABLE webhook_events (
     received_at       timestamptz NOT NULL,
     processed_at      timestamptz
 );
-CREATE UNIQUE INDEX webhook_events_provider_event_uidx ON webhook_events (provider, event_id);
+-- One Stripe account may serve two establishments (two endpoints): the
+-- same event id reaches both, each applies its own copy (INV-23 per tenant).
+CREATE UNIQUE INDEX webhook_events_provider_event_uidx ON webhook_events (establishment_id, provider, event_id);
 CREATE INDEX webhook_events_establishment_received_idx ON webhook_events (establishment_id, received_at);
 
 -- Editable notification templates (spec 19): Markdown with variables, per

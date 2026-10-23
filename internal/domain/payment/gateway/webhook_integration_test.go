@@ -418,12 +418,25 @@ func TestPaymentWebhook_CrossTenant(t *testing.T) {
 		e := newEnv(t, db)
 		b := e.held(0, "2027-07-10")
 		res := e.start(b)
-		out, err := e.deliverTo(e.f.Other.ID, e.paidEvent(e.sessionOf(res)))
+		payload := e.paidEvent(e.sessionOf(res))
+		out, err := e.deliverTo(e.f.Other.ID, payload)
 		if err != nil || !out.Ignored {
 			t.Fatalf("cross tenant: %v %+v", err, out)
 		}
 		if e.reload(b.ID).Status != "held" || e.count("payments", "1 = 1") != 0 {
 			t.Fatal("cross-tenant delivery changed A")
+		}
+		// One Stripe account, two establishments: the same event then
+		// reaches A's own endpoint and must be applied (not a duplicate).
+		out, err = e.deliver(payload)
+		if err != nil || out.Duplicate || out.Ignored {
+			t.Fatalf("redelivery to the owner: %v %+v", err, out)
+		}
+		if e.reload(b.ID).Status != "confirmed" {
+			t.Fatal("booking not confirmed by the delivery to its own establishment")
+		}
+		if e.count("webhook_events", "establishment_id = ?", e.f.Other.ID) != 0 {
+			t.Fatal("event of another establishment must not be recorded")
 		}
 	})
 }

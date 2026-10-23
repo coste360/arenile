@@ -108,7 +108,8 @@ func syntheticEventID(ref string, ev *ext.PaymentEvent) string {
 
 // apply runs one verified provider event in ONE transaction (spec 13.3):
 //
-//	insert webhook_events (provider, event_id)   unique: duplicate -> no effect (INV-23)
+//	event of another establishment -> ignored, nothing recorded
+//	insert webhook_events (establishment, provider, event_id)   unique: duplicate -> no effect (INV-23)
 //	resolve + lock the intent (scoped to es)
 //	payment intent:
 //	  succeeded -> Ledger.RecordProviderPayment (ledger, paid_amount,
@@ -133,6 +134,14 @@ func (s *Service) apply(ctx context.Context, es store.EstablishmentScope, provid
 		eventID = syntheticEventID(ev.ProviderRef, ev)
 	}
 	out := &applied{}
+	if ev.EstablishmentID != "" && ev.EstablishmentID != es.ID() {
+		// Another establishment's payment (one provider account, two
+		// endpoints): authentic but not ours. Nothing is recorded, so the
+		// delivery to the right endpoint is applied normally (INV-23 is per
+		// establishment).
+		s.d.Log.InfoContext(ctx, "gateway: event of another establishment ignored", "provider", provider, "establishment_id", es.ID(), "event_id", eventID)
+		return &applied{ignored: true}, nil
+	}
 	err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
 		*out = applied{}
 		now := s.now()
@@ -145,9 +154,6 @@ func (s *Service) apply(ctx context.Context, es store.EstablishmentScope, provid
 				return errDuplicate
 			}
 			return fmt.Errorf("gateway: %w", err)
-		}
-		if ev.EstablishmentID != "" && ev.EstablishmentID != es.ID() {
-			return s.ignore(ctx, tx, es, we, out, "establishment_mismatch")
 		}
 		pi, err := s.resolve(ctx, tx, es, provider, ev)
 		if errors.Is(err, store.ErrNotFound) {
@@ -192,7 +198,7 @@ func (s *Service) apply(ctx context.Context, es store.EstablishmentScope, provid
 	case err != nil && store.IsUniqueViolation(err):
 		// Two deliveries of the same event raced past the insert (the
 		// loser's insert failed only at commit time on some drivers).
-		if ok, xerr := store.WebhookEventExists(ctx, s.d.DB, provider, eventID); xerr == nil && ok {
+		if ok, xerr := store.WebhookEventExists(ctx, s.d.DB, es, provider, eventID); xerr == nil && ok {
 			return &applied{duplicate: true}, nil
 		}
 		return nil, err

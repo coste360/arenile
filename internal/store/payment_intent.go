@@ -267,8 +267,10 @@ func ListReconcilableIntents(ctx context.Context, db bun.IDB, establishmentID st
 }
 
 // InsertWebhookEvent records a provider event of es. A second insert of the
-// same (provider, event_id) is ErrConflict: the event was already applied
-// (INV-23). It must run in the transaction that applies the event.
+// same (establishment, provider, event_id) is ErrConflict: the event was
+// already applied (INV-23). It must run in the transaction that applies the
+// event. The key is per establishment: one provider account shared by two
+// establishments delivers the same event id to both endpoints.
 func InsertWebhookEvent(ctx context.Context, db bun.IDB, es EstablishmentScope, ev *WebhookEvent) error {
 	if err := es.mustBeValid(); err != nil {
 		return err
@@ -278,9 +280,12 @@ func InsertWebhookEvent(ctx context.Context, db bun.IDB, es EstablishmentScope, 
 	return wrapWrite("insert webhook event", err)
 }
 
-// WebhookEventExists reports whether (provider, eventID) was recorded.
-func WebhookEventExists(ctx context.Context, db bun.IDB, provider, eventID string) (bool, error) {
-	n, err := db.NewSelect().Model((*WebhookEvent)(nil)).
+// WebhookEventExists reports whether (provider, eventID) was recorded for es.
+func WebhookEventExists(ctx context.Context, db bun.IDB, es EstablishmentScope, provider, eventID string) (bool, error) {
+	if err := es.mustBeValid(); err != nil {
+		return false, err
+	}
+	n, err := db.NewSelect().Model((*WebhookEvent)(nil)).Where("whe.establishment_id = ?", es.ID()).
 		Where("whe.provider = ?", provider).Where("whe.event_id = ?", eventID).Count(ctx)
 	if err != nil {
 		return false, fmt.Errorf("store: webhook event exists: %w", err)
