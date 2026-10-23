@@ -132,3 +132,36 @@ func LeadTimeBucketOf(days int) LeadTimeBucket {
 		return Lead61Plus
 	}
 }
+
+// WeekdaySpan returns the weekday-aligned comparison span of p: the same
+// number of days, starting on the day with the weekday of p.From nearest to
+// the calendar-aligned start (PreviousSpan(p, compareYear).From), at most 3
+// days away. For the previous year it is p moved back by 364 days (52
+// weeks), so Saturdays compare with Saturdays.
+func WeekdaySpan(p Period, compareYear int) Period {
+	anchor := PreviousSpan(p, compareYear).From
+	shift := (p.From.ISOWeekday() - anchor.ISOWeekday() + 7) % 7 // 0..6 forward
+	if shift > 3 {
+		shift -= 7 // nearer going back
+	}
+	from := anchor.AddDays(shift)
+	return Period{From: from, To: from.AddDays(p.Days() - 1)}
+}
+
+// ComparisonSpan returns the comparison span of p for compareYear (0 = the
+// previous year) and align (empty = AlignCalendar).
+func ComparisonSpan(p Period, compareYear int, align Align) Period {
+	if align == AlignWeekday {
+		return WeekdaySpan(p, compareYear)
+	}
+	return PreviousSpan(p, compareYear)
+}
+
+// dayWindow returns the UTC half-open window [start of p.From, start of the
+// day after p.To) in loc: the instants whose calendar date in loc is in p
+// (DST transitions included, since each bound is resolved separately).
+func dayWindow(p Period, loc *time.Location) (from, to time.Time) {
+	start := time.Date(p.From.Year(), p.From.Month(), p.From.Day(), 0, 0, 0, 0, loc)
+	end := p.To.AddDays(1)
+	return start.UTC(), time.Date(end.Year(), end.Month(), end.Day(), 0, 0, 0, 0, loc).UTC()
+}

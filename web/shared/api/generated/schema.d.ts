@@ -2447,7 +2447,7 @@ export interface paths {
         };
         /**
          * Confronto con l'anno precedente sullo stesso intervallo di calendario
-         * @description Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e mese; il 29 febbraio diventa 28 febbraio) o di `compare_year`. Per ogni metrica: valore corrente, precedente, differenza assoluta e relativa in punti base (assente se il precedente è 0). La serie allinea i due anni per giorno/settimana/mese di calendario. Permesso reports.read.
+         * @description Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e mese; il 29 febbraio diventa 28 febbraio) o di `compare_year`. Per ogni metrica: valore corrente, precedente, differenza assoluta e relativa in punti base (assente se il precedente è 0). La serie allinea i due anni per giorno/settimana/mese di calendario. Con `align=weekday` il periodo di confronto ha la stessa durata ma inizia nel giorno della settimana uguale più vicino alla data di calendario corrispondente (es. sabato con sabato: 364 giorni prima per l'anno precedente). Permesso reports.read.
          */
         get: operations["getYearComparisonReport"];
         put?: never;
@@ -6018,6 +6018,11 @@ export interface components {
         };
         /** @enum {string} */
         ComparisonGranularity: "day" | "week" | "month";
+        /**
+         * @description calendar = stesso giorno e mese (29 febbraio → 28 febbraio); weekday = stessa durata, inizio spostato al giorno della settimana uguale più vicino (scarto massimo 3 giorni).
+         * @enum {string}
+         */
+        ComparisonAlign: "calendar" | "weekday";
         /** @enum {string} */
         ComparisonMetricKey: "occupancy_bp" | "revenue_collected" | "revenue_booked" | "bookings" | "average_booking_value" | "cancellations" | "no_shows" | "season_passes_sold" | "released_units" | "resold_units";
         /**
@@ -6060,6 +6065,7 @@ export interface components {
             current: components["schemas"]["ReportPeriod"];
             previous: components["schemas"]["ReportPeriod"];
             granularity: components["schemas"]["ComparisonGranularity"];
+            align?: components["schemas"]["ComparisonAlign"];
             metrics: components["schemas"]["ComparisonMetric"][];
             series: components["schemas"]["ComparisonPoint"][];
         };
@@ -13260,6 +13266,8 @@ export interface operations {
                 compare_year?: number;
                 /** @description Granularità della serie (default week). */
                 granularity?: components["schemas"]["ComparisonGranularity"];
+                /** @description Allineamento del periodo di confronto (default calendar). */
+                align?: components["schemas"]["ComparisonAlign"];
                 /** @description Formato (default json; in alternativa Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };

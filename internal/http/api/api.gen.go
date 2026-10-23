@@ -501,6 +501,24 @@ func (e CheckoutSessionState) Valid() bool {
 	}
 }
 
+// Defines values for ComparisonAlign.
+const (
+	ComparisonAlignCalendar ComparisonAlign = "calendar"
+	ComparisonAlignWeekday  ComparisonAlign = "weekday"
+)
+
+// Valid indicates whether the value is a known member of the ComparisonAlign enum.
+func (e ComparisonAlign) Valid() bool {
+	switch e {
+	case ComparisonAlignCalendar:
+		return true
+	case ComparisonAlignWeekday:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ComparisonGranularity.
 const (
 	ComparisonGranularityDay   ComparisonGranularity = "day"
@@ -3488,6 +3506,9 @@ type ClosureDayList struct {
 	// NextCursor Presente se esistono altri elementi.
 	NextCursor *string `json:"next_cursor,omitempty"`
 }
+
+// ComparisonAlign calendar = stesso giorno e mese (29 febbraio → 28 febbraio); weekday = stessa durata, inizio spostato al giorno della settimana uguale più vicino (scarto massimo 3 giorni).
+type ComparisonAlign string
 
 // ComparisonGranularity defines model for ComparisonGranularity.
 type ComparisonGranularity string
@@ -7300,6 +7321,8 @@ type WebhookSecretRotated struct {
 
 // YearComparisonReport defines model for YearComparisonReport.
 type YearComparisonReport struct {
+	// Align calendar = stesso giorno e mese (29 febbraio → 28 febbraio); weekday = stessa durata, inizio spostato al giorno della settimana uguale più vicino (scarto massimo 3 giorni).
+	Align       *ComparisonAlign      `json:"align,omitempty"`
 	Current     ReportPeriod          `json:"current"`
 	Granularity ComparisonGranularity `json:"granularity"`
 	Metrics     []ComparisonMetric    `json:"metrics"`
@@ -8780,6 +8803,9 @@ type GetYearComparisonReportParams struct {
 
 	// Granularity Granularità della serie (default week).
 	Granularity *ComparisonGranularity `form:"granularity,omitempty" json:"granularity,omitempty"`
+
+	// Align Allineamento del periodo di confronto (default calendar).
+	Align *ComparisonAlign `form:"align,omitempty" json:"align,omitempty"`
 
 	// Format Formato (default json; in alternativa Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
@@ -20256,6 +20282,19 @@ func (siw *ServerInterfaceWrapper) GetYearComparisonReport(w http.ResponseWriter
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "granularity"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "granularity", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "align" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "align", r.URL.Query(), &params.Align, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "align"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "align", Err: err})
 		}
 		return
 	}

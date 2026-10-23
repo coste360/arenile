@@ -25,6 +25,8 @@ type (
 	TopCustomersSort string
 	// Granularity of the comparison series: day, week, month.
 	Granularity string
+	// Align is how the comparison span is aligned: calendar, weekday.
+	Align string
 )
 
 // Group-by constants.
@@ -65,6 +67,12 @@ const (
 	GranularityDay   Granularity = "day"
 	GranularityWeek  Granularity = "week"
 	GranularityMonth Granularity = "month"
+
+	// AlignCalendar compares the same day and month (PreviousSpan).
+	AlignCalendar Align = "calendar"
+	// AlignWeekday compares a span of the same length starting on the same
+	// weekday, nearest to the calendar-aligned start (WeekdaySpan).
+	AlignWeekday Align = "weekday"
 )
 
 // ChannelCounter is the revenue channel of counter sales without a booking.
@@ -287,12 +295,14 @@ type ComparisonQuery struct {
 	Period      Period
 	CompareYear int // 0 = previous year
 	Granularity Granularity
+	Align       Align // default AlignCalendar
 }
 
 // Comparison is the year-over-year comparison report.
 type Comparison struct {
 	Current, Previous Period
 	Granularity       Granularity
+	Align             Align
 	Metrics           []ComparisonMetric
 	Series            []ComparisonPoint
 }

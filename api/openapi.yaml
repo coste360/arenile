@@ -7065,7 +7065,10 @@ paths:
         Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e
         mese; il 29 febbraio diventa 28 febbraio) o di `compare_year`. Per ogni metrica: valore
         corrente, precedente, differenza assoluta e relativa in punti base (assente se il precedente è 0).
-        La serie allinea i due anni per giorno/settimana/mese di calendario. Permesso reports.read.
+        La serie allinea i due anni per giorno/settimana/mese di calendario. Con `align=weekday` il periodo
+        di confronto ha la stessa durata ma inizia nel giorno della settimana uguale più vicino alla data
+        di calendario corrispondente (es. sabato con sabato: 364 giorni prima per l'anno precedente).
+        Permesso reports.read.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -7087,6 +7090,12 @@ paths:
           description: "Granularità della serie (default week)."
           schema:
             $ref: "#/components/schemas/ComparisonGranularity"
+        - name: align
+          in: query
+          required: false
+          description: "Allineamento del periodo di confronto (default calendar)."
+          schema:
+            $ref: "#/components/schemas/ComparisonAlign"
         - $ref: "#/components/parameters/ReportFormat"
       responses:
         "200":
@@ -15341,6 +15350,13 @@ components:
     ComparisonGranularity:
       type: string
       enum: [day, week, month]
+    ComparisonAlign:
+      type: string
+      description: >-
+        calendar = stesso giorno e mese (29 febbraio → 28 febbraio); weekday = stessa durata, inizio
+        spostato al giorno della settimana uguale più vicino (scarto massimo 3 giorni).
+      enum: [calendar, weekday]
+      x-enum-varnames: [ComparisonAlignCalendar, ComparisonAlignWeekday]
     ComparisonMetricKey:
       type: string
       enum:
@@ -15407,6 +15423,8 @@ components:
           $ref: "#/components/schemas/ReportPeriod"
         granularity:
           $ref: "#/components/schemas/ComparisonGranularity"
+        align:
+          $ref: "#/components/schemas/ComparisonAlign"
         metrics:
           type: array
           items:
