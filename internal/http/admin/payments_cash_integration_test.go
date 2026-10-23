@@ -52,6 +52,7 @@ type deskEnv struct {
 	owner   *auth.Principal
 	cashier *auth.Principal
 	viewer  *auth.Principal
+	ownerB  *auth.Principal // owner of another organization
 	booking *store.Booking
 }
 
@@ -60,6 +61,10 @@ func newDeskEnv(t *testing.T, db *store.DB) *deskEnv {
 	ctx := context.Background()
 	now := time.Date(2027, 7, 15, 8, 0, 0, 0, time.UTC)
 	org, est, err := store.CreateOrganizationWithEstablishment(ctx, db, "Org A", "lido-a", "Lido A", now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	orgB, _, err := store.CreateOrganizationWithEstablishment(ctx, db, "Org B", "lido-b", "Lido B", now)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,13 +77,14 @@ func newDeskEnv(t *testing.T, db *store.DB) *deskEnv {
 		DB: db, Clock: c, Audit: aw, Outbox: ob, Bookings: booking.NewLedger(booking.LedgerDeps{Clock: c}),
 		Cash: cashSvc, Fiscal: fiscalSvc, Credits: custSvc, Providers: deskRegistry{c},
 	})
-	mk := func(estID string, role auth.Role) *auth.Principal {
-		u := &store.User{ID: store.NewID(), Email: fmt.Sprintf("%s@lido.it", role), PasswordHash: "x", Name: "U", Locale: "it", Active: true, CreatedAt: now, UpdatedAt: now}
+	mkIn := func(orgID, estID string, role auth.Role) *auth.Principal {
+		u := &store.User{ID: store.NewID(), Email: fmt.Sprintf("%s-%s@lido.it", role, store.NewID()), PasswordHash: "x", Name: "U", Locale: "it", Active: true, CreatedAt: now, UpdatedAt: now}
 		if err := store.InsertUser(ctx, db, u); err != nil {
 			t.Fatal(err)
 		}
-		return &auth.Principal{Kind: auth.PrincipalUser, UserID: u.ID, Grants: []auth.Grant{{OrganizationID: org.ID, EstablishmentID: estID, Role: role}}}
+		return &auth.Principal{Kind: auth.PrincipalUser, UserID: u.ID, Grants: []auth.Grant{{OrganizationID: orgID, EstablishmentID: estID, Role: role}}}
 	}
+	mk := func(estID string, role auth.Role) *auth.Principal { return mkIn(org.ID, estID, role) }
 	cu := &store.Customer{ID: store.NewID(), EstablishmentID: est.ID, LastName: "Rossi", Locale: "it", Tags: []string{}, Version: 1, CreatedAt: now, UpdatedAt: now}
 	if _, err := db.NewInsert().Model(cu).Exec(ctx); err != nil {
 		t.Fatal(err)
@@ -97,6 +103,7 @@ func newDeskEnv(t *testing.T, db *store.DB) *deskEnv {
 		h:     &admin.Handlers{Payments: paySvc, Cash: cashSvc, Fiscal: fiscalSvc, Log: slog.New(slog.DiscardHandler)},
 		est:   est,
 		owner: mk("", auth.RoleOwner), cashier: mk(est.ID, auth.RoleCashier), viewer: mk(est.ID, auth.RoleViewer),
+		ownerB:  mkIn(orgB.ID, "", auth.RoleOwner),
 		booking: b,
 	}
 }
@@ -264,6 +271,17 @@ func TestPaymentsCashHTTP_DeskDay(t *testing.T) {
 		})
 		if status != 200 || len(body["items"].([]any)) != 4 {
 			t.Fatalf("fiscal documents: %d %v", status, body)
+		}
+		// Cross-tenant: the owner of another organization gets 404 on both
+		// fiscal endpoints of this establishment.
+		status, _, body = call(t, e.ownerB, http.MethodGet, nil, func(w http.ResponseWriter, r *http.Request) {
+			e.h.ListFiscalDocuments(w, r, est, api.ListFiscalDocumentsParams{})
+		})
+		if status != 404 || body["type"] != "not_found" {
+			t.Fatalf("cross-tenant fiscal documents: %d %v", status, body)
+		}
+		if status, _, body := call(t, e.ownerB, http.MethodGet, nil, func(w http.ResponseWriter, r *http.Request) { e.h.GetCorrispettivi(w, r, est, params) }); status != 404 || body["type"] != "not_found" {
+			t.Fatalf("cross-tenant corrispettivi: %d %v", status, body)
 		}
 	})
 }

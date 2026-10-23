@@ -600,7 +600,11 @@ func (s *Service) loadDetail(ctx context.Context, db bun.IDB, es store.Establish
 	if d.Payments == nil {
 		d.Payments = []store.Payment{}
 	}
-	if d.History, err = store.ListBookingHistory(ctx, db, es, b.ID); err != nil {
+	paymentIDs := make([]string, 0, len(d.Payments))
+	for i := range d.Payments {
+		paymentIDs = append(paymentIDs, d.Payments[i].ID)
+	}
+	if d.History, err = store.ListBookingHistory(ctx, db, es, b.ID, paymentIDs); err != nil {
 		return nil, err
 	}
 	var spotIDs []string

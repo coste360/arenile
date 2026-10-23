@@ -8,7 +8,10 @@ import (
 )
 
 // VATTotal is the takings of a session for one VAT rate (refunds negative);
-// Taxable + Tax == Gross (money.VATSplit, half-even, on the rate total).
+// Taxable + Tax == Gross. The scorporo runs per (rate, method) and the
+// shares are summed, the same granularity as the rows of the corrispettivi
+// export (fiscal.BuildReport), so that the Z summary of a one-session day
+// and the daily export agree to the cent on taxable and tax.
 type VATTotal struct {
 	RateBP  int64
 	Gross   money.Cents
@@ -52,7 +55,11 @@ func Summarize(openingFloat money.Cents, payments []store.Payment, movements []s
 		Expected: store.MethodTotals{store.PaymentMethodCash: openingFloat},
 		ByVAT:    []VATTotal{},
 	}
-	vat := map[int64]money.Cents{}
+	type vatKey struct {
+		rate   int64
+		method string
+	}
+	vat := map[vatKey]money.Cents{}
 	for i := range payments {
 		pm := &payments[i]
 		if pm.Status != store.PaymentSucceeded {
@@ -71,7 +78,7 @@ func Summarize(openingFloat money.Cents, payments []store.Payment, movements []s
 			sign = -1
 		}
 		for _, sh := range pm.VATBreakdown {
-			vat[sh.RateBP] += sign * sh.Gross
+			vat[vatKey{sh.RateBP, pm.Method}] += sign * sh.Gross
 		}
 	}
 	for _, m := range movements {
@@ -84,14 +91,25 @@ func Summarize(openingFloat money.Cents, payments []store.Payment, movements []s
 			s.Expected[store.PaymentMethodCash] -= m.Amount
 		}
 	}
-	rates := make([]int64, 0, len(vat))
-	for r := range vat {
+	byRate := map[int64]*VATTotal{}
+	for k, gross := range vat {
+		t := byRate[k.rate]
+		if t == nil {
+			t = &VATTotal{RateBP: k.rate}
+			byRate[k.rate] = t
+		}
+		taxable, tax := money.VATSplit(gross, k.rate)
+		t.Gross += gross
+		t.Taxable += taxable
+		t.Tax += tax
+	}
+	rates := make([]int64, 0, len(byRate))
+	for r := range byRate {
 		rates = append(rates, r)
 	}
 	sort.Slice(rates, func(i, j int) bool { return rates[i] < rates[j] })
 	for _, r := range rates {
-		taxable, tax := money.VATSplit(vat[r], r)
-		s.ByVAT = append(s.ByVAT, VATTotal{RateBP: r, Gross: vat[r], Taxable: taxable, Tax: tax})
+		s.ByVAT = append(s.ByVAT, *byRate[r])
 	}
 	if counted != nil {
 		s.Counted = store.MethodTotals{}

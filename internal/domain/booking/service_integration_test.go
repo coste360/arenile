@@ -567,6 +567,57 @@ func TestBookingService_AuditAndOutboxAtomic(t *testing.T) {
 	})
 }
 
+// TestBookingService_TransitionRollsBackWhole (INV-18): a cancellation whose
+// refund fails after the status was written (a cash refund without an open
+// session, here a failing payments port) leaves status, allocations,
+// paid_amount, audit log and outbox exactly as they were; the next attempt
+// with a working refund succeeds. The test table covers both outcomes.
+func TestBookingService_TransitionRollsBackWhole(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		det := f.MustCreate(f.Input(f.Spots[0], "2027-07-10", "2027-07-12"))
+		f.PayBooking(det.Booking.ID, 3000)
+		cases := []struct {
+			name    string
+			failure error
+			wantErr bool
+		}{
+			{"refund fails: nothing changes", errors.New("cash: no open session"), true},
+			{"refund works: cancelled with refund", nil, false},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				f.Pay.SetFailure(tc.failure)
+				before, _ := f.Svc.Get(f.Ctx, f.Owner, f.Est.ID, det.Booking.ID)
+				audits, events := f.Count((*store.AuditEntry)(nil), ""), f.Count((*store.OutboxEvent)(nil), "")
+				refunds := f.Pay.RefundCount()
+				_, err := f.Svc.Cancel(f.Ctx, f.Owner, f.Est.ID, det.Booking.ID, booking.CancelInput{RefundMethod: store.PaymentMethodCash, Reason: "cliente"})
+				if (err != nil) != tc.wantErr {
+					t.Fatalf("cancel: %v", err)
+				}
+				after, _ := f.Svc.Get(f.Ctx, f.Owner, f.Est.ID, det.Booking.ID)
+				if !tc.wantErr {
+					if after.Booking.Status != string(booking.StatusCancelled) || len(after.SpotAllocations) != 0 || after.Booking.PaidAmount != 0 ||
+						f.Count((*store.AuditEntry)(nil), "") != audits+1 || f.Count((*store.OutboxEvent)(nil), "") != events+1 || f.Pay.RefundCount() != refunds+1 {
+						t.Fatalf("cancelled: %+v allocations %d", after.Booking, len(after.SpotAllocations))
+					}
+					return
+				}
+				if !errors.Is(err, tc.failure) {
+					t.Fatalf("error %v not the refund failure", err)
+				}
+				if after.Booking.Status != before.Booking.Status || after.Booking.Version != before.Booking.Version ||
+					after.Booking.PaidAmount != before.Booking.PaidAmount || after.Booking.CancelledAt != nil ||
+					len(after.SpotAllocations) != len(before.SpotAllocations) ||
+					f.Count((*store.AuditEntry)(nil), "") != audits || f.Count((*store.OutboxEvent)(nil), "") != events {
+					t.Fatalf("partial writes after a failed cancellation: before %+v after %+v (audit %d/%d, outbox %d/%d)",
+						before.Booking, after.Booking, audits, f.Count((*store.AuditEntry)(nil), ""), events, f.Count((*store.OutboxEvent)(nil), ""))
+				}
+			})
+		}
+	})
+}
+
 func TestLedger_ApplyPayment(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		f := bookingtest.New(t, db)

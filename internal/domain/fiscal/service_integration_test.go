@@ -65,13 +65,22 @@ func TestFiscalService_DocumentsAndExport(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		orgB, estB, err := store.CreateOrganizationWithEstablishment(ctx, db, "Org B", "lido-b", "Lido B", t0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		esB, err := store.SystemEstablishmentScope(ctx, db, estB.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ownerB := &auth.Principal{Kind: auth.PrincipalUser, UserID: store.NewID(), Grants: []auth.Grant{{OrganizationID: orgB.ID, Role: auth.RoleOwner}}}
 		c := clock.NewFake(t0)
 		rt := &device{}
 		svc := fiscal.NewService(fiscal.Deps{DB: db, Clock: c, Audit: audit.NewWriter(c), Outbox: event.NewOutbox(c), Drivers: drivers{c, rt}})
 		owner := &auth.Principal{Kind: auth.PrincipalUser, UserID: store.NewID(), Grants: []auth.Grant{{OrganizationID: org.ID, Role: auth.RoleOwner}}}
 		cashier := &auth.Principal{Kind: auth.PrincipalUser, UserID: store.NewID(), Grants: []auth.Grant{{OrganizationID: org.ID, EstablishmentID: est.ID, Role: auth.RoleCashier}}}
 
-		record := func(day string, dir string, amount money.Cents) *store.Payment {
+		recordIn := func(scope store.EstablishmentScope, day string, dir string, amount money.Cents) *store.Payment {
 			t.Helper()
 			taxable, tax := money.VATSplit(amount, 1000)
 			pm := &store.Payment{
@@ -80,19 +89,23 @@ func TestFiscalService_DocumentsAndExport(t *testing.T) {
 				VATBreakdown: []store.VATShare{{RateBP: 1000, Gross: amount, Taxable: taxable, Tax: tax}}, CreatedAt: t0, UpdatedAt: t0,
 			}
 			err := store.RunInTx(ctx, db, func(ctx context.Context, tx bun.Tx) error {
-				if err := store.InsertPayment(ctx, tx, es, pm); err != nil {
+				if err := store.InsertPayment(ctx, tx, scope, pm); err != nil {
 					return err
 				}
-				return svc.RecordPayment(ctx, tx, es, pm)
+				return svc.RecordPayment(ctx, tx, scope, pm)
 			})
 			if err != nil {
 				t.Fatal(err)
 			}
 			return pm
 		}
+		record := func(day string, dir string, amount money.Cents) *store.Payment { return recordIn(es, day, dir, amount) }
 		record("2027-07-15", store.PaymentDirectionIn, 1100)
 		record("2027-07-15", store.PaymentDirectionIn, 2200)
 		record("2027-07-16", store.PaymentDirectionRefund, 550)
+		// Another establishment of another organization: its documents and
+		// takings never cross over (tenancy, INV-26).
+		recordIn(esB, "2027-07-15", store.PaymentDirectionIn, 99900)
 		page, err := svc.ListDocuments(ctx, owner, est.ID, store.FiscalDocumentFilter{}, "", 10)
 		if err != nil {
 			t.Fatal(err)
@@ -145,8 +158,29 @@ func TestFiscalService_DocumentsAndExport(t *testing.T) {
 		if rep.GrandTotal != 1100+2200-550+3300 || len(rep.Rows) != 1 || rep.Rows[0].Count != 4 || rep.Rows[0].Tax != 550 {
 			t.Fatalf("report %+v", rep)
 		}
-		if n, _ := db.NewSelect().TableExpr("outbox_events").Where("type = ?", event.FiscalDocumentRecorded).Count(ctx); n != 5 {
+		if n, _ := db.NewSelect().TableExpr("outbox_events").Where("type = ?", event.FiscalDocumentRecorded).Count(ctx); n != 6 {
 			t.Fatalf("fiscal events %d", n)
+		}
+		// Cross-tenant: the owner of B gets not found on A and sees only B.
+		if _, err := svc.ListDocuments(ctx, ownerB, est.ID, store.FiscalDocumentFilter{}, "", 10); !errors.Is(err, configerr.ErrNotFound) {
+			t.Fatalf("documents of A for owner B: %v", err)
+		}
+		if _, err := svc.Corrispettivi(ctx, ownerB, est.ID, fiscal.CorrispettiviQuery{From: from, To: to}); !errors.Is(err, configerr.ErrNotFound) {
+			t.Fatalf("corrispettivi of A for owner B: %v", err)
+		}
+		if _, err := svc.Corrispettivi(ctx, owner, estB.ID, fiscal.CorrispettiviQuery{From: from, To: to}); !errors.Is(err, configerr.ErrNotFound) {
+			t.Fatalf("corrispettivi of B for owner A: %v", err)
+		}
+		pageB, err := svc.ListDocuments(ctx, ownerB, estB.ID, store.FiscalDocumentFilter{}, "", 10)
+		if err != nil || len(pageB.Items) != 1 || pageB.Items[0].EstablishmentID != estB.ID {
+			t.Fatalf("documents of B: %v %+v", err, pageB.Items)
+		}
+		repB, err := svc.Corrispettivi(ctx, ownerB, estB.ID, fiscal.CorrispettiviQuery{From: from, To: to})
+		if err != nil || repB.GrandTotal != 99900 || len(repB.Rows) != 1 {
+			t.Fatalf("corrispettivi of B: %v %+v", err, repB)
+		}
+		if len(page.Items) != 3 || len(issued.Items) != 4 {
+			t.Fatal("documents of B leaked into A")
 		}
 	})
 }

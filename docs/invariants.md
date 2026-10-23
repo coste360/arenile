@@ -124,7 +124,7 @@ Verificata da: `TestBookingTransitions_OnlyAllowed` (tabella completa stati × a
 **INV-18 — Audit e outbox nella stessa transazione.**
 Ogni transizione di stato scrive una riga in `audit_log` e un evento in `outbox_events` nella stessa
 transazione: se la transazione fallisce non resta nessuna delle tre scritture.
-Verificata da: `TestBookingService_AuditAndOutboxAtomic` (`internal/domain/booking`, tag `integration`), `TestPaymentService_AtomicRollback` (`internal/domain/payment`), `TestOutbox_SameTransactionSemantics` (primitiva). Stato: implemented.
+Verificata da: `TestBookingService_AuditAndOutboxAtomic` (modifica rifiutata prima di ogni scrittura), `TestBookingService_TransitionRollsBackWhole` (cancellazione il cui rimborso fallisce dopo la scrittura dello stato: stato, allocazioni, `paid_amount`, audit e outbox invariati) (`internal/domain/booking`, tag `integration`), `TestPaymentService_AtomicRollback` (`internal/domain/payment`), `TestOutbox_SameTransactionSemantics` (primitiva). Stato: implemented.
 
 **INV-19 — Conferma solo dal pagamento.**
 Una prenotazione online passa a `confirmed` solo da un webhook verificato del provider o dal driver
@@ -268,15 +268,19 @@ esattamente le allocazioni delle sue righe (meno i giorni rilasciati), le cancel
 pagamenti − rimborsi; i totali attesi di ogni sessione di cassa = fondo + incassi ± movimenti e la differenza
 di chiusura = contato − atteso; ogni prenotazione ha audit ed eventi, l'outbox è svuotato e senza dati personali.
 Verificata da: `TestAcceptance_SimulatedDay` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL;
-seme casuale ripetibile con `ARENILE_ACCEPTANCE_SEED`). Stato: implemented (476 operazioni
-con mutazione per esecuzione, in verde su SQLite e PostgreSQL anche con `-race`; un'operazione che risponde 501
-fa fallire il test).
+seme casuale ripetibile con `ARENILE_ACCEPTANCE_SEED`). Stato: implemented (contano solo le mutazioni accettate
+con 2xx: 324 con il seme predefinito, più 152 rifiuti attesi; ogni rifiuto deve appartenere all'elenco ammesso per
+quel passo dello scenario, un'operazione che risponde 501 o un rifiuto non previsto fanno fallire il test; il
+registratore SSE si riconnette con `Last-Event-ID` come il browser, così un client disconnesso perché in ritardo
+non perde eventi sotto carico).
 
 **INV-44 — Corrispettivi uguali agli incassi.**
 L'export dei corrispettivi di un periodo ha totale uguale alla somma dei pagamenti riusciti meno i rimborsi
 riusciti con `business_date` nel periodo (rimborsi come credito inclusi, metodo `credit`); per ogni riga e per
 ogni aliquota `taxable + tax = gross` e la somma delle righe è il totale.
-Verificata da: `TestAcceptance_SimulatedDay` (`checkCorrispettivi`). Stato: implemented
+Lo scorporo avviene per aliquota e metodo sia nell'export sia nel riepilogo Z della cassa (`cash.Summarize`), così
+imponibile e imposta di una giornata con una sola sessione coincidono al centesimo tra i due.
+Verificata da: `TestAcceptance_SimulatedDay` (`checkCorrispettivi`), `TestSummarize_MatchesCorrispettivi` (`internal/domain/cash`). Stato: implemented
 (`calendar.Date` implementa il `Binder` di oapi-codegen, verificato da `TestDate_BindQueryParameter`).
 
 **INV-45 — Flusso SSE dopo il commit e senza dati personali.**

@@ -60,6 +60,8 @@ type OperationalBooking struct {
 	BalanceDue          money.Cents
 	HasExtras           bool
 	HasNotes            bool
+	// Version is the If-Match version for the actions offered on the map.
+	Version int64
 }
 
 // OperationalSpot is the state of a spot on the requested slot(s).
@@ -416,7 +418,7 @@ func operationalBooking(b *store.BookingSummary, a *store.SpotAllocation, packs 
 		CustomerDisplayName: DisplayName(b.FirstName, b.LastName), CustomerTags: b.Tags,
 		StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, IsSeasonPass: b.IsSeasonPass,
 		PackCodes: packs, TotalAmount: b.TotalAmount, PaidAmount: b.PaidAmount, BalanceDue: b.BalanceDue(),
-		HasExtras: b.HasExtras, HasNotes: b.NotesCustomer != "" || b.NotesInternal != "",
+		HasExtras: b.HasExtras, HasNotes: b.NotesCustomer != "" || b.NotesInternal != "", Version: b.Version,
 	}
 	if a.BookingLineID != nil {
 		ob.LineID = *a.BookingLineID

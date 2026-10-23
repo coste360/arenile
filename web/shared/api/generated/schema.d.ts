@@ -3713,6 +3713,8 @@ export interface components {
             balance_due: components["schemas"]["Money"];
             has_notes: boolean;
             has_extras: boolean;
+            /** @description Versione della prenotazione per l'If-Match delle azioni dalla mappa (check-in, spostamento). */
+            version: components["schemas"]["Version"];
         };
         OperationalSpot: {
             /** Format: uuid */

@@ -290,6 +290,10 @@ type Payments struct {
 	mu     sync.Mutex
 	// Refunds lists the refund requests recorded.
 	Refunds []payment.RefundRequest
+	// FailWith, when set, makes RecordRefund fail (after writing to the
+	// ledger, like a cash refund without an open session would): the
+	// caller's transaction must roll back everything (INV-18).
+	FailWith error
 }
 
 // RecordRefund applies the refund to paid_amount and remembers it.
@@ -298,10 +302,23 @@ func (p *Payments) RecordRefund(ctx context.Context, tx bun.IDB, _ *auth.Princip
 		return nil, err
 	}
 	p.mu.Lock()
+	fail := p.FailWith
+	p.mu.Unlock()
+	if fail != nil {
+		return nil, fail
+	}
+	p.mu.Lock()
 	p.Refunds = append(p.Refunds, req)
 	p.mu.Unlock()
 	id := req.BookingID
 	return &store.Payment{ID: store.NewID(), BookingID: &id, Amount: req.Amount, Direction: store.PaymentDirectionRefund, Method: req.Method, Provider: "manual", Status: "succeeded", CreatedAt: p.Clock.Now()}, nil
+}
+
+// SetFailure sets (or clears, with nil) the error RecordRefund returns.
+func (p *Payments) SetFailure(err error) {
+	p.mu.Lock()
+	p.FailWith = err
+	p.mu.Unlock()
 }
 
 // RefundCount returns how many refunds were recorded.

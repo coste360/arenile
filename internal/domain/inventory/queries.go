@@ -326,13 +326,22 @@ func (s *Service) availability(ctx context.Context, es store.EstablishmentScope,
 			if pl == nil {
 				break
 			}
+			// Capacity is the smallest effective capacity over the open
+			// half-days (capacity_overrides applied, as poolAvailability does).
 			za.Capacity = pl.Capacity
+			minCap := -1
 			for _, ds := range open {
 				o := occByKey[store.PoolKey{PoolID: pl.ID, Date: ds.Date, Slot: ds.Slot}]
 				capacity := effectiveCapacity(pl, ds.Date)
+				if minCap < 0 || capacity < minCap {
+					minCap = capacity
+				}
 				perHalfDay[ds] = availability.OnlineAvailable(availability.Channel(q.Channel), availability.QuotaState{
 					Capacity: capacity, Free: capacity - o.Used - o.Held, SoldOnline: o.Online,
 				}, quota)
+			}
+			if minCap >= 0 {
+				za.Capacity = minCap
 			}
 		}
 		minAvail := -1

@@ -28,7 +28,8 @@ type apiClient struct {
 	base string
 	http *http.Client
 
-	mutations atomic.Int64 // state-changing calls (the operation count)
+	mutations atomic.Int64 // state-changing calls answered 2xx (the operation count)
+	refused   atomic.Int64 // state-changing calls refused by the server (4xx)
 
 	mu      sync.Mutex
 	missing map[string]int // operation -> 501 answers
@@ -109,7 +110,6 @@ func (c *apiClient) do(op, method, path string, in any, hdr map[string]string) r
 	}
 	if method != http.MethodGet {
 		req.Header.Set("X-CSRF-Token", c.csrf())
-		c.mutations.Add(1)
 	}
 	if method == http.MethodPost {
 		req.Header.Set("Idempotency-Key", newKey())
@@ -126,6 +126,15 @@ func (c *apiClient) do(op, method, path string, in any, hdr map[string]string) r
 	r := result{Status: resp.StatusCode, Body: raw, ETag: resp.Header.Get("ETag")}
 	if strings.Contains(resp.Header.Get("Content-Type"), "problem+json") {
 		_ = json.Unmarshal(raw, &r.Problem)
+	}
+	// Only a mutation the server accepted counts as an operation of the
+	// day; refusals are reported apart (INV-43 counts work done, not tried).
+	if method != http.MethodGet {
+		if r.ok() {
+			c.mutations.Add(1)
+		} else {
+			c.refused.Add(1)
+		}
 	}
 	c.mu.Lock()
 	c.counts[op]++

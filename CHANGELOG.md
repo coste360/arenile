@@ -63,7 +63,7 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
   stati, ricerca, scheda della postazione e spostamento con anteprima, calendario planning in SVG con trascinamento
   e tastiera, elenco e dettaglio prenotazioni, foglio "Nuova prenotazione" con mini mappa e anteprima del prezzo,
   clienti, abbonamenti con calendario dei rilasci, cassa e corrispettivi; italiano, inglese, tedesco e francese.
-- M3 — test di accettazione `internal/acceptance`: giornata simulata da 476 operazioni via API (100 prenotazioni
+- M3 — test di accettazione `internal/acceptance`: giornata simulata da oltre 300 operazioni accettate via API (324 con il seme predefinito; 100 prenotazioni
   parallele sulla stessa postazione, 50 hold paralleli sullo stesso pool, 10 ripetizioni dello stesso pagamento)
   con verifica sul database di allocazioni, pool, prenotazioni, incassi, cassa, corrispettivi, audit, outbox e
   flusso SSE, su SQLite e PostgreSQL; 28 test `TestConcurrency_*`; test Playwright della mappa operativa, del foglio

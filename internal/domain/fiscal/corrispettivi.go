@@ -31,7 +31,8 @@ func (g GroupBy) Valid() bool { return g == GroupByDay || g == GroupByMonth }
 // Row is the takings of one period, VAT rate and payment method. Refunds
 // are negative. Taxable + Tax == Gross (INV-16), split with money.VATSplit
 // (half-even) on the row gross, i.e. the scorporo of the daily (or monthly)
-// total per rate.
+// total per rate and method: the same granularity as cash.Summarize, so the
+// Z summary of a one-session day matches the daily export.
 type Row struct {
 	Period  string // YYYY-MM-DD or YYYY-MM
 	RateBP  int64

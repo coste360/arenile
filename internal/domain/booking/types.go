@@ -86,7 +86,8 @@ type Detail struct {
 	SpotAllocations []store.SpotAllocation
 	PoolAllocations []store.PoolAllocation
 	Payments        []store.Payment
-	// History is read from audit_log (entity_type booking, entity_id = id).
+	// History is read from audit_log: the entries of the booking (entity_type
+	// booking) and of its payments and refunds (entity_type payment), oldest first.
 	History []store.AuditEntry
 	// SpotLabels, PackCodes and ExtraCodes label the ids of the lines.
 	SpotLabels map[string]string

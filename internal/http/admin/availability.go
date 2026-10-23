@@ -154,6 +154,7 @@ func (h *Handlers) GetOperationsDay(w http.ResponseWriter, r *http.Request, esta
 				StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: api.Slots(b.Slots), IsSeasonPass: b.IsSeasonPass,
 				LineId: invOpt(b.LineID), PackCodes: b.PackCodes, TotalAmount: int64(b.TotalAmount),
 				PaidAmount: int64(b.PaidAmount), BalanceDue: int64(b.BalanceDue), HasExtras: b.HasExtras, HasNotes: b.HasNotes,
+				Version: b.Version,
 			}
 		}
 		out.Spots[i] = os

@@ -3,6 +3,7 @@
 package acceptance
 
 import (
+	"slices"
 	"context"
 	"fmt"
 	"math/rand/v2"
@@ -44,9 +45,9 @@ func TestAcceptance_SimulatedDay(t *testing.T) {
 		e.runJobs()
 
 		ops := d.c.mutations.Load()
-		t.Logf("operations: %d mutating calls; business refusals: %v", ops, d.refusals)
+		t.Logf("operations: %d mutations accepted, %d refused by the server; business refusals: %v", ops, d.c.refused.Load(), d.refusals)
 		if ops < minOperations {
-			t.Fatalf("simulated day ran %d operations, want >= %d", ops, minOperations)
+			t.Fatalf("simulated day ran %d accepted operations, want >= %d", ops, minOperations)
 		}
 		checkInvariants(t, e, d)
 		d.checkStream()
@@ -214,24 +215,41 @@ func formulaOf(from, to calendar.Date, slots api.Slots) api.Formula {
 	return api.FormulaDay
 }
 
-// refused records an expected business refusal (409 conflict, 412/422
-// policy, 400 validation_failed): the scenario is random, the server decides. Any
-// other failure stops the test; 501 answers are collected and fail it.
+// allowedRefusals lists, per scenario step, the problem types the server may
+// legitimately answer: the scenario is random and the server decides, but a
+// regression that turns another step into a refusal (a payment answering
+// 409, a move answering 422...) must fail the day, not be counted as business.
+var allowedRefusals = map[string][]string{
+	"createBooking":                    {"spot_unavailable", "pool_exhausted", "quota_exceeded", "policy_violation", "no_price"},
+	"createBooking(held)":              {"spot_unavailable", "pool_exhausted", "quota_exceeded", "policy_violation", "no_price"},
+	"createBooking(burst)":             {"policy_violation"},
+	"createBooking(pass spot)":         {"spot_unavailable"},
+	"createHold":                       {"spot_unavailable", "pool_exhausted", "quota_exceeded"},
+	"createHold(pool burst)":           {"quota_exceeded"},
+	"recordBookingPayment":             {"validation_failed", "cash_session_closed", "conflict"},
+	"recordBookingPayment(idempotent)": {"validation_failed", "idempotency_key_reused"},
+	"updateBooking":                    {"spot_unavailable", "pool_exhausted", "quota_exceeded", "policy_violation", "version_conflict", "conflict", "no_price"},
+	"moveBooking":                      {"spot_unavailable", "pool_exhausted", "quota_exceeded", "validation_failed", "conflict", "version_conflict"},
+	"cancelBooking":                    {"invalid_transition", "conflict", "validation_failed", "version_conflict"},
+	"recordBookingRefund":              {"validation_failed", "cash_session_closed"},
+	"recordBookingRefund(over)":        {"validation_failed"},
+	"checkInBooking":                   {"invalid_transition", "booking_outside_period", "version_conflict"},
+}
+
+// refused records an expected business refusal of a scenario step: only a
+// 4xx problem type in allowedRefusals for that step. Any other answer stops
+// the test; 501 answers are collected and fail it.
 func (d *day) refused(op string, r result) {
 	d.t.Helper()
-	switch r.Status {
-	case http.StatusConflict, http.StatusUnprocessableEntity, http.StatusPreconditionFailed:
-		d.refusals[op+":"+r.Problem.Type]++
-	case http.StatusBadRequest:
-		if r.Problem.Type != "validation_failed" {
-			d.t.Fatalf("%s: unexpected %s", op, r)
-		}
-		d.refusals[op+":"+r.Problem.Type]++
-	case http.StatusNotImplemented:
+	if r.Status == http.StatusNotImplemented {
 		d.c.failIfNotImplemented()
-	default:
-		d.t.Fatalf("%s: unexpected %s", op, r)
+		return
 	}
+	if r.Status >= 400 && r.Status < 500 && slices.Contains(allowedRefusals[op], r.Problem.Type) {
+		d.refusals[op+":"+r.Problem.Type]++
+		return
+	}
+	d.t.Fatalf("%s: unexpected %s", op, r)
 }
 
 func (d *day) track(bd api.BookingDetail) *trackedBooking {

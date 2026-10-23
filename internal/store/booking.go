@@ -303,14 +303,26 @@ func ListBookingPoolAllocations(ctx context.Context, db bun.IDB, es Establishmen
 }
 
 // ListBookingHistory returns the audit entries of a booking of es (entity
-// type "booking"), oldest first.
-func ListBookingHistory(ctx context.Context, db bun.IDB, es EstablishmentScope, bookingID string) ([]AuditEntry, error) {
+// type "booking") and those of its payments and refunds (entity type
+// "payment", ids in paymentIDs), oldest first: the timeline of the booking.
+func ListBookingHistory(ctx context.Context, db bun.IDB, es EstablishmentScope, bookingID string, paymentIDs []string) ([]AuditEntry, error) {
 	if err := es.mustBeValid(); err != nil {
 		return nil, err
 	}
 	out := []AuditEntry{}
 	err := db.NewSelect().Model(&out).
-		Where("establishment_id = ?", es.ID()).Where("entity_type = ?", "booking").Where("entity_id = ?", bookingID).
+		Where("establishment_id = ?", es.ID()).
+		WhereGroup(" AND ", func(q *bun.SelectQuery) *bun.SelectQuery {
+			q = q.WhereGroup(" OR ", func(g *bun.SelectQuery) *bun.SelectQuery {
+				return g.Where("entity_type = ?", "booking").Where("entity_id = ?", bookingID)
+			})
+			if len(paymentIDs) > 0 {
+				q = q.WhereGroup(" OR ", func(g *bun.SelectQuery) *bun.SelectQuery {
+					return g.Where("entity_type = ?", "payment").Where("entity_id IN (?)", bun.List(paymentIDs))
+				})
+			}
+			return q
+		}).
 		OrderExpr("created_at ASC, id ASC").Scan(ctx)
 	if err != nil && !isNoRows(err) {
 		return nil, fmt.Errorf("store: list booking history: %w", err)

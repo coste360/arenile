@@ -10290,7 +10290,7 @@ components:
       enum: [free, booked, checked_in, pass_holder, released, held, renewal_offer, blocked, closed, inactive]
     OperationalBooking:
       type: object
-      required: [booking_id, code, status, channel, customer_id, customer_display_name, customer_tags, starts_on, ends_on, slots, is_season_pass, pack_codes, total_amount, paid_amount, balance_due, has_notes, has_extras]
+      required: [booking_id, code, status, channel, customer_id, customer_display_name, customer_tags, starts_on, ends_on, slots, is_season_pass, pack_codes, total_amount, paid_amount, balance_due, has_notes, has_extras, version]
       properties:
         booking_id:
           type: string
@@ -10338,6 +10338,10 @@ components:
           type: boolean
         has_extras:
           type: boolean
+        version:
+          allOf:
+            - $ref: "#/components/schemas/Version"
+          description: Versione della prenotazione per l'If-Match delle azioni dalla mappa (check-in, spostamento).
     OperationalSpot:
       type: object
       required: [spot_id, map_id, zone_id, label, status]

@@ -3168,6 +3168,9 @@ type OperationalBooking struct {
 
 	// TotalAmount Importo in centesimi di euro (IVA inclusa).
 	TotalAmount Money `json:"total_amount"`
+
+	// Version Versione della prenotazione per l'If-Match delle azioni dalla mappa (check-in, spostamento).
+	Version Version `json:"version"`
 }
 
 // OperationalSpot defines model for OperationalSpot.
