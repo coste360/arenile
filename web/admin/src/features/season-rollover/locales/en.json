@@ -47,6 +47,11 @@
   "openApplied": "Go to the result",
   "alreadyApplied": "Season {{year}} has already been created by this rollover.",
   "warnings": "To check",
+  "warning": {
+    "closure_outside_season": "Closure of {{date}}: the shifted date ({{target}}) falls outside the new season and was not copied.",
+    "closure_already_closed": "Closure of {{date}}: the new season is already closed on {{target}}.",
+    "closure_duplicate": "Closure of {{date}}: {{target}} is already covered by another copied closure."
+  },
   "readOnly": "Only users who can configure the establishment can create the season.",
   "counts": {
     "rate_periods": "Rate periods",

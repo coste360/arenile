@@ -81,7 +81,7 @@ type Result struct {
 	Season         *store.Season // nil on dry run
 	Counts         Counts
 	SeasonPasses   int // confirmed passes of the source season (renewal candidates)
-	Warnings       []string
+	Warnings       []Warning
 }
 
 // Rollover previews (in.DryRun) or applies the rollover of sourceSeasonID.
@@ -160,7 +160,7 @@ type recordedResult struct {
 	FixedPrices  int           `json:"fixed_prices"`
 	Policies     int           `json:"policies"`
 	SeasonPasses int           `json:"season_passes"`
-	Warnings     []string      `json:"warnings"`
+	Warnings     []Warning     `json:"warnings"`
 }
 
 // recordedOptions is the JSON of season_rollovers.options.
@@ -198,7 +198,7 @@ func (s *Service) recorded(ctx context.Context, db bun.IDB, es store.Establishme
 		return nil, fmt.Errorf("rollover: target season: %w", err)
 	}
 	if rr.Warnings == nil {
-		rr.Warnings = []string{}
+		rr.Warnings = []Warning{}
 	}
 	return &Result{
 		AlreadyApplied: true, RolloverID: r.ID, SourceSeasonID: r.SourceSeasonID, TargetYear: r.TargetYear,
@@ -232,7 +232,10 @@ func (s *Service) apply(ctx context.Context, tx bun.IDB, p *auth.Principal, es s
 		Counts: Counts{
 			RatePeriods: copied.RatePeriods, PriceRules: copied.PriceRules, FixedPrices: copied.FixedPrices, Policies: copied.Policies,
 		},
-		Warnings: append([]string{}, copied.Warnings...),
+		Warnings: []Warning{},
+	}
+	for _, w := range copied.Warnings {
+		res.Warnings = append(res.Warnings, Warning{Code: WarnSeasonCopy, Text: w})
 	}
 	now := s.d.Clock.Now().UTC()
 	if in.IncludeClosureDays {
@@ -304,7 +307,7 @@ func (s *Service) apply(ctx context.Context, tx bun.IDB, p *auth.Principal, es s
 }
 
 // copyClosures copies the closure days of the source season onto target.
-func (s *Service) copyClosures(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, src, target *store.Season, now time.Time) (int, []string, error) {
+func (s *Service) copyClosures(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, src, target *store.Season, now time.Time) (int, []Warning, error) {
 	srcDays, err := store.RolloverClosureDays(ctx, tx, es, src.OpensOn, src.ClosesOn)
 	if err != nil {
 		return 0, nil, err

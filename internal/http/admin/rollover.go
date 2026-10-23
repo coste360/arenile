@@ -81,10 +81,12 @@ func rolloverResultToAPI(res *rollover.Result) api.SeasonRolloverResult {
 	out := api.SeasonRolloverResult{
 		DryRun: res.DryRun, AlreadyApplied: res.AlreadyApplied, SourceSeasonId: res.SourceSeasonID, TargetYear: res.TargetYear,
 		OpensOn: res.OpensOn, ClosesOn: res.ClosesOn, Counts: rolloverCountsToAPI(res.Counts), SeasonPasses: &passes,
-		Warnings: res.Warnings,
+		Warnings: make([]api.SeasonRolloverWarning, 0, len(res.Warnings)),
 	}
-	if out.Warnings == nil {
-		out.Warnings = []string{}
+	for _, w := range res.Warnings {
+		out.Warnings = append(out.Warnings, api.SeasonRolloverWarning{
+			Code: api.SeasonRolloverWarningCode(w.Code), Date: nilIfEmpty(w.Date), TargetDate: nilIfEmpty(w.TargetDate), Text: nilIfEmpty(w.Text),
+		})
 	}
 	if res.RolloverID != "" {
 		id := res.RolloverID
@@ -102,4 +104,12 @@ func rolloverToAPI(r *store.SeasonRollover) api.SeasonRollover {
 		Id: r.ID, SourceSeasonId: r.SourceSeasonID, TargetSeasonId: r.TargetSeasonID, TargetYear: r.TargetYear,
 		Counts: rolloverCountsToAPI(rollover.CountsOf(r)), CreatedByUserId: r.CreatedByUserID, CreatedAt: r.CreatedAt,
 	}
+}
+
+// nilIfEmpty is the pointer of a non-empty string (nil when empty).
+func nilIfEmpty(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }

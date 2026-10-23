@@ -47,6 +47,11 @@
   "openApplied": "Vai al risultato",
   "alreadyApplied": "La stagione {{year}} è già stata creata con questo passaggio.",
   "warnings": "Da controllare",
+  "warning": {
+    "closure_outside_season": "Chiusura del {{date}}: la data spostata ({{target}}) cade fuori dalla nuova stagione e non è stata copiata.",
+    "closure_already_closed": "Chiusura del {{date}}: la nuova stagione è già chiusa il {{target}}.",
+    "closure_duplicate": "Chiusura del {{date}}: il {{target}} è già coperto da un'altra chiusura copiata."
+  },
   "readOnly": "Solo chi può configurare lo stabilimento può creare la stagione.",
   "counts": {
     "rate_periods": "Periodi tariffari",

@@ -1,7 +1,6 @@
 package rollover
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -41,6 +40,37 @@ func TargetDates(src store.Season, targetYear int, opensOn, closesOn *calendar.D
 	return opens, closes, v.OrNil()
 }
 
+// Warning codes of a rollover (api.SeasonRolloverWarning.code): the panel
+// translates them (i18n keys), the API never carries prose.
+const (
+	// WarnClosureOutside: the shifted closure falls outside the target season.
+	WarnClosureOutside = "closure_outside_season"
+	// WarnClosureExists: the target season is already closed on the shifted day.
+	WarnClosureExists = "closure_already_closed"
+	// WarnClosureDuplicate: two closures shift onto the same target day.
+	WarnClosureDuplicate = "closure_duplicate"
+	// WarnSeasonCopy: a warning of the pricing season copy (M2), carried in
+	// Text as the copy service formats it.
+	WarnSeasonCopy = "season_copy"
+)
+
+// Warning is one thing to check after a rollover: a code and its
+// parameters (dates as YYYY-MM-DD).
+type Warning struct {
+	Code string `json:"code"`
+	// Date is the source date the warning is about (closures).
+	Date string `json:"date,omitempty"`
+	// TargetDate is the shifted date in the target season (closures).
+	TargetDate string `json:"target_date,omitempty"`
+	// Text is the message of a WarnSeasonCopy warning.
+	Text string `json:"text,omitempty"`
+}
+
+// closureWarning builds a closure warning.
+func closureWarning(code string, from, to calendar.Date) Warning {
+	return Warning{Code: code, Date: from.String(), TargetDate: to.String()}
+}
+
 // ClosureCopy is one closure day to create in the target season.
 type ClosureCopy struct {
 	From   calendar.Date // date in the source season
@@ -55,9 +85,9 @@ type ClosureCopy struct {
 // their calendar date). A shifted date outside [opens, closes], already
 // closed in the target (existing, keyed by YYYY-MM-DD) or produced twice is not copied, with a
 // warning. The result is sorted by date.
-func PlanClosureDays(src []store.ClosureDay, years int, opens, closes calendar.Date, existing map[string]bool) ([]ClosureCopy, []string) {
+func PlanClosureDays(src []store.ClosureDay, years int, opens, closes calendar.Date, existing map[string]bool) ([]ClosureCopy, []Warning) {
 	out := []ClosureCopy{}
-	warnings := []string{}
+	warnings := []Warning{}
 	taken := map[string]bool{}
 	sorted := slices.Clone(src)
 	slices.SortFunc(sorted, func(a, b store.ClosureDay) int { return strings.Compare(a.Date.String(), b.Date.String()) })
@@ -65,11 +95,11 @@ func PlanClosureDays(src []store.ClosureDay, years int, opens, closes calendar.D
 		d := pricing.ShiftDate(c.Date, years, false)
 		switch {
 		case d.Before(opens) || d.After(closes):
-			warnings = append(warnings, fmt.Sprintf("closure %s (%s) falls outside the target season and was not copied", c.Date, d))
+			warnings = append(warnings, closureWarning(WarnClosureOutside, c.Date, d))
 		case existing[d.String()]:
-			warnings = append(warnings, fmt.Sprintf("closure %s: the target season is already closed on %s", c.Date, d))
+			warnings = append(warnings, closureWarning(WarnClosureExists, c.Date, d))
 		case taken[d.String()]:
-			warnings = append(warnings, fmt.Sprintf("closure %s: %s is already copied from another closure", c.Date, d))
+			warnings = append(warnings, closureWarning(WarnClosureDuplicate, c.Date, d))
 		default:
 			taken[d.String()] = true
 			out = append(out, ClosureCopy{From: c.Date, Date: d, Slots: slices.Clone(c.Slots), Reason: c.Reason})

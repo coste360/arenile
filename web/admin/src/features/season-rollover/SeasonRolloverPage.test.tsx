@@ -35,7 +35,10 @@ function result(overrides: Record<string, unknown> = {}) {
     closes_on: '2027-09-20',
     counts: COUNTS,
     season_passes: 42,
-    warnings: ['Il periodo «Ferragosto» cade di sabato nel 2027.'],
+    warnings: [
+      { code: 'closure_outside_season', date: '2026-09-20', target_date: '2027-09-19' },
+      { code: 'season_copy', text: 'Il periodo «Ferragosto» cade di sabato nel 2027.' },
+    ],
     ...overrides,
   };
 }
@@ -84,6 +87,12 @@ describe('SeasonRolloverPage', () => {
       screen.getByText('Abbonati da rinnovare').parentElement?.parentElement,
     ).toHaveTextContent('42');
     expect(screen.getByText(/Ferragosto/)).toBeInTheDocument();
+    // Structured warnings are translated by the panel (dates localised).
+    expect(
+      screen.getByText(
+        'Chiusura del 20/09/2026: la data spostata (19/09/2027) cade fuori dalla nuova stagione e non è stata copiata.',
+      ),
+    ).toBeInTheDocument();
     const [preview] = callsTo(fetchMock, 'POST', estPath('/seasons/s2026/rollover'));
     expect(await bodyOf(preview!)).toEqual({
       target_year: 2027,

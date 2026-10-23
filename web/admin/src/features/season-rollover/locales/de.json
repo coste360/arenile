@@ -47,6 +47,11 @@
   "openApplied": "Zum Ergebnis",
   "alreadyApplied": "Die Saison {{year}} wurde bereits mit diesem Saisonwechsel erstellt.",
   "warnings": "Zu prüfen",
+  "warning": {
+    "closure_outside_season": "Schließtag {{date}}: das verschobene Datum ({{target}}) liegt außerhalb der neuen Saison und wurde nicht kopiert.",
+    "closure_already_closed": "Schließtag {{date}}: die neue Saison ist am {{target}} bereits geschlossen.",
+    "closure_duplicate": "Schließtag {{date}}: der {{target}} ist bereits durch einen anderen kopierten Schließtag belegt."
+  },
   "readOnly": "Nur Benutzer mit Konfigurationsrechten können die Saison erstellen.",
   "counts": {
     "rate_periods": "Tarifzeiträume",

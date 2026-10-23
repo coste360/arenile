@@ -331,8 +331,15 @@ function Wizard({
                 <AlertTitle>{t('warnings')}</AlertTitle>
                 <AlertDescription>
                   <ul className="list-inside list-disc">
-                    {shown.warnings.map((w) => (
-                      <li key={w}>{w}</li>
+                    {shown.warnings.map((w, i) => (
+                      <li key={`${w.code}-${w.date ?? ''}-${i}`}>
+                        {w.code === 'season_copy'
+                          ? w.text
+                          : t(`warning.${w.code}`, {
+                              date: w.date ? formatIsoDate(w.date) : '',
+                              target: w.target_date ? formatIsoDate(w.target_date) : '',
+                            })}
+                      </li>
                     ))}
                   </ul>
                 </AlertDescription>

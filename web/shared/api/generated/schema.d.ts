@@ -7435,7 +7435,21 @@ export interface components {
             counts: components["schemas"]["SeasonRolloverCounts"];
             /** @description Abbonamenti confermati della stagione di origine, candidati al rinnovo. */
             season_passes?: number;
-            warnings: string[];
+            /** @description Cose da controllare dopo il passaggio: codici con parametri, tradotti dal pannello. */
+            warnings: components["schemas"]["SeasonRolloverWarning"][];
+        };
+        SeasonRolloverWarning: {
+            /**
+             * @description closure_outside_season: la chiusura spostata cade fuori dalla nuova stagione e non è stata copiata; closure_already_closed: la nuova stagione è già chiusa nel giorno spostato; closure_duplicate: due chiusure cadono sullo stesso giorno spostato; season_copy: avviso della copia di stagione dei prezzi (testo in `text`).
+             * @enum {string}
+             */
+            code: "closure_outside_season" | "closure_already_closed" | "closure_duplicate" | "season_copy";
+            /** @description Data di origine (chiusure), `YYYY-MM-DD`. */
+            date?: string;
+            /** @description Data spostata nella nuova stagione (chiusure), `YYYY-MM-DD`. */
+            target_date?: string;
+            /** @description Messaggio della copia di stagione (solo `season_copy`). */
+            text?: string;
         };
         SeasonRollover: {
             /** Format: uuid */

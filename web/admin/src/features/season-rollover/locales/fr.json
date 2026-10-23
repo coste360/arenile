@@ -47,6 +47,11 @@
   "openApplied": "Voir le résultat",
   "alreadyApplied": "La saison {{year}} a déjà été créée par ce passage.",
   "warnings": "À vérifier",
+  "warning": {
+    "closure_outside_season": "Fermeture du {{date}} : la date décalée ({{target}}) tombe hors de la nouvelle saison et n'a pas été copiée.",
+    "closure_already_closed": "Fermeture du {{date}} : la nouvelle saison est déjà fermée le {{target}}.",
+    "closure_duplicate": "Fermeture du {{date}} : le {{target}} est déjà couvert par une autre fermeture copiée."
+  },
   "readOnly": "Seuls les utilisateurs autorisés à configurer l'établissement peuvent créer la saison.",
   "counts": {
     "rate_periods": "Périodes tarifaires",

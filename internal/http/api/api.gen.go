@@ -2469,6 +2469,30 @@ func (e SeasonReleaseStatus) Valid() bool {
 	}
 }
 
+// Defines values for SeasonRolloverWarningCode.
+const (
+	ClosureAlreadyClosed SeasonRolloverWarningCode = "closure_already_closed"
+	ClosureDuplicate     SeasonRolloverWarningCode = "closure_duplicate"
+	ClosureOutsideSeason SeasonRolloverWarningCode = "closure_outside_season"
+	SeasonCopy           SeasonRolloverWarningCode = "season_copy"
+)
+
+// Valid indicates whether the value is a known member of the SeasonRolloverWarningCode enum.
+func (e SeasonRolloverWarningCode) Valid() bool {
+	switch e {
+	case ClosureAlreadyClosed:
+		return true
+	case ClosureDuplicate:
+		return true
+	case ClosureOutsideSeason:
+		return true
+	case SeasonCopy:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SeasonStatus.
 const (
 	SeasonStatusActive SeasonStatus = "active"
@@ -8074,11 +8098,31 @@ type SeasonRolloverResult struct {
 	Season *Season `json:"season,omitempty"`
 
 	// SeasonPasses Abbonamenti confermati della stagione di origine, candidati al rinnovo.
-	SeasonPasses   *int     `json:"season_passes,omitempty"`
-	SourceSeasonId string   `json:"source_season_id"`
-	TargetYear     int      `json:"target_year"`
-	Warnings       []string `json:"warnings"`
+	SeasonPasses   *int   `json:"season_passes,omitempty"`
+	SourceSeasonId string `json:"source_season_id"`
+	TargetYear     int    `json:"target_year"`
+
+	// Warnings Cose da controllare dopo il passaggio: codici con parametri, tradotti dal pannello.
+	Warnings []SeasonRolloverWarning `json:"warnings"`
 }
+
+// SeasonRolloverWarning defines model for SeasonRolloverWarning.
+type SeasonRolloverWarning struct {
+	// Code closure_outside_season: la chiusura spostata cade fuori dalla nuova stagione e non è stata copiata; closure_already_closed: la nuova stagione è già chiusa nel giorno spostato; closure_duplicate: due chiusure cadono sullo stesso giorno spostato; season_copy: avviso della copia di stagione dei prezzi (testo in `text`).
+	Code SeasonRolloverWarningCode `json:"code"`
+
+	// Date Data di origine (chiusure), `YYYY-MM-DD`.
+	Date *string `json:"date,omitempty"`
+
+	// TargetDate Data spostata nella nuova stagione (chiusure), `YYYY-MM-DD`.
+	TargetDate *string `json:"target_date,omitempty"`
+
+	// Text Messaggio della copia di stagione (solo `season_copy`).
+	Text *string `json:"text,omitempty"`
+}
+
+// SeasonRolloverWarningCode closure_outside_season: la chiusura spostata cade fuori dalla nuova stagione e non è stata copiata; closure_already_closed: la nuova stagione è già chiusa nel giorno spostato; closure_duplicate: due chiusure cadono sullo stesso giorno spostato; season_copy: avviso della copia di stagione dei prezzi (testo in `text`).
+type SeasonRolloverWarningCode string
 
 // SeasonStatus defines model for SeasonStatus.
 type SeasonStatus string
