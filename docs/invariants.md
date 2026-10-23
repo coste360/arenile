@@ -333,9 +333,11 @@ Verificata da: `TestConcurrency_PairingCodeSingleUse` (100 scambi paralleli dell
 **INV-50 — Token per dispositivo limitato e revocabile subito.**
 Un token `ar_dev_…` autentica come l'utente del dispositivo con i permessi del suo ruolo ristretti allo
 stabilimento del dispositivo; non autentica più dalla richiesta successiva alla revoca (nessuna cache), se
-l'utente è disattivato o non ha più un ruolo nello stabilimento. Un dispositivo o una chiave API non creano codici
+l'utente è disattivato o non ha più un ruolo nello stabilimento, né dopo 90 giorni senza uso
+(`device.IdleExpiry`, contati da `last_used_at` o dall'abbinamento). Un dispositivo o una chiave API non creano codici
 di abbinamento; con il token non serve il CSRF (niente cookie), con il cookie sì.
-Verificata da: `TestDeviceService_RevokeIsImmediate`, `TestDeviceService_PermissionsByRole`,
+Verificata da: `TestDeviceService_RevokeIsImmediate`, `TestDeviceService_PermissionsByRole`, `TestIdleExpired_Scenarios`,
+`TestDeviceService_PairAndAuthenticate` (scadenza per inattività),
 `TestDeviceService_CrossTenant` (`internal/domain/device`, tag `integration`), `TestAuthenticate_BearerAndCookie`,
 `TestAuthenticate_DeviceOnly` (`internal/http/middleware`), `TestHTTPIntegration_DevicePairing` (`internal/http`,
 tag `integration`). Stato: implemented.

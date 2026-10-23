@@ -22,6 +22,24 @@ const (
 	MaxAppVersionLen = 32
 )
 
+// IdleExpiry: a device token that has not been used for this long no
+// longer authenticates (spec 29.2 gives the token the role permissions
+// with no second factor; an idle phone in a drawer must not keep them
+// forever). The device stays listed until the owner revokes it, and a new
+// pairing is needed to use it again.
+const IdleExpiry = 90 * 24 * time.Hour
+
+// IdleExpired reports whether d has been idle longer than IdleExpiry at
+// now (pure): idle since last_used_at, or since the pairing when the
+// token was never used.
+func IdleExpired(d *store.Device, now time.Time) bool {
+	last := d.CreatedAt
+	if d.LastUsedAt != nil && d.LastUsedAt.After(last) {
+		last = *d.LastUsedAt
+	}
+	return now.Sub(last) > IdleExpiry
+}
+
 var (
 	platforms = []string{
 		store.DevicePlatformIOS, store.DevicePlatformAndroid, store.DevicePlatformWindows,

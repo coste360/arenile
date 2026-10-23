@@ -174,3 +174,25 @@ func TestRenderQRSVG_Scenarios(t *testing.T) {
 		}
 	}
 }
+
+func TestIdleExpired_Scenarios(t *testing.T) {
+	now := time.Date(2027, 7, 1, 9, 0, 0, 0, time.UTC)
+	at := func(d time.Duration) *time.Time { v := now.Add(-d); return &v }
+	tests := []struct {
+		name string
+		d    *store.Device
+		want bool
+	}{
+		{"fresh pairing never used", &store.Device{CreatedAt: now.Add(-time.Hour)}, false},
+		{"used yesterday", &store.Device{CreatedAt: now.Add(-200 * 24 * time.Hour), LastUsedAt: at(24 * time.Hour)}, false},
+		{"idle exactly the limit", &store.Device{CreatedAt: now.Add(-400 * 24 * time.Hour), LastUsedAt: at(IdleExpiry)}, false},
+		{"idle past the limit", &store.Device{CreatedAt: now.Add(-400 * 24 * time.Hour), LastUsedAt: at(IdleExpiry + time.Second)}, true},
+		{"never used since an old pairing", &store.Device{CreatedAt: now.Add(-(IdleExpiry + time.Hour))}, true},
+		{"last_used_at older than created_at (clock skew)", &store.Device{CreatedAt: now.Add(-time.Hour), LastUsedAt: at(500 * 24 * time.Hour)}, false},
+	}
+	for _, tt := range tests {
+		if got := IdleExpired(tt.d, now); got != tt.want {
+			t.Errorf("%s: IdleExpired = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}

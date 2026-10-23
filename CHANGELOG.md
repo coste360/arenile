@@ -61,7 +61,7 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
   come hash) con QR in SVG generato dal server (`qr_svg`, nuovo campo opzionale di `DevicePairingCode`),
   scambio con un token per dispositivo a 256 bit (hash, legato a utente e stabilimento, permessi del ruolo),
   autenticazione `Authorization: Bearer ar_dev_…` accanto ai cookie (CSRF solo per i cookie), `last_used_at`
-  aggiornato al più una volta al minuto, revoca immediata, audit `device.pairing_code_created`,
+  aggiornato al più una volta al minuto, revoca immediata, scadenza per inattività dopo 90 giorni, audit `device.pairing_code_created`,
   `device.paired`, `device.revoked`; `Me.device` per le richieste con token. Pagina *Configurazione →
   Dispositivi* con QR, codice, conto alla rovescia e revoca (INV-49, INV-50). Nuova dipendenza
   `github.com/skip2/go-qrcode` (MIT), la stessa usata da M4 per il QR delle prenotazioni.

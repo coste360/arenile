@@ -181,11 +181,12 @@ func (s *Service) revoke(ctx context.Context, p *auth.Principal, es store.Establ
 }
 
 // AuthenticateDevice resolves a device token to its principal: shape check
-// (ParseToken), lookup by token_hash with revoked_at IS NULL, then
-// Principals.PrincipalForDevice (active user with a role on the device's
-// establishment, grants narrowed to it); touches last_used_at at most
-// every TouchInterval. Any failure to authenticate is
-// auth.ErrUnauthenticated; database errors are returned as such.
+// (ParseToken), lookup by token_hash with revoked_at IS NULL, idle expiry
+// (IdleExpired: unused for IdleExpiry), then Principals.PrincipalForDevice
+// (active user with a role on the device's establishment, grants narrowed
+// to it); touches last_used_at at most every TouchInterval. Any failure to
+// authenticate is auth.ErrUnauthenticated; database errors are returned as
+// such.
 func (s *Service) AuthenticateDevice(ctx context.Context, token string) (*auth.Principal, error) {
 	prefix, ok := ParseToken(token)
 	if !ok || s.d.DB == nil || s.d.Principals == nil {
@@ -201,13 +202,17 @@ func (s *Service) AuthenticateDevice(ctx context.Context, token string) (*auth.P
 	if d.TokenPrefix != prefix {
 		return nil, auth.ErrUnauthenticated
 	}
+	now := s.d.Clock.Now().UTC()
+	if IdleExpired(d, now) {
+		s.d.Log.InfoContext(ctx, "device: token expired for inactivity", slog.String("device_id", d.ID))
+		return nil, auth.ErrUnauthenticated
+	}
 	p, err := s.d.Principals.PrincipalForDevice(ctx, auth.DeviceIdentity{
 		DeviceID: d.ID, DeviceName: d.Name, UserID: d.UserID, EstablishmentID: d.EstablishmentID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	now := s.d.Clock.Now().UTC()
 	if d.LastUsedAt == nil || now.Sub(*d.LastUsedAt) >= TouchInterval {
 		if _, err := store.TouchDevice(ctx, s.d.DB, d.ID, now, now.Add(-TouchInterval)); err != nil {
 			// Bookkeeping only: never fail the request for it.

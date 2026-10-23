@@ -209,6 +209,16 @@ func TestDeviceService_PairAndAuthenticate(t *testing.T) {
 		if count(t, db, "device_pairing_codes", "device_id = ?", res.Device.ID) != 1 {
 			t.Fatal("pairing code not linked to the device")
 		}
+		// Idle expiry: a token unused for IdleExpiry stops authenticating
+		// (INV-50); it was used "now", so it survives until then.
+		f.clock.Advance(device.IdleExpiry)
+		if _, err := f.svc.AuthenticateDevice(f.ctx, res.Token); err != nil {
+			t.Fatalf("at the idle limit: %v", err)
+		}
+		f.clock.Advance(device.IdleExpiry + time.Minute)
+		if _, err := f.svc.AuthenticateDevice(f.ctx, res.Token); !errors.Is(err, auth.ErrUnauthenticated) {
+			t.Fatalf("idle token still authenticates: %v", err)
+		}
 	})
 }
 

@@ -99,6 +99,14 @@ Decisioni prese durante l'implementazione, a complemento dei punti sopra.
 14. **Abbinamento della modalità remota anche da riga di comando**: `arenile-desktop -pair <QR|URL>
     [-pair-code ...] [-pair-fingerprint ...]` salva token e configurazione e passa la cartella dati in modalità
     remota (utile per installazioni gestite e per i PC senza fotocamera).
+16. **Durata del token per dispositivo.** Il token non ha scadenza assoluta (un telefono della cassa resta abbinato
+    per la stagione) ma scade dopo **90 giorni senza uso** (`device.IdleExpiry`, contati da `last_used_at` o
+    dall'abbinamento): un dispositivo dimenticato in un cassetto non conserva i permessi del titolare per sempre.
+    Con il token non si chiede un secondo fattore (spec 29.2: "permessi del suo ruolo"; l'abbinamento nasce da una
+    sessione già autenticata con TOTP) e le operazioni sensibili (team, impostazioni, revoca di altri dispositivi)
+    non sono per ora ristrette ai dispositivi: le mitigazioni sono il restringimento allo stabilimento, la scadenza
+    per inattività e la revoca immediata dal pannello. Un eventuale restringimento si deciderà con M7, quando l'app
+    mobile definirà quali operazioni le servono davvero.
 15. **Pacchetti**: macOS `.app` + `.dmg` universale, Windows Inno Setup (per utente, senza amministratore),
     Linux AppImage su `ubuntu-22.04` (glibc vecchia). Firme solo se i segreti esistono, altrimenti suffisso
     `-unsigned`; tutto nell'artefatto `portal-bundle-<tag>`, mai come asset di una release GitHub
