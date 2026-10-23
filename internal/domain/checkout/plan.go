@@ -184,23 +184,34 @@ func DefaultFormula(from, to calendar.Date, slots calendar.Slots) string {
 type planInput struct {
 	Rules            policy.Rules
 	ApprovalRequired bool
-	ProviderOnline   bool
-	Total            money.Cents
+	// ProviderOnline: the active provider takes online payments now
+	// (driver online and credentials complete); ProviderManual: the active
+	// provider is the desk driver (nothing is ever paid online by design).
+	ProviderOnline bool
+	ProviderManual bool
+	Total          money.Cents
 	Deposit          money.Cents
 	Paid             money.Cents
 }
 
 // paymentPlan decides the payment plan and the amount due now (spec 9
 // payment, 13.2): approval first (nothing paid until the manager decides),
-// then payment mode none or a provider without online payments (paid at
-// the desk), then deposit or full online payment. Free bookings are
-// confirmed without payment (at_desk with nothing due).
+// then payment mode none or the manual (desk) provider (paid at the desk),
+// then deposit or full online payment. Free bookings are confirmed
+// without payment (at_desk with nothing due).
+//
+// An online provider that is not usable now (Stripe active with the
+// secret or the webhook secret cleared) is NOT a desk provider: the plan
+// stays online and Pay fails with ErrOnlinePaymentUnavailable, so a broken
+// setup never confirms bookings with nothing paid (INV-19).
 func paymentPlan(in planInput) (plan string, dueNow, balanceLater money.Cents) {
 	remaining := max(in.Total-in.Paid, 0)
 	switch {
 	case in.ApprovalRequired:
 		return PlanApproval, 0, remaining
-	case in.Rules.EffectivePaymentMode() == policy.PaymentNone || !in.ProviderOnline || remaining == 0:
+	case in.Rules.EffectivePaymentMode() == policy.PaymentNone || remaining == 0:
+		return PlanAtDesk, 0, remaining
+	case !in.ProviderOnline && in.ProviderManual:
 		return PlanAtDesk, 0, remaining
 	case in.Rules.EffectivePaymentMode() == policy.PaymentDeposit && in.Deposit < in.Total:
 		due := min(max(in.Deposit-in.Paid, 0), remaining)

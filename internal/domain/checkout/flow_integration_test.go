@@ -393,3 +393,52 @@ func TestCheckoutLimits_PerEstablishment(t *testing.T) {
 }
 
 func ptr[T any](v T) *T { return &v }
+
+// TestCheckoutFlow_BrokenOnlineProviderNeverConfirms (INV-19): Stripe is
+// the active provider but its credentials were cleared, so no online
+// payment can be taken. The plan must stay online (never "at the desk")
+// and Pay must fail, leaving the booking held: a broken setup never
+// confirms bookings with nothing paid.
+func TestCheckoutFlow_BrokenOnlineProviderNeverConfirms(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		ctx := e.Ctx
+		sk, wh, empty := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn", ""
+		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
+			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		// The panel refuses to activate Stripe without both secrets; a
+		// broken row (key ring rotated, credentials wiped by an operator)
+		// is simulated at the database level.
+		if _, err := db.NewUpdate().Model((*store.PaymentProviderSettings)(nil)).Set("credentials = ?", empty).
+			Where("establishment_id = ? AND provider = ?", e.F.Est.ID, "stripe").Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		pe, err := e.Online.ResolvePublic(ctx, slug)
+		if err != nil || pe.Provider != "stripe" || pe.Online {
+			t.Fatalf("stripe without credentials must not be online: %v %+v", err, pe)
+		}
+		s := e.Create(e.Seat(e.F.Spots[1], "2027-07-12"))
+		if s.Quote.Plan != checkout.PlanOnlineFull || s.Quote.DueNow != 2000 {
+			t.Fatalf("plan must stay online, got %+v", s.Quote)
+		}
+		e.Details(s, "mario@example.org")
+		for _, in := range []checkout.PayInput{{}, {Settlement: checkout.SettleOnline}, {Settlement: checkout.SettleAtDesk}} {
+			_, err := e.Svc.Pay(ctx, slug, s.BookingID, s.Token, in)
+			if !errors.Is(err, checkout.ErrOnlinePaymentUnavailable) && !errors.Is(err, checkout.ErrSettlementNotAllowed) {
+				t.Fatalf("pay %+v: %v", in, err)
+			}
+		}
+		if b := e.Booking(s.BookingID); b.Status != "held" || b.PaidAmount != 0 {
+			t.Fatalf("booking must stay held, got %s paid %d", b.Status, b.PaidAmount)
+		}
+		if n := e.Count((*store.OutboxEvent)(nil), "type = ?", event.BookingConfirmed); n != 0 {
+			t.Fatalf("confirmed events = %d", n)
+		}
+		if len(e.Pay.Starts) != 0 {
+			t.Fatal("provider must not be called")
+		}
+	})
+}

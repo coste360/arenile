@@ -766,7 +766,8 @@ func (s *Service) quote(ctx context.Context, db bun.IDB, pe *online.PublicEstabl
 	out.Violations = append(out.Violations, res.Violations...)
 	out.Items = quoteItems(res.Breakdown, owner, in.Lines, in.Extras, cat.packs, cat.extras)
 	out.Plan, out.DueNow, out.BalanceLater = paymentPlan(planInput{
-		Rules: res.Policy.Rules, ApprovalRequired: approval, ProviderOnline: pe.Online, Total: res.Breakdown.Total, Deposit: res.DepositDue,
+		Rules: res.Policy.Rules, ApprovalRequired: approval, ProviderOnline: pe.Online, ProviderManual: pe.Provider == online.ProviderManual,
+		Total: res.Breakdown.Total, Deposit: res.DepositDue,
 	})
 	conflicts, err := s.conflicts(ctx, es, in, cat)
 	if err != nil {
@@ -867,7 +868,8 @@ func (s *Service) quoteWith(ctx context.Context, db bun.IDB, pe *online.PublicEs
 		DepositDue: b.DepositDue, Violations: []policy.Violation{}, Items: quoteItems(bd, owner, lines, extras, cat.packs, cat.extras),
 	}
 	out.Plan, out.DueNow, out.BalanceLater = paymentPlan(planInput{
-		Rules: snap.Rules, ApprovalRequired: approval, ProviderOnline: pe.Online, Total: b.TotalAmount, Deposit: b.DepositDue, Paid: b.PaidAmount,
+		Rules: snap.Rules, ApprovalRequired: approval, ProviderOnline: pe.Online, ProviderManual: pe.Provider == online.ProviderManual,
+		Total: b.TotalAmount, Deposit: b.DepositDue, Paid: b.PaidAmount,
 	})
 	if b.PromoCodeID != nil {
 		if pc, err := store.GetPromoCode(ctx, db, pe.Scope, *b.PromoCodeID); err == nil {
