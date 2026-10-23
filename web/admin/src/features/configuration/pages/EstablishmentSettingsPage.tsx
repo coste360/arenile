@@ -74,10 +74,7 @@ export function EstablishmentSettingsPage() {
       {/* Keyed by id: switching establishment remounts the forms with fresh defaults.
           Every panel stays mounted (hidden) so unsaved edits survive a tab change. */}
       <Tabs key={est.id} value={tab} onValueChange={setTab} className="gap-6">
-        <TabsList
-          aria-label={t('establishment.tabsLabel')}
-          className="flex-wrap group-data-[orientation=horizontal]/tabs:h-auto"
-        >
+        <TabsList aria-label={t('establishment.tabsLabel')} wrap>
           {TABS.map(({ id, icon: Icon }) => (
             <TabsTrigger key={id} value={id}>
               <Icon aria-hidden="true" />

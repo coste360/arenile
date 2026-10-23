@@ -2,10 +2,17 @@ import { Toaster } from '@arenile/shared/ui/sonner';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { I18nextProvider } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { toast } from 'sonner';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminTestI18n } from '../i18n';
 import { createPwaController } from './store';
-import { UpdatePrompt } from './UpdatePrompt';
+import { OFFLINE_READY_SHOWN_KEY, UpdatePrompt } from './UpdatePrompt';
+
+beforeEach(() => {
+  localStorage.removeItem(OFFLINE_READY_SHOWN_KEY);
+  // sonner keeps its toasts in a module-level store: start every test clean.
+  toast.dismiss();
+});
 
 function setup() {
   const controller = createPwaController();
@@ -42,12 +49,21 @@ describe('UpdatePrompt', () => {
     expect(controller.getSnapshot().needRefresh).toBe(false);
   });
 
-  it('says once that the panel works offline', async () => {
+  it('says once per browser that the panel works offline, away from the header', async () => {
     const { controller } = setup();
     act(() => controller.setOfflineReady());
-    expect(
-      await screen.findByText('Il pannello è pronto per funzionare anche offline.'),
-    ).toBeInTheDocument();
+    const notice = await screen.findByText('Il pannello è pronto per funzionare anche offline.');
+    expect(notice).toBeInTheDocument();
+    expect(notice.closest('[data-sonner-toast]')).toHaveAttribute('data-y-position', 'bottom');
     await waitFor(() => expect(controller.getSnapshot().offlineReady).toBe(false));
+    expect(localStorage.getItem(OFFLINE_READY_SHOWN_KEY)).toBe('1');
+  });
+
+  it('does not repeat the offline notice on later visits', async () => {
+    localStorage.setItem(OFFLINE_READY_SHOWN_KEY, '1');
+    const { controller } = setup();
+    act(() => controller.setOfflineReady());
+    await waitFor(() => expect(controller.getSnapshot().offlineReady).toBe(false));
+    expect(screen.queryByText('Il pannello è pronto per funzionare anche offline.')).toBeNull();
   });
 });

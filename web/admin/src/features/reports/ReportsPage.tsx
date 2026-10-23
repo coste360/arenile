@@ -122,10 +122,7 @@ function ReportsBody({ ctx }: { ctx: ReportsContext }) {
         // Panels stay mounted (hidden) so each keeps its grouping; queries
         // run only for the visible tab.
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="gap-6">
-          <TabsList
-            aria-label={t('tabs.label')}
-            className="flex-wrap group-data-[orientation=horizontal]/tabs:h-auto"
-          >
+          <TabsList aria-label={t('tabs.label')} wrap>
             {TABS.map((id) => (
               <TabsTrigger key={id} value={id}>
                 {t(`tabs.${id}`)}
