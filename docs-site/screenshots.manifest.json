@@ -9,6 +9,7 @@
     { "name": "admin-login", "section": "gestore", "route": "/admin/login", "viewport": "desktop", "auth": false, "description": "Pagina di accesso al pannello del gestore." },
     { "name": "admin-today", "section": "gestore", "route": "/admin/e/{est}/oggi?date={date}", "viewport": "desktop", "description": "Vista \"Oggi\": arrivi, presenze, incassi da riscuotere del giorno." },
     { "name": "admin-map", "section": "gestore", "route": "/admin/e/{est}/mappa?date={date}", "viewport": "desktop", "description": "Mappa operativa del giorno con gli stati delle postazioni e la legenda." },
+    { "name": "admin-map-labels", "section": "gestore", "route": "/admin/e/{est}/mappa?date={date}", "viewport": "desktop", "description": "Mappa operativa con le etichette \"Entrambi\": codice della postazione e cognome di chi la occupa." },
     { "name": "admin-map-mobile", "section": "gestore", "route": "/admin/e/{est}/mappa?date={date}", "viewport": "mobile", "description": "Mappa operativa su smartphone, per il giro in spiaggia." },
     { "name": "admin-map-spot", "section": "gestore", "route": "/admin/e/{est}/mappa?date={date}", "viewport": "desktop", "description": "Mappa operativa con il pannello di una postazione occupata aperto." },
     { "name": "admin-planning", "section": "gestore", "route": "/admin/e/{est}/calendario?date={date}", "viewport": "desktop", "description": "Planning: postazioni per riga e giorni in colonna." },

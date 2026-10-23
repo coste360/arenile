@@ -166,5 +166,16 @@
     "takingsOffline": "Offline nicht verfügbar",
     "balanceDue": "Offene Beträge: {{amount}}",
     "balanceDueTitle": "Offene Beträge"
+  },
+  "labels": {
+    "label": "Beschriftung",
+    "code": "Code",
+    "customer": "Gast",
+    "both": "Beides"
+  },
+  "occupant": {
+    "anonymous": "Anonymer Gast",
+    "anonymousShort": "Anonym",
+    "aria": "belegt von {{name}}"
   }
 }

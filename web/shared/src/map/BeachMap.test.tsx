@@ -267,6 +267,97 @@ describe('operational overlays (additive props)', () => {
     expect(dots[1]).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('draws occupant captions by label mode, truncated, with the full text in the tooltip', () => {
+    // Roomier than a dense beach: legible at the fitted zoom.
+    const geometry: MapGeometry = {
+      width: 300,
+      height: 200,
+      sea_side: 'top',
+      spots: [
+        {
+          id: 's1',
+          label: 'A1',
+          kind: 'umbrella',
+          x: 40,
+          y: 40,
+          shape: { type: 'circle', w: 30, h: 30 },
+        },
+        {
+          id: 's2',
+          label: 'A2',
+          kind: 'umbrella',
+          x: 100,
+          y: 40,
+          shape: { type: 'circle', w: 30, h: 30 },
+        },
+        {
+          id: 's3',
+          label: 'B1',
+          kind: 'umbrella',
+          x: 40,
+          y: 110,
+          shape: { type: 'circle', w: 30, h: 30 },
+        },
+      ],
+    };
+    const captions = { s1: 'Mastrogiacomo', s2: 'Rossi' };
+    const labels = (el: HTMLElement, kind: string) => {
+      // Captions live in their own layer, outside the spot button (label in name).
+      const root =
+        kind === 'caption'
+          ? document.querySelector(`[data-caption-for="${el.getAttribute('data-spot-id')}"]`)
+          : el;
+      return [...(root?.querySelectorAll(`[data-map-label="${kind}"]`) ?? [])].map(
+        (l) => l.textContent,
+      );
+    };
+    const { rerender } = renderWithI18n(
+      <BeachMap
+        geometry={geometry}
+        spotCaptions={captions}
+        spotDescription={(s) =>
+          captions[s.id as 's1'] ? `occupato da ${captions[s.id as 's1']}` : undefined
+        }
+      />,
+    );
+    const a1 = screen.getByRole('button', {
+      name: 'Postazione A1: Libero, occupato da Mastrogiacomo',
+    });
+    const a2 = screen.getByRole('button', { name: /^Postazione A2/ });
+    // Default "both": code and caption; the long name cut with an ellipsis.
+    expect(labels(a1, 'code')).toEqual(['A1']);
+    const [cut] = labels(a1, 'caption');
+    expect(cut).toMatch(/^Mastrog.*…$/);
+    expect(labels(a2, 'caption')).toEqual(['Rossi']);
+    // Native tooltip with the full name; captions are hidden from assistive tech.
+    expect(a1.querySelector('title')).toHaveTextContent('occupato da Mastrogiacomo');
+    // The tooltip is the description only, never a repeat of the name.
+    expect(a1.querySelector('title')?.textContent).toBe('occupato da Mastrogiacomo');
+    expect(a1.querySelector('[data-map-label="caption"]')).toBeNull();
+    expect(screen.getByTestId('beach-map-captions')).toHaveAttribute('aria-hidden', 'true');
+    // Spots without an occupant: code only, no tooltip.
+    const b1 = screen.getByRole('button', { name: /^Postazione B1/ });
+    expect(labels(b1, 'caption')).toEqual([]);
+    expect(b1.querySelector('title')).toBeNull();
+
+    rerender(<BeachMap geometry={geometry} spotCaptions={captions} labelMode="customer" />);
+    // "Cliente": the name replaces the code; free spots keep their code.
+    expect(labels(a2, 'code')).toEqual([]);
+    expect(labels(a2, 'caption')).toEqual(['Rossi']);
+    expect(labels(screen.getByRole('button', { name: /^Postazione B1/ }), 'code')).toEqual(['B1']);
+
+    rerender(<BeachMap geometry={geometry} spotCaptions={captions} labelMode="code" />);
+    expect(labels(a2, 'caption')).toEqual([]);
+    expect(labels(a2, 'code')).toEqual(['A2']);
+  });
+
+  it('renders toolbar controls next to the zoom buttons', () => {
+    renderWithI18n(
+      <BeachMap geometry={geometry} toolbar={<button type="button">Etichette</button>} />,
+    );
+    expect(screen.getByRole('button', { name: 'Etichette' })).toBeInTheDocument();
+  });
+
   it('SpotList with activateAny lets booked spots be opened, never inactive ones', async () => {
     const onActivate = vi.fn();
     renderWithI18n(

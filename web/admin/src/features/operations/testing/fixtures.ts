@@ -11,6 +11,8 @@ export function opBooking(overrides: Partial<OperationalBooking> = {}): Operatio
     channel: 'desk',
     customer_id: 'c1',
     customer_display_name: 'Rossi M.',
+    occupant_label: 'Rossi',
+    customer_anonymized: false,
     customer_tags: [],
     starts_on: '2026-07-14',
     ends_on: '2026-07-14',

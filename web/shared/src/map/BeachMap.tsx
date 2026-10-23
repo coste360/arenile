@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
@@ -44,6 +45,13 @@ import {
   useUnitsPerPixel,
 } from './labels';
 import { INDICATOR_CLASSES, type SpotIndicator } from './indicators';
+import {
+  captionsLegible,
+  layoutCaption,
+  spotNeighbours,
+  type CaptionLayout,
+  type MapLabelMode,
+} from './captions';
 import { MapGlyph } from './MapGlyph';
 import { MapLegend } from './MapLegend';
 import { MapZoomControls } from './MapZoomControls';
@@ -82,6 +90,17 @@ export interface BeachMapProps {
   minTapTargetPx?: number;
   /** Show the zoom slider next to the zoom buttons (default true). */
   zoomSlider?: boolean;
+  /**
+   * Caption per spot id, drawn as a second pill under the art (operational
+   * map: who occupies the spot). Full text: the map truncates it to the room
+   * between neighbours and hides it when it would not be legible. Repeat it
+   * in `spotDescription` (accessible name and tooltip).
+   */
+  spotCaptions?: Readonly<Record<string, string>>;
+  /** Which labels are drawn when `spotCaptions` is set (default `both`). */
+  labelMode?: MapLabelMode;
+  /** Extra controls in the toolbar above the drawing, left of the zoom controls. */
+  toolbar?: ReactNode;
   /** Optional extra text per spot (e.g. a price), appended to the aria-label. */
   spotDescription?: (spot: MapSpot) => string | undefined;
   /** Colour overrides (hex), e.g. from the panel theme; default: the --status-* theme tokens. */
@@ -153,6 +172,10 @@ interface SpotProps {
   /** Map units per screen pixel, zoom included (label legibility). */
   unitsPerPixel: number;
   ariaLabel: string;
+  /** Draw the spot code pill. */
+  showCode: boolean;
+  /** Native tooltip (the full caption the pill may truncate); undefined = none. */
+  tooltip: string | undefined;
   /** False when the status is not pickable (public picker): aria-disabled, no activation. */
   pickable: boolean;
   onActivate?: (spot: MapSpot) => void;
@@ -192,6 +215,8 @@ const Spot = memo(function Spot({
   focusable,
   unitsPerPixel,
   ariaLabel,
+  showCode,
+  tooltip,
   pickable,
   onActivate,
   onPointerActivate,
@@ -231,6 +256,7 @@ const Spot = memo(function Spot({
       onClick={pointerActivate}
       onKeyDown={onKeyDown}
     >
+      {tooltip && <title>{tooltip}</title>}
       <SpotArt
         x={spot.x}
         y={spot.y}
@@ -267,7 +293,7 @@ const Spot = memo(function Spot({
           aria-hidden="true"
         />
       ))}
-      {fontSize > 0 && (
+      {showCode && fontSize > 0 && (
         <MapLabel
           x={spot.x}
           y={spot.y + S * 0.36}
@@ -275,6 +301,38 @@ const Spot = memo(function Spot({
           fontSize={fontSize}
           muted={status === 'unavailable'}
         />
+      )}
+    </g>
+  );
+});
+
+/**
+ * Caption pills of the spots, one layer above every spot: a caption may
+ * reach under a neighbour's art, and it is not part of the spot button, so
+ * the button's visible text stays its code (WCAG 2.5.3, label in name) while
+ * the full caption is in its accessible name and tooltip. Pointer events
+ * pass through to the spots. Re-renders only when the layout changes.
+ */
+const CaptionLayer = memo(function CaptionLayer({
+  layouts,
+  highlighted,
+}: {
+  layouts: ReadonlyMap<string, (CaptionLayout & { spotLabel: string }) | undefined>;
+  highlighted: ReadonlySet<string> | null;
+}) {
+  return (
+    <g pointerEvents="none" aria-hidden="true" data-testid="beach-map-captions">
+      {[...layouts].map(([id, c]) =>
+        c ? (
+          <g
+            key={id}
+            data-caption-for={id}
+            data-caption-spot={c.spotLabel}
+            className={cn(highlighted && !highlighted.has(id) && 'opacity-30')}
+          >
+            <MapLabel x={c.x} y={c.y} text={c.text} fontSize={c.fontSize} variant="caption" />
+          </g>
+        ) : null,
       )}
     </g>
   );
@@ -393,6 +451,9 @@ export function BeachMap({
   minTapTargetPx,
   zoomSlider = true,
   spotDescription,
+  spotCaptions,
+  labelMode = 'both',
+  toolbar,
   statusColors,
   legendStatuses,
   showLegend = true,
@@ -421,6 +482,51 @@ export function BeachMap({
     () => (pickableStatuses ? new Set(pickableStatuses) : null),
     [pickableStatuses],
   );
+
+  // Captions: neighbours once per geometry, layout once per quantised zoom
+  // step / data change (never per pan step), so 500+ memoised spots stay put.
+  const showCaptions = !!spotCaptions && labelMode !== 'code';
+  const neighbours = useMemo(
+    () => (showCaptions ? spotNeighbours(geometry.spots, (s) => spotArtSize(s.shape)) : null),
+    [showCaptions, geometry.spots],
+  );
+  const captions = useMemo(() => {
+    const out = new Map<string, (CaptionLayout & { spotLabel: string }) | undefined>();
+    let hidden = false;
+    if (!neighbours || !spotCaptions) return { out, hidden };
+    const has = (id: string) => !!spotCaptions[id];
+    const legible = captionsLegible(
+      geometry.spots,
+      (s) => spotArtSize(s.shape),
+      neighbours,
+      unitsPerPixel,
+      (size) => (labelMode === 'both' ? labelFontSize(size, 0.2, unitsPerPixel, 0.42) : 0),
+    );
+    for (const spot of geometry.spots) {
+      const text = spotCaptions[spot.id];
+      if (!text || spot.active === false) continue;
+      if (!legible) {
+        hidden = true;
+        continue;
+      }
+      const S = spotArtSize(spot.shape);
+      // "Entrambi": the caption goes under the code pill, never over it.
+      const codeFont = labelMode === 'both' ? labelFontSize(S, 0.2, unitsPerPixel, 0.42) : 0;
+      const c = layoutCaption(
+        spot,
+        text,
+        S,
+        neighbours.get(spot.id),
+        has,
+        unitsPerPixel,
+        codeFont > 0 ? spot.y + S * 0.36 + codeFont * 0.66 : undefined,
+      );
+      // A single spot without room (an irregular row) stays without caption
+      // but does not raise the zoom hint: only the map-wide decision does.
+      out.set(spot.id, c && { ...c, spotLabel: spot.label });
+    }
+    return { out, hidden };
+  }, [neighbours, spotCaptions, geometry.spots, unitsPerPixel, labelMode]);
 
   // Pointer taps on spots smaller than minTapTargetPx zoom in first. The
   // callback is stable (latest values through a ref) so memoised spots do
@@ -520,7 +626,8 @@ export function BeachMap({
   // Labels are dropped under 9 px on screen: say so, with the way out.
   const first = geometry.spots[0];
   const labelsHidden =
-    !!first && labelFontSize(spotArtSize(first.shape), 0.2, unitsPerPixel, 0.42) === 0;
+    (!!first && labelFontSize(spotArtSize(first.shape), 0.2, unitsPerPixel, 0.42) === 0) ||
+    (showCaptions && captions.hidden);
 
   /** Name of a decoration: its label, the kit asset or the kind, plus the flag colour. */
   const decorationName = (d: MapDecoration): string => {
@@ -540,6 +647,7 @@ export function BeachMap({
       {/* Legend and zoom controls above the drawing: visible without scrolling past the map. */}
       <div className="mb-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
         {showLegend && <MapLegend id={legendId} statuses={legend} statusColors={statusColors} />}
+        {toolbar}
         <MapZoomControls
           className="ml-auto w-fit"
           scale={view.scale}
@@ -592,6 +700,8 @@ export function BeachMap({
               label: spot.label,
               status: t(`map.status.${status}`),
             });
+            const caption = showCaptions ? captions.out.get(spot.id) : undefined;
+            const ariaLabel = extra ? `${aria}, ${extra}` : aria;
             return (
               <Spot
                 key={spot.id}
@@ -603,13 +713,17 @@ export function BeachMap({
                 indicators={spotIndicators?.[spot.id]}
                 focusable={spot.id === focusableId}
                 unitsPerPixel={unitsPerPixel}
-                ariaLabel={extra ? `${aria}, ${extra}` : aria}
+                ariaLabel={ariaLabel}
+                showCode={labelMode !== 'customer' || !showCaptions || !caption}
+                // Only the description (full occupant name): the name itself is the aria-label.
+                tooltip={spotCaptions?.[spot.id] ? extra : undefined}
                 pickable={!pickable || pickable.has(status)}
                 onActivate={onSpotActivate}
                 onPointerActivate={minTapTargetPx ? onPointerActivate : undefined}
               />
             );
           })}
+          {showCaptions && <CaptionLayer layouts={captions.out} highlighted={highlighted} />}
         </g>
       </svg>
       {labelsHidden && (

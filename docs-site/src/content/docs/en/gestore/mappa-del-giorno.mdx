@@ -49,6 +49,34 @@ Additional indicators show **Extras**, **Note** and **VIP** customers (customer 
 
 <LiveMap />
 
+## Labels: code, customer or both
+
+<Screenshot name="admin-map-labels" alt="Operational map with the code of each spot and the surname of who occupies it" />
+
+Above the map, **Labels** chooses what is written under each spot:
+
+| Choice | What it shows |
+|---|---|
+| **Code** | Only the spot code (A1, B7...) |
+| **Customer** | The surname of who occupies the spot; free spots keep their code |
+| **Both** | The code and, below it, the surname (default) |
+
+The name is the **surname** of the booking's customer (the first name when there is no surname): the holder for
+season passes, the main customer for groups; an anonymised customer shows as **Anonymous**. Never email or
+phone. Long names are shortened with an ellipsis; the full name is in the mouse tooltip and in what the screen
+reader announces ("Spot B7: Booked at the desk, occupied by Rossi M."). The choice is remembered for your user
+on that device.
+
+Names appear only when they can be read without overlapping: when the map is too small (phone, tablet with the
+sidebar open, many spots close together) the codes stay and the hint suggests zooming in; **Customer** frees the
+room of the code. In the **List** the name is always next to the spot.
+
+<Aside type="note" title="Who sees the names">
+  Every role that views the map and the bookings (permission *bookings.read*, **viewer** included). An API key
+  without that permission sees neither the map nor the names. Live updates carry no names: the map reads them
+  again from the server.
+</Aside>
+
 ## Searching
 
 The **Search customer, code or spot** field highlights the matching spots on the map ("3 spots found"): useful when a

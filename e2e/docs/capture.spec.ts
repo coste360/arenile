@@ -80,6 +80,13 @@ const PREPARE: Record<string, Prepare> = {
     await spot.click();
     await expect(page.getByRole("dialog")).toBeVisible();
   },
+  "admin-map-labels": async (page) => {
+    // Occupant labels (spec 11.3): "Entrambi", one zoom step so the names read in full.
+    await page.getByRole("radio", { name: "Entrambi" }).click();
+    await page.getByRole("button", { name: "Ingrandisci" }).first().click();
+    await page.getByTestId("beach-map").scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-map-label="caption"]').first()).toBeVisible();
+  },
   "admin-booking-new": async (page) => {
     await page.getByRole("button", { name: "Nuova prenotazione" }).first().click();
     await expect(page.getByRole("dialog", { name: "Nuova prenotazione" })).toBeVisible();

@@ -166,5 +166,16 @@
     "takingsOffline": "Indisponible hors ligne",
     "balanceDue": "Soldes ouverts : {{amount}}",
     "balanceDueTitle": "Soldes ouverts"
+  },
+  "labels": {
+    "label": "Étiquettes",
+    "code": "Code",
+    "customer": "Client",
+    "both": "Les deux"
+  },
+  "occupant": {
+    "anonymous": "Client anonyme",
+    "anonymousShort": "Anonyme",
+    "aria": "occupé par {{name}}"
   }
 }

@@ -13,6 +13,15 @@ offline).
 
 ### Added
 
+- Mappa operativa (Mappa e Oggi): **etichetta dell'occupante** sotto le postazioni occupate, cioè il cognome del
+  cliente (il nome se manca il cognome; titolare per gli abbonamenti, cliente principale per i gruppi; "Anonimo"
+  per i clienti anonimizzati; mai email o telefono), troncata allo spazio tra le postazioni vicine e nascosta,
+  con l'invito a ingrandire, quando non sarebbe leggibile senza sovrapporsi; nome completo nel tooltip e nel nome
+  accessibile ("occupato da Rossi M."), anche nella vista Elenco. Selettore **Etichette: Codice / Cliente /
+  Entrambi** nella barra della mappa (menu a tendina su schermi stretti), memorizzato per utente. API: campi
+  `occupant_label` e `customer_anonymized` in `OperationalBooking` (`GET .../operations/day`, permesso
+  `bookings.read`); gli eventi SSE restano senza dati personali. Spec 11.3, guida "Mappa del giorno" (it/en) e
+  screenshot `admin-map-labels`.
 - Documentazione, guida del gestore in italiano e inglese: nuove pagine **Report** (periodo, report di dettaglio,
   confronto con l'anno precedente, esportazione CSV), **Chiavi API e webhook** (creazione, permessi, scadenza e
   revoca delle chiavi; endpoint, evento di prova, stati, registro consegne e rotazione del segreto),

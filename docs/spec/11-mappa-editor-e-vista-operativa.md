@@ -71,6 +71,13 @@
 | Prelazione rinnovo | Hold di rinnovo | rinnovo |
 
 - Indicatori sovrapposti: icona extra, nota presente, cliente VIP.
+- **Etichette dell'occupante:** sotto le postazioni occupate, il cognome del cliente della prenotazione (il nome
+  se manca il cognome; titolare per gli abbonamenti, cliente principale per i gruppi; "Anonimo" per i clienti
+  anonimizzati; mai email o telefono), campo `occupant_label` della vista del giorno, visibile con
+  `bookings.read`. Selettore **Etichette: Codice / Cliente / Entrambi** memorizzato per utente; i nomi sono
+  troncati allo spazio tra le postazioni vicine e nascosti, con l'invito a ingrandire, quando non sarebbero
+  leggibili (minimo 9 px) senza sovrapporsi. Nome completo nel tooltip e nel nome accessibile. Gli eventi SSE
+  restano senza dati personali: la mappa rilegge la vista del giorno.
 - **Tocco su una postazione:** scheda rapida con cliente, periodo, pack, extra, saldo; azioni: nuova prenotazione, check-in, incassa, sposta, rilascia giorno, blocca, apri dettaglio.
 - **Trascinamento** di una prenotazione su un'altra postazione: anteprima del conflitto, conferma, ricalcolo prezzo se cambia la categoria.
 - **Selezione multipla** per prenotazioni di gruppo.

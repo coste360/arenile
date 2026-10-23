@@ -13,6 +13,12 @@ export interface OperationsPermissions {
   canSeeTakings: boolean;
   /** Edit maps and configuration (establishment.configure). */
   canConfigure: boolean;
+  /**
+   * See who occupies a spot (names on the map, spec 11.3): bookings.read,
+   * the "Vista mappa e prenotazioni" row of spec 16.1 (every role, viewer
+   * included; not an API key without that scope).
+   */
+  canSeeCustomers: boolean;
 }
 
 /** Permissions granted on `establishment` by memberships or API key scopes. */
@@ -42,6 +48,7 @@ export function toOperationsPermissions(granted: Set<Permission>): OperationsPer
     canWriteBookings: granted.has('bookings.write'),
     canSeeTakings: granted.has('cash.operate') || granted.has('reports.read'),
     canConfigure: granted.has('establishment.configure'),
+    canSeeCustomers: granted.has('bookings.read'),
   };
 }
 

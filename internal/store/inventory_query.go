@@ -170,6 +170,7 @@ type BookingSummary struct {
 	NotesInternal string         `bun:"notes_internal"`
 	FirstName     string         `bun:"first_name"`
 	LastName      string         `bun:"last_name"`
+	AnonymizedAt  *time.Time     `bun:"anonymized_at"`
 	Tags          []string       `bun:"tags,type:json"`
 	HasExtras     bool           `bun:"has_extras"`
 	Version       int64          `bun:"version"`
@@ -183,7 +184,7 @@ func bookingSummarySelect(db bun.IDB, es EstablishmentScope) *bun.SelectQuery {
 		Join("JOIN customers AS c ON c.id = bk.customer_id").
 		ColumnExpr("bk.id, bk.code, bk.status, bk.channel, bk.customer_id, bk.starts_on, bk.ends_on, bk.slots").
 		ColumnExpr("bk.is_season_pass, bk.total_amount, bk.paid_amount, bk.notes_customer, bk.notes_internal, bk.version").
-		ColumnExpr("c.first_name, c.last_name, c.tags").
+		ColumnExpr("c.first_name, c.last_name, c.anonymized_at, c.tags").
 		ColumnExpr("EXISTS (SELECT 1 FROM booking_line_extras AS ble WHERE ble.booking_id = bk.id) AS has_extras").
 		Where("bk.establishment_id = ?", es.ID())
 }

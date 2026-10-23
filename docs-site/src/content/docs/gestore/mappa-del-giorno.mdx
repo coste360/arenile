@@ -53,6 +53,34 @@ Indicatori aggiuntivi segnalano **Extra**, **Nota** e cliente **VIP** (tag del c
 
 <LiveMap />
 
+## Etichette: codice, cliente o entrambi
+
+<Screenshot name="admin-map-labels" alt="Mappa operativa con il codice di ogni postazione e il cognome di chi la occupa" />
+
+Sopra la mappa, **Etichette** sceglie cosa scrivere sotto ogni postazione:
+
+| Scelta | Cosa mostra |
+|---|---|
+| **Codice** | Solo il codice della postazione (A1, B7...) |
+| **Cliente** | Il cognome di chi occupa la postazione; le postazioni libere restano col codice |
+| **Entrambi** | Codice e, sotto, il cognome (predefinito) |
+
+Il nome è il **cognome** del cliente della prenotazione (il nome se manca il cognome): per gli abbonamenti è
+il titolare, per i gruppi il cliente principale; un cliente anonimizzato compare come **Anonimo**. Mai email o
+telefono. I nomi lunghi sono accorciati con i puntini; il nome completo è nel suggerimento al passaggio del
+mouse e in quello che legge il lettore di schermo ("Postazione B7: Prenotato in cassa, occupato da Rossi M.").
+La scelta resta memorizzata per il tuo utente su quel dispositivo.
+
+I nomi compaiono solo quando si leggono senza sovrapporsi: se la mappa è troppo piccola (telefono, tablet con la
+barra laterale aperta, molte postazioni vicine) restano i codici e l'avviso suggerisce di ingrandire; con
+**Cliente** al posto del codice c'è più spazio. Nell'**Elenco** il nome è sempre accanto alla postazione.
+
+<Aside type="note" title="Chi vede i nomi">
+  Tutti i ruoli che vedono la mappa e le prenotazioni (permesso *bookings.read*, anche **viewer**). Una chiave
+  API senza quel permesso non vede né la mappa né i nomi. Gli aggiornamenti in tempo reale non trasportano nomi:
+  la mappa li rilegge dal server.
+</Aside>
+
 ## Cercare
 
 Il campo **Cerca cliente, codice o postazione** evidenzia sulla mappa le postazioni corrispondenti ("3

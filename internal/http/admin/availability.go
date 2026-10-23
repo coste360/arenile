@@ -151,6 +151,7 @@ func (h *Handlers) GetOperationsDay(w http.ResponseWriter, r *http.Request, esta
 			os.Booking = &api.OperationalBooking{
 				BookingId: b.BookingID, Code: b.Code, Status: api.BookingStatus(b.Status), Channel: api.Channel(b.Channel),
 				CustomerId: b.CustomerID, CustomerDisplayName: b.CustomerDisplayName, CustomerTags: b.CustomerTags,
+				OccupantLabel: b.OccupantLabel, CustomerAnonymized: b.CustomerAnonymized,
 				StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: api.Slots(b.Slots), IsSeasonPass: b.IsSeasonPass,
 				LineId: invOpt(b.LineID), PackCodes: b.PackCodes, TotalAmount: int64(b.TotalAmount),
 				PaidAmount: int64(b.PaidAmount), BalanceDue: int64(b.BalanceDue), HasExtras: b.HasExtras, HasNotes: b.HasNotes,

@@ -265,6 +265,29 @@ func TestDisplayName_Scenarios(t *testing.T) {
 	}
 }
 
+func TestOccupantLabel_Scenarios(t *testing.T) {
+	tests := []struct {
+		name, first, last string
+		anonymized        bool
+		want              string
+	}{
+		{"surname", "Mario", "Rossi", false, "Rossi"},
+		{"compound surname", "Luca", "De Santis", false, "De Santis"},
+		{"no surname", "Anna", "", false, "Anna"},
+		{"blank surname", "Anna", "  ", false, "Anna"},
+		{"trimmed", " ", " Bianchi ", false, "Bianchi"},
+		{"no name", "", "", false, ""},
+		{"anonymised", "", "Anonimizzato", true, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := OccupantLabel(tt.first, tt.last, tt.anonymized); got != tt.want {
+				t.Errorf("OccupantLabel(%q,%q,%v) = %q, want %q", tt.first, tt.last, tt.anonymized, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCombineStatus_FullDay(t *testing.T) {
 	got := combineStatus([]halfDayState{{status: SpotFree}, {status: SpotBooked}})
 	if got != SpotBooked {

@@ -5739,19 +5739,25 @@ type OperationalBooking struct {
 	BookingId  string `json:"booking_id"`
 
 	// Channel Canale di vendita.
-	Channel             Channel  `json:"channel"`
-	Code                string   `json:"code"`
+	Channel Channel `json:"channel"`
+	Code    string  `json:"code"`
+
+	// CustomerAnonymized Cliente anonimizzato (GDPR, spec 23); il client mostra "Cliente anonimo" invece del nome.
+	CustomerAnonymized  bool     `json:"customer_anonymized"`
 	CustomerDisplayName string   `json:"customer_display_name"`
 	CustomerId          string   `json:"customer_id"`
 	CustomerTags        []string `json:"customer_tags"`
 
 	// EndsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
-	EndsOn       Date     `json:"ends_on"`
-	HasExtras    bool     `json:"has_extras"`
-	HasNotes     bool     `json:"has_notes"`
-	IsSeasonPass bool     `json:"is_season_pass"`
-	LineId       *string  `json:"line_id,omitempty"`
-	PackCodes    []string `json:"pack_codes"`
+	EndsOn       Date    `json:"ends_on"`
+	HasExtras    bool    `json:"has_extras"`
+	HasNotes     bool    `json:"has_notes"`
+	IsSeasonPass bool    `json:"is_season_pass"`
+	LineId       *string `json:"line_id,omitempty"`
+
+	// OccupantLabel Etichetta breve dell'occupante sulla mappa operativa (spec 11.3): il cognome del cliente della prenotazione (titolare per gli abbonamenti, cliente principale per i gruppi), il nome se manca il cognome; vuota per i clienti anonimizzati (customer_anonymized) o senza nome. Mai email o telefono. La troncatura per la mappa è del client. Visibile a chi ha bookings.read (spec 16.1: vista mappa e prenotazioni); gli eventi SSE non la contengono.
+	OccupantLabel string   `json:"occupant_label"`
+	PackCodes     []string `json:"pack_codes"`
 
 	// PaidAmount Importo in centesimi di euro (IVA inclusa).
 	PaidAmount Money `json:"paid_amount"`

@@ -5487,6 +5487,10 @@ export interface components {
             /** Format: uuid */
             customer_id: string;
             customer_display_name: string;
+            /** @description Etichetta breve dell'occupante sulla mappa operativa (spec 11.3): il cognome del cliente della prenotazione (titolare per gli abbonamenti, cliente principale per i gruppi), il nome se manca il cognome; vuota per i clienti anonimizzati (customer_anonymized) o senza nome. Mai email o telefono. La troncatura per la mappa è del client. Visibile a chi ha bookings.read (spec 16.1: vista mappa e prenotazioni); gli eventi SSE non la contengono. */
+            occupant_label: string;
+            /** @description Cliente anonimizzato (GDPR, spec 23); il client mostra "Cliente anonimo" invece del nome. */
+            customer_anonymized: boolean;
             customer_tags: string[];
             starts_on: components["schemas"]["Date"];
             ends_on: components["schemas"]["Date"];

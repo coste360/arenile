@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { EST_ID, baseRoutes, callsTo, json, renderApp } from '../configuration/testing';
+import { EST_ID, baseRoutes, callsTo, json, meFor, renderApp } from '../configuration/testing';
 import { opBooking, opDay, opSpot } from './testing/fixtures';
 import { API, operationsRoutes } from './testing/routes';
 
@@ -18,6 +18,7 @@ const day = opDay([
       line_id: 'pl1',
       code: 'AB-0007',
       customer_display_name: 'Verdi L.',
+      occupant_label: 'Verdi',
       is_season_pass: true,
     }),
   }),
@@ -198,5 +199,77 @@ describe('OperationalMapPage', () => {
         ),
       ).toBe(true),
     );
+  });
+
+  it('labels occupied spots with the occupant and switches labels with the toggle', async () => {
+    localStorage.clear();
+    const user = userEvent.setup();
+    setup();
+    const a2 = await screen.findByRole('button', {
+      name: 'Postazione A2: Prenotato in cassa, occupato da Rossi M., Nota, VIP',
+    });
+    const a3 = screen.getByRole('button', {
+      name: /Postazione A3: Abbonato, occupato da Verdi L\./,
+    });
+    const text = (el: HTMLElement, kind: string) => {
+      const root =
+        kind === 'caption'
+          ? document.querySelector(`[data-caption-for="${el.getAttribute('data-spot-id')}"]`)
+          : el;
+      return [...(root?.querySelectorAll(`[data-map-label="${kind}"]`) ?? [])].map(
+        (l) => l.textContent,
+      );
+    };
+    // Default "Entrambi": code and surname; free spots only their code.
+    expect(text(a2, 'code')).toEqual(['A2']);
+    expect(text(a2, 'caption')).toEqual(['Rossi']);
+    expect(text(a3, 'caption')).toEqual(['Verdi']);
+    expect(a2.querySelector('title')).toHaveTextContent('occupato da Rossi M.');
+    const a1 = screen.getByRole('button', { name: /Postazione A1: Libero$/ });
+    expect(text(a1, 'caption')).toEqual([]);
+
+    const toggle = screen.getByRole('radiogroup', { name: 'Etichette' });
+    await user.click(within(toggle).getByRole('radio', { name: 'Codice' }));
+    expect(text(a2, 'caption')).toEqual([]);
+    expect(text(a2, 'code')).toEqual(['A2']);
+    await user.click(within(toggle).getByRole('radio', { name: 'Cliente' }));
+    expect(text(a2, 'caption')).toEqual(['Rossi']);
+    expect(text(a2, 'code')).toEqual([]);
+    // Remembered for this user.
+    expect(localStorage.getItem('arenile.map.labelMode.u-self')).toBe('customer');
+
+    // The list view names the occupant too.
+    await user.click(screen.getByRole('tab', { name: 'Elenco' }));
+    expect(
+      await screen.findByRole('button', {
+        name: /A2 – Prenotato in cassa – occupato da Rossi M\./,
+      }),
+    ).toBeInTheDocument();
+    localStorage.clear();
+  });
+
+  it('shows no names nor toggle without bookings.read (reports-only API key)', async () => {
+    const me = { ...meFor('cashier'), memberships: [] as unknown[] };
+    renderApp(PATH, {
+      ...baseRoutes('cashier'),
+      ...operationsRoutes(day),
+      'GET /api/admin/v1/auth/me': () =>
+        json(200, {
+          ...me,
+          principal_type: 'api_key',
+          user: undefined,
+          api_key: {
+            id: 'k1',
+            name: 'Report',
+            prefix: 'ar_live_x',
+            establishment_id: EST_ID,
+            scopes: ['reports.read'],
+          },
+        }),
+    });
+    const a2 = await screen.findByRole('button', { name: /^Postazione A2: Prenotato in cassa/ });
+    expect(a2).not.toHaveAccessibleName(/Rossi/);
+    expect(document.querySelector('[data-map-label="caption"]')).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Etichette' })).toBeNull();
   });
 });

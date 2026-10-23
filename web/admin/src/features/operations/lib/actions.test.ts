@@ -9,12 +9,14 @@ const all: OperationsPermissions = {
   canWriteBookings: true,
   canSeeTakings: true,
   canConfigure: true,
+  canSeeCustomers: true,
 };
 const viewer: OperationsPermissions = {
   canRun: false,
   canWriteBookings: false,
   canSeeTakings: false,
   canConfigure: false,
+  canSeeCustomers: true,
 };
 
 const on = (a: ReturnType<typeof spotActions>) =>
@@ -93,8 +95,31 @@ describe('permissions', () => {
       toOperationsPermissions(
         grantedPermissions(me(['bookings.write', 'operations.run', 'cash.operate']), est),
       ),
-    ).toEqual({ canRun: true, canWriteBookings: true, canSeeTakings: true, canConfigure: false });
+    ).toEqual({
+      canRun: true,
+      canWriteBookings: true,
+      canSeeTakings: true,
+      canConfigure: false,
+      canSeeCustomers: false,
+    });
     expect(toOperationsPermissions(grantedPermissions(me(['bookings.read']), est))).toEqual(viewer);
+  });
+  it('names on the map need bookings.read (viewer yes, reports-only API key no)', () => {
+    const viewerMe = {
+      principal_type: 'user',
+      memberships: [
+        { organization_id: 'o1', role: 'viewer', permissions: ['bookings.read', 'reports.read'] },
+      ],
+    } as unknown as Parameters<typeof grantedPermissions>[0];
+    expect(toOperationsPermissions(grantedPermissions(viewerMe, est)).canSeeCustomers).toBe(true);
+    const reportsKey = {
+      principal_type: 'api_key',
+      api_key: { establishment_id: 'e1', scopes: ['reports.read'] },
+      memberships: [],
+    } as unknown as Parameters<typeof grantedPermissions>[0];
+    expect(toOperationsPermissions(grantedPermissions(reportsKey, est)).canSeeCustomers).toBe(
+      false,
+    );
   });
   it('ignores memberships of other establishments', () => {
     const me = {

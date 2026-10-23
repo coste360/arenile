@@ -48,18 +48,22 @@ type OperationalBooking struct {
 	Channel             string
 	CustomerID          string
 	CustomerDisplayName string
-	CustomerTags        []string
-	StartsOn            calendar.Date
-	EndsOn              calendar.Date
-	Slots               calendar.Slots
-	IsSeasonPass        bool
-	LineID              string
-	PackCodes           []string
-	TotalAmount         money.Cents
-	PaidAmount          money.Cents
-	BalanceDue          money.Cents
-	HasExtras           bool
-	HasNotes            bool
+	// OccupantLabel is the short name drawn on the map (OccupantLabel func).
+	OccupantLabel string
+	// CustomerAnonymized: GDPR-anonymised customer, no name to show.
+	CustomerAnonymized bool
+	CustomerTags       []string
+	StartsOn           calendar.Date
+	EndsOn             calendar.Date
+	Slots              calendar.Slots
+	IsSeasonPass       bool
+	LineID             string
+	PackCodes          []string
+	TotalAmount        money.Cents
+	PaidAmount         money.Cents
+	BalanceDue         money.Cents
+	HasExtras          bool
+	HasNotes           bool
 	// Version is the If-Match version for the actions offered on the map.
 	Version int64
 }
@@ -125,6 +129,20 @@ func DisplayName(first, last string) string {
 	}
 	r, _ := utf8.DecodeRuneInString(first)
 	return strings.TrimSpace(last + " " + string(r) + ".")
+}
+
+// OccupantLabel is the label of the occupant drawn on the operational map
+// (spec 11.3): the surname, or the first name when there is no surname;
+// empty for anonymised customers (the client shows "Cliente anonimo").
+// Personal data: admin API only, never in SSE payloads or logs.
+func OccupantLabel(first, last string, anonymized bool) string {
+	if anonymized {
+		return ""
+	}
+	if last = strings.TrimSpace(last); last != "" {
+		return last
+	}
+	return strings.TrimSpace(first)
 }
 
 // halfDayState is the occupant of one spot on one half-day.
@@ -416,7 +434,9 @@ func operationalBooking(b *store.BookingSummary, a *store.SpotAllocation, packs 
 	ob := &OperationalBooking{
 		BookingID: b.ID, Code: b.Code, Status: b.Status, Channel: b.Channel, CustomerID: b.CustomerID,
 		CustomerDisplayName: DisplayName(b.FirstName, b.LastName), CustomerTags: b.Tags,
-		StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, IsSeasonPass: b.IsSeasonPass,
+		OccupantLabel:      OccupantLabel(b.FirstName, b.LastName, b.AnonymizedAt != nil),
+		CustomerAnonymized: b.AnonymizedAt != nil,
+		StartsOn:           b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, IsSeasonPass: b.IsSeasonPass,
 		PackCodes: packs, TotalAmount: b.TotalAmount, PaidAmount: b.PaidAmount, BalanceDue: b.BalanceDue(),
 		HasExtras: b.HasExtras, HasNotes: b.NotesCustomer != "" || b.NotesInternal != "", Version: b.Version,
 	}

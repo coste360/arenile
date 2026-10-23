@@ -166,5 +166,16 @@
     "takingsOffline": "Non disponibile offline",
     "balanceDue": "Saldi aperti: {{amount}}",
     "balanceDueTitle": "Saldi aperti"
+  },
+  "labels": {
+    "label": "Etichette",
+    "code": "Codice",
+    "customer": "Cliente",
+    "both": "Entrambi"
+  },
+  "occupant": {
+    "anonymous": "Cliente anonimo",
+    "anonymousShort": "Anonimo",
+    "aria": "occupato da {{name}}"
   }
 }

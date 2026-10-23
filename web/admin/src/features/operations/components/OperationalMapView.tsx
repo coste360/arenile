@@ -4,7 +4,9 @@ import {
   MapLegend,
   SPOT_INDICATORS,
   SpotList,
+  MAP_LABEL_MODES,
   type MapGeometry,
+  type MapLabelMode,
   type MapSpot,
 } from '@arenile/shared/map';
 import { cn } from '@arenile/shared/lib/utils';
@@ -16,11 +18,13 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@arenile/shared/ui/input-group';
+import { useMe } from '@arenile/shared/api';
 import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
-import { ResponsiveTabsList } from '@arenile/shared/ui/patterns';
+import { ResponsiveTabsList, SegmentedControl } from '@arenile/shared/ui/patterns';
 import { ArrowRightLeftIcon, SearchIcon, XIcon } from 'lucide-react';
 import { lazy, Suspense, useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { occupantCaptions, occupantFullName, useLabelMode } from '../lib/occupant';
 import type { OperationsPermissions } from '../lib/permissions';
 import {
   OPERATIONAL_LEGEND,
@@ -92,6 +96,14 @@ export function OperationalMapView({
   const byId = useMemo(() => new Map(spots.map((s) => [s.spot_id, s])), [spots]);
   const statuses = useMemo(() => statusesBySpot(spots, slot), [spots, slot]);
   const indicators = useMemo(() => indicatorsBySpot(spots), [spots]);
+  // Who occupies each spot (spec 11.3), only for users who may see customers.
+  const canSeeCustomers = permissions.canSeeCustomers;
+  const captions = useMemo(
+    () => occupantCaptions(spots, slot, t, canSeeCustomers),
+    [spots, slot, t, canSeeCustomers],
+  );
+  const me = useMe();
+  const [labelMode, setLabelMode] = useLabelMode(me.data?.user?.id);
   const matches = useMemo(() => searchSpots(spots, deferredQuery), [spots, deferredQuery]);
   const selectedIds = useMemo(
     () => [selectedId, moveSource?.spot_id].filter((v): v is string => !!v),
@@ -103,11 +115,13 @@ export function OperationalMapView({
       const op = byId.get(spot.id);
       const b = op?.booking;
       if (!b) return undefined;
-      const parts = [b.customer_display_name];
+      const parts: string[] = [];
+      const name = canSeeCustomers ? occupantFullName(b, t) : undefined;
+      if (name) parts.push(captions[spot.id] ? t('occupant.aria', { name }) : name);
       for (const kind of indicators[spot.id] ?? []) parts.push(t(`indicator.${kind}`));
       return parts.join(', ');
     },
-    [byId, indicators, t],
+    [byId, indicators, t, canSeeCustomers, captions],
   );
 
   const activate = useCallback(
@@ -235,6 +249,25 @@ export function OperationalMapView({
             spotIndicators={indicators}
             onSpotActivate={activate}
             spotDescription={spotDescription}
+            spotCaptions={canSeeCustomers ? captions : undefined}
+            labelMode={labelMode}
+            toolbar={
+              canSeeCustomers ? (
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
+                    {t('labels.label')}
+                  </span>
+                  <SegmentedControl
+                    label={t('labels.label')}
+                    value={labelMode}
+                    onValueChange={(v) => setLabelMode(v as MapLabelMode)}
+                    options={MAP_LABEL_MODES.map((m) => ({ value: m, label: t(`labels.${m}`) }))}
+                    collapseOnNarrow
+                    className="sm:w-auto"
+                  />
+                </div>
+              ) : undefined
+            }
             legendStatuses={OPERATIONAL_LEGEND}
             showLegend={false}
             title={t('map.aria', { name: geometry.name ?? '', date, slot: t(`slot.${slot}`) })}

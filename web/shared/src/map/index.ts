@@ -17,5 +17,22 @@ export {
   useUnitsPerPixel,
 } from './labels';
 export { DECORATION_KIND_ICONS, SPOT_KIND_ICONS, decorationKindIcon, spotKindIcon } from './icons';
+export {
+  CAPTION_CHAR_EM,
+  LABEL_CHAR_EM,
+  MAP_LABEL_MODES,
+  MAX_CAPTION_CHARS,
+  MIN_CAPTION_CHARS,
+  captionFontSize,
+  captionsLegible,
+  graphemeCount,
+  labelPillWidth,
+  layoutCaption,
+  spotNeighbours,
+  truncateLabel,
+  type CaptionLayout,
+  type MapLabelMode,
+  type SpotNeighbours,
+} from './captions';
 export { INDICATOR_CLASSES, SPOT_INDICATORS, type SpotIndicator } from './indicators';
 export * from './kit';

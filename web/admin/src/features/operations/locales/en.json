@@ -166,5 +166,16 @@
     "takingsOffline": "Not available offline",
     "balanceDue": "Open balances: {{amount}}",
     "balanceDueTitle": "Open balances"
+  },
+  "labels": {
+    "label": "Labels",
+    "code": "Code",
+    "customer": "Customer",
+    "both": "Both"
+  },
+  "occupant": {
+    "anonymous": "Anonymous customer",
+    "anonymousShort": "Anonymous",
+    "aria": "occupied by {{name}}"
   }
 }

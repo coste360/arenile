@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { cn } from '../../lib/utils';
 import { STATUS_CLASSES } from '../colors';
 import type { Shape, SpotStatus } from '../types';
+import { CAPTION_CHAR_EM, graphemeCount, labelPillWidth } from '../captions';
 import { kitSymbolId } from './assets';
 import { isTileAsset, spotArtSize, tileLayout } from './geometry';
 import { STATUS_BADGES, badgeSymbolId } from './status';
@@ -215,14 +216,33 @@ export interface MapLabelProps {
   className?: string;
   /** Muted label (inactive spot). */
   muted?: boolean;
+  /** `code` (default): bold tabular spot code; `caption`: a name, regular weight. */
+  variant?: 'code' | 'caption';
 }
 
 /** A label on a soft pill, readable over any art, in light and dark mode. */
-export function MapLabel({ x, y, text, fontSize, className, muted }: MapLabelProps) {
-  const w = Math.max(text.length * fontSize * 0.62 + fontSize * 0.7, fontSize * 1.6);
+export function MapLabel({
+  x,
+  y,
+  text,
+  fontSize,
+  className,
+  muted,
+  variant = 'code',
+}: MapLabelProps) {
+  const w = labelPillWidth(
+    graphemeCount(text),
+    fontSize,
+    variant === 'caption' ? CAPTION_CHAR_EM : undefined,
+  );
   const h = fontSize * 1.32;
   return (
-    <g pointerEvents="none" aria-hidden="true" className={cn(muted && 'opacity-60', className)}>
+    <g
+      pointerEvents="none"
+      aria-hidden="true"
+      data-map-label={variant}
+      className={cn(muted && 'opacity-60', className)}
+    >
       <rect
         x={x - w / 2}
         y={y - h / 2}
@@ -238,8 +258,8 @@ export function MapLabel({ x, y, text, fontSize, className, muted }: MapLabelPro
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={fontSize}
-        fontWeight={600}
-        className="fill-foreground tabular-nums"
+        fontWeight={variant === 'caption' ? 500 : 600}
+        className={cn('fill-foreground', variant === 'code' && 'tabular-nums')}
       >
         {text}
       </text>
