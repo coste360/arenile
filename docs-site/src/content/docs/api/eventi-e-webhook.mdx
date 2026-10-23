@@ -77,10 +77,11 @@ li riceve li tratta come "ricarica la configurazione dello stabilimento".
 - La configurazione guidata scrive un solo evento per tipo, con `reason` (`setup_template`, `quick_pricelist`),
   `template`, `map_ids`, `zone_ids` e `counts`.
 
-## Webhook in uscita <Badge text="Configurazione in arrivo (M5)" variant="caution" />
+## Webhook in uscita
 
-Il motore di consegna dei webhook in uscita è già nel core; la configurazione degli endpoint dal pannello (con
-filtro sugli eventi, log delle consegne e reinvio) arriva con la milestone M5. Ecco come funziona la consegna:
+Il proprietario configura gli endpoint dal pannello, con filtro sugli eventi, evento di prova, registro delle
+consegne, reinvio e rotazione del segreto con periodo di grazia (vedi
+[Chiavi API e webhook](/gestore/chiavi-api-e-webhook/)). Ecco come funziona la consegna:
 
 | Aspetto | Comportamento |
 |---|---|

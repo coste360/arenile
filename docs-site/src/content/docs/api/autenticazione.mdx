@@ -55,22 +55,25 @@ La sessione scade dopo un periodo di inattività (7 giorni di default) e si rinn
 `POST /api/admin/v1/auth/totp/confirm` con un codice valido la attiva. Con
 `ARENILE_REQUIRE_TOTP_FOR_OWNERS=true` un proprietario senza TOTP riceve `totp_enrolment_required`.
 
-## Chiavi API <Badge text="In arrivo (M5)" variant="caution" />
+## Chiavi API
 
-Il contratto prevede chiavi API per le integrazioni server-to-server, legate a uno stabilimento e con scope pari
-ai permessi:
+Le chiavi API servono alle integrazioni server-to-server: sono legate a uno stabilimento, hanno come scope i
+permessi (tranne `users.manage`) e una scadenza facoltativa:
 
 ```http
 Authorization: Bearer ar_live_<prefisso>_<segreto>
 ```
 
-Con una chiave API non servono cookie né CSRF. La creazione e la revoca delle chiavi dal pannello arrivano con la
-milestone M5.
+Con una chiave API non servono cookie né CSRF. Il proprietario crea, modifica e revoca le chiavi dal pannello
+(vedi [Chiavi API e webhook](/gestore/chiavi-api-e-webhook/)); la chiave completa compare una sola volta e Arenile
+ne conserva solo l'impronta. Una chiave non può mai gestire utenti, chiavi o webhook; le prenotazioni create con
+una chiave hanno il canale `api`; ogni chiave ha un limite di 300 richieste al minuto (oltre, `429` con
+`Retry-After`); la revoca vale dalla richiesta successiva.
 
 ## Permessi
 
 Ogni operazione richiede un permesso, verificato nel servizio di dominio (non solo nell'handler). I valori sono
-stabili e saranno anche gli scope delle chiavi API.
+stabili e sono anche gli scope delle chiavi API.
 
 | Permesso | Significato | Ruoli |
 |---|---|---|

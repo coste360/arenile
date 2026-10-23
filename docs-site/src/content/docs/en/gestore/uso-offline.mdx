@@ -1,0 +1,104 @@
+---
+title: Panel without connection
+description: Install the panel as an app on phone, tablet and computer and keep working when the connection drops - what works offline, the operation queue, data saved on the device.
+sidebar:
+  order: 33
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Where:** the whole panel, on any device. **Who:** every user.
+
+On the beach the connection sometimes drops. The manager panel keeps working in a limited way: you can view the map
+and the bookings of today and tomorrow, check customers in, add notes and take cash payments. What you do without a
+connection is sent by itself as soon as the network is back.
+
+## Installing the panel as an app
+
+The panel can be installed like an app: it opens full screen from its icon, without the address bar, on the
+**Today** page.
+
+<Tabs>
+  <TabItem label="Android">
+    Open the panel with Chrome, tap the ⋮ menu and choose **Install app** (or **Add to Home screen**).
+  </TabItem>
+  <TabItem label="iPhone and iPad">
+    Open the panel with Safari, tap **Share** and then **Add to Home Screen**.
+  </TabItem>
+  <TabItem label="Computer">
+    With Chrome or Edge open the panel and use the install icon in the address bar (or the browser menu →
+    **Install**). With Safari on a Mac: **File** menu → **Add to Dock**.
+  </TabItem>
+</Tabs>
+
+The panel address is the same one you use in the browser and must be `https`. On a computer you can also use the
+[desktop app](/en/gestore/app-desktop/), which brings Arenile straight onto the cash desk PC.
+
+### Updates
+
+When a new version comes out, **A new version of the panel is available** appears with **Update** and **Later**.
+The update never starts by itself, so nobody is interrupted during a check-in; queued operations are not lost when
+updating. The first time **The panel is ready to work offline too** also appears.
+
+## What works without a connection
+
+The indicator at the top always shows the status: **Online**, **Offline** or **Syncing**, with the number of
+operations **queued** and of those **to review**. Without a connection the **You are offline** notice appears with
+the time of the data you are viewing.
+
+| Offline you can | Offline you cannot |
+| --- | --- |
+| View the map and the bookings of today and tomorrow | Create new bookings |
+| See the balances to collect of the day | Move a booking to another spot |
+| Check in a booking | See the takings of the day (*Not available offline*) |
+| Add a note to a booking (**Add note**) | Refunds, card payments or payment links |
+| Record a cash payment on an existing booking (**Cash payment**) | Change configuration, prices and users |
+
+Creating and moving bookings needs the connection: only the server guarantees that the spot is free and that nobody
+sells it twice. The panel explains it in the form (**Not available offline**) and sends nothing.
+
+<Aside type="caution" title="Data must be saved first">
+The panel prepares the offline copy while online and keeps it fresh as long as it stays open. Open the panel on the
+device at least once a day with the connection: when no data is saved the notice says *There is no saved data of
+this establishment on this device*.
+</Aside>
+
+## The operation queue
+
+Check-ins, notes and payments made offline show up on the map at once and go into the queue. When the connection is
+back they are sent **in order**, each **only once**, even if the network drops halfway. The typical arrival
+(collecting the balance and then checking in the same booking) works offline too.
+
+Tap the indicator to open **Offline operations**: you see what is queued, with the time, and you can use **Send
+now**.
+
+If the server refuses an operation (for example a cash payment without an open [cash session](/en/gestore/cassa/),
+or a check-in on a booking cancelled in the meantime) **Offline operations to review** appears:
+
+<Steps>
+
+1. Tap **Review** to see the operation and the reason.
+2. Fix the cause (for example open the cash desk) and choose **Retry**, or **Discard** if the operation is no longer
+   needed.
+
+</Steps>
+
+If the session has expired you see *Session expired: sign in again to send the queued operations*.
+
+## Which data stays on the device
+
+To work offline the panel saves in the browser, only for the establishment you are viewing: your profile, the maps,
+the beach situation of today and tomorrow (customer name, booking code and balance) and the details of the bookings
+of these two days that you opened. It never saves the customer records, contact details, payments, reports or staff
+users.
+
+- Saved data expires after 48 hours and is replaced when you switch establishment.
+- With **Sign out** the panel tries to send the queued operations and then deletes the saved data; the same happens
+  when another user signs in on the device.
+- **Queued operations** are never discarded by themselves: they contain cash really collected and check-ins really
+  done. If a colleague signs in on the same device, they see them in the indicator and they are sent with their
+  session.
+
+<Aside type="tip" title="Shared devices">
+On the tablet or phone that passes from hand to hand among the staff, always sign out at the end of the shift.
+</Aside>

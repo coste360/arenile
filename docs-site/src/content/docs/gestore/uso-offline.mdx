@@ -1,0 +1,102 @@
+---
+title: Pannello senza connessione
+description: Installa il pannello come app su telefono, tablet e computer e continua a lavorare quando la connessione cade - cosa funziona offline, coda delle operazioni, dati salvati sul dispositivo.
+sidebar:
+  order: 33
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Dove:** in tutto il pannello, su qualsiasi dispositivo. **Chi:** tutti gli utenti.
+
+In spiaggia la connessione a volte salta. Il pannello del gestore continua a funzionare in modo limitato: puoi
+consultare la mappa e le prenotazioni di oggi e di domani, fare i check-in, aggiungere note e incassare in contanti.
+Quello che fai senza connessione viene inviato da solo appena la rete torna.
+
+## Installare il pannello come app
+
+Il pannello si può installare come un'app: si apre a schermo intero dalla sua icona, senza barra degli indirizzi,
+sulla pagina **Oggi**.
+
+<Tabs>
+  <TabItem label="Android">
+    Apri il pannello con Chrome, tocca il menu ⋮ e scegli **Installa app** (o **Aggiungi a schermata Home**).
+  </TabItem>
+  <TabItem label="iPhone e iPad">
+    Apri il pannello con Safari, tocca **Condividi** e poi **Aggiungi alla schermata Home**.
+  </TabItem>
+  <TabItem label="Computer">
+    Con Chrome o Edge apri il pannello e usa l'icona di installazione nella barra degli indirizzi (oppure il menu
+    del browser → **Installa**). Con Safari su Mac: menu **File** → **Aggiungi al Dock**.
+  </TabItem>
+</Tabs>
+
+L'indirizzo del pannello è lo stesso che usi nel browser e deve essere in `https`. Su un computer puoi anche usare
+l'[app desktop](/gestore/app-desktop/), che porta Arenile direttamente sul PC della cassa.
+
+### Aggiornamenti
+
+Quando esce una nuova versione compare **È disponibile una nuova versione del pannello** con **Aggiorna** e **Più
+tardi**. L'aggiornamento non parte mai da solo, così nessuno viene interrotto durante un check-in; le operazioni in
+coda non si perdono aggiornando. La prima volta compare anche **Il pannello è pronto per funzionare anche offline**.
+
+## Cosa funziona senza connessione
+
+L'indicatore in alto mostra sempre lo stato: **Online**, **Offline** o **Sincronizzazione**, con il numero di
+operazioni **in coda** e di quelle **da rivedere**. Senza connessione compare l'avviso **Sei offline** con l'ora
+dei dati che stai consultando.
+
+| Offline puoi | Offline non puoi |
+| --- | --- |
+| Consultare la mappa e le prenotazioni di oggi e di domani | Creare nuove prenotazioni |
+| Vedere i saldi da incassare del giorno | Spostare una prenotazione su un'altra postazione |
+| Fare il check-in di una prenotazione | Vedere gli incassi del giorno (*Non disponibile offline*) |
+| Aggiungere una nota a una prenotazione (**Aggiungi nota**) | Rimborsi, pagamenti con carta o link di pagamento |
+| Registrare un incasso in contanti su una prenotazione esistente (**Incasso in contanti**) | Modificare configurazione, prezzi e utenti |
+
+Creare e spostare prenotazioni richiede la connessione: solo il server garantisce che la postazione sia libera e
+che nessuno la venda due volte. Il pannello lo spiega nel modulo (**Non disponibile offline**) e non invia nulla.
+
+<Aside type="caution" title="I dati vanno salvati prima">
+Il pannello prepara la copia offline mentre è online e la tiene aggiornata finché resta aperto. Apri il pannello sul
+dispositivo almeno una volta al giorno con la connessione: se non ci sono dati salvati l'avviso dice *Su questo
+dispositivo non ci sono dati salvati di questo stabilimento*.
+</Aside>
+
+## La coda delle operazioni
+
+Check-in, note e incassi fatti offline compaiono subito sulla mappa e finiscono in coda. Alla riconnessione
+partono **in ordine**, ognuno **una sola volta**, anche se la rete cade a metà invio. L'arrivo tipico (incasso
+del saldo e poi check-in sulla stessa prenotazione) funziona anche offline.
+
+Tocca l'indicatore per aprire **Operazioni offline**: vedi cosa è in coda, con l'ora, e puoi usare **Invia ora**.
+
+Se il server rifiuta un'operazione (ad esempio un incasso in contanti senza una [sessione di cassa](/gestore/cassa/)
+aperta, o un check-in su una prenotazione cancellata nel frattempo) compare **Operazioni offline da rivedere**:
+
+<Steps>
+
+1. Tocca **Rivedi** per vedere l'operazione e il motivo.
+2. Risolvi la causa (ad esempio apri la cassa) e scegli **Riprova**, oppure **Scarta** se l'operazione non va più
+   fatta.
+
+</Steps>
+
+Se la sessione è scaduta compare *Sessione scaduta: accedi di nuovo per inviare le operazioni in coda*.
+
+## Quali dati restano sul dispositivo
+
+Per funzionare offline il pannello salva nel browser, solo per lo stabilimento che stai guardando: il tuo
+profilo, le mappe, la situazione della spiaggia di oggi e di domani (nome del cliente, codice e saldo della
+prenotazione) e il dettaglio delle prenotazioni di questi due giorni che hai aperto. Non salva mai l'anagrafica
+clienti, i contatti, i pagamenti, i report o gli utenti dello staff.
+
+- I dati salvati scadono dopo 48 ore e vengono sostituiti quando cambi stabilimento.
+- Con **Esci** il pannello prova a inviare le operazioni in coda e poi cancella i dati salvati; lo stesso succede
+  quando sul dispositivo accede un altro utente.
+- Le **operazioni in coda** non vengono mai scartate da sole: contengono incassi davvero riscossi e check-in davvero
+  fatti. Se accede un collega sullo stesso dispositivo, le vede nell'indicatore e partono con la sua sessione.
+
+<Aside type="tip" title="Dispositivi condivisi">
+Sul tablet o sul telefono che passa di mano in mano tra lo staff, esci sempre a fine turno.
+</Aside>

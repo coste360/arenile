@@ -1,0 +1,85 @@
+---
+title: Devices
+description: Pair the desktop app and the staff devices with a QR code - personal access limited to the establishment, list of devices, immediate revocation.
+sidebar:
+  order: 32
+---
+
+import { Steps, Aside, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Devices**. **Who:** every user pairs and revokes their own devices; the owner sees
+those of the whole team, can pair one for a colleague and revoke any of them.
+
+A **paired device** is an Arenile app that connects to your Arenile with a personal access, without entering the
+address and credentials every time: today it is the [desktop app](/en/gestore/app-desktop/) in remote mode, later
+also the mobile app for staff <Badge text="Coming soon" variant="caution" />.
+
+<Aside type="note" title="The browser needs no pairing">
+To use the panel from a phone, a tablet or another PC just open it in the browser and sign in with your own user:
+no pairing is needed. You can also [install it as an app](/en/gestore/uso-offline/).
+</Aside>
+
+<Screenshot name="admin-devices" alt="Devices page with the list of paired devices, the user, the last use and the status" />
+
+## Pairing a device
+
+<Steps>
+
+1. **Pair a device**.
+2. Owner only: in **Device of** choose **Myself** or the colleague who will use it, then **Generate the QR code**.
+   The device gets the permissions of that user's role, in this establishment only.
+3. The QR code appears with the **Pairing code** (eight characters, for example `ABCD-EFGH`) and the address of
+   your Arenile, with the **Expires in** countdown.
+4. On the device open the Arenile app and scan the QR code, or type the address and the code by hand (in the
+   desktop app: **Pair this PC** window, fields **Instance address** and **Pairing code**, then **Pair**).
+5. The panel shows **Device paired**: **Done**.
+
+</Steps>
+
+The code works **only once** and **expires after 5 minutes**: if it expires (**Code expired**) use **Generate a new
+code**.
+
+<Aside type="caution" title="Desktop app in local mode">
+If you run Arenile with the desktop app on the cash desk PC, other devices can reach it only with the **local
+network mode** on: while it is off the page shows **Turn on the local network mode** and pairing is not available.
+See [Desktop app and local network](/en/gestore/app-desktop/#local-network-mode).
+</Aside>
+
+## The list of devices
+
+For every device you see the name and the system (**iPhone / iPad**, **Android**, **Windows**, **macOS**,
+**Linux**), the **User** with their role, **Last used** and the **Status**:
+
+| Status | Meaning |
+| --- | --- |
+| **Active** | The device can access. |
+| **Fiscal bridge** | It is the cash desk PC that forwards fiscal documents to the connected fiscal printer (desktop app in remote mode). |
+| **Revoked** | It can no longer access; it appears only with **Show revoked**. |
+
+The device you are using is marked **This device**.
+
+## Access security
+
+- Every device has **its own access**, different from the others: revoking one does not affect the others.
+- The access works **only for this establishment**, even if the user works in several establishments of the same
+  company, and only with the permissions of their role.
+- If the user is deactivated or loses their role on the establishment, the device stops working.
+- A device **not used for 90 days** loses its access by itself: it must be paired again.
+
+## Revoking a device
+
+<Steps>
+
+1. In the device row choose **Revoke**.
+2. Confirm: the device loses access immediately. To use it again it must be paired with a new code.
+
+</Steps>
+
+Revoke right away a lost or stolen phone, the PC of a collaborator who no longer works with you or a device you do
+not recognise.
+
+<Aside type="caution" title="Revoking the fiscal bridge">
+If you revoke the device acting as **Fiscal bridge**, fiscal documents stay pending until you register another
+bridge (by pairing the cash desk desktop app again).
+</Aside>

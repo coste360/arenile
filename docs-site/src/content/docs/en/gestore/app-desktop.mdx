@@ -1,0 +1,142 @@
+---
+title: Desktop app and local network
+description: Arenile on the cash desk PC without a server or internet - its own window, system tray icon, automatic backups, local network mode for the other devices and remote mode.
+sidebar:
+  order: 34
+---
+
+import { Steps, Aside, Badge } from '@astrojs/starlight/components';
+
+**Where:** on the cash desk PC (Windows, macOS or Linux); in the panel, Configuration → **Desktop app**. **Who:** the
+desktop app settings are reserved to the owner.
+
+The **desktop app** is Arenile installed on the cash desk computer: no server to rent, no terminal, no internet.
+The archive (bookings, customers, takings) stays in a folder of that computer. It is the right choice for those who
+work mainly at the desk and do not need online booking.
+
+<Aside type="caution" title="Packages coming soon">
+Ready-to-install packages for Windows, macOS and Linux will be downloadable from the **Coste360 portal**, after
+signing in <Badge text="Coming soon" variant="caution" />. They are not published on GitHub. In the meantime you can
+run Arenile [online or on an on-site server](/en/installazione/scegli-come-installare/).
+</Aside>
+
+## How it works
+
+- **Its own window**: on Windows and macOS the panel opens in a window of the app, not in the browser; on Linux it
+  opens in the default browser. **Open in the browser** is always available.
+- **System tray icon** (menu bar on macOS), with the menu: **Open panel**, **Open in the browser**, **Back up
+  now**, **Restore a backup…**, **Open data folder**, **Start at login**, **Local network mode**, **Show local
+  network QR**, **Quit**.
+- **Closing the window**: on macOS the window hides and Arenile stays in the menu bar until you choose **Quit**. On
+  Windows closing the window quits Arenile, unless you turn on **Keep running in the system tray when the window is
+  closed** (recommended if you use the local network).
+- **First start**: the **Welcome to Arenile** page asks for **Company or establishment**, **Full name**, **Email**
+  and **Password** of the owner (**Create the user and continue**), then the
+  [guided setup](/en/gestore/configurazione-guidata/) starts.
+
+### What the desktop app does not have
+
+The app cannot be reached from the internet, so the **public page** and **online payments** are not available
+(their pages explain it: *No public page on desktop*, *Payments at the cash desk only*). Cash, card terminal, bank
+transfer and the other methods are recorded from the [cash desk](/en/gestore/cassa/) as usual. The app sends no
+email.
+
+## Settings and backups
+
+In Configuration → **Desktop app**:
+
+| Section | Settings |
+| --- | --- |
+| **Backup** | **Backup folder** (also on a USB stick), **Automatic backups to keep**, **Daily automatic backup**, **Backup when the app closes**. |
+| **Startup and updates** | **Start Arenile when the computer starts**, **Keep running in the system tray when the window is closed**, **Check for a new version** (once a day it only reads the latest version number from the Coste360 website, without sending any data of the beach). |
+| **Local network mode** | **Enable local network mode** and **Port** (default 8443). |
+
+Remember to **Save settings**.
+
+**Available backups** lists the copies with **Date**, **Type** (**Manual**, **Daily**, **On exit**, **Before
+restore**) and **Size**. **Back up now** makes one right away; the oldest automatic backups are deleted, manual ones
+are always kept.
+
+### Restoring a backup
+
+<Steps>
+
+1. In the backup row choose **Restore** (or **Restore a backup…** from the icon menu).
+2. Confirm with **Restore and restart**.
+3. Arenile restarts for a few seconds and the page reloads by itself.
+
+</Steps>
+
+Before restoring, the current archive is saved as a **Before restore** backup: the operation can therefore be undone
+by restoring that copy.
+
+<Aside type="tip" title="A copy outside the PC">
+If the cash desk PC breaks or is stolen, the backups in its folder go with it. Set the **Backup folder** to a USB
+stick or a synchronised folder, or regularly copy a backup elsewhere.
+</Aside>
+
+## Local network mode
+
+With the **local network mode** the other PCs, tablets and phones connected to the beach Wi-Fi use Arenile from the
+browser, on the **same archive** as the cash desk PC. There is still a single server, with the same guarantees
+against double bookings.
+
+<Steps>
+
+1. Turn on **Local network mode** from the icon menu, or **Enable local network mode** in Configuration →
+   **Desktop app**, and save.
+2. Choose **Show local network QR** from the icon menu: the **Local network** page opens (Configuration →
+   **Devices** → **Local network**) with the **Panel address** (for example `https://192.168.1.20:8443/admin/`), its
+   QR code and the **Certificate fingerprint**.
+3. On the other device, connected to the same Wi-Fi, open the address in the browser or scan the QR code with the
+   camera.
+4. The first time the browser warns that the connection is not private: this is expected, because the certificate
+   is created by the cash desk PC and not by a public authority. Open the certificate details and compare the
+   SHA-256 fingerprint with the one on the **Local network** page.
+5. Only if every character matches choose **Advanced** and then **Proceed** (Safari: **Visit this website**). If it
+   does not match, do not continue.
+6. Sign in with your panel user.
+
+</Steps>
+
+Good to know:
+
+- **Beach network only**: only connections from the local network are accepted; those from the internet are refused
+  even if the router forwards the port by mistake.
+- **Fixed address**: reserve a fixed IP address for the cash desk PC in the router, so that the panel address does
+  not change.
+- **PC switched on**: the other devices work only while Arenile is open on the cash desk PC. On Windows turn on
+  **Keep running in the system tray when the window is closed**.
+- **Certificate renewal**: the certificate lasts a long time and does not change on restart. When the renewal gets
+  close, the **Local network** page, the icon menu and a notification show the date: from that day browsers will ask
+  to accept the new certificate and paired apps must be paired again. Plan it on a closing day.
+
+## Remote mode
+
+The desktop app can also **connect to an existing Arenile** (online or on an on-site server) instead of starting its
+own archive: it shows that instance's panel in a dedicated window and can act as a **fiscal bridge** to the fiscal
+printer connected to the cash desk PC.
+
+The PC is paired from the instance's [Devices](/en/gestore/dispositivi/) page (**Pair a device**), and in the app's
+**Pair this PC** window you enter the **Instance address** and the **Pairing code**. In the panel window you then
+sign in with your own user. In remote mode the app needs the connection: without network the window does not work.
+
+## Moving to an online instance
+
+If later you want online booking, the desktop app backup is the same archive as the server edition and moves
+without conversions:
+
+<Steps>
+
+1. Make a backup from the app.
+2. Install Arenile on a server (see [Choose how to install](/en/installazione/scegli-come-installare/)).
+3. Restore the backup on the server (see [Backup and restore](/en/installazione/backup-e-ripristino/)).
+4. Start Arenile on the server and enable the public page and online payments from there.
+
+</Steps>
+
+<Aside type="note" title="No synchronisation">
+The desktop app and an online instance do not synchronise: after the move, work only on the online instance (you
+can connect the desktop app in remote mode). Two archives that synchronise could not guarantee that a spot is never
+sold twice.
+</Aside>

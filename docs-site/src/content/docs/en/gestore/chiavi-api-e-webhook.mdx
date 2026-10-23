@@ -1,0 +1,151 @@
+---
+title: API keys and webhooks
+description: Connect accounting software, CRMs and other programs to Arenile - API keys with limited permissions and expiry, signed webhooks with a test event, secret rotation and delivery log.
+sidebar:
+  order: 31
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **API keys** and Configuration → **Webhooks**. **Who:** the owner only (other roles see
+*Only the owner can manage integrations.*).
+
+Arenile can talk to other programs: the accounting software, a CRM, an automated spreadsheet, the beach website.
+There are two tools:
+
+- **API keys**, with which an external program *asks* Arenile for data or creates bookings;
+- **webhooks**, with which Arenile *notifies* an external program when something happens (a booking confirmed, a
+  payment succeeded, a map changed…).
+
+They are usually set up by whoever develops the integration: this page explains what to do in the panel. The
+technical details are in the [API and webhooks](/en/api/) section.
+
+## API keys
+
+<Screenshot name="admin-api-keys" alt="API keys page with the list of keys, permissions, last use and expiry" />
+
+### Creating a key
+
+<Steps>
+
+1. **New key**.
+2. Give it a recognisable **Name**, for example the name of the system.
+3. Optional: an **Expiry**. After that day the key stops working.
+4. Choose the **Permissions**: only those the program needs (for example only **Bookings (read)** and **Reports**
+   for a program that reads data).
+5. **Create key**.
+6. **Key created** appears with the full key: **Copy** it and paste it right away into the external program, then
+   **Saved it, close**.
+
+</Steps>
+
+<Aside type="caution" title="The key is shown only once">
+Arenile keeps only a fingerprint of the key, not the key itself: after the window is closed it cannot show it
+again. If you lose it, revoke it and create a new one.
+</Aside>
+
+| Permission | What it allows |
+| --- | --- |
+| **Bookings (read)** | Read bookings, availability and customers. |
+| **Bookings (write)** | Create, change and cancel bookings and customers. |
+| **Operations** | Check-in, moves and the day view. |
+| **Cash desk** | Cash sessions and takings. |
+| **Refunds** | Issue refunds. |
+| **Reports** | Reports and exports. |
+| **Configuration** | Establishment, maps, price lists and policies. |
+| **Payments** | Payment method configuration. |
+
+Rules that always apply:
+
+- a key acts **only on the establishment** where it was created;
+- a key **can never** manage users, API keys or webhooks;
+- bookings created with a key have the **API** channel and respect the online quota of the
+  [zones](/en/gestore/zone/), like those of the public page.
+
+### Checking and revoking
+
+The list shows for every key **Permissions**, **Status** (**Active**, **Expired**, **Revoked**), **Created**, **Last
+used** and **Expiry**. With the buttons of the **Actions** column:
+
+- **Edit key**: change name, expiry and permissions (the key stays the same);
+- **Revoke**: requests made with that key are refused immediately. This cannot be undone.
+
+**Show revoked** also lists the revoked keys.
+
+<Aside type="tip">
+Create **one key per program**: if a supplier changes or a program is no longer needed, you revoke only its key
+without stopping the others.
+</Aside>
+
+## Webhooks
+
+<Screenshot name="admin-webhooks" alt="Webhooks page with the endpoints, the chosen events, the status and the last delivery" />
+
+An **endpoint** is the address of the program that receives the notifications. For every chosen event Arenile sends
+it a signed request: the program checks the signature with the **Signing secret** and so knows that the
+notification really comes from your Arenile.
+
+### Adding an endpoint
+
+<Steps>
+
+1. **New endpoint**.
+2. Enter the **Address (URL)**: it must start with `https://`.
+3. Optional: a **Description** to remember what it is for.
+4. Choose the **Events**: single events, a whole group (for example **Bookings: all**) or **All events**. The
+   groups are **Bookings**, **Spots**, **Season passes**, **Waitlist**, **Credits**, **Payments**, **Customers**,
+   **Cash desk** and **Configuration**.
+5. **Create endpoint**.
+6. Copy the **Signing secret** and give it to whoever manages the receiving program. The secret too is shown only
+   once.
+
+</Steps>
+
+Then, from the endpoint's **⋯** menu (more actions), use **Send test event**: Arenile immediately sends a test
+notification to that endpoint only and tells you whether it was delivered and with which response.
+
+### Endpoint status
+
+| Status | Meaning |
+| --- | --- |
+| **Active** | Receives the chosen events. |
+| **Paused** | You paused it by turning off **Active** in **Edit endpoint**: events are not sent (the test event still works). |
+| **Disabled after failures** | Arenile stopped it by itself after many failed deliveries in a row. When the receiving program works again, turn it back on from **Edit endpoint**. |
+
+The number of **Consecutive failures** appears under the status. After an outage of the receiving program, check
+this page: Arenile does not send an email about the disabling.
+
+### Delivery log
+
+**Delivery log** shows every notification sent to the endpoint with **Event**, **Outcome** (**Pending**,
+**Delivered**, **Failed**), **Attempts** and response. Open a row to see the **Body sent** and the **Response
+(excerpt)**; **Redeliver** queues a delivery again (for example after fixing the receiving program).
+
+A failed delivery is retried automatically with growing waits for 24 hours. Deliveries stay in the log for 30
+days.
+
+### Changing the signing secret
+
+If the secret may have ended up in the wrong hands, or simply as a precaution:
+
+<Steps>
+
+1. Endpoint **⋯** menu → **Rotate secret**.
+2. Choose the **Grace period**: the time to update the secret in the receiving program (**None (the old one stops
+   at once)**, **1 hour**, **24 hours**, **3 days**, **7 days**).
+3. **Generate new secret** and copy it.
+4. Update the receiving program within the grace period.
+
+</Steps>
+
+During the grace period every notification is signed with both secrets, so no delivery is lost while you update the
+program. From the same menu, **Delete endpoint** removes the endpoint and its log.
+
+## For integration developers
+
+<Aside type="note" title="Technical documentation">
+How to use a key in requests, event format, signature verification with examples and the full reference of every
+operation: see [Authentication](/en/api/autenticazione/), [Events and outgoing webhooks](/en/api/eventi-e-webhook/)
+and the [API and webhooks](/en/api/) overview.
+</Aside>

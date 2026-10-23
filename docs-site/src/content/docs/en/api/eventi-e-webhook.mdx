@@ -74,10 +74,11 @@ them treats them as "reload the establishment's configuration".
 - The guided setup writes a single event per type, with `reason` (`setup_template`, `quick_pricelist`), `template`,
   `map_ids`, `zone_ids` and `counts`.
 
-## Outgoing webhooks <Badge text="Configuration coming (M5)" variant="caution" />
+## Outgoing webhooks
 
-The delivery engine for outgoing webhooks is already in the core; configuring endpoints from the panel (with event
-filters, delivery log and redelivery) arrives with milestone M5. This is how delivery works:
+The owner configures endpoints from the panel, with event filters, test event, delivery log, redelivery and secret
+rotation with a grace period (see [API keys and webhooks](/en/gestore/chiavi-api-e-webhook/)). This is how delivery
+works:
 
 | Aspect | Behaviour |
 |---|---|

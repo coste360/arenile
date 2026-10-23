@@ -1,0 +1,97 @@
+---
+title: Report
+description: Occupazione, ricavi, prenotazioni, cancellazioni, abbonamenti, clienti migliori e saldi aperti per stagione, mese o periodo libero, con confronto con l'anno precedente ed esportazione CSV.
+sidebar:
+  order: 28
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Report**. **Chi:** proprietari, gestori e utenti in sola lettura (ad esempio il
+commercialista). Gli altri ruoli vedono **Accesso non consentito**.
+
+La pagina **Report** risponde alle domande di fine giornata e di fine stagione: quanto è stata piena la spiaggia,
+quanto hai incassato, da dove arrivano le prenotazioni, quanti abbonati hanno rilasciato giorni e chi deve ancora
+saldare. Ogni report ha schede con i numeri principali, un grafico e una tabella con gli stessi dati, ed è
+esportabile in CSV.
+
+<Screenshot name="admin-reports" alt="Pagina Report: scelta del periodo, schede del riepilogo con occupazione, incassato e prenotazioni" />
+
+## Scegliere il periodo
+
+In alto c'è un'unica barra con il **Periodo**, valida per tutti i report:
+
+- **Stagione**: scegli la stagione dall'elenco. È la scelta di partenza (la stagione in corso, altrimenti
+  l'ultima aperta).
+- **Mese**: scegli **Mese** e **Anno**.
+- **Personalizzato**: scegli **Dal – al** sul calendario, al massimo 400 giorni.
+
+Sotto la barra il pannello ricorda l'intervallo esatto (*Dati dal … al … (estremi inclusi)*). Tutte le date sono
+nel fuso orario dello stabilimento.
+
+## I report
+
+Scegli il report dalle schede in alto.
+
+| Report | Cosa mostra | Raggruppa per |
+| --- | --- | --- |
+| **Riepilogo** | Gli **Indicatori del periodo**: **Occupazione**, **Incassato**, **Prenotato**, **Prenotazioni**, **Valore medio prenotazione**, **Cancellazioni**, **No-show**, **Abbonamenti venduti**, **Saldi aperti**. | — |
+| **Occupazione** | Fasce occupate sulla capacità dei giorni aperti, con abbonati, rilasciate e bloccate. | **Giorno**, **Zona**, **Fila**, **Fascia** |
+| **Ricavi** | Lordo, imponibile, IVA e rimborsi. | **Giorno**, **Settimana**, **Mese**, **Canale**, **Pack**, **Extra**, **Metodo di pagamento**, **Aliquota IVA** |
+| **Prenotazioni** | Numero, quota, valore, valore medio e anticipo medio. | **Canale**, **Anticipo**, **Formula**, **Giorno** |
+| **Cancellazioni e no-show** | Cancellate e no-show sul totale, valore perso e rimborsato. | **Giorno**, **Mese**, **Canale** |
+| **Abbonamenti e rilasci** | Abbonamenti venduti e rinnovi, fasce rilasciate e rivendute, ricavi da rivendita e crediti emessi. | **Giorno**, **Mese**, **Zona** |
+| **Clienti migliori** | Classifica con prenotazioni, giorni-postazione, valore e ultima prenotazione. **Ordina per** valore o numero di prenotazioni; **Clienti** sceglie quanti mostrarne (10, 20, 50, 100). | — |
+| **Saldi aperti** | Prenotazioni del periodo con un importo ancora da incassare: codice, cliente, stato, date, totale, pagato e saldo. | — |
+
+Una **fascia** è una postazione per una mezza giornata (mattina o pomeriggio): l'occupazione conta le fasce
+occupate sulle fasce disponibili, esclusi i giorni di chiusura e le postazioni bloccate.
+
+### Incassato o prenotato
+
+Il report **Ricavi** ha la **Base di calcolo**:
+
+- **Incassato**: i pagamenti riusciti nel periodo, al netto dei rimborsi. È la base della cassa e coincide al
+  centesimo con l'incassato dei [corrispettivi](/gestore/corrispettivi/) dello stesso periodo.
+- **Prenotato**: il valore delle prenotazioni per i giorni del periodo, indipendentemente dal pagamento.
+
+Alcuni raggruppamenti esistono solo per una base: **Metodo di pagamento** solo con **Incassato**, **Pack** ed
+**Extra** solo con **Prenotato**.
+
+<Aside type="note" title="A quale data è attribuito un numero">
+Sotto ogni scheda del riepilogo il pannello scrive la base di data: **Per primo giorno di soggiorno** (una
+prenotazione venduta a marzo per agosto conta in agosto) oppure **Per data di incasso**. Il report
+**Prenotazioni** invece conta per data di vendita, perché misura come e quando vendi: per questo, sullo stesso
+periodo, i due numeri possono essere diversi.
+</Aside>
+
+## Confronto con l'anno precedente
+
+<Steps>
+
+1. Attiva **Confronta con il …** nella barra del periodo (l'anno è quello precedente al periodo scelto).
+2. Nel **Riepilogo** le schede (tranne **Saldi aperti**) mostrano il valore dell'anno precedente e la variazione;
+   sotto compare la sezione **Confronto con il …** con gli **Indicatori a confronto con l'anno precedente** e
+   l'andamento nel tempo.
+3. Scegli l'**Allineamento**: **Stesse date del calendario** (il 15 agosto con il 15 agosto) oppure **Stesso giorno
+   della settimana** (i sabati con i sabati, utile per i fine settimana).
+
+</Steps>
+
+Quando il valore dell'anno precedente è zero la variazione percentuale non si può calcolare e la scheda è segnata
+**Nuovo**.
+
+## Esportare in CSV
+
+Ogni report ha il pulsante **Esporta CSV**, che scarica esattamente ciò che vedi: periodo, raggruppamento e base
+scelti. Anche il confronto con l'anno precedente si esporta. Il file usa il formato italiano (separatore `;`,
+virgola decimale) e si apre direttamente con Excel, LibreOffice o Numbers.
+
+<Aside type="tip" title="Per il commercialista">
+Crea un utente con ruolo **Sola lettura** (vedi [Team e ruoli](/gestore/team-e-ruoli/)): può consultare i report
+ed esportarli senza poter modificare nulla.
+</Aside>
+
+La classifica **Clienti migliori** mostra solo nome e cognome: email e telefono restano nella
+[scheda cliente](/gestore/clienti/), anche nel CSV.

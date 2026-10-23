@@ -1,0 +1,94 @@
+---
+title: Reports
+description: Occupancy, revenue, bookings, cancellations, season passes, top customers and open balances by season, month or custom period, with comparison with the previous year and CSV export.
+sidebar:
+  order: 28
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Reports**. **Who:** owners, managers and read-only users (for example the accountant).
+Other roles see **Access not allowed**.
+
+The **Reports** page answers the end-of-day and end-of-season questions: how full the beach was, how much you
+collected, where bookings come from, how many pass holders released days and who still has to pay. Every report has
+cards with the key figures, a chart and a table with the same data, and can be exported to CSV.
+
+<Screenshot name="admin-reports" alt="Reports page: period selection, summary cards with occupancy, collected and bookings" />
+
+## Choosing the period
+
+At the top there is a single bar with the **Period**, valid for every report:
+
+- **Season**: choose the season from the list. It is the starting choice (the current season, otherwise the
+  latest one opened).
+- **Month**: choose **Month** and **Year**.
+- **Custom**: choose **From – to** on the calendar, at most 400 days.
+
+Below the bar the panel shows the exact range (*Data from … to … (inclusive)*). All dates are in the
+establishment time zone.
+
+## The reports
+
+Choose the report from the tabs at the top.
+
+| Report | What it shows | Group by |
+| --- | --- | --- |
+| **Summary** | The **Period indicators**: **Occupancy**, **Collected**, **Booked**, **Bookings**, **Average booking value**, **Cancellations**, **No-shows**, **Season passes sold**, **Open balances**. | — |
+| **Occupancy** | Slots occupied over the capacity of open days, with pass holders, released and blocked. | **Day**, **Zone**, **Row**, **Time slot** |
+| **Revenue** | Gross, taxable, VAT and refunds. | **Day**, **Week**, **Month**, **Channel**, **Pack**, **Extra**, **Payment method**, **VAT rate** |
+| **Bookings** | Count, share, value, average value and average lead time. | **Channel**, **Lead time**, **Duration**, **Day** |
+| **Cancellations and no-shows** | Cancelled and no-shows over the total, lost and refunded value. | **Day**, **Month**, **Channel** |
+| **Season passes and releases** | Passes sold and renewals, released and resold slots, resale revenue and credits issued. | **Day**, **Month**, **Zone** |
+| **Top customers** | Ranking with bookings, spot-days, value and last booking. **Sort by** value or number of bookings; **Customers** chooses how many to show (10, 20, 50, 100). | — |
+| **Open balances** | Bookings of the period with an amount still to collect: code, customer, status, dates, total, paid and balance. | — |
+
+A **slot** is one spot for half a day (morning or afternoon): occupancy counts the occupied slots over the available
+ones, excluding closure days and blocked spots.
+
+### Collected or booked
+
+The **Revenue** report has a **Basis**:
+
+- **Collected**: successful payments in the period, net of refunds. It is the cash basis and matches to the cent
+  the collected amount of the [daily takings](/en/gestore/corrispettivi/) of the same period.
+- **Booked**: the value of the bookings for the days of the period, regardless of payment.
+
+Some groupings exist for one basis only: **Payment method** only with **Collected**, **Pack** and **Extra** only
+with **Booked**.
+
+<Aside type="note" title="Which date a figure belongs to">
+Under every summary card the panel prints the date basis: **By first day of stay** (a booking sold in March for
+August counts in August) or **By payment date**. The **Bookings** report instead counts by sale date, because it
+measures how and when you sell: this is why, over the same period, the two figures can differ.
+</Aside>
+
+## Comparison with the previous year
+
+<Steps>
+
+1. Turn on **Compare with …** in the period bar (the year is the one before the chosen period).
+2. In the **Summary** the cards (except **Open balances**) show the previous year's value and the change; below
+   appears the **Comparison with …** section with the **Indicators compared with the previous year** and the trend
+   over time.
+3. Choose the **Alignment**: **Same calendar dates** (15 August with 15 August) or **Same weekday** (Saturdays with
+   Saturdays, useful for weekends).
+
+</Steps>
+
+When the previous year's value is zero the percentage change cannot be computed and the card is marked **New**.
+
+## Exporting to CSV
+
+Every report has the **Export CSV** button, which downloads exactly what you see: chosen period, grouping and
+basis. The comparison with the previous year can be exported too. The file uses the Italian format (`;` separator,
+decimal comma) and opens directly in Excel, LibreOffice or Numbers.
+
+<Aside type="tip" title="For the accountant">
+Create a user with the **Read only** role (see [Team and roles](/en/gestore/team-e-ruoli/)): they can view and
+export the reports without being able to change anything.
+</Aside>
+
+The **Top customers** ranking shows only first and last name: email and phone stay in the
+[customer record](/en/gestore/clienti/), also in the CSV.

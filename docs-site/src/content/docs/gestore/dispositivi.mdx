@@ -1,0 +1,86 @@
+---
+title: Dispositivi
+description: Abbina l'app desktop e i dispositivi dello staff con un QR code - accesso personale limitato allo stabilimento, elenco dei dispositivi, revoca immediata.
+sidebar:
+  order: 32
+---
+
+import { Steps, Aside, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Dispositivi**. **Chi:** ogni utente abbina e revoca i propri dispositivi; il
+proprietario vede quelli di tutto il team, può abbinarne uno per un collega e revocarli tutti.
+
+Un **dispositivo abbinato** è un'app di Arenile che si collega al tuo Arenile con un accesso personale, senza
+dover inserire ogni volta indirizzo e credenziali: oggi è l'[app desktop](/gestore/app-desktop/) in modalità
+remota, domani anche l'app mobile per lo staff <Badge text="In arrivo" variant="caution" />.
+
+<Aside type="note" title="Il browser non va abbinato">
+Per usare il pannello da un telefono, un tablet o un altro PC basta aprirlo nel browser e accedere con il proprio
+utente: non serve nessun abbinamento. Puoi anche [installarlo come app](/gestore/uso-offline/).
+</Aside>
+
+<Screenshot name="admin-devices" alt="Pagina Dispositivi con l'elenco dei dispositivi abbinati, l'utente, l'ultimo utilizzo e lo stato" />
+
+## Abbinare un dispositivo
+
+<Steps>
+
+1. **Abbina un dispositivo**.
+2. Solo per il proprietario: in **Dispositivo di** scegli **Me stesso** o il collega che lo userà, poi **Genera il
+   QR code**. Il dispositivo avrà i permessi del ruolo di quell'utente, solo in questo stabilimento.
+3. Compaiono il QR code, il **Codice di abbinamento** (otto caratteri, ad esempio `ABCD-EFGH`) e l'indirizzo del
+   tuo Arenile, con il conto alla rovescia **Scade tra**.
+4. Sul dispositivo apri l'app Arenile e inquadra il QR code, oppure inserisci a mano indirizzo e codice (nell'app
+   desktop: finestra **Collega questo PC**, campi **Indirizzo dell'istanza** e **Codice di abbinamento**, poi
+   **Collega**).
+5. Il pannello mostra **Dispositivo abbinato**: **Fatto**.
+
+</Steps>
+
+Il codice vale **una sola volta** e **scade dopo 5 minuti**: se scade (**Codice scaduto**) usa **Genera un nuovo
+codice**.
+
+<Aside type="caution" title="App desktop in modalità locale">
+Se usi Arenile con l'app desktop sul PC della cassa, gli altri dispositivi possono raggiungerlo solo con la
+**modalità rete locale** attiva: finché è spenta la pagina mostra **Attiva la modalità rete locale** e l'abbinamento
+non è disponibile. Vedi [App desktop e rete locale](/gestore/app-desktop/#modalità-rete-locale).
+</Aside>
+
+## L'elenco dei dispositivi
+
+Per ogni dispositivo vedi il nome e il sistema (**iPhone / iPad**, **Android**, **Windows**, **macOS**, **Linux**),
+l'**Utente** con il suo ruolo, l'**Ultimo utilizzo** e lo **Stato**:
+
+| Stato | Significato |
+| --- | --- |
+| **Attivo** | Il dispositivo può accedere. |
+| **Ponte fiscale** | È il PC della cassa che inoltra i documenti fiscali al registratore telematico collegato (app desktop in modalità remota). |
+| **Revocato** | Non può più accedere; compare solo con **Mostra revocati**. |
+
+Il dispositivo che stai usando è segnato **Questo dispositivo**.
+
+## Sicurezza dell'accesso
+
+- Ogni dispositivo ha un **accesso suo**, diverso da quello degli altri: revocarne uno non tocca gli altri.
+- L'accesso vale **solo per questo stabilimento**, anche se l'utente lavora in più stabilimenti della stessa
+  azienda, e con i soli permessi del suo ruolo.
+- Se l'utente viene disattivato o perde il ruolo sullo stabilimento, il dispositivo smette di funzionare.
+- Un dispositivo **non usato per 90 giorni** perde l'accesso da solo: va abbinato di nuovo.
+
+## Revocare un dispositivo
+
+<Steps>
+
+1. Nella riga del dispositivo scegli **Revoca**.
+2. Conferma: il dispositivo perde subito l'accesso. Per usarlo di nuovo andrà abbinato con un nuovo codice.
+
+</Steps>
+
+Revoca subito un telefono perso o rubato, il PC di un collaboratore che non lavora più con te o un dispositivo che
+non riconosci.
+
+<Aside type="caution" title="Revocare il ponte fiscale">
+Se revochi il dispositivo che fa da **Ponte fiscale**, i documenti fiscali restano in attesa finché non registri
+un altro ponte (abbinando di nuovo l'app desktop della cassa).
+</Aside>

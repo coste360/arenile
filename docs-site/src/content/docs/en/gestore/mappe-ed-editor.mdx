@@ -1,6 +1,6 @@
 ---
 title: Maps and editor
-description: Draw the beach with the Coste360 map kit - row generator, spots, modular walkways, flag, alignment, renumbering and keyboard shortcuts.
+description: Draw the beach with the Coste360 map kit - row generator, spots, modular walkways, flag, sea side and reorientation, alignment, renumbering and keyboard shortcuts.
 sidebar:
   order: 5
 ---
@@ -35,7 +35,7 @@ there are spots with future bookings.
 | **Name** | For example "Beach". |
 | **Width**, **Height** | Size in map units (not metres: it is a drawing scale). |
 | **Grid step** | Dragged spots snap to the grid. A step that divides 60 (10, 12, 15, 20, 30, 60) makes walkways snap too. |
-| **Sea side** | **Top**, **Bottom**, **Left** or **Right**: decides where the sea is drawn and which way the rows start. |
+| **Sea side** | **Top** (proposed, as on most Italian beaches), **Bottom**, **Left** or **Right**: decides where the sea is drawn and which way the rows start. |
 
 **Create and open the editor** takes you straight to drawing.
 
@@ -139,6 +139,27 @@ drop them.
 
 The **Sea condition flag** element has the **Flag colour** property: **Green**, **Yellow** or **Red**. On the map it
 is named and described with its colour, also for screen reader users.
+
+### Moving the sea
+
+The sea is the blue strip drawn along the map's **Sea side**, with the shoreline in the style of the kit: row A is
+the closest one. New maps propose the sea at the **top**. To change it on a map already drawn:
+
+<Steps>
+
+1. Save or discard the pending changes, then open **Map settings**.
+2. Change **Sea side** and press **Apply**: if the map already contains elements, **Move the sea?** appears.
+3. Choose how to apply the change:
+   - **Flip the layout**: spots, decorations and walkways are mirrored (opposite sides, for example from bottom to
+     top) or rotated by 90° (adjacent sides, for example from bottom to right), so that every row keeps its distance
+     from the sea. Labels, rows, zones and bookings do not change. It is saved right away as a new version.
+   - **Only the sea**: only the sea side changes and the elements stay where they are; save the map to apply it.
+
+</Steps>
+
+If the map has bookings, season passes or blocks from today on, the panel says so (**Future bookings on the map**)
+before going ahead: only the drawing changes, assigned spots stay the same. If you also changed the size of the
+map, apply and save it first, then move the sea.
 
 ### Renumbering a row
 

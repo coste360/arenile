@@ -54,21 +54,25 @@ with `retry_after` in seconds.
 `POST /api/admin/v1/auth/totp/confirm` with a valid code enables it. With `ARENILE_REQUIRE_TOTP_FOR_OWNERS=true` an
 owner without TOTP gets `totp_enrolment_required`.
 
-## API keys <Badge text="Coming (M5)" variant="caution" />
+## API keys
 
-The contract foresees API keys for server-to-server integrations, bound to an establishment and with scopes equal to
-the permissions:
+API keys serve server-to-server integrations: they are bound to an establishment, have the permissions as scopes
+(except `users.manage`) and an optional expiry:
 
 ```http
 Authorization: Bearer ar_live_<prefix>_<secret>
 ```
 
-With an API key no cookies or CSRF are needed. Creating and revoking keys from the panel arrives with milestone M5.
+With an API key no cookies or CSRF are needed. The owner creates, edits and revokes keys from the panel (see
+[API keys and webhooks](/en/gestore/chiavi-api-e-webhook/)); the full key is shown only once and Arenile keeps only
+its fingerprint. A key can never manage users, keys or webhooks; bookings created with a key have the `api`
+channel; every key is limited to 300 requests per minute (beyond that, `429` with `Retry-After`); revocation takes
+effect from the next request.
 
 ## Permissions
 
 Each operation requires a permission, checked in the domain service (not just in the handler). The values are stable
-and will also be the scopes of API keys.
+and are also the scopes of API keys.
 
 | Permission | Meaning | Roles |
 |---|---|---|

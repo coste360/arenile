@@ -1,0 +1,152 @@
+---
+title: Chiavi API e webhook
+description: Collega a Arenile gestionali, CRM e altri programmi - chiavi API con permessi limitati e scadenza, webhook firmati con evento di prova, rotazione del segreto e registro delle consegne.
+sidebar:
+  order: 31
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Chiavi API** e Configurazione → **Webhook**. **Chi:** solo il proprietario (gli altri
+ruoli vedono *Solo il titolare può gestire le integrazioni.*).
+
+Arenile può parlare con altri programmi: il gestionale contabile, un CRM, un foglio di calcolo automatico, il sito
+del lido. Gli strumenti sono due:
+
+- le **chiavi API**, con cui un programma esterno *chiede* dati ad Arenile o crea prenotazioni;
+- i **webhook**, con cui Arenile *avvisa* un programma esterno quando succede qualcosa (una prenotazione
+  confermata, un pagamento riuscito, una mappa modificata…).
+
+Di solito li configura chi sviluppa l'integrazione: questa pagina spiega cosa fare nel pannello. I dettagli tecnici
+sono nella sezione [API e webhook](/api/).
+
+## Chiavi API
+
+<Screenshot name="admin-api-keys" alt="Pagina Chiavi API con l'elenco delle chiavi, permessi, ultimo uso e scadenza" />
+
+### Creare una chiave
+
+<Steps>
+
+1. **Nuova chiave**.
+2. Dai un **Nome** riconoscibile, ad esempio il nome del gestionale.
+3. Facoltativo: una **Scadenza**. Dopo quel giorno la chiave smette di funzionare.
+4. Scegli i **Permessi**: solo quelli che servono al programma (ad esempio solo **Prenotazioni (lettura)** e
+   **Report** per un programma che legge i dati).
+5. **Crea chiave**.
+6. Compare **Chiave creata** con la chiave completa: **Copia** e incollala subito nel programma esterno, poi **Ho
+   salvato, chiudi**.
+
+</Steps>
+
+<Aside type="caution" title="La chiave si vede una volta sola">
+Arenile conserva solo un'impronta della chiave, non la chiave: dopo la chiusura della finestra non può più
+mostrarla. Se la perdi, revocala e creane un'altra.
+</Aside>
+
+| Permesso | Cosa permette |
+| --- | --- |
+| **Prenotazioni (lettura)** | Leggere prenotazioni, disponibilità e clienti. |
+| **Prenotazioni (scrittura)** | Creare, modificare e cancellare prenotazioni e clienti. |
+| **Operatività** | Check-in, spostamenti e vista del giorno. |
+| **Cassa** | Sessioni di cassa e incassi. |
+| **Rimborsi** | Emettere rimborsi. |
+| **Report** | Report ed esportazioni. |
+| **Configurazione** | Stabilimento, mappe, listini e policy. |
+| **Pagamenti** | Configurazione dei metodi di pagamento. |
+
+Regole che valgono sempre:
+
+- una chiave agisce **solo sullo stabilimento** in cui è stata creata;
+- una chiave **non può mai** gestire utenti, chiavi API o webhook;
+- le prenotazioni create con una chiave hanno il canale **API** e rispettano la quota online delle
+  [zone](/gestore/zone/), come quelle della pagina pubblica.
+
+### Controllare e revocare
+
+L'elenco mostra per ogni chiave **Permessi**, **Stato** (**Attiva**, **Scaduta**, **Revocata**), **Creata**,
+**Ultimo uso** e **Scadenza**. Con i pulsanti della colonna **Azioni**:
+
+- **Modifica chiave**: cambia nome, scadenza e permessi (la chiave resta la stessa);
+- **Revoca**: le richieste fatte con quella chiave vengono rifiutate da subito. Non si può annullare.
+
+**Mostra revocate** fa comparire anche le chiavi revocate.
+
+<Aside type="tip">
+Crea **una chiave per ogni programma**: se un fornitore cambia o un programma non serve più, revochi solo la sua
+chiave senza fermare gli altri.
+</Aside>
+
+## Webhook
+
+<Screenshot name="admin-webhooks" alt="Pagina Webhook con gli endpoint, gli eventi scelti, lo stato e l'ultima consegna" />
+
+Un **endpoint** è l'indirizzo del programma che riceve gli avvisi. Per ogni evento scelto Arenile gli invia una
+richiesta firmata: il programma controlla la firma con il **segreto di firma** e così sa che l'avviso viene
+davvero dal tuo Arenile.
+
+### Aggiungere un endpoint
+
+<Steps>
+
+1. **Nuovo endpoint**.
+2. Inserisci l'**Indirizzo (URL)**: deve iniziare con `https://`.
+3. Facoltativo: una **Descrizione** per ricordare a cosa serve.
+4. Scegli gli **Eventi**: singoli eventi, un gruppo intero (ad esempio **Prenotazioni: tutti**) o **Tutti gli
+   eventi**. I gruppi sono **Prenotazioni**, **Postazioni**, **Abbonamenti**, **Lista d'attesa**, **Crediti**,
+   **Pagamenti**, **Clienti**, **Cassa** e **Configurazione**.
+5. **Crea endpoint**.
+6. Copia il **Segreto di firma** e consegnalo a chi gestisce il programma che riceve. Anche il segreto si vede una
+   volta sola.
+
+</Steps>
+
+Poi, dal menu **⋯** (altre azioni) dell'endpoint, usa **Invia evento di prova**: Arenile manda subito un avviso di
+prova solo a quell'endpoint e ti dice se è stato consegnato e con quale risposta.
+
+### Stati dell'endpoint
+
+| Stato | Significato |
+| --- | --- |
+| **Attivo** | Riceve gli eventi scelti. |
+| **In pausa** | L'hai messo in pausa togliendo **Attivo** in **Modifica endpoint**: gli eventi non vengono inviati (l'evento di prova funziona comunque). |
+| **Disattivato per errori** | Arenile l'ha fermato da solo dopo molte consegne fallite di seguito. Quando il programma che riceve funziona di nuovo, riattivalo da **Modifica endpoint**. |
+
+Il numero di **Errori consecutivi** compare sotto lo stato. Dopo un'interruzione del programma che riceve, controlla
+questa pagina: Arenile non manda email per avvisarti della disattivazione.
+
+### Registro consegne
+
+**Registro consegne** mostra ogni avviso inviato all'endpoint con **Evento**, **Esito** (**In corso**,
+**Consegnato**, **Fallito**), **Tentativi** e risposta. Apri una riga per vedere il **Corpo inviato** e la
+**Risposta (estratto)**; **Reinvia** rimette in coda una consegna (ad esempio dopo aver corretto il programma che
+riceve).
+
+Una consegna fallita viene ritentata in automatico con attese crescenti per 24 ore. Le consegne restano nel
+registro per 30 giorni.
+
+### Cambiare il segreto di firma
+
+Se il segreto potrebbe essere finito nelle mani sbagliate, o semplicemente per prudenza:
+
+<Steps>
+
+1. Menu **⋯** dell'endpoint → **Ruota segreto**.
+2. Scegli il **Periodo di grazia**: il tempo per aggiornare il segreto nel programma che riceve (**Nessuno (il
+   vecchio smette subito)**, **1 ora**, **24 ore**, **3 giorni**, **7 giorni**).
+3. **Genera nuovo segreto** e copialo.
+4. Aggiorna il programma che riceve entro il periodo di grazia.
+
+</Steps>
+
+Durante il periodo di grazia ogni avviso è firmato con entrambi i segreti, quindi nessuna consegna va persa mentre
+aggiorni il programma. Dallo stesso menu, **Elimina endpoint** cancella l'endpoint e il suo registro.
+
+## Per chi sviluppa l'integrazione
+
+<Aside type="note" title="Documentazione tecnica">
+Come usare una chiave nelle richieste, formato degli eventi, verifica della firma con esempi e riferimento completo
+di tutte le operazioni: vedi [Autenticazione](/api/autenticazione/), [Eventi e webhook in
+uscita](/api/eventi-e-webhook/) e la panoramica [API e webhook](/api/).
+</Aside>

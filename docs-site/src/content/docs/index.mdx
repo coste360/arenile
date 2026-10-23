@@ -103,7 +103,8 @@ import {
   reverse
 >
   Tutti gli abbonati della stagione in un elenco, con saldo e crediti. Quando un abbonato non viene, rilasci il
-  posto per quel giorno: se lo rivendi, l'abbonato matura un credito.
+  posto per quel giorno: se lo rivendi, l'abbonato matura un credito. A fine stagione proponi a ogni abbonato il
+  rinnovo con prelazione sulla stessa postazione; chi non trova posto si mette in lista d'attesa.
 </FeatureRow>
 
 <FeatureCards
@@ -111,7 +112,7 @@ import {
     {
       icon: 'wifi-off',
       title: 'Anche senza internet',
-      text: "Installato su un computer nel lido, Arenile continua a funzionare anche se la connessione salta. Presto anche come app desktop per il PC della cassa.",
+      text: "Il pannello si installa come app e, se la connessione salta, continua a mostrare la giornata e a registrare check-in e incassi in contanti. Su un computer nel lido funziona del tutto anche senza internet; presto anche come app desktop per il PC della cassa.",
     },
     {
       icon: 'languages',
@@ -198,9 +199,15 @@ import {
     },
     {
       q: 'Funziona senza internet?',
-      a: "Sì, con l'app desktop (in arrivo) o con un computer nel lido: mappa, prenotazioni dal pannello, abbonati e cassa funzionano anche senza connessione. Le prenotazioni online dei clienti, invece, richiedono che Arenile sia raggiungibile da internet.",
-      link: '/installazione/scegli-come-installare/',
-      linkText: 'Confronta le soluzioni',
+      a: "Sì. Con un computer nel lido (e presto con l'app desktop) mappa, prenotazioni dal pannello, abbonati e cassa funzionano anche senza connessione. Anche con Arenile online, se la rete della spiaggia cade il pannello installato come app continua a mostrare mappa e prenotazioni di oggi e di domani e registra check-in, note e incassi in contanti, che invia appena la connessione torna. Le prenotazioni online dei clienti, invece, richiedono che Arenile sia raggiungibile da internet.",
+      link: '/gestore/uso-offline/',
+      linkText: 'Il pannello senza connessione',
+    },
+    {
+      q: 'Gestisce anche rinnovi degli abbonamenti e lista d’attesa?',
+      a: "Sì. A fine stagione il cambio stagione prepara la nuova stagione e una campagna di rinnovo propone a ogni abbonato la stessa postazione con diritto di prelazione, per email o al banco. Chi non trova posto entra in lista d'attesa e riceve un'offerta appena una postazione si libera. Il credito dei clienti si usa come metodo di pagamento.",
+      link: '/gestore/rinnovi/',
+      linkText: 'Rinnovi degli abbonamenti',
     },
     {
       q: 'Posso provarlo prima di usarlo davvero?',

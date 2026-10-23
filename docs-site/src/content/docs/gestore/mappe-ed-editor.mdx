@@ -1,6 +1,6 @@
 ---
 title: Mappe ed editor
-description: Disegna la spiaggia con il kit grafico Coste360 - generatore di file, postazioni, passerelle modulari, bandiera, allineamenti, rinumerazione e scorciatoie da tastiera.
+description: Disegna la spiaggia con il kit grafico Coste360 - generatore di file, postazioni, passerelle modulari, bandiera, lato del mare e riorientamento, allineamenti, rinumerazione e scorciatoie da tastiera.
 sidebar:
   order: 5
 ---
@@ -37,7 +37,7 @@ usata da regole di prezzo, pack, policy o se ci sono postazioni con prenotazioni
 | **Nome** | Ad esempio "Spiaggia". |
 | **Larghezza**, **Altezza** | Dimensioni in unità della mappa (non metri: è una scala di disegno). |
 | **Passo griglia** | Le postazioni trascinate si agganciano alla griglia. Un passo che divide 60 (10, 12, 15, 20, 30, 60) fa agganciare anche le passerelle. |
-| **Lato del mare** | **In alto**, **In basso**, **A sinistra** o **A destra**: decide dove si disegna il mare e da che parte partono le file. |
+| **Lato del mare** | **In alto** (proposto, come sulla maggior parte dei lidi italiani), **In basso**, **A sinistra** o **A destra**: decide dove si disegna il mare e da che parte partono le file. |
 
 **Crea e apri l'editor** porta direttamente al disegno.
 
@@ -143,6 +143,29 @@ griglia delle tessere; altrimenti mantengono la posizione dove le lasci.
 
 L'elemento **Bandiera stato del mare** ha la proprietà **Colore della bandiera**: **Verde**, **Gialla** o
 **Rossa**. Sulla mappa è nominata e descritta con il colore, anche per chi usa un lettore di schermo.
+
+### Spostare il mare
+
+Il mare è la fascia azzurra disegnata lungo il **Lato del mare** della mappa, con la battigia nello stile del kit:
+la fila A è quella più vicina. Le nuove mappe propongono il mare **in alto**. Per cambiarlo su una mappa già
+disegnata:
+
+<Steps>
+
+1. Salva o annulla le modifiche in corso, poi apri **Impostazioni mappa**.
+2. Cambia **Lato del mare** e premi **Applica**: se la mappa contiene già elementi compare **Spostare il mare?**.
+3. Scegli come applicare il cambio:
+   - **Ribalta la disposizione**: postazioni, decorazioni e passerelle vengono ribaltate (lati opposti, ad esempio
+     da in basso a in alto) o ruotate di 90° (lati vicini, ad esempio da in basso a destra), così che ogni fila resti
+     alla stessa distanza dal mare. Etichette, file, zone e prenotazioni non cambiano. Viene salvato subito come
+     nuova versione.
+   - **Solo il mare**: cambia solo il lato del mare e gli elementi restano dove sono; salva la mappa per applicare.
+
+</Steps>
+
+Se la mappa ha prenotazioni, abbonamenti o blocchi da oggi in poi, il pannello lo segnala (**Prenotazioni future
+sulla mappa**) prima di procedere: cambia solo il disegno, le postazioni assegnate restano le stesse. Se hai
+cambiato anche le dimensioni della mappa, applica e salva prima quelle, poi sposta il mare.
 
 ### Rinumerare una fila
 

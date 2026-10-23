@@ -42,6 +42,10 @@
     { "name": "admin-online-settings", "section": "gestore", "route": "/admin/e/{est}/config/online", "viewport": "desktop", "description": "Pagina pubblica: modalità, tema, termini e incorporamento." },
     { "name": "admin-payment-settings", "section": "gestore", "route": "/admin/e/{est}/config/payments", "viewport": "desktop", "description": "Pagamenti online: Stripe e verifica delle credenziali." },
     { "name": "admin-email-settings", "section": "gestore", "route": "/admin/e/{est}/config/email", "viewport": "desktop", "description": "Email transazionali: mittente, modelli e invio di prova." },
+    { "name": "admin-reports", "section": "gestore", "route": "/admin/e/{est}/report", "viewport": "desktop", "description": "Report: scelta del periodo e indicatori del riepilogo (M5)." },
+    { "name": "admin-api-keys", "section": "gestore", "route": "/admin/e/{est}/config/api-keys", "viewport": "desktop", "description": "Chiavi API: elenco con permessi, ultimo uso e scadenza (M5)." },
+    { "name": "admin-webhooks", "section": "gestore", "route": "/admin/e/{est}/config/webhooks", "viewport": "desktop", "description": "Webhook: endpoint, eventi scelti, stato e ultima consegna (M5)." },
+    { "name": "admin-devices", "section": "gestore", "route": "/admin/e/{est}/config/devices", "viewport": "desktop", "description": "Dispositivi abbinati con utente, ultimo utilizzo e stato (M6)." },
 
     { "name": "public-when-mobile", "section": "pagina-pubblica", "route": "/b/{slug}", "viewport": "mobile", "auth": false, "description": "Pagina pubblica, passo \"Quando\" su smartphone." },
     { "name": "public-when-desktop", "section": "pagina-pubblica", "route": "/b/{slug}", "viewport": "desktop", "auth": false, "description": "Pagina pubblica, passo \"Quando\" su desktop." },

@@ -15,6 +15,29 @@ Arenile follows semantic versioning; the full list of changes, item by item, is 
   apply from the first release onwards.
 </Aside>
 
+## M5 — Completing the season
+
+- Guided **[season rollover](/en/gestore/cambio-stagione/)**: rate periods, closures, prices and policies copied to
+  the new season with a preview.
+- Season pass **[renewals](/en/gestore/rinnovi/)** with right of pre-emption on the same spot, proposal by email and
+  acceptance at the desk or online.
+- **[Waitlist](/en/gestore/lista-d-attesa/)** with priority and automatic offers when a spot frees up.
+- **[Customer credits](/en/gestore/crediti/)** usable as a payment method, with ledger and expiry.
+- Full **[reports](/en/gestore/report/)** with comparison with the previous year and CSV export.
+- **[Installable panel](/en/gestore/uso-offline/)** that keeps working, in a limited way, without a connection.
+- **[API keys and webhooks](/en/gestore/chiavi-api-e-webhook/)** configurable from the panel.
+- Maps with the **sea at the top** by default and reorientation of the layout when you change the sea side.
+
+**Upgrade notes:** new database migrations (applied automatically at start-up); new optional variable
+`ARENILE_WEBHOOKS_ALLOW_PRIVATE` to deliver webhooks to addresses of the local network.
+
+## M6 — Desktop edition
+
+- **[Desktop app](/en/gestore/app-desktop/)** for Windows, macOS and Linux: its own window, system tray icon,
+  automatic backups and restore, **local network mode** for the other devices of the beach and remote mode with
+  fiscal bridge. Packages will be downloadable from the Coste360 portal <Badge text="Coming soon" variant="caution" />.
+- **[Devices](/en/gestore/dispositivi/)**: QR code pairing, access limited to the establishment and revocation.
+
 ## M4 — Public page and online payments <Badge text="Public MVP" variant="success" />
 
 - **Public booking page** at `/b/<address>`, built for smartphones, in the three modes (chosen spot on the map,
@@ -76,6 +99,5 @@ upgrading.
 
 | Milestone | Content |
 |---|---|
-| M5 | Season pass renewals, waiting list, credits as a payment method, full reports, panel usable offline, configurable outgoing webhooks, API keys |
-| M6 | Desktop edition for Windows, macOS and Linux, with a local network mode |
+| M6 | Ready-made desktop app packages on the Coste360 portal |
 | M7 | Mobile app for staff |

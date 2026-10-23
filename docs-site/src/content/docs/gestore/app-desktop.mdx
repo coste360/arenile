@@ -1,0 +1,143 @@
+---
+title: App desktop e rete locale
+description: Arenile sul PC della cassa senza server né internet - finestra propria, icona nella barra di sistema, backup automatici, modalità rete locale per gli altri dispositivi e modalità remota.
+sidebar:
+  order: 34
+---
+
+import { Steps, Aside, Badge } from '@astrojs/starlight/components';
+
+**Dove:** sul PC della cassa (Windows, macOS o Linux); nel pannello, Configurazione → **App desktop**. **Chi:** le
+impostazioni dell'app desktop sono riservate al proprietario.
+
+L'**app desktop** è Arenile installato sul computer della cassa: niente server da noleggiare, niente terminale,
+niente internet. L'archivio (prenotazioni, clienti, incassi) resta in una cartella di quel computer. È la scelta
+giusta per chi lavora soprattutto in cassa e non ha bisogno della prenotazione online.
+
+<Aside type="caution" title="Pacchetti in arrivo">
+I pacchetti pronti da installare per Windows, macOS e Linux saranno scaricabili dal **portale Coste360**, previo
+accesso <Badge text="In arrivo" variant="caution" />. Non vengono pubblicati su GitHub. Nel frattempo puoi usare
+Arenile [online o su un server in sede](/installazione/scegli-come-installare/).
+</Aside>
+
+## Come funziona
+
+- **Finestra propria**: su Windows e macOS il pannello si apre in una finestra dell'app, non nel browser; su Linux
+  si apre nel browser predefinito. **Apri nel browser** è sempre disponibile.
+- **Icona nella barra di sistema** (barra dei menu su macOS), con il menu: **Apri pannello**, **Apri nel browser**,
+  **Backup ora**, **Ripristina un backup…**, **Apri cartella dati**, **Avvio automatico all'accensione**,
+  **Modalità rete locale**, **Mostra QR rete locale**, **Esci**.
+- **Chiusura della finestra**: su macOS la finestra si nasconde e Arenile resta nella barra dei menu finché non
+  scegli **Esci**. Su Windows chiudere la finestra chiude Arenile, a meno di attivare **Alla chiusura della finestra
+  resta attivo nella barra di sistema** (consigliato se usi la rete locale).
+- **Primo avvio**: la pagina **Benvenuto in Arenile** chiede **Azienda o stabilimento**, **Nome e cognome**,
+  **Email** e **Password** del proprietario (**Crea l'utente e continua**), poi parte la
+  [configurazione guidata](/gestore/configurazione-guidata/).
+
+### Cosa non c'è sull'app desktop
+
+L'app non è raggiungibile da internet, quindi **pagina pubblica** e **pagamenti online** non sono disponibili (le
+loro pagine lo spiegano: *Pagina pubblica non disponibile*, *Incassi solo dalla cassa*). Contanti, POS, bonifici e
+gli altri metodi si registrano dalla [cassa](/gestore/cassa/) come sempre. L'app non invia email.
+
+## Impostazioni e backup
+
+In Configurazione → **App desktop**:
+
+| Sezione | Impostazioni |
+| --- | --- |
+| **Backup** | **Cartella dei backup** (anche su una chiavetta USB), **Backup automatici da conservare**, **Backup automatico giornaliero**, **Backup alla chiusura dell'app**. |
+| **Avvio e aggiornamenti** | **Avvia Arenile all'accensione del computer**, **Alla chiusura della finestra resta attivo nella barra di sistema**, **Controlla se esiste una nuova versione** (una volta al giorno legge solo il numero dell'ultima versione dal sito Coste360, senza inviare dati del lido). |
+| **Modalità rete locale** | **Attiva la modalità rete locale** e **Porta** (predefinita 8443). |
+
+Ricordati di **Salva impostazioni**.
+
+**Backup disponibili** elenca le copie con **Data**, **Tipo** (**Manuale**, **Giornaliero**, **Alla chiusura**,
+**Prima del ripristino**) e **Dimensione**. **Backup ora** ne crea una subito; i backup automatici più vecchi
+vengono eliminati, quelli manuali restano sempre.
+
+### Ripristinare un backup
+
+<Steps>
+
+1. Nella riga del backup scegli **Ripristina** (oppure **Ripristina un backup…** dal menu dell'icona).
+2. Conferma con **Ripristina e riavvia**.
+3. Arenile si riavvia per qualche secondo e la pagina si ricarica da sola.
+
+</Steps>
+
+Prima di ripristinare, l'archivio attuale viene salvato come backup **Prima del ripristino**: l'operazione si può
+quindi annullare ripristinando quella copia.
+
+<Aside type="tip" title="Una copia fuori dal PC">
+Se il PC della cassa si rompe o viene rubato, i backup nella sua cartella spariscono con lui. Imposta la **Cartella
+dei backup** su una chiavetta USB o su una cartella sincronizzata, oppure copia regolarmente un backup altrove.
+</Aside>
+
+## Modalità rete locale
+
+Con la **modalità rete locale** gli altri PC, i tablet e i telefoni collegati alla Wi-Fi del lido usano Arenile dal
+browser, sullo **stesso archivio** del PC della cassa. Il server resta uno solo, con le stesse garanzie contro le
+doppie prenotazioni.
+
+<Steps>
+
+1. Attiva **Modalità rete locale** dal menu dell'icona, oppure **Attiva la modalità rete locale** in Configurazione →
+   **App desktop**, e salva.
+2. Scegli **Mostra QR rete locale** dal menu dell'icona: si apre la pagina **Rete locale** (Configurazione →
+   **Dispositivi** → **Rete locale**) con l'**Indirizzo del pannello** (ad esempio `https://192.168.1.20:8443/admin/`),
+   il suo QR code e l'**Impronta del certificato**.
+3. Sull'altro dispositivo, collegato alla stessa Wi-Fi, apri l'indirizzo nel browser oppure inquadra il QR code con
+   la fotocamera.
+4. La prima volta il browser avvisa che la connessione non è privata: è normale, perché il certificato è creato dal
+   PC della cassa e non da un'autorità pubblica. Apri i dettagli del certificato e confronta l'impronta SHA-256 con
+   quella della pagina **Rete locale**.
+5. Solo se coincide in ogni carattere scegli **Avanzate** e poi **Procedi** (Safari: **Visita questo sito web**).
+   Se non coincide, non proseguire.
+6. Accedi con il tuo utente del pannello.
+
+</Steps>
+
+Cosa sapere:
+
+- **Solo la rete del lido**: sono accettate solo le connessioni dalla rete locale; quelle da internet vengono
+  rifiutate anche se il router inoltra la porta per errore.
+- **Indirizzo fisso**: riserva nel router un indirizzo IP fisso per il PC della cassa, così l'indirizzo del pannello
+  non cambia.
+- **PC acceso**: gli altri dispositivi funzionano solo finché Arenile è aperto sul PC della cassa. Su Windows
+  attiva **Alla chiusura della finestra resta attivo nella barra di sistema**.
+- **Rinnovo del certificato**: il certificato dura a lungo e non cambia ai riavvii. Quando si avvicina il rinnovo,
+  la pagina **Rete locale**, il menu dell'icona e una notifica indicano la data: da quel giorno i browser chiederanno
+  di accettare il nuovo certificato e le app abbinate andranno abbinate di nuovo. Pianificalo in un giorno di
+  chiusura.
+
+## Modalità remota
+
+L'app desktop può anche **collegarsi a un Arenile già esistente** (online o su un server in sede) invece di
+avviare il proprio archivio: mostra il pannello di quell'istanza in una finestra dedicata e può fare da **ponte
+fiscale** verso il registratore telematico collegato al PC della cassa.
+
+Il PC si abbina dalla pagina [Dispositivi](/gestore/dispositivi/) dell'istanza (**Abbina un dispositivo**) e nella
+finestra **Collega questo PC** dell'app si inseriscono **Indirizzo dell'istanza** e **Codice di abbinamento**. Nella
+finestra del pannello poi si accede con il proprio utente. In modalità remota l'app richiede la connessione:
+senza rete la finestra non funziona.
+
+## Passare a un'istanza online
+
+Se più avanti vuoi la prenotazione online, il backup dell'app desktop è lo stesso archivio dell'edizione server e si
+sposta senza conversioni:
+
+<Steps>
+
+1. Fai un backup dall'app.
+2. Installa Arenile su un server (vedi [Scegli come installare](/installazione/scegli-come-installare/)).
+3. Ripristina il backup sul server (vedi [Backup e ripristino](/installazione/backup-e-ripristino/)).
+4. Avvia Arenile sul server e attiva da lì la pagina pubblica e i pagamenti online.
+
+</Steps>
+
+<Aside type="note" title="Nessuna sincronizzazione">
+L'app desktop e un'istanza online non si sincronizzano: dopo il passaggio lavora solo sull'istanza online (puoi
+collegare l'app desktop in modalità remota). Due archivi che si sincronizzano non potrebbero garantire che una
+postazione non venga mai venduta due volte.
+</Aside>

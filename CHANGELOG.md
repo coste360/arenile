@@ -13,6 +13,19 @@ offline).
 
 ### Added
 
+- Documentazione, guida del gestore in italiano e inglese: nuove pagine **Report** (periodo, report di dettaglio,
+  confronto con l'anno precedente, esportazione CSV), **Chiavi API e webhook** (creazione, permessi, scadenza e
+  revoca delle chiavi; endpoint, evento di prova, stati, registro consegne e rotazione del segreto),
+  **Dispositivi** (abbinamento con QR code, accesso limitato allo stabilimento, revoca), **Pannello senza
+  connessione** (installazione come app, cosa funziona offline, coda delle operazioni, dati sul dispositivo) e
+  **App desktop e rete locale** (finestra, icona nella barra di sistema, backup e ripristino, modalità rete locale,
+  modalità remota; pacchetti indicati come in arrivo); sezione "Spostare il mare" (lato del mare e riorientamento
+  della disposizione) in Mappe ed editor; panoramica della guida con le schede di Cambio stagione, Crediti,
+  Rinnovi, Lista d'attesa e delle nuove pagine; screenshot `admin-reports`, `admin-api-keys`, `admin-webhooks`,
+  `admin-devices`. Home, domande frequenti, Cos'è Arenile, Novità, Scegli come installare e le pagine API su
+  autenticazione ed eventi non indicano più come "in arrivo" funzioni già disponibili (rinnovi, lista d'attesa,
+  crediti, report, pannello offline, chiavi API, webhook); restano in arrivo i pacchetti dell'app desktop e l'app
+  mobile.
 - Marchio ufficiale **Arenile — Coste360.it** e dominio **arenile.app** ([ADR 0018](docs/adr/0018-marchio.md)):
   brand kit v1.0 e logo Coste360 in `assets/brand/` (tutti i diritti riservati, esclusi dalla licenza del
   codice, `NOTICE.md` e `TRADEMARK.md` aggiornati), testo dei logotipi in tracciati e PNG derivati con
