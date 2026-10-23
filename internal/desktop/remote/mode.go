@@ -43,6 +43,10 @@ type Options struct {
 	// DataDirFlag is the -data-dir flag of this start ("" = default
 	// folder): the autostart entry repeats it (desktop.AutostartArgs).
 	DataDirFlag string
+	// OpenExternal opens links to other origins in the default browser
+	// (default: desktop.UI.OpenURL, which in the window build would show
+	// the local panel window instead).
+	OpenExternal func(url string) error
 }
 
 // PairingForm asks the operator for the pairing input and calls submit
@@ -187,6 +191,9 @@ func (m *Mode) Run(ctx context.Context, ui desktop.UI, dataDir string, log *slog
 	opts := WindowOptions{
 		URL: panel, Title: windowTitle(cfg), Kiosk: cfg.Kiosk, Init: InitScript(m.o.Version, cfg.Kiosk),
 		OpenExternal: ui.OpenURL, Width: 1366, Height: 860,
+	}
+	if m.o.OpenExternal != nil {
+		opts.OpenExternal = m.o.OpenExternal
 	}
 	var runErr error
 	if w := m.window(ui, dataDir); w != nil {

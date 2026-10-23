@@ -39,6 +39,7 @@ const (
 // Tray menu item identifiers (MenuItem.ID).
 const (
 	MenuOpen      = "open"
+	MenuBrowser   = "browser"
 	MenuBackup    = "backup"
 	MenuDataDir   = "data_dir"
 	MenuAutostart = "autostart"
@@ -68,8 +69,9 @@ type UI interface {
 	Run(ctx context.Context, menu []MenuItem) error
 	// SetMenu replaces the menu (e.g. after toggling LAN mode).
 	SetMenu(menu []MenuItem)
-	// OpenURL opens the default browser (local mode) or the app window
-	// (remote mode, kiosk optional). It may be called before Run.
+	// OpenURL shows the panel: in the app window (shell build, local and
+	// LAN mode; spec 29.1) or in the default browser (headless and tray-only
+	// builds, Linux). It may be called before Run.
 	OpenURL(url string) error
 	// OpenFolder opens a folder in the file manager.
 	OpenFolder(path string) error
@@ -77,6 +79,14 @@ type UI interface {
 	Notify(title, message string)
 	// Quit ends Run.
 	Quit()
+}
+
+// BrowserOpener is implemented by UIs that show the panel in their own
+// window (shell build): the menu then also offers "Apri nel browser", and a
+// second launch that cannot reach the running instance falls back to the
+// browser instead of a window it cannot open.
+type BrowserOpener interface {
+	OpenInBrowser(url string) error
 }
 
 // LANDeps are given to the LAN adapter factory (Options.NewLAN).
@@ -158,6 +168,7 @@ type Launcher struct {
 	srv      *server
 	setupURL string // first-run URL while no owner exists
 	fatal    error
+	activate *ActivationServer
 }
 
 // NewLauncher returns a Launcher.
@@ -241,9 +252,19 @@ func (l *Launcher) activateRunning(ctx context.Context) error {
 	for {
 		info, err := ReadInstanceInfo(l.dataDir)
 		if err == nil && info.BaseURL != "" {
+			if info.ActivateAddr != "" {
+				err := SendActivation(ctx, info.ActivateAddr, info.ActivateToken)
+				if err == nil {
+					return nil
+				}
+				l.log.Warn("desktop activation not delivered, opening the panel", slog.String("error", err.Error()))
+			}
 			target := info.OpenURL
 			if target == "" {
 				target = info.BaseURL + "/admin/"
+			}
+			if b, ok := l.ui.(BrowserOpener); ok {
+				return b.OpenInBrowser(target)
 			}
 			return l.ui.OpenURL(target)
 		}
@@ -353,6 +374,15 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 		deps.LAN = l.o.NewLAN(LANDeps{DataDir: l.dataDir, Serve: l.serveOnCurrent, Log: log})
 	}
 	l.rt = NewRuntime(deps)
+
+	// A second launch shows this panel (window to the front) instead of
+	// starting again; without the listener it opens the browser.
+	if as, err := ListenActivation(func() { _ = l.ui.OpenURL(l.panelURL()) }); err != nil {
+		log.Warn("desktop activation listener not started", slog.String("error", err.Error()))
+	} else {
+		l.activate = as
+		defer func() { _ = as.Close() }()
+	}
 
 	if err := l.start(ctx); err != nil {
 		return err
@@ -485,6 +515,9 @@ func (l *Launcher) panelURL() string {
 
 func (l *Launcher) writeInstanceInfo() {
 	info := InstanceInfo{PID: os.Getpid(), BaseURL: l.cfg.BaseURL, OpenURL: l.panelURL()}
+	if l.activate != nil {
+		info.ActivateAddr, info.ActivateToken = l.activate.Addr(), l.activate.Token()
+	}
 	if err := WriteInstanceInfo(l.dataDir, info); err != nil {
 		l.log.Warn("desktop instance file not written", slog.String("error", err.Error()))
 	}
@@ -603,9 +636,14 @@ func (l *Launcher) menu() []MenuItem {
 	s, _ := l.rt.Settings(context.Background())
 	items := []MenuItem{
 		{ID: MenuOpen, Label: T("menu.open"), OnClick: func() { _ = l.ui.OpenURL(l.panelURL()) }},
+	}
+	if b, ok := l.ui.(BrowserOpener); ok {
+		items = append(items, MenuItem{ID: MenuBrowser, Label: T("menu.open_browser"), OnClick: func() { _ = b.OpenInBrowser(l.panelURL()) }})
+	}
+	items = append(items, []MenuItem{
 		{ID: MenuBackup, Label: T("menu.backup"), OnClick: func() { go l.backupNow() }},
 		{ID: MenuDataDir, Label: T("menu.data_dir"), OnClick: func() { _ = l.ui.OpenFolder(l.dataDir) }},
-	}
+	}...)
 	if l.rt.d.Autostart != nil {
 		items = append(items, MenuItem{
 			ID: MenuAutostart, Label: T("menu.autostart"), Checkbox: true, Checked: s.Autostart,

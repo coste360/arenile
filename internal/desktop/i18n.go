@@ -113,6 +113,33 @@ var messages = map[string][2]string{
 	"menu.unpair":        {"Scollega questo PC dall'istanza", "Unpair this PC from the instance"},
 	"menu.window_title":  {"Arenile — %s", "Arenile — %s"},
 	"menu.pairing_title": {"Arenile — collega questo PC a un'istanza", "Arenile — pair this PC with an instance"},
+	"menu.open_browser":  {"Apri nel browser", "Open in the browser"},
+
+	// Application menu of the window on macOS (shell/menu.go).
+	"app.about":       {"Informazioni su Arenile", "About Arenile"},
+	"app.settings":    {"Impostazioni…", "Settings…"},
+	"app.hide":        {"Nascondi Arenile", "Hide Arenile"},
+	"app.hide_others": {"Nascondi altre", "Hide Others"},
+	"app.show_all":    {"Mostra tutte", "Show All"},
+	"app.quit":        {"Esci da Arenile", "Quit Arenile"},
+	"app.edit":        {"Modifica", "Edit"},
+	"app.undo":        {"Annulla", "Undo"},
+	"app.redo":        {"Ripeti", "Redo"},
+	"app.cut":         {"Taglia", "Cut"},
+	"app.copy":        {"Copia", "Copy"},
+	"app.paste":       {"Incolla", "Paste"},
+	"app.select_all":  {"Seleziona tutto", "Select All"},
+	"app.view":        {"Vista", "View"},
+	"app.reload":      {"Ricarica", "Reload"},
+	"app.zoom_reset":  {"Dimensioni reali", "Actual Size"},
+	"app.zoom_in":     {"Ingrandisci", "Zoom In"},
+	"app.zoom_out":    {"Rimpicciolisci", "Zoom Out"},
+	"app.full_screen": {"Schermo intero", "Enter Full Screen"},
+	"app.window":      {"Finestra", "Window"},
+	"app.minimize":    {"Riduci", "Minimize"},
+	"app.window_zoom": {"Zoom", "Zoom"},
+	"app.close":       {"Chiudi finestra", "Close Window"},
+	"app.front":       {"Porta tutto in primo piano", "Bring All to Front"},
 
 	// Notifications (launcher.go, remote/mode.go).
 	"notify.lan_not_started":   {"Modalità rete locale non avviata: controlla le impostazioni.", "Local network mode not started: check the settings."},
@@ -132,6 +159,8 @@ var messages = map[string][2]string{
 	"notify.switch_local":      {"Al prossimo avvio Arenile userà il server interno di questo PC.", "At the next start Arenile will use the internal server of this PC."},
 	"notify.unpair_fail":       {"Scollegamento non riuscito: %s", "Unpairing failed: %s"},
 	"notify.unpaired":          {"PC scollegato dall'istanza.", "PC unpaired from the instance."},
+	"notify.download_ok":       {"Scaricato nella cartella Download: %s", "Saved to the Downloads folder: %s"},
+	"notify.download_fail":     {"Download non riuscito: %s", "Download failed: %s"},
 	"notify.pair_needed":       {"Modalità remota: abbina questo PC con il codice del pannello (Configurazione → Dispositivi).", "Remote mode: pair this PC with the code from the panel (Settings → Devices)."},
 
 	// Errors shown to the operator (remote/mode.go).

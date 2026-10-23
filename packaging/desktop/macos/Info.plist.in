@@ -2,8 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
   Info.plist template of Arenile.app; scripts/desktop/package-macos.sh
-  replaces the @PLACEHOLDERS@. LSUIElement: the launcher lives in the menu
-  bar (tray), so no Dock icon; the remote-mode window can still be shown.
+  replaces the @PLACEHOLDERS@. A regular app (no LSUIElement): the panel runs
+  in the app window with a Dock icon and the application menu; the menu bar
+  icon stays too, and closing the window keeps the app running there.
 -->
 <plist version="1.0">
 <dict>
@@ -40,8 +41,8 @@
 	<string>public.app-category.business</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>@MIN_MACOS@</string>
-	<key>LSUIElement</key>
-	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

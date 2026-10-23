@@ -5,6 +5,9 @@
 #include <winver.h>
 
 1 ICON "@ICON@"
+// IDI_APPLICATION (32512): webview_go loads it as the icon of the panel
+// window (title bar, taskbar, Alt+Tab).
+32512 ICON "@ICON@"
 1 24 "@MANIFEST@"
 
 VS_VERSION_INFO VERSIONINFO

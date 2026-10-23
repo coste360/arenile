@@ -7,11 +7,14 @@ import (
 	"context"
 	"html"
 	"html/template"
+	"os"
+	"runtime"
 	"sync"
 
 	webview "github.com/webview/webview_go"
 
 	"github.com/coste360/arenile/internal/desktop"
+	"github.com/coste360/arenile/internal/desktop/shell"
 )
 
 // The native panel window of the remote mode: the system webview (WKWebView
@@ -61,7 +64,22 @@ func (webviewWindow) Open(ctx context.Context, o WindowOptions) error {
 		})
 	}
 	w.Init(o.Init)
-	w.Navigate(o.URL)
+	// Same native layer as the local window (internal/desktop/shell): on
+	// macOS the application menu (copy and paste in the panel fields,
+	// Cmd+Q), close to the Dock, downloads and printing. "Impostazioni"
+	// opens the panel home of the instance (the desktop settings belong to
+	// the local mode).
+	home, _ := os.UserHomeDir()
+	ctl := shell.NewController(shell.Options{
+		GOOS: runtime.GOOS, SettingsPath: "/admin/",
+		Quit:         func() { w.Dispatch(w.Terminate) },
+		OpenBrowser:  o.OpenExternal,
+		Notify:       func(t, m string) { _ = desktop.Notify(context.Background(), runtime.GOOS, t, m) },
+		DownloadsDir: shell.DownloadsDir(home),
+	})
+	ctl.ShowPanel(o.URL)
+	win := shell.Adopt(w, ctl)
+	defer win.Detach()
 	stop := terminateOnDone(ctx, w)
 	defer stop()
 	w.Run()

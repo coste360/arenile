@@ -1,7 +1,8 @@
 // Command arenile-desktop is the launcher of the Arenile desktop edition
-// (spec 29.1): the same core as `arenile serve` on 127.0.0.1 with a system
-// tray icon, or, in remote mode, a client of an existing instance with the
-// fiscal bridge towards the local printer / registratore telematico.
+// (spec 29.1): the same core as `arenile serve` on 127.0.0.1, shown in the
+// app's own window with a system tray icon, or, in remote mode, a client of
+// an existing instance with the fiscal bridge towards the local printer /
+// registratore telematico.
 //
 // Build (see also `make build-desktop`):
 //
@@ -9,9 +10,11 @@
 //	    no CGO, headless UI (opens the browser, logs the panel URL):
 //	    what `go build ./...` and CI compile.
 //	CGO_ENABLED=1 go build -tags desktop ./cmd/arenile-desktop
-//	    tray icon (fyne.io/systray) and remote-mode webview, built on the
-//	    native runner of macOS and Windows; on Linux the same tag builds
-//	    with CGO_ENABLED=0 (tray over D-Bus, browser window, no WebKitGTK);
+//	    panel window (internal/desktop/shell: WKWebView, WebView2) with the
+//	    tray icon (fyne.io/systray), remote-mode webview; built on the
+//	    native runner of macOS and Windows (-browser keeps the panel in the
+//	    browser). On Linux the same tag builds with CGO_ENABLED=0 (tray over
+//	    D-Bus, panel in the browser, no WebKitGTK);
 //	    packaging and signing in the release workflow (portal-bundle-<tag>
 //	    artifact, never a GitHub release asset).
 //
@@ -43,8 +46,15 @@ var version = "dev"
 
 // uiOptions select the UI behaviour from the flags.
 type uiOptions struct {
+	// browser false (-no-browser): do not open the panel at start.
 	browser bool
 	noTray  bool
+	// inBrowser (-browser): the panel in the default browser instead of the
+	// app window (window build only).
+	inBrowser bool
+	// dataDir is the resolved data folder (window state, settings).
+	dataDir string
+	version string
 }
 
 func main() {
@@ -57,6 +67,7 @@ func run(args []string, stderr io.Writer) int {
 	dataDir := fs.String("data-dir", "", "cartella dati (default: cartella utente del sistema operativo)")
 	noBrowser := fs.Bool("no-browser", false, "non aprire il browser all'avvio")
 	noTray := fs.Bool("no-tray", false, "nessuna icona nella barra di sistema (solo con la build tray)")
+	inBrowser := fs.Bool("browser", false, "apri il pannello nel browser predefinito invece che nella finestra dell'app")
 	showVersion := fs.Bool("version", false, "mostra la versione")
 	pair := fs.String("pair", "", "abbina questo PC a un'istanza (modalità remota): testo del QR arenile://pair?d=... oppure URL dell'istanza")
 	pairCode := fs.String("pair-code", "", "codice di abbinamento mostrato in Configurazione → Dispositivi (con -pair URL)")
@@ -78,7 +89,10 @@ func run(args []string, stderr io.Writer) int {
 	log := slog.New(slog.NewTextHandler(stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	rm := remote.New(remote.Options{Version: version, DataDirFlag: *dataDir})
+	rm := remote.New(remote.Options{
+		Version: version, DataDirFlag: *dataDir,
+		OpenExternal: func(u string) error { return desktop.OpenURL(ctx, runtime.GOOS, u) },
+	})
 	if *pair != "" {
 		return runPair(ctx, rm, *dataDir, pairInput(*pair, *pairCode, *pairFingerprint, *deviceName), stderr)
 	}
@@ -87,7 +101,11 @@ func run(args []string, stderr io.Writer) int {
 		NewLAN: lan.New, // LAN mode adapter (internal/desktop/lan)
 		Remote: rm,      // remote mode adapter (internal/desktop/remote)
 	})
-	ui := newUI(log, uiOptions{browser: !*noBrowser, noTray: *noTray})
+	resolved, err := resolveDataDir(*dataDir)
+	if err != nil {
+		log.Warn("arenile desktop: data folder not resolved, window state not saved", slog.String("error", err.Error()))
+	}
+	ui := newUI(log, uiOptions{browser: !*noBrowser, noTray: *noTray, inBrowser: *inBrowser, dataDir: resolved, version: version})
 	if err := l.Run(ctx, ui); err != nil {
 		fmt.Fprintf(stderr, "arenile-desktop: %v\n", err)
 		return 1

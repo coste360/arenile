@@ -54,6 +54,19 @@ func (f *fakeUI) OpenFolder(string) error { return nil }
 func (f *fakeUI) Notify(_, m string)      { f.mu.Lock(); f.notes = append(f.notes, m); f.mu.Unlock() }
 func (f *fakeUI) Quit()                   { f.once.Do(func() { close(f.quit) }) }
 
+// browserFakeUI is a window UI (desktop.BrowserOpener).
+type browserFakeUI struct {
+	*fakeUI
+	browser []string
+}
+
+func (b *browserFakeUI) OpenInBrowser(u string) error {
+	b.mu.Lock()
+	b.browser = append(b.browser, u)
+	b.mu.Unlock()
+	return nil
+}
+
 func (f *fakeUI) lastOpened() string {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -330,13 +343,48 @@ func TestSmoke_DesktopLauncherHeadless(t *testing.T) {
 		t.Fatalf("backups after restore %v", list)
 	}
 
-	// Second launch: opens the running panel and returns.
+	// Second launch: asks the running instance to show its panel (window
+	// to the front) through the activation listener and returns.
 	ui2 := newFakeUI()
+	ui.mu.Lock()
+	before := len(ui.opened)
+	ui.mu.Unlock()
 	if err := NewLauncher(opts).Run(context.Background(), ui2); err != nil {
 		t.Fatalf("second launch: %v", err)
 	}
-	if ui2.lastOpened() != si.BaseURL+"/admin/" {
-		t.Fatalf("second launch opened %v", ui2.opened)
+	if len(ui2.opened) != 0 {
+		t.Fatalf("second launch opened its own panel %v", ui2.opened)
+	}
+	deadline = time.Now().Add(5 * time.Second)
+	for {
+		ui.mu.Lock()
+		n := len(ui.opened)
+		ui.mu.Unlock()
+		if n > before && ui.lastOpened() == si.BaseURL+"/admin/" {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("running instance not activated: %v", ui.opened)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	// An instance without the activation listener (older launcher): the
+	// panel opens in the second launch, in the browser for a window UI.
+	running, _ := ReadInstanceInfo(dataDir)
+	legacy := running
+	legacy.ActivateAddr, legacy.ActivateToken = "", ""
+	if err := WriteInstanceInfo(dataDir, legacy); err != nil {
+		t.Fatal(err)
+	}
+	winUI := &browserFakeUI{fakeUI: newFakeUI()}
+	if err := NewLauncher(opts).Run(context.Background(), winUI); err != nil {
+		t.Fatalf("third launch: %v", err)
+	}
+	if len(winUI.browser) != 1 || winUI.browser[0] != si.BaseURL+"/admin/" || len(winUI.opened) != 0 {
+		t.Fatalf("legacy fallback: browser=%v window=%v", winUI.browser, winUI.opened)
+	}
+	if err := WriteInstanceInfo(dataDir, running); err != nil {
+		t.Fatal(err)
 	}
 
 	// Quit: exit backup, instance file removed.

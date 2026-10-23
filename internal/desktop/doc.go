@@ -28,9 +28,13 @@
 //   - launcher.go: Launcher.Run, the start sequence: data dir -> rotated
 //     log -> single-instance lock -> secret key -> 127.0.0.1:<free port,
 //     reused> -> app.New(cfg, app.WithDesktop(runtime)) (the same bootstrap
-//     as `arenile serve`, migrations included) -> browser on /admin/ or on
-//     /admin/first-run#token=... -> tray menu, daily backups, update check,
-//     restore = stop, replace, start -> exit backup after the stop.
+//     as `arenile serve`, migrations included) -> panel (app window of the
+//     shell build, else browser) on /admin/ or /admin/first-run#token=...
+//     -> tray menu, daily backups, update check, restore = stop, replace,
+//     start -> exit backup after the stop.
+//   - activate.go: the single-instance activation listener (a second
+//     launch brings the running window to the front).
+//   - shell/: the native panel window (webview, macOS menu, downloads).
 //   - runtime.go: Runtime implements control.Control (and
 //     meta.RuntimeProvider): settings with side effects, backups, restore
 //     requests, first-run token, LAN state for /meta.

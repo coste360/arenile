@@ -55,10 +55,16 @@ func (l *InstanceLock) Release() error {
 // at exit. OpenURL carries the one-time first-run token (in the fragment)
 // while no owner exists: whoever can read the user's data directory can
 // read the database anyway.
+//
+// ActivateAddr and ActivateToken locate the activation listener
+// (ListenActivation): a second launch asks the running one to show its
+// window instead of opening a second one.
 type InstanceInfo struct {
-	PID     int    `json:"pid"`
-	BaseURL string `json:"base_url"`
-	OpenURL string `json:"open_url"`
+	PID           int    `json:"pid"`
+	BaseURL       string `json:"base_url"`
+	OpenURL       string `json:"open_url"`
+	ActivateAddr  string `json:"activate_addr,omitempty"`
+	ActivateToken string `json:"activate_token,omitempty"`
 }
 
 // WriteInstanceInfo writes <data dir>/instance.json atomically.

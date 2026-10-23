@@ -13,12 +13,10 @@ import (
 	"github.com/coste360/arenile/internal/desktop"
 )
 
-const uiKind = "tray"
-
-// newUI returns the tray UI (fyne.io/systray, Apache-2.0: CGO on macOS,
+// newTrayUI returns the tray UI (fyne.io/systray, Apache-2.0: CGO on macOS,
 // D-Bus StatusNotifierItem on Linux, Win32 on Windows), or the headless UI
-// with -no-tray.
-func newUI(log *slog.Logger, o uiOptions) desktop.UI {
+// with -no-tray. The panel opens in the default browser.
+func newTrayUI(log *slog.Logger, o uiOptions) desktop.UI {
 	h := newHeadlessUI(log, o.browser)
 	if o.noTray {
 		return h
@@ -38,6 +36,16 @@ type trayUI struct {
 	handlers map[string]func()
 	pending  []desktop.MenuItem
 	ready    bool
+	// stopped: the event loop is ending; systray calls would wait forever
+	// for a main-thread run loop that no longer runs (macOS).
+	stopped bool
+}
+
+// stop makes SetMenu a no-op (before the window event loop returns).
+func (t *trayUI) stop() {
+	t.mu.Lock()
+	t.stopped = true
+	t.mu.Unlock()
 }
 
 func (t *trayUI) Run(ctx context.Context, menu []desktop.MenuItem) error {
@@ -55,6 +63,7 @@ func (t *trayUI) Run(ctx context.Context, menu []desktop.MenuItem) error {
 	return nil
 }
 
+// onReady sets the icon and builds the pending menu (systray callback).
 func (t *trayUI) onReady() {
 	if runtime.GOOS == "windows" {
 		systray.SetIcon(desktop.ICOFromPNG(desktop.TrayIconPNG(16, false), desktop.TrayIconPNG(32, false)))
@@ -73,6 +82,9 @@ func (t *trayUI) onReady() {
 func (t *trayUI) SetMenu(menu []desktop.MenuItem) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+	if t.stopped {
+		return
+	}
 	if !t.ready {
 		t.pending = menu
 		return
