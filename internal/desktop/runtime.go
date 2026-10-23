@@ -124,12 +124,13 @@ func (r *Runtime) LANAvailable() bool { return r.d.LAN != nil }
 // launcher stops the app, calls Backuper.Restore and starts it again.
 func (r *Runtime) Restarts() <-chan string { return r.restarts }
 
-// ConsumeSetupToken implements control.Control.
-func (r *Runtime) ConsumeSetupToken(token string) error {
+// ConsumeSetupToken implements control.Control. OnSetupCompleted (the
+// launcher drops the first-run URL) runs only after complete succeeded.
+func (r *Runtime) ConsumeSetupToken(token string, complete func() error) error {
 	r.mu.Lock()
 	tok := r.d.Setup
 	r.mu.Unlock()
-	if err := tok.Consume(token); err != nil {
+	if err := tok.Consume(token, complete); err != nil {
 		return err
 	}
 	if r.d.OnSetupCompleted != nil {

@@ -71,8 +71,11 @@ type Control interface {
 	// RuntimeProvider reports edition desktop and the local/LAN mode.
 	meta.RuntimeProvider
 	// ConsumeSetupToken checks the one-time first-run token in constant
-	// time and invalidates it on success (ErrSetupTokenInvalid otherwise).
-	ConsumeSetupToken(token string) error
+	// time (ErrSetupTokenInvalid otherwise), runs complete (the owner
+	// creation) and invalidates the token only when complete returned nil,
+	// so a failed creation never burns the link. Errors of complete are
+	// returned unchanged.
+	ConsumeSetupToken(token string, complete func() error) error
 	// Settings returns the current settings.
 	Settings(ctx context.Context) (Settings, error)
 	// UpdateSettings validates, persists and applies the settings (starts

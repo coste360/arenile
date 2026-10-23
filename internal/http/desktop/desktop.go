@@ -33,7 +33,7 @@ type UsersCounter interface {
 // desktop runtime builder.
 //
 //	GetFirstRunStatus     -> UsersCounter                                     -> api.FirstRunStatus
-//	CompleteFirstRun      -> Control.ConsumeSetupToken, Auth.CreateOwner,
+//	CompleteFirstRun      -> Control.ConsumeSetupToken(Auth.CreateOwner),
 //	                         Auth.Login (cookies as admin.Login)              -> api.Me (201)
 //	GetDesktopSettings    -> Control.Settings          (owner)                -> api.DesktopSettings
 //	UpdateDesktopSettings -> Control.UpdateSettings    (owner)                -> api.DesktopSettings

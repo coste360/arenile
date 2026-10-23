@@ -36,9 +36,11 @@ func (h *Handlers) GetFirstRunStatus(w http.ResponseWriter, r *http.Request) {
 //
 // Order matters: the input is validated BEFORE the token is consumed (a
 // typo in the password must not burn the link), "already set up" is
-// answered without touching the token, and the creation itself is
-// conditional on an empty users table (CreateOwner OnlyIfNoUsers), so two
-// concurrent requests can never create two owners.
+// answered without touching the token, the owner is created inside
+// Control.ConsumeSetupToken so that the token is burnt only when the owner
+// exists (a database error keeps the link usable), and the creation itself
+// is conditional on an empty users table (CreateOwner OnlyIfNoUsers), so
+// two concurrent requests can never create two owners.
 func (h *Handlers) CompleteFirstRun(w http.ResponseWriter, r *http.Request) {
 	if !h.enabled(w, r) {
 		return
@@ -60,14 +62,13 @@ func (h *Handlers) CompleteFirstRun(w http.ResponseWriter, r *http.Request) {
 		problem.Error(w, r, h.Log, control.ErrSetupCompleted)
 		return
 	}
-	if err := h.Control.ConsumeSetupToken(req.SetupToken); err != nil {
-		problem.Error(w, r, h.Log, err)
-		return
-	}
 	email := string(req.Email)
-	if _, err := h.Auth.CreateOwner(r.Context(), auth.CreateOwnerInput{
-		Email: email, Name: req.Name, Password: req.Password, OrganizationName: req.OrganizationName,
-		OnlyIfNoUsers: true, Source: "desktop_first_run",
+	if err := h.Control.ConsumeSetupToken(req.SetupToken, func() error {
+		_, err := h.Auth.CreateOwner(r.Context(), auth.CreateOwnerInput{
+			Email: email, Name: req.Name, Password: req.Password, OrganizationName: req.OrganizationName,
+			OnlyIfNoUsers: true, Source: "desktop_first_run",
+		})
+		return err
 	}); err != nil {
 		if errors.Is(err, auth.ErrUsersExist) || errors.Is(err, auth.ErrUserExists) {
 			err = control.ErrSetupCompleted

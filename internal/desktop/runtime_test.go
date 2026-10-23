@@ -237,13 +237,20 @@ func TestRuntime_ScheduleRestore(t *testing.T) {
 func TestRuntime_SetupTokenCompletion(t *testing.T) {
 	completed := 0
 	rt, _, _ := newTestRuntime(t, func(d *RuntimeDeps) { d.OnSetupCompleted = func() { completed++ } })
-	if err := rt.ConsumeSetupToken("x"); !errors.Is(err, control.ErrSetupTokenInvalid) {
+	if err := rt.ConsumeSetupToken("x", nil); !errors.Is(err, control.ErrSetupTokenInvalid) {
 		t.Fatalf("no token installed: %v", err)
 	}
 	tok, _ := NewSetupToken()
 	rt.SetSetupToken(tok)
-	if err := rt.ConsumeSetupToken(tok.Value()); err != nil || completed != 1 {
+	// A failed owner creation: token kept, launcher not told.
+	if err := rt.ConsumeSetupToken(tok.Value(), func() error { return errors.New("db busy") }); err == nil || completed != 0 {
+		t.Fatalf("failed completion: %v %d", err, completed)
+	}
+	if err := rt.ConsumeSetupToken(tok.Value(), func() error { return nil }); err != nil || completed != 1 {
 		t.Fatalf("consume: %v %d", err, completed)
+	}
+	if err := rt.ConsumeSetupToken(tok.Value(), nil); !errors.Is(err, control.ErrSetupTokenInvalid) || completed != 1 {
+		t.Fatalf("replay: %v %d", err, completed)
 	}
 }
 
