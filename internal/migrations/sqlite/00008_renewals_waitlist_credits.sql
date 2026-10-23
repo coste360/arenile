@@ -206,8 +206,20 @@ CREATE TABLE customer_credit_balances (
 );
 CREATE UNIQUE INDEX customer_credit_balances_customer_uidx ON customer_credit_balances (customer_id);
 
+-- Legacy ledgers whose sum is negative (uncapped reversals written before
+-- this migration) get a compensating adjustment row, so that the stored
+-- balance (never negative) equals SUM(customer_credits.amount).
+INSERT INTO customer_credits (id, establishment_id, customer_id, amount, source, note, created_at)
+SELECT lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(2))) || '-'
+           || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(6))),
+       establishment_id, customer_id, -SUM(amount), 'adjustment',
+       'Rettifica automatica (migrazione 00008): saldo negativo riportato a zero', MAX(created_at)
+FROM customer_credits
+GROUP BY establishment_id, customer_id
+HAVING SUM(amount) < 0;
+
 INSERT INTO customer_credit_balances (establishment_id, customer_id, balance, updated_at)
-SELECT establishment_id, customer_id, MAX(SUM(amount), 0), MAX(created_at)
+SELECT establishment_id, customer_id, SUM(amount), MAX(created_at)
 FROM customer_credits
 GROUP BY establishment_id, customer_id;
 

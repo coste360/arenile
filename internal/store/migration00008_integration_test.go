@@ -54,6 +54,25 @@ func TestMigration00008_CreditBackfillAndDown(t *testing.T) {
 				t.Fatalf("insert credit: %v", err)
 			}
 		}
+		// Legacy data: a negative sum (uncapped reversal) and an expired
+		// grant never materialised.
+		neg := &store.Customer{ID: store.NewID(), EstablishmentID: est.ID, LastName: "Negativo", Locale: "it", Tags: []string{}, Version: 1, CreatedAt: t0, UpdatedAt: t0}
+		old := &store.Customer{ID: store.NewID(), EstablishmentID: est.ID, LastName: "Scaduto", Locale: "it", Tags: []string{}, Version: 1, CreatedAt: t0, UpdatedAt: t0}
+		if _, err := db.NewInsert().Model(&[]*store.Customer{neg, old}).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		for _, row := range []struct {
+			cust    string
+			amount  int64
+			source  string
+			expires any
+		}{{neg.ID, 2000, "season_release", nil}, {neg.ID, -2000, "redemption", nil}, {neg.ID, -2000, "season_release", nil}, {old.ID, 800, "cancellation", "2020-01-01"}} {
+			if _, err := db.ExecContext(ctx,
+				"INSERT INTO customer_credits (id, establishment_id, customer_id, amount, source, note, expires_on, created_at) VALUES (?, ?, ?, ?, ?, '', ?, ?)",
+				store.NewID(), est.ID, row.cust, row.amount, row.source, row.expires, t0); err != nil {
+				t.Fatalf("insert legacy credit: %v", err)
+			}
+		}
 		if _, err := p.Up(ctx); err != nil {
 			t.Fatalf("up: %v", err)
 		}
@@ -67,6 +86,30 @@ func TestMigration00008_CreditBackfillAndDown(t *testing.T) {
 		n, err := db.NewSelect().Model((*store.CustomerCredit)(nil)).Where("customer_id = ?", cust.ID).Count(ctx)
 		if err != nil || n != 3 {
 			t.Fatalf("ledger rows = %d (%v), want 3", n, err)
+		}
+		// Negative legacy sum: an adjustment row brings the ledger to the
+		// stored balance (0), so balance = SUM(ledger) holds (INV-70).
+		var adj store.CustomerCredit
+		if err := db.NewSelect().Model(&adj).Where("cc.customer_id = ?", neg.ID).Where("cc.source = ?", store.CreditSourceAdjustment).Scan(ctx); err != nil {
+			t.Fatalf("adjustment row: %v", err)
+		}
+		if adj.Amount != 2000 || adj.ID == "" {
+			t.Fatalf("adjustment %+v", adj)
+		}
+		var negBal store.CustomerCreditBalance
+		if err := db.NewSelect().Model(&negBal).Where("customer_id = ?", neg.ID).Scan(ctx); err != nil || negBal.Balance != 0 {
+			t.Fatalf("negative legacy balance = %+v (%v), want 0", negBal, err)
+		}
+		var negSum int64
+		if err := db.NewSelect().TableExpr("customer_credits").ColumnExpr("SUM(amount)").Where("customer_id = ?", neg.ID).Scan(ctx, &negSum); err != nil || negSum != 0 {
+			t.Fatalf("negative legacy ledger sum = %d (%v), want 0", negSum, err)
+		}
+		// An expired legacy grant stays in the balance (SUM of the ledger):
+		// the expiry is materialised by the credits.expire job, available
+		// already excludes it.
+		var oldBal store.CustomerCreditBalance
+		if err := db.NewSelect().Model(&oldBal).Where("customer_id = ?", old.ID).Scan(ctx); err != nil || oldBal.Balance != 800 {
+			t.Fatalf("expired legacy balance = %+v (%v), want 800", oldBal, err)
 		}
 		if _, err := p.DownTo(ctx, 7); err != nil {
 			t.Fatalf("down to 7 after backfill: %v", err)
