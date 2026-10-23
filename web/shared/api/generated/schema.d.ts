@@ -5764,6 +5764,8 @@ export interface components {
             lan_url?: string;
             /** @description SHA-256 del certificato TLS autogenerato, esadecimale maiuscolo separato da `:` (solo `mode=lan`). */
             lan_cert_fingerprint?: string;
+            /** @description QR code (SVG) dell'indirizzo del pannello sulla rete locale (`lan_url` + `/admin/`), da inquadrare con la fotocamera di un telefono o tablet per aprirlo nel browser (solo `mode=lan`). Non contiene codici di abbinamento: per l'app si usa il QR di Configurazione → Dispositivi. */
+            lan_qr_svg?: string;
         };
         /** @description Versioni minime dei client che questa istanza supporta (semver). */
         MinClientVersions: {
@@ -5815,6 +5817,8 @@ export interface components {
             qr_payload: components["schemas"]["DevicePairingQRPayload"];
             /** @description Testo da codificare nel QR: `arenile://pair?d=<qr_payload JSON in base64url>`. L'app lo decodifica; un browser che scansiona il QR apre `qr_payload.url`. */
             qr_text: string;
+            /** @description QR di `qr_text` in SVG in linea (correzione M, zona di rispetto inclusa, sfondo bianco), da mostrare nel pannello senza una seconda richiesta: il codice non è conservato in chiaro, quindi non esiste un endpoint che possa ridisegnarlo. */
+            qr_svg?: string;
         };
         DevicePairingQRPayload: {
             /**

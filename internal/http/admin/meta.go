@@ -2,7 +2,9 @@ package admin
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/http/api"
 )
@@ -41,8 +43,19 @@ func MetaToAPI(m meta.Meta) api.Meta {
 		if d.LANURL != "" {
 			u, fp := d.LANURL, d.LANFingerprint
 			rt.LanUrl, rt.LanCertFingerprint = &u, &fp
+			// QR of the panel address for phone cameras (spec 29.1: browsers
+			// reach the panel from the QR); no pairing code in it.
+			if svg, err := device.RenderQRSVG(LANPanelAddress(d.LANURL)); err == nil {
+				rt.LanQrSvg = &svg
+			}
 		}
 		out.Desktop = rt
 	}
 	return out
+}
+
+// LANPanelAddress is the panel address on the LAN listener (lan_url +
+// "/admin/"), the text of DesktopRuntime.lan_qr_svg.
+func LANPanelAddress(lanURL string) string {
+	return strings.TrimRight(lanURL, "/") + "/admin/"
 }

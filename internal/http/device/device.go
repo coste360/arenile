@@ -14,20 +14,17 @@ package device
 
 import (
 	"log/slog"
-	"net/http"
 
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/fiscalbridge"
-	"github.com/coste360/arenile/internal/http/api"
-	"github.com/coste360/arenile/internal/http/problem"
 )
 
 // Handlers implements the device operations of api.ServerInterface.
 //
-//	PairDevice                  -> Devices.Pair            -> api.DevicePairResult (201)   owner: devices builder
+//	PairDevice                  -> Devices.Pair            -> api.DevicePairResult (201)   owner: devices builder (pair.go)
 //	GetCurrentDevice            -> Devices.Current         -> api.Device                   owner: devices builder
 //	UnpairCurrentDevice         -> Devices.UnpairCurrent   -> 204                          owner: devices builder
-//	RegisterFiscalBridge        -> FiscalBridge.Register   -> api.FiscalBridgeStatus       owner: fiscal bridge builder
+//	RegisterFiscalBridge        -> FiscalBridge.Register   -> api.FiscalBridgeStatus       owner: fiscal bridge builder (fiscalbridge.go)
 //	UnregisterFiscalBridge      -> FiscalBridge.Unregister -> 204                          owner: fiscal bridge builder
 //	PollFiscalBridgeJobs        -> FiscalBridge.Poll       -> api.FiscalBridgeJobBatch     owner: fiscal bridge builder
 //	SubmitFiscalBridgeJobResult -> FiscalBridge.Submit     -> 204                          owner: fiscal bridge builder
@@ -35,39 +32,4 @@ type Handlers struct {
 	Devices      *device.Service
 	FiscalBridge *fiscalbridge.Service
 	Log          *slog.Logger
-}
-
-// PairDevice implements POST /api/device/v1/pair.
-func (h *Handlers) PairDevice(w http.ResponseWriter, r *http.Request) {
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// GetCurrentDevice implements GET /api/device/v1/self.
-func (h *Handlers) GetCurrentDevice(w http.ResponseWriter, r *http.Request) {
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// UnpairCurrentDevice implements DELETE /api/device/v1/self.
-func (h *Handlers) UnpairCurrentDevice(w http.ResponseWriter, r *http.Request) {
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// RegisterFiscalBridge implements PUT /api/device/v1/fiscal-bridge.
-func (h *Handlers) RegisterFiscalBridge(w http.ResponseWriter, r *http.Request) {
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// UnregisterFiscalBridge implements DELETE /api/device/v1/fiscal-bridge.
-func (h *Handlers) UnregisterFiscalBridge(w http.ResponseWriter, r *http.Request) {
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// PollFiscalBridgeJobs implements GET /api/device/v1/fiscal-bridge/jobs.
-func (h *Handlers) PollFiscalBridgeJobs(w http.ResponseWriter, r *http.Request, params api.PollFiscalBridgeJobsParams) {
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// SubmitFiscalBridgeJobResult implements POST /api/device/v1/fiscal-bridge/jobs/{jobId}/result.
-func (h *Handlers) SubmitFiscalBridgeJobResult(w http.ResponseWriter, r *http.Request, jobID api.FiscalBridgeJobID) {
-	problem.Write(w, r, problem.NotImplemented)
 }

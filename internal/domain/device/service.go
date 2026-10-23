@@ -12,7 +12,6 @@ import (
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/configerr"
-	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -104,6 +103,9 @@ type PairingCode struct {
 	UserID          string
 	QR              QRPayload
 	QRText          string
+	// QRSVG is QRText rendered as SVG (empty if rendering failed: the
+	// panel then shows the code only).
+	QRSVG string
 }
 
 // PairInput is the request of Pair (unauthenticated).
@@ -136,60 +138,4 @@ type ListFilter struct {
 	IncludeRevoked bool
 	Cursor         string
 	Limit          int
-}
-
-// CreatePairingCode creates a single-use code for in.UserID (default the
-// caller) on establishmentID. Audit "device.pairing_code_created".
-func (s *Service) CreatePairingCode(ctx context.Context, p *auth.Principal, establishmentID string, in PairingCodeInput) (*PairingCode, error) {
-	return nil, ErrNotImplemented
-}
-
-// Pair exchanges a code for a device token (conditional UPDATE on the
-// code, insert of the device, audit "device.paired" in one transaction).
-func (s *Service) Pair(ctx context.Context, in PairInput) (*PairResult, error) {
-	return nil, ErrNotImplemented
-}
-
-// List returns the devices of establishmentID visible to p.
-func (s *Service) List(ctx context.Context, p *auth.Principal, establishmentID string, f ListFilter) (store.Page[View], error) {
-	return store.Page[View]{}, ErrNotImplemented
-}
-
-// Revoke revokes deviceID (idempotent) and deactivates its fiscal bridge
-// registration in the same transaction. Audit "device.revoked".
-func (s *Service) Revoke(ctx context.Context, p *auth.Principal, establishmentID, deviceID string) error {
-	return ErrNotImplemented
-}
-
-// Current returns the device of a device principal (p.DeviceID).
-func (s *Service) Current(ctx context.Context, p *auth.Principal) (*View, error) {
-	return nil, ErrNotImplemented
-}
-
-// UnpairCurrent revokes the device of a device principal.
-func (s *Service) UnpairCurrent(ctx context.Context, p *auth.Principal) error {
-	return ErrNotImplemented
-}
-
-// AuthenticateDevice resolves a device token to its principal: shape check
-// (ParseToken), lookup by token_hash, revoked_at IS NULL, then
-// Principals.PrincipalForDevice; touches last_used_at at most every
-// TouchInterval. Any failure is auth.ErrUnauthenticated.
-func (s *Service) AuthenticateDevice(ctx context.Context, token string) (*auth.Principal, error) {
-	if _, ok := ParseToken(token); !ok {
-		return nil, auth.ErrUnauthenticated
-	}
-	// Scaffolding: no device can authenticate until the builder implements
-	// the lookup (fails closed).
-	return nil, auth.ErrUnauthenticated
-}
-
-// CleanupExpiredCodes deletes pairing codes expired for more than a day.
-func (s *Service) CleanupExpiredCodes(ctx context.Context) error {
-	return nil
-}
-
-// Jobs are the background jobs of the device service.
-func (s *Service) Jobs() []jobs.Job {
-	return []jobs.Job{{Name: "device.cleanup_pairing_codes", Interval: time.Hour, Run: s.CleanupExpiredCodes}}
 }

@@ -16,9 +16,13 @@
 //     characters shown as ABCD-EFGH (NewPairingCode, NormalizePairingCode,
 //     HashPairingCode) and the QR text arenile://pair?d=<base64url JSON>
 //     (EncodeQR, DecodeQR).
-//   - service.go (shell): use cases with *auth.Principal, each in one
-//     store.RunInTx with an audit entry ("device.pairing_code_created",
-//     "device.paired", "device.revoked"; never the code or the token).
+//   - rules.go, qrsvg.go (pure, tested): input validation, effective role,
+//     listing order (last use, else pairing, most recent first) with a
+//     keyset cursor on that order, and the SVG rendering of the QR text.
+//   - service.go, pairing.go, devices.go (shell): use cases with
+//     *auth.Principal, each in one store.RunInTx with an audit entry
+//     ("device.pairing_code_created", "device.paired", "device.revoked";
+//     never the code or the token).
 //   - authenticator.go: BearerAuthenticator (strategy on the token scheme:
 //     ar_dev_ -> device, anything else -> API key) for /api/admin, and
 //     DeviceOnly for /api/device.
@@ -48,7 +52,11 @@
 //
 // # Permissions (spec 16.1)
 //
-// Any authenticated user creates codes for themselves and lists / revokes
-// their own devices; codes for another user and the devices of others
-// require auth.PermUsersManage.
+// Any user with a role on the establishment creates codes for themselves
+// and lists / revokes their own devices; codes for another (active, member)
+// user and the devices of others require auth.PermUsersManage (the devices
+// of others are "not found" without it). Device principals and API keys
+// never create codes (a stolen token must not mint new ones; an API key has
+// no user to bind a device to); API keys list and revoke only with
+// users.manage.
 package device

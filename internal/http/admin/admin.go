@@ -237,6 +237,9 @@ func MeFromPrincipal(p *auth.Principal) api.Me {
 	}
 	me.PrincipalType = api.MePrincipalType("user")
 	me.User = &api.User{Id: p.UserID, Email: p.Email, Name: p.Name, Locale: p.Locale, TotpEnabled: p.TOTPEnabled, LastLoginAt: p.LastLoginAt}
+	if p.DeviceID != "" {
+		me.Device = &api.CurrentDeviceInfo{Id: p.DeviceID, Name: p.DeviceName, EstablishmentId: p.DeviceEstablishmentID}
+	}
 	for _, g := range p.Grants {
 		m := api.Membership{OrganizationId: g.OrganizationID, Role: api.Role(g.Role), Permissions: permissionsToAPI(auth.RolePermissions(g.Role))}
 		if g.EstablishmentID != "" {
