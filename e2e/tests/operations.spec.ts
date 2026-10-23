@@ -36,6 +36,16 @@ test("the operational map shows statuses and opens the spot sheet", async ({ pag
   // shown as "Da incassare" before the season colour, spec 11.3), free spots further back.
   await expect(spot(page, "A1")).toHaveAccessibleName(/Da incassare/);
   await expect(spot(page, "F8")).toHaveAccessibleName(/Libero/);
+  // Map kit (ADR 0012): the art is a <use> of the shared sprite, the status
+  // an overlay badge with a glyph (here the euro of "Da incassare").
+  await expect(spot(page, "A1").locator('use[href="#ark-ombrellone_2_lettini"]')).toHaveCount(1);
+  await expect(
+    spot(page, "A1").locator('[data-badge="to_collect"] use[href="#ark-badge-euro"]'),
+  ).toHaveCount(1);
+  await expect(spot(page, "F8").locator("[data-badge]")).toHaveCount(0);
+  // One sprite, with the symbol actually drawn.
+  await expect(page.getByTestId("map-kit-defs")).toHaveCount(1);
+  await expect(page.locator("#ark-ombrellone_2_lettini")).toHaveCount(1);
   // The legend always lists every status.
   const legend = page.getByText("Legenda").locator("..");
   for (const status of ["Libero", "Da incassare", "Abbonato", "Bloccato"]) {

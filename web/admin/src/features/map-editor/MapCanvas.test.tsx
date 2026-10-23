@@ -14,6 +14,7 @@ function spot(key: string, x: number, y: number): DraftSpot {
     row_label: '',
     number: null,
     kind: 'umbrella',
+    asset: '',
     x,
     y,
     rotation: 0,

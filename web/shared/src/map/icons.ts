@@ -1,12 +1,16 @@
 import {
+  BedDouble,
+  BedSingle,
   DoorOpen,
   Footprints,
   LifeBuoy,
   Martini,
   Shapes,
   ShowerHead,
+  Spline,
   Store,
   Tent,
+  TentTree,
   TreePalm,
   Type,
   Umbrella,
@@ -22,6 +26,10 @@ export const SPOT_KIND_ICONS: Record<SpotKind, LucideIcon> = {
   tent: Tent,
   palm: TreePalm,
   custom: Shapes,
+  sunbed: BedSingle,
+  daybed: BedDouble,
+  cabana: TentTree,
+  hammock: Spline,
 };
 
 /** Glyph of each decoration kind (palette, map decorations). */

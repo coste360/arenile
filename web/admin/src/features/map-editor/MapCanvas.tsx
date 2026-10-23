@@ -1,19 +1,27 @@
 import {
+  DecorationArt,
+  MIN_LABEL_PX,
+  MapBackdrop,
   MapGlyph,
+  MapKitDefs,
+  MapLabel,
   MapZoomControls,
   ShapeElement,
+  SpotArt,
+  decorationAsset,
   decorationKindIcon,
   computeViewBox,
+  geometryKitIds,
   labelFontSize,
   padViewBox,
   useUnitsPerPixel,
   rectFromPoints,
-  seaRect,
   shapeSize,
   snapDelta,
+  spotArtSize,
+  spotAsset,
   type Point,
 } from '@arenile/shared/map';
-import { readableTextColor } from '@arenile/shared/theme';
 import {
   memo,
   useId,
@@ -134,7 +142,10 @@ export function MapCanvas(props: MapCanvasProps) {
   // Room around the drawing so the sea band and strokes are never cut at the edge.
   const vb = useMemo(() => padViewBox(computeViewBox(doc.map), 8), [doc.map]);
   const unitsPerPixel = useUnitsPerPixel(svgRef, vb);
-  const sea = seaRect(doc.map);
+  const kitIds = useMemo(
+    () => geometryKitIds({ spots: doc.spots, decorations: doc.decorations }),
+    [doc.spots, doc.decorations],
+  );
   const grid = doc.map.grid_size > 0 ? doc.map.grid_size : 0;
 
   useLayoutEffect(() => {
@@ -347,22 +358,7 @@ export function MapCanvas(props: MapCanvasProps) {
               </pattern>
             </defs>
           )}
-          <rect
-            data-background="sea"
-            x={sea.x}
-            y={sea.y}
-            width={sea.width}
-            height={sea.height}
-            className="fill-map-sea"
-          />
-          <rect
-            data-background="sand"
-            x={0}
-            y={0}
-            width={doc.map.width}
-            height={doc.map.height}
-            className="fill-map-sand"
-          />
+          <MapBackdrop geometry={doc.map} seaLabel={t('canvas.sea')} />
           {grid > 0 && (
             <rect
               data-background="grid"
@@ -407,6 +403,7 @@ export function MapCanvas(props: MapCanvasProps) {
           />
         </svg>
       </div>
+      <MapKitDefs ids={kitIds} />
       <MapZoomControls
         className="absolute right-3 bottom-3"
         scale={zoom}
@@ -440,8 +437,8 @@ const SpotEl = memo(function SpotEl({
   /** Map units per screen pixel (zoom included): labels never go below 9px. */
   unitsPerPixel: number;
 }) {
-  const size = shapeSize(spot.shape);
-  const fontSize = labelFontSize(size, 0.34, unitsPerPixel);
+  const S = spotArtSize(spot.shape);
+  const fontSize = labelFontSize(S, 0.2, unitsPerPixel, 0.42);
   return (
     // The outer group carries only the drag translate (set imperatively).
     <g
@@ -456,33 +453,26 @@ const SpotEl = memo(function SpotEl({
       data-y={spot.y}
       className={focusClass}
     >
-      <g transform={spot.rotation ? `rotate(${spot.rotation} ${spot.x} ${spot.y})` : undefined}>
-        <ShapeElement
-          shape={spot.shape}
-          x={spot.x}
-          y={spot.y}
-          fill={color}
-          opacity={spot.active ? 1 : 0.35}
-          className={selected ? 'stroke-map-spot-selected' : 'stroke-background'}
-          strokeWidth={selected ? Math.max(2, size * 0.1) : Math.max(1, size * 0.04)}
-          strokeDasharray={spot.active ? undefined : `${size * 0.12} ${size * 0.08}`}
-        />
-      </g>
+      {/* Zone colour as a light halo with a ring: the art stays the kit's. */}
+      <SpotArt
+        x={spot.x}
+        y={spot.y}
+        shape={spot.shape}
+        rotation={spot.rotation}
+        asset={spotAsset(spot)}
+        color={color}
+        tint="outline"
+        emphasis={selected}
+        muted={!spot.active}
+      />
       {fontSize > 0 && (
-        <text
+        <MapLabel
           x={spot.x}
-          y={spot.y}
-          textAnchor="middle"
-          dominantBaseline="central"
+          y={spot.y + S * 0.36}
+          text={spot.label}
           fontSize={fontSize}
-          fontWeight={600}
-          fill={readableTextColor(color)}
-          opacity={spot.active ? 1 : 0.6}
-          pointerEvents="none"
-          aria-hidden="true"
-        >
-          {spot.label}
-        </text>
+          muted={!spot.active}
+        />
       )}
     </g>
   );
@@ -503,10 +493,28 @@ const DecorationEl = memo(function DecorationEl({
 }) {
   const { t } = useTranslation('mapEditor');
   const size = shapeSize(d.shape);
-  // Room for a glyph above the label on square-ish shapes.
-  const glyph = d.kind !== 'text' && size >= 28 ? size * 0.42 : 0;
-  // Readable beats contained: decoration labels may overflow a narrow shape.
-  const fontSize = Math.max(Math.min(size * (glyph > 0 ? 0.18 : 0.3), 14), 9 * unitsPerPixel);
+  const w = d.shape.w;
+  const h = d.shape.type === 'circle' ? d.shape.w : d.shape.h;
+  const asset = decorationAsset(d);
+  const explicit = Object.values(d.label).some((v) => v.trim());
+  const fontSize = Math.max(Math.min(size * 0.22, 14), MIN_LABEL_PX * unitsPerPixel);
+  const pad = Math.max(2, size * 0.06);
+  const outline = (
+    <rect
+      x={d.x - w / 2 - pad}
+      y={d.y - h / 2 - pad}
+      width={w + pad * 2}
+      height={h + pad * 2}
+      rx={pad * 1.5}
+      fill="transparent"
+      className={selected ? 'stroke-map-spot-selected' : 'stroke-transparent'}
+      strokeDasharray={selected ? undefined : '4 3'}
+      strokeWidth={selected ? Math.max(1.5, size * 0.05) : 1}
+      vectorEffect="non-scaling-stroke"
+    />
+  );
+  // Room for a glyph above the label on square-ish shapes without art.
+  const glyph = !asset && d.kind !== 'text' && size >= 28 ? size * 0.42 : 0;
   return (
     <g
       role="button"
@@ -520,17 +528,21 @@ const DecorationEl = memo(function DecorationEl({
       className={focusClass}
     >
       <g transform={d.rotation ? `rotate(${d.rotation} ${d.x} ${d.y})` : undefined}>
-        <ShapeElement
-          shape={d.shape}
-          x={d.x}
-          y={d.y}
-          className={cn(
-            'fill-map-decoration',
-            selected ? 'stroke-map-spot-selected' : 'stroke-map-decoration-stroke',
-          )}
-          strokeDasharray={d.kind === 'text' && !selected ? '4 3' : undefined}
-          strokeWidth={selected ? Math.max(2, size * 0.08) : 1}
-        />
+        {asset ? (
+          outline
+        ) : (
+          <ShapeElement
+            shape={d.shape}
+            x={d.x}
+            y={d.y}
+            className={cn(
+              'fill-map-decoration',
+              selected ? 'stroke-map-spot-selected' : 'stroke-map-decoration-stroke',
+            )}
+            strokeDasharray={d.kind === 'text' && !selected ? '4 3' : undefined}
+            strokeWidth={selected ? Math.max(2, size * 0.08) : 1}
+          />
+        )}
         {glyph > 0 && (
           <MapGlyph
             icon={decorationKindIcon(d.kind)}
@@ -541,18 +553,34 @@ const DecorationEl = memo(function DecorationEl({
           />
         )}
       </g>
-      <text
-        x={d.x}
-        y={glyph > 0 ? d.y + size * 0.26 : d.y}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={fontSize}
-        className="fill-map-decoration-label"
-        pointerEvents="none"
-        aria-hidden="true"
-      >
-        {label}
-      </text>
+      {asset && (
+        <DecorationArt
+          asset={asset}
+          x={d.x}
+          y={d.y}
+          shape={d.shape}
+          rotation={d.rotation}
+          variant={d.variant}
+        />
+      )}
+      {asset ? (
+        explicit && (
+          <MapLabel x={d.x} y={d.y + h / 2 + fontSize * 0.6} text={label} fontSize={fontSize} />
+        )
+      ) : (
+        <text
+          x={d.x}
+          y={glyph > 0 ? d.y + size * 0.26 : d.y}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={fontSize}
+          className="fill-map-decoration-label"
+          pointerEvents="none"
+          aria-hidden="true"
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 });

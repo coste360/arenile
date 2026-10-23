@@ -32,7 +32,17 @@ export const FORMULAS = [
   'season',
 ] as const;
 export const CHANNELS = ['desk', 'online', 'api'] as const;
-export const SPOT_KINDS = ['umbrella', 'gazebo', 'tent', 'palm', 'custom'] as const;
+export const SPOT_KINDS = [
+  'umbrella',
+  'gazebo',
+  'tent',
+  'palm',
+  'sunbed',
+  'daybed',
+  'cabana',
+  'hammock',
+  'custom',
+] as const;
 export const PRICING_UNITS = ['per_booking', 'per_day', 'per_slot'] as const;
 export const ATTACH_TO = ['line', 'booking'] as const;
 

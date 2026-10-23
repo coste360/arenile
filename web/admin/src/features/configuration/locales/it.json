@@ -432,6 +432,10 @@
     "gazebo": "Gazebo",
     "tent": "Tenda",
     "palm": "Palma",
+    "sunbed": "Lettino",
+    "daybed": "Daybed",
+    "cabana": "Cabana",
+    "hammock": "Amaca",
     "custom": "Altro"
   },
   "roles": {

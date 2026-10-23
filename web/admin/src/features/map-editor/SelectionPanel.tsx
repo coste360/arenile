@@ -1,4 +1,11 @@
-import { DECORATION_KIND_ICONS, SPOT_KIND_ICONS, type AlignMode } from '@arenile/shared/map';
+import {
+  DECORATION_KIND_ICONS,
+  KIT_BY_ID,
+  SPOT_KIND_ICONS,
+  decorationAsset,
+  spotAsset,
+  type AlignMode,
+} from '@arenile/shared/map';
 import {
   ButtonGroup,
   FieldDescription,
@@ -42,6 +49,7 @@ import {
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ZoneOption } from './dialogs';
+import { IllustrationField, VariantField } from './IllustrationField';
 import { ToolButton } from './ui';
 import {
   DECORATION_KINDS,
@@ -285,6 +293,7 @@ export function SelectionPanel(p: SelectionPanelProps) {
   const single = selected.length === 1 ? selected[0] : undefined;
   const sameZone = spots.every((s) => s.zone_id === spots[0]?.zone_id);
   const sameKind = spots.every((s) => s.kind === spots[0]?.kind);
+  const sameAsset = spots.every((s) => s.asset === spots[0]?.asset && s.kind === spots[0]?.kind);
 
   return (
     <FieldGroup className="gap-5">
@@ -429,6 +438,19 @@ export function SelectionPanel(p: SelectionPanelProps) {
               }))}
             />
           </Row>
+          <Row id="spot-asset" label={t('fields.illustration')}>
+            <IllustrationField
+              id="spot-asset"
+              family="spots"
+              disabled={readOnly}
+              value={sameAsset ? (spots[0]?.asset ?? '') : undefined}
+              effective={sameAsset && spots[0] ? spotAsset(spots[0]) : null}
+              onPick={(a) =>
+                p.onSpotPatch({ asset: a.id, kind: (a.spotKind ?? 'custom') as SpotKind })
+              }
+              onReset={() => p.onSpotPatch({ asset: '' })}
+            />
+          </Row>
           <Field orientation="horizontal" className="items-start">
             <Switch
               id="spot-active"
@@ -465,6 +487,39 @@ export function SelectionPanel(p: SelectionPanelProps) {
               }))}
             />
           </Row>
+          {single.kind !== 'text' && (
+            <Row id="deco-asset" label={t('fields.illustration')}>
+              <IllustrationField
+                id="deco-asset"
+                family="decorations"
+                disabled={readOnly}
+                value={single.asset}
+                effective={decorationAsset(single)}
+                onPick={(a) =>
+                  p.onDecorationPatch(single.key, {
+                    asset: a.id,
+                    kind: (a.decorationKind ?? 'custom') as DecorationKind,
+                    variant: a.variants?.includes(single.variant) ? single.variant : '',
+                  })
+                }
+                onReset={() => p.onDecorationPatch(single.key, { asset: '', variant: '' })}
+              />
+            </Row>
+          )}
+          {(() => {
+            const variants = KIT_BY_ID.get(decorationAsset(single) ?? '')?.variants;
+            return variants ? (
+              <Row id="deco-variant" label={t('fields.flagColour')}>
+                <VariantField
+                  id="deco-variant"
+                  variants={variants}
+                  value={single.variant}
+                  disabled={readOnly}
+                  onChange={(variant) => p.onDecorationPatch(single.key, { variant })}
+                />
+              </Row>
+            ) : null;
+          })()}
           <Row id="deco-label" label={t('fields.decorationLabel')}>
             <CommitInput
               id="deco-label"

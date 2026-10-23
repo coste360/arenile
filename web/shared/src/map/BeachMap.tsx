@@ -1,22 +1,31 @@
 import { useGesture } from '@use-gesture/react';
 import { memo, useCallback, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { readableTextColor } from '../theme/contrast';
 import { cn } from '../lib/utils';
-import { STATUS_CLASSES } from './colors';
 import {
   IDENTITY,
   MAX_SCALE,
   MIN_SCALE,
   computeViewBox,
-  seaRect,
   transformAttr,
   zoomAt,
   type Transform,
   type ViewBox,
 } from './geometry';
 import { decorationKindIcon } from './icons';
-import { labelFontSize, padViewBox, useUnitsPerPixel } from './labels';
+import {
+  DecorationArt,
+  MapBackdrop,
+  MapKitDefs,
+  MapLabel,
+  SpotArt,
+  StatusBadge,
+  decorationAsset,
+  geometryKitIds,
+  spotArtSize,
+  spotAsset,
+} from './kit';
+import { MIN_LABEL_PX, labelFontSize, padViewBox, useUnitsPerPixel } from './labels';
 import { INDICATOR_CLASSES, type SpotIndicator } from './indicators';
 import { MapGlyph } from './MapGlyph';
 import { MapLegend } from './MapLegend';
@@ -116,8 +125,10 @@ const Spot = memo(function Spot({
   onActivate,
 }: SpotProps) {
   const disabled = spot.active === false || !onActivate;
-  const size = spot.shape.type === 'circle' ? spot.shape.w : Math.min(spot.shape.w, spot.shape.h);
-  const fontSize = labelFontSize(size, 0.38, unitsPerPixel);
+  const S = spotArtSize(spot.shape);
+  const fontSize = labelFontSize(S, 0.2, unitsPerPixel, 0.42);
+  const badgeR = Math.min(Math.max(S * 0.12, 6.5 * unitsPerPixel), S * 0.2);
+  const dotR = Math.min(Math.max(S * 0.085, 4.5 * unitsPerPixel), S * 0.14);
   const activate = () => {
     if (spot.active !== false) onActivate?.(spot);
   };
@@ -142,69 +153,93 @@ const Spot = memo(function Spot({
         disabled ? 'cursor-default' : 'cursor-pointer',
         highlighted === false && 'opacity-30',
       )}
-      transform={spot.rotation ? `rotate(${spot.rotation} ${spot.x} ${spot.y})` : undefined}
       onClick={activate}
       onKeyDown={onKeyDown}
     >
-      <ShapeElement
-        shape={spot.shape}
+      <SpotArt
         x={spot.x}
         y={spot.y}
-        fill={color}
-        className={cn(
-          !color && STATUS_CLASSES[status].fill,
-          selected || highlighted ? 'stroke-map-spot-selected' : 'stroke-map-spot-stroke',
-        )}
-        strokeWidth={selected || highlighted ? size * 0.12 : size * 0.04}
+        shape={spot.shape}
+        rotation={spot.rotation}
+        asset={spotAsset(spot)}
+        status={status}
+        color={color}
+        tint={status === 'free' ? 'faint' : 'strong'}
+        emphasis={selected || !!highlighted}
+        muted={status === 'unavailable'}
+      />
+      <StatusBadge
+        status={status}
+        x={spot.x + S * 0.34}
+        y={spot.y - S * 0.34}
+        r={badgeR}
+        color={color}
       />
       {indicators?.map((kind, i) => (
         <circle
           key={kind}
-          cx={spot.x + size * 0.42 - i * size * 0.26}
-          cy={spot.y - size * 0.42}
-          r={size * 0.13}
+          cx={spot.x - S * 0.36 + i * dotR * 2.3}
+          cy={spot.y - S * 0.36}
+          r={dotR}
           data-indicator={kind}
           className={cn(INDICATOR_CLASSES[kind].fill, 'stroke-background')}
-          strokeWidth={size * 0.04}
+          strokeWidth={dotR * 0.35}
           pointerEvents="none"
           aria-hidden="true"
         />
       ))}
       {fontSize > 0 && (
-        <text
+        <MapLabel
           x={spot.x}
-          y={spot.y}
-          textAnchor="middle"
-          dominantBaseline="central"
+          y={spot.y + S * 0.36}
+          text={spot.label}
           fontSize={fontSize}
-          fontWeight={600}
-          fill={color ? readableTextColor(color) : undefined}
-          className={color ? undefined : STATUS_CLASSES[status].labelFill}
-          pointerEvents="none"
-          aria-hidden="true"
-        >
-          {spot.label}
-        </text>
+          muted={status === 'unavailable'}
+        />
       )}
     </g>
   );
 });
 
-function Decoration({
+const Decoration = memo(function Decoration({
   decoration,
   label,
+  name,
   unitsPerPixel,
 }: {
   decoration: MapDecoration;
+  /** Explicit label of the decoration (drawn), if any. */
   label: string;
+  /** Accessible / tooltip name: the label or the kind. */
+  name: string;
   unitsPerPixel: number;
 }) {
   const { shape, x, y } = decoration;
-  const size = shape.type === 'circle' ? shape.w : Math.min(shape.w, shape.h);
-  // Room for a glyph above the label on square-ish shapes.
+  const w = shape.w;
+  const h = shape.type === 'circle' ? shape.w : shape.h;
+  const asset = decorationAsset(decoration);
+  const fontSize = Math.max(Math.min(w, h) * 0.2, MIN_LABEL_PX * unitsPerPixel);
+  if (asset) {
+    return (
+      <g aria-hidden="true" data-decoration={decoration.kind}>
+        <title>{name}</title>
+        <DecorationArt
+          asset={asset}
+          x={x}
+          y={y}
+          shape={shape}
+          rotation={decoration.rotation}
+          variant={decoration.variant}
+        />
+        {label && (
+          <MapLabel x={x} y={y + h / 2 + fontSize * 0.5} text={label} fontSize={fontSize} />
+        )}
+      </g>
+    );
+  }
+  // Text labels and custom elements without an illustration.
+  const size = Math.min(w, h);
   const glyph = decoration.kind !== 'text' && size >= 28 ? size * 0.42 : 0;
-  // Labels may overflow narrow decorations: readable beats contained here.
-  const fontSize = Math.max(size * (glyph > 0 ? 0.18 : 0.28), 9 * unitsPerPixel);
   return (
     <g
       transform={decoration.rotation ? `rotate(${decoration.rotation} ${x} ${y})` : undefined}
@@ -234,16 +269,16 @@ function Decoration({
         y={glyph > 0 ? y + size * 0.26 : y}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={fontSize}
+        fontSize={Math.max(size * (glyph > 0 ? 0.18 : 0.28), MIN_LABEL_PX * unitsPerPixel)}
         className="fill-map-decoration-label"
         pointerEvents="none"
       >
-        <title>{label}</title>
+        <title>{name}</title>
         {label}
       </text>
     </g>
   );
-}
+});
 
 const NAV_KEYS: Record<string, 'prev' | 'next' | 'first' | 'last'> = {
   ArrowLeft: 'prev',
@@ -289,7 +324,7 @@ export function BeachMap({
 
   // Padded so that labels on the edges (decorations at x = 0) are never clipped.
   const vb = useMemo(() => padViewBox(computeViewBox(geometry), 8), [geometry]);
-  const sea = useMemo(() => seaRect(geometry), [geometry]);
+  const kitIds = useMemo(() => geometryKitIds(geometry), [geometry]);
   const selected = useMemo(() => new Set(selectedIds ?? []), [selectedIds]);
   const highlighted = useMemo(
     () => (highlightedIds && highlightedIds.length > 0 ? new Set(highlightedIds) : null),
@@ -372,7 +407,6 @@ export function BeachMap({
   );
 
   const center = { x: vb.x + vb.width / 2, y: vb.y + vb.height / 2 };
-  const seaLabelVertical = geometry.sea_side === 'left' || geometry.sea_side === 'right';
   const accessibleTitle = title ?? geometry.name ?? t('map.title');
 
   return (
@@ -384,52 +418,22 @@ export function BeachMap({
         role="group"
         aria-labelledby={titleId}
         aria-describedby={showLegend ? legendId : undefined}
-        className="block w-full touch-none rounded-lg bg-map-sand select-none"
+        className="block w-full touch-none rounded-lg bg-muted/40 select-none"
         // Height is a caller-provided CSS length (dynamic geometry).
         style={{ height }}
         onKeyDown={onKeyDown}
       >
         <title id={titleId}>{accessibleTitle}</title>
         <g transform={transformAttr(view)} data-testid="beach-map-viewport">
-          <rect
-            x={0}
-            y={0}
-            width={geometry.width}
-            height={geometry.height}
-            className="fill-map-sand"
-          />
-          <g aria-hidden="true" data-sea-side={geometry.sea_side}>
-            <rect
-              x={sea.x}
-              y={sea.y}
-              width={sea.width}
-              height={sea.height}
-              className="fill-map-sea"
-            />
-            <text
-              x={sea.x + sea.width / 2}
-              y={sea.y + sea.height / 2}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={Math.min(sea.width, sea.height) * 0.4}
-              className="fill-map-sea-label"
-              letterSpacing="0.2em"
-              transform={
-                seaLabelVertical
-                  ? `rotate(-90 ${sea.x + sea.width / 2} ${sea.y + sea.height / 2})`
-                  : undefined
-              }
-            >
-              {t('map.sea')}
-            </text>
-          </g>
+          <MapBackdrop geometry={geometry} seaLabel={t('map.sea')} />
           {(geometry.decorations ?? []).map((d) => (
             <Decoration
               key={d.id}
               decoration={d}
               unitsPerPixel={unitsPerPixel}
-              label={
-                d.label ??
+              label={d.label ?? ''}
+              name={
+                d.label ||
                 (d.kind === 'text' ? '' : t(`map.decoration.${d.kind}`, { defaultValue: '' }))
               }
             />
@@ -472,6 +476,7 @@ export function BeachMap({
       {showLegend && (
         <MapLegend id={legendId} statuses={legend} statusColors={statusColors} className="mt-2" />
       )}
+      <MapKitDefs ids={kitIds} />
     </div>
   );
 }

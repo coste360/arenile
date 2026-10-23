@@ -60,6 +60,9 @@ const STYLE_CODE_ALLOW = new Set([
   'shared/src/theme/theme.ts', // writes the establishment theme CSS variables (spec 12.5)
   'shared/src/ui/patterns/ThemeProvider.tsx', // `color-scheme` for light/dark on <html>
   'booking/src/embed/embed.ts', // sizes the iframe on the host page, where our CSS does not exist
+  // injects the beach map kit <symbol> bodies, generated and sanitised at build time by
+  // scripts/gen-map-kit.mjs (allowlisted SVG elements/attributes only; ADR 0012)
+  'shared/src/map/kit/MapKitDefs.tsx',
 ]);
 
 /** Files allowed to mention `--ar-*` (the test asserting their absence). */
@@ -165,7 +168,7 @@ for (const top of SCAN) {
     }
 
     // Tests may read computed styles; the rule targets code that writes them.
-    if (!vendored && !STYLE_CODE_ALLOW.has(path) && !/\.test\.[jt]sx?$/.test(path)) {
+    if (!vendored && !STYLE_CODE_ALLOW.has(path) && !/\.test\.(?:[jt]sx?|mjs)$/.test(path)) {
       for (const m of text.matchAll(STYLE_CODE_RE)) {
         fail(
           path,

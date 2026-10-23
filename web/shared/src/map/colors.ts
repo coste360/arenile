@@ -29,6 +29,10 @@ export interface StatusClasses {
   labelFill: string;
   /** Background (legend swatch, badge dot). */
   bg: string;
+  /** SVG stroke (halo ring of the kit art). */
+  stroke: string;
+  /** Text colour of glyphs drawn on the status colour (currentColor of badge glyphs). */
+  fg: string;
   /** Name of the CSS variable, for rare non-class uses. */
   cssVar: string;
 }
@@ -39,66 +43,88 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     fill: 'fill-status-free',
     labelFill: 'fill-status-free-foreground',
     bg: 'bg-status-free',
+    stroke: 'stroke-status-free',
+    fg: 'text-status-free-foreground',
     cssVar: '--status-free',
   },
   booked_online: {
     fill: 'fill-status-booked-online',
     labelFill: 'fill-status-booked-online-foreground',
     bg: 'bg-status-booked-online',
+    stroke: 'stroke-status-booked-online',
+    fg: 'text-status-booked-online-foreground',
     cssVar: '--status-booked-online',
   },
   booked_desk: {
     fill: 'fill-status-booked-desk',
     labelFill: 'fill-status-booked-desk-foreground',
     bg: 'bg-status-booked-desk',
+    stroke: 'stroke-status-booked-desk',
+    fg: 'text-status-booked-desk-foreground',
     cssVar: '--status-booked-desk',
   },
   season: {
     fill: 'fill-status-season',
     labelFill: 'fill-status-season-foreground',
     bg: 'bg-status-season',
+    stroke: 'stroke-status-season',
+    fg: 'text-status-season-foreground',
     cssVar: '--status-season',
   },
   season_released: {
     fill: 'fill-status-season-released',
     labelFill: 'fill-status-season-released-foreground',
     bg: 'bg-status-season-released',
+    stroke: 'stroke-status-season-released',
+    fg: 'text-status-season-released-foreground',
     cssVar: '--status-season-released',
   },
   hold: {
     fill: 'fill-status-hold',
     labelFill: 'fill-status-hold-foreground',
     bg: 'bg-status-hold',
+    stroke: 'stroke-status-hold',
+    fg: 'text-status-hold-foreground',
     cssVar: '--status-hold',
   },
   to_collect: {
     fill: 'fill-status-to-collect',
     labelFill: 'fill-status-to-collect-foreground',
     bg: 'bg-status-to-collect',
+    stroke: 'stroke-status-to-collect',
+    fg: 'text-status-to-collect-foreground',
     cssVar: '--status-to-collect',
   },
   present: {
     fill: 'fill-status-present',
     labelFill: 'fill-status-present-foreground',
     bg: 'bg-status-present',
+    stroke: 'stroke-status-present',
+    fg: 'text-status-present-foreground',
     cssVar: '--status-present',
   },
   blocked: {
     fill: 'fill-status-blocked',
     labelFill: 'fill-status-blocked-foreground',
     bg: 'bg-status-blocked',
+    stroke: 'stroke-status-blocked',
+    fg: 'text-status-blocked-foreground',
     cssVar: '--status-blocked',
   },
   renewal_hold: {
     fill: 'fill-status-renewal-hold',
     labelFill: 'fill-status-renewal-hold-foreground',
     bg: 'bg-status-renewal-hold',
+    stroke: 'stroke-status-renewal-hold',
+    fg: 'text-status-renewal-hold-foreground',
     cssVar: '--status-renewal-hold',
   },
   unavailable: {
     fill: 'fill-status-unavailable',
     labelFill: 'fill-status-unavailable-foreground',
     bg: 'bg-status-unavailable',
+    stroke: 'stroke-status-unavailable',
+    fg: 'text-status-unavailable-foreground',
     cssVar: '--status-unavailable',
   },
 };

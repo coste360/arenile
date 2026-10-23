@@ -32,6 +32,7 @@ export function spotFromApi(s: ApiSpot): DraftSpot {
     row_label: s.row_label ?? '',
     number: s.number ?? null,
     kind: s.kind,
+    asset: s.asset ?? '',
     x: s.x,
     y: s.y,
     rotation: s.rotation ?? 0,
@@ -53,6 +54,7 @@ export function spotFromInput(s: ApiSpotInput): DraftSpot {
     row_label: s.row_label ?? '',
     number: s.number ?? null,
     kind: s.kind,
+    asset: s.asset ?? '',
     x: s.x,
     y: s.y,
     rotation: s.rotation ?? 0,
@@ -70,6 +72,8 @@ export function decorationFromApi(d: ApiDecoration): DraftDecoration {
     key: d.id,
     id: d.id,
     kind: d.kind,
+    asset: d.asset ?? '',
+    variant: d.variant ?? '',
     x: d.x,
     y: d.y,
     rotation: d.rotation ?? 0,
@@ -117,6 +121,7 @@ export function spotToInput(s: DraftSpot): ApiSpotInput {
     active: s.active,
   };
   if (s.id) out.id = s.id;
+  if (s.asset) out.asset = s.asset;
   if (s.row_label) out.row_label = s.row_label;
   if (s.number != null) out.number = s.number;
   const capacity = nonEmpty(s.capacity);
@@ -138,6 +143,8 @@ export function decorationToInput(d: DraftDecoration): ApiDecorationInput {
     shape: d.shape,
   };
   if (d.id) out.id = d.id;
+  if (d.asset) out.asset = d.asset;
+  if (d.variant) out.variant = d.variant;
   const label = cleanText(d.label);
   if (label) out.label = label;
   return out;

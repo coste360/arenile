@@ -19,7 +19,17 @@ export type ShapeDef = Schemas['Shape'];
 export type ComponentQuantities = Schemas['ComponentQuantities'];
 export type I18nText = Record<string, string>;
 
-export const SPOT_KINDS: readonly SpotKind[] = ['umbrella', 'gazebo', 'tent', 'palm', 'custom'];
+export const SPOT_KINDS: readonly SpotKind[] = [
+  'umbrella',
+  'gazebo',
+  'tent',
+  'palm',
+  'sunbed',
+  'daybed',
+  'cabana',
+  'hammock',
+  'custom',
+];
 export const DECORATION_KINDS: readonly DecorationKind[] = [
   'walkway',
   'shower',
@@ -45,6 +55,8 @@ export interface DraftSpot {
   row_label: string;
   number: number | null;
   kind: SpotKind;
+  /** Kit illustration id; '' = default of the kind (ADR 0012). */
+  asset: string;
   x: number;
   y: number;
   rotation: number;
@@ -60,6 +72,10 @@ export interface DraftDecoration {
   key: string;
   id?: string;
   kind: DecorationKind;
+  /** Kit illustration id; '' = default of the kind (text, custom: none). */
+  asset: string;
+  /** Colour variant of the illustration (sea flag); '' = default. */
+  variant: string;
   x: number;
   y: number;
   rotation: number;

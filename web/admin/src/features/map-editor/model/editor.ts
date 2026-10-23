@@ -1,6 +1,12 @@
 import {
+  KIT_BY_ID,
+  KIT_TILE,
   alignPositions,
   clampToMap,
+  decorationAsset,
+  isTileAsset,
+  snapTileCentre,
+  snapTileLength,
   distributePositions,
   itemsInRect,
   normalizeRotation,
@@ -27,6 +33,34 @@ import type {
  * returns a new document and never mutates its input, so the page can keep
  * an undo history of plain snapshots.
  */
+
+/**
+ * Modular walkway tiles (ADR 0012) keep the kit scale and sit on the tile
+ * grid so that pieces join: straight runs are one tile thick and a whole
+ * number of tiles long, the other pieces are one tile; edges are aligned to
+ * multiples of KIT_TILE. `from` is the previous centre: a small move (arrow
+ * nudge, duplicate) then advances one whole tile instead of snapping back.
+ */
+export function normalizeTile(
+  d: DraftDecoration,
+  from?: { x: number; y: number },
+): DraftDecoration {
+  const asset = decorationAsset(d);
+  if (!isTileAsset(asset)) return d;
+  const straight = asset === 'passerella_orizzontale' || asset === 'passerella_verticale';
+  const horizontal = d.shape.w >= d.shape.h;
+  const w = straight && horizontal ? snapTileLength(d.shape.w) : KIT_TILE;
+  const h = straight && !horizontal ? snapTileLength(d.shape.h) : KIT_TILE;
+  const x = snapTileCentre(d.x, w, from?.x);
+  const y = snapTileCentre(d.y, h, from?.y);
+  if (x === d.x && y === d.y && w === d.shape.w && h === d.shape.h && d.shape.type === 'rect')
+    return d;
+  return { ...d, x, y, shape: { type: 'rect', w, h } };
+}
+
+function isDecoration(el: DraftElement): el is DraftDecoration {
+  return !('zone_id' in el);
+}
 
 /** All elements (spots first) in document order. */
 export function elements(doc: DraftDocument): DraftElement[] {
@@ -65,13 +99,16 @@ export function moveElements(
   const anchor = findElement(doc, opts.anchorKey ?? [...keys][0] ?? '');
   const d = anchor && opts.snap ? snapDelta(anchor, delta, doc.map.grid_size) : delta;
   if (d.x === 0 && d.y === 0) return doc;
+  // A drag is already where the pointer left it; a nudge moves whole tiles.
+  const nudge = !opts.anchorKey;
   return mapElements(doc, keys, (el) => {
     const p = clampToMap(
       { x: round2(el.x + d.x), y: round2(el.y + d.y) },
       doc.map.width,
       doc.map.height,
     );
-    return { ...el, x: p.x, y: p.y };
+    const moved = { ...el, x: p.x, y: p.y };
+    return isDecoration(moved) ? normalizeTile(moved, nudge ? el : undefined) : moved;
   });
 }
 
@@ -135,7 +172,9 @@ export function updateDecoration(
 ): DraftDocument {
   return {
     ...doc,
-    decorations: doc.decorations.map((d) => (d.key === key ? { ...d, ...patch } : d)),
+    decorations: doc.decorations.map((d) =>
+      d.key === key ? normalizeTile({ ...d, ...patch }) : d,
+    ),
   };
 }
 
@@ -160,11 +199,12 @@ export function nextFreeLabel(doc: DraftDocument, taken?: ReadonlySet<string>): 
 export function newSpot(
   doc: DraftDocument,
   zoneId: string,
-  opts: { at?: Point; kind?: SpotKind } = {},
+  opts: { at?: Point; kind?: SpotKind; asset?: string } = {},
 ): DraftSpot {
   const size = Math.max(10, Math.round((doc.map.grid_size || 10) * 4));
   const at = opts.at ?? { x: Math.round(doc.map.width / 2), y: Math.round(doc.map.height / 2) };
   const kind = opts.kind ?? 'umbrella';
+  const square = kind === 'gazebo' || kind === 'cabana' || kind === 'daybed';
   return {
     key: newKey(),
     zone_id: zoneId,
@@ -172,13 +212,13 @@ export function newSpot(
     row_label: '',
     number: null,
     kind,
+    asset: opts.asset ?? '',
     x: at.x,
     y: at.y,
     rotation: 0,
-    shape:
-      kind === 'gazebo'
-        ? { type: 'rect', w: size * 1.5, h: size * 1.5 }
-        : { type: 'circle', w: size, h: size },
+    shape: square
+      ? { type: 'rect', w: size * 1.5, h: size * 1.5 }
+      : { type: 'circle', w: size, h: size },
     capacity: {},
     max_extra: {},
     price_category_override: '',
@@ -187,25 +227,36 @@ export function newSpot(
   };
 }
 
+/** Default side of a new decoration of a kit category, in grid steps. */
+const DECORATION_STEPS: Record<string, number> = { structures: 7, sport: 9, nature: 5 };
+
 export function newDecoration(
   doc: DraftDocument,
   kind: DecorationKind,
   at?: Point,
+  asset = '',
 ): DraftDecoration {
-  const size = Math.max(10, Math.round((doc.map.grid_size || 10) * 4));
+  const grid = doc.map.grid_size || 10;
   const p = at ?? { x: Math.round(doc.map.width / 2), y: Math.round(doc.map.height / 2) };
-  return {
+  const category = KIT_BY_ID.get(asset)?.category ?? '';
+  const size = Math.max(10, Math.round(grid * (DECORATION_STEPS[category] ?? 4.5)));
+  const d: DraftDecoration = {
     key: newKey(),
     kind,
+    asset,
+    variant: '',
     x: p.x,
     y: p.y,
     rotation: 0,
     shape:
       kind === 'walkway'
-        ? { type: 'rect', w: size * 6, h: size / 2 }
-        : { type: 'rect', w: size, h: size },
+        ? { type: 'rect', w: KIT_TILE * 3, h: KIT_TILE }
+        : kind === 'text'
+          ? { type: 'rect', w: size * 3, h: size }
+          : { type: 'rect', w: size, h: size },
     label: {},
   };
+  return normalizeTile(d);
 }
 
 export function addSpots(doc: DraftDocument, spots: DraftSpot[]): DraftDocument {
@@ -291,7 +342,7 @@ export function duplicateElements(
     });
   const decorations = doc.decorations
     .filter((d) => keys.has(d.key))
-    .map((d) => ({ ...place(d), shape: { ...d.shape }, label: { ...d.label } }));
+    .map((d) => normalizeTile({ ...place(d), shape: { ...d.shape }, label: { ...d.label } }, d));
   return {
     doc: {
       ...doc,

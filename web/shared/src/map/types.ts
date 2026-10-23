@@ -1,7 +1,8 @@
 /** Side of the map facing the sea (spec 6.2, maps.sea_side). */
 export type SeaSide = 'top' | 'bottom' | 'left' | 'right';
 
-export type SpotKind = 'umbrella' | 'gazebo' | 'tent' | 'palm' | 'custom';
+export type SpotKind =
+  'umbrella' | 'gazebo' | 'tent' | 'palm' | 'custom' | 'sunbed' | 'daybed' | 'cabana' | 'hammock';
 
 export type DecorationKind =
   'walkway' | 'shower' | 'lifeguard' | 'bar' | 'entrance' | 'cabin_block' | 'text' | 'custom';
@@ -24,6 +25,8 @@ export interface MapSpot {
   row_label?: string | null;
   number?: number | null;
   kind: SpotKind | (string & {});
+  /** Kit illustration (assets/beach-map-kit); empty = default of the kind. */
+  asset?: string | null;
   x: number;
   y: number;
   rotation?: number | null;
@@ -35,6 +38,10 @@ export interface MapSpot {
 export interface MapDecoration {
   id: string;
   kind: DecorationKind | (string & {});
+  /** Kit illustration; empty = default of the kind (text and custom: none). */
+  asset?: string | null;
+  /** Colour variant of the illustration (sea flag: green, yellow, red). */
+  variant?: string | null;
   x: number;
   y: number;
   rotation?: number | null;

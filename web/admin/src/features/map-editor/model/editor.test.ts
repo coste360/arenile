@@ -23,6 +23,9 @@ import {
   rotateElements,
   undo,
   updateSpots,
+  normalizeTile,
+  newDecoration,
+  updateDecoration,
 } from './editor';
 import type { DraftDocument, DraftSpot } from './types';
 
@@ -35,6 +38,7 @@ function spot(key: string, x: number, y: number, extra: Partial<DraftSpot> = {})
     row_label: '',
     number: null,
     kind: 'umbrella',
+    asset: '',
     x,
     y,
     rotation: 0,
@@ -273,5 +277,50 @@ describe('commitFrom', () => {
     expect(h.past).toEqual([d0]);
     expect(undo(h).present).toBe(d0);
     expect(commitFrom(h, h.present)).toBe(h);
+  });
+});
+
+describe('kit walkway tiles', () => {
+  const base = doc([]);
+  it('a new walkway is three tiles on the 60-unit tile grid', () => {
+    const d = newDecoration(base, 'walkway', { x: 247, y: 131 });
+    expect(d.shape).toEqual({ type: 'rect', w: 180, h: 60 });
+    expect((((d.x - d.shape.w / 2) % 60) + 60) % 60).toBe(0);
+    expect((((d.y - d.shape.h / 2) % 60) + 60) % 60).toBe(0);
+  });
+
+  it('pieces other than straight runs are one tile; straight runs are whole tiles long', () => {
+    const corner = newDecoration(base, 'walkway', { x: 100, y: 100 }, 'passerella_angolo');
+    expect(corner.shape).toMatchObject({ w: 60, h: 60 });
+    const run = normalizeTile({
+      ...corner,
+      asset: 'passerella_verticale',
+      shape: { type: 'rect', w: 40, h: 170 },
+    });
+    expect(run.shape).toMatchObject({ w: 60, h: 180 });
+  });
+
+  it('arrow nudges and duplicates move whole tiles, so pieces keep joining', () => {
+    const d = newDecoration(base, 'walkway', { x: 90, y: 90 }, 'passerella_croce');
+    let next = { ...base, decorations: [d] };
+    next = moveElements(next, new Set([d.key]), { x: 10, y: 0 });
+    expect(next.decorations[0]?.x).toBe(d.x + 60);
+    const dup = duplicateElements(next, new Set([d.key]), { x: 20, y: 20 });
+    const copy = dup.doc.decorations[1];
+    expect(copy && [copy.x - (next.decorations[0]?.x ?? 0), copy.y - d.y]).toEqual([60, 60]);
+  });
+
+  it('resizing a straight run snaps the length to whole tiles', () => {
+    const d = newDecoration(base, 'walkway', { x: 150, y: 90 });
+    const next = updateDecoration({ ...base, decorations: [d] }, d.key, {
+      shape: { type: 'rect', w: 250, h: 60 },
+    });
+    expect(next.decorations[0]?.shape.w).toBe(240);
+  });
+
+  it('non-tile decorations are untouched', () => {
+    const bar = newDecoration(base, 'bar', { x: 123, y: 77 }, 'bar');
+    expect(bar).toMatchObject({ x: 123, y: 77, asset: 'bar' });
+    expect(normalizeTile(bar)).toBe(bar);
   });
 });

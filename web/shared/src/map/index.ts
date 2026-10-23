@@ -12,3 +12,4 @@ export { MapGlyph, type MapGlyphProps } from './MapGlyph';
 export { MIN_LABEL_PX, labelFontSize, padViewBox, useUnitsPerPixel } from './labels';
 export { DECORATION_KIND_ICONS, SPOT_KIND_ICONS, decorationKindIcon, spotKindIcon } from './icons';
 export { INDICATOR_CLASSES, SPOT_INDICATORS, type SpotIndicator } from './indicators';
+export * from './kit';

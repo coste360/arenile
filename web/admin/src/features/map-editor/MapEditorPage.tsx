@@ -1,5 +1,5 @@
 import { ApiProblem } from '@arenile/shared/api';
-import type { AlignMode, Point } from '@arenile/shared/map';
+import type { AlignMode, KitAsset, Point } from '@arenile/shared/map';
 import {
   Alert,
   AlertDescription,
@@ -368,19 +368,20 @@ function Editor(props: EditorProps) {
     y: Math.round(doc.map.height / 2),
   });
 
-  const addSpotOfKind = (kind: SpotKind) => {
+  const addSpotOfAsset = (asset: KitAsset) => {
     if (!firstZone) return;
+    const kind = (asset.spotKind ?? 'custom') as SpotKind;
     // New spots go in the zone of the selected spot, if any.
     const zone =
       selectedSpots.find((s) => zoneOptions.some((z) => z.id === s.zone_id && !z.disabled))
         ?.zone_id ?? firstZone;
-    const s = newSpot(doc, zone, { kind, at: freePosition(doc, center()) });
+    const s = newSpot(doc, zone, { kind, asset: asset.id, at: freePosition(doc, center()) });
     commit(addSpots(doc, [s]));
     setSelection(new Set([s.key]));
   };
 
-  const addDecorationOfKind = (kind: DecorationKind) => {
-    const d = newDecoration(doc, kind, freePosition(doc, center()));
+  const addDecorationOfKind = (kind: DecorationKind, asset = '') => {
+    const d = newDecoration(doc, kind, freePosition(doc, center()), asset);
     commit(addDecoration(doc, d));
     setSelection(new Set([d.key]));
   };
@@ -547,8 +548,11 @@ function Editor(props: EditorProps) {
             <Separator orientation="vertical" className="mx-1 h-6!" />
             <Palette
               canAddSpots={!!firstZone}
-              onAddSpot={addSpotOfKind}
-              onAddDecoration={addDecorationOfKind}
+              onAddSpot={addSpotOfAsset}
+              onAddDecoration={(a) =>
+                addDecorationOfKind((a.decorationKind ?? 'custom') as DecorationKind, a.id)
+              }
+              onAddText={() => addDecorationOfKind('text')}
             />
             <Separator orientation="vertical" className="mx-1 h-6!" />
             <ToolButton

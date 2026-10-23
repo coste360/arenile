@@ -161,7 +161,10 @@ describe('MapEditorPage', () => {
       routes('manager', { [`PUT ${API}/maps/m1`]: echoPut((b) => (sent = b)) }),
     );
     await spotButton('A1');
-    await user.click(screen.getByRole('button', { name: 'Aggiungi postazione: Gazebo' }));
+    // Kit picker: searchable, categorised grid of illustrations.
+    await user.click(screen.getByRole('button', { name: 'Postazione' }));
+    await user.type(await screen.findByPlaceholderText("Cerca un'illustrazione…"), 'gazebo + 2');
+    await user.click(await screen.findByRole('option', { name: 'Gazebo + 2 lettini' }));
     expect(screen.getByText(/^3 postazioni/)).toBeInTheDocument();
     expect(screen.getByLabelText('Etichetta')).toHaveValue('N3');
 
@@ -180,7 +183,11 @@ describe('MapEditorPage', () => {
     await user.click(screen.getByRole('button', { name: 'Salva mappa' }));
     await waitFor(() => expect(sent).toBeDefined());
     const g1 = sent?.spots.find((s) => s.label === 'G1') as Record<string, unknown>;
-    expect(g1).toMatchObject({ kind: 'gazebo', capacity: { umbrella: 2 } });
+    expect(g1).toMatchObject({
+      kind: 'gazebo',
+      asset: 'gazebo_lettini',
+      capacity: { umbrella: 2 },
+    });
     expect(g1).not.toHaveProperty('id');
   });
 

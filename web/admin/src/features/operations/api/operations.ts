@@ -73,6 +73,7 @@ export function toGeometry(doc: MapDocument, locale: string): MapGeometry {
       row_label: s.row_label || null,
       number: s.number,
       kind: s.kind,
+      asset: s.asset ?? null,
       x: s.x,
       y: s.y,
       rotation: s.rotation,
@@ -83,6 +84,8 @@ export function toGeometry(doc: MapDocument, locale: string): MapGeometry {
     decorations: doc.decorations.map((d) => ({
       id: d.id,
       kind: d.kind,
+      asset: d.asset ?? null,
+      variant: d.variant ?? null,
       x: d.x,
       y: d.y,
       rotation: d.rotation,
