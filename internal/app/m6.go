@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"log/slog"
 	"net"
 	"net/http"
 	"time"
@@ -70,6 +71,9 @@ func (a *App) ServeListener(ln net.Listener) (stop func(context.Context) error) 
 	srv := &http.Server{
 		Handler: a.handler, ReadHeaderTimeout: 10 * time.Second, ReadTimeout: 30 * time.Second,
 		WriteTimeout: 60 * time.Second, IdleTimeout: 120 * time.Second,
+		// Browsers that have not accepted the self-signed LAN certificate
+		// abort the handshake: keep those messages out of stderr.
+		ErrorLog: slog.NewLogLogger(a.log.Handler(), slog.LevelDebug),
 	}
 	a.mu.Lock()
 	a.extra = append(a.extra, srv)

@@ -167,6 +167,7 @@ func New(d Deps) http.Handler {
 		middleware.RequestContext(d.TrustedProxies),
 		middleware.AccessLog(d.Log),
 		middleware.Recoverer(d.Log),
+		desktopPeers(d),
 		middleware.SecurityHeaders(middleware.SecurityOptions{
 			EmbedOrigins:      d.Establishments.EmbedOrigins,
 			AdminFrameSources: pluginOrigins,
