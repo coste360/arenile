@@ -1,8 +1,9 @@
-import { changeLocale, isLocale, type Locale } from '@arenile/shared/i18n';
+import { isLocale, type Locale } from '@arenile/shared/i18n';
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
 import { GlobeIcon } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import { changePublicLocale } from './i18n';
 
 /**
  * Language picker of the public header: the shadcn NativeSelect (a styled
@@ -23,7 +24,7 @@ export function LanguageSelect({ languages }: { languages: readonly Locale[] }) 
         size="sm"
         value={i18n.language}
         onChange={(e) => {
-          if (isLocale(e.target.value)) void changeLocale(i18n, e.target.value);
+          if (isLocale(e.target.value)) void changePublicLocale(i18n, e.target.value);
         }}
         className="border-primary-foreground/40 bg-transparent text-primary-foreground dark:bg-transparent [&>option]:text-foreground"
       >

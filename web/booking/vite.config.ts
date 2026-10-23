@@ -9,13 +9,13 @@ const apiTarget = process.env.ARENILE_DEV_API ?? 'http://localhost:8080';
  * file under shared/src (`@source '../'` in the theme), so without this the
  * public page would ship the utilities of the admin shell (sidebar, charts,
  * data tables...) in its render-blocking CSS. This only trims the scan: no
- * CSS is written here (ADR 0009).
+ * CSS is written here (ADR 0009). `button-group` stays in: the zoom controls
+ * of the seat map use it (the slider is hidden on the public page).
  */
 const ADMIN_ONLY_UI = [
   'accordion',
   'avatar',
   'breadcrumb',
-  'button-group',
   'chart',
   'command',
   'context-menu',

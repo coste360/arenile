@@ -6,6 +6,10 @@
  *   <script src="https://{host}/embed.js" async></script>
  *
  * Optional attributes: data-lang, data-from, data-to, data-pack, data-title.
+ * The host page address is passed as ?return= so that a payment provider
+ * (opened at top level) comes back here with ?arenile_checkout=<id>: the
+ * loader strips it from the address bar and opens the widget on the outcome
+ * (?checkout=<id>), where the iframe still has its session token.
  * Messages from the iframe are accepted only from the script origin and from
  * the iframe's own window; they are re-dispatched on the container as
  * bubbling CustomEvents ("arenile:resize", "arenile:booked", "arenile:navigate").
@@ -24,6 +28,22 @@ declare global {
 
 const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 const PARAMS = ['lang', 'from', 'to', 'pack'] as const;
+const RETURN_PARAM = 'arenile_checkout';
+const UUID_RE = /^[0-9a-f-]{36}$/i;
+
+/** Takes ?arenile_checkout=<id> off the host address (once) and returns the id. */
+function takeReturn(): string | null {
+  const here = new URL(location.href);
+  const id = here.searchParams.get(RETURN_PARAM);
+  if (!id) return null;
+  here.searchParams.delete(RETURN_PARAM);
+  try {
+    history.replaceState(history.state, '', here.href);
+  } catch {
+    /* sandboxed host: keep the parameter */
+  }
+  return UUID_RE.test(id) ? id : null;
+}
 
 function scriptOrigin(): string {
   const current = document.currentScript as HTMLScriptElement | null;
@@ -38,6 +58,7 @@ function scriptOrigin(): string {
 }
 
 function setup(origin: string): ArenileEmbedApi {
+  let checkout = takeReturn();
   const frames = new Map<Window, { iframe: HTMLIFrameElement; host: HTMLElement }>();
 
   window.addEventListener('message', (event: MessageEvent) => {
@@ -74,6 +95,14 @@ function setup(origin: string): ArenileEmbedApi {
           if (v) url.searchParams.set(p, v);
         });
         url.searchParams.set('origin', location.origin);
+        const page = new URL(location.href);
+        page.hash = '';
+        url.searchParams.set('return', page.href);
+        const resumed = !!checkout;
+        if (checkout) {
+          url.searchParams.set('checkout', checkout);
+          checkout = null;
+        }
         const iframe = document.createElement('iframe');
         iframe.src = url.href;
         iframe.title = host.getAttribute('data-title') || 'Prenota il tuo posto';
@@ -83,6 +112,7 @@ function setup(origin: string): ArenileEmbedApi {
         host.setAttribute('data-arenile-ready', '');
         host.appendChild(iframe);
         if (iframe.contentWindow) frames.set(iframe.contentWindow, { iframe, host });
+        if (resumed) host.scrollIntoView({ block: 'start' });
       });
   }
 

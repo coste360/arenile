@@ -74,7 +74,7 @@ function checkoutHeader(token: string) {
 export function usePublicCalendar(
   slug: string,
   month: string,
-  opts: { slots?: Schemas['Slots']; zoneId?: string } = {},
+  opts: { slots?: Schemas['Slots']; zoneId?: string; enabled?: boolean } = {},
 ) {
   const client = useApiClient();
   return useQuery<PublicCalendar, ApiProblem>({
@@ -85,6 +85,7 @@ export function usePublicCalendar(
           params: { path: { slug }, query: { month, slots: opts.slots, zone_id: opts.zoneId } },
         }),
       ),
+    enabled: opts.enabled ?? true,
     retry: shouldRetry,
     staleTime: 30_000,
     placeholderData: keepPreviousData,
@@ -289,4 +290,134 @@ export function useRequestManageLink(slug: string) {
       );
     },
   });
+}
+
+/** Fresh Idempotency-Key for a create / pay attempt (a retry of the same attempt reuses it). */
+export function newIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+export type CheckoutDocument = 'ics' | 'qr';
+
+/**
+ * Downloads the .ics or the QR (SVG) of a confirmed booking with the session
+ * header (they cannot be plain links: the token never goes in a URL).
+ */
+export async function fetchCheckoutDocument(
+  client: ReturnType<typeof useApiClient>,
+  slug: string,
+  session: { bookingId: string; token: string },
+  doc: CheckoutDocument,
+): Promise<Blob> {
+  const params = {
+    path: { slug, bookingId: session.bookingId },
+    header: checkoutHeader(session.token),
+  };
+  return doc === 'ics'
+    ? call(() =>
+        client.GET('/api/public/v1/{slug}/bookings/{bookingId}/ics', { params, parseAs: 'blob' }),
+      )
+    : call(() =>
+        client.GET('/api/public/v1/{slug}/bookings/{bookingId}/qr', {
+          params: { ...params, query: { format: 'svg' } },
+          parseAs: 'blob',
+        }),
+      );
+}
+
+/** Starts the payment of the balance from the manage area (redirect like the checkout). */
+export function useManagePay(slug: string, token: string) {
+  const client = useApiClient();
+  return useMutation<PayResult, ApiProblem, { idempotencyKey: string }>({
+    mutationFn: ({ idempotencyKey }) =>
+      call(() =>
+        client.POST('/api/public/v1/{slug}/manage/{token}/pay', {
+          params: { path: { slug, token }, header: { 'Idempotency-Key': idempotencyKey } },
+        }),
+      ),
+  });
+}
+
+function ifMatch(version: number): string {
+  return `"${String(version)}"`;
+}
+
+/** Applies a manage action result to the cached booking (version moves forward). */
+function useManageCache(slug: string, token: string) {
+  const qc = useQueryClient();
+  return (booking: ManageBooking | undefined) => {
+    if (booking) qc.setQueryData(publicKeys.manage(slug, token), booking);
+    else void qc.invalidateQueries({ queryKey: publicKeys.manage(slug, token) });
+  };
+}
+
+/** Modify within the policy: `dry_run` (default) previews, `false` applies with If-Match. */
+export function useManageModify(slug: string, token: string) {
+  const client = useApiClient();
+  const update = useManageCache(slug, token);
+  return useMutation<
+    ManageModifyResult,
+    ApiProblem,
+    { version: number; body: ManageModifyRequest }
+  >({
+    mutationFn: ({ version, body }) =>
+      call(() =>
+        client.POST('/api/public/v1/{slug}/manage/{token}/modify', {
+          params: { path: { slug, token }, header: { 'If-Match': ifMatch(version) } },
+          body,
+        }),
+      ),
+    onSuccess: (r) => {
+      if (r.applied) update(r.booking);
+    },
+  });
+}
+
+/** Cancellation with refund / credit preview (`dry_run`) or for real. */
+export function useManageCancel(slug: string, token: string) {
+  const client = useApiClient();
+  const update = useManageCache(slug, token);
+  return useMutation<
+    ManageCancelResult,
+    ApiProblem,
+    { version: number; body: ManageCancelRequest }
+  >({
+    mutationFn: ({ version, body }) =>
+      call(() =>
+        client.POST('/api/public/v1/{slug}/manage/{token}/cancel', {
+          params: { path: { slug, token }, header: { 'If-Match': ifMatch(version) } },
+          body,
+        }),
+      ),
+    onSuccess: (r) => {
+      if (r.applied) update(r.booking);
+    },
+  });
+}
+
+/** Season pass holders: release single days for a credit (preview or apply). */
+export function useManageRelease(slug: string, token: string) {
+  const client = useApiClient();
+  const update = useManageCache(slug, token);
+  return useMutation<ManageReleaseResult, ApiProblem, ManageReleaseRequest>({
+    mutationFn: (body) =>
+      call(() =>
+        client.POST('/api/public/v1/{slug}/manage/{token}/releases', {
+          params: { path: { slug, token } },
+          body,
+        }),
+      ),
+    onSuccess: (r) => {
+      if (r.applied) update(r.booking);
+    },
+  });
+}
+
+/** Public URL of a manage document (the magic link token is already in the path). */
+export function manageDocumentUrl(slug: string, token: string, doc: CheckoutDocument): string {
+  const base = `/api/public/v1/${encodeURIComponent(slug)}/manage/${encodeURIComponent(token)}`;
+  return doc === 'ics' ? `${base}/ics` : `${base}/qr?format=svg`;
 }

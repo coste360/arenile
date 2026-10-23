@@ -1,4 +1,4 @@
-import type { Locale } from '@arenile/shared/i18n';
+import { changeLocale, type Locale } from '@arenile/shared/i18n';
 import type { i18n as I18n } from 'i18next';
 import it from './it.json';
 
@@ -25,6 +25,12 @@ export async function addPublicMessages(i18n: I18n, locale: Locale): Promise<voi
   if (locale === 'it' || i18n.hasResourceBundle(locale, PUBLIC_NS)) return;
   const mod = await loaders[locale]();
   i18n.addResourceBundle(locale, PUBLIC_NS, mod.default);
+}
+
+/** Switches the page language, loading the public namespace of `locale` first. */
+export async function changePublicLocale(i18n: I18n, locale: Locale): Promise<void> {
+  await addPublicMessages(i18n, locale);
+  await changeLocale(i18n, locale);
 }
 
 export const publicLocaleLoaders = loaders;

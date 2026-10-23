@@ -1,5 +1,4 @@
 import { ApiClientProvider, createApiClient } from '@arenile/shared/api';
-import { createTestI18n } from '@arenile/shared/i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { BookingPage } from './BookingPage';
 import { parseBookingLocation } from './location';
 import { localBusinessJsonLd } from './seo';
+import { testI18n } from './test-utils';
 
 const ESTABLISHMENT = {
   slug: 'lido-demo',
@@ -31,7 +31,7 @@ function renderPage(path: string, response: () => Response) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const [pathname, search = ''] = path.split('?');
   return render(
-    <I18nextProvider i18n={createTestI18n()}>
+    <I18nextProvider i18n={testI18n()}>
       <ApiClientProvider client={api}>
         <QueryClientProvider client={qc}>
           <BookingPage location={parseBookingLocation(pathname!, search ? `?${search}` : '')} />
@@ -64,19 +64,19 @@ describe('BookingPage', () => {
     );
   });
 
-  it('keeps the later steps disabled and says the flow continues soon', async () => {
+  it('keeps the later steps unavailable until the previous ones are complete', async () => {
     const user = userEvent.setup();
     renderPage('/b/lido-demo', ok());
     const steps = await screen.findByRole('region', { name: '1. Quando' });
-    expect(steps).toHaveTextContent('In arrivo');
-    expect(steps).toHaveTextContent(/Postazione, pacchetto e pagamento online arrivano a breve/);
+    expect(steps).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Avanti' })).toBeDisabled();
     const where = screen.getByRole('button', { name: /Dove/ });
     expect(where).toHaveAttribute('aria-disabled', 'true');
-    expect(where).toHaveAccessibleName(/In arrivo/);
+    expect(where).toHaveAccessibleName(/Completa prima i passi precedenti/);
     await user.click(where);
     expect(screen.getByRole('region', { name: '1. Quando' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: '2. Dove' })).not.toBeInTheDocument();
+    expect(screen.getByText(/Scegli date, postazione e pacchetto/)).toBeInTheDocument();
   });
 
   it('shows the city and the active season under the title and limits the dates to it', async () => {

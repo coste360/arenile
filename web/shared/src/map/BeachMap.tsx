@@ -1,11 +1,21 @@
 import { useGesture } from '@use-gesture/react';
-import { memo, useCallback, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  memo,
+  useCallback,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import {
   IDENTITY,
   MAX_SCALE,
   MIN_SCALE,
+  clampScale,
   computeViewBox,
   transformAttr,
   zoomAt,
@@ -57,6 +67,21 @@ export interface BeachMapProps {
   spotIndicators?: Readonly<Record<string, readonly SpotIndicator[]>>;
   /** Called on click, tap, Enter or Space on a spot. */
   onSpotActivate?: (spot: MapSpot) => void;
+  /**
+   * Public seat picker: only spots in these statuses can be activated; the
+   * others stay readable (aria-label with their status) but are
+   * aria-disabled. Default: every active spot can be activated.
+   */
+  pickableStatuses?: readonly SpotStatus[];
+  /**
+   * Minimum on-screen size (CSS px) of a spot for a pointer tap to activate
+   * it (WCAG 2.5.8 target size, 44 px on the public page). A tap on a smaller
+   * spot zooms the map in, centred on that spot, until it reaches the size;
+   * the next tap activates it. Enter and Space always activate.
+   */
+  minTapTargetPx?: number;
+  /** Show the zoom slider next to the zoom buttons (default true). */
+  zoomSlider?: boolean;
   /** Optional extra text per spot (e.g. a price), appended to the aria-label. */
   spotDescription?: (spot: MapSpot) => string | undefined;
   /** Colour overrides (hex), e.g. from the panel theme; default: the --status-* theme tokens. */
@@ -78,6 +103,14 @@ export interface BeachMapProps {
 interface Point {
   x: number;
   y: number;
+}
+
+/** Transform that shows `point` at the centre of the drawing at `scale` (clamped). */
+function centerOn(vb: ViewBox, point: Point, scale: number): Transform {
+  const s = clampScale(scale);
+  const cx = vb.x + vb.width / 2;
+  const cy = vb.y + vb.height / 2;
+  return { scale: s, x: cx - point.x * s, y: cy - point.y * s };
 }
 
 function clientToViewBox(
@@ -120,7 +153,33 @@ interface SpotProps {
   /** Map units per screen pixel, zoom included (label legibility). */
   unitsPerPixel: number;
   ariaLabel: string;
+  /** False when the status is not pickable (public picker): aria-disabled, no activation. */
+  pickable: boolean;
   onActivate?: (spot: MapSpot) => void;
+  /** Pointer activation (click / tap); defaults to `onActivate`. */
+  onPointerActivate?: (spot: MapSpot) => void;
+}
+
+/** Check mark on a selected spot: the choice reads at a glance, not only as a ring. */
+function SelectedBadge({ x, y, r }: { x: number; y: number; r: number }) {
+  return (
+    <g pointerEvents="none" aria-hidden="true" data-selected-badge="">
+      <circle
+        cx={x}
+        cy={y}
+        r={r}
+        className="fill-primary stroke-background"
+        strokeWidth={r * 0.25}
+      />
+      <path
+        d={`M ${x - r * 0.45} ${y + r * 0.02} L ${x - r * 0.1} ${y + r * 0.38} L ${x + r * 0.48} ${y - r * 0.32}`}
+        className="fill-none stroke-primary-foreground"
+        strokeWidth={r * 0.28}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+  );
 }
 
 const Spot = memo(function Spot({
@@ -133,15 +192,20 @@ const Spot = memo(function Spot({
   focusable,
   unitsPerPixel,
   ariaLabel,
+  pickable,
   onActivate,
+  onPointerActivate,
 }: SpotProps) {
-  const disabled = spot.active === false || !onActivate;
+  const disabled = spot.active === false || !onActivate || !pickable;
   const S = spotArtSize(spot.shape);
   const fontSize = labelFontSize(S, 0.2, unitsPerPixel, 0.42);
   const badgeR = Math.min(Math.max(S * 0.12, 6.5 * unitsPerPixel), S * 0.2);
   const dotR = Math.min(Math.max(S * 0.085, 4.5 * unitsPerPixel), S * 0.14);
   const activate = () => {
-    if (spot.active !== false) onActivate?.(spot);
+    if (!disabled) onActivate?.(spot);
+  };
+  const pointerActivate = () => {
+    if (!disabled) (onPointerActivate ?? onActivate)?.(spot);
   };
   const onKeyDown = (e: KeyboardEvent<SVGGElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -164,7 +228,7 @@ const Spot = memo(function Spot({
         disabled ? 'cursor-default' : 'cursor-pointer',
         highlighted === false && 'opacity-30',
       )}
-      onClick={activate}
+      onClick={pointerActivate}
       onKeyDown={onKeyDown}
     >
       <SpotArt
@@ -175,17 +239,21 @@ const Spot = memo(function Spot({
         asset={spotAsset(spot)}
         status={status}
         color={color}
-        tint={status === 'free' ? 'faint' : 'strong'}
+        tint={status === 'free' && !selected ? 'faint' : 'strong'}
         emphasis={selected || !!highlighted}
         muted={status === 'unavailable'}
       />
-      <StatusBadge
-        status={status}
-        x={spot.x + S * 0.34}
-        y={spot.y - S * 0.34}
-        r={badgeR}
-        color={color}
-      />
+      {selected ? (
+        <SelectedBadge x={spot.x + S * 0.34} y={spot.y - S * 0.34} r={badgeR * 1.25} />
+      ) : (
+        <StatusBadge
+          status={status}
+          x={spot.x + S * 0.34}
+          y={spot.y - S * 0.34}
+          r={badgeR}
+          color={color}
+        />
+      )}
       {indicators?.map((kind, i) => (
         <circle
           key={kind}
@@ -321,6 +389,9 @@ export function BeachMap({
   highlightedIds,
   spotIndicators,
   onSpotActivate,
+  pickableStatuses,
+  minTapTargetPx,
+  zoomSlider = true,
   spotDescription,
   statusColors,
   legendStatuses,
@@ -344,7 +415,30 @@ export function BeachMap({
     [highlightedIds],
   );
   // Quantised: a wheel step must not re-render every memoised spot.
-  const unitsPerPixel = quantiseUnitsPerPixel(useUnitsPerPixel(svgRef, vb) / view.scale);
+  const fitUnitsPerPixel = useUnitsPerPixel(svgRef, vb);
+  const unitsPerPixel = quantiseUnitsPerPixel(fitUnitsPerPixel / view.scale);
+  const pickable = useMemo(
+    () => (pickableStatuses ? new Set(pickableStatuses) : null),
+    [pickableStatuses],
+  );
+
+  // Pointer taps on spots smaller than minTapTargetPx zoom in first. The
+  // callback is stable (latest values through a ref) so memoised spots do
+  // not re-render on every pan or zoom step.
+  const tapRef = useRef({ view, fitUnitsPerPixel, vb, minTapTargetPx, onSpotActivate });
+  useLayoutEffect(() => {
+    tapRef.current = { view, fitUnitsPerPixel, vb, minTapTargetPx, onSpotActivate };
+  });
+  const onPointerActivate = useCallback((spot: MapSpot) => {
+    const c = tapRef.current;
+    const size = spotArtSize(spot.shape);
+    const onScreen = (size / c.fitUnitsPerPixel) * c.view.scale;
+    if (!c.minTapTargetPx || onScreen >= c.minTapTargetPx || c.view.scale >= MAX_SCALE) {
+      c.onSpotActivate?.(spot);
+      return;
+    }
+    setView(centerOn(c.vb, spot, (c.view.scale * c.minTapTargetPx * 1.15) / onScreen));
+  }, []);
 
   // Roving tabindex: one focusable spot, moved with the keyboard.
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -454,7 +548,9 @@ export function BeachMap({
           onZoomIn={() => setView((v) => zoomAt(v, center, 1.25))}
           onZoomOut={() => setView((v) => zoomAt(v, center, 0.8))}
           onFit={() => setView(IDENTITY)}
-          onScaleChange={(scale) => setView((v) => zoomAt(v, center, scale / v.scale))}
+          onScaleChange={
+            zoomSlider ? (scale) => setView((v) => zoomAt(v, center, scale / v.scale)) : undefined
+          }
         />
       </div>
       <svg
@@ -508,7 +604,9 @@ export function BeachMap({
                 focusable={spot.id === focusableId}
                 unitsPerPixel={unitsPerPixel}
                 ariaLabel={extra ? `${aria}, ${extra}` : aria}
+                pickable={!pickable || pickable.has(status)}
                 onActivate={onSpotActivate}
+                onPointerActivate={minTapTargetPx ? onPointerActivate : undefined}
               />
             );
           })}

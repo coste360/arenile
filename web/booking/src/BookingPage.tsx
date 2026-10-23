@@ -1,7 +1,7 @@
-import { ApiProblem, usePublicEstablishment } from '@arenile/shared/api';
+import { ApiProblem } from '@arenile/shared/api';
 import { formatIsoDate } from '@arenile/shared/lib/dates';
-import { SUPPORTED_LOCALES, changeLocale, isLocale, resolveLocale } from '@arenile/shared/i18n';
-import { applyTheme, customText, resolveTheme } from '@arenile/shared/theme';
+import { SUPPORTED_LOCALES, isLocale } from '@arenile/shared/i18n';
+import { customText } from '@arenile/shared/theme';
 import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/card';
@@ -15,18 +15,22 @@ import {
   RotateCwIcon,
   UmbrellaIcon,
 } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { connectParent, observeHeight } from './embed/parent';
+import { BookingEnvProvider } from './flow/context';
+import { usePublicPage } from './flow/usePublicPage';
 import type { BookingLocation } from './location';
 import { applySeo } from './seo';
 import { LanguageSelect } from './LanguageSelect';
 import { Stepper } from './steps/Stepper';
+import { serverNow } from './flow/serverClock';
 
 export interface BookingPageProps {
   location: BookingLocation;
   /** Window used for embedding and SEO side effects (injectable for tests). */
   win?: Window;
+  /** Current time in ms (tests). */
+  now?: () => number;
 }
 
 function Message({ children, role = 'status' }: { children: string; role?: 'status' | 'alert' }) {
@@ -52,27 +56,9 @@ function Loading({ label }: { label: string }) {
   );
 }
 
-export function BookingPage({ location, win = window }: BookingPageProps) {
+export function BookingPage({ location, win = window, now = serverNow }: BookingPageProps) {
   const { t, i18n } = useTranslation();
-  const query = usePublicEstablishment(location.slug);
-  const establishment = query.data;
-  const theme = useMemo(() => resolveTheme(establishment?.theme), [establishment?.theme]);
-
-  // Language: ?lang, then browser, then establishment default (spec 20).
-  useEffect(() => {
-    if (!establishment) return;
-    const desired = resolveLocale({
-      param: location.lang,
-      browser: win.navigator.languages,
-      establishmentDefault: establishment.default_locale,
-      enabled: establishment.enabled_locales,
-    });
-    if (desired !== i18n.language) void changeLocale(i18n, desired);
-  }, [establishment, location.lang, i18n, win]);
-
-  useEffect(() => {
-    applyTheme(theme, win.document.documentElement);
-  }, [theme, win]);
+  const { query, establishment, theme, env } = usePublicPage(location, win, now);
 
   useEffect(() => {
     if (!establishment) return;
@@ -84,14 +70,6 @@ export function BookingPage({ location, win = window }: BookingPageProps) {
         t('booking.poweredBy'),
     });
   }, [establishment, location.embed, t, theme, i18n.language]);
-
-  // Embedded mode: report height to the verified host origin (spec 12.2).
-  useEffect(() => {
-    if (!location.embed) return;
-    const channel = connectParent(win, location.parentOrigin);
-    if (!channel) return;
-    return observeHeight(win, channel);
-  }, [location.embed, location.parentOrigin, win]);
 
   if (!location.slug) return <Message role="alert">{t('booking.notFound')}</Message>;
   if (query.isPending) return <Loading label={t('common.loading')} />;
@@ -132,6 +110,75 @@ export function BookingPage({ location, win = window }: BookingPageProps) {
     : '';
   const hasContacts = !!(e.contact_phone || e.contact_email || addressLine);
 
+  const heading = (
+    <div className="space-y-1.5">
+      <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+        {showHeader ? t('booking.title') : e.name}
+      </h1>
+      {!showHeader && <p className="text-sm text-muted-foreground">{t('booking.title')}</p>}
+      {(address?.city || e.season) && (
+        <p className="text-sm text-muted-foreground">
+          {[
+            address?.city,
+            e.season &&
+              t('booking.season', {
+                year: e.season.year,
+                from: formatIsoDate(e.season.opens_on),
+                to: formatIsoDate(e.season.closes_on),
+              }),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
+      )}
+      {intro && <p className="text-pretty text-muted-foreground">{intro}</p>}
+    </div>
+  );
+
+  const contacts = hasContacts ? (
+    <Card className="gap-3 py-4" aria-labelledby="contacts">
+      <CardHeader className="px-4">
+        <CardTitle>
+          <h2 id="contacts" className="text-base">
+            {t('booking.contact')}
+          </h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-4">
+        <ul className="space-y-2.5 text-sm">
+          {e.contact_phone && (
+            <li className="flex items-center gap-2">
+              <PhoneIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+              <a
+                className="text-primary-on-surface underline-offset-4 hover:underline"
+                href={`tel:${e.contact_phone.replace(/\s+/g, '')}`}
+              >
+                {e.contact_phone}
+              </a>
+            </li>
+          )}
+          {e.contact_email && (
+            <li className="flex items-center gap-2">
+              <MailIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+              <a
+                className="min-w-0 break-all text-primary-on-surface underline-offset-4 hover:underline"
+                href={`mailto:${e.contact_email}`}
+              >
+                {e.contact_email}
+              </a>
+            </li>
+          )}
+          {addressLine && (
+            <li className="flex items-start gap-2 text-muted-foreground">
+              <MapPinIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+              <span>{addressLine}</span>
+            </li>
+          )}
+        </ul>
+      </CardContent>
+    </Card>
+  ) : null;
+
   return (
     <div className="flex min-h-svh flex-col bg-muted/30">
       {showHeader && (
@@ -161,88 +208,25 @@ export function BookingPage({ location, win = window }: BookingPageProps) {
           </div>
         </header>
       )}
-      <main className="mx-auto grid w-full max-w-5xl flex-1 gap-6 px-4 py-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
-        <div className="space-y-6">
-          <div className="space-y-1.5">
-            <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-              {showHeader ? t('booking.title') : e.name}
-            </h1>
-            {!showHeader && <p className="text-sm text-muted-foreground">{t('booking.title')}</p>}
-            {(address?.city || e.season) && (
-              <p className="text-sm text-muted-foreground">
-                {[
-                  address?.city,
-                  e.season &&
-                    t('booking.season', {
-                      year: e.season.year,
-                      from: formatIsoDate(e.season.opens_on),
-                      to: formatIsoDate(e.season.closes_on),
-                    }),
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </p>
-            )}
-            {intro && <p className="text-pretty text-muted-foreground">{intro}</p>}
-          </div>
-          {e.booking_enabled ? (
-            <Stepper season={e.season} />
+      <main className="flex flex-1 flex-col">
+        <BookingEnvProvider value={env}>
+          {e.booking_enabled || location.preview ? (
+            <Stepper
+              header={heading}
+              aside={contacts}
+              returnedBookingId={location.checkoutBookingId}
+            />
           ) : (
-            <Alert>
-              <InfoIcon aria-hidden="true" />
-              <AlertDescription role="status">{t('booking.disabled')}</AlertDescription>
-            </Alert>
+            <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:py-8">
+              {heading}
+              <Alert>
+                <InfoIcon aria-hidden="true" />
+                <AlertDescription role="status">{t('booking.disabled')}</AlertDescription>
+              </Alert>
+              {contacts}
+            </div>
           )}
-        </div>
-        {hasContacts && (
-          <Card className="gap-3 py-4 lg:sticky lg:top-6" aria-labelledby="contacts">
-            <CardHeader className="px-4">
-              <CardTitle>
-                <h2 id="contacts" className="text-base">
-                  {t('booking.contact')}
-                </h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4">
-              <ul className="space-y-2.5 text-sm">
-                {e.contact_phone && (
-                  <li className="flex items-center gap-2">
-                    <PhoneIcon
-                      aria-hidden="true"
-                      className="size-4 shrink-0 text-muted-foreground"
-                    />
-                    <a
-                      className="text-primary-on-surface underline-offset-4 hover:underline"
-                      href={`tel:${e.contact_phone.replace(/\s+/g, '')}`}
-                    >
-                      {e.contact_phone}
-                    </a>
-                  </li>
-                )}
-                {e.contact_email && (
-                  <li className="flex items-center gap-2">
-                    <MailIcon
-                      aria-hidden="true"
-                      className="size-4 shrink-0 text-muted-foreground"
-                    />
-                    <a
-                      className="min-w-0 break-all text-primary-on-surface underline-offset-4 hover:underline"
-                      href={`mailto:${e.contact_email}`}
-                    >
-                      {e.contact_email}
-                    </a>
-                  </li>
-                )}
-                {addressLine && (
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <MapPinIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-                    <span>{addressLine}</span>
-                  </li>
-                )}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
+        </BookingEnvProvider>
       </main>
       <footer className="mx-auto w-full max-w-5xl px-4 pb-8">
         <Separator className="mb-4" />

@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { BookingPage } from './BookingPage';
 import { addPublicMessages } from './i18n';
+import { observeServerDate } from './flow/serverClock';
 import { parseBookingLocation } from './location';
 import { ManagePage } from './views';
 import '@arenile/shared/styles/globals.css';
@@ -20,6 +21,13 @@ async function bootstrap() {
     defaultOptions: { queries: { retry: shouldRetry, refetchOnWindowFocus: false } },
   });
   const api = createApiClient();
+  // Hold countdowns run on the server's clock (devices are often minutes off).
+  api.use({
+    onResponse({ response }) {
+      observeServerDate(response.headers.get('Date'));
+      return undefined;
+    },
+  });
   const root = document.getElementById('root');
   if (!root) throw new Error('missing #root');
   createRoot(root).render(

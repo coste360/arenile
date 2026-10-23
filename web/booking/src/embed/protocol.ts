@@ -20,3 +20,21 @@ export interface NavigateMessage {
 }
 
 export type ArenileMessage = ResizeMessage | BookedMessage | NavigateMessage;
+
+/**
+ * Admin panel ↔ theme preview (spec 12.5: "l'anteprima nel pannello è la
+ * pagina reale in modalità prova"). The panel frames `/b/{slug}?embed=1&preview=1`
+ * on the SAME origin and posts the theme being edited; the page announces
+ * itself when ready. Never exchanged with third-party hosts.
+ */
+export interface PreviewReadyMessage {
+  type: 'arenile:preview-ready';
+}
+
+export interface PreviewThemeMessage {
+  type: 'arenile:preview-theme';
+  /** Theme as edited (not yet saved), same shape as the API `Theme`. */
+  theme: Record<string, unknown>;
+}
+
+export type PreviewMessage = PreviewReadyMessage | PreviewThemeMessage;

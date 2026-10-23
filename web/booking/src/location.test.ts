@@ -19,6 +19,9 @@ describe('parseBookingLocation', () => {
       to: '2027-07-12',
       pack: 'base',
       parentOrigin: 'https://x.it',
+      hostPage: null,
+      preview: false,
+      colorScheme: null,
     });
   });
 
@@ -46,12 +49,35 @@ describe('parseBookingLocation', () => {
     });
   });
 
+  it('reads the host page of the widget only in embed mode', () => {
+    const page = encodeURIComponent('https://www.lido.it/prenota?x=1');
+    expect(parseBookingLocation('/b/lido', `?embed=1&return=${page}`).hostPage).toBe(
+      'https://www.lido.it/prenota?x=1',
+    );
+    expect(parseBookingLocation('/b/lido', `?return=${page}`).hostPage).toBeNull();
+    expect(
+      parseBookingLocation('/b/lido', '?embed=1&return=javascript:alert(1)').hostPage,
+    ).toBeNull();
+    expect(parseBookingLocation('/b/lido', '?embed=1&return=/relative').hostPage).toBeNull();
+  });
+
   it('reads the checkout to resume after the payment return', () => {
     const id = '0192F5A0-1C2B-7D3E-8F40-123456789ABC';
     expect(parseBookingLocation('/b/lido', `?checkout=${id}`).checkoutBookingId).toBe(
       id.toLowerCase(),
     );
     expect(parseBookingLocation('/b/lido', '?checkout=nope').checkoutBookingId).toBeNull();
+  });
+
+  it('reads the panel preview flag and the forced colour scheme', () => {
+    expect(parseBookingLocation('/b/x', '?preview=1&theme=dark')).toMatchObject({
+      preview: true,
+      colorScheme: 'dark',
+    });
+    expect(parseBookingLocation('/b/x', '?theme=blue')).toMatchObject({
+      preview: false,
+      colorScheme: null,
+    });
   });
 
   it('drops malformed dates and defaults embed to false', () => {
