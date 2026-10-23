@@ -29,9 +29,13 @@ function Rows({ items }: { items: Establishment[] }) {
             <a
               href={`/b/${encodeURIComponent(e.slug)}`}
               className="inline-flex items-center gap-1 text-primary-on-surface underline-offset-4 hover:underline"
-              aria-label={t('admin.establishments.openPublicPage', { name: e.name })}
             >
               /b/{e.slug}
+              {/* Visible text stays part of the accessible name (WCAG 2.5.3). */}
+              <span className="sr-only">
+                {' '}
+                {t('admin.establishments.openPublicPage', { name: e.name })}
+              </span>
               <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
             </a>
           </TableCell>

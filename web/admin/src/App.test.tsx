@@ -169,7 +169,7 @@ describe('admin app', () => {
     );
     expect(await screen.findByRole('rowheader', { name: 'Lido Demo' })).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: 'Apri la pagina pubblica di Lido Demo' }),
+      screen.getByRole('link', { name: /^\/b\/lido-demo\s*Apri la pagina pubblica di Lido Demo$/ }),
     ).toHaveAttribute('href', '/b/lido-demo');
     const config = screen.getByRole('navigation', { name: 'Configurazione dello stabilimento' });
     expect(within(config).getByRole('link', { name: 'Tutti gli stabilimenti' })).toHaveAttribute(
@@ -189,7 +189,7 @@ describe('admin app', () => {
         return new Response(null, { status: 204 });
       },
     });
-    await user.click(await screen.findByRole('button', { name: 'Menu utente' }));
+    await user.click(await screen.findByRole('button', { name: /Menu utente/ }));
     await user.click(await screen.findByRole('menuitem', { name: 'Esci' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/login'));
   });
@@ -209,7 +209,7 @@ const OWNER_ME = {
 
 /** Opens the establishment switcher once the list is loaded. */
 async function openSwitcher(user: ReturnType<typeof userEvent.setup>) {
-  const trigger = await screen.findByRole('button', { name: /^Stabilimento: Lido/ });
+  const trigger = await screen.findByRole('button', { name: /Stabilimento:\s*Lido/ });
   await user.click(trigger);
 }
 
@@ -273,7 +273,7 @@ describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
       name: 'Configurazione dello stabilimento',
     });
     expect(within(nav).queryByRole('link', { name: 'Utenti' })).not.toBeInTheDocument();
-    await userEvent.setup().click(screen.getByRole('button', { name: /^Stabilimento:/ }));
+    await userEvent.setup().click(screen.getByRole('button', { name: /Stabilimento:/ }));
     await screen.findByRole('menuitemradio', { name: 'Lido Demo' });
     expect(screen.queryByRole('menuitem', { name: 'Nuovo stabilimento' })).not.toBeInTheDocument();
   });

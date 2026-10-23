@@ -48,10 +48,10 @@ export function CommandMenu() {
         size="sm"
         onClick={() => setOpen(true)}
         className="w-9 justify-center px-0 text-muted-foreground sm:w-56 sm:justify-start sm:px-3"
-        aria-label={t('nav.search')}
         aria-keyshortcuts={isMac ? 'Meta+K' : 'Control+K'}
       >
         <SearchIcon aria-hidden="true" />
+        <span className="sr-only sm:hidden">{t('nav.search')}</span>
         <span className="hidden flex-1 text-left font-normal sm:inline">
           {t('nav.searchPlaceholder')}
         </span>

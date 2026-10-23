@@ -56,7 +56,6 @@ export function EstablishmentSwitcher() {
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              aria-label={`${t('admin.switcher.label')}: ${subtitle}`}
               disabled={current.isLoading}
             >
               <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
@@ -64,6 +63,8 @@ export function EstablishmentSwitcher() {
               </span>
               <span className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{t('common.appName')}</span>
+                {/* Visible text is part of the name: "Arenile Stabilimento: Lido Demo". */}
+                <span className="sr-only">{t('admin.switcher.label')}: </span>
                 {current.isLoading ? (
                   <Skeleton className="mt-1 h-3 w-24" />
                 ) : (

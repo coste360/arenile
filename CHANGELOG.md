@@ -8,11 +8,18 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi e policy** (completate, non rilasciate).
 
+### Changed
+
+- Pagina pubblica: il passo "Quando" e il selettore della lingua (NativeSelect) fanno parte del primo caricamento, il corpo del calendario si carica all'apertura del campo; `npm run budget` conta ogni chunk del primo schermo seguendo il manifest di Vite (JS 141 KB gzip su 150, CSS 12,8 KB su 25) e la scansione di Tailwind è limitata ai componenti usati. I passi successivi restano disattivati con "In arrivo".
+- Pannello: nomi al posto dei codici per periodi e categorie di prezzo (riepiloghi delle regole, matrice con colonna "Codice" nascosta, simulatore, policy, linea temporale delle stagioni); Policy come scheda della barra prezzi; barra laterale con le sezioni non ancora disponibili raccolte in un gruppo "In arrivo" chiuso e voce "Tutti gli stabilimenti"; mappa condivisa con un solo punto di tabulazione (frecce, PagSu/PagGiù, Home/Fine tra le postazioni) ed etichette mai sotto i 9 px; procedura guidata senza riferimenti alle milestone interne.
+
 ### Added
 
 - Pannello e pagina di prenotazione con UI kit shadcn/ui (ADR 0009): barra laterale con selettore dello stabilimento e menu utente, breadcrumb, palette comandi (Ctrl/⌘+K), tema chiaro/scuro/sistema, toast; tabelle con ordinamento e filtro, pannelli laterali di modifica, calendari e selettori di date gg/MM/aaaa in italiano al posto di `<input type="date">`, importi con `MoneyInput`; editor della mappa con barra degli strumenti a icone, zoom fino al 400%, legenda e pannello proprietà; stagioni con linea temporale e calendario, chiusure su calendario, simulatore con grafico e dettaglio per giorno; pagina pubblica mobile-first con passo "Quando" e selettore del periodo.
 - Controllo `web/scripts/css-guard.mjs` in `npm run lint`: rifiuta fogli di stile diversi dal tema (anche in `public/` e `.html`), CSS-in-JS, `style={…}` e stili programmatici fuori dalle esenzioni elencate (geometria della mappa, variabili del tema, iframe dell'embed), valori arbitrari di Tailwind che aggirano il tema (colori, `text-[10px]`, proprietà) e i vecchi token `--ar-*`.
-- Test e2e del guscio del pannello (tema scuro persistente, palette comandi) e del selettore di date della pagina pubblica.
+- Test e2e del guscio del pannello (tema scuro persistente, palette comandi) e del selettore di date della pagina pubblica; scansioni axe (WCAG 2.1 AA) del guscio, di una pagina con modulo e dell'editor della mappa in tema chiaro e scuro.
+- `GET /api/public/v1/{slug}` restituisce `season` (anno e date della stagione attiva, assente senza stagione attiva): la pagina pubblica limita il calendario alla stagione e mostra città e date sotto il titolo.
+- Pattern condivisi `QueryState`, `RowActions` (`EditButton`, `DeleteButton` con conferma e errore del server nel dialogo), `OptionSelect`, `MultiSelect`, `FormDialog`/`FormSheet`/`SheetForm`/`FormActions` in `@arenile/shared/ui/patterns`; un solo modulo degli importi (`@arenile/shared/lib/money`, raggruppamento delle migliaia sempre attivo, importi illeggibili respinti dai moduli invece di essere azzerati).
 - M1 — stabilimenti: creazione di nuovi stabilimenti dal pannello (solo owner dell'organizzazione) con selettore, impostazioni con `If-Match` (fuso, lingue, origini embed, tema, impostazioni prezzi, festività locali, policy predefinita), archiviazione e ripristino.
 - M1 — stagioni, periodi tariffari (senza sovrapposizioni, serializzati sulla stagione) e giorni di chiusura per fascia AM/PM; copia delle date di stagione.
 - M1 — utenti e ruoli (solo owner): aggiunta con password iniziale o temporanea, cambio ruolo e ambito, disattivazione con chiusura delle sessioni; l'ultimo owner attivo non può essere rimosso.
@@ -49,7 +56,7 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 - Roadmap estesa con M6 (edizione desktop, locale o client remoto) e M7 (app mobile), sezione 29 della specifica.
 - `pkg/ext`: `PaymentProvider.ParseWebhook` riceve anche le credenziali decifrate dello stabilimento (`ParseWebhook(ctx, r, creds)`), diversamente dalla spec 13.1 ([ADR 0006](docs/adr/0006-deviazioni-m0-dalla-specifica.md)).
 - `make test-race` compila con il tag `integration` e fallisce se non trova test `TestConcurrency_*`.
-- L'editor della mappa usa un *roving tabindex*: la mappa è un solo punto di tabulazione (il primo elemento selezionato, altrimenti la prima postazione); Inizio/Fine e PagSu/PagGiù spostano fuoco e selezione tra gli elementi, le frecce lo fanno in sola lettura.
+- L'editor della mappa usa un _roving tabindex_: la mappa è un solo punto di tabulazione (il primo elemento selezionato, altrimenti la prima postazione); Inizio/Fine e PagSu/PagGiù spostano fuoco e selezione tra gli elementi, le frecce lo fanno in sola lettura.
 
 ### Added (deviazioni e integrazioni alla specifica, ADR 0006)
 

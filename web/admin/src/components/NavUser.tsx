@@ -50,8 +50,9 @@ export function NavUser() {
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              aria-label={t('admin.userMenu')}
             >
+              {/* The visible name and email stay part of the accessible name (WCAG 2.5.3). */}
+              <span className="sr-only">{t('admin.userMenu')}: </span>
               <Avatar className="size-8 rounded-lg">
                 <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary-on-surface">
                   {initials(name)}
