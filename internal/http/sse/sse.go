@@ -82,12 +82,15 @@ func (s *Server) Serve(w http.ResponseWriter, r *http.Request, establishmentID s
 	}
 }
 
+// writeEvent sends one message: the SSE event name is the stream topic
+// (booking.changed, allocation.changed, ...), the domain type is in data.
 func writeEvent(w http.ResponseWriter, ev ext.Event) error {
-	b, err := json.Marshal(event.ToStreamMessage(ev))
+	msg := event.ToStreamMessage(ev)
+	b, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprintf(w, "id: %s\nevent: %s\ndata: %s\n\n", sanitize(ev.ID), sanitize(ev.Type), b)
+	_, err = fmt.Fprintf(w, "id: %s\nevent: %s\ndata: %s\n\n", sanitize(ev.ID), sanitize(msg.Topic), b)
 	return err
 }
 

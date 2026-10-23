@@ -123,6 +123,7 @@ describe('admin app', () => {
     let loggedIn = false;
     const { history, fetchMock } = setup('/admin/cassa', {
       'GET /api/admin/v1/auth/me': () => (loggedIn ? json(200, ME) : problem(401, 'unauthorized')),
+      'GET /api/admin/v1/establishments': () => json(200, { items: [ESTABLISHMENT] }),
       'POST /api/admin/v1/auth/login': async (req) => {
         expect(await req.json()).toEqual({ email: 'gestore@example.it', password: 'segreta' });
         loggedIn = true;
@@ -132,9 +133,9 @@ describe('admin app', () => {
     await user.type(await screen.findByLabelText('Email'), 'gestore@example.it');
     await user.type(screen.getByLabelText('Password'), 'segreta');
     await user.click(screen.getByRole('button', { name: 'Accedi' }));
+    // The legacy section path lands on the same section of the current establishment.
     expect(await screen.findByRole('heading', { name: 'Cassa', level: 1 })).toBeInTheDocument();
-    expect(history.location.pathname).toBe('/admin/cassa');
-    expect(screen.getByText('Disponibile dalla milestone M3')).toBeInTheDocument();
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e1/cassa'));
     const loginCall = fetchMock.mock.calls.find(([r]) => r.method === 'POST');
     expect(loginCall?.[0].headers.get('X-CSRF-Token')).toBe('csrf');
   });
@@ -149,21 +150,28 @@ describe('admin app', () => {
       within(nav)
         .getAllByRole('link')
         .map((a) => a.textContent);
-    // Only delivered sections are listed; the others sit in a closed "In arrivo" group.
-    expect(labels()).toEqual(['Mappa']);
-    expect(within(nav).getByRole('link', { name: 'Mappa' })).not.toHaveAttribute('aria-disabled');
-    await userEvent.click(within(nav).getByRole('button', { name: /In arrivo/ }));
-    expect(labels()).toEqual([
-      'Mappa',
+    // Delivered sections (M3) link to the current establishment; the others
+    // sit in a closed "In arrivo" group.
+    const operations = [
       'Oggi',
+      'Mappa',
       'Prenotazioni',
       'Calendario',
       'Clienti',
       'Abbonamenti',
       'Cassa',
-      'Report',
-    ]);
-    expect(within(nav).getByRole('link', { name: 'Cassa' })).toHaveAttribute(
+    ];
+    await waitFor(() =>
+      expect(within(nav).getByRole('link', { name: 'Cassa' })).toHaveAttribute(
+        'href',
+        '/admin/e/e1/cassa',
+      ),
+    );
+    expect(labels()).toEqual(operations);
+    expect(within(nav).getByRole('link', { name: 'Cassa' })).not.toHaveAttribute('aria-disabled');
+    await userEvent.click(within(nav).getByRole('button', { name: /In arrivo/ }));
+    expect(labels()).toEqual([...operations, 'Report']);
+    expect(within(nav).getByRole('link', { name: 'Report' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
@@ -194,11 +202,21 @@ describe('admin app', () => {
     await waitFor(() => expect(history.location.pathname).toBe('/admin/login'));
   });
 
-  it('shows the demo map with accessible spots', async () => {
-    setup('/admin/mappa', { 'GET /api/admin/v1/auth/me': () => json(200, ME) });
-    expect(await screen.findByRole('group', { name: 'Mappa dimostrativa' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Postazione A1:/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Adatta alla vista' })).toBeInTheDocument();
+  it('redirects a legacy section to the current establishment', async () => {
+    const { history } = setup('/admin/mappa', {
+      'GET /api/admin/v1/auth/me': () => json(200, ME),
+      'GET /api/admin/v1/establishments': () => json(200, { items: [ESTABLISHMENT] }),
+    });
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e1/mappa'));
+    expect(await screen.findByRole('heading', { name: 'Mappa', level: 1 })).toBeInTheDocument();
+  });
+
+  it('sends a legacy section to the establishments list when there is none', async () => {
+    const { history } = setup('/admin/oggi', {
+      'GET /api/admin/v1/auth/me': () => json(200, ME),
+      'GET /api/admin/v1/establishments': () => json(200, { items: [] }),
+    });
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/configurazione'));
   });
 });
 
@@ -236,6 +254,17 @@ describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
     ['/admin/e/e1/pricing/matrix', 'Matrice di listino'],
     ['/admin/e/e1/pricing/coverage', 'Verifica di copertura'],
     ['/admin/e/e1/policies', 'Policy di prenotazione'],
+    ['/admin/e/e1/oggi', 'Oggi'],
+    ['/admin/e/e1/mappa', 'Mappa'],
+    ['/admin/e/e1/prenotazioni', 'Prenotazioni'],
+    ['/admin/e/e1/prenotazioni/b1', 'Prenotazione'],
+    ['/admin/e/e1/calendario', 'Calendario'],
+    ['/admin/e/e1/clienti', 'Clienti'],
+    ['/admin/e/e1/clienti/c1', 'Cliente'],
+    ['/admin/e/e1/abbonamenti', 'Abbonamenti'],
+    ['/admin/e/e1/cassa', 'Cassa'],
+    ['/admin/e/e1/cassa/corrispettivi', 'Corrispettivi'],
+    ['/admin/e/e1/report', 'Report'],
     ['/admin/establishments/new', 'Nuovo stabilimento'],
   ])('%s renders its feature page', async (path, title) => {
     setup(path, routes);
@@ -302,9 +331,17 @@ describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
     await waitFor(() => expect(history.location.pathname).toBe('/admin/establishments/new'));
   });
 
+  it('switches from a booking detail to the bookings list', async () => {
+    const user = userEvent.setup();
+    const { history } = setup('/admin/e/e1/prenotazioni/b1', routes);
+    await openSwitcher(user);
+    await user.click(await screen.findByRole('menuitemradio', { name: 'Lido Due' }));
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/prenotazioni'));
+  });
+
   it('goes to the establishment settings when switching from a global page', async () => {
     const user = userEvent.setup();
-    const { history } = setup('/admin/oggi', routes);
+    const { history } = setup('/admin/configurazione', routes);
     await openSwitcher(user);
     await user.click(await screen.findByRole('menuitemradio', { name: 'Lido Due' }));
     await waitFor(() => expect(history.location.pathname).toBe('/admin/e/e2/config/establishment'));

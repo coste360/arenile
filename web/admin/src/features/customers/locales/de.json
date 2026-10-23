@@ -1,0 +1,10 @@
+{
+  "list": {
+    "title": "Kunden",
+    "description": "Kundenstamm mit Suche nach Name, Telefon, E-Mail und Tag."
+  },
+  "detail": {
+    "title": "Kunde",
+    "description": "Daten, Verlauf, Guthaben, Saisonabos, DSGVO-Export und Anonymisierung."
+  }
+}

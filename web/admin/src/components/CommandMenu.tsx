@@ -66,7 +66,12 @@ export function CommandMenu() {
           <CommandEmpty>{t('ui.noResults')}</CommandEmpty>
           <CommandGroup heading={t('nav.operations')}>
             {NAV_ITEMS.filter((i) => i.available).map((item) => (
-              <CommandItem key={item.to} onSelect={() => go(item.to)}>
+              <CommandItem
+                key={item.to}
+                onSelect={() =>
+                  current.id ? go(item.to, { establishmentId: current.id }) : go(`/${item.section}`)
+                }
+              >
                 <item.icon aria-hidden="true" />
                 {t(item.labelKey)}
               </CommandItem>

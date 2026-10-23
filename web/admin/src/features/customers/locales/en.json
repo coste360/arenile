@@ -1,0 +1,10 @@
+{
+  "list": {
+    "title": "Customers",
+    "description": "Customer records with search by name, phone, email and tag."
+  },
+  "detail": {
+    "title": "Customer",
+    "description": "Details, history, credits, season passes, GDPR export and anonymization."
+  }
+}

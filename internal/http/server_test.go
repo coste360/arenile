@@ -418,7 +418,7 @@ func TestHTTP_SSEStream(t *testing.T) {
 		switch {
 		case line == ": ping":
 			sawPing = true
-		case strings.HasPrefix(line, "event: booking.confirmed"):
+		case strings.HasPrefix(line, "event: booking.changed"):
 			sawEvent = true
 		}
 	}

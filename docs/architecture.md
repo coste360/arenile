@@ -52,24 +52,26 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/http/admin` | Handler di `/api/admin/v1`: decodifica, chiamata al servizio, codifica; errori `application/problem+json` | `http/api`, `domain/*` |
 | `internal/http/public` | Handler di `/api/public/v1/{slug}` e dei webhook di pagamento `/webhooks/payments/{provider}/{establishment_id}` | `http/api`, `domain/*` |
 | `internal/http/middleware` | Logging slog, recover, request ID, sessione e chiavi API, CSRF double-submit, rate limit, risoluzione dello stabilimento, header di sicurezza | `domain/auth` |
-| `internal/http/sse` | `GET /api/admin/v1/stream`: broker in memoria, messaggi leggeri `{type, spot_ids, dates}` | `domain/event` |
+| `internal/http/sse` | `GET /api/admin/v1/stream`: broker in memoria, `event:` = topic (`booking.changed`, `allocation.changed`, `hold.changed`, `cash.changed`, ...), messaggi leggeri `{topic, type, booking_id, spot_ids, dates}` senza dati personali (ADR 0010) | `domain/event` |
 | `internal/http/static` | `embed.FS` di `static/admin` e `static/booking` (copiati da `web/*/dist` in build); pagina segnaposto se manca `index.html`. Serve `/admin/`, `/b/{slug}`, `/embed.js` | stdlib |
 | `internal/reqctx` | Metadati della richiesta nel `context` (request ID, IP del client, schema, metodo di autenticazione): li scrive il middleware, li leggono handler e servizi per l'audit. Nessuna dipendenza da `net/http` | stdlib |
 | `internal/domain/establishment` | Organizzazioni e stabilimenti: creazione (solo owner dell'organizzazione), impostazioni con `If-Match`, tema, archiviazione | `store`, `audit`, `event` |
 | `internal/domain/season` | Stagioni, periodi tariffari (senza sovrapposizioni, lock sulla riga della stagione), giorni di chiusura, copia delle date di stagione | `store`, `audit`, `event` |
 | `internal/domain/team` | Utenti e membership dello stabilimento (solo owner), password temporanea, disattivazione; protezione dell'ultimo owner | `auth`, `store`, `audit` |
-| `internal/domain/mapping` | Documento mappa versionato (postazioni, decorazioni), zone, pool e pool implicito delle zone `zone`, generatore di file puro (`generator.go`), verifica delle allocazioni future (`AllocationChecker`, `NoAllocations` fino a M3) | `store`, `audit`, `event` |
+| `internal/domain/mapping` | Documento mappa versionato (postazioni, decorazioni), zone, pool e pool implicito delle zone `zone`, generatore di file puro (`generator.go`), verifica delle allocazioni future (`AllocationChecker`, implementato da `inventory`) | `store`, `audit`, `event` |
 | `internal/domain/catalog` | Componenti, pack, extra; `LoadPricingCatalog` costruisce il `pricing.Catalog` | `store`, `pricing` |
 | `internal/domain/pricingconfig` | Persistenza di regole di prezzo, prezzi fissi, promo, convenzioni e policy; `LoadPriceList` per i motori; simulatore, matrice, copertura, copia del listino | `pricing`, `policy`, `store` |
 | `internal/domain/setup` | Configurazione guidata: modelli, applicazione in una transazione, listino rapido, stato, `seed demo` | `mapping`, `pricingconfig`, `store` |
-| `internal/domain/availability` | Allocazioni, hold, pool, quote online, rilasci, assegnazione automatica | `store`, `clock` |
+| `internal/domain/availability` | Motore **puro**: assegnazione automatica, quote online, aggregazione, errori di conflitto (`ConflictError`) | `calendar` |
+| `internal/domain/inventory` | Disponibilità su database: allocazioni, hold con scadenza, blocchi, `pool_usage` con `UPDATE` condizionale, quote; vista operativa del giorno, planning | `availability`, `store`, `event` |
 | `internal/domain/pricing` | Motore prezzi **puro** `Quote(input, catalogo, regole) → PriceBreakdown` (ADR 0004) | `money`, `calendar` |
 | `internal/domain/policy` | Risoluzione della policy applicabile e validazione dei vincoli | `calendar`, `clock` |
-| `internal/domain/booking` | Ciclo di vita della prenotazione (spec 10.2); unico punto che cambia lo stato; audit + outbox nella stessa transazione | `availability`, `pricing`, `policy`, `event` |
-| `internal/domain/customer` | Clienti, consensi, crediti, esportazione e anonimizzazione GDPR | |
-| `internal/domain/payment` | Pagamenti, rimborsi, driver `manual` e `stripe`, deduplica dei webhook, riconciliazione | `pkg/ext` |
-| `internal/domain/cash` | Sessioni di cassa, incassi, chiusure | |
-| `internal/domain/fiscal` | Documenti commerciali tramite `ext.FiscalDriver` (`none`, `export`) | `pkg/ext` |
+| `internal/domain/booking` | Ciclo di vita della prenotazione (spec 10.2); unico punto che cambia lo stato; audit + outbox nella stessa transazione; porte `Inventory`, `Pricer`, `Customers`, `Payments`, `Releases`; `Ledger` per `paid_amount` | `inventory`, `pricingconfig`, `customer`, `payment`, `event` |
+| `internal/domain/pass` | Abbonamenti stagionali (prenotazioni `is_season_pass`) e rilasci; `Resale` per le rivendite | `booking`, `inventory`, `store` |
+| `internal/domain/customer` | Clienti, consensi, crediti, esportazione e anonimizzazione GDPR | `store`, `audit`, `event` |
+| `internal/domain/payment` | Pagamenti, rimborsi, vendite di cassa, registro dei driver (`manual`; `stripe`, deduplica dei webhook e riconciliazione in M4); porte `BookingLedger`, `CashDesk`, `Fiscal`, `Credits` | `pkg/ext`, `store` |
+| `internal/domain/cash` | Sessioni di cassa per registro, movimenti, chiusure con differenza (INV-25) | `store`, `audit`, `event` |
+| `internal/domain/fiscal` | Corrispettivi per aliquota e metodo (JSON/CSV), documenti commerciali tramite `ext.FiscalDriver` (`none`, `export`) | `pkg/ext`, `store` |
 | `internal/domain/notification` | Template, invio email (SMTP), `ext.Notifier` | |
 | `internal/domain/event` | Tipi di evento, scrittura nell'outbox, dispatcher verso sink, webhook in uscita e SSE | |
 | `internal/domain/auth` | Utenti, membership, ruoli e permessi (spec 16), sessioni, TOTP, chiavi API | `x/crypto` |

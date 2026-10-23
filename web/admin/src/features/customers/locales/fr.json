@@ -1,0 +1,10 @@
+{
+  "list": {
+    "title": "Clients",
+    "description": "Fichier clients avec recherche par nom, téléphone, e-mail et étiquette."
+  },
+  "detail": {
+    "title": "Client",
+    "description": "Données, historique, crédits, abonnements, export et anonymisation RGPD."
+  }
+}

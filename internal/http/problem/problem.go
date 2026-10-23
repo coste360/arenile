@@ -12,6 +12,9 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/availability"
+	"github.com/coste360/arenile/internal/domain/booking"
+	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/policy"
@@ -52,6 +55,11 @@ const (
 	PreconditionRequired  = api.ProblemType("precondition_required")
 	SpotHasFutureAllocs   = api.ProblemType("spot_has_future_allocations")
 	NotImplemented        = api.ProblemType("not_implemented")
+	PoolExhausted         = api.ProblemType("pool_exhausted")
+	QuotaExceeded         = api.ProblemType("quota_exceeded")
+	InvalidTransition     = api.ProblemType("invalid_transition")
+	CashSessionClosed     = api.ProblemType("cash_session_closed")
+	CashSessionOpen       = api.ProblemType("cash_session_already_open")
 )
 
 type meta struct {
@@ -88,6 +96,11 @@ var catalog = map[api.ProblemType]meta{
 	PreconditionRequired:  {http.StatusPreconditionRequired, "Header If-Match obbligatorio"},
 	SpotHasFutureAllocs:   {http.StatusConflict, "Postazione con prenotazioni future: puoi solo disattivarla"},
 	NotImplemented:        {http.StatusNotImplemented, "Operazione non ancora disponibile"},
+	PoolExhausted:         {http.StatusConflict, "Quantità non disponibile per le date richieste"},
+	QuotaExceeded:         {http.StatusConflict, "Quota online esaurita per le date richieste"},
+	InvalidTransition:     {http.StatusConflict, "Operazione non ammessa nello stato attuale della prenotazione"},
+	CashSessionClosed:     {http.StatusConflict, "La sessione di cassa è chiusa"},
+	CashSessionOpen:       {http.StatusConflict, "C'è già una sessione di cassa aperta"},
 }
 
 // Option customises a problem.
@@ -107,6 +120,34 @@ func SpotIDs(ids []string) Option { return func(p *api.Problem) { p.SpotIds = &i
 
 // Violations sets violations (policy_violation).
 func Violations(vs []api.PolicyViolation) Option { return func(p *api.Problem) { p.Violations = &vs } }
+
+// Conflicts sets conflicts (spot_unavailable, pool_exhausted, quota_exceeded).
+func Conflicts(cs []availability.Conflict) Option {
+	return func(p *api.Problem) {
+		out := make([]api.AllocationConflict, len(cs))
+		for i, c := range cs {
+			out[i] = api.AllocationConflict{Date: c.Date, Slot: api.Slot(c.Slot), Reason: api.AllocationConflictReason(c.Reason)}
+			if c.SpotID != "" {
+				out[i].SpotId = &cs[i].SpotID
+			}
+			if c.PoolID != "" {
+				out[i].PoolId = &cs[i].PoolID
+			}
+			if c.ZoneID != "" {
+				out[i].ZoneId = &cs[i].ZoneID
+			}
+		}
+		p.Conflicts = &out
+	}
+}
+
+// CurrentStatus sets current_status (invalid_transition).
+func CurrentStatus(s string) Option {
+	return func(p *api.Problem) {
+		st := api.BookingStatus(s)
+		p.CurrentStatus = &st
+	}
+}
 
 // RetryAfter sets retry_after (seconds) and the Retry-After header.
 func RetryAfter(d time.Duration) Option {
@@ -166,6 +207,9 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		vc  *configerr.VersionConflictError
 		sa  *configerr.SpotsAllocatedError
 		pve *policy.ViolationError
+		ce  *availability.ConflictError
+		sue *availability.SpotUnavailableError
+		te  *booking.TransitionError
 	)
 	switch {
 	case errors.As(err, &rl):
@@ -226,6 +270,39 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 			}
 		}
 		Write(w, r, PolicyViolation, Violations(vs))
+	case errors.Is(err, configerr.ErrNotImplemented):
+		Write(w, r, NotImplemented)
+	case errors.As(err, &ce):
+		t := SpotUnavailable
+		switch {
+		case errors.Is(ce.Err, availability.ErrPoolExhausted):
+			t = PoolExhausted
+		case errors.Is(ce.Err, availability.ErrQuotaExceeded):
+			t = QuotaExceeded
+		}
+		Write(w, r, t, Conflicts(ce.Conflicts))
+	case errors.As(err, &sue):
+		cs := make([]availability.Conflict, len(sue.Conflicts))
+		for i, c := range sue.Conflicts {
+			cs[i] = availability.Conflict{SpotID: sue.SpotID.String(), Date: c.Date, Slot: c.Slot, Reason: availability.ReasonSpotUnavailable}
+		}
+		Write(w, r, SpotUnavailable, Conflicts(cs))
+	case errors.Is(err, availability.ErrSpotUnavailable):
+		Write(w, r, SpotUnavailable)
+	case errors.Is(err, availability.ErrPoolExhausted):
+		Write(w, r, PoolExhausted)
+	case errors.Is(err, availability.ErrQuotaExceeded):
+		Write(w, r, QuotaExceeded)
+	case errors.Is(err, availability.ErrHoldExpired):
+		Write(w, r, HoldExpired)
+	case errors.As(err, &te):
+		Write(w, r, InvalidTransition, CurrentStatus(string(te.From)))
+	case errors.Is(err, booking.ErrInvalidTransition):
+		Write(w, r, InvalidTransition)
+	case errors.Is(err, cash.ErrSessionClosed):
+		Write(w, r, CashSessionClosed)
+	case errors.Is(err, cash.ErrSessionAlreadyOpen):
+		Write(w, r, CashSessionOpen)
 	case errors.Is(err, store.ErrConflict):
 		Write(w, r, Conflict)
 	default:

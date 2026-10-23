@@ -1,0 +1,18 @@
+{
+  "session": {
+    "title": "Kasse",
+    "description": "Aktuelle Sitzung, Einnahmen, Bewegungen und Abschluss mit Zählung."
+  },
+  "corrispettivi": {
+    "title": "Tageseinnahmen",
+    "description": "Tägliche oder monatliche Einnahmen nach MwSt.-Satz und Zahlungsart, als CSV oder JSON."
+  },
+  "method": {
+    "cash": "Bar",
+    "card": "Karte",
+    "bank_transfer": "Überweisung",
+    "wallet": "Wallet",
+    "credit": "Guthaben",
+    "other": "Sonstiges"
+  }
+}

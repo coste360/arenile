@@ -1,0 +1,27 @@
+{
+  "today": {
+    "title": "Oggi",
+    "description": "Mappa del giorno, arrivi, saldi da incassare e righe da assegnare."
+  },
+  "map": {
+    "title": "Mappa",
+    "description": "Vista operativa della mappa per qualsiasi data e fascia, con colori per stato."
+  },
+  "slot": {
+    "FULL": "Giorno intero",
+    "AM": "Mattina",
+    "PM": "Pomeriggio"
+  },
+  "status": {
+    "free": "Libero",
+    "booked": "Prenotato",
+    "checked_in": "Presente",
+    "pass_holder": "Abbonato",
+    "released": "Abbonato assente oggi",
+    "held": "In attesa",
+    "renewal_offer": "Prelazione rinnovo",
+    "blocked": "Bloccato",
+    "closed": "Chiuso",
+    "inactive": "Non attivo"
+  }
+}

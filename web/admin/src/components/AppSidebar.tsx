@@ -42,7 +42,11 @@ export function AppSidebar() {
 
   const operationLink = (item: (typeof NAV_ITEMS)[number]) => {
     const label = t(item.labelKey);
-    const active = !!matchRoute({ to: item.to, fuzzy: true });
+    // Operational sections are establishment-scoped; without an establishment
+    // the legacy path redirects to the establishments list.
+    const params = current.id ? { establishmentId: current.id } : undefined;
+    const to = params ? item.to : `/${item.section}`;
+    const active = !!matchRoute({ to, params, fuzzy: true } as never);
     return (
       <SidebarMenuItem key={item.to}>
         <SidebarMenuButton
@@ -52,7 +56,8 @@ export function AppSidebar() {
           className="aria-disabled:pointer-events-none aria-disabled:opacity-60"
         >
           <Link
-            to={item.to}
+            to={to as never}
+            params={params as never}
             onClick={close}
             aria-current={active ? 'page' : undefined}
             aria-disabled={item.available ? undefined : true}

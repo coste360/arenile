@@ -12,9 +12,16 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/booking"
+	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
+	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/fiscal"
+	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/pass"
+	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
@@ -31,6 +38,10 @@ import (
 // configuration handlers (M1/M2) live in one file per area, each owned by
 // the builder of the matching domain package: establishments_write.go,
 // team.go, seasons.go, maps.go, catalog.go, pricing.go, policies.go, setup.go.
+// The M3 operations follow the same rule: customers.go (Customers),
+// bookings.go (Bookings), availability.go (Inventory: holds, availability,
+// operations day, planning, spot blocks), passes.go (Passes), payments.go
+// (Payments), cash.go (Cash) and fiscal.go (Fiscal).
 type Handlers struct {
 	Auth           *auth.Service
 	Establishments *establishment.Service
@@ -41,8 +52,16 @@ type Handlers struct {
 	Pricing        *pricingconfig.Service
 	Policies       *pricingconfig.PolicyService
 	Setup          *setup.Service
-	Stream         *sse.Server
-	Log            *slog.Logger
+	// M3: bookings from the panel and cash desk.
+	Customers *customer.Service
+	Bookings  *booking.Service
+	Inventory *inventory.Service
+	Passes    *pass.Service
+	Payments  *payment.Service
+	Cash      *cash.Service
+	Fiscal    *fiscal.Service
+	Stream    *sse.Server
+	Log       *slog.Logger
 	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
 	SecureCookies bool
 }

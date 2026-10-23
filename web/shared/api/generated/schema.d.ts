@@ -916,6 +916,734 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco e ricerca clienti */
+        get: operations["listCustomers"];
+        put?: never;
+        /** Crea cliente */
+        post: operations["createCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/customers/{customerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Scheda cliente con statistiche, crediti, prenotazioni recenti e abbonamenti */
+        get: operations["getCustomer"];
+        /**
+         * Sostituisce i dati del cliente
+         * @description Un cliente anonimizzato non è modificabile (409 conflict).
+         */
+        put: operations["updateCustomer"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/customers/{customerId}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Esportazione GDPR dei dati del cliente (JSON)
+         * @description Spec 23. Richiede il permesso bookings.write; la richiesta è registrata nel registro attività.
+         */
+        get: operations["exportCustomer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/customers/{customerId}/anonymize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Anonimizza il cliente (GDPR)
+         * @description Sostituisce i dati personali (nome, email, telefono, note, consensi) in modo irreversibile; prenotazioni e pagamenti restano per gli obblighi contabili. Emette customer.anonymized.
+         */
+        post: operations["anonymizeCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco prenotazioni filtrabile */
+        get: operations["listBookings"];
+        put?: never;
+        /**
+         * Crea prenotazione dal pannello
+         * @description Quotazione, policy e allocazione nella stessa transazione (spec 7, 10). Errori: 409 spot_unavailable / pool_exhausted / quota_exceeded (con conflicts), 410 hold_expired (hold_id scaduto), 422 no_price / policy_violation (salvo force). Per un'anteprima senza scritture usare /bookings/quote.
+         */
+        post: operations["createBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Anteprima di una prenotazione: prezzo, policy e disponibilità (nessuna scrittura) */
+        post: operations["quoteBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio prenotazione con righe, allocazioni, pagamenti e storico */
+        get: operations["getBooking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifica date, postazioni, righe o note (ricalcolo e riallocazione atomici)
+         * @description Spec 10.3: nuova allocazione e rilascio della vecchia nella stessa transazione, nuovo prezzo, differenza da incassare (positiva) o rimborsare (negativa). Gli snapshot originali restano (INV-21).
+         */
+        patch: operations["updateBooking"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Conferma manuale (driver manual)
+         * @description Solo da held, pending_payment o awaiting_approval; mai dal ritorno del browser (INV-19). Stato non ammesso: 409 invalid_transition.
+         */
+        post: operations["confirmBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registra il check-in
+         * @description Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition.
+         */
+        post: operations["checkInBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/no-show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Segna come non presentato
+         * @description Da confirmed a no_show; le allocazioni dei giorni futuri vengono rilasciate. Stato non ammesso: 409 invalid_transition.
+         */
+        post: operations["markBookingNoShow"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approva una prenotazione in attesa
+         * @description Da awaiting_approval a confirmed. Stato non ammesso: 409 invalid_transition.
+         */
+        post: operations["approveBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rifiuta una prenotazione in attesa
+         * @description Da awaiting_approval a rejected; rilascia le allocazioni. Stato non ammesso: 409 invalid_transition.
+         */
+        post: operations["rejectBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancella con rimborso o credito da policy (anteprima con dry_run)
+         * @description Rilascia le allocazioni, calcola il rimborso dalla policy_snapshot (spec 9) e lo registra come rimborso manuale o credito del cliente nella stessa transazione. Il rimborso richiede refunds.issue.
+         */
+        post: operations["cancelBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sposta una riga su un'altra postazione (o assegna una riga in attesa)
+         * @description Spec 11.3 trascinamento: anteprima del conflitto con dry_run, ricalcolo se cambia la categoria di prezzo. Per righe pending (zone in modalità zone) vale come assegnazione.
+         */
+        post: operations["moveBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Aggiunge una nota */
+        post: operations["addBookingNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/assignments/auto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assegnazione automatica delle righe in attesa (modalità zone)
+         * @description Spec 7.5: algoritmo greedy del motore puro internal/domain/availability; con dry_run non salva.
+         */
+        post: operations["autoAssign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pagamenti e rimborsi della prenotazione */
+        get: operations["listBookingPayments"];
+        put?: never;
+        /**
+         * Registra un incasso manuale (contanti, carta, bonifico, altro)
+         * @description Driver manual. Idempotency-Key fortemente consigliata (coda offline, spec 21.2). I contanti richiedono una sessione di cassa aperta (409 cash_session_closed). Aggiorna paid_amount (INV-22).
+         */
+        post: operations["recordBookingPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registra un rimborso manuale
+         * @description Permesso refunds.issue. La somma dei rimborsi non supera il pagato (INV-24, 422 validation).
+         */
+        post: operations["recordBookingRefund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco pagamenti dello stabilimento */
+        get: operations["listPayments"];
+        put?: never;
+        /**
+         * Vendita libera di cassa senza prenotazione
+         * @description Spec 14.1 (lettino extra al volo, cliente generico).
+         */
+        post: operations["recordCounterSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/holds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Blocco temporaneo (hold) di una selezione
+         * @description Occupa le risorse con allocazioni kind=hold ed expires_at (spec 7.4). Si converte in prenotazione passando hold_id a POST /bookings. 409 spot_unavailable / pool_exhausted / quota_exceeded.
+         */
+        post: operations["createHold"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/holds/{holdId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stato di un hold */
+        get: operations["getHold"];
+        put?: never;
+        post?: never;
+        /** Rilascia un hold */
+        delete: operations["releaseHold"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Disponibilità per postazione e per zona/pool su un intervallo
+         * @description Spec 7.8 vista dal pannello: hold scaduti ignorati (INV-05), giorni di chiusura esclusi.
+         */
+        get: operations["getAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/operations/day": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stato operativo della mappa per data e fascia
+         * @description Spec 11.3 e 15.1 (Oggi): stato per postazione, riepilogo prenotazione, righe da assegnare, pool, totali.
+         */
+        get: operations["getOperationsDay"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/planning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Calendario postazioni x giorni (codifica compatta) */
+        get: operations["getPlanning"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/spot-blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Blocchi manuali delle postazioni */
+        get: operations["listSpotBlocks"];
+        put?: never;
+        /**
+         * Blocca postazioni su un intervallo
+         * @description Allocazioni kind=block (permesso operations.run); 409 spot_unavailable.
+         */
+        post: operations["createSpotBlock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/spot-blocks/{blockId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Rimuove un blocco */
+        delete: operations["deleteSpotBlock"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/season-passes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Elenco abbonamenti stagionali */
+        get: operations["listSeasonPasses"];
+        put?: never;
+        /**
+         * Crea abbonamento (postazione per la stagione)
+         * @description Un abbonamento è una prenotazione con is_season_pass=true e formula season; le allocazioni sono kind=season per ogni giorno e fascia (spec 7.7). L'id coincide con quello della prenotazione: si cancella con POST /bookings/{id}/cancel.
+         */
+        post: operations["createSeasonPass"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/season-passes/{passId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio abbonamento con rilasci */
+        get: operations["getSeasonPass"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Modifica note dell'abbonamento
+         * @description Cambio di postazione o date: PATCH /bookings/{id} o POST /bookings/{id}/move.
+         */
+        patch: operations["updateSeasonPass"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/releases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Giorni rilasciati */
+        get: operations["listSeasonPassReleases"];
+        put?: never;
+        /**
+         * Rilascia giorni: la postazione diventa prenotabile
+         * @description Rimuove le allocazioni season di quei giorni ed emette season.day_released (spec 7.7, INV-10).
+         */
+        post: operations["createSeasonPassReleases"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/releases/{releaseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoca un rilascio non ancora rivenduto
+         * @description 409 conflict se il giorno è già stato rivenduto (o la postazione è occupata).
+         */
+        delete: operations["revokeSeasonPassRelease"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Storico delle sessioni di cassa */
+        get: operations["listCashSessions"];
+        put?: never;
+        /**
+         * Apre una sessione di cassa con fondo cassa
+         * @description Una sola sessione aperta per cassa (409 cash_session_already_open).
+         */
+        post: operations["openCashSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-sessions/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sessione aperta della cassa
+         * @description 404 not_found se non c'è una sessione aperta.
+         */
+        get: operations["getCurrentCashSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio sessione di cassa */
+        get: operations["getCashSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Versamento o prelievo di contanti
+         * @description 409 cash_session_closed se la sessione è chiusa.
+         */
+        post: operations["addCashMovement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chiude la sessione: atteso vs contato e differenza
+         * @description INV-25: difference = contato - atteso; atteso = fondo + incassi della sessione. Emette cash_session.closed.
+         */
+        post: operations["closeCashSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/fiscal/corrispettivi": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Corrispettivi per aliquota IVA e metodo di pagamento (JSON o CSV)
+         * @description Spec 14.2 driver export: importi IVA inclusa scorporati per aliquota dallo snapshot del prezzo (rimborsi in negativo). Permesso reports.read.
+         */
+        get: operations["getCorrispettivi"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/fiscal/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Documenti fiscali emessi dal driver */
+        get: operations["listFiscalDocuments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/v1/stream": {
         parameters: {
             query?: never;
@@ -925,9 +1653,14 @@ export interface paths {
         };
         /**
          * Flusso SSE degli eventi di uno stabilimento
-         * @description Server-Sent Events. Ogni messaggio ha `event:` uguale al tipo di
-         *     evento di dominio e `data:` con un oggetto `StreamMessage`. Un commento
-         *     `: ping` viene inviato periodicamente come heartbeat.
+         * @description Server-Sent Events (spec 21.1). Ogni messaggio ha `id:` uguale all'id
+         *     dell'evento, `event:` uguale al topic (`booking.changed`,
+         *     `allocation.changed`, `hold.changed`, `cash.changed`,
+         *     `customer.changed`, `config.changed`, `event` per gli altri) e `data:`
+         *     con un oggetto `StreamMessage` (tipo di dominio in `type`). I messaggi
+         *     non contengono dati personali: solo id, date e postazioni, così il
+         *     pannello invalida le query interessate. Un commento `: ping` viene
+         *     inviato periodicamente come heartbeat.
          */
         get: operations["streamEvents"];
         put?: never;
@@ -964,7 +1697,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -985,6 +1718,9 @@ export interface components {
             spot_ids?: string[];
             /** @description Vincoli violati (solo per `policy_violation`). */
             violations?: components["schemas"]["PolicyViolation"][];
+            /** @description Mezze giornate non disponibili (solo per `spot_unavailable`, `pool_exhausted`, `quota_exceeded`). */
+            conflicts?: components["schemas"]["AllocationConflict"][];
+            current_status?: components["schemas"]["BookingStatus"];
         };
         FieldError: {
             field: string;
@@ -1148,16 +1884,30 @@ export interface components {
             opens_on: components["schemas"]["Date"];
             closes_on: components["schemas"]["Date"];
         };
-        /** @description Messaggio leggero inviato sul flusso SSE (specifica 21.1). */
+        /** @description Messaggio leggero inviato sul flusso SSE (specifica 21.1), mai con dati personali. */
         StreamMessage: {
             id: string;
+            topic: components["schemas"]["StreamTopic"];
+            /** @description Tipo dell'evento di dominio (spec 18.1), es. booking.confirmed. */
             type: string;
+            /** @description Prenotazione interessata, se presente. */
+            booking_id?: string;
             establishment_id: string;
             /** Format: date-time */
             occurred_at: string;
             spot_ids?: string[];
             dates?: string[];
         };
+        /**
+         * @description Nome SSE (`event:`) del messaggio, derivato dal tipo di evento:
+         *     booking.* e payment.* con prenotazione → booking.changed; allocation.*,
+         *     season.* e spot_block.* → allocation.changed; hold.* → hold.changed;
+         *     cash_session.*, cash_movement.* e payment.* senza prenotazione →
+         *     cash.changed; customer.* → customer.changed; config.* → config.changed;
+         *     altri → event.
+         * @enum {string}
+         */
+        StreamTopic: "booking.changed" | "allocation.changed" | "hold.changed" | "cash.changed" | "customer.changed" | "config.changed" | "event";
         /** @description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita. */
         I18nText: {
             [key: string]: string;
@@ -2429,6 +3179,932 @@ export interface components {
             has_prices: boolean;
             booking_enabled: boolean;
         };
+        /** @description Mezza giornata non disponibile per una risorsa (spec 7.2), restituita in Problem.conflicts e nelle anteprime. */
+        AllocationConflict: {
+            /** Format: uuid */
+            spot_id?: string;
+            /** Format: uuid */
+            pool_id?: string;
+            /** Format: uuid */
+            zone_id?: string;
+            date: components["schemas"]["Date"];
+            slot: components["schemas"]["Slot"];
+            /** @enum {string} */
+            reason: "spot_unavailable" | "pool_exhausted" | "quota_exceeded" | "closed" | "inactive";
+        };
+        /** @description Consenso marketing separato e facoltativo (spec 23). */
+        MarketingConsent: {
+            /** Format: date-time */
+            given_at: string;
+            source: string;
+            text_version: string;
+        };
+        /** @description Dati minimi per una prenotazione dal pannello. Email lowercase, telefono E.164. */
+        CustomerInput: {
+            first_name?: string;
+            last_name: string;
+            /** Format: email */
+            email?: string;
+            /** @description E.164 (es. +393331234567). */
+            phone?: string;
+            /** @enum {string} */
+            locale?: "it" | "en" | "de" | "fr";
+            /** @description Solo interne, mai mostrate al cliente. */
+            notes?: string;
+            tags?: string[];
+            /** Format: uuid */
+            agreement_id?: string;
+            marketing_consent?: components["schemas"]["MarketingConsent"];
+        };
+        Customer: {
+            /** Format: uuid */
+            id: string;
+            first_name: string;
+            last_name: string;
+            /** @description Cognome e nome per elenchi e mappa. */
+            display_name: string;
+            email?: string;
+            phone?: string;
+            locale: string;
+            notes: string;
+            tags: string[];
+            /** Format: uuid */
+            agreement_id?: string;
+            marketing_consent?: components["schemas"]["MarketingConsent"];
+            /** Format: date-time */
+            anonymized_at?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        CustomerList: {
+            items: components["schemas"]["Customer"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        CustomerStats: {
+            bookings_count: number;
+            total_spent: components["schemas"]["Money"];
+            balance_due: components["schemas"]["Money"];
+            last_booking_on?: components["schemas"]["Date"];
+        };
+        /** @description Movimento del saldo crediti del cliente (spec 13.4); amount negativo = credito usato. */
+        CustomerCredit: {
+            /** Format: uuid */
+            id: string;
+            amount: components["schemas"]["Money"];
+            /** @enum {string} */
+            source: "cancellation" | "season_release" | "weather" | "manual" | "redemption";
+            /** Format: uuid */
+            booking_id?: string;
+            note?: string;
+            expires_on?: components["schemas"]["Date"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        CustomerDetail: {
+            customer: components["schemas"]["Customer"];
+            stats: components["schemas"]["CustomerStats"];
+            credit_balance: components["schemas"]["Money"];
+            credits: components["schemas"]["CustomerCredit"][];
+            recent_bookings: components["schemas"]["BookingSummary"][];
+            season_passes: components["schemas"]["SeasonPass"][];
+        };
+        /** @description Esportazione GDPR (spec 23). */
+        CustomerExport: {
+            /** Format: date-time */
+            exported_at: string;
+            customer: components["schemas"]["Customer"];
+            bookings: components["schemas"]["BookingSummary"][];
+            payments: components["schemas"]["Payment"][];
+            credits: components["schemas"]["CustomerCredit"][];
+        };
+        /**
+         * @description Stato della prenotazione (spec 10.2).
+         * @enum {string}
+         */
+        BookingStatus: "draft" | "held" | "pending_payment" | "awaiting_approval" | "confirmed" | "checked_in" | "completed" | "cancelled" | "no_show" | "expired" | "rejected";
+        /** @enum {string} */
+        AssignmentStatus: "assigned" | "pending" | "not_applicable";
+        /** @enum {string} */
+        AllocationKind: "booking" | "hold" | "block" | "season";
+        BookingSummary: {
+            /** Format: uuid */
+            id: string;
+            /** @description Codice leggibile univoco per stabilimento (es. AR-7K3Q9). */
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            channel: components["schemas"]["Channel"];
+            /** Format: uuid */
+            customer_id: string;
+            customer_display_name: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            formula: components["schemas"]["Formula"];
+            is_season_pass: boolean;
+            total_amount: components["schemas"]["Money"];
+            paid_amount: components["schemas"]["Money"];
+            balance_due: components["schemas"]["Money"];
+            deposit_due: components["schemas"]["Money"];
+            spot_labels: string[];
+            /** Format: date-time */
+            hold_expires_at?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        BookingList: {
+            items: components["schemas"]["BookingSummary"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        BookingExtra: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            extra_id: string;
+            extra_code?: string;
+            /**
+             * Format: uuid
+             * @description Assente per gli extra legati alla prenotazione.
+             */
+            booking_line_id?: string;
+            quantity: number;
+            total: components["schemas"]["Money"];
+        };
+        BookingLine: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            pack_id: string;
+            pack_code?: string;
+            /** Format: uuid */
+            zone_id: string;
+            /** Format: uuid */
+            spot_id?: string;
+            spot_label?: string;
+            assignment_status: components["schemas"]["AssignmentStatus"];
+            /** @description Unità per le zone a quantità; 1 altrimenti. */
+            quantity: number;
+            line_total: components["schemas"]["Money"];
+            extras: components["schemas"]["BookingExtra"][];
+        };
+        /** @description Una riga di spot_allocations o pool_allocations della prenotazione. */
+        BookingAllocation: {
+            /** Format: uuid */
+            booking_line_id?: string;
+            /** Format: uuid */
+            spot_id?: string;
+            /** Format: uuid */
+            pool_id?: string;
+            date: components["schemas"]["Date"];
+            slot: components["schemas"]["Slot"];
+            kind: components["schemas"]["AllocationKind"];
+            quantity?: number;
+            /** Format: date-time */
+            expires_at?: string;
+        };
+        /** @description Voce dello storico, letta dal registro attività (audit_log). */
+        BookingHistoryEntry: {
+            /** Format: date-time */
+            at: string;
+            /** @description Es. booking.created, booking.confirmed, booking.note_added, payment.succeeded. */
+            action: string;
+            /** @enum {string} */
+            actor_type: "user" | "customer" | "system" | "api_key";
+            actor_id?: string;
+            actor_name?: string;
+            details?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description Policy applicata al momento della creazione (spec 9), base di rimborsi e modifiche. */
+        PolicySnapshot: {
+            /** Format: uuid */
+            policy_id?: string;
+            rules: components["schemas"]["PolicyRules"];
+        };
+        BookingDetail: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            channel: components["schemas"]["Channel"];
+            customer: components["schemas"]["Customer"];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            formula: components["schemas"]["Formula"];
+            is_season_pass: boolean;
+            /** Format: uuid */
+            season_id?: string;
+            total_amount: components["schemas"]["Money"];
+            paid_amount: components["schemas"]["Money"];
+            balance_due: components["schemas"]["Money"];
+            deposit_due: components["schemas"]["Money"];
+            /** Format: date-time */
+            hold_expires_at?: string;
+            lines: components["schemas"]["BookingLine"][];
+            /** @description Extra legati alla prenotazione (attach_to = booking). */
+            extras: components["schemas"]["BookingExtra"][];
+            allocations: components["schemas"]["BookingAllocation"][];
+            payments: components["schemas"]["Payment"][];
+            history: components["schemas"]["BookingHistoryEntry"][];
+            price_snapshot: components["schemas"]["PriceBreakdown"];
+            policy_snapshot: components["schemas"]["PolicySnapshot"];
+            promo_code?: string;
+            /** Format: uuid */
+            agreement_id?: string;
+            notes_customer: string;
+            notes_internal: string;
+            /** Format: date-time */
+            cancelled_at?: string;
+            cancel_reason?: string;
+            /** Format: uuid */
+            created_by_user_id?: string;
+            /** @description Stati raggiungibili da quello corrente (macchina a stati, spec 10.2). */
+            next_statuses: components["schemas"]["BookingStatus"][];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        BookingLineInput: {
+            /** Format: uuid */
+            pack_id: string;
+            /**
+             * Format: uuid
+             * @description Obbligatoria per zone in modalità zone o quantity; dedotta dalla postazione in modalità seat.
+             */
+            zone_id?: string;
+            /**
+             * Format: uuid
+             * @description Obbligatoria per le zone seat; facoltativa per le zone zone (assegnazione immediata).
+             */
+            spot_id?: string;
+            /** @description Default 1; >1 solo per zone quantity. */
+            quantity?: number;
+            extras?: components["schemas"]["SimulateExtra"][];
+        };
+        /** @description Prenotazione dal pannello. Il cliente è customer_id oppure customer (creato nella stessa transazione). status: draft (nessuna risorsa), held (hold con scadenza, M4 lo userà per il checkout), confirmed (default: conferma manuale immediata, incasso alla cassa). */
+        BookingCreate: {
+            /** Format: uuid */
+            customer_id?: string;
+            customer?: components["schemas"]["CustomerInput"];
+            channel?: components["schemas"]["Channel"];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            formula: components["schemas"]["Formula"];
+            lines: components["schemas"]["BookingLineInput"][];
+            /** @description Extra legati alla prenotazione. */
+            extras?: components["schemas"]["SimulateExtra"][];
+            promo_code?: string;
+            /** Format: uuid */
+            agreement_id?: string;
+            notes_customer?: string;
+            notes_internal?: string;
+            /**
+             * Format: uuid
+             * @description Converte questo hold (stessa selezione) invece di allocare di nuovo.
+             */
+            hold_id?: string;
+            /**
+             * @description Stato iniziale (default confirmed).
+             * @enum {string}
+             */
+            status?: "draft" | "held" | "confirmed";
+            /** @description Durata dell'hold per status=held (default ARENILE_HOLD_TTL). */
+            hold_ttl_seconds?: number;
+            /** @description Ignora le violazioni di policy (sempre permesso dal pannello, registrato nell'audit). */
+            force?: boolean;
+        };
+        BookingQuote: {
+            breakdown: components["schemas"]["PriceBreakdown"];
+            deposit_due: components["schemas"]["Money"];
+            policy: components["schemas"]["PolicyEvaluation"];
+            available: boolean;
+            conflicts: components["schemas"]["AllocationConflict"][];
+        };
+        /** @description Campi da modificare; i campi assenti restano invariati. lines sostituisce tutte le righe. */
+        BookingPatch: {
+            /** Format: uuid */
+            customer_id?: string;
+            starts_on?: components["schemas"]["Date"];
+            ends_on?: components["schemas"]["Date"];
+            slots?: components["schemas"]["Slots"];
+            formula?: components["schemas"]["Formula"];
+            lines?: components["schemas"]["BookingLineInput"][];
+            extras?: components["schemas"]["SimulateExtra"][];
+            notes_customer?: string;
+            notes_internal?: string;
+            /** @description Ignora i limiti di modifica della policy (registrato nell'audit). */
+            force?: boolean;
+        };
+        BookingChangeResult: {
+            /** @description false con dry_run=true (nessuna scrittura). */
+            applied: boolean;
+            booking: components["schemas"]["BookingDetail"];
+            previous_total: components["schemas"]["Money"];
+            new_total: components["schemas"]["Money"];
+            price_difference: components["schemas"]["Money"];
+            conflicts: components["schemas"]["AllocationConflict"][];
+        };
+        BookingActionRequest: {
+            note?: string;
+        };
+        BookingCancelRequest: {
+            reason?: string;
+            /**
+             * @description policy (default): come da policy_snapshot; refund/credit forzano la forma; none: nessun rimborso.
+             * @enum {string}
+             */
+            settlement?: "policy" | "refund" | "credit" | "none";
+            refund_amount?: components["schemas"]["Money"];
+            refund_method?: components["schemas"]["PaymentMethod"];
+            /** @description Cancellazione per maltempo (weather_policy). */
+            weather?: boolean;
+            dry_run?: boolean;
+        };
+        RefundPreview: {
+            paid_amount: components["schemas"]["Money"];
+            refund_percent: number;
+            amount: components["schemas"]["Money"];
+            /** @enum {string} */
+            as: "refund" | "credit" | "none";
+            tier?: components["schemas"]["PolicyCancellationTier"];
+        };
+        BookingCancelResult: {
+            applied: boolean;
+            booking: components["schemas"]["BookingDetail"];
+            refund: components["schemas"]["RefundPreview"];
+        };
+        BookingMoveRequest: {
+            /** Format: uuid */
+            line_id: string;
+            /** Format: uuid */
+            spot_id: string;
+            from?: components["schemas"]["Date"];
+            dry_run?: boolean;
+        };
+        BookingNoteInput: {
+            text: string;
+            /** @enum {string} */
+            visibility?: "internal" | "customer";
+        };
+        AutoAssignRequest: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            /** Format: uuid */
+            zone_id?: string;
+            dry_run?: boolean;
+        };
+        AutoAssignment: {
+            /** Format: uuid */
+            booking_id: string;
+            /** Format: uuid */
+            line_id: string;
+            /** Format: uuid */
+            spot_id: string;
+            spot_label?: string;
+        };
+        AutoUnassigned: {
+            /** Format: uuid */
+            booking_id: string;
+            /** Format: uuid */
+            line_id: string;
+            reason: string;
+        };
+        AutoAssignResult: {
+            applied: boolean;
+            assigned: components["schemas"]["AutoAssignment"][];
+            unassigned: components["schemas"]["AutoUnassigned"][];
+        };
+        /** @description Una risorsa da bloccare: spot_id (postazione), zone_id + quantity (capacità di zona) o pool_id + quantity. */
+        HoldItem: {
+            /** Format: uuid */
+            spot_id?: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            pool_id?: string;
+            quantity?: number;
+        };
+        HoldCreate: {
+            channel?: components["schemas"]["Channel"];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            items: components["schemas"]["HoldItem"][];
+            /** @description Default ARENILE_HOLD_TTL (10 minuti). */
+            ttl_seconds?: number;
+            note?: string;
+        };
+        Hold: {
+            /** Format: uuid */
+            id: string;
+            channel: components["schemas"]["Channel"];
+            /** @enum {string} */
+            status: "active" | "released" | "converted" | "expired";
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            items: components["schemas"]["HoldItem"][];
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: uuid */
+            converted_booking_id?: string;
+            note?: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        SpotAvailability: {
+            /** Format: uuid */
+            spot_id: string;
+            label: string;
+            /** @enum {string} */
+            status: "available" | "unavailable";
+            /** @description Mezze giornate occupate nell'intervallo. */
+            conflicts?: components["schemas"]["AllocationConflict"][];
+        };
+        ZoneAvailability: {
+            /** Format: uuid */
+            zone_id: string;
+            code: string;
+            assignment_mode: components["schemas"]["AssignmentMode"];
+            capacity: number;
+            /** @description Minimo disponibile nell'intervallo (postazioni libere o unità del pool), quota inclusa per online. */
+            available: number;
+            /** @description Solo per zone seat e zone. */
+            spots?: components["schemas"]["SpotAvailability"][];
+        };
+        PoolDay: {
+            date: components["schemas"]["Date"];
+            slot: components["schemas"]["Slot"];
+            /** @description Capacità effettiva (capacity_overrides inclusi). */
+            capacity: number;
+            used: number;
+            held: number;
+            available: number;
+        };
+        PoolAvailability: {
+            /** Format: uuid */
+            pool_id: string;
+            /** Format: uuid */
+            zone_id?: string;
+            component_code: string;
+            capacity: number;
+            available: number;
+            days: components["schemas"]["PoolDay"][];
+        };
+        AvailabilityResult: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            channel: components["schemas"]["Channel"];
+            closed_dates?: components["schemas"]["Date"][];
+            zones: components["schemas"]["ZoneAvailability"][];
+            pools: components["schemas"]["PoolAvailability"][];
+        };
+        /**
+         * @description Stato di una postazione nella vista operativa (spec 11.3).
+         * @enum {string}
+         */
+        OperationalSpotStatus: "free" | "booked" | "checked_in" | "pass_holder" | "released" | "held" | "renewal_offer" | "blocked" | "closed" | "inactive";
+        OperationalBooking: {
+            /** Format: uuid */
+            booking_id: string;
+            /** Format: uuid */
+            line_id?: string;
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            channel: components["schemas"]["Channel"];
+            /** Format: uuid */
+            customer_id: string;
+            customer_display_name: string;
+            customer_tags: string[];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            is_season_pass: boolean;
+            pack_codes: string[];
+            total_amount: components["schemas"]["Money"];
+            paid_amount: components["schemas"]["Money"];
+            balance_due: components["schemas"]["Money"];
+            has_notes: boolean;
+            has_extras: boolean;
+        };
+        OperationalSpot: {
+            /** Format: uuid */
+            spot_id: string;
+            /** Format: uuid */
+            map_id: string;
+            /** Format: uuid */
+            zone_id: string;
+            label: string;
+            status: components["schemas"]["OperationalSpotStatus"];
+            am_status?: components["schemas"]["OperationalSpotStatus"];
+            pm_status?: components["schemas"]["OperationalSpotStatus"];
+            booking?: components["schemas"]["OperationalBooking"];
+            /** Format: uuid */
+            hold_id?: string;
+            /** Format: date-time */
+            hold_expires_at?: string;
+            /** Format: uuid */
+            release_id?: string;
+            /** Format: uuid */
+            block_id?: string;
+            block_reason?: string;
+        };
+        PendingAssignment: {
+            /** Format: uuid */
+            booking_id: string;
+            /** Format: uuid */
+            line_id: string;
+            code: string;
+            /** Format: uuid */
+            zone_id: string;
+            customer_display_name: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+        };
+        OperationsTotals: {
+            spots: number;
+            free: number;
+            occupied: number;
+            arrivals: number;
+            departures: number;
+            checked_in: number;
+            balance_due_amount: components["schemas"]["Money"];
+            pending_assignments: number;
+        };
+        OperationsDay: {
+            date: components["schemas"]["Date"];
+            slot: components["schemas"]["Slots"];
+            /** @description Giorno di chiusura o fuori stagione. */
+            closed: boolean;
+            spots: components["schemas"]["OperationalSpot"][];
+            pending_assignments: components["schemas"]["PendingAssignment"][];
+            pools: components["schemas"]["PoolAvailability"][];
+            totals: components["schemas"]["OperationsTotals"];
+        };
+        PlanningSpot: {
+            /** Format: uuid */
+            spot_id: string;
+            label: string;
+            row_label?: string;
+            /** Format: uuid */
+            zone_id: string;
+            /** Format: uuid */
+            map_id: string;
+        };
+        /** @description Occupazione referenziata dai segmenti per indice (una volta sola anche se lunga mesi). */
+        PlanningEntry: {
+            /** @enum {string} */
+            kind: "booking" | "hold" | "season" | "block" | "release";
+            /** Format: uuid */
+            booking_id?: string;
+            /** Format: uuid */
+            hold_id?: string;
+            /** Format: uuid */
+            block_id?: string;
+            code?: string;
+            /** @description Nome breve del cliente o motivo del blocco. */
+            label: string;
+            status?: components["schemas"]["BookingStatus"];
+            channel?: components["schemas"]["Channel"];
+            balance_due?: boolean;
+        };
+        /** @description Giorni consecutivi [from, to] (indici in days, inclusivi) della stessa occupazione. */
+        PlanningSegment: {
+            /** @description Indice in Planning.entries. */
+            entry: number;
+            from: number;
+            to: number;
+            slots: components["schemas"]["Slots"];
+        };
+        PlanningRow: {
+            /** @description Indice in Planning.spots. */
+            spot: number;
+            segments: components["schemas"]["PlanningSegment"][];
+        };
+        /** @description Griglia postazioni x giorni con codifica run-length (spec 15.1 Calendario). */
+        Planning: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            days: components["schemas"]["Date"][];
+            /** @description Indici in days dei giorni di chiusura. */
+            closed_days: number[];
+            spots: components["schemas"]["PlanningSpot"][];
+            entries: components["schemas"]["PlanningEntry"][];
+            /** @description Solo le postazioni con almeno un segmento. */
+            rows: components["schemas"]["PlanningRow"][];
+        };
+        SpotBlockCreate: {
+            spot_ids: string[];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            reason?: string;
+        };
+        SpotBlock: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            spot_id: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            reason: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        SpotBlockList: {
+            items: components["schemas"]["SpotBlock"][];
+            next_cursor?: string;
+        };
+        /** @description Abbonamento stagionale; id = id della prenotazione (is_season_pass = true). */
+        SeasonPass: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            /** Format: uuid */
+            customer_id: string;
+            customer_display_name: string;
+            /** Format: uuid */
+            season_id: string;
+            /** Format: uuid */
+            spot_id: string;
+            spot_label: string;
+            /** Format: uuid */
+            pack_id: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            total_amount: components["schemas"]["Money"];
+            paid_amount: components["schemas"]["Money"];
+            balance_due: components["schemas"]["Money"];
+            /** @description Mezze giornate rilasciate e non revocate. */
+            released_days: number;
+            credit_amount: components["schemas"]["Money"];
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        SeasonPassList: {
+            items: components["schemas"]["SeasonPass"][];
+            next_cursor?: string;
+        };
+        SeasonPassCreate: {
+            /** Format: uuid */
+            customer_id: string;
+            /** Format: uuid */
+            season_id: string;
+            /** Format: uuid */
+            spot_id: string;
+            /** Format: uuid */
+            pack_id: string;
+            starts_on?: components["schemas"]["Date"];
+            ends_on?: components["schemas"]["Date"];
+            slots?: components["schemas"]["Slots"];
+            extras?: components["schemas"]["SimulateExtra"][];
+            notes_internal?: string;
+            /** Format: uuid */
+            renewal_of_booking_id?: string;
+        };
+        SeasonPassUpdate: {
+            notes_internal?: string;
+            notes_customer?: string;
+        };
+        SeasonRelease: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            pass_id: string;
+            date: components["schemas"]["Date"];
+            slot: components["schemas"]["Slot"];
+            /** @enum {string} */
+            status: "released" | "resold" | "revoked";
+            /** Format: uuid */
+            resold_booking_id?: string;
+            credit_amount: components["schemas"]["Money"];
+            note?: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            revoked_at?: string;
+        };
+        SeasonReleaseList: {
+            items: components["schemas"]["SeasonRelease"][];
+        };
+        SeasonPassDetail: {
+            pass: components["schemas"]["SeasonPass"];
+            releases: components["schemas"]["SeasonRelease"][];
+        };
+        SeasonReleaseCreate: {
+            dates: components["schemas"]["Date"][];
+            slots?: components["schemas"]["Slots"];
+            note?: string;
+        };
+        /**
+         * @description Metodo di pagamento (spec 6.7); credit = uso del saldo crediti del cliente (spec 13.4).
+         * @enum {string}
+         */
+        PaymentMethod: "cash" | "card" | "bank_transfer" | "wallet" | "credit" | "other";
+        /** @enum {string} */
+        PaymentDirection: "in" | "refund";
+        /** @enum {string} */
+        PaymentStatus: "pending" | "succeeded" | "failed" | "cancelled";
+        Payment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            booking_id?: string;
+            booking_code?: string;
+            /** @description manual, stripe, ... */
+            provider: string;
+            method: components["schemas"]["PaymentMethod"];
+            direction: components["schemas"]["PaymentDirection"];
+            amount: components["schemas"]["Money"];
+            status: components["schemas"]["PaymentStatus"];
+            provider_ref?: string;
+            /** Format: uuid */
+            cash_session_id?: string;
+            /** Format: uuid */
+            refund_of_payment_id?: string;
+            /** Format: uuid */
+            received_by_user_id?: string;
+            description?: string;
+            note?: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        PaymentList: {
+            items: components["schemas"]["Payment"][];
+            next_cursor?: string;
+        };
+        ManualPaymentInput: {
+            /**
+             * Format: int64
+             * @description Centesimi.
+             */
+            amount: number;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Format: uuid
+             * @description Default la sessione aperta della cassa main (obbligatoria per i contanti).
+             */
+            cash_session_id?: string;
+            note?: string;
+        };
+        RefundInput: {
+            /** Format: int64 */
+            amount: number;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Format: uuid
+             * @description Pagamento rimborsato (facoltativo).
+             */
+            payment_id?: string;
+            /**
+             * @description refund (default) restituisce il denaro; credit lo accredita al cliente.
+             * @enum {string}
+             */
+            as?: "refund" | "credit";
+            reason?: string;
+            /** Format: uuid */
+            cash_session_id?: string;
+        };
+        CounterSaleInput: {
+            /** Format: int64 */
+            amount: number;
+            method: components["schemas"]["PaymentMethod"];
+            description: string;
+            vat_rate_bp?: components["schemas"]["BasisPoints"];
+            /** Format: uuid */
+            customer_id?: string;
+            /** Format: uuid */
+            cash_session_id?: string;
+        };
+        /** @description Importi per metodo di pagamento (chiavi di PaymentMethod). */
+        MethodTotals: {
+            [key: string]: components["schemas"]["Money"];
+        };
+        /** @enum {string} */
+        CashSessionStatus: "open" | "closed";
+        CashSession: {
+            /** Format: uuid */
+            id: string;
+            register: string;
+            status: components["schemas"]["CashSessionStatus"];
+            /** Format: date-time */
+            opened_at: string;
+            /** Format: uuid */
+            opened_by: string;
+            /** Format: date-time */
+            closed_at?: string;
+            /** Format: uuid */
+            closed_by?: string;
+            opening_float: components["schemas"]["Money"];
+            expected_totals: components["schemas"]["MethodTotals"];
+            counted_totals?: components["schemas"]["MethodTotals"];
+            difference?: components["schemas"]["Money"];
+            notes: string;
+            version: components["schemas"]["Version"];
+        };
+        CashSessionList: {
+            items: components["schemas"]["CashSession"][];
+            next_cursor?: string;
+        };
+        CashSessionOpen: {
+            /** @description Default main. */
+            register?: string;
+            /** Format: int64 */
+            opening_float: number;
+            notes?: string;
+        };
+        CashMovement: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cash_session_id: string;
+            /** @enum {string} */
+            kind: "in" | "out";
+            amount: components["schemas"]["Money"];
+            reason: string;
+            /** Format: uuid */
+            created_by?: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        CashMovementInput: {
+            /** @enum {string} */
+            kind: "in" | "out";
+            /** Format: int64 */
+            amount: number;
+            reason: string;
+        };
+        CashSessionClose: {
+            counted_totals: components["schemas"]["MethodTotals"];
+            notes?: string;
+        };
+        CashSessionDetail: {
+            session: components["schemas"]["CashSession"];
+            movements: components["schemas"]["CashMovement"][];
+            payments: components["schemas"]["Payment"][];
+            totals_by_method: components["schemas"]["MethodTotals"];
+        };
+        CorrispettiviRow: {
+            /** @description YYYY-MM-DD (group_by=day) o YYYY-MM (group_by=month). */
+            period: string;
+            vat_rate_bp: components["schemas"]["BasisPoints"];
+            method: components["schemas"]["PaymentMethod"];
+            gross: components["schemas"]["Money"];
+            taxable: components["schemas"]["Money"];
+            tax: components["schemas"]["Money"];
+            count: number;
+        };
+        CorrispettiviTotal: {
+            vat_rate_bp: components["schemas"]["BasisPoints"];
+            gross: components["schemas"]["Money"];
+            taxable: components["schemas"]["Money"];
+            tax: components["schemas"]["Money"];
+        };
+        CorrispettiviReport: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            /** @enum {string} */
+            group_by: "day" | "month";
+            currency: string;
+            rows: components["schemas"]["CorrispettiviRow"][];
+            totals: components["schemas"]["CorrispettiviTotal"][];
+            grand_total: components["schemas"]["Money"];
+        };
+        /** @enum {string} */
+        FiscalDocumentStatus: "pending" | "issued" | "failed" | "void";
+        FiscalDocument: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            payment_id: string;
+            driver: string;
+            status: components["schemas"]["FiscalDocumentStatus"];
+            document_number?: string;
+            business_date: components["schemas"]["Date"];
+            error?: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        FiscalDocumentList: {
+            items: components["schemas"]["FiscalDocument"][];
+            next_cursor?: string;
+        };
     };
     responses: {
         /** @description Richiesta non valida */
@@ -2469,6 +4145,15 @@ export interface components {
         };
         /** @description Conflitto con lo stato corrente */
         Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Risorsa scaduta (hold_expired) */
+        Gone: {
             headers: {
                 [name: string]: unknown;
             };
@@ -2561,6 +4246,13 @@ export interface components {
         PromoCodeID: string;
         AgreementID: string;
         PolicyID: string;
+        CustomerID: string;
+        BookingID: string;
+        HoldID: string;
+        SpotBlockID: string;
+        SeasonPassID: string;
+        ReleaseID: string;
+        CashSessionID: string;
     };
     requestBodies: never;
     headers: {
@@ -5882,6 +7574,1906 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+        };
+    };
+    listCustomers: {
+        parameters: {
+            query?: {
+                /** @description Ricerca per nome, cognome, email o telefono (sottostringa, senza distinzione di maiuscole e accenti). */
+                q?: string;
+                /** @description Solo i clienti con questo tag. */
+                tag?: string;
+                /** @description Include i clienti anonimizzati (default false). */
+                include_anonymized?: boolean;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di clienti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createCustomer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerInput"];
+            };
+        };
+        responses: {
+            /** @description Cliente creato */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Customer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCustomer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                customerId: components["parameters"]["CustomerID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cliente */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateCustomer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                customerId: components["parameters"]["CustomerID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerInput"];
+            };
+        };
+        responses: {
+            /** @description Cliente aggiornato */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Customer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    exportCustomer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                customerId: components["parameters"]["CustomerID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tutti i dati personali del cliente con prenotazioni, pagamenti e crediti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerExport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    anonymizeCustomer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                customerId: components["parameters"]["CustomerID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cliente anonimizzato */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Customer"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listBookings: {
+        parameters: {
+            query?: {
+                /** @description Prenotazioni che terminano in questa data o dopo. */
+                from?: components["schemas"]["Date"];
+                /** @description Prenotazioni che iniziano in questa data o prima. */
+                to?: components["schemas"]["Date"];
+                /** @description Uno o più stati (status=confirmed&status=checked_in). */
+                status?: components["schemas"]["BookingStatus"][];
+                /** @description Solo le prenotazioni del cliente. */
+                customer_id?: string;
+                /** @description Solo le prenotazioni con una riga su questa postazione. */
+                spot_id?: string;
+                /** @description Canale di vendita. */
+                channel?: components["schemas"]["Channel"];
+                /** @description true = solo abbonamenti, false = solo prenotazioni ordinarie. */
+                season_pass?: boolean;
+                /** @description true = solo con saldo da incassare. */
+                balance_due?: boolean;
+                /** @description Codice prenotazione o nome/telefono del cliente. */
+                q?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di prenotazioni (ordinate per starts_on, poi id) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingCreate"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione creata */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    quoteBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingCreate"];
+            };
+        };
+        responses: {
+            /** @description Anteprima */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingQuote"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prenotazione */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateBooking: {
+        parameters: {
+            query?: {
+                /** @description true = calcola differenza e conflitti senza salvare. */
+                dry_run?: boolean;
+            };
+            header: {
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
+                "If-Match": components["parameters"]["IfMatchRequired"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingPatch"];
+            };
+        };
+        responses: {
+            /** @description Esito della modifica */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingChangeResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            428: components["responses"]["PreconditionRequired"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    confirmBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BookingActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione aggiornata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    checkInBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BookingActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione aggiornata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    markBookingNoShow: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BookingActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione aggiornata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    approveBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BookingActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione aggiornata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    rejectBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BookingActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione aggiornata */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    cancelBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingCancelRequest"];
+            };
+        };
+        responses: {
+            /** @description Esito della cancellazione */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingCancelResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    moveBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingMoveRequest"];
+            };
+        };
+        responses: {
+            /** @description Esito dello spostamento */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingChangeResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    addBookingNote: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingNoteInput"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione con la nota */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    autoAssign: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutoAssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Esito dell'assegnazione */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutoAssignResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listBookingPayments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagamenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    recordBookingPayment: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualPaymentInput"];
+            };
+        };
+        responses: {
+            /** @description Pagamento registrato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Payment"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    recordBookingRefund: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundInput"];
+            };
+        };
+        responses: {
+            /** @description Rimborso registrato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Payment"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listPayments: {
+        parameters: {
+            query?: {
+                /** @description Dalla data (fuso dello stabilimento). */
+                from?: components["schemas"]["Date"];
+                /** @description Alla data inclusa. */
+                to?: components["schemas"]["Date"];
+                /** @description Metodo. */
+                method?: components["schemas"]["PaymentMethod"];
+                /** @description Incasso o rimborso. */
+                direction?: components["schemas"]["PaymentDirection"];
+                /** @description Solo i pagamenti della sessione di cassa. */
+                cash_session_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di pagamenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    recordCounterSale: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CounterSaleInput"];
+            };
+        };
+        responses: {
+            /** @description Vendita registrata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Payment"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createHold: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HoldCreate"];
+            };
+        };
+        responses: {
+            /** @description Hold creato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Hold"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getHold: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                holdId: components["parameters"]["HoldID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hold */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Hold"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    releaseHold: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                holdId: components["parameters"]["HoldID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rilasciato (idempotente) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getAvailability: {
+        parameters: {
+            query: {
+                /** @description Primo giorno (incluso). */
+                from: components["schemas"]["Date"];
+                /** @description Ultimo giorno (incluso). */
+                to: components["schemas"]["Date"];
+                /** @description Fasce (default FULL). */
+                slots?: components["schemas"]["Slots"];
+                /** @description Canale: online applica le quote (default desk). */
+                channel?: components["schemas"]["Channel"];
+                /** @description Solo le zone della mappa. */
+                map_id?: string;
+                /** @description Solo la zona. */
+                zone_id?: string;
+                /** @description Solo zone e postazioni compatibili con il pack. */
+                pack_id?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Disponibilità */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getOperationsDay: {
+        parameters: {
+            query: {
+                /** @description Giorno. */
+                date: components["schemas"]["Date"];
+                /** @description Fascia (default FULL). */
+                slot?: components["schemas"]["Slots"];
+                /** @description Solo le postazioni della mappa. */
+                map_id?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato di ogni postazione */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationsDay"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPlanning: {
+        parameters: {
+            query: {
+                /** @description Primo giorno. */
+                from: components["schemas"]["Date"];
+                /** @description Ultimo giorno (max 62 giorni). */
+                to: components["schemas"]["Date"];
+                /** @description Solo la mappa. */
+                map_id?: string;
+                /** @description Solo la zona. */
+                zone_id?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Griglia del planning */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Planning"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listSpotBlocks: {
+        parameters: {
+            query?: {
+                /** @description Blocchi che terminano da questa data. */
+                from?: components["schemas"]["Date"];
+                /** @description Blocchi che iniziano entro questa data. */
+                to?: components["schemas"]["Date"];
+                /** @description Solo la postazione. */
+                spot_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di blocchi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpotBlockList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createSpotBlock: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpotBlockCreate"];
+            };
+        };
+        responses: {
+            /** @description Blocchi creati (uno per postazione) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpotBlockList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    deleteSpotBlock: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                blockId: components["parameters"]["SpotBlockID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rimosso */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listSeasonPasses: {
+        parameters: {
+            query?: {
+                /** @description Stagione. */
+                season_id?: string;
+                /** @description Cliente. */
+                customer_id?: string;
+                /** @description Postazione. */
+                spot_id?: string;
+                /** @description Stato. */
+                status?: components["schemas"]["BookingStatus"];
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di abbonamenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonPassList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createSeasonPass: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonPassCreate"];
+            };
+        };
+        responses: {
+            /** @description Abbonamento creato */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonPassDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getSeasonPass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                passId: components["parameters"]["SeasonPassID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Abbonamento */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonPassDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateSeasonPass: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                passId: components["parameters"]["SeasonPassID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonPassUpdate"];
+            };
+        };
+        responses: {
+            /** @description Abbonamento aggiornato */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonPassDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listSeasonPassReleases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                passId: components["parameters"]["SeasonPassID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rilasci */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonReleaseList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createSeasonPassReleases: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                passId: components["parameters"]["SeasonPassID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonReleaseCreate"];
+            };
+        };
+        responses: {
+            /** @description Rilasci creati */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonReleaseList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    revokeSeasonPassRelease: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                passId: components["parameters"]["SeasonPassID"];
+                releaseId: components["parameters"]["ReleaseID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revocato: le allocazioni season sono ricreate */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listCashSessions: {
+        parameters: {
+            query?: {
+                /** @description Aperte o chiuse. */
+                status?: components["schemas"]["CashSessionStatus"];
+                /** @description Cassa (default tutte). */
+                register?: string;
+                /** @description Aperte da questa data. */
+                from?: components["schemas"]["Date"];
+                /** @description Aperte entro questa data. */
+                to?: components["schemas"]["Date"];
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di sessioni */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSessionList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    openCashSession: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashSessionOpen"];
+            };
+        };
+        responses: {
+            /** @description Sessione aperta */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCurrentCashSession: {
+        parameters: {
+            query?: {
+                /** @description Cassa (default main). */
+                register?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sessione corrente con movimenti e totali */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSessionDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCashSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                cashSessionId: components["parameters"]["CashSessionID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sessione */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSessionDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    addCashMovement: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                cashSessionId: components["parameters"]["CashSessionID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashMovementInput"];
+            };
+        };
+        responses: {
+            /** @description Movimento registrato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashMovement"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    closeCashSession: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                cashSessionId: components["parameters"]["CashSessionID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashSessionClose"];
+            };
+        };
+        responses: {
+            /** @description Sessione chiusa */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCorrispettivi: {
+        parameters: {
+            query: {
+                /** @description Primo giorno. */
+                from: components["schemas"]["Date"];
+                /** @description Ultimo giorno (incluso). */
+                to: components["schemas"]["Date"];
+                /** @description Raggruppamento (default day). */
+                group_by?: "day" | "month";
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: "json" | "csv";
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Corrispettivi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrispettiviReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listFiscalDocuments: {
+        parameters: {
+            query?: {
+                /** @description Dalla data. */
+                from?: components["schemas"]["Date"];
+                /** @description Alla data. */
+                to?: components["schemas"]["Date"];
+                /** @description Stato. */
+                status?: components["schemas"]["FiscalDocumentStatus"];
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di documenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalDocumentList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
         };
     };
     streamEvents: {

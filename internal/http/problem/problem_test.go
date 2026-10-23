@@ -9,7 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/availability"
+	"github.com/coste360/arenile/internal/domain/booking"
+	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
@@ -40,6 +44,14 @@ func TestError_Mapping(t *testing.T) {
 		{"spots allocated", &configerr.SpotsAllocatedError{SpotIDs: []string{"s1"}}, 409, "spot_has_future_allocations"},
 		{"no price", &pricing.NoPriceError{}, 422, "no_price"},
 		{"policy violation", &policy.ViolationError{Violations: []policy.Violation{{Code: policy.CodeTooManySpots}}}, 422, "policy_violation"},
+		{"not implemented", fmt.Errorf("x: %w", configerr.ErrNotImplemented), 501, "not_implemented"},
+		{"spot conflict", &availability.ConflictError{Err: availability.ErrSpotUnavailable, Conflicts: []availability.Conflict{{SpotID: "s1", Date: calendar.MustParse("2027-07-01"), Slot: calendar.AM, Reason: availability.ReasonSpotUnavailable}}}, 409, "spot_unavailable"},
+		{"pool exhausted", fmt.Errorf("tx: %w", &availability.ConflictError{Err: availability.ErrPoolExhausted}), 409, "pool_exhausted"},
+		{"quota exceeded", availability.ErrQuotaExceeded, 409, "quota_exceeded"},
+		{"hold expired", availability.ErrHoldExpired, 410, "hold_expired"},
+		{"invalid transition", booking.Transition(booking.StatusCancelled, booking.StatusConfirmed), 409, "invalid_transition"},
+		{"cash closed", cash.ErrSessionClosed, 409, "cash_session_closed"},
+		{"cash open", fmt.Errorf("x: %w", cash.ErrSessionAlreadyOpen), 409, "cash_session_already_open"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

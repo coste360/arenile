@@ -30,6 +30,9 @@ var (
 	// ErrSpotHasFutureAllocations -> 409 spot_has_future_allocations
 	// (see SpotsAllocatedError).
 	ErrSpotHasFutureAllocations = errors.New("config: spot has future allocations")
+	// ErrNotImplemented -> 501 not_implemented: an operation of the M3
+	// scaffolding whose implementation has not landed yet.
+	ErrNotImplemented = errors.New("not implemented")
 )
 
 // FieldError is one invalid field; Field uses the JSON path of the request

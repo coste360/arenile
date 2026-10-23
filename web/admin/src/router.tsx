@@ -12,6 +12,7 @@ import {
 import { AppShell } from './components/AppShell';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { RouteError } from './components/RouteError';
+import { EstablishmentLayout, EstablishmentSectionRedirect } from './establishment';
 import { NAV_ITEMS } from './nav';
 import { LoginRoute } from './pages/LoginRoute';
 import { SettingsPage } from './pages/SettingsPage';
@@ -67,43 +68,23 @@ const indexRoute = createRoute({
   },
 });
 
-const mapRoute = createRoute({
-  getParentRoute: () => appRoute,
-  path: 'mappa',
-  component: lazyRouteComponent(() => import('./pages/DemoMapPage'), 'DemoMapPage'),
-});
-
 const settingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'configurazione',
   component: SettingsPage,
 });
 
-function placeholderRoute<TPath extends string>(path: TPath) {
-  const item = NAV_ITEMS.find((i) => i.to === `/${path}`);
-  if (!item) throw new Error(`unknown nav item ${path}`);
-  return createRoute({
+/**
+ * Legacy top-level paths of the operational sections (/oggi, /mappa, ...):
+ * they redirect to the same section of the current establishment.
+ */
+const legacySectionRoutes = NAV_ITEMS.map((item) =>
+  createRoute({
     getParentRoute: () => appRoute,
-    path,
-    component: () => (
-      <PlaceholderPage
-        titleKey={item.labelKey}
-        descriptionKey={item.descriptionKey}
-        milestone={item.milestone}
-      />
-    ),
-  });
-}
-
-const placeholderRoutes = [
-  placeholderRoute('oggi'),
-  placeholderRoute('prenotazioni'),
-  placeholderRoute('calendario'),
-  placeholderRoute('clienti'),
-  placeholderRoute('abbonamenti'),
-  placeholderRoute('cassa'),
-  placeholderRoute('report'),
-] as const;
+    path: item.section,
+    component: () => <EstablishmentSectionRedirect section={item.section} />,
+  }),
+);
 
 // ---- M1/M2 configuration --------------------------------------------------
 // Establishment-scoped routes live under /e/$establishmentId: the URL is the
@@ -129,7 +110,7 @@ const newEstablishmentRoute = createRoute({
 const establishmentRoute = createRoute({
   getParentRoute: () => appRoute,
   path: 'e/$establishmentId',
-  component: Outlet,
+  component: EstablishmentLayout,
 });
 
 const establishmentIndexRoute = createRoute({
@@ -225,13 +206,99 @@ const policiesRoute = createRoute({
   component: lazyRouteComponent(() => import('./features/policies'), 'PoliciesPage'),
 });
 
+// ---- M3 operations ---------------------------------------------------------
+// Establishment-scoped pages of spec 15.1 "Operatività", lazy-loaded from the
+// feature folders (owned by the feature builders).
+
+/** `?date=YYYY-MM-DD&slot=AM|PM|FULL` shared by the map and the day view. */
+export interface DaySearch {
+  date?: string;
+  slot?: 'AM' | 'PM' | 'FULL';
+}
+
+export function validateDaySearch(search: Record<string, unknown>): DaySearch {
+  const date =
+    typeof search.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(search.date)
+      ? search.date
+      : undefined;
+  const slot =
+    search.slot === 'AM' || search.slot === 'PM' || search.slot === 'FULL'
+      ? search.slot
+      : undefined;
+  return { date, slot };
+}
+
+const todayRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'oggi',
+  validateSearch: validateDaySearch,
+  component: lazyRouteComponent(() => import('./features/operations'), 'TodayPage'),
+});
+const operationalMapRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'mappa',
+  validateSearch: validateDaySearch,
+  component: lazyRouteComponent(() => import('./features/operations'), 'OperationalMapPage'),
+});
+const bookingsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'prenotazioni',
+  component: lazyRouteComponent(() => import('./features/bookings'), 'BookingsPage'),
+});
+const bookingDetailRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'prenotazioni/$bookingId',
+  component: lazyRouteComponent(() => import('./features/bookings'), 'BookingDetailPage'),
+});
+const planningRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'calendario',
+  component: lazyRouteComponent(() => import('./features/planning'), 'PlanningPage'),
+});
+const customersRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'clienti',
+  component: lazyRouteComponent(() => import('./features/customers'), 'CustomersPage'),
+});
+const customerDetailRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'clienti/$customerId',
+  component: lazyRouteComponent(() => import('./features/customers'), 'CustomerDetailPage'),
+});
+const seasonPassesRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'abbonamenti',
+  component: lazyRouteComponent(() => import('./features/passes'), 'SeasonPassesPage'),
+});
+const cashRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'cassa',
+  component: lazyRouteComponent(() => import('./features/cash'), 'CashPage'),
+});
+const corrispettiviRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'cassa/corrispettivi',
+  component: lazyRouteComponent(() => import('./features/cash'), 'CorrispettiviPage'),
+});
+const reportsItem = NAV_ITEMS.find((i) => i.section === 'report');
+const reportsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'report',
+  component: () => (
+    <PlaceholderPage
+      titleKey="nav.reports"
+      descriptionKey="admin.placeholder.reports"
+      milestone={reportsItem?.milestone ?? 'M5'}
+    />
+  ),
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
     indexRoute,
-    mapRoute,
     settingsRoute,
-    ...placeholderRoutes,
+    ...legacySectionRoutes,
     newEstablishmentRoute,
     establishmentRoute.addChildren([
       establishmentIndexRoute,
@@ -250,6 +317,17 @@ const routeTree = rootRoute.addChildren([
       priceMatrixRoute,
       coverageRoute,
       policiesRoute,
+      todayRoute,
+      operationalMapRoute,
+      bookingsRoute,
+      bookingDetailRoute,
+      planningRoute,
+      customersRoute,
+      customerDetailRoute,
+      seasonPassesRoute,
+      cashRoute,
+      corrispettiviRoute,
+      reportsRoute,
     ]),
   ]),
 ]);

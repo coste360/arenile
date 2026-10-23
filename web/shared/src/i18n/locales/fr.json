@@ -23,7 +23,15 @@
       "versionConflict": "Un autre utilisateur a modifié ces données. Rechargez pour voir la dernière version.",
       "notImplemented": "Fonction pas encore disponible.",
       "spotHasFutureAllocations": "L'emplacement a des réservations futures : vous pouvez seulement le désactiver.",
-      "noPrice": "Il manque un prix pour les dates demandées."
+      "noPrice": "Il manque un prix pour les dates demandées.",
+      "spotUnavailable": "L'emplacement n'est pas disponible aux dates choisies.",
+      "poolExhausted": "Quantité non disponible aux dates choisies.",
+      "quotaExceeded": "Le quota en ligne est épuisé aux dates choisies.",
+      "holdExpired": "La réservation temporaire a expiré : sélectionnez à nouveau.",
+      "invalidTransition": "Action non autorisée dans l'état actuel de la réservation.",
+      "cashSessionClosed": "La session de caisse est fermée : ouvrez-en une pour enregistrer des paiements en espèces.",
+      "cashSessionAlreadyOpen": "Une session de caisse est déjà ouverte.",
+      "policyViolation": "La demande ne respecte pas les règles de réservation."
     },
     "languages": {
       "it": "Italiano",

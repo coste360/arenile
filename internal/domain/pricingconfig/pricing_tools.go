@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/uptrace/bun"
+
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/configerr"
@@ -91,12 +93,21 @@ func (s *Service) Simulate(ctx context.Context, p *auth.Principal, establishment
 	if err != nil {
 		return nil, err
 	}
+	return s.Quote(ctx, s.d.DB, es, in)
+}
+
+// Quote is Simulate without the permission check, reading through db (the
+// caller's transaction): the booking service prices, validates the policy
+// and computes the deposit with it inside the transaction that allocates the
+// resources (M3), after authorizing the principal itself. Errors are those of
+// Simulate (configerr validation, pricing.ErrNoPrice).
+func (s *Service) Quote(ctx context.Context, db bun.IDB, es store.EstablishmentScope, in SimulateInput) (*SimulateResult, error) {
 	if err := validateSimulate(&in); err != nil {
 		return nil, err
 	}
 	seasonID := strings.TrimSpace(in.SeasonID)
 	if seasonID == "" {
-		sn, err := store.PricingSeasonForDate(ctx, s.d.DB, es, in.StartsOn)
+		sn, err := store.PricingSeasonForDate(ctx, db, es, in.StartsOn)
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, configerr.Invalid("starts_on", "Nessuna stagione contiene la data di inizio.")
 		}
@@ -105,7 +116,7 @@ func (s *Service) Simulate(ctx context.Context, p *auth.Principal, establishment
 		}
 		seasonID = sn.ID
 	} else {
-		sn, err := seasonOf(ctx, s.d.DB, es, seasonID)
+		sn, err := seasonOf(ctx, db, es, seasonID)
 		if err != nil {
 			return nil, err
 		}
@@ -119,7 +130,7 @@ func (s *Service) Simulate(ctx context.Context, p *auth.Principal, establishment
 	for _, l := range in.Lines {
 		spotIDs = append(spotIDs, l.SpotID)
 	}
-	pl, err := LoadPriceList(ctx, s.d.DB, es, seasonID, spotIDs)
+	pl, err := LoadPriceList(ctx, db, es, seasonID, spotIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +147,7 @@ func (s *Service) Simulate(ctx context.Context, p *auth.Principal, establishment
 		Today: today, Lines: in.Lines, Extras: in.Extras, Customer: pricing.CustomerInput{Tags: cleanIDs(in.CustomerTags)},
 	}
 	if id := strings.TrimSpace(in.AgreementID); id != "" {
-		row, err := store.GetAgreement(ctx, s.d.DB, es, id)
+		row, err := store.GetAgreement(ctx, db, es, id)
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, configerr.Invalid("agreement_id", "Convenzione inesistente.")
 		}
@@ -154,7 +165,7 @@ func (s *Service) Simulate(ctx context.Context, p *auth.Principal, establishment
 		q.Agreement = &ea
 	}
 	if code := strings.TrimSpace(in.PromoCode); code != "" {
-		row, err := store.GetPromoCodeByCode(ctx, s.d.DB, es, code)
+		row, err := store.GetPromoCodeByCode(ctx, db, es, code)
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, configerr.Invalid("promo_code", "Codice promozionale inesistente.")
 		}

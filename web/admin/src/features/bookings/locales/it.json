@@ -1,0 +1,32 @@
+{
+  "list": {
+    "title": "Prenotazioni",
+    "description": "Elenco filtrabile per date, stato, canale, cliente e saldo."
+  },
+  "detail": {
+    "title": "Prenotazione",
+    "description": "Righe, allocazioni, pagamenti e storico della prenotazione."
+  },
+  "new": {
+    "title": "Nuova prenotazione",
+    "description": "Date, postazioni, pack, cliente e anteprima del prezzo."
+  },
+  "status": {
+    "draft": "Bozza",
+    "held": "In attesa",
+    "pending_payment": "In attesa di pagamento",
+    "awaiting_approval": "Da approvare",
+    "confirmed": "Confermata",
+    "checked_in": "Presente",
+    "completed": "Conclusa",
+    "cancelled": "Cancellata",
+    "no_show": "Non presentato",
+    "expired": "Scaduta",
+    "rejected": "Rifiutata"
+  },
+  "channel": {
+    "desk": "Cassa",
+    "online": "Online",
+    "api": "API"
+  }
+}

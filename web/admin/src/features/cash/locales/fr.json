@@ -1,0 +1,18 @@
+{
+  "session": {
+    "title": "Caisse",
+    "description": "Session en cours, encaissements, mouvements et clôture avec comptage."
+  },
+  "corrispettivi": {
+    "title": "Recettes journalières",
+    "description": "Recettes journalières ou mensuelles par taux de TVA et mode de paiement, en CSV ou JSON."
+  },
+  "method": {
+    "cash": "Espèces",
+    "card": "Carte",
+    "bank_transfer": "Virement",
+    "wallet": "Portefeuille",
+    "credit": "Crédit",
+    "other": "Autre"
+  }
+}

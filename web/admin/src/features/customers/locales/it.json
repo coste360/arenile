@@ -1,0 +1,10 @@
+{
+  "list": {
+    "title": "Clienti",
+    "description": "Anagrafica con ricerca per nome, telefono, email e tag."
+  },
+  "detail": {
+    "title": "Cliente",
+    "description": "Dati, storico, crediti, abbonamenti, esportazione e anonimizzazione GDPR."
+  }
+}

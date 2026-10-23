@@ -1,0 +1,18 @@
+{
+  "session": {
+    "title": "Cash desk",
+    "description": "Current session, takings, movements and closing with count."
+  },
+  "corrispettivi": {
+    "title": "Daily takings",
+    "description": "Daily or monthly takings by VAT rate and method, as CSV or JSON."
+  },
+  "method": {
+    "cash": "Cash",
+    "card": "Card",
+    "bank_transfer": "Bank transfer",
+    "wallet": "Wallet",
+    "credit": "Credit",
+    "other": "Other"
+  }
+}

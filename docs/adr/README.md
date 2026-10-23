@@ -17,6 +17,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0007](0007-licenza-bsl.md) | Licenza del core: Business Source License 1.1, conversione in AGPL-3.0 dopo tre anni | accettato |
 | [0008](0008-scelte-m1-m2.md) | Scelte di M1/M2: `internal/reqctx`, allocazioni future, pool implicito, password temporanea, payload degli eventi di configurazione | accettato |
 | [0009](0009-ui-kit-shadcn.md) | UI kit: shadcn/ui, niente CSS custom | accettato |
+| [0010](0010-scelte-m3.md) | Scelte di M3: allocazioni cancellate al rilascio, hold del pannello, abbonamenti come prenotazioni, registro unico dei pagamenti, topic SSE | accettato |
 
 ## Come aggiungere un ADR
 

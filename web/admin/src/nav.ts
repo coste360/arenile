@@ -27,21 +27,25 @@ interface NavItemBase {
 }
 
 /**
- * "Operatività" (spec 15.1) and the milestone that delivers each section
- * (spec 28). Items with `available: false` are shown disabled with a
- * "presto" badge; their routes still render the placeholder page.
+ * "Operatività" (spec 15.1), scoped to the current establishment: every path
+ * is under /e/$establishmentId (`section` is the last segment, also served
+ * as a legacy top-level path that redirects to the current establishment).
+ * `milestone` is the roadmap milestone that delivers the section (spec 28);
+ * items with `available: false` are shown disabled with a "presto" badge.
  */
 export const NAV_ITEMS = [
   {
-    to: '/oggi',
+    to: '/e/$establishmentId/oggi',
+    section: 'oggi',
     labelKey: 'nav.today',
     descriptionKey: 'admin.placeholder.today',
     milestone: 'M3',
     icon: SunIcon,
-    available: false,
+    available: true,
   },
   {
-    to: '/mappa',
+    to: '/e/$establishmentId/mappa',
+    section: 'mappa',
     labelKey: 'nav.map',
     descriptionKey: 'admin.placeholder.map',
     milestone: 'M3',
@@ -49,47 +53,53 @@ export const NAV_ITEMS = [
     available: true,
   },
   {
-    to: '/prenotazioni',
+    to: '/e/$establishmentId/prenotazioni',
+    section: 'prenotazioni',
     labelKey: 'nav.bookings',
     descriptionKey: 'admin.placeholder.bookings',
     milestone: 'M3',
     icon: ClipboardListIcon,
-    available: false,
+    available: true,
   },
   {
-    to: '/calendario',
+    to: '/e/$establishmentId/calendario',
+    section: 'calendario',
     labelKey: 'nav.calendar',
     descriptionKey: 'admin.placeholder.calendar',
     milestone: 'M3',
     icon: CalendarDaysIcon,
-    available: false,
+    available: true,
   },
   {
-    to: '/clienti',
+    to: '/e/$establishmentId/clienti',
+    section: 'clienti',
     labelKey: 'nav.customers',
     descriptionKey: 'admin.placeholder.customers',
     milestone: 'M3',
     icon: UsersIcon,
-    available: false,
+    available: true,
   },
   {
-    to: '/abbonamenti',
+    to: '/e/$establishmentId/abbonamenti',
+    section: 'abbonamenti',
     labelKey: 'nav.seasonPasses',
     descriptionKey: 'admin.placeholder.seasonPasses',
     milestone: 'M3',
     icon: TicketIcon,
-    available: false,
+    available: true,
   },
   {
-    to: '/cassa',
+    to: '/e/$establishmentId/cassa',
+    section: 'cassa',
     labelKey: 'nav.cash',
     descriptionKey: 'admin.placeholder.cash',
     milestone: 'M3',
     icon: WalletIcon,
-    available: false,
+    available: true,
   },
   {
-    to: '/report',
+    to: '/e/$establishmentId/report',
+    section: 'report',
     labelKey: 'nav.reports',
     descriptionKey: 'admin.placeholder.reports',
     milestone: 'M5',
@@ -98,10 +108,13 @@ export const NAV_ITEMS = [
   },
 ] as const satisfies readonly (NavItemBase & {
   to: string;
+  section: string;
   descriptionKey: string;
   milestone: string;
   available: boolean;
 })[];
+
+export type NavSection = (typeof NAV_ITEMS)[number]['section'];
 
 export type NavPath = (typeof NAV_ITEMS)[number]['to'];
 

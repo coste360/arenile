@@ -26,10 +26,17 @@ import (
 	"github.com/coste360/arenile/internal/crypto"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/booking"
+	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
+	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/fiscal"
+	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/pass"
+	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
@@ -90,8 +97,16 @@ type App struct {
 	Pricing        *pricingconfig.Service
 	Policies       *pricingconfig.PolicyService
 	Setup          *setup.Service
-	Outbox         *event.Outbox
-	Bus            ext.EventBus
+	// M3 services (wired by wireOperations, see m3.go).
+	Inventory *inventory.Service
+	Customers *customer.Service
+	Bookings  *booking.Service
+	Passes    *pass.Service
+	Payments  *payment.Service
+	Cash      *cash.Service
+	Fiscal    *fiscal.Service
+	Outbox    *event.Outbox
+	Bus       ext.EventBus
 
 	mu    sync.Mutex
 	addr  string
@@ -196,6 +211,7 @@ func (a *App) wire() error {
 	}))
 	a.wireConfiguration(aw)
 	a.registry = NewRegistry(c, x)
+	a.wireOperations(aw)
 	if x.EventBus != nil {
 		a.Bus = x.EventBus
 	} else {
@@ -218,12 +234,19 @@ func (a *App) wire() error {
 			return err
 		}
 	}
+	for _, j := range a.operationJobs() {
+		if err := a.runner.Register(j); err != nil {
+			return err
+		}
+	}
 
 	a.handler = httpserver.New(httpserver.Deps{
 		DB: a.db, Clock: c, Log: a.log, Version: a.opts.version,
 		Auth: authSvc, Establishments: a.Establishments, Bus: a.Bus,
 		Team: a.Team, Seasons: a.Seasons, Mapping: a.Mapping, Catalog: a.Catalog,
 		Pricing: a.Pricing, Policies: a.Policies, Setup: a.Setup,
+		Customers: a.Customers, Bookings: a.Bookings, Inventory: a.Inventory, Passes: a.Passes,
+		Payments: a.Payments, Cash: a.Cash, Fiscal: a.Fiscal,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),
@@ -238,9 +261,13 @@ func (a *App) wireConfiguration(aw *audit.Writer) {
 	c := a.opts.clock
 	a.Team = team.NewService(team.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Auth: a.Auth})
 	a.Seasons = season.NewService(season.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log})
-	// Allocations arrive with M3: until then no spot has future allocations.
+	// The inventory (M3) answers the future allocation check of map edits
+	// from spot_allocations (ADR 0008 §2).
+	a.Inventory = inventory.NewService(inventory.Deps{
+		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, HoldTTL: a.cfg.HoldTTL,
+	})
 	a.Mapping = mapping.NewService(mapping.Deps{
-		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Allocations: mapping.NoAllocations{},
+		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Allocations: a.Inventory,
 	})
 	a.Catalog = catalog.NewService(catalog.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log})
 	pd := pricingconfig.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log}

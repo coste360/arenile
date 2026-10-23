@@ -6,7 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi e policy** (completate, non rilasciate).
+Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi e policy** (completate, non rilasciate);
+**M3 — Prenotazioni dal pannello e cassa** in corso.
 
 ### Changed
 
@@ -14,6 +15,14 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 - Pannello: nomi al posto dei codici per periodi e categorie di prezzo (riepiloghi delle regole, matrice con colonna "Codice" nascosta, simulatore, policy, linea temporale delle stagioni); Policy come scheda della barra prezzi; barra laterale con le sezioni non ancora disponibili raccolte in un gruppo "In arrivo" chiuso e voce "Tutti gli stabilimenti"; mappa condivisa con un solo punto di tabulazione (frecce, PagSu/PagGiù, Home/Fine tra le postazioni) ed etichette mai sotto i 9 px; procedura guidata senza riferimenti alle milestone interne.
 
 ### Added
+
+- M3 — contratto API (clienti, prenotazioni con anteprima e azioni di stato, hold, disponibilità, vista operativa del
+  giorno, planning, blocchi, abbonamenti e rilasci, pagamenti manuali e rimborsi, vendite di cassa, sessioni di cassa,
+  corrispettivi JSON/CSV) con nuovi tipi di errore `pool_exhausted`, `quota_exceeded`, `invalid_transition`,
+  `cash_session_closed`, `cash_session_already_open` e `conflicts`; migrazione 00003 per SQLite e PostgreSQL (ADR
+  0010); flusso SSE con nomi di evento per topic (`booking.changed`, `allocation.changed`, `hold.changed`,
+  `cash.changed`); pannello con le sezioni Oggi, Mappa, Prenotazioni, Calendario, Clienti, Abbonamenti e Cassa per
+  stabilimento. Le operazioni rispondono `501 not_implemented` finché non vengono implementate.
 
 - Pannello e pagina di prenotazione con UI kit shadcn/ui (ADR 0009): barra laterale con selettore dello stabilimento e menu utente, breadcrumb, palette comandi (Ctrl/⌘+K), tema chiaro/scuro/sistema, toast; tabelle con ordinamento e filtro, pannelli laterali di modifica, calendari e selettori di date gg/MM/aaaa in italiano al posto di `<input type="date">`, importi con `MoneyInput`; editor della mappa con barra degli strumenti a icone, zoom fino al 400%, legenda e pannello proprietà; stagioni con linea temporale e calendario, chiusure su calendario, simulatore con grafico e dettaglio per giorno; pagina pubblica mobile-first con passo "Quando" e selettore del periodo.
 - Controllo `web/scripts/css-guard.mjs` in `npm run lint`: rifiuta fogli di stile diversi dal tema (anche in `public/` e `.html`), CSS-in-JS, `style={…}` e stili programmatici fuori dalle esenzioni elencate (geometria della mappa, variabili del tema, iframe dell'embed), valori arbitrari di Tailwind che aggirano il tema (colori, `text-[10px]`, proprietà) e i vecchi token `--ar-*`.

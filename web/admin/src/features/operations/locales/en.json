@@ -1,0 +1,27 @@
+{
+  "today": {
+    "title": "Today",
+    "description": "Map of the day, arrivals, balances to collect and lines to assign."
+  },
+  "map": {
+    "title": "Map",
+    "description": "Operational map view for any date and slot, coloured by status."
+  },
+  "slot": {
+    "FULL": "Full day",
+    "AM": "Morning",
+    "PM": "Afternoon"
+  },
+  "status": {
+    "free": "Free",
+    "booked": "Booked",
+    "checked_in": "Checked in",
+    "pass_holder": "Season pass",
+    "released": "Season pass away today",
+    "held": "On hold",
+    "renewal_offer": "Renewal option",
+    "blocked": "Blocked",
+    "closed": "Closed",
+    "inactive": "Inactive"
+  }
+}

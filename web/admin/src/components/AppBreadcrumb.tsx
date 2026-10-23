@@ -18,9 +18,13 @@ export function AppBreadcrumb() {
   const current = useCurrentEstablishment();
 
   let trail: string[] = [];
-  const op = NAV_ITEMS.find((i) => matchRoute({ to: i.to, fuzzy: true }));
+  const op = NAV_ITEMS.find((i) => matchRoute({ to: i.to, fuzzy: true } as never));
   if (op) {
-    trail = [t('nav.operations'), t(op.labelKey)];
+    trail = [
+      t('nav.operations'),
+      ...(current.establishment ? [current.establishment.name] : []),
+      t(op.labelKey),
+    ];
   } else if (matchRoute({ to: ESTABLISHMENTS_NAV_ITEM.to, fuzzy: true })) {
     trail = [t('nav.configGroup'), t(ESTABLISHMENTS_NAV_ITEM.labelKey)];
   } else if (matchRoute({ to: '/establishments/new' })) {

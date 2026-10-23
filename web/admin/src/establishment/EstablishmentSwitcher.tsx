@@ -22,7 +22,12 @@ import { useCurrentEstablishment, useIsOwner } from './context';
 export function EstablishmentSwitcher() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const params = useParams({ strict: false }) as { establishmentId?: string; mapId?: string };
+  const params = useParams({ strict: false }) as {
+    establishmentId?: string;
+    mapId?: string;
+    bookingId?: string;
+    customerId?: string;
+  };
   const isOwner = useIsOwner();
   const current = useCurrentEstablishment();
 
@@ -30,6 +35,11 @@ export function EstablishmentSwitcher() {
     if (params.mapId) {
       // A map document belongs to one establishment: go back to the maps list.
       void navigate({ to: '/e/$establishmentId/maps', params: { establishmentId: value } });
+    } else if (params.bookingId) {
+      // Bookings and customers belong to one establishment: back to the list.
+      void navigate({ to: '/e/$establishmentId/prenotazioni', params: { establishmentId: value } });
+    } else if (params.customerId) {
+      void navigate({ to: '/e/$establishmentId/clienti', params: { establishmentId: value } });
     } else if (params.establishmentId) {
       // Same section, other establishment.
       void navigate({ to: '.', params: { establishmentId: value } as never });

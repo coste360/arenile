@@ -1,0 +1,18 @@
+{
+  "session": {
+    "title": "Cassa",
+    "description": "Sessione corrente, incassi, movimenti e chiusura con conteggio."
+  },
+  "corrispettivi": {
+    "title": "Corrispettivi",
+    "description": "Incassi giornalieri o mensili per aliquota IVA e metodo, in CSV o JSON."
+  },
+  "method": {
+    "cash": "Contanti",
+    "card": "Carta",
+    "bank_transfer": "Bonifico",
+    "wallet": "Wallet",
+    "credit": "Credito",
+    "other": "Altro"
+  }
+}

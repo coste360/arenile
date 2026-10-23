@@ -1,0 +1,32 @@
+{
+  "list": {
+    "title": "Buchungen",
+    "description": "Liste filterbar nach Datum, Status, Kanal, Kunde und Saldo."
+  },
+  "detail": {
+    "title": "Buchung",
+    "description": "Positionen, Belegungen, Zahlungen und Verlauf der Buchung."
+  },
+  "new": {
+    "title": "Neue Buchung",
+    "description": "Daten, Plätze, Pakete, Kunde und Preisvorschau."
+  },
+  "status": {
+    "draft": "Entwurf",
+    "held": "Vorgemerkt",
+    "pending_payment": "Zahlung ausstehend",
+    "awaiting_approval": "Genehmigung ausstehend",
+    "confirmed": "Bestätigt",
+    "checked_in": "Anwesend",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert",
+    "no_show": "Nicht erschienen",
+    "expired": "Abgelaufen",
+    "rejected": "Abgelehnt"
+  },
+  "channel": {
+    "desk": "Kasse",
+    "online": "Online",
+    "api": "API"
+  }
+}

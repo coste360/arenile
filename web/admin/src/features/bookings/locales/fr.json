@@ -1,0 +1,32 @@
+{
+  "list": {
+    "title": "Réservations",
+    "description": "Liste filtrable par dates, état, canal, client et solde."
+  },
+  "detail": {
+    "title": "Réservation",
+    "description": "Lignes, allocations, paiements et historique de la réservation."
+  },
+  "new": {
+    "title": "Nouvelle réservation",
+    "description": "Dates, emplacements, formules, client et aperçu du prix."
+  },
+  "status": {
+    "draft": "Brouillon",
+    "held": "En attente",
+    "pending_payment": "Paiement en attente",
+    "awaiting_approval": "En attente d'approbation",
+    "confirmed": "Confirmée",
+    "checked_in": "Présent",
+    "completed": "Terminée",
+    "cancelled": "Annulée",
+    "no_show": "Absent",
+    "expired": "Expirée",
+    "rejected": "Refusée"
+  },
+  "channel": {
+    "desk": "Caisse",
+    "online": "En ligne",
+    "api": "API"
+  }
+}

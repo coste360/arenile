@@ -1,0 +1,27 @@
+{
+  "today": {
+    "title": "Heute",
+    "description": "Karte des Tages, Ankünfte, offene Salden und zuzuweisende Positionen."
+  },
+  "map": {
+    "title": "Karte",
+    "description": "Operative Kartenansicht für jedes Datum und jeden Zeitraum, nach Status eingefärbt."
+  },
+  "slot": {
+    "FULL": "Ganzer Tag",
+    "AM": "Vormittag",
+    "PM": "Nachmittag"
+  },
+  "status": {
+    "free": "Frei",
+    "booked": "Gebucht",
+    "checked_in": "Anwesend",
+    "pass_holder": "Saisonabo",
+    "released": "Saisonabo heute abwesend",
+    "held": "Vorgemerkt",
+    "renewal_offer": "Verlängerungsoption",
+    "blocked": "Gesperrt",
+    "closed": "Geschlossen",
+    "inactive": "Inaktiv"
+  }
+}

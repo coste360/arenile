@@ -1,0 +1,32 @@
+{
+  "list": {
+    "title": "Bookings",
+    "description": "List filterable by dates, status, channel, customer and balance."
+  },
+  "detail": {
+    "title": "Booking",
+    "description": "Lines, allocations, payments and history of the booking."
+  },
+  "new": {
+    "title": "New booking",
+    "description": "Dates, spots, packs, customer and price preview."
+  },
+  "status": {
+    "draft": "Draft",
+    "held": "On hold",
+    "pending_payment": "Awaiting payment",
+    "awaiting_approval": "Awaiting approval",
+    "confirmed": "Confirmed",
+    "checked_in": "Checked in",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "no_show": "No-show",
+    "expired": "Expired",
+    "rejected": "Rejected"
+  },
+  "channel": {
+    "desk": "Desk",
+    "online": "Online",
+    "api": "API"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "today": {
+    "title": "Aujourd'hui",
+    "description": "Carte du jour, arrivées, soldes à encaisser et lignes à attribuer."
+  },
+  "map": {
+    "title": "Carte",
+    "description": "Vue opérationnelle de la carte pour toute date et tranche, colorée selon l'état."
+  },
+  "slot": {
+    "FULL": "Journée entière",
+    "AM": "Matin",
+    "PM": "Après-midi"
+  },
+  "status": {
+    "free": "Libre",
+    "booked": "Réservé",
+    "checked_in": "Présent",
+    "pass_holder": "Abonné",
+    "released": "Abonné absent aujourd'hui",
+    "held": "En attente",
+    "renewal_offer": "Option de renouvellement",
+    "blocked": "Bloqué",
+    "closed": "Fermé",
+    "inactive": "Inactif"
+  }
+}

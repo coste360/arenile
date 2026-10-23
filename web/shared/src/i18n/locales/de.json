@@ -23,7 +23,15 @@
       "versionConflict": "Ein anderer Benutzer hat diese Daten geändert. Neu laden, um die aktuelle Version zu sehen.",
       "notImplemented": "Funktion noch nicht verfügbar.",
       "spotHasFutureAllocations": "Der Platz hat zukünftige Buchungen: Er kann nur deaktiviert werden.",
-      "noPrice": "Für die gewählten Daten fehlt ein Preis."
+      "noPrice": "Für die gewählten Daten fehlt ein Preis.",
+      "spotUnavailable": "Der Platz ist für die gewählten Daten nicht verfügbar.",
+      "poolExhausted": "Menge für die gewählten Daten nicht verfügbar.",
+      "quotaExceeded": "Das Online-Kontingent ist für die gewählten Daten ausgeschöpft.",
+      "holdExpired": "Die vorläufige Reservierung ist abgelaufen: bitte erneut auswählen.",
+      "invalidTransition": "Diese Aktion ist im aktuellen Buchungsstatus nicht erlaubt.",
+      "cashSessionClosed": "Die Kassensitzung ist geschlossen: öffne eine, um Barzahlungen zu erfassen.",
+      "cashSessionAlreadyOpen": "Es ist bereits eine Kassensitzung geöffnet.",
+      "policyViolation": "Die Anfrage entspricht nicht den Buchungsregeln."
     },
     "languages": {
       "it": "Italiano",

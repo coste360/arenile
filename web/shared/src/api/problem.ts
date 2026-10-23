@@ -25,6 +25,22 @@ export function problemMessageKey(error: unknown): string {
       return 'common.errors.spotHasFutureAllocations';
     case 'no_price':
       return 'common.errors.noPrice';
+    case 'policy_violation':
+      return 'common.errors.policyViolation';
+    case 'spot_unavailable':
+      return 'common.errors.spotUnavailable';
+    case 'pool_exhausted':
+      return 'common.errors.poolExhausted';
+    case 'quota_exceeded':
+      return 'common.errors.quotaExceeded';
+    case 'hold_expired':
+      return 'common.errors.holdExpired';
+    case 'invalid_transition':
+      return 'common.errors.invalidTransition';
+    case 'cash_session_closed':
+      return 'common.errors.cashSessionClosed';
+    case 'cash_session_already_open':
+      return 'common.errors.cashSessionAlreadyOpen';
     default:
       return 'common.errors.generic';
   }

@@ -46,6 +46,22 @@ tags:
     description: Policy di prenotazione
   - name: setup
     description: Configurazione guidata
+  - name: customers
+    description: Clienti, ricerca, esportazione e anonimizzazione GDPR
+  - name: bookings
+    description: Prenotazioni dal pannello, azioni di stato, modifiche e assegnazioni
+  - name: availability
+    description: Disponibilità, hold e blocchi delle postazioni
+  - name: operations
+    description: Vista operativa del giorno e calendario planning
+  - name: passes
+    description: Abbonamenti stagionali e rilasci
+  - name: payments
+    description: Pagamenti manuali, rimborsi e vendite di cassa
+  - name: cash
+    description: Sessioni di cassa, movimenti e chiusure
+  - name: fiscal
+    description: Corrispettivi e documenti fiscali
   - name: realtime
     description: Eventi in tempo reale (SSE)
   - name: public
@@ -3208,15 +3224,2089 @@ paths:
         "409":
           $ref: "#/components/responses/Conflict"
 
+  /api/admin/v1/establishments/{establishmentId}/customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: "Elenco e ricerca clienti"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: q
+          in: query
+          required: false
+          description: "Ricerca per nome, cognome, email o telefono (sottostringa, senza distinzione di maiuscole e accenti)."
+          schema:
+            type: string
+            maxLength: 200
+        - name: tag
+          in: query
+          required: false
+          description: "Solo i clienti con questo tag."
+          schema:
+            type: string
+            maxLength: 50
+        - name: include_anonymized
+          in: query
+          required: false
+          description: "Include i clienti anonimizzati (default false)."
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Pagina di clienti"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: "Crea cliente"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: "Cliente creato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/customers/{customerId}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: "Scheda cliente con statistiche, crediti, prenotazioni recenti e abbonamenti"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+      responses:
+        "200":
+          description: "Cliente"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: "Sostituisce i dati del cliente"
+      description: >-
+        Un cliente anonimizzato non è modificabile (409 conflict).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "200":
+          description: "Cliente aggiornato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/export:
+    get:
+      operationId: exportCustomer
+      tags: [customers]
+      summary: "Esportazione GDPR dei dati del cliente (JSON)"
+      description: >-
+        Spec 23. Richiede il permesso bookings.write; la richiesta è registrata nel registro attività.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+      responses:
+        "200":
+          description: "Tutti i dati personali del cliente con prenotazioni, pagamenti e crediti"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerExport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/anonymize:
+    post:
+      operationId: anonymizeCustomer
+      tags: [customers]
+      summary: "Anonimizza il cliente (GDPR)"
+      description: >-
+        Sostituisce i dati personali (nome, email, telefono, note, consensi) in modo irreversibile;
+        prenotazioni e pagamenti restano per gli obblighi contabili. Emette customer.anonymized.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "Cliente anonimizzato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: "Elenco prenotazioni filtrabile"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: false
+          description: "Prenotazioni che terminano in questa data o dopo."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          description: "Prenotazioni che iniziano in questa data o prima."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: status
+          in: query
+          required: false
+          description: "Uno o più stati (status=confirmed&status=checked_in)."
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/BookingStatus"
+        - name: customer_id
+          in: query
+          required: false
+          description: "Solo le prenotazioni del cliente."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: spot_id
+          in: query
+          required: false
+          description: "Solo le prenotazioni con una riga su questa postazione."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: channel
+          in: query
+          required: false
+          description: "Canale di vendita."
+          schema:
+            $ref: "#/components/schemas/Channel"
+        - name: season_pass
+          in: query
+          required: false
+          description: "true = solo abbonamenti, false = solo prenotazioni ordinarie."
+          schema:
+            type: boolean
+        - name: balance_due
+          in: query
+          required: false
+          description: "true = solo con saldo da incassare."
+          schema:
+            type: boolean
+        - name: q
+          in: query
+          required: false
+          description: "Codice prenotazione o nome/telefono del cliente."
+          schema:
+            type: string
+            maxLength: 100
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Pagina di prenotazioni (ordinate per starts_on, poi id)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: "Crea prenotazione dal pannello"
+      description: >-
+        Quotazione, policy e allocazione nella stessa transazione (spec 7, 10). Errori: 409
+        spot_unavailable / pool_exhausted / quota_exceeded (con conflicts), 410 hold_expired (hold_id scaduto),
+        422 no_price / policy_violation (salvo force). Per un'anteprima senza scritture usare /bookings/quote.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingCreate"
+      responses:
+        "201":
+          description: "Prenotazione creata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/quote:
+    post:
+      operationId: quoteBooking
+      tags: [bookings]
+      summary: "Anteprima di una prenotazione: prezzo, policy e disponibilità (nessuna scrittura)"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingCreate"
+      responses:
+        "200":
+          description: "Anteprima"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingQuote"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: "Dettaglio prenotazione con righe, allocazioni, pagamenti e storico"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+      responses:
+        "200":
+          description: "Prenotazione"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updateBooking
+      tags: [bookings]
+      summary: "Modifica date, postazioni, righe o note (ricalcolo e riallocazione atomici)"
+      description: >-
+        Spec 10.3: nuova allocazione e rilascio della vecchia nella stessa transazione, nuovo prezzo,
+        differenza da incassare (positiva) o rimborsare (negativa). Gli snapshot originali restano (INV-21).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - name: dry_run
+          in: query
+          required: false
+          description: "true = calcola differenza e conflitti senza salvare."
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/IfMatchRequired"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingPatch"
+      responses:
+        "200":
+          description: "Esito della modifica"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingChangeResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/confirm:
+    post:
+      operationId: confirmBooking
+      tags: [bookings]
+      summary: "Conferma manuale (driver manual)"
+      description: >-
+        Solo da held, pending_payment o awaiting_approval; mai dal ritorno del browser (INV-19). Stato non ammesso: 409 invalid_transition.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingActionRequest"
+      responses:
+        "200":
+          description: "Prenotazione aggiornata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/check-in:
+    post:
+      operationId: checkInBooking
+      tags: [bookings]
+      summary: "Registra il check-in"
+      description: >-
+        Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingActionRequest"
+      responses:
+        "200":
+          description: "Prenotazione aggiornata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/no-show:
+    post:
+      operationId: markBookingNoShow
+      tags: [bookings]
+      summary: "Segna come non presentato"
+      description: >-
+        Da confirmed a no_show; le allocazioni dei giorni futuri vengono rilasciate. Stato non ammesso: 409 invalid_transition.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingActionRequest"
+      responses:
+        "200":
+          description: "Prenotazione aggiornata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/approve:
+    post:
+      operationId: approveBooking
+      tags: [bookings]
+      summary: "Approva una prenotazione in attesa"
+      description: >-
+        Da awaiting_approval a confirmed. Stato non ammesso: 409 invalid_transition.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingActionRequest"
+      responses:
+        "200":
+          description: "Prenotazione aggiornata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/reject:
+    post:
+      operationId: rejectBooking
+      tags: [bookings]
+      summary: "Rifiuta una prenotazione in attesa"
+      description: >-
+        Da awaiting_approval a rejected; rilascia le allocazioni. Stato non ammesso: 409 invalid_transition.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingActionRequest"
+      responses:
+        "200":
+          description: "Prenotazione aggiornata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/cancel:
+    post:
+      operationId: cancelBooking
+      tags: [bookings]
+      summary: "Cancella con rimborso o credito da policy (anteprima con dry_run)"
+      description: >-
+        Rilascia le allocazioni, calcola il rimborso dalla policy_snapshot (spec 9) e lo registra come
+        rimborso manuale o credito del cliente nella stessa transazione. Il rimborso richiede refunds.issue.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingCancelRequest"
+      responses:
+        "200":
+          description: "Esito della cancellazione"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingCancelResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/move:
+    post:
+      operationId: moveBooking
+      tags: [bookings]
+      summary: "Sposta una riga su un'altra postazione (o assegna una riga in attesa)"
+      description: >-
+        Spec 11.3 trascinamento: anteprima del conflitto con dry_run, ricalcolo se cambia la categoria
+        di prezzo. Per righe pending (zone in modalità zone) vale come assegnazione.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingMoveRequest"
+      responses:
+        "200":
+          description: "Esito dello spostamento"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingChangeResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/notes:
+    post:
+      operationId: addBookingNote
+      tags: [bookings]
+      summary: "Aggiunge una nota"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingNoteInput"
+      responses:
+        "200":
+          description: "Prenotazione con la nota"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/assignments/auto:
+    post:
+      operationId: autoAssign
+      tags: [bookings]
+      summary: "Assegnazione automatica delle righe in attesa (modalità zone)"
+      description: >-
+        Spec 7.5: algoritmo greedy del motore puro internal/domain/availability; con dry_run non salva.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutoAssignRequest"
+      responses:
+        "200":
+          description: "Esito dell'assegnazione"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutoAssignResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/payments:
+    get:
+      operationId: listBookingPayments
+      tags: [payments]
+      summary: "Pagamenti e rimborsi della prenotazione"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+      responses:
+        "200":
+          description: "Pagamenti"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: recordBookingPayment
+      tags: [payments]
+      summary: "Registra un incasso manuale (contanti, carta, bonifico, altro)"
+      description: >-
+        Driver manual. Idempotency-Key fortemente consigliata (coda offline, spec 21.2). I contanti
+        richiedono una sessione di cassa aperta (409 cash_session_closed). Aggiorna paid_amount (INV-22).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualPaymentInput"
+      responses:
+        "201":
+          description: "Pagamento registrato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/refunds:
+    post:
+      operationId: recordBookingRefund
+      tags: [payments]
+      summary: "Registra un rimborso manuale"
+      description: >-
+        Permesso refunds.issue. La somma dei rimborsi non supera il pagato (INV-24, 422 validation).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefundInput"
+      responses:
+        "201":
+          description: "Rimborso registrato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: "Elenco pagamenti dello stabilimento"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: false
+          description: "Dalla data (fuso dello stabilimento)."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          description: "Alla data inclusa."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: method
+          in: query
+          required: false
+          description: "Metodo."
+          schema:
+            $ref: "#/components/schemas/PaymentMethod"
+        - name: direction
+          in: query
+          required: false
+          description: "Incasso o rimborso."
+          schema:
+            $ref: "#/components/schemas/PaymentDirection"
+        - name: cash_session_id
+          in: query
+          required: false
+          description: "Solo i pagamenti della sessione di cassa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Pagina di pagamenti"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: recordCounterSale
+      tags: [payments]
+      summary: "Vendita libera di cassa senza prenotazione"
+      description: >-
+        Spec 14.1 (lettino extra al volo, cliente generico).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CounterSaleInput"
+      responses:
+        "201":
+          description: "Vendita registrata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/holds:
+    post:
+      operationId: createHold
+      tags: [availability]
+      summary: "Blocco temporaneo (hold) di una selezione"
+      description: >-
+        Occupa le risorse con allocazioni kind=hold ed expires_at (spec 7.4). Si converte in prenotazione
+        passando hold_id a POST /bookings. 409 spot_unavailable / pool_exhausted / quota_exceeded.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HoldCreate"
+      responses:
+        "201":
+          description: "Hold creato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hold"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/holds/{holdId}:
+    get:
+      operationId: getHold
+      tags: [availability]
+      summary: "Stato di un hold"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/HoldID"
+      responses:
+        "200":
+          description: "Hold"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hold"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: releaseHold
+      tags: [availability]
+      summary: "Rilascia un hold"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/HoldID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Rilasciato (idempotente)"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/availability:
+    get:
+      operationId: getAvailability
+      tags: [availability]
+      summary: "Disponibilità per postazione e per zona/pool su un intervallo"
+      description: >-
+        Spec 7.8 vista dal pannello: hold scaduti ignorati (INV-05), giorni di chiusura esclusi.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: true
+          description: "Primo giorno (incluso)."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: true
+          description: "Ultimo giorno (incluso)."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: slots
+          in: query
+          required: false
+          description: "Fasce (default FULL)."
+          schema:
+            $ref: "#/components/schemas/Slots"
+        - name: channel
+          in: query
+          required: false
+          description: "Canale: online applica le quote (default desk)."
+          schema:
+            $ref: "#/components/schemas/Channel"
+        - name: map_id
+          in: query
+          required: false
+          description: "Solo le zone della mappa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: zone_id
+          in: query
+          required: false
+          description: "Solo la zona."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: pack_id
+          in: query
+          required: false
+          description: "Solo zone e postazioni compatibili con il pack."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: "Disponibilità"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilityResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/operations/day:
+    get:
+      operationId: getOperationsDay
+      tags: [operations]
+      summary: "Stato operativo della mappa per data e fascia"
+      description: >-
+        Spec 11.3 e 15.1 (Oggi): stato per postazione, riepilogo prenotazione, righe da assegnare, pool, totali.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: date
+          in: query
+          required: true
+          description: "Giorno."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: slot
+          in: query
+          required: false
+          description: "Fascia (default FULL)."
+          schema:
+            $ref: "#/components/schemas/Slots"
+        - name: map_id
+          in: query
+          required: false
+          description: "Solo le postazioni della mappa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: "Stato di ogni postazione"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationsDay"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/planning:
+    get:
+      operationId: getPlanning
+      tags: [operations]
+      summary: "Calendario postazioni x giorni (codifica compatta)"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: true
+          description: "Primo giorno."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: true
+          description: "Ultimo giorno (max 62 giorni)."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: map_id
+          in: query
+          required: false
+          description: "Solo la mappa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: zone_id
+          in: query
+          required: false
+          description: "Solo la zona."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: "Griglia del planning"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Planning"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/spot-blocks:
+    get:
+      operationId: listSpotBlocks
+      tags: [availability]
+      summary: "Blocchi manuali delle postazioni"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: false
+          description: "Blocchi che terminano da questa data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          description: "Blocchi che iniziano entro questa data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: spot_id
+          in: query
+          required: false
+          description: "Solo la postazione."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Pagina di blocchi"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpotBlockList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createSpotBlock
+      tags: [availability]
+      summary: "Blocca postazioni su un intervallo"
+      description: >-
+        Allocazioni kind=block (permesso operations.run); 409 spot_unavailable.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpotBlockCreate"
+      responses:
+        "201":
+          description: "Blocchi creati (uno per postazione)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpotBlockList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/spot-blocks/{blockId}:
+    delete:
+      operationId: deleteSpotBlock
+      tags: [availability]
+      summary: "Rimuove un blocco"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SpotBlockID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Rimosso"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/season-passes:
+    get:
+      operationId: listSeasonPasses
+      tags: [passes]
+      summary: "Elenco abbonamenti stagionali"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: season_id
+          in: query
+          required: false
+          description: "Stagione."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: customer_id
+          in: query
+          required: false
+          description: "Cliente."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: spot_id
+          in: query
+          required: false
+          description: "Postazione."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: status
+          in: query
+          required: false
+          description: "Stato."
+          schema:
+            $ref: "#/components/schemas/BookingStatus"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Pagina di abbonamenti"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonPassList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createSeasonPass
+      tags: [passes]
+      summary: "Crea abbonamento (postazione per la stagione)"
+      description: >-
+        Un abbonamento è una prenotazione con is_season_pass=true e formula season; le allocazioni
+        sono kind=season per ogni giorno e fascia (spec 7.7). L'id coincide con quello della prenotazione:
+        si cancella con POST /bookings/{id}/cancel.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonPassCreate"
+      responses:
+        "201":
+          description: "Abbonamento creato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonPassDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}:
+    get:
+      operationId: getSeasonPass
+      tags: [passes]
+      summary: "Dettaglio abbonamento con rilasci"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonPassID"
+      responses:
+        "200":
+          description: "Abbonamento"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonPassDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updateSeasonPass
+      tags: [passes]
+      summary: "Modifica note dell'abbonamento"
+      description: >-
+        Cambio di postazione o date: PATCH /bookings/{id} o POST /bookings/{id}/move.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonPassID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonPassUpdate"
+      responses:
+        "200":
+          description: "Abbonamento aggiornato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonPassDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/releases:
+    get:
+      operationId: listSeasonPassReleases
+      tags: [passes]
+      summary: "Giorni rilasciati"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonPassID"
+      responses:
+        "200":
+          description: "Rilasci"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonReleaseList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createSeasonPassReleases
+      tags: [passes]
+      summary: "Rilascia giorni: la postazione diventa prenotabile"
+      description: >-
+        Rimuove le allocazioni season di quei giorni ed emette season.day_released (spec 7.7, INV-10).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonPassID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonReleaseCreate"
+      responses:
+        "201":
+          description: "Rilasci creati"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonReleaseList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/releases/{releaseId}:
+    delete:
+      operationId: revokeSeasonPassRelease
+      tags: [passes]
+      summary: "Revoca un rilascio non ancora rivenduto"
+      description: >-
+        409 conflict se il giorno è già stato rivenduto (o la postazione è occupata).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonPassID"
+        - $ref: "#/components/parameters/ReleaseID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Revocato: le allocazioni season sono ricreate"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-sessions:
+    get:
+      operationId: listCashSessions
+      tags: [cash]
+      summary: "Storico delle sessioni di cassa"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: status
+          in: query
+          required: false
+          description: "Aperte o chiuse."
+          schema:
+            $ref: "#/components/schemas/CashSessionStatus"
+        - name: register
+          in: query
+          required: false
+          description: "Cassa (default tutte)."
+          schema:
+            type: string
+            maxLength: 40
+        - name: from
+          in: query
+          required: false
+          description: "Aperte da questa data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          description: "Aperte entro questa data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Pagina di sessioni"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashSessionList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: openCashSession
+      tags: [cash]
+      summary: "Apre una sessione di cassa con fondo cassa"
+      description: >-
+        Una sola sessione aperta per cassa (409 cash_session_already_open).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashSessionOpen"
+      responses:
+        "201":
+          description: "Sessione aperta"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashSession"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-sessions/current:
+    get:
+      operationId: getCurrentCashSession
+      tags: [cash]
+      summary: "Sessione aperta della cassa"
+      description: >-
+        404 not_found se non c'è una sessione aperta.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: register
+          in: query
+          required: false
+          description: "Cassa (default main)."
+          schema:
+            type: string
+            maxLength: 40
+      responses:
+        "200":
+          description: "Sessione corrente con movimenti e totali"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashSessionDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}:
+    get:
+      operationId: getCashSession
+      tags: [cash]
+      summary: "Dettaglio sessione di cassa"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CashSessionID"
+      responses:
+        "200":
+          description: "Sessione"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashSessionDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/movements:
+    post:
+      operationId: addCashMovement
+      tags: [cash]
+      summary: "Versamento o prelievo di contanti"
+      description: >-
+        409 cash_session_closed se la sessione è chiusa.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CashSessionID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashMovementInput"
+      responses:
+        "201":
+          description: "Movimento registrato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashMovement"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/close:
+    post:
+      operationId: closeCashSession
+      tags: [cash]
+      summary: "Chiude la sessione: atteso vs contato e differenza"
+      description: >-
+        INV-25: difference = contato - atteso; atteso = fondo + incassi della sessione. Emette cash_session.closed.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CashSessionID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashSessionClose"
+      responses:
+        "200":
+          description: "Sessione chiusa"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashSession"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/fiscal/corrispettivi:
+    get:
+      operationId: getCorrispettivi
+      tags: [fiscal]
+      summary: "Corrispettivi per aliquota IVA e metodo di pagamento (JSON o CSV)"
+      description: >-
+        Spec 14.2 driver export: importi IVA inclusa scorporati per aliquota dallo snapshot del prezzo
+        (rimborsi in negativo). Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: true
+          description: "Primo giorno."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: true
+          description: "Ultimo giorno (incluso)."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: group_by
+          in: query
+          required: false
+          description: "Raggruppamento (default day)."
+          schema:
+            type: string
+            enum: [day, month]
+        - name: format
+          in: query
+          required: false
+          description: "Formato (default json; in alternativa Accept: text/csv)."
+          schema:
+            type: string
+            enum: [json, csv]
+      responses:
+        "200":
+          description: "Corrispettivi"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CorrispettiviReport"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/fiscal/documents:
+    get:
+      operationId: listFiscalDocuments
+      tags: [fiscal]
+      summary: "Documenti fiscali emessi dal driver"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: false
+          description: "Dalla data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          description: "Alla data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: status
+          in: query
+          required: false
+          description: "Stato."
+          schema:
+            $ref: "#/components/schemas/FiscalDocumentStatus"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Pagina di documenti"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FiscalDocumentList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
   /api/admin/v1/stream:
     get:
       operationId: streamEvents
       tags: [realtime]
       summary: Flusso SSE degli eventi di uno stabilimento
       description: |
-        Server-Sent Events. Ogni messaggio ha `event:` uguale al tipo di
-        evento di dominio e `data:` con un oggetto `StreamMessage`. Un commento
-        `: ping` viene inviato periodicamente come heartbeat.
+        Server-Sent Events (spec 21.1). Ogni messaggio ha `id:` uguale all'id
+        dell'evento, `event:` uguale al topic (`booking.changed`,
+        `allocation.changed`, `hold.changed`, `cash.changed`,
+        `customer.changed`, `config.changed`, `event` per gli altri) e `data:`
+        con un oggetto `StreamMessage` (tipo di dominio in `type`). I messaggi
+        non contengono dati personali: solo id, date e postazioni, così il
+        pannello invalida le query interessate. Un commento `: ping` viene
+        inviato periodicamente come heartbeat.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -3475,6 +5565,62 @@ components:
         type: string
         format: uuid
         x-go-type: string
+    CustomerID:
+      name: customerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    BookingID:
+      name: bookingId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    HoldID:
+      name: holdId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    SpotBlockID:
+      name: blockId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    SeasonPassID:
+      name: passId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    ReleaseID:
+      name: releaseId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    CashSessionID:
+      name: cashSessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
 
   responses:
     BadRequest:
@@ -3503,6 +5649,12 @@ components:
             $ref: "#/components/schemas/Problem"
     Conflict:
       description: Conflitto con lo stato corrente
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Gone:
+      description: Risorsa scaduta (hold_expired)
       content:
         application/problem+json:
           schema:
@@ -3583,6 +5735,11 @@ components:
         - precondition_required
         - spot_has_future_allocations
         - not_implemented
+        - pool_exhausted
+        - quota_exceeded
+        - invalid_transition
+        - cash_session_closed
+        - cash_session_already_open
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -3621,6 +5778,13 @@ components:
           description: Vincoli violati (solo per `policy_violation`).
           items:
             $ref: "#/components/schemas/PolicyViolation"
+        conflicts:
+          type: array
+          description: Mezze giornate non disponibili (solo per `spot_unavailable`, `pool_exhausted`, `quota_exceeded`).
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+        current_status:
+          $ref: "#/components/schemas/BookingStatus"
     FieldError:
       type: object
       required: [field, message]
@@ -3964,13 +6128,19 @@ components:
           $ref: "#/components/schemas/Date"
     StreamMessage:
       type: object
-      description: Messaggio leggero inviato sul flusso SSE (specifica 21.1).
-      required: [id, type, establishment_id, occurred_at]
+      description: Messaggio leggero inviato sul flusso SSE (specifica 21.1), mai con dati personali.
+      required: [id, topic, type, establishment_id, occurred_at]
       properties:
         id:
           type: string
+        topic:
+          $ref: "#/components/schemas/StreamTopic"
         type:
           type: string
+          description: Tipo dell'evento di dominio (spec 18.1), es. booking.confirmed.
+        booking_id:
+          type: string
+          description: Prenotazione interessata, se presente.
         establishment_id:
           type: string
         occurred_at:
@@ -3985,6 +6155,16 @@ components:
           items:
             type: string
             format: date
+    StreamTopic:
+      type: string
+      description: |
+        Nome SSE (`event:`) del messaggio, derivato dal tipo di evento:
+        booking.* e payment.* con prenotazione → booking.changed; allocation.*,
+        season.* e spot_block.* → allocation.changed; hold.* → hold.changed;
+        cash_session.*, cash_movement.* e payment.* senza prenotazione →
+        cash.changed; customer.* → customer.changed; config.* → config.changed;
+        altri → event.
+      enum: [booking.changed, allocation.changed, hold.changed, cash.changed, customer.changed, config.changed, event]
     I18nText:
       type: object
       description: "Testo localizzato lingua → testo (es. {\"it\": \"Prima fila\"}); si ricade sulla lingua predefinita."
@@ -7079,3 +9259,1869 @@ components:
           type: boolean
         booking_enabled:
           type: boolean
+
+    # ---- M3: customers, bookings, availability, passes, payments, cash, fiscal ----
+    AllocationConflict:
+      type: object
+      description: Mezza giornata non disponibile per una risorsa (spec 7.2), restituita in Problem.conflicts e nelle anteprime.
+      required: [date, slot, reason]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slot"
+        reason:
+          type: string
+          enum: [spot_unavailable, pool_exhausted, quota_exceeded, closed, inactive]
+    MarketingConsent:
+      type: object
+      description: Consenso marketing separato e facoltativo (spec 23).
+      required: [given_at, source, text_version]
+      properties:
+        given_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+          maxLength: 40
+        text_version:
+          type: string
+          maxLength: 40
+    CustomerInput:
+      type: object
+      description: Dati minimi per una prenotazione dal pannello. Email lowercase, telefono E.164.
+      required: [last_name]
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          pattern: ^\+[1-9][0-9]{6,14}$
+          description: E.164 (es. +393331234567).
+        locale:
+          type: string
+          enum: [it, en, de, fr]
+        notes:
+          type: string
+          maxLength: 2000
+          description: Solo interne, mai mostrate al cliente.
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        marketing_consent:
+          $ref: "#/components/schemas/MarketingConsent"
+    Customer:
+      type: object
+      required: [id, first_name, last_name, display_name, locale, notes, tags, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        display_name:
+          type: string
+          description: Cognome e nome per elenchi e mappa.
+        email:
+          type: string
+        phone:
+          type: string
+        locale:
+          type: string
+        notes:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        marketing_consent:
+          $ref: "#/components/schemas/MarketingConsent"
+        anonymized_at:
+          type: string
+          format: date-time
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CustomerList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Customer"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    CustomerStats:
+      type: object
+      required: [bookings_count, total_spent, balance_due]
+      properties:
+        bookings_count:
+          type: integer
+        total_spent:
+          $ref: "#/components/schemas/Money"
+        balance_due:
+          $ref: "#/components/schemas/Money"
+        last_booking_on:
+          $ref: "#/components/schemas/Date"
+    CustomerCredit:
+      type: object
+      description: Movimento del saldo crediti del cliente (spec 13.4); amount negativo = credito usato.
+      required: [id, amount, source, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        source:
+          type: string
+          enum: [cancellation, season_release, weather, manual, redemption]
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        note:
+          type: string
+        expires_on:
+          $ref: "#/components/schemas/Date"
+        created_at:
+          type: string
+          format: date-time
+    CustomerDetail:
+      type: object
+      required: [customer, stats, credit_balance, credits, recent_bookings, season_passes]
+      properties:
+        customer:
+          $ref: "#/components/schemas/Customer"
+        stats:
+          $ref: "#/components/schemas/CustomerStats"
+        credit_balance:
+          $ref: "#/components/schemas/Money"
+        credits:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerCredit"
+        recent_bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingSummary"
+        season_passes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeasonPass"
+    CustomerExport:
+      type: object
+      description: Esportazione GDPR (spec 23).
+      required: [exported_at, customer, bookings, payments, credits]
+      properties:
+        exported_at:
+          type: string
+          format: date-time
+        customer:
+          $ref: "#/components/schemas/Customer"
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingSummary"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        credits:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerCredit"
+
+    BookingStatus:
+      type: string
+      description: Stato della prenotazione (spec 10.2).
+      enum: [draft, held, pending_payment, awaiting_approval, confirmed, checked_in, completed, cancelled, no_show, expired, rejected]
+    AssignmentStatus:
+      type: string
+      enum: [assigned, pending, not_applicable]
+    AllocationKind:
+      type: string
+      enum: [booking, hold, block, season]
+    BookingSummary:
+      type: object
+      required: [id, code, status, channel, customer_id, customer_display_name, starts_on, ends_on, slots, formula, is_season_pass, total_amount, paid_amount, balance_due, deposit_due, spot_labels, version, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          description: Codice leggibile univoco per stabilimento (es. AR-7K3Q9).
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        is_season_pass:
+          type: boolean
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        balance_due:
+          $ref: "#/components/schemas/Money"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+        spot_labels:
+          type: array
+          items:
+            type: string
+        hold_expires_at:
+          type: string
+          format: date-time
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+    BookingList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingSummary"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    BookingExtra:
+      type: object
+      required: [id, extra_id, quantity, total]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        extra_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        extra_code:
+          type: string
+        booking_line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente per gli extra legati alla prenotazione.
+        quantity:
+          type: integer
+        total:
+          $ref: "#/components/schemas/Money"
+    BookingLine:
+      type: object
+      required: [id, pack_id, zone_id, assignment_status, quantity, line_total, extras]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_code:
+          type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        assignment_status:
+          $ref: "#/components/schemas/AssignmentStatus"
+        quantity:
+          type: integer
+          description: Unità per le zone a quantità; 1 altrimenti.
+        line_total:
+          $ref: "#/components/schemas/Money"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingExtra"
+    BookingAllocation:
+      type: object
+      description: Una riga di spot_allocations o pool_allocations della prenotazione.
+      required: [date, slot, kind]
+      properties:
+        booking_line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slot"
+        kind:
+          $ref: "#/components/schemas/AllocationKind"
+        quantity:
+          type: integer
+        expires_at:
+          type: string
+          format: date-time
+    BookingHistoryEntry:
+      type: object
+      description: Voce dello storico, letta dal registro attività (audit_log).
+      required: [at, action, actor_type]
+      properties:
+        at:
+          type: string
+          format: date-time
+        action:
+          type: string
+          description: Es. booking.created, booking.confirmed, booking.note_added, payment.succeeded.
+        actor_type:
+          type: string
+          enum: [user, customer, system, api_key]
+        actor_id:
+          type: string
+        actor_name:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    PolicySnapshot:
+      type: object
+      description: Policy applicata al momento della creazione (spec 9), base di rimborsi e modifiche.
+      required: [rules]
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        rules:
+          $ref: "#/components/schemas/PolicyRules"
+    BookingDetail:
+      type: object
+      required: [id, code, status, channel, customer, starts_on, ends_on, slots, formula, is_season_pass, total_amount, paid_amount, balance_due, deposit_due, lines, extras, allocations, payments, history, price_snapshot, policy_snapshot, notes_customer, notes_internal, next_statuses, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        customer:
+          $ref: "#/components/schemas/Customer"
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        is_season_pass:
+          type: boolean
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        balance_due:
+          $ref: "#/components/schemas/Money"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+        hold_expires_at:
+          type: string
+          format: date-time
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingLine"
+        extras:
+          type: array
+          description: Extra legati alla prenotazione (attach_to = booking).
+          items:
+            $ref: "#/components/schemas/BookingExtra"
+        allocations:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingAllocation"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingHistoryEntry"
+        price_snapshot:
+          $ref: "#/components/schemas/PriceBreakdown"
+        policy_snapshot:
+          $ref: "#/components/schemas/PolicySnapshot"
+        promo_code:
+          type: string
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        notes_customer:
+          type: string
+        notes_internal:
+          type: string
+        cancelled_at:
+          type: string
+          format: date-time
+        cancel_reason:
+          type: string
+        created_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        next_statuses:
+          type: array
+          description: Stati raggiungibili da quello corrente (macchina a stati, spec 10.2).
+          items:
+            $ref: "#/components/schemas/BookingStatus"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    BookingLineInput:
+      type: object
+      required: [pack_id]
+      properties:
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Obbligatoria per zone in modalità zone o quantity; dedotta dalla postazione in modalità seat.
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Obbligatoria per le zone seat; facoltativa per le zone zone (assegnazione immediata).
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: "Default 1; >1 solo per zone quantity."
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+    BookingCreate:
+      type: object
+      description: >-
+        Prenotazione dal pannello. Il cliente è customer_id oppure customer (creato nella stessa transazione).
+        status: draft (nessuna risorsa), held (hold con scadenza, M4 lo userà per il checkout), confirmed (default:
+        conferma manuale immediata, incasso alla cassa).
+      required: [starts_on, ends_on, slots, formula, lines]
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer:
+          $ref: "#/components/schemas/CustomerInput"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/BookingLineInput"
+        extras:
+          type: array
+          description: Extra legati alla prenotazione.
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+        promo_code:
+          type: string
+          maxLength: 40
+        agreement_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        notes_customer:
+          type: string
+          maxLength: 2000
+        notes_internal:
+          type: string
+          maxLength: 2000
+        hold_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Converte questo hold (stessa selezione) invece di allocare di nuovo.
+        status:
+          type: string
+          enum: [draft, held, confirmed]
+          description: Stato iniziale (default confirmed).
+        hold_ttl_seconds:
+          type: integer
+          minimum: 60
+          maximum: 2592000
+          description: Durata dell'hold per status=held (default ARENILE_HOLD_TTL).
+        force:
+          type: boolean
+          description: Ignora le violazioni di policy (sempre permesso dal pannello, registrato nell'audit).
+    BookingQuote:
+      type: object
+      required: [breakdown, deposit_due, policy, available, conflicts]
+      properties:
+        breakdown:
+          $ref: "#/components/schemas/PriceBreakdown"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+        policy:
+          $ref: "#/components/schemas/PolicyEvaluation"
+        available:
+          type: boolean
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+    BookingPatch:
+      type: object
+      description: Campi da modificare; i campi assenti restano invariati. lines sostituisce tutte le righe.
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/BookingLineInput"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+        notes_customer:
+          type: string
+          maxLength: 2000
+        notes_internal:
+          type: string
+          maxLength: 2000
+        force:
+          type: boolean
+          description: Ignora i limiti di modifica della policy (registrato nell'audit).
+    BookingChangeResult:
+      type: object
+      required: [applied, booking, previous_total, new_total, price_difference, conflicts]
+      properties:
+        applied:
+          type: boolean
+          description: false con dry_run=true (nessuna scrittura).
+        booking:
+          $ref: "#/components/schemas/BookingDetail"
+        previous_total:
+          $ref: "#/components/schemas/Money"
+        new_total:
+          $ref: "#/components/schemas/Money"
+        price_difference:
+          $ref: "#/components/schemas/Money"
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+    BookingActionRequest:
+      type: object
+      properties:
+        note:
+          type: string
+          maxLength: 2000
+    BookingCancelRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+        settlement:
+          type: string
+          enum: [policy, refund, credit, none]
+          description: "policy (default): come da policy_snapshot; refund/credit forzano la forma; none: nessun rimborso."
+        refund_amount:
+          $ref: "#/components/schemas/Money"
+        refund_method:
+          $ref: "#/components/schemas/PaymentMethod"
+        weather:
+          type: boolean
+          description: Cancellazione per maltempo (weather_policy).
+        dry_run:
+          type: boolean
+    RefundPreview:
+      type: object
+      required: [paid_amount, refund_percent, amount, as]
+      properties:
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        refund_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        amount:
+          $ref: "#/components/schemas/Money"
+        as:
+          type: string
+          enum: [refund, credit, none]
+        tier:
+          $ref: "#/components/schemas/PolicyCancellationTier"
+    BookingCancelResult:
+      type: object
+      required: [applied, booking, refund]
+      properties:
+        applied:
+          type: boolean
+        booking:
+          $ref: "#/components/schemas/BookingDetail"
+        refund:
+          $ref: "#/components/schemas/RefundPreview"
+    BookingMoveRequest:
+      type: object
+      required: [line_id, spot_id]
+      properties:
+        line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        from:
+          $ref: "#/components/schemas/Date"
+        dry_run:
+          type: boolean
+    BookingNoteInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        visibility:
+          type: string
+          enum: [internal, customer]
+    AutoAssignRequest:
+      type: object
+      required: [from, to]
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        dry_run:
+          type: boolean
+    AutoAssignment:
+      type: object
+      required: [booking_id, line_id, spot_id]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+    AutoUnassigned:
+      type: object
+      required: [booking_id, line_id, reason]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        reason:
+          type: string
+    AutoAssignResult:
+      type: object
+      required: [applied, assigned, unassigned]
+      properties:
+        applied:
+          type: boolean
+        assigned:
+          type: array
+          items:
+            $ref: "#/components/schemas/AutoAssignment"
+        unassigned:
+          type: array
+          items:
+            $ref: "#/components/schemas/AutoUnassigned"
+
+    HoldItem:
+      type: object
+      description: "Una risorsa da bloccare: spot_id (postazione), zone_id + quantity (capacità di zona) o pool_id + quantity."
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+    HoldCreate:
+      type: object
+      required: [starts_on, ends_on, slots, items]
+      properties:
+        channel:
+          $ref: "#/components/schemas/Channel"
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/HoldItem"
+        ttl_seconds:
+          type: integer
+          minimum: 60
+          maximum: 86400
+          description: Default ARENILE_HOLD_TTL (10 minuti).
+        note:
+          type: string
+          maxLength: 500
+    Hold:
+      type: object
+      required: [id, channel, status, starts_on, ends_on, slots, items, expires_at, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        channel:
+          $ref: "#/components/schemas/Channel"
+        status:
+          type: string
+          enum: [active, released, converted, expired]
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/HoldItem"
+        expires_at:
+          type: string
+          format: date-time
+        converted_booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    SpotAvailability:
+      type: object
+      required: [spot_id, label, status]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        label:
+          type: string
+        status:
+          type: string
+          enum: [available, unavailable]
+        conflicts:
+          type: array
+          description: Mezze giornate occupate nell'intervallo.
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+    ZoneAvailability:
+      type: object
+      required: [zone_id, code, assignment_mode, capacity, available]
+      properties:
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        assignment_mode:
+          $ref: "#/components/schemas/AssignmentMode"
+        capacity:
+          type: integer
+        available:
+          type: integer
+          description: Minimo disponibile nell'intervallo (postazioni libere o unità del pool), quota inclusa per online.
+        spots:
+          type: array
+          description: Solo per zone seat e zone.
+          items:
+            $ref: "#/components/schemas/SpotAvailability"
+    PoolDay:
+      type: object
+      required: [date, slot, capacity, used, held, available]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slot"
+        capacity:
+          type: integer
+          description: Capacità effettiva (capacity_overrides inclusi).
+        used:
+          type: integer
+        held:
+          type: integer
+        available:
+          type: integer
+    PoolAvailability:
+      type: object
+      required: [pool_id, component_code, capacity, available, days]
+      properties:
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        component_code:
+          type: string
+        capacity:
+          type: integer
+        available:
+          type: integer
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/PoolDay"
+    AvailabilityResult:
+      type: object
+      required: [from, to, slots, channel, zones, pools]
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        closed_dates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Date"
+        zones:
+          type: array
+          items:
+            $ref: "#/components/schemas/ZoneAvailability"
+        pools:
+          type: array
+          items:
+            $ref: "#/components/schemas/PoolAvailability"
+    OperationalSpotStatus:
+      type: string
+      description: Stato di una postazione nella vista operativa (spec 11.3).
+      enum: [free, booked, checked_in, pass_holder, released, held, renewal_offer, blocked, closed, inactive]
+    OperationalBooking:
+      type: object
+      required: [booking_id, code, status, channel, customer_id, customer_display_name, customer_tags, starts_on, ends_on, slots, is_season_pass, pack_codes, total_amount, paid_amount, balance_due, has_notes, has_extras]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        customer_tags:
+          type: array
+          items:
+            type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        is_season_pass:
+          type: boolean
+        pack_codes:
+          type: array
+          items:
+            type: string
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        balance_due:
+          $ref: "#/components/schemas/Money"
+        has_notes:
+          type: boolean
+        has_extras:
+          type: boolean
+    OperationalSpot:
+      type: object
+      required: [spot_id, map_id, zone_id, label, status]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        label:
+          type: string
+        status:
+          $ref: "#/components/schemas/OperationalSpotStatus"
+        am_status:
+          $ref: "#/components/schemas/OperationalSpotStatus"
+        pm_status:
+          $ref: "#/components/schemas/OperationalSpotStatus"
+        booking:
+          $ref: "#/components/schemas/OperationalBooking"
+        hold_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        hold_expires_at:
+          type: string
+          format: date-time
+        release_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        block_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        block_reason:
+          type: string
+    PendingAssignment:
+      type: object
+      required: [booking_id, line_id, code, zone_id, customer_display_name, starts_on, ends_on, slots]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        line_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+    OperationsTotals:
+      type: object
+      required: [spots, free, occupied, arrivals, departures, checked_in, balance_due_amount, pending_assignments]
+      properties:
+        spots:
+          type: integer
+        free:
+          type: integer
+        occupied:
+          type: integer
+        arrivals:
+          type: integer
+        departures:
+          type: integer
+        checked_in:
+          type: integer
+        balance_due_amount:
+          $ref: "#/components/schemas/Money"
+        pending_assignments:
+          type: integer
+    OperationsDay:
+      type: object
+      required: [date, slot, closed, spots, pending_assignments, pools, totals]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slots"
+        closed:
+          type: boolean
+          description: Giorno di chiusura o fuori stagione.
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationalSpot"
+        pending_assignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PendingAssignment"
+        pools:
+          type: array
+          items:
+            $ref: "#/components/schemas/PoolAvailability"
+        totals:
+          $ref: "#/components/schemas/OperationsTotals"
+    PlanningSpot:
+      type: object
+      required: [spot_id, label, zone_id, map_id]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        label:
+          type: string
+        row_label:
+          type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+    PlanningEntry:
+      type: object
+      description: Occupazione referenziata dai segmenti per indice (una volta sola anche se lunga mesi).
+      required: [kind, label]
+      properties:
+        kind:
+          type: string
+          enum: [booking, hold, season, block, release]
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        hold_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        block_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        label:
+          type: string
+          description: Nome breve del cliente o motivo del blocco.
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        balance_due:
+          type: boolean
+    PlanningSegment:
+      type: object
+      description: Giorni consecutivi [from, to] (indici in days, inclusivi) della stessa occupazione.
+      required: [entry, from, to, slots]
+      properties:
+        entry:
+          type: integer
+          description: Indice in Planning.entries.
+        from:
+          type: integer
+        to:
+          type: integer
+        slots:
+          $ref: "#/components/schemas/Slots"
+    PlanningRow:
+      type: object
+      required: [spot, segments]
+      properties:
+        spot:
+          type: integer
+          description: Indice in Planning.spots.
+        segments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanningSegment"
+    Planning:
+      type: object
+      description: Griglia postazioni x giorni con codifica run-length (spec 15.1 Calendario).
+      required: [from, to, days, closed_days, spots, entries, rows]
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/Date"
+        closed_days:
+          type: array
+          description: Indici in days dei giorni di chiusura.
+          items:
+            type: integer
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanningSpot"
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanningEntry"
+        rows:
+          type: array
+          description: Solo le postazioni con almeno un segmento.
+          items:
+            $ref: "#/components/schemas/PlanningRow"
+    SpotBlockCreate:
+      type: object
+      required: [spot_ids, starts_on, ends_on, slots]
+      properties:
+        spot_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        reason:
+          type: string
+          maxLength: 200
+    SpotBlock:
+      type: object
+      required: [id, spot_id, starts_on, ends_on, slots, reason, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    SpotBlockList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotBlock"
+        next_cursor:
+          type: string
+
+    SeasonPass:
+      type: object
+      description: Abbonamento stagionale; id = id della prenotazione (is_season_pass = true).
+      required: [id, code, status, customer_id, customer_display_name, season_id, spot_id, spot_label, pack_id, starts_on, ends_on, slots, total_amount, paid_amount, balance_due, released_days, credit_amount, version, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        balance_due:
+          $ref: "#/components/schemas/Money"
+        released_days:
+          type: integer
+          description: Mezze giornate rilasciate e non revocate.
+        credit_amount:
+          $ref: "#/components/schemas/Money"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+    SeasonPassList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeasonPass"
+        next_cursor:
+          type: string
+    SeasonPassCreate:
+      type: object
+      required: [customer_id, season_id, spot_id, pack_id]
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+        notes_internal:
+          type: string
+          maxLength: 2000
+        renewal_of_booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+    SeasonPassUpdate:
+      type: object
+      properties:
+        notes_internal:
+          type: string
+          maxLength: 2000
+        notes_customer:
+          type: string
+          maxLength: 2000
+    SeasonRelease:
+      type: object
+      required: [id, pass_id, date, slot, status, credit_amount, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pass_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slot"
+        status:
+          type: string
+          enum: [released, resold, revoked]
+        resold_booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        credit_amount:
+          $ref: "#/components/schemas/Money"
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+    SeasonReleaseList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeasonRelease"
+    SeasonPassDetail:
+      type: object
+      required: [pass, releases]
+      properties:
+        pass:
+          $ref: "#/components/schemas/SeasonPass"
+        releases:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeasonRelease"
+    SeasonReleaseCreate:
+      type: object
+      required: [dates]
+      properties:
+        dates:
+          type: array
+          minItems: 1
+          maxItems: 120
+          items:
+            $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        note:
+          type: string
+          maxLength: 500
+
+    PaymentMethod:
+      type: string
+      enum: [cash, card, bank_transfer, wallet, credit, other]
+      description: "Metodo di pagamento (spec 6.7); credit = uso del saldo crediti del cliente (spec 13.4)."
+    PaymentDirection:
+      type: string
+      enum: [in, refund]
+    PaymentStatus:
+      type: string
+      enum: [pending, succeeded, failed, cancelled]
+    Payment:
+      type: object
+      required: [id, provider, method, direction, amount, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_code:
+          type: string
+        provider:
+          type: string
+          description: manual, stripe, ...
+        method:
+          $ref: "#/components/schemas/PaymentMethod"
+        direction:
+          $ref: "#/components/schemas/PaymentDirection"
+        amount:
+          $ref: "#/components/schemas/Money"
+        status:
+          $ref: "#/components/schemas/PaymentStatus"
+        provider_ref:
+          type: string
+        cash_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        refund_of_payment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        received_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        description:
+          type: string
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    PaymentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        next_cursor:
+          type: string
+    ManualPaymentInput:
+      type: object
+      required: [amount, method]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Centesimi.
+        method:
+          $ref: "#/components/schemas/PaymentMethod"
+        cash_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Default la sessione aperta della cassa main (obbligatoria per i contanti).
+        note:
+          type: string
+          maxLength: 500
+    RefundInput:
+      type: object
+      required: [amount, method]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+        method:
+          $ref: "#/components/schemas/PaymentMethod"
+        payment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Pagamento rimborsato (facoltativo).
+        as:
+          type: string
+          enum: [refund, credit]
+          description: refund (default) restituisce il denaro; credit lo accredita al cliente.
+        reason:
+          type: string
+          maxLength: 500
+        cash_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+    CounterSaleInput:
+      type: object
+      required: [amount, method, description]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+        method:
+          $ref: "#/components/schemas/PaymentMethod"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 200
+        vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        cash_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+
+    MethodTotals:
+      type: object
+      description: Importi per metodo di pagamento (chiavi di PaymentMethod).
+      additionalProperties:
+        $ref: "#/components/schemas/Money"
+    CashSessionStatus:
+      type: string
+      enum: [open, closed]
+    CashSession:
+      type: object
+      required: [id, register, status, opened_at, opened_by, opening_float, expected_totals, notes, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        register:
+          type: string
+        status:
+          $ref: "#/components/schemas/CashSessionStatus"
+        opened_at:
+          type: string
+          format: date-time
+        opened_by:
+          type: string
+          format: uuid
+          x-go-type: string
+        closed_at:
+          type: string
+          format: date-time
+        closed_by:
+          type: string
+          format: uuid
+          x-go-type: string
+        opening_float:
+          $ref: "#/components/schemas/Money"
+        expected_totals:
+          $ref: "#/components/schemas/MethodTotals"
+        counted_totals:
+          $ref: "#/components/schemas/MethodTotals"
+        difference:
+          $ref: "#/components/schemas/Money"
+        notes:
+          type: string
+        version:
+          $ref: "#/components/schemas/Version"
+    CashSessionList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CashSession"
+        next_cursor:
+          type: string
+    CashSessionOpen:
+      type: object
+      required: [opening_float]
+      properties:
+        register:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Default main.
+        opening_float:
+          type: integer
+          format: int64
+          minimum: 0
+        notes:
+          type: string
+          maxLength: 500
+    CashMovement:
+      type: object
+      required: [id, cash_session_id, kind, amount, reason, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        cash_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        kind:
+          type: string
+          enum: [in, out]
+        amount:
+          $ref: "#/components/schemas/Money"
+        reason:
+          type: string
+        created_by:
+          type: string
+          format: uuid
+          x-go-type: string
+        created_at:
+          type: string
+          format: date-time
+    CashMovementInput:
+      type: object
+      required: [kind, amount, reason]
+      properties:
+        kind:
+          type: string
+          enum: [in, out]
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 200
+    CashSessionClose:
+      type: object
+      required: [counted_totals]
+      properties:
+        counted_totals:
+          $ref: "#/components/schemas/MethodTotals"
+        notes:
+          type: string
+          maxLength: 500
+    CashSessionDetail:
+      type: object
+      required: [session, movements, payments, totals_by_method]
+      properties:
+        session:
+          $ref: "#/components/schemas/CashSession"
+        movements:
+          type: array
+          items:
+            $ref: "#/components/schemas/CashMovement"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        totals_by_method:
+          $ref: "#/components/schemas/MethodTotals"
+
+    CorrispettiviRow:
+      type: object
+      required: [period, vat_rate_bp, method, gross, taxable, tax, count]
+      properties:
+        period:
+          type: string
+          description: YYYY-MM-DD (group_by=day) o YYYY-MM (group_by=month).
+        vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+        method:
+          $ref: "#/components/schemas/PaymentMethod"
+        gross:
+          $ref: "#/components/schemas/Money"
+        taxable:
+          $ref: "#/components/schemas/Money"
+        tax:
+          $ref: "#/components/schemas/Money"
+        count:
+          type: integer
+    CorrispettiviTotal:
+      type: object
+      required: [vat_rate_bp, gross, taxable, tax]
+      properties:
+        vat_rate_bp:
+          $ref: "#/components/schemas/BasisPoints"
+        gross:
+          $ref: "#/components/schemas/Money"
+        taxable:
+          $ref: "#/components/schemas/Money"
+        tax:
+          $ref: "#/components/schemas/Money"
+    CorrispettiviReport:
+      type: object
+      required: [from, to, group_by, currency, rows, totals, grand_total]
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        group_by:
+          type: string
+          enum: [day, month]
+        currency:
+          type: string
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/CorrispettiviRow"
+        totals:
+          type: array
+          items:
+            $ref: "#/components/schemas/CorrispettiviTotal"
+        grand_total:
+          $ref: "#/components/schemas/Money"
+    FiscalDocumentStatus:
+      type: string
+      enum: [pending, issued, failed, void]
+    FiscalDocument:
+      type: object
+      required: [id, payment_id, driver, status, business_date, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        payment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        driver:
+          type: string
+        status:
+          $ref: "#/components/schemas/FiscalDocumentStatus"
+        document_number:
+          type: string
+        business_date:
+          $ref: "#/components/schemas/Date"
+        error:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    FiscalDocumentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FiscalDocument"
+        next_cursor:
+          type: string

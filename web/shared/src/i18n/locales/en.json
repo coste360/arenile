@@ -23,7 +23,15 @@
       "versionConflict": "Another user changed this data. Reload to see the latest version.",
       "notImplemented": "Feature not available yet.",
       "spotHasFutureAllocations": "The spot has future bookings: you can only deactivate it.",
-      "noPrice": "A price is missing for the requested dates."
+      "noPrice": "A price is missing for the requested dates.",
+      "spotUnavailable": "The spot is not available for the selected dates.",
+      "poolExhausted": "Quantity not available for the selected dates.",
+      "quotaExceeded": "The online quota is sold out for the selected dates.",
+      "holdExpired": "The temporary hold has expired: select again.",
+      "invalidTransition": "This action is not allowed in the current booking status.",
+      "cashSessionClosed": "The cash session is closed: open one to record cash payments.",
+      "cashSessionAlreadyOpen": "A cash session is already open.",
+      "policyViolation": "The request does not comply with the booking rules."
     },
     "languages": {
       "it": "Italiano",
