@@ -179,6 +179,23 @@ func ListOpenPaymentIntents(ctx context.Context, db bun.IDB, es EstablishmentSco
 	return items, nil
 }
 
+// ListSucceededPaymentIntents returns the provider payments of a booking
+// that succeeded (status succeeded, ledger row written), oldest first.
+func ListSucceededPaymentIntents(ctx context.Context, db bun.IDB, es EstablishmentScope, bookingID string) ([]PaymentIntent, error) {
+	if err := es.mustBeValid(); err != nil {
+		return nil, err
+	}
+	var items []PaymentIntent
+	err := db.NewSelect().Model(&items).
+		Where("pi.establishment_id = ?", es.ID()).Where("pi.booking_id = ?", bookingID).
+		Where("pi.kind = ?", IntentKindPayment).Where("pi.status = ?", IntentSucceeded).Where("pi.payment_id IS NOT NULL").
+		OrderExpr("pi.created_at ASC, pi.id ASC").Scan(ctx)
+	if err != nil && !isNoRows(err) {
+		return nil, fmt.Errorf("store: list succeeded payment intents: %w", err)
+	}
+	return items, nil
+}
+
 // ListRefundIntents returns the refund intents of a provider payment,
 // oldest first; openOnly keeps those still waiting for the provider.
 func ListRefundIntents(ctx context.Context, db bun.IDB, es EstablishmentScope, paymentIntentID string, openOnly bool) ([]PaymentIntent, error) {

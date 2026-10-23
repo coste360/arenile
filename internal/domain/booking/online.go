@@ -376,13 +376,7 @@ func (s *Service) Abandon(ctx context.Context, tx bun.IDB, actor audit.Actor, es
 		if st != StatusHeld && st != StatusPendingPayment {
 			return nil, &TransitionError{From: st, To: StatusExpired}
 		}
-		alloc, err := s.releaseAll(ctx, tx, es, b)
-		if err != nil {
-			return nil, err
-		}
-		b.Status = string(StatusExpired)
-		b.HoldExpiresAt = nil
-		return &outcome{action: eventExpired, diff: map[string]any{"reason": "abandoned"}, alloc: alloc}, nil
+		return s.expireLocked(ctx, tx, es, b, map[string]any{"reason": "abandoned"})
 	})
 	return err
 }

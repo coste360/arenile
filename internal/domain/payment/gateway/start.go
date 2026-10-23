@@ -18,9 +18,14 @@ import (
 	"github.com/coste360/arenile/pkg/ext"
 )
 
-// Start creates a provider payment for a booking of es. tx is the caller's
-// transaction (checkout: the same unit of work that moves the booking to
-// pending_payment), so the intent row and payment.pending commit with it.
+// Start creates a provider payment for a booking of es and records the
+// intent row with payment.started in tx. The checkout service calls it
+// AFTER the transaction that moved the booking to pending_payment has
+// committed (the provider call is network I/O and must not hold database
+// locks), so the two writes are separate units of work: a crash or a
+// provider error in between leaves a pending_payment booking with no
+// intent, which the page retries (a new attempt) and the hold sweeper
+// expires like any unpaid booking.
 //
 //  1. the active provider of es must take online payments;
 //  2. open intents of earlier attempts are closed at the provider

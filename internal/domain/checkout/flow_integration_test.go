@@ -442,3 +442,35 @@ func TestCheckoutFlow_BrokenOnlineProviderNeverConfirms(t *testing.T) {
 		}
 	})
 }
+
+// TestCheckoutFlow_PayUsesCurrentTotal (INV-22, INV-51): the amount asked
+// to the provider is computed under the booking lock when the payment
+// starts, not from the total Pay read first: a change of the total in
+// between (staff edit, extras of a later submit) can never leave the
+// provider paid below the confirmation threshold.
+func TestCheckoutFlow_PayUsesCurrentTotal(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		ctx := e.Ctx
+		sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
+			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		s := e.Create(e.Seat(e.F.Spots[1], "2027-07-12"))
+		e.Details(s, "mario@example.org")
+		// A staff edit raises the total after the page computed its quote.
+		if _, err := db.NewUpdate().Model((*store.Booking)(nil)).Set("total_amount = ?", 3500).Set("deposit_due = ?", 3500).
+			Where("id = ?", s.BookingID).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		out, err := e.Svc.Pay(ctx, slug, s.BookingID, s.Token, checkout.PayInput{})
+		if err != nil || out.Amount != 3500 || len(e.Pay.Starts) != 1 || e.Pay.Starts[0].Amount != 3500 {
+			t.Fatalf("pay must ask the current total: %v %+v %+v", err, out, e.Pay.Starts)
+		}
+		if b := e.Booking(s.BookingID); b.Status != "pending_payment" {
+			t.Fatalf("booking after start: %s", b.Status)
+		}
+	})
+}

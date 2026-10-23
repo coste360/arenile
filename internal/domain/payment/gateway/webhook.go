@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/coste360/arenile/internal/domain/audit"
+	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/payment"
@@ -273,7 +275,7 @@ func (s *Service) mayArriveLater(es store.EstablishmentScope, ev *ext.PaymentEve
 // txn carries the state of one apply transaction.
 type txn struct {
 	s       *Service
-	tx      bun.Tx
+	tx      bun.IDB
 	es      store.EstablishmentScope
 	cfg     *online.ProviderConfig
 	ev      *ext.PaymentEvent
@@ -342,7 +344,12 @@ func (x *txn) close(ctx context.Context, pi *store.PaymentIntent, status, reason
 
 // succeed applies a provider success to a payment intent (idempotent).
 //
-// Booking held or pending_payment: the ledger row confirms it (INV-19).
+// Booking held or pending_payment: the ledger row confirms it (INV-19)
+// when the paid amount reaches the threshold; below it (a total changed
+// after the payment started) the booking stays held until its hold
+// expires, when the booking service asks RefundExpiredBooking to refund
+// what was paid. A hold already elapsed is expired first (HoldExpirer) and
+// the payment follows the late-payment path.
 // Booking expired (late payment): the money is recorded, then the
 // LateConfirmer re-allocates and confirms inside a savepoint; if it is
 // missing or fails, the whole payment is refunded automatically.
@@ -366,11 +373,35 @@ func (x *txn) succeed(ctx context.Context, pi *store.PaymentIntent, amount money
 		return fmt.Errorf("gateway: %w", err)
 	}
 	normal := b.Status == bookingHeld || b.Status == bookingPendingPayment
+	if normal && b.HoldExpiresAt != nil && !b.HoldExpiresAt.After(x.s.now()) && x.s.d.HoldExpirer != nil {
+		// The hold elapsed but the sweeper has not run yet: confirming would
+		// fail on the expired hold and the whole delivery would be retried.
+		// Expire the booking here (audit, outbox, resources released) and
+		// treat the money as a late payment (INV-05, INV-51).
+		if err := x.s.d.HoldExpirer.ExpireHold(ctx, x.tx, x.es, b.ID); err != nil {
+			return fmt.Errorf("gateway: expire elapsed hold: %w", err)
+		}
+		b.Status, normal = bookingExpired, false
+	}
 	terminal := isTerminalBooking(b.Status)
-	res, err := x.s.d.Ledger.RecordProviderPayment(ctx, x.tx, x.es, payment.ProviderPayment{
-		BookingID: b.ID, Provider: pi.Provider, ProviderRef: pi.ExternalID, Amount: amount,
-		Method: store.PaymentMethodCard, IntentID: pi.ID, EventID: x.eventID, NoConfirm: terminal,
-	})
+	record := func() (*payment.Result, error) {
+		return x.s.d.Ledger.RecordProviderPayment(ctx, x.tx, x.es, payment.ProviderPayment{
+			BookingID: b.ID, Provider: pi.Provider, ProviderRef: pi.ExternalID, Amount: amount,
+			Method: store.PaymentMethodCard, IntentID: pi.ID, EventID: x.eventID, NoConfirm: terminal,
+		})
+	}
+	res, err := x.inSavepoint(ctx, normal && x.s.d.HoldExpirer != nil, record)
+	if errors.Is(err, availability.ErrHoldExpired) && normal && x.s.d.HoldExpirer != nil {
+		// The hold ran out between the check above and the confirmation
+		// (the inventory decides with its own clock): same late-payment
+		// path as an elapsed hold, after the savepoint rolled the partial
+		// ledger write back.
+		if xerr := x.s.d.HoldExpirer.ExpireHold(ctx, x.tx, x.es, b.ID); xerr != nil {
+			return fmt.Errorf("gateway: expire elapsed hold: %w", xerr)
+		}
+		b.Status, normal, terminal = bookingExpired, false, true
+		res, err = record()
+	}
 	if err != nil {
 		return fmt.Errorf("gateway: record provider payment: %w", err)
 	}
@@ -412,13 +443,47 @@ func isTerminalBooking(status string) bool {
 	return false
 }
 
+// savepointer is the part of bun.Tx that opens a nested transaction.
+type savepointer interface {
+	BeginTx(context.Context, *sql.TxOptions) (bun.Tx, error)
+}
+
+// inSavepoint runs fn inside a savepoint when wanted (and the transaction
+// supports it), so a failure leaves tx usable; otherwise fn runs directly.
+func (x *txn) inSavepoint(ctx context.Context, wanted bool, fn func() (*payment.Result, error)) (*payment.Result, error) {
+	nested, ok := x.tx.(savepointer)
+	if !wanted || !ok {
+		return fn()
+	}
+	sp, err := nested.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("gateway: savepoint: %w", err)
+	}
+	outer := x.tx
+	x.tx = sp
+	res, err := fn()
+	x.tx = outer
+	if err != nil {
+		_ = sp.Rollback()
+		return nil, err
+	}
+	if err := sp.Commit(); err != nil {
+		return nil, fmt.Errorf("gateway: release savepoint: %w", err)
+	}
+	return res, nil
+}
+
 // lateConfirm tries the LateConfirmer inside a savepoint.
 func (x *txn) lateConfirm(ctx context.Context, bookingID string, pm *store.Payment) bool {
 	lc := x.s.d.LateConfirmer
 	if lc == nil {
 		return false
 	}
-	sp, err := x.tx.BeginTx(ctx, nil)
+	nested, ok := x.tx.(savepointer)
+	if !ok {
+		return false
+	}
+	sp, err := nested.BeginTx(ctx, nil)
 	if err != nil {
 		x.s.d.Log.WarnContext(ctx, "gateway: savepoint for late payment", "err", err)
 		return false

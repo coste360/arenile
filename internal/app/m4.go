@@ -40,6 +40,8 @@ var (
 	_ notify.Settings                = (*online.Service)(nil)
 	_ online.Providers               = (*Registry)(nil)
 	_ ext.EventSink                  = (*notify.Service)(nil).Sink()
+	_ gateway.HoldExpirer            = (*booking.Service)(nil)
+	_ booking.ExpiredRefunder        = (*gateway.Service)(nil)
 	_ interface{ Jobs() []jobs.Job } = (*gateway.Service)(nil)
 	_ interface{ Jobs() []jobs.Job } = (*notify.Service)(nil)
 )
@@ -66,6 +68,11 @@ func (a *App) wireOnline(aw *audit.Writer) {
 		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
 		Providers: a.registry, Settings: a.Online, Ledger: a.Payments, BaseURL: base,
 	})
+	// Hold expiry and payments meet in both directions: a payment arriving
+	// after the hold elapsed expires the booking first (late-payment path),
+	// an expired hold with money on it schedules the refund (INV-51).
+	a.Gateway.SetHoldExpirer(a.Bookings)
+	a.Bookings.SetExpiredRefunder(a.Gateway)
 	a.Checkout = checkout.NewService(checkout.Deps{
 		DB: a.db, Clock: c, Log: a.log,
 		Settings: a.Online, Inventory: a.Inventory, Pricer: a.Pricing,

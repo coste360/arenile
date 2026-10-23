@@ -53,6 +53,9 @@ type Deps struct {
 	Customers Customers
 	Payments  Payments
 	Releases  Releases
+	// ExpiredRefunds refunds the online money left on a booking whose hold
+	// expired (optional, see ExpiredRefunder).
+	ExpiredRefunds ExpiredRefunder
 	// HoldTTL is ARENILE_HOLD_TTL (default DefaultHoldTTL).
 	HoldTTL time.Duration
 	// ApprovalTTL is the hold of bookings awaiting approval (default DefaultApprovalTTL).
@@ -77,6 +80,22 @@ func NewService(d Deps) *Service {
 	}
 	return &Service{d: d}
 }
+
+// ExpiredRefunder is the OPTIONAL payment-side port of a hold that expires
+// with money on the booking (INV-51): a provider payment below the
+// confirmation threshold (the total changed after the payment started) or
+// a partial payment. It schedules the refunds in tx (the booking is
+// locked, audit and outbox of the expiry are written in the same
+// transaction); the provider is called later. Implemented by
+// *gateway.Service (internal/app wires it); without it the money stays on
+// the expired booking for a manual refund.
+type ExpiredRefunder interface {
+	RefundExpiredBooking(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, bookingID string) error
+}
+
+// SetExpiredRefunder installs the refund path of expired holds after
+// construction (the gateway is built after the booking service).
+func (s *Service) SetExpiredRefunder(r ExpiredRefunder) { s.d.ExpiredRefunds = r }
 
 // WithDB returns a copy of the service bound to db.
 func (s *Service) WithDB(db bun.IDB) *Service {

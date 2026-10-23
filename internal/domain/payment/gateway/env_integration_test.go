@@ -151,6 +151,10 @@ func newEnv(t *testing.T, db *store.DB) *env {
 		DB: db, Clock: c, Audit: aw, Outbox: ob, Providers: reg, Settings: st, Ledger: lh,
 		BaseURL: "https://lido.example",
 	})
+	// Wired as internal/app does: a payment after an elapsed hold expires
+	// the booking first; an expired hold with money on it schedules refunds.
+	gw.SetHoldExpirer(svc)
+	svc.SetExpiredRefunder(gw)
 	es, err := store.SystemEstablishmentScope(f.Ctx, db, f.Est.ID)
 	if err != nil {
 		t.Fatal(err)

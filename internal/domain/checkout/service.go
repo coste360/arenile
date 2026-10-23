@@ -55,6 +55,9 @@ var (
 	// ErrSettlementNotAllowed: at_desk asked while the policy wants an
 	// online payment (422).
 	ErrSettlementNotAllowed = fmt.Errorf("%w: il pagamento in cassa non è previsto per questa prenotazione", configerr.ErrValidation)
+	// ErrBookingChanged: the booking changed between two steps of the page
+	// (409); the page reloads its state and continues from there.
+	ErrBookingChanged = fmt.Errorf("%w: la prenotazione è cambiata, ricarica la pagina", configerr.ErrConflict)
 	// ErrDocumentNotReady: QR and .ics exist only for confirmed bookings (404).
 	ErrDocumentNotReady = fmt.Errorf("%w: document", configerr.ErrNotFound)
 )

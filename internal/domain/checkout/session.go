@@ -297,7 +297,9 @@ func (s *Service) Pay(ctx context.Context, slug, bookingID, token string, in Pay
 	if !detailsComplete(&d.Booking, false, terms) {
 		return nil, ErrTermsOutdated
 	}
-	plan, due, err := s.planOf(ctx, s.d.DB, pe, d)
+	// A first look at the plan decides the branch; startPayment computes
+	// the amount again under the booking lock.
+	plan, _, err := s.planOf(ctx, s.d.DB, pe, d)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +320,7 @@ func (s *Service) Pay(ctx context.Context, slug, bookingID, token string, in Pay
 		}
 		returnURL = u
 	}
-	return s.startPayment(ctx, pe, cs, d, plan, due, returnURL)
+	return s.startPayment(ctx, pe, cs, returnURL)
 }
 
 // EmbedReturnParam is the query parameter of the host page that embed.js
@@ -360,7 +362,15 @@ func (s *Service) confirmWithoutPayment(ctx context.Context, pe *online.PublicEs
 	return &PayOutcome{Mode: PayNone, Status: d.Booking.Status, HoldExpiresAt: d.Booking.HoldExpiresAt}, nil
 }
 
-func (s *Service) startPayment(ctx context.Context, pe *online.PublicEstablishment, cs *store.CheckoutSession, d *booking.Detail, plan string, due money.Cents, returnURL string) (*PayOutcome, error) {
+// startPayment moves the booking to pending_payment and asks the provider
+// for the amount due. The plan and the amount are computed again inside
+// the transaction, on the locked booking (INV-22, INV-51): the total read
+// by Pay may have changed in between (extras or promo code of a later
+// PATCH, a staff edit), and the provider must be asked for the current
+// amount, never a stale one that would leave the booking below its
+// confirmation threshold with money on it. A booking that no longer needs
+// an online payment is a conflict: the page reloads its state.
+func (s *Service) startPayment(ctx context.Context, pe *online.PublicEstablishment, cs *store.CheckoutSession, returnURL string) (*PayOutcome, error) {
 	es := pe.Scope
 	if !pe.Online {
 		return nil, ErrOnlinePaymentUnavailable
@@ -369,10 +379,21 @@ func (s *Service) startPayment(ctx context.Context, pe *online.PublicEstablishme
 	if dl := s.holdDeadline(cs); until.After(dl) {
 		until = dl
 	}
+	var (
+		d    *booking.Detail
+		plan string
+		due  money.Cents
+	)
 	err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
 		var err error
 		if d, err = s.d.Bookings.StartPayment(ctx, tx, actor(ctx, cs.ID), es, cs.BookingID, until); err != nil {
 			return err
+		}
+		if plan, due, err = s.planOf(ctx, tx, pe, d); err != nil {
+			return err
+		}
+		if (plan != PlanOnlineFull && plan != PlanOnlineDeposit) || due <= 0 {
+			return ErrBookingChanged
 		}
 		cs.State, cs.PaymentAttempts, cs.UpdatedAt = store.CheckoutPaying, cs.PaymentAttempts+1, s.now()
 		cs.ExpiresAt = *d.Booking.HoldExpiresAt

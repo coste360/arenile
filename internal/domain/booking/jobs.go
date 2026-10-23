@@ -11,6 +11,7 @@ import (
 
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/audit"
+	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -71,13 +72,7 @@ func (s *Service) ExpireHolds(ctx context.Context) (int, error) {
 				if err := Transition(Status(b.Status), StatusExpired); err != nil {
 					return nil, errSkip
 				}
-				alloc, err := s.releaseAll(ctx, tx, es, b)
-				if err != nil {
-					return nil, err
-				}
-				b.Status = string(StatusExpired)
-				b.HoldExpiresAt = nil
-				return &outcome{action: eventExpired, alloc: alloc}, nil
+				return s.expireLocked(ctx, tx, es, b, nil)
 			})
 			return err
 		})
@@ -90,6 +85,52 @@ func (s *Service) ExpireHolds(ctx context.Context) (int, error) {
 		}
 	}
 	return n, nil
+}
+
+// expireLocked moves the locked booking b to expired: resources released,
+// booking.expired with diff, and, when money was paid online, the refund
+// of what was paid scheduled by the ExpiredRefunder in the same
+// transaction (INV-51: an expired booking does not keep the customer's
+// money).
+func (s *Service) expireLocked(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, diff map[string]any) (*outcome, error) {
+	alloc, err := s.releaseAll(ctx, tx, es, b)
+	if err != nil {
+		return nil, err
+	}
+	b.Status = string(StatusExpired)
+	b.HoldExpiresAt = nil
+	o := &outcome{action: eventExpired, diff: diff, alloc: alloc}
+	if b.PaidAmount > 0 && s.d.ExpiredRefunds != nil {
+		if o.diff == nil {
+			o.diff = map[string]any{}
+		}
+		o.diff["paid_amount"] = int64(b.PaidAmount)
+		o.diff["refund_scheduled"] = true
+		o.after = func(ctx context.Context, tx bun.IDB, b *store.Booking) error {
+			return s.d.ExpiredRefunds.RefundExpiredBooking(ctx, tx, es, b.ID)
+		}
+	}
+	return o, nil
+}
+
+// ExpireHold expires a held or pending_payment booking whose hold already
+// elapsed, in tx (the transition of ExpireHolds, on demand): the payment
+// gateway calls it when a provider payment arrives after hold_expires_at
+// and before the sweeper ran. ErrInvalidTransition when the booking is in
+// another status; a hold still running is a conflict. Implements
+// gateway.HoldExpirer.
+func (s *Service) ExpireHold(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, bookingID string) error {
+	_, err := s.mutateInTx(ctx, tx, audit.SystemActor, es, bookingID, nil, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
+		st := Status(b.Status)
+		if st != StatusHeld && st != StatusPendingPayment {
+			return nil, &TransitionError{From: st, To: StatusExpired}
+		}
+		if b.HoldExpiresAt == nil || b.HoldExpiresAt.After(s.now()) {
+			return nil, fmt.Errorf("%w: il blocco della prenotazione non è ancora scaduto", configerr.ErrConflict)
+		}
+		return s.expireLocked(ctx, tx, es, b, map[string]any{"reason": "payment_after_hold"})
+	})
+	return err
 }
 
 // CompletePast moves confirmed and checked-in bookings whose last day is

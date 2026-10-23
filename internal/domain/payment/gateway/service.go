@@ -196,6 +196,9 @@ type Deps struct {
 	// LateConfirmer confirms late payments when resources are still free
 	// (optional, see LateConfirmer).
 	LateConfirmer LateConfirmer
+	// HoldExpirer expires a booking whose hold elapsed before the sweeper
+	// ran, when its payment arrives (optional, see HoldExpirer).
+	HoldExpirer HoldExpirer
 	// BaseURL is config.EffectiveBaseURL() (default return and cancel URLs).
 	BaseURL string
 	// PendingAfter is the age after which a pending intent is reconciled.
