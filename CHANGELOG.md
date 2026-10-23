@@ -213,6 +213,12 @@ offline).
 
 ### Changed
 
+- Pannello: le pagine di M4, M5 parte A e M6 (Pagina pubblica, Pagamenti online, Email e notifiche,
+  Dispositivi, Rete locale, App desktop, Report) seguono lo standard UI comune (`Page`, `SectionCard`, `StatCard`,
+  `DataTable`, `ResponsiveTabsList`, `SegmentedControl`); niente più barre di schede che vanno a capo: sotto i
+  640 px diventano un menu a tendina.
+- Le invarianti di M6 sono ora INV-55..INV-60 e quelle di M5 parte A INV-61..INV-66; l'ADR di M5 parte A è
+  0016 (0014 resta quello dei pagamenti online di M4).
 - I file testuali delle SPA incorporate sono serviti compressi gzip (`Vary: Accept-Encoding`).
 - Limiti dell'API pubblica: contano come creazioni solo l'avvio di una prenotazione e la richiesta di un nuovo
   link; i passi successivi della stessa prenotazione contano come letture.

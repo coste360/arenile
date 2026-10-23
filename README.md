@@ -11,7 +11,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fcoste360%2Farenile-2496ED?logo=docker&logoColor=white)](https://github.com/coste360/arenile/pkgs/container/arenile)
 [![SQLite | PostgreSQL](https://img.shields.io/badge/DB-SQLite%20%7C%20PostgreSQL-003B57?logo=sqlite&logoColor=white)](#architettura)
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
-[![Stato: M0-M4 completate nel ramo di sviluppo, nessun rilascio](https://img.shields.io/badge/stato-M0%E2%80%93M4%20MVP%20pubblico%2C%20non%20rilasciato-orange.svg)](#roadmap)
+[![Stato: M0-M4 e M6 completate, M5 parte A integrata, nessun rilascio](https://img.shields.io/badge/stato-M0%E2%80%93M4%2C%20M6%2C%20M5A%2C%20non%20rilasciato-orange.svg)](#roadmap)
 
 [Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-a-codice-sorgente-disponibile) ·
 [Funzionalità](#funzionalità) ·
@@ -27,7 +27,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 ---
 
 > [!IMPORTANT]
-> **Stato del progetto: fondamenta (M0), inventario e mappa (M1), prezzi e policy (M2), prenotazioni dal pannello e cassa (M3) e pagina pubblica con pagamenti online (M4) completati nel ramo di sviluppo, verificati da test automatici ma non ancora provati sul campo in uno stabilimento reale né con un account Stripe di produzione. Nessuna versione ancora rilasciata; prossima milestone M5 (completamento della stagione).**
+> **Stato del progetto: fondamenta (M0), inventario e mappa (M1), prezzi e policy (M2), prenotazioni dal pannello e cassa (M3), pagina pubblica con pagamenti online (M4) ed edizione desktop (M6) completati nel ramo di sviluppo, con la parte A di M5 (report, chiavi API, webhook, pannello offline), verificati da test automatici ma non ancora provati sul campo in uno stabilimento reale né con un account Stripe di produzione. Nessuna versione ancora rilasciata; prossima milestone: il resto di M5 (completamento della stagione).**
 > Arenile non è ancora pronto per la produzione. Le funzionalità descritte in questa pagina sono la roadmap della [specifica tecnica](docs/spec/README.md): la [tabella di stato](#stato-delle-funzionalità) indica con precisione cosa è disponibile, cosa è in sviluppo e cosa è pianificato. Se gestisci un lido e vuoi provarlo per la stagione, segui il repository (*Watch → Releases*) per essere avvisato al primo rilascio.
 
 **Arenile** è un **software gratuito per la gestione di stabilimenti balneari, con codice sorgente disponibile**, lidi, spiagge attrezzate e piscine. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
@@ -156,9 +156,9 @@ Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono comp
 | Pagamenti | Driver Stripe (Checkout), webhook firmato, riconciliazione ogni 15 minuti, rimborsi tramite Stripe, rimborso automatico dei pagamenti tardivi o doppi | M4 | Completato (Stripe Elements incorporato: in arrivo) |
 | Clienti | Link magico e area di gestione, email transazionali (it/en/de/fr), QR, `.ics`, assegnazione automatica nelle zone `zone` | M4 | Completato (promemoria: in arrivo) |
 | Stagione | Rinnovi abbonamenti, lista d'attesa, crediti | M5 | Pianificato |
-| Report | Report completi, confronto anni, esportazioni CSV/XLSX | M5 | Pianificato |
-| Offline | PWA del pannello con offline limitato | M5 | Pianificato |
-| Integrazioni | Webhook in uscita configurabili, chiavi API | M5 | Pianificato |
+| Report | Report completi, confronto anni, esportazioni CSV/XLSX | M5 | In sviluppo (report, confronto anni e CSV completati; esportazioni di elenco e XLSX in M5 parte B) |
+| Offline | PWA del pannello con offline limitato | M5 | Completato |
+| Integrazioni | Webhook in uscita configurabili, chiavi API | M5 | Completato (email al proprietario alla disattivazione automatica in M5 parte B) |
 | Lingue | Traduzioni inglese, tedesco, francese | M5 | Pianificato |
 | Desktop | App desktop per Windows, macOS e Linux: server sul PC della cassa, backup, modalità rete locale, modalità remota con ponte fiscale; dispositivi abbinati con QR e token revocabili | M6 | Completato (pacchetti firmati e collaudo su Windows da completare) |
 | App mobile | App per lo staff in spiaggia (repository separato) sui token per dispositivo del core | M7 | Pianificato |
@@ -471,8 +471,8 @@ Il dettaglio con i criteri di accettazione è nella sezione 28 della [specifica]
 - [x] **M2 — Prezzi e policy** *(completata: oltre 400 casi di test del motore prezzi)*: motore prezzi completo, prezzi a durata fissa, promo e convenzioni, simulatore e matrice di listino, policy. *Accettazione:* almeno 150 casi di test del motore prezzi.
 - [x] **M3 — Prenotazioni dal pannello e cassa** *(completata: 28 test di concorrenza da almeno 100 tentativi paralleli e una giornata simulata da oltre 450 operazioni, su SQLite e PostgreSQL, senza incoerenze tra allocazioni, prenotazioni e incassi; manca ancora la prova sul campo in uno stabilimento reale)*: motore di disponibilità, vista operativa, planning, clienti, abbonamenti e rilasci, cassa, corrispettivi, SSE. *Accettazione:* test di concorrenza superati, giornata simulata da 300 operazioni senza incoerenze.
 - [x] **M4 — Pagina pubblica e pagamenti online (MVP pubblico)** *(completata nel ramo di sviluppo: prenotazione da smartphone dentro un iframe su un'altra origine, pagata con un doppio di Stripe che firma il webhook, in circa 5 secondi nel test Playwright; nessuna doppia vendita tra cassa e online con 120 tentativi paralleli su una postazione e sui pool delle zone, su SQLite e PostgreSQL; prima schermata 135 KB gzip di JavaScript su 150, Lighthouse mobile 97/100/100/100; manca la prova con un account Stripe reale e in uno stabilimento)*: booking online, `embed.js`, tema, Stripe, link magico, email, QR e `.ics`, documentazione completa. *Accettazione:* prenotazione completa da smartphone in un iframe su dominio esterno in meno di 2 minuti.
-- [ ] **M5 — Completamento della stagione**: rinnovi, lista d'attesa, crediti, report, PWA offline, webhook, chiavi API, traduzioni.
-- [ ] **M6 — Edizione desktop** *(implementata nel ramo `m6-desktop`, in attesa dell'integrazione dopo M4; collaudo su Mac ripetibile con Playwright, mancano firme e prova su Windows)*: app desktop con server locale, backup e ripristino, modalità rete locale, modalità remota con ponte fiscale, dispositivi abbinati. I pacchetti desktop **non sono pubblicati su GitHub**: saranno scaricabili, previo accesso, dal portale Coste360; GitHub contiene i sorgenti e le istruzioni di build ([docs/desktop-build.md](docs/desktop-build.md)). L'immagine Docker resta pubblica su GHCR.
+- [ ] **M5 — Completamento della stagione** *(parte A integrata: report, chiavi API, webhook, pannello offline, mare in alto)*: rinnovi, lista d'attesa, crediti, report, PWA offline, webhook, chiavi API, traduzioni.
+- [ ] **M6 — Edizione desktop** *(implementata e integrata nel ramo di sviluppo; collaudo su Mac ripetibile con Playwright, mancano firme e prova su Windows)*: app desktop con server locale, backup e ripristino, modalità rete locale, modalità remota con ponte fiscale, dispositivi abbinati. I pacchetti desktop **non sono pubblicati su GitHub**: saranno scaricabili, previo accesso, dal portale Coste360; GitHub contiene i sorgenti e le istruzioni di build ([docs/desktop-build.md](docs/desktop-build.md)). L'immagine Docker resta pubblica su GHCR.
 - [ ] **M7 — App mobile**: app per lo staff in spiaggia (repository separato) che usa l'abbinamento con QR e i token per dispositivo già presenti nel core.
 - **Dopo l'MVP**: Satispay e altri provider, driver per registratori telematici, WhatsApp e SMS, app per lo staff in spiaggia, bar e ristorante con addebito sulla postazione.
 
