@@ -262,7 +262,7 @@ export function TodayPage() {
       )}
 
       {day.data && kpis && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>{t('today.chartTitle')}</CardTitle>
@@ -278,7 +278,7 @@ export function TodayPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="checkin">
-                <TabsList>
+                <TabsList className="flex-wrap group-data-[orientation=horizontal]/tabs:h-auto">
                   <TabsTrigger value="checkin">
                     {t('today.toCheckIn')} <Badge variant="secondary">{toCheckIn.length}</Badge>
                   </TabsTrigger>
