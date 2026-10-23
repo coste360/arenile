@@ -386,7 +386,8 @@ Un token `ar_dev_…` autentica come l'utente del dispositivo con i permessi del
 stabilimento del dispositivo; non autentica più dalla richiesta successiva alla revoca (nessuna cache), se
 l'utente è disattivato o non ha più un ruolo nello stabilimento, né dopo 90 giorni senza uso
 (`device.IdleExpiry`, contati da `last_used_at` o dall'abbinamento). Un dispositivo o una chiave API non creano codici
-di abbinamento; con il token non serve il CSRF (niente cookie), con il cookie sì.
+di abbinamento, chiavi API né webhook (`TestAuthorize_RefusesKeysAndDevices` in `internal/domain/apikey` e
+`internal/domain/webhook`); con il token non serve il CSRF (niente cookie), con il cookie sì.
 Verificata da: `TestDeviceService_RevokeIsImmediate`, `TestDeviceService_PermissionsByRole`, `TestIdleExpired_Scenarios`,
 `TestDeviceService_PairAndAuthenticate` (scadenza per inattività),
 `TestDeviceService_CrossTenant` (`internal/domain/device`, tag `integration`), `TestAuthenticate_BearerAndCookie`,
@@ -455,13 +456,14 @@ e `TestReportsHTTP_Flow` (tag `integration`, SQLite e PostgreSQL). Stato: implem
 **INV-62 — Chiavi API: canale `api`, scope limitati, scadenza.**
 Una prenotazione o un hold creati con una chiave API sono sempre del canale `api` (`auth.ChannelFor`), qualunque
 canale chieda la richiesta, quindi consumano e rispettano la quota online (ADR 0011 §1). Una chiave non riceve mai
-`users.manage` e non gestisce chiavi né webhook (sempre `403`); vale solo per il suo stabilimento; una chiave scaduta
+`users.manage` e non gestisce chiavi né webhook (sempre `403`, come un token di dispositivo); vale solo per il suo stabilimento; una chiave scaduta
 (`expires_at <= now`) o revocata non autentica; il segreto è salvato solo come SHA-256 e mostrato una volta
-(`Cache-Control: no-store`); ogni chiave ha un budget di richieste al minuto.
+(`Cache-Control: no-store` e `middleware.NoReplay`); ogni chiave ha un budget di richieste al minuto.
 Verificata da: `TestInventory_APIKeyCannotBypassQuota` (`internal/domain/inventory`), `TestAPIKeyService_Lifecycle`,
 `TestAPIKeyService_ExpiredKeyRejected`, `TestAPIKeyService_PermissionsAndTenancy` (`internal/domain/apikey`),
 `TestIntegrationsHTTP_APIKeys` (`internal/http/admin`), tutti con tag `integration`, `TestChannelFor_APIKeyAlwaysAPI`,
-`TestAPIKeyRateLimit_PerKey`. Stato: implemented.
+`TestAPIKeyRateLimit_PerKey`, `TestAuthorize_RefusesKeysAndDevices` (`internal/domain/apikey`, `internal/domain/webhook`).
+Stato: implemented.
 
 **INV-63 — Webhook in uscita mai verso la rete interna.**
 Le consegne passano dal client di `event.NewEgressClient`: l'host è risolto una volta, ogni indirizzo è controllato
@@ -479,10 +481,10 @@ dell'outbox, firmato `t=<ts>,v1=<HMAC-SHA256>` con il segreto corrente e, nel pe
 anche con il precedente. I segreti sono cifrati con il portachiavi (AAD `<id>` e `<id>:previous`), mostrati solo alla
 creazione e alla rotazione, mai nel registro attività né nei log; l'URL entra nel registro attività e nell'elenco del
 pannello senza query string (`webhook.RedactURL`, `redactWebhookUrl`), dove spesso viaggia un token del ricevitore;
-una risposta `Cache-Control: no-store` non viene mai salvata da `Idempotency-Key`
-(`TestIdempotency_NeverStoresNoStoreResponses`), salvo la sessione di checkout dell'API pubblica, che resta
-ripetibile con la stessa chiave e lo stesso `X-Arenile-Checkout` (doppio tocco, M4:
-`TestIdempotency_PublicCheckoutNoStoreReplays`). Scostamento dichiarato (ADR 0016): la disattivazione automatica
+una risposta che mostra un segreto una sola volta (chiave API, segreto del webhook, password iniziale, codice di
+abbinamento, link magico) è marcata `middleware.NoReplay` e non viene mai salvata da `Idempotency-Key`
+(`TestIdempotency_NeverStoresNoStoreResponses`); il solo `Cache-Control: no-store`, presente su ogni risposta
+`/api/`, non spegne la ripetizione (`TestIdempotency_NoStoreHeaderStillReplays`). Scostamento dichiarato (ADR 0016): la disattivazione automatica
 dopo 20 errori consecutivi scrive registro attività e log ma non invia ancora l'email al proprietario prevista da
 18.2.
 Verificata da: `TestConcurrency_WebhookDelivery` (100 worker, SQLite e PostgreSQL),

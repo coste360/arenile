@@ -197,9 +197,11 @@ func NewService(d Deps) *Service {
 }
 
 // authorize refuses API key principals (a key never manages webhooks) and
-// requires auth.PermUsersManage on the establishment.
+// device tokens (a stolen device token must not mint a credential that
+// outlives its revocation, INV-56), and requires auth.PermUsersManage on
+// the establishment.
 func (s *Service) authorize(ctx context.Context, p *auth.Principal, establishmentID string) (store.EstablishmentScope, error) {
-	if p != nil && p.Kind == auth.PrincipalAPIKey {
+	if p != nil && (p.Kind == auth.PrincipalAPIKey || p.DeviceID != "") {
 		return store.EstablishmentScope{}, auth.ErrForbidden
 	}
 	return p.Authorize(ctx, s.d.DB, establishmentID, auth.PermUsersManage)

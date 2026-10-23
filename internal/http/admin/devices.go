@@ -8,6 +8,7 @@ import (
 
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/http/api"
+	"github.com/coste360/arenile/internal/http/middleware"
 	"github.com/coste360/arenile/internal/http/problem"
 )
 
@@ -46,6 +47,7 @@ func (h *Handlers) CreateDevicePairingCode(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
+	middleware.NoReplay(w) // a secret shown once: never stored for Idempotency-Key replay
 	writeJSON(w, http.StatusCreated, PairingCodeToAPI(pc))
 }
 

@@ -210,7 +210,6 @@ func New(d Deps) http.Handler {
 		)),
 		middleware.OnPrefix("/api/", middleware.Idempotency(middleware.IdempotencyOptions{
 			DB: d.DB, Clock: d.Clock, Log: d.Log, Skip: []string{authPathPrefix, "/api/device/", "/api/desktop/"},
-			ReplayNoStore: []string{"/api/public/"},
 		})),
 	)
 

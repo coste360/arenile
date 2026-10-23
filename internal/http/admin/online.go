@@ -7,6 +7,7 @@ import (
 
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/http/api"
+	"github.com/coste360/arenile/internal/http/middleware"
 	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -122,6 +123,7 @@ func (h *Handlers) ResendBookingConfirmation(w http.ResponseWriter, r *http.Requ
 // The link is returned once and never logged.
 func (h *Handlers) RegenerateMagicLink(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, bookingID api.BookingID, params api.RegenerateMagicLinkParams) {
 	w.Header().Set("Cache-Control", "no-store")
+	middleware.NoReplay(w) // a secret shown once: never stored for Idempotency-Key replay
 	if h.Notify == nil {
 		notImplemented(w, r)
 		return

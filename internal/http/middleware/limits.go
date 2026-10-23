@@ -57,14 +57,6 @@ type IdempotencyOptions struct {
 	Skip []string
 	// MaxBody is the largest response stored for replay (default 1 MiB).
 	MaxBody int
-	// ReplayNoStore lists path prefixes whose Cache-Control: no-store
-	// responses are still stored for replay. The public checkout (M4) marks
-	// the session it creates no-store for browsers and proxies, yet a double
-	// tap with the same key must return the same session instead of a second
-	// hold (the replay also requires the same X-Arenile-Checkout header).
-	// Everywhere else a no-store response is a secret shown once and is
-	// never persisted.
-	ReplayNoStore []string
 }
 
 const maxIdempotencyKeyLen = 128
@@ -157,10 +149,12 @@ func Idempotency(o IdempotencyOptions) Middleware {
 			if status == 0 {
 				status = http.StatusOK
 			}
-			// A no-store response carries a credential shown once (API key,
-			// webhook secret, initial password): never persist it for replay.
-			// The key is released, so a retry executes the request again.
-			if status >= 500 || rec.overflow || (noStore(rec.Header()) && !skipped(r.URL.Path, o.ReplayNoStore)) {
+			// A response marked NoReplay carries a credential shown once (API
+			// key, webhook secret, initial password, pairing code, magic link):
+			// never persist it for replay. The key is released, so a retry
+			// executes the request again. Cache-Control: no-store alone is not
+			// the signal: SecurityHeaders sets it on every /api/ response.
+			if status >= 500 || rec.overflow || rec.noReplay {
 				return
 			}
 			if err := store.CompleteIdempotencyKey(context.WithoutCancel(ctx), o.DB, scope, key, status, rec.Header().Get("Content-Type"), rec.buf.Bytes()); err != nil {
@@ -172,15 +166,22 @@ func Idempotency(o IdempotencyOptions) Middleware {
 	}
 }
 
-func noStore(h http.Header) bool {
-	for _, v := range h.Values("Cache-Control") {
-		for _, d := range strings.Split(v, ",") {
-			if strings.EqualFold(strings.TrimSpace(d), "no-store") {
-				return true
-			}
+// NoReplay marks the response being written as one that must never be
+// stored by Idempotency (a secret shown once). Handlers call it before
+// writing; it finds the idempotency recorder through Unwrap chains and is a
+// no-op when the request carries no Idempotency-Key.
+func NoReplay(w http.ResponseWriter) {
+	for w != nil {
+		if c, ok := w.(*captureWriter); ok {
+			c.noReplay = true
+			return
 		}
+		u, ok := w.(interface{ Unwrap() http.ResponseWriter })
+		if !ok {
+			return
+		}
+		w = u.Unwrap()
 	}
-	return false
 }
 
 func skipped(path string, prefixes []string) bool {
@@ -205,6 +206,7 @@ type captureWriter struct {
 	buf      bytes.Buffer
 	max      int
 	overflow bool
+	noReplay bool
 }
 
 func (c *captureWriter) WriteHeader(code int) {
