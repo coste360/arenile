@@ -197,7 +197,9 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
                 <h1 className="text-xl">{t('manage.title')}</h1>
               </CardTitle>
               <Badge variant={b.status === 'confirmed' ? 'default' : 'secondary'}>
-                {t(`manage.status.${b.status}`)}
+                {renewal && b.status !== 'confirmed'
+                  ? t('manage.renewalBadge')
+                  : t(`manage.status.${b.status}`)}
               </Badge>
             </div>
             <CardDescription>

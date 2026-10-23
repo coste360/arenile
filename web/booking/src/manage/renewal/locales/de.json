@@ -34,6 +34,10 @@
   "termsRequired": "Für die Verlängerung müssen Sie die Bedingungen akzeptieren.",
   "accept": "Verlängern",
   "acceptPay": "Verlängern und {{amount}} bezahlen",
+
+  "acceptDesk": "Verlängerung bestätigen",
+
+  "deskHint": "Der Restbetrag von {{amount}} wird bis {{date}} an der Kasse bezahlt: danach wird der Platz wieder frei.",
   "decline": "Nicht verlängern",
   "declineQuestion": "Möchten Sie auf den Platz {{spot}} verzichten?",
   "declineHint": "Der Platz wird freigegeben und kann von anderen gebucht werden.",

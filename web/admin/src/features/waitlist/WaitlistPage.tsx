@@ -19,6 +19,7 @@ import {
   QueryState,
   SectionCard,
   StatusBadge,
+  useIsNarrow,
   type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import {
@@ -108,6 +109,7 @@ function Period({ entry }: { entry: Pick<WaitlistEntry, 'starts_on' | 'ends_on' 
  */
 export function WaitlistPage() {
   const { t, i18n } = useTranslation('waitlist');
+  const narrow = useIsNarrow();
   const establishmentId = useRequiredEstablishmentId();
   const perms = useOperationalPermissions();
   const ctx = useConfigContext();
@@ -167,18 +169,136 @@ export function WaitlistPage() {
     );
   };
 
-  const columns: ColumnDef<WaitlistEntry>[] = [
-    {
-      id: 'position',
-      header: '#',
-      meta: { label: t('columns.position'), align: 'right' },
-      cell: ({ row }) =>
-        row.original.status === 'waiting' ? (
-          <span className="font-medium tabular-nums">{row.original.position}</span>
+  const offerCell = (e: WaitlistEntry) => {
+    const o = e.active_offer;
+    if (!o) return <span className="text-muted-foreground">—</span>;
+    return (
+      <span className="flex flex-col">
+        <span>{o.spot_label ?? t('offer.anySpot')}</span>
+        {o.status === 'pending' ? (
+          <span className="text-xs">
+            <Countdown deadline={o.expires_at} now={now} />
+          </span>
         ) : (
-          <span className="text-muted-foreground">—</span>
-        ),
+          <span className="text-xs text-muted-foreground">{t(`offerStatus.${o.status}`)}</span>
+        )}
+      </span>
+    );
+  };
+  const positionColumn: ColumnDef<WaitlistEntry> = {
+    id: 'position',
+    header: '#',
+    meta: { label: t('columns.position'), align: 'right' },
+    cell: ({ row }) =>
+      row.original.status === 'waiting' ? (
+        <span className="font-medium tabular-nums">{row.original.position}</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  };
+  // Phones: one stacked cell keeps period, request, status and the running
+  // offer on screen instead of a table scrolling sideways.
+  const summaryColumn: ColumnDef<WaitlistEntry> = {
+    id: 'summary',
+    enableHiding: false,
+    header: t('columns.customer'),
+    meta: { label: t('columns.customer') },
+    cell: ({ row: { original: e } }) => (
+      <div className="flex min-w-0 flex-col gap-1 py-1">
+        <span className="font-medium">{e.customer_display_name}</span>
+        <span className="text-sm">
+          <Period entry={e} />
+        </span>
+        <span className="text-sm text-muted-foreground">{requestLabel(e)}</span>
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <StatusBadge tone={ENTRY_TONE[e.status]}>{t(`status.${e.status}`)}</StatusBadge>
+          {e.active_offer && offerCell(e)}
+        </span>
+      </div>
+    ),
+  };
+  const actionsColumn: ColumnDef<WaitlistEntry> = {
+    id: 'actions',
+    enableHiding: false,
+    header: () => <span className="sr-only">{t('columns.actions')}</span>,
+    cell: ({ row: { original: e } }) => {
+      const i = queue.findIndex((x) => x.id === e.id);
+      const active = e.status === 'waiting' || e.status === 'offered';
+      if (!perms.canWrite) return null;
+      return (
+        <div
+          className="flex items-center justify-end gap-0.5"
+          onClick={(ev) => ev.stopPropagation()}
+          onKeyDown={(ev) => ev.stopPropagation()}
+          role="presentation"
+        >
+          {canReorder && e.status === 'waiting' && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('reorder.up', { customer: e.customer_display_name })}
+                title={t('reorder.upShort')}
+                disabled={i <= 0 || reorder.isPending}
+                onClick={() => move(e, -1)}
+              >
+                <ArrowUpIcon aria-hidden="true" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('reorder.down', { customer: e.customer_display_name })}
+                title={t('reorder.downShort')}
+                disabled={i < 0 || i >= queue.length - 1 || reorder.isPending}
+                onClick={() => move(e, 1)}
+              >
+                <ArrowDownIcon aria-hidden="true" />
+              </Button>
+            </>
+          )}
+          {active && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t('row.more', { customer: e.customer_display_name })}
+                >
+                  <MoreHorizontalIcon aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {e.status === 'waiting' && (
+                  <DropdownMenuItem onSelect={() => setOffering(e)}>
+                    <GiftIcon aria-hidden="true" />
+                    {t('row.offer')}
+                  </DropdownMenuItem>
+                )}
+                {e.active_offer?.status === 'pending' && (
+                  <DropdownMenuItem onSelect={() => runRevoke(e)}>
+                    <BanIcon aria-hidden="true" />
+                    {t('row.revoke')}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onSelect={() => setEditing(e)}>
+                  <PencilIcon aria-hidden="true" />
+                  {t('row.edit')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onSelect={() => setRemoving(e)}>
+                  <Trash2Icon aria-hidden="true" />
+                  {t('row.remove')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      );
     },
+  };
+
+  const fullColumns: ColumnDef<WaitlistEntry>[] = [
+    positionColumn,
     {
       id: 'customer',
       header: t('columns.customer'),
@@ -211,22 +331,7 @@ export function WaitlistPage() {
       id: 'offer',
       header: t('columns.offer'),
       meta: { label: t('columns.offer') },
-      cell: ({ row }) => {
-        const o = row.original.active_offer;
-        if (!o) return <span className="text-muted-foreground">—</span>;
-        return (
-          <span className="flex flex-col">
-            <span>{o.spot_label ?? t('offer.anySpot')}</span>
-            {o.status === 'pending' ? (
-              <span className="text-xs">
-                <Countdown deadline={o.expires_at} now={now} />
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground">{t(`offerStatus.${o.status}`)}</span>
-            )}
-          </span>
-        );
-      },
+      cell: ({ row }) => offerCell(row.original),
     },
     {
       id: 'channel',
@@ -235,86 +340,9 @@ export function WaitlistPage() {
       cell: ({ row }) =>
         t(`bookings:channel.${row.original.channel}`, { defaultValue: row.original.channel }),
     },
-    {
-      id: 'actions',
-      enableHiding: false,
-      header: () => <span className="sr-only">{t('columns.actions')}</span>,
-      cell: ({ row: { original: e } }) => {
-        const i = queue.findIndex((x) => x.id === e.id);
-        const active = e.status === 'waiting' || e.status === 'offered';
-        if (!perms.canWrite) return null;
-        return (
-          <div
-            className="flex items-center justify-end gap-0.5"
-            onClick={(ev) => ev.stopPropagation()}
-            onKeyDown={(ev) => ev.stopPropagation()}
-            role="presentation"
-          >
-            {canReorder && e.status === 'waiting' && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('reorder.up', { customer: e.customer_display_name })}
-                  title={t('reorder.upShort')}
-                  disabled={i <= 0 || reorder.isPending}
-                  onClick={() => move(e, -1)}
-                >
-                  <ArrowUpIcon aria-hidden="true" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('reorder.down', { customer: e.customer_display_name })}
-                  title={t('reorder.downShort')}
-                  disabled={i < 0 || i >= queue.length - 1 || reorder.isPending}
-                  onClick={() => move(e, 1)}
-                >
-                  <ArrowDownIcon aria-hidden="true" />
-                </Button>
-              </>
-            )}
-            {active && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t('row.more', { customer: e.customer_display_name })}
-                  >
-                    <MoreHorizontalIcon aria-hidden="true" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {e.status === 'waiting' && (
-                    <DropdownMenuItem onSelect={() => setOffering(e)}>
-                      <GiftIcon aria-hidden="true" />
-                      {t('row.offer')}
-                    </DropdownMenuItem>
-                  )}
-                  {e.active_offer?.status === 'pending' && (
-                    <DropdownMenuItem onSelect={() => runRevoke(e)}>
-                      <BanIcon aria-hidden="true" />
-                      {t('row.revoke')}
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onSelect={() => setEditing(e)}>
-                    <PencilIcon aria-hidden="true" />
-                    {t('row.edit')}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={() => setRemoving(e)}>
-                    <Trash2Icon aria-hidden="true" />
-                    {t('row.remove')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        );
-      },
-    },
+    actionsColumn,
   ];
+  const columns = narrow ? [positionColumn, summaryColumn, actionsColumn] : fullColumns;
 
   const disabled = settings.data && !settings.data.enabled;
   return (

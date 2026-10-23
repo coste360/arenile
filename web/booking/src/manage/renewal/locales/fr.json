@@ -34,6 +34,10 @@
   "termsRequired": "Pour renouveler, vous devez accepter les conditions.",
   "accept": "Renouveler",
   "acceptPay": "Renouveler et payer {{amount}}",
+
+  "acceptDesk": "Confirmer le renouvellement",
+
+  "deskHint": "Le solde de {{amount}} se règle à la caisse avant le {{date}} : passé cette date, l'emplacement redevient disponible.",
   "decline": "Je ne renouvelle pas",
   "declineQuestion": "Souhaitez-vous renoncer à l'emplacement {{spot}} ?",
   "declineHint": "L'emplacement sera libéré et pourra être réservé par d'autres.",

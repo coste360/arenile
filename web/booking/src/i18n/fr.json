@@ -203,6 +203,8 @@
     },
     "customer": "Au nom de",
     "linkExpires": "Lien valable jusqu'au {{date}}",
+
+    "renewalBadge": "Proposition de renouvellement",
     "payBalance": "Payer le solde",
     "payBalanceAmount": "Payer le solde de {{amount}}",
     "modify": "Modifier",

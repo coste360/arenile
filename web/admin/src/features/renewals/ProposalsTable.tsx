@@ -18,6 +18,7 @@ import {
   OptionSelect,
   QueryState,
   StatusBadge,
+  useIsNarrow,
   type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { Link } from '@tanstack/react-router';
@@ -125,15 +126,43 @@ function SelectCell({ proposal }: { proposal: RenewalProposal }) {
   );
 }
 
+/** Time left of an open proposal; closed ones show a dash (the answer date is its own column). */
 function DeadlineCell({ proposal }: { proposal: RenewalProposal }) {
   const { now } = useSelection();
-  const fmt = useInstantFormat();
   if (proposal.status === 'proposed')
     return <Countdown deadline={proposal.deadline_at} now={now} />;
+  return <span className="text-muted-foreground">—</span>;
+}
+
+/** Date of the customer's or desk's answer (accepted, declined, converted); open ones show a dash. */
+function ResponseCell({ proposal }: { proposal: RenewalProposal }) {
+  const fmt = useInstantFormat();
+  if (proposal.status === 'proposed' || !proposal.responded_at)
+    return <span className="text-muted-foreground">—</span>;
+  return <span className="tabular-nums">{fmt.date(proposal.responded_at)}</span>;
+}
+
+/** One proposal stacked in a single cell (below `sm`): spot, customer, amount, status, sending and deadline. */
+function SummaryCell({ proposal: p }: { proposal: RenewalProposal }) {
+  const { t } = useTranslation('renewals');
   return (
-    <span className="text-muted-foreground tabular-nums">
-      {proposal.responded_at ? fmt.date(proposal.responded_at) : '—'}
-    </span>
+    <div className="flex min-w-0 flex-col gap-1 py-1">
+      <span className="font-medium">
+        {p.spot_label} · {p.customer_display_name}
+      </span>
+      <span className="text-sm text-muted-foreground">
+        {formatCents(p.total_amount)} ·{' '}
+        {t('row.previous', { amount: formatCents(p.previous_amount) })}
+      </span>
+      <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+        <StatusBadge tone={PROPOSAL_TONE[p.status]}>{t(`status.${p.status}`)}</StatusBadge>
+        {p.customer_has_email === false && <Badge variant="outline">{t('row.noEmail')}</Badge>}
+        <span className="text-muted-foreground">
+          {p.send_count > 0 ? t('row.sentCount', { count: p.send_count }) : t('row.notSent')}
+        </span>
+        {p.status === 'proposed' ? <DeadlineCell proposal={p} /> : <ResponseCell proposal={p} />}
+      </span>
+    </div>
   );
 }
 
@@ -221,6 +250,7 @@ export function ProposalsTable({
   maxDeadline,
 }: ProposalsTableProps) {
   const { t, i18n } = useTranslation('renewals');
+  const narrow = useIsNarrow();
   const [status, setStatus] = useState<'' | RenewalProposalStatus>('');
   const [sent, setSent] = useState<SentFilter>('');
   const [zoneId, setZoneId] = useState('');
@@ -304,17 +334,39 @@ export function ProposalsTable({
 
   const zoneName = (id?: string) => (id ? inventory.zoneName(id) : '');
 
-  const columns = useMemo<ColumnDef<RenewalProposal>[]>(
-    () => [
-      {
-        id: 'select',
-        enableHiding: false,
-        header: () => <SelectAllCell />,
-        cell: ({ row }) =>
-          row.original.status === 'proposed' || row.original.status === 'accepted' ? (
-            <SelectCell proposal={row.original} />
-          ) : null,
-      },
+  const columns = useMemo<ColumnDef<RenewalProposal>[]>(() => {
+    const select: ColumnDef<RenewalProposal> = {
+      id: 'select',
+      enableHiding: false,
+      header: () => <SelectAllCell />,
+      cell: ({ row }) =>
+        row.original.status === 'proposed' || row.original.status === 'accepted' ? (
+          <SelectCell proposal={row.original} />
+        ) : null,
+    };
+    const actionsCol: ColumnDef<RenewalProposal> = {
+      id: 'actions',
+      enableHiding: false,
+      header: () => <span className="sr-only">{t('columns.actions')}</span>,
+      cell: ({ row }) => <ActionsCell proposal={row.original} />,
+    };
+    if (narrow) {
+      // Phones: one stacked cell keeps status, deadline and the row menu
+      // on screen instead of a table scrolling sideways.
+      return [
+        select,
+        {
+          id: 'summary',
+          enableHiding: false,
+          header: t('columns.spot'),
+          meta: { label: t('columns.spot') },
+          cell: ({ row }) => <SummaryCell proposal={row.original} />,
+        },
+        actionsCol,
+      ];
+    }
+    return [
+      select,
       {
         id: 'spot',
         header: t('columns.spot'),
@@ -375,14 +427,14 @@ export function ProposalsTable({
         cell: ({ row }) => <DeadlineCell proposal={row.original} />,
       },
       {
-        id: 'actions',
-        enableHiding: false,
-        header: () => <span className="sr-only">{t('columns.actions')}</span>,
-        cell: ({ row }) => <ActionsCell proposal={row.original} />,
+        id: 'response',
+        header: t('columns.response'),
+        meta: { label: t('columns.response') },
+        cell: ({ row }) => <ResponseCell proposal={row.original} />,
       },
-    ],
-    [t],
-  );
+      actionsCol,
+    ];
+  }, [t, narrow]);
 
   const statusOptions = [
     { value: '', label: t('filters.allStatuses') },

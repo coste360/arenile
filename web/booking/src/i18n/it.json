@@ -203,6 +203,8 @@
     },
     "customer": "Intestatario",
     "linkExpires": "Link valido fino al {{date}}",
+
+    "renewalBadge": "Proposta di rinnovo",
     "payBalance": "Paga il saldo",
     "payBalanceAmount": "Paga il saldo di {{amount}}",
     "modify": "Modifica",

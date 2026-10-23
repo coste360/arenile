@@ -80,6 +80,7 @@
     "status": "Stato",
     "sent": "Invio",
     "deadline": "Scadenza",
+    "response": "Risposta",
     "actions": "Azioni"
   },
   "status": {

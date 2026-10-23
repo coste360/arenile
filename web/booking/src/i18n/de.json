@@ -203,6 +203,8 @@
     },
     "customer": "Gebucht von",
     "linkExpires": "Link gültig bis {{date}}",
+
+    "renewalBadge": "Verlängerungsangebot",
     "payBalance": "Restbetrag bezahlen",
     "payBalanceAmount": "Restbetrag von {{amount}} bezahlen",
     "modify": "Ändern",

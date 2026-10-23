@@ -385,7 +385,7 @@ function SettingsForm({
   const id = useId();
   const save = useUpdateWaitlistSettings(establishmentId);
   const [enabled, setEnabled] = useState(settings.enabled);
-  const [publicJoin, setPublicJoin] = useState(settings.public_join);
+  const publicJoin = settings.public_join;
   const [autoOffer, setAutoOffer] = useState(settings.auto_offer);
   const [minutes, setMinutes] = useState(String(settings.offer_hold_minutes));
   const [failure, setFailure] = useState<ProblemText | null>(null);
@@ -411,9 +411,10 @@ function SettingsForm({
       setFailure(describeM5bProblem(err, t));
     }
   };
+  // public_join is kept as stored but not offered: the public booking page
+  // has no join form yet (the public API accepts joins; see the guide).
   const toggles = [
     { key: 'enabled', value: enabled, set: setEnabled },
-    { key: 'public_join', value: publicJoin, set: setPublicJoin },
     { key: 'auto_offer', value: autoOffer, set: setAutoOffer },
   ] as const;
   return (

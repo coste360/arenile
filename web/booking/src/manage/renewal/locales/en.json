@@ -34,6 +34,10 @@
   "termsRequired": "To renew you need to accept the terms.",
   "accept": "Renew",
   "acceptPay": "Renew and pay {{amount}}",
+
+  "acceptDesk": "Confirm the renewal",
+
+  "deskHint": "The balance of {{amount}} is paid at the desk by {{date}}: after that date the spot becomes available again.",
   "decline": "I will not renew",
   "declineQuestion": "Do you want to give up spot {{spot}}?",
   "declineHint": "The spot will be released and others will be able to book it.",

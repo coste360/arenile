@@ -203,6 +203,8 @@
     },
     "customer": "Booked by",
     "linkExpires": "Link valid until {{date}}",
+
+    "renewalBadge": "Renewal proposal",
     "payBalance": "Pay the balance",
     "payBalanceAmount": "Pay the balance of {{amount}}",
     "modify": "Change",

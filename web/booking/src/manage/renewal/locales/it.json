@@ -34,6 +34,10 @@
   "termsRequired": "Per rinnovare devi accettare le condizioni.",
   "accept": "Rinnova",
   "acceptPay": "Rinnova e paga {{amount}}",
+
+  "acceptDesk": "Conferma il rinnovo",
+
+  "deskHint": "Il saldo di {{amount}} si paga in cassa entro il {{date}}: dopo questa data la postazione torna disponibile.",
   "decline": "Non rinnovo",
   "declineQuestion": "Vuoi rinunciare alla postazione {{spot}}?",
   "declineHint": "La postazione verrà liberata e potrà essere prenotata da altri.",

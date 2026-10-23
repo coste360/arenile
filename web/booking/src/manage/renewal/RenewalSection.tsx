@@ -108,6 +108,9 @@ export default function RenewalSection({
   const credit = r.credit_available ?? 0;
   const due = payment === 'deposit' ? r.deposit_due : r.total_amount - r.paid_amount;
   const toPay = Math.max(0, due - (useCredit ? credit : 0));
+  // No online payment offered: the renewal is confirmed here, the balance
+  // is collected at the desk before the deadline.
+  const online = r.allowed.pay_full || r.allowed.pay_deposit;
 
   const submit = () => {
     if (r.terms_version && !terms) {
@@ -306,7 +309,11 @@ export default function RenewalSection({
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button className="h-11" disabled={accept.isPending} onClick={submit}>
                 {accept.isPending ? <Spinner /> : <CheckCircle2Icon aria-hidden="true" />}
-                {toPay > 0 ? t('acceptPay', { amount: money(toPay) }) : t('accept')}
+                {toPay > 0
+                  ? online
+                    ? t('acceptPay', { amount: money(toPay) })
+                    : t('acceptDesk')
+                  : t('accept')}
               </Button>
               {r.allowed.decline && (
                 <Button variant="outline" className="h-11" onClick={() => setDeclining(true)}>
@@ -315,6 +322,11 @@ export default function RenewalSection({
                 </Button>
               )}
             </div>
+            {toPay > 0 && !online && (
+              <p className="text-sm text-muted-foreground">
+                {t('deskHint', { amount: money(toPay), date: deadline })}
+              </p>
+            )}
             {accept.error && (
               <p role="alert" className="text-sm text-destructive">
                 {tc(problemKey(accept.error))}

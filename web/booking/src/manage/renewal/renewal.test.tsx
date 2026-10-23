@@ -229,6 +229,44 @@ describe('renewal proposal on the manage page', () => {
     expect(screen.queryByRole('button', { name: /Rinnova/ })).toBeNull();
   });
 
+  it('confirms at the desk when the establishment takes no online payments', async () => {
+    const user = userEvent.setup();
+    renderManage({
+      [`GET ${MANAGE}`]: () =>
+        json(
+          200,
+          booking({
+            renewal: proposal({
+              terms_version: undefined,
+              credit_available: 0,
+              allowed: {
+                accept: true,
+                decline: true,
+                pay_deposit: false,
+                pay_full: false,
+                use_credit: false,
+              },
+            }),
+          }),
+        ),
+      [`POST ${MANAGE}/renewal/accept`]: () =>
+        json(200, {
+          proposal: proposal({ status: 'accepted', allowed: {} }),
+          credit_applied: 0,
+          pay: { mode: 'none', status: 'held' },
+        }),
+    });
+    const button = await screen.findByRole('button', { name: 'Conferma il rinnovo' });
+    expect(screen.queryByRole('button', { name: /Rinnova e paga/ })).toBeNull();
+    expect(
+      screen.getByText(/Il saldo di 1\.500,00 € si paga in cassa entro il/),
+    ).toBeInTheDocument();
+    await user.click(button);
+    expect(
+      await screen.findByText('Rinnovo accettato: completa il pagamento per confermarlo.'),
+    ).toBeInTheDocument();
+  });
+
   it('loads the English messages lazily', async () => {
     renderManage({ [`GET ${MANAGE}`]: () => json(200, booking()) }, undefined, '?lang=en');
     expect(
