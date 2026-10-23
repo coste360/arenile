@@ -45,6 +45,19 @@
   --sl-color-bg-sidebar: var(--background);
 }
 
+/* Starlight's "note" blue (asides, badges) in the brand sea colours (ocean
+   #0D79AC, navy #092D62, cyan #16CDE1) instead of the default periwinkle. */
+:root {
+  --sl-color-blue-low: #0b2c47;
+  --sl-color-blue: #16cde1;
+  --sl-color-blue-high: #b8eef6;
+}
+:root[data-theme='light'] {
+  --sl-color-blue-low: #dcf0f9;
+  --sl-color-blue: #0d79ac;
+  --sl-color-blue-high: #092d62;
+}
+
 @layer base {
   /* Islands render shadcn components: give them the app base styles. */
   .arenile-island {

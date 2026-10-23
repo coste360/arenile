@@ -51,4 +51,13 @@ mascherati, uscita WebP ottimizzata: due esecuzioni producono gli stessi file.
 `release.yml`, con screenshot rigenerati). Il sito è un artifact; il deploy su GitHub Pages si attiva con la
 variabile di repository `DOCS_PAGES=true` (opzionali `DOCS_SITE_URL`, `DOCS_BASE_PATH`, `DOCS_STRICT`).
 
+## Indirizzo e marchio
+
+L'indirizzo canonico è `https://docs.arenile.app`; si cambia con la variabile d'ambiente `ARENILE_DOCS_SITE`
+(origine, ad esempio `https://arenile.app`) e `ARENILE_DOCS_BASE` (percorso, ad esempio `/docs/`): canonical,
+sitemap e immagine social (`public/og.png`, URL assoluto) li seguono. Logo (chiaro/scuro, testo convertito in
+tracciati), favicon (`public/favicon.svg` con fallback PNG) e logo Coste360 del piè di pagina (`public/brand/`)
+sono copie dei file del kit in `assets/brand/` (© Coste360 SRL, fuori dalla licenza del codice, vedi
+`assets/brand/*/NOTICE.md` e `TRADEMARK.md`); i colori vengono dai token condivisi di `globals.css`.
+
 `astro` è fissato a 7.4.1 perché le versioni successive richiedono Node.js >= 22.23.4.
