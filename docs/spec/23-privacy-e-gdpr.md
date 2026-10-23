@@ -1,6 +1,7 @@
 ## 23. Privacy e GDPR
 
-- Dati minimi per una prenotazione online: nome, cognome, email o telefono.
+- Dati minimi per una prenotazione online: nome, cognome ed email; il telefono è sempre facoltativo, anche dal
+  pannello (ADR 0020). La vendita giornaliera al banco non richiede alcun dato del cliente.
 - Testi delle condizioni e dell'informativa versionati; ogni prenotazione salva la versione accettata.
 - Consenso marketing separato, facoltativo, con data, fonte e versione del testo.
 - **Esportazione** dei dati di un cliente in JSON dal pannello.

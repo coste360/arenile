@@ -26,6 +26,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0016](0016-scelte-m5a.md) | Scelte di M5 (parte A): report come query e confronto anni, chiavi API con scadenza, webhook configurabili con rotazione del segreto, PWA offline senza nuove dipendenze, mare in alto e riorientamento della mappa | accettato |
 | [0017](0017-scelte-m5b.md) | Scelte di M5 (parte B): passaggio di stagione idempotente, rinnovi come prenotazioni held in prelazione, lista d'attesa con hold riservati, crediti con saldo vincolato dal database | accettato |
 | [0018](0018-marchio.md) | Marchio ufficiale Arenile (brand kit v2.0 rifinito, regole d'uso colore/bianco/navy) e Coste360.it: asset in `assets/brand` esclusi dalla licenza del codice, testo in tracciati senza font a runtime, tema shadcn sui colori del kit, componenti condivisi del marchio | accettato |
+| [0020](0020-vendita-giornaliera-e-telefono-facoltativo.md) | Vendita giornaliera con biglietti numerati per giorno (contatore atomico e vincolo unico), vendita per zona sui vincoli esistenti, biglietti d'ingresso su zone quantity, telefono facoltativo ovunque | accettato |
 
 ## Come aggiungere un ADR
 

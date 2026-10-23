@@ -1,0 +1,28 @@
+{
+  "scaffold": "Fonction en préparation.",
+  "sale": {
+    "title": "Vente rapide",
+    "description": "Journée, matin ou après-midi sur un emplacement ou seulement une zone : prix, encaissement et ticket numéroté en une étape."
+  },
+  "tickets": {
+    "title": "Tickets du jour",
+    "description": "Tickets émis aujourd'hui avec numéro, heure, emplacement ou zone, statut, montant et moyen de paiement ; export CSV."
+  },
+  "assign": {
+    "title": "À attribuer",
+    "description": "Tickets vendus pour une zone : choisissez-en un, puis touchez un emplacement libre de sa zone."
+  },
+  "print": {
+    "label": "Ticket {{number}}",
+    "reprint": "Réimpression",
+    "unassigned": "À attribuer"
+  },
+  "problems": {
+    "zone_full": "Plus aucune place libre dans la zone pour le créneau choisi.",
+    "assignment_conflict": "L'emplacement vient d'être occupé : choisissez-en un autre.",
+    "ticket_number_conflict": "Numéro de ticket déjà utilisé, réessayez.",
+    "ticket_voided": "Le ticket est annulé.",
+    "ticket_already_entered": "Le ticket a déjà été utilisé pour entrer.",
+    "price_changed": "Le prix a changé : vérifiez le nouveau total."
+  }
+}

@@ -22,6 +22,9 @@ import waitlistIt from '../features/waitlist/locales/it.json';
 import creditsIt from '../features/credits/locales/it.json';
 import seasonRolloverIt from '../features/season-rollover/locales/it.json';
 import setupWizardIt from '../features/setup-wizard/locales/it.json';
+// Daily sale and entry tickets (ADR 0020).
+import dailySaleIt from '../features/daily-sale/locales/it.json';
+import entryTicketsIt from '../features/entry-tickets/locales/it.json';
 
 type Messages = Record<string, unknown>;
 type Loader = () => Promise<{ default: Messages }>;
@@ -249,6 +252,25 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/season-rollover/locales/en.json'),
       de: () => import('../features/season-rollover/locales/de.json'),
       fr: () => import('../features/season-rollover/locales/fr.json'),
+    },
+  },
+  // Daily sale, tickets and entry tickets (ADR 0020).
+  {
+    ns: 'dailySale',
+    it: dailySaleIt,
+    load: {
+      en: () => import('../features/daily-sale/locales/en.json'),
+      de: () => import('../features/daily-sale/locales/de.json'),
+      fr: () => import('../features/daily-sale/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'entryTickets',
+    it: entryTicketsIt,
+    load: {
+      en: () => import('../features/entry-tickets/locales/en.json'),
+      de: () => import('../features/entry-tickets/locales/de.json'),
+      fr: () => import('../features/entry-tickets/locales/fr.json'),
     },
   },
 ];

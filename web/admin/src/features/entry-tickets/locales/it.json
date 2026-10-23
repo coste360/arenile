@@ -1,0 +1,11 @@
+{
+  "scaffold": "Funzione in preparazione.",
+  "types": {
+    "title": "Biglietti d'ingresso",
+    "description": "Tipi di ingresso (Adulto, Ridotto, Bambino, ...) per spiaggia libera attrezzata e piscina: prezzo per periodo e capienza giornaliera condivisa con l'online."
+  },
+  "gate": {
+    "title": "Varco",
+    "description": "Scansiona il QR del biglietto: un solo ingresso per biglietto."
+  }
+}

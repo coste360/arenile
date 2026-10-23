@@ -1,0 +1,11 @@
+{
+  "scaffold": "Fonction en préparation.",
+  "types": {
+    "title": "Billets d'entrée",
+    "description": "Types d'entrée (Adulte, Réduit, Enfant, ...) pour plage libre équipée et piscine : prix par période et capacité journalière partagée avec la vente en ligne."
+  },
+  "gate": {
+    "title": "Contrôle d'accès",
+    "description": "Scannez le QR du ticket : une seule entrée par ticket."
+  }
+}

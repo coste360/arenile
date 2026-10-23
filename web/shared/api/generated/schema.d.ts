@@ -1237,6 +1237,367 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/daily-sales/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Prezzo e disponibilità di una vendita giornaliera (nessuna scrittura)
+         * @description Vendita giornaliera (biglietto): prezzo dal motore dei prezzi per il giorno, la fascia, il pack e gli extra, e disponibilità della postazione (spot-first) o della zona (zone-first, posti liberi residui). Permesso bookings.write.
+         */
+        post: operations["quoteDailySale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/daily-sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vendita giornaliera rapida: biglietto numerato e prenotazione confermata
+         * @description Crea in una transazione la prenotazione confermata (canale desk, via internal/domain/booking con audit e outbox), il pagamento manuale (contanti o carta; i contanti richiedono una sessione di cassa aperta) e il biglietto con il numero progressivo del giorno (riparte da 1 ogni giorno nel fuso dello stabilimento, unico per stabilimento su tutte le casse). Con spot_id occupa la postazione (409 spot_unavailable); con zone_id consuma subito la capacità della zona (409 zone_full) e il biglietto resta "da assegnare". Il nome è facoltativo (etichetta in mappa). expected_total, se presente, deve coincidere con il prezzo calcolato (409 price_changed). Permessi bookings.write e cash.operate.
+         */
+        post: operations["createDailySale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/daily-sale-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Impostazioni della vendita giornaliera e della stampa del biglietto */
+        get: operations["getDailySaleSettings"];
+        /**
+         * Aggiorna le impostazioni della vendita giornaliera
+         * @description Permesso establishment.configure. Concorrenza ottimistica con If-Match.
+         */
+        put: operations["updateDailySaleSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ticket del giorno (JSON o CSV)
+         * @description Biglietti emessi in un giorno con numero, ora, postazione o zona, stato, importo e metodo, più il riepilogo (totali per metodo e per aliquota IVA, coerenti con sessioni di cassa e corrispettivi). format=csv (o Accept: text/csv) esporta il giorno intero (UTF-8 con BOM, separatore ';'). Permesso bookings.read.
+         */
+        get: operations["listTickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/unassigned": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Biglietti da assegnare (pannello Da assegnare della mappa e Oggi)
+         * @description Biglietti validi zone-first del giorno non ancora collocati su una postazione, in ordine di numero. Permesso bookings.read.
+         */
+        get: operations["listUnassignedTickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/auto-assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assegna automaticamente i biglietti da assegnare del giorno
+         * @description Riempie le postazioni libere della zona in ordine (motore greedy di internal/domain/availability, spec 7.5), un biglietto alla volta con l'allocazione atomica: un posto preso nel frattempo da altri finisce in unassigned. Con dry_run non salva. Permesso bookings.write.
+         */
+        post: operations["autoAssignTickets"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/by-code/{bookingCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Biglietto dal codice del QR (controllo)
+         * @description Il QR del biglietto contiene il codice della prenotazione. Permesso bookings.read.
+         */
+        get: operations["getTicketByCode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio del biglietto */
+        get: operations["getTicket"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/print": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dati di stampa del biglietto (scontrino 80/58 mm, A4, A5)
+         * @description Tutto ciò che serve alla stampa dal browser: stabilimento, numero e data, postazione o zona, formula, pack, extra, totale con scorporo IVA, metodo di pagamento e contenuto del QR. Nessuna scrittura. Permesso bookings.read.
+         */
+        get: operations["getTicketPrint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/reprint": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ristampa del biglietto (conteggio e audit)
+         * @description Incrementa print_count, scrive l'audit e restituisce i dati di stampa con la dicitura di ristampa. Permesso bookings.write.
+         */
+        post: operations["reprintTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Annulla il biglietto (mantiene il numero, rimborso tramite pagamenti)
+         * @description Annulla la prenotazione tramite internal/domain/booking (audit e outbox nella stessa transazione), libera la postazione o la capacità di zona e rimborsa con il driver manuale (refund) o in credito. Il biglietto mantiene il numero ed è marcato annullato. 409 ticket_voided se già annullato, ticket_already_entered se già entrato. Permessi bookings.write e refunds.issue (per il rimborso).
+         */
+        post: operations["voidTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assegna un biglietto da assegnare a una postazione libera della sua zona
+         * @description Allocazione atomica (vincolo unico di spot_allocations): 409 assignment_conflict se la postazione è stata presa nel frattempo, spot_unavailable se non è libera. Permesso bookings.write.
+         */
+        post: operations["assignTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sposta il biglietto su un'altra postazione
+         * @description Spostamento (o riassegnazione) tramite la Move della prenotazione: atomico, 409 se la postazione è occupata. Permesso bookings.write.
+         */
+        post: operations["moveTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/entry-gate/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ingresso al varco: scansione del QR del biglietto
+         * @description Un ingresso per biglietto: il primo passaggio registra entered_at (condizionale, mai due volte anche da due telefoni), i successivi rispondono already_entered. outcome descrive l'esito per lo scanner (voided, wrong_date). 404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
+         */
+        post: operations["checkInEntryTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/entry-ticket-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tipi di biglietto d'ingresso (Adulto, Ridotto, Bambino, ...) */
+        get: operations["listEntryTicketTypes"];
+        put?: never;
+        /**
+         * Crea un tipo di biglietto d'ingresso
+         * @description Ogni tipo è un pack (prezzo dal motore per periodo tariffario) su una zona in modalità quantity: il pool della zona è la capienza giornaliera condivisa con la vendita online. Permesso establishment.configure.
+         */
+        post: operations["createEntryTicketType"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio del tipo di biglietto d'ingresso */
+        get: operations["getEntryTicketType"];
+        put?: never;
+        post?: never;
+        /**
+         * Elimina il tipo (o disattivalo se ha già biglietti venduti)
+         * @description 409 conflict se esistono biglietti venduti: va disattivato (active=false). Permesso establishment.configure.
+         */
+        delete: operations["deleteEntryTicketType"];
+        options?: never;
+        head?: never;
+        /**
+         * Modifica il tipo di biglietto d'ingresso
+         * @description Permesso establishment.configure. If-Match obbligatorio.
+         */
+        patch: operations["updateEntryTicketType"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/entry-sales/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prezzo e capienza residua di una vendita di ingressi */
+        post: operations["quoteEntrySale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/entry-sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vendita di biglietti d'ingresso (stessa numerazione giornaliera)
+         * @description Prenotazione confermata sulle zone quantity dei tipi scelti (pool condiviso con l'online, 409 pool_exhausted), pagamento manuale e biglietto numerato con QR per il varco. Permessi bookings.write e cash.operate.
+         */
+        post: operations["createEntrySale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/payments": {
         parameters: {
             query?: never;
@@ -3459,7 +3820,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -4990,7 +5351,7 @@ export interface components {
             source: string;
             text_version: string;
         };
-        /** @description Dati minimi per una prenotazione dal pannello. Email lowercase, telefono E.164. */
+        /** @description Dati minimi per una prenotazione dal pannello: solo il cognome è obbligatorio. Email lowercase; telefono E.164 facoltativo (ADR 0020), usato per la deduplica solo se presente. */
         CustomerInput: {
             first_name?: string;
             last_name: string;
@@ -5384,6 +5745,356 @@ export interface components {
             applied: boolean;
             assigned: components["schemas"]["AutoAssignment"][];
             unassigned: components["schemas"]["AutoUnassigned"][];
+        };
+        /**
+         * @description sale = vendita giornaliera di una postazione; entry = biglietto d'ingresso.
+         * @enum {string}
+         */
+        TicketKind: "sale" | "entry";
+        /**
+         * @description Stato memorizzato; un biglietto annullato mantiene il suo numero.
+         * @enum {string}
+         */
+        TicketStatus: "valid" | "voided";
+        /**
+         * @description Stato mostrato (derivato): assigned = vendita su una postazione; unassigned = zone-first da assegnare; issued = ingresso non ancora entrato; entered = ingresso registrato al varco; voided = annullato.
+         * @enum {string}
+         */
+        TicketState: "assigned" | "unassigned" | "issued" | "entered" | "voided";
+        /**
+         * @description Metodo della vendita rapida (driver manuale; i contanti richiedono una sessione di cassa aperta).
+         * @enum {string}
+         */
+        TicketPaymentMethod: "cash" | "card";
+        /**
+         * @description Scontrino termico 80 o 58 mm, oppure foglio A4 o A5.
+         * @enum {string}
+         */
+        TicketPrintFormat: "thermal_80" | "thermal_58" | "a4" | "a5";
+        /** @description Dati facoltativi del cliente, solo per l'etichetta in mappa (nessun telefono né email). */
+        DailySaleHolder: {
+            first_name?: string;
+            last_name?: string;
+        };
+        DailySalePayment: {
+            method: components["schemas"]["TicketPaymentMethod"];
+            /**
+             * Format: uuid
+             * @description Default la sessione aperta della cassa (obbligatoria per i contanti, 409 cash_session_closed).
+             */
+            cash_session_id?: string;
+            /**
+             * Format: int64
+             * @description Contanti ricevuti in centesimi, per calcolare il resto (solo cash).
+             */
+            tendered_amount?: number;
+        };
+        /** @description Dove: spot_id (spot-first, postazione precisa) oppure zone_id (zone-first, es. "Prima fila"); esattamente uno dei due. Formula dalla fascia: FULL = giornata intera, AM = mattina, PM = pomeriggio. */
+        DailySaleQuoteRequest: {
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            /** Format: uuid */
+            spot_id?: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            pack_id: string;
+            extras?: components["schemas"]["SimulateExtra"][];
+        };
+        DailySaleQuote: {
+            breakdown: components["schemas"]["PriceBreakdown"];
+            total: components["schemas"]["Money"];
+            /** @description La postazione è libera o la zona ha ancora posti per la fascia. */
+            available: boolean;
+            /** @description Posti residui della zona (solo zone-first). */
+            zone_free?: number;
+            conflicts: components["schemas"]["AllocationConflict"][];
+        };
+        /** @description Come DailySaleQuoteRequest, più pagamento e nome facoltativo. */
+        DailySaleCreate: {
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            /** Format: uuid */
+            spot_id?: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            pack_id: string;
+            extras?: components["schemas"]["SimulateExtra"][];
+            payment: components["schemas"]["DailySalePayment"];
+            holder?: components["schemas"]["DailySaleHolder"];
+            expected_total?: components["schemas"]["Money"];
+            notes_internal?: string;
+        };
+        DailySaleResult: {
+            ticket: components["schemas"]["Ticket"];
+            /** Format: uuid */
+            booking_id: string;
+            /** Format: uuid */
+            payment_id: string;
+            change_amount?: components["schemas"]["Money"];
+        };
+        TicketExtra: {
+            /** Format: uuid */
+            extra_id: string;
+            name: components["schemas"]["I18nText"];
+            quantity: number;
+            total: components["schemas"]["Money"];
+        };
+        TicketEntryItem: {
+            /** Format: uuid */
+            entry_ticket_type_id: string;
+            name: components["schemas"]["I18nText"];
+            quantity: number;
+            total: components["schemas"]["Money"];
+        };
+        Ticket: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["TicketKind"];
+            status: components["schemas"]["TicketStatus"];
+            state: components["schemas"]["TicketState"];
+            ticket_date: components["schemas"]["Date"];
+            /**
+             * Format: int64
+             * @description Progressivo del giorno (riparte da 1 ogni giorno, unico per stabilimento).
+             */
+            ticket_number: number;
+            /** @description Numero formattato a tre cifre con cancelletto (es. "#037"), usato in mappa e in stampa. */
+            number_label: string;
+            /** Format: uuid */
+            booking_id: string;
+            /** @description Codice della prenotazione, contenuto del QR. */
+            booking_code: string;
+            /** Format: uuid */
+            zone_id: string;
+            zone_name: components["schemas"]["I18nText"];
+            /**
+             * Format: uuid
+             * @description Postazione assegnata (assente se da assegnare o per gli ingressi).
+             */
+            spot_id?: string;
+            spot_label?: string;
+            /** @description Vendita zone-first non ancora collocata ("da assegnare"). */
+            needs_assignment: boolean;
+            /** @description Nome facoltativo per l'etichetta in mappa. */
+            holder_name?: string;
+            slots: components["schemas"]["Slots"];
+            formula: components["schemas"]["Formula"];
+            /** Format: uuid */
+            pack_id?: string;
+            pack_name?: components["schemas"]["I18nText"];
+            extras: components["schemas"]["TicketExtra"][];
+            /** @description Righe per tipo di ingresso (solo kind=entry). */
+            entry_items: components["schemas"]["TicketEntryItem"][];
+            total_amount: components["schemas"]["Money"];
+            vat: components["schemas"]["VatBreakdown"][];
+            payment_method: components["schemas"]["TicketPaymentMethod"];
+            /** Format: uuid */
+            payment_id?: string;
+            /** Format: uuid */
+            cash_session_id?: string;
+            print_count: number;
+            /** Format: uuid */
+            created_by_user_id?: string;
+            /** Format: date-time */
+            voided_at?: string;
+            void_reason?: string;
+            /** Format: uuid */
+            refund_payment_id?: string;
+            /** Format: date-time */
+            entered_at?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        TicketMethodTotal: {
+            method: components["schemas"]["TicketPaymentMethod"];
+            count: number;
+            amount: components["schemas"]["Money"];
+        };
+        /** @description Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso). */
+        TicketDaySummary: {
+            issued: number;
+            voided: number;
+            unassigned: number;
+            entered: number;
+            total_amount: components["schemas"]["Money"];
+            by_method: components["schemas"]["TicketMethodTotal"][];
+            vat: components["schemas"]["VatBreakdown"][];
+        };
+        TicketList: {
+            items: components["schemas"]["Ticket"][];
+            summary: components["schemas"]["TicketDaySummary"];
+            next_cursor?: string;
+        };
+        UnassignedTicketList: {
+            items: components["schemas"]["Ticket"][];
+        };
+        TicketAssignRequest: {
+            /** Format: uuid */
+            spot_id: string;
+            version?: components["schemas"]["Version"];
+        };
+        TicketAutoAssignRequest: {
+            date: components["schemas"]["Date"];
+            /**
+             * Format: uuid
+             * @description Solo questa zona (default tutte).
+             */
+            zone_id?: string;
+            dry_run?: boolean;
+        };
+        TicketAutoAssignment: {
+            /** Format: uuid */
+            ticket_id: string;
+            /** Format: int64 */
+            ticket_number: number;
+            /** Format: uuid */
+            spot_id: string;
+            spot_label: string;
+        };
+        TicketAutoUnassigned: {
+            /** Format: uuid */
+            ticket_id: string;
+            /** Format: int64 */
+            ticket_number: number;
+            /** @enum {string} */
+            reason: "no_free_spot" | "conflict";
+        };
+        TicketAutoAssignResult: {
+            applied: boolean;
+            assigned: components["schemas"]["TicketAutoAssignment"][];
+            unassigned: components["schemas"]["TicketAutoUnassigned"][];
+        };
+        TicketVoidRequest: {
+            reason: string;
+            /**
+             * @description refund (default) restituisce l'importo con il metodo del biglietto tramite i pagamenti; credit lo accredita al cliente (solo se il biglietto ha un cliente con nome); none annulla senza rimborso.
+             * @enum {string}
+             */
+            refund?: "refund" | "credit" | "none";
+            version?: components["schemas"]["Version"];
+        };
+        TicketReprintRequest: {
+            format?: components["schemas"]["TicketPrintFormat"];
+        };
+        TicketPrintEstablishment: {
+            name: string;
+            legal_name?: string;
+            vat_number?: string;
+            address?: string;
+            logo_url?: string;
+        };
+        TicketPrintData: {
+            format: components["schemas"]["TicketPrintFormat"];
+            ticket: components["schemas"]["Ticket"];
+            establishment: components["schemas"]["TicketPrintEstablishment"];
+            /** @description Contenuto del QR (codice della prenotazione). */
+            qr_payload: string;
+            /** @description Stampa successiva alla prima (dicitura "Ristampa"). */
+            reprint: boolean;
+            footer_text?: string;
+            /** Format: date-time */
+            issued_at: string;
+        };
+        DailySaleSettings: {
+            print_format: components["schemas"]["TicketPrintFormat"];
+            /** @description Apre la stampa subito dopo la vendita. */
+            auto_print: boolean;
+            /** @description Consente la vendita per zona (da assegnare). */
+            zone_first_enabled: boolean;
+            footer_text: components["schemas"]["I18nText"];
+            version: components["schemas"]["Version"];
+        };
+        DailySaleSettingsUpdate: {
+            print_format: components["schemas"]["TicketPrintFormat"];
+            auto_print: boolean;
+            zone_first_enabled: boolean;
+            footer_text: components["schemas"]["I18nText"];
+        };
+        GateCheckInRequest: {
+            /** @description Contenuto del QR scansionato (codice della prenotazione). */
+            code: string;
+        };
+        GateCheckInResult: {
+            /** @enum {string} */
+            outcome: "admitted" | "already_entered" | "voided" | "wrong_date";
+            ticket?: components["schemas"]["Ticket"];
+        };
+        EntryTicketType: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description: components["schemas"]["I18nText"];
+            /**
+             * Format: uuid
+             * @description Pack prezzato dal motore dei prezzi per periodo tariffario.
+             */
+            pack_id: string;
+            /**
+             * Format: uuid
+             * @description Zona in modalità quantity; il suo pool è la capienza giornaliera condivisa con l'online.
+             */
+            zone_id: string;
+            sort_order: number;
+            active: boolean;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        EntryTicketTypeInput: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description?: components["schemas"]["I18nText"];
+            /** Format: uuid */
+            pack_id: string;
+            /** Format: uuid */
+            zone_id: string;
+            sort_order?: number;
+            active?: boolean;
+        };
+        EntryTicketTypeUpdate: {
+            name?: components["schemas"]["I18nText"];
+            description?: components["schemas"]["I18nText"];
+            /** Format: uuid */
+            pack_id?: string;
+            /** Format: uuid */
+            zone_id?: string;
+            sort_order?: number;
+            active?: boolean;
+        };
+        EntryTicketTypeList: {
+            items: components["schemas"]["EntryTicketType"][];
+        };
+        EntrySaleItem: {
+            /** Format: uuid */
+            entry_ticket_type_id: string;
+            quantity: number;
+        };
+        EntrySaleQuoteRequest: {
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            items: components["schemas"]["EntrySaleItem"][];
+        };
+        EntrySaleQuote: {
+            breakdown: components["schemas"]["PriceBreakdown"];
+            total: components["schemas"]["Money"];
+            available: boolean;
+            /** @description Capienza residua minima delle zone coinvolte per la fascia. */
+            remaining: number;
+            conflicts: components["schemas"]["AllocationConflict"][];
+        };
+        EntrySaleCreate: {
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            items: components["schemas"]["EntrySaleItem"][];
+            payment: components["schemas"]["DailySalePayment"];
+            holder?: components["schemas"]["DailySaleHolder"];
+            expected_total?: components["schemas"]["Money"];
         };
         /** @description Una risorsa da bloccare: spot_id (postazione), zone_id + quantity (capacità di zona) o pool_id + quantity. */
         HoldItem: {
@@ -5972,6 +6683,10 @@ export interface components {
             show_prices_on_map: boolean;
             show_rate_periods: boolean;
             promo_codes_enabled: boolean;
+            /**
+             * @deprecated
+             * @description Sempre false: il telefono è facoltativo ovunque (decisione del gestore, ADR 0020). Il campo resta per compatibilità con i client esistenti.
+             */
             require_phone: boolean;
             terms?: components["schemas"]["PublicTerms"];
         };
@@ -6273,7 +6988,7 @@ export interface components {
             last_name: string;
             /** Format: email */
             email: string;
-            /** @description E.164 o numero italiano; obbligatorio se `require_phone`. */
+            /** @description E.164 o numero italiano; facoltativo (ADR 0020), usato per la deduplica solo se presente. */
             phone?: string;
             locale?: string;
             /** @description Versione delle condizioni mostrata e accettata (deve essere la corrente). */
@@ -6419,6 +7134,10 @@ export interface components {
             /** @description Limite di prenotabilità in giorni (oltre alla policy). */
             max_days_ahead?: number;
             promo_codes_enabled: boolean;
+            /**
+             * @deprecated
+             * @description Ignorato e salvato sempre come false: il telefono è facoltativo ovunque (ADR 0020).
+             */
             require_phone: boolean;
         };
         EmbedSnippets: {
@@ -8055,6 +8774,10 @@ export interface components {
         FiscalBridgeJobID: string;
         /** @description Nome del file di backup come restituito da `listDesktopBackups` (nessun percorso). */
         BackupName: string;
+        TicketID: string;
+        EntryTicketTypeID: string;
+        /** @description Codice della prenotazione (contenuto del QR del biglietto). */
+        BookingCode: string;
         /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
         Cursor: string;
         /** @description Numero massimo di elementi (default 50). */
@@ -12251,6 +12974,804 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    quoteDailySale: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DailySaleQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Preventivo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailySaleQuote"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createDailySale: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DailySaleCreate"];
+            };
+        };
+        responses: {
+            /** @description Biglietto emesso */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailySaleResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getDailySaleSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Impostazioni */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailySaleSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateDailySaleSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DailySaleSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Impostazioni aggiornate */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailySaleSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listTickets: {
+        parameters: {
+            query: {
+                /** @description Giorno dei biglietti. */
+                date: components["schemas"]["Date"];
+                /** @description Filtro sullo stato. */
+                state?: components["schemas"]["TicketState"];
+                /** @description Filtro sul tipo. */
+                kind?: components["schemas"]["TicketKind"];
+                /** @description Filtro sulla zona. */
+                zone_id?: string;
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Biglietti del giorno */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketList"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listUnassignedTickets: {
+        parameters: {
+            query: {
+                /** @description Giorno. */
+                date: components["schemas"]["Date"];
+                /** @description Solo questa zona. */
+                zone_id?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Biglietti da assegnare */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnassignedTicketList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    autoAssignTickets: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketAutoAssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Esito */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketAutoAssignResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getTicketByCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                /** @description Codice della prenotazione (contenuto del QR del biglietto). */
+                bookingCode: components["parameters"]["BookingCode"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Biglietto */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ticketId: components["parameters"]["TicketID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Biglietto */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getTicketPrint: {
+        parameters: {
+            query?: {
+                /** @description Formato (default dalle impostazioni). */
+                format?: components["schemas"]["TicketPrintFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ticketId: components["parameters"]["TicketID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dati di stampa */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketPrintData"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    reprintTicket: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ticketId: components["parameters"]["TicketID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["TicketReprintRequest"];
+            };
+        };
+        responses: {
+            /** @description Dati di stampa */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketPrintData"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    voidTicket: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ticketId: components["parameters"]["TicketID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketVoidRequest"];
+            };
+        };
+        responses: {
+            /** @description Biglietto annullato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    assignTicket: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ticketId: components["parameters"]["TicketID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketAssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Biglietto assegnato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    moveTicket: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                ticketId: components["parameters"]["TicketID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TicketAssignRequest"];
+            };
+        };
+        responses: {
+            /** @description Biglietto spostato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ticket"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    checkInEntryTicket: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GateCheckInRequest"];
+            };
+        };
+        responses: {
+            /** @description Esito del controllo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GateCheckInResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listEntryTicketTypes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tipi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryTicketTypeList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createEntryTicketType: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryTicketTypeInput"];
+            };
+        };
+        responses: {
+            /** @description Tipo creato */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryTicketType"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getEntryTicketType: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryTicketTypeId: components["parameters"]["EntryTicketTypeID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tipo */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryTicketType"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    deleteEntryTicketType: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryTicketTypeId: components["parameters"]["EntryTicketTypeID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateEntryTicketType: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                entryTicketTypeId: components["parameters"]["EntryTicketTypeID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryTicketTypeUpdate"];
+            };
+        };
+        responses: {
+            /** @description Tipo aggiornato */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryTicketType"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    quoteEntrySale: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntrySaleQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Preventivo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntrySaleQuote"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createEntrySale: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntrySaleCreate"];
+            };
+        };
+        responses: {
+            /** @description Biglietto emesso */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailySaleResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
             501: components["responses"]["NotImplemented"];
         };
     };

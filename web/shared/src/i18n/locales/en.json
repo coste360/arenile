@@ -127,6 +127,9 @@
     "renewals": "Renewals",
     "waitlist": "Waitlist",
     "cash": "Cash desk",
+    "dailySale": "Quick sale",
+    "tickets": "Today's tickets",
+    "entryGate": "Gate",
     "reports": "Reports",
     "settings": "Settings",
     "openMenu": "Open menu",
@@ -152,7 +155,8 @@
       "desktop": "Desktop app",
       "apiKeys": "API keys",
       "webhooks": "Webhooks",
-      "seasonRollover": "New season"
+      "seasonRollover": "New season",
+      "entryTickets": "Entry tickets"
     },
     "operations": "Operations",
     "configGroup": "Configuration",
@@ -173,6 +177,8 @@
       "renewals": "Season pass renewal campaigns with right of pre-emption.",
       "waitlist": "Requests with no availability and automatic offers when a spot frees up.",
       "cash": "Cash session, payments and closures.",
+      "dailySale": "Walk-in daily sale: spot or zone, price, payment and numbered ticket.",
+      "tickets": "Tickets issued today, to assign, voided and entered; CSV export.",
       "reports": "Occupancy, revenue, channels and exports.",
       "settings": "Seasons, maps, zones, catalogue, prices, policies, public page and payments."
     },

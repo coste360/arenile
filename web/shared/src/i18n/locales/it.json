@@ -127,6 +127,9 @@
     "renewals": "Rinnovi",
     "waitlist": "Lista d'attesa",
     "cash": "Cassa",
+    "dailySale": "Vendita rapida",
+    "tickets": "Ticket del giorno",
+    "entryGate": "Varco",
     "reports": "Report",
     "settings": "Configurazione",
     "openMenu": "Apri il menu",
@@ -152,7 +155,8 @@
       "desktop": "App desktop",
       "apiKeys": "Chiavi API",
       "webhooks": "Webhook",
-      "seasonRollover": "Nuova stagione"
+      "seasonRollover": "Nuova stagione",
+      "entryTickets": "Biglietti d'ingresso"
     },
     "operations": "Operatività",
     "configGroup": "Configurazione",
@@ -173,6 +177,8 @@
       "renewals": "Campagne di rinnovo degli abbonamenti con diritto di prelazione.",
       "waitlist": "Richieste senza disponibilità e offerte automatiche quando si libera un posto.",
       "cash": "Sessione di cassa, incassi e chiusure.",
+      "dailySale": "Vendita giornaliera al banco: postazione o zona, prezzo, incasso e biglietto numerato.",
+      "tickets": "Biglietti emessi oggi, da assegnare, annullati ed entrati; esportazione CSV.",
       "reports": "Occupazione, ricavi, canali ed esportazioni.",
       "settings": "Stagioni, mappe, zone, catalogo, prezzi, policy, pagina pubblica e pagamenti."
     },

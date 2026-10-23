@@ -69,6 +69,8 @@ tags:
     description: Pagamenti manuali, rimborsi e vendite di cassa
   - name: cash
     description: Sessioni di cassa, movimenti e chiusure
+  - name: tickets
+    description: Vendita giornaliera rapida, biglietti numerati del giorno, assegnazione, ingressi e varco
   - name: fiscal
     description: Corrispettivi e documenti fiscali
   - name: realtime
@@ -4122,6 +4124,837 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/daily-sales/quote:
+    post:
+      operationId: quoteDailySale
+      tags: [tickets]
+      summary: "Prezzo e disponibilità di una vendita giornaliera (nessuna scrittura)"
+      description: >-
+        Vendita giornaliera (biglietto): prezzo dal motore dei prezzi per il giorno, la fascia, il pack e gli extra,
+        e disponibilità della postazione (spot-first) o della zona (zone-first, posti liberi residui). Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailySaleQuoteRequest"
+      responses:
+        "200":
+          description: "Preventivo"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySaleQuote"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/daily-sales:
+    post:
+      operationId: createDailySale
+      tags: [tickets]
+      summary: "Vendita giornaliera rapida: biglietto numerato e prenotazione confermata"
+      description: >-
+        Crea in una transazione la prenotazione confermata (canale desk, via internal/domain/booking con audit e outbox),
+        il pagamento manuale (contanti o carta; i contanti richiedono una sessione di cassa aperta) e il biglietto con il
+        numero progressivo del giorno (riparte da 1 ogni giorno nel fuso dello stabilimento, unico per stabilimento su
+        tutte le casse). Con spot_id occupa la postazione (409 spot_unavailable); con zone_id consuma subito la capacità
+        della zona (409 zone_full) e il biglietto resta "da assegnare". Il nome è facoltativo (etichetta in mappa).
+        expected_total, se presente, deve coincidere con il prezzo calcolato (409 price_changed). Permessi bookings.write
+        e cash.operate.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailySaleCreate"
+      responses:
+        "201":
+          description: "Biglietto emesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySaleResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/daily-sale-settings:
+    get:
+      operationId: getDailySaleSettings
+      tags: [tickets]
+      summary: "Impostazioni della vendita giornaliera e della stampa del biglietto"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: "Impostazioni"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySaleSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateDailySaleSettings
+      tags: [tickets]
+      summary: "Aggiorna le impostazioni della vendita giornaliera"
+      description: >-
+        Permesso establishment.configure. Concorrenza ottimistica con If-Match.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailySaleSettingsUpdate"
+      responses:
+        "200":
+          description: "Impostazioni aggiornate"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySaleSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets:
+    get:
+      operationId: listTickets
+      tags: [tickets]
+      summary: "Ticket del giorno (JSON o CSV)"
+      description: >-
+        Biglietti emessi in un giorno con numero, ora, postazione o zona, stato, importo e metodo, più il riepilogo
+        (totali per metodo e per aliquota IVA, coerenti con sessioni di cassa e corrispettivi). format=csv (o
+        Accept: text/csv) esporta il giorno intero (UTF-8 con BOM, separatore ';'). Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: date
+          in: query
+          required: true
+          description: "Giorno dei biglietti."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: state
+          in: query
+          required: false
+          description: "Filtro sullo stato."
+          schema:
+            $ref: "#/components/schemas/TicketState"
+        - name: kind
+          in: query
+          required: false
+          description: "Filtro sul tipo."
+          schema:
+            $ref: "#/components/schemas/TicketKind"
+        - name: zone_id
+          in: query
+          required: false
+          description: "Filtro sulla zona."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/ReportFormat"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Biglietti del giorno"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketList"
+            text/csv:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/unassigned:
+    get:
+      operationId: listUnassignedTickets
+      tags: [tickets]
+      summary: "Biglietti da assegnare (pannello Da assegnare della mappa e Oggi)"
+      description: >-
+        Biglietti validi zone-first del giorno non ancora collocati su una postazione, in ordine di numero. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: date
+          in: query
+          required: true
+          description: "Giorno."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: zone_id
+          in: query
+          required: false
+          description: "Solo questa zona."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: "Biglietti da assegnare"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnassignedTicketList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/auto-assign:
+    post:
+      operationId: autoAssignTickets
+      tags: [tickets]
+      summary: "Assegna automaticamente i biglietti da assegnare del giorno"
+      description: >-
+        Riempie le postazioni libere della zona in ordine (motore greedy di internal/domain/availability, spec 7.5), un
+        biglietto alla volta con l'allocazione atomica: un posto preso nel frattempo da altri finisce in unassigned. Con
+        dry_run non salva. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketAutoAssignRequest"
+      responses:
+        "200":
+          description: "Esito"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketAutoAssignResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/by-code/{bookingCode}:
+    get:
+      operationId: getTicketByCode
+      tags: [tickets]
+      summary: "Biglietto dal codice del QR (controllo)"
+      description: >-
+        Il QR del biglietto contiene il codice della prenotazione. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingCode"
+      responses:
+        "200":
+          description: "Biglietto"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}:
+    get:
+      operationId: getTicket
+      tags: [tickets]
+      summary: "Dettaglio del biglietto"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TicketID"
+      responses:
+        "200":
+          description: "Biglietto"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/print:
+    get:
+      operationId: getTicketPrint
+      tags: [tickets]
+      summary: "Dati di stampa del biglietto (scontrino 80/58 mm, A4, A5)"
+      description: >-
+        Tutto ciò che serve alla stampa dal browser: stabilimento, numero e data, postazione o zona, formula, pack, extra,
+        totale con scorporo IVA, metodo di pagamento e contenuto del QR. Nessuna scrittura. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TicketID"
+        - name: format
+          in: query
+          required: false
+          description: "Formato (default dalle impostazioni)."
+          schema:
+            $ref: "#/components/schemas/TicketPrintFormat"
+      responses:
+        "200":
+          description: "Dati di stampa"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketPrintData"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/reprint:
+    post:
+      operationId: reprintTicket
+      tags: [tickets]
+      summary: "Ristampa del biglietto (conteggio e audit)"
+      description: >-
+        Incrementa print_count, scrive l'audit e restituisce i dati di stampa con la dicitura di ristampa. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TicketID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketReprintRequest"
+      responses:
+        "200":
+          description: "Dati di stampa"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketPrintData"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/void:
+    post:
+      operationId: voidTicket
+      tags: [tickets]
+      summary: "Annulla il biglietto (mantiene il numero, rimborso tramite pagamenti)"
+      description: >-
+        Annulla la prenotazione tramite internal/domain/booking (audit e outbox nella stessa transazione), libera la
+        postazione o la capacità di zona e rimborsa con il driver manuale (refund) o in credito. Il biglietto mantiene il
+        numero ed è marcato annullato. 409 ticket_voided se già annullato, ticket_already_entered se già entrato.
+        Permessi bookings.write e refunds.issue (per il rimborso).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TicketID"
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketVoidRequest"
+      responses:
+        "200":
+          description: "Biglietto annullato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/assign:
+    post:
+      operationId: assignTicket
+      tags: [tickets]
+      summary: "Assegna un biglietto da assegnare a una postazione libera della sua zona"
+      description: >-
+        Allocazione atomica (vincolo unico di spot_allocations): 409 assignment_conflict se la postazione è stata presa
+        nel frattempo, spot_unavailable se non è libera. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TicketID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketAssignRequest"
+      responses:
+        "200":
+          description: "Biglietto assegnato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/move:
+    post:
+      operationId: moveTicket
+      tags: [tickets]
+      summary: "Sposta il biglietto su un'altra postazione"
+      description: >-
+        Spostamento (o riassegnazione) tramite la Move della prenotazione: atomico, 409 se la postazione è occupata.
+        Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/TicketID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketAssignRequest"
+      responses:
+        "200":
+          description: "Biglietto spostato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/entry-gate/check-in:
+    post:
+      operationId: checkInEntryTicket
+      tags: [tickets]
+      summary: "Ingresso al varco: scansione del QR del biglietto"
+      description: >-
+        Un ingresso per biglietto: il primo passaggio registra entered_at (condizionale, mai due volte anche da due
+        telefoni), i successivi rispondono already_entered. outcome descrive l'esito per lo scanner (voided,
+        wrong_date). 404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GateCheckInRequest"
+      responses:
+        "200":
+          description: "Esito del controllo"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GateCheckInResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/entry-ticket-types:
+    get:
+      operationId: listEntryTicketTypes
+      tags: [tickets]
+      summary: "Tipi di biglietto d'ingresso (Adulto, Ridotto, Bambino, ...)"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: "Tipi"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntryTicketTypeList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createEntryTicketType
+      tags: [tickets]
+      summary: "Crea un tipo di biglietto d'ingresso"
+      description: >-
+        Ogni tipo è un pack (prezzo dal motore per periodo tariffario) su una zona in modalità quantity: il pool della
+        zona è la capienza giornaliera condivisa con la vendita online. Permesso establishment.configure.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntryTicketTypeInput"
+      responses:
+        "201":
+          description: "Tipo creato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntryTicketType"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId}:
+    get:
+      operationId: getEntryTicketType
+      tags: [tickets]
+      summary: "Dettaglio del tipo di biglietto d'ingresso"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EntryTicketTypeID"
+      responses:
+        "200":
+          description: "Tipo"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntryTicketType"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updateEntryTicketType
+      tags: [tickets]
+      summary: "Modifica il tipo di biglietto d'ingresso"
+      description: >-
+        Permesso establishment.configure. If-Match obbligatorio.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EntryTicketTypeID"
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntryTicketTypeUpdate"
+      responses:
+        "200":
+          description: "Tipo aggiornato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntryTicketType"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: deleteEntryTicketType
+      tags: [tickets]
+      summary: "Elimina il tipo (o disattivalo se ha già biglietti venduti)"
+      description: >-
+        409 conflict se esistono biglietti venduti: va disattivato (active=false). Permesso establishment.configure.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EntryTicketTypeID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Eliminato"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/entry-sales/quote:
+    post:
+      operationId: quoteEntrySale
+      tags: [tickets]
+      summary: "Prezzo e capienza residua di una vendita di ingressi"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntrySaleQuoteRequest"
+      responses:
+        "200":
+          description: "Preventivo"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntrySaleQuote"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/entry-sales:
+    post:
+      operationId: createEntrySale
+      tags: [tickets]
+      summary: "Vendita di biglietti d'ingresso (stessa numerazione giornaliera)"
+      description: >-
+        Prenotazione confermata sulle zone quantity dei tipi scelti (pool condiviso con l'online, 409 pool_exhausted),
+        pagamento manuale e biglietto numerato con QR per il varco. Permessi bookings.write e cash.operate.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntrySaleCreate"
+      responses:
+        "201":
+          description: "Biglietto emesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySaleResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/payments:
@@ -9590,6 +10423,31 @@ components:
       schema:
         type: string
         pattern: ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$
+    TicketID:
+      name: ticketId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    EntryTicketTypeID:
+      name: entryTicketTypeId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    BookingCode:
+      name: bookingCode
+      in: path
+      required: true
+      description: Codice della prenotazione (contenuto del QR del biglietto).
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 40
     Cursor:
       name: cursor
       in: query
@@ -10068,6 +10926,12 @@ components:
         - waitlist_disabled
         - credit_insufficient
         - season_rollover_conflict
+        - zone_full
+        - assignment_conflict
+        - ticket_number_conflict
+        - ticket_voided
+        - ticket_already_entered
+        - price_changed
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -13689,7 +14553,9 @@ components:
           maxLength: 40
     CustomerInput:
       type: object
-      description: Dati minimi per una prenotazione dal pannello. Email lowercase, telefono E.164.
+      description: >-
+        Dati minimi per una prenotazione dal pannello: solo il cognome è obbligatorio. Email lowercase; telefono E.164
+        facoltativo (ADR 0020), usato per la deduplica solo se presente.
       required: [last_name]
       properties:
         first_name:
@@ -14470,6 +15336,671 @@ components:
           items:
             $ref: "#/components/schemas/AutoUnassigned"
 
+    # ---- Daily sale, tickets and entry tickets (migration 00010) ----
+    TicketKind:
+      type: string
+      enum: [sale, entry]
+      description: "sale = vendita giornaliera di una postazione; entry = biglietto d'ingresso."
+    TicketStatus:
+      type: string
+      enum: [valid, voided]
+      description: Stato memorizzato; un biglietto annullato mantiene il suo numero.
+    TicketState:
+      type: string
+      enum: [assigned, unassigned, issued, entered, voided]
+      description: >-
+        Stato mostrato (derivato): assigned = vendita su una postazione; unassigned = zone-first da assegnare;
+        issued = ingresso non ancora entrato; entered = ingresso registrato al varco; voided = annullato.
+    TicketPaymentMethod:
+      type: string
+      enum: [cash, card]
+      description: Metodo della vendita rapida (driver manuale; i contanti richiedono una sessione di cassa aperta).
+    TicketPrintFormat:
+      type: string
+      enum: [thermal_80, thermal_58, a4, a5]
+      description: Scontrino termico 80 o 58 mm, oppure foglio A4 o A5.
+    DailySaleHolder:
+      type: object
+      description: Dati facoltativi del cliente, solo per l'etichetta in mappa (nessun telefono né email).
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+    DailySalePayment:
+      type: object
+      required: [method]
+      properties:
+        method:
+          $ref: "#/components/schemas/TicketPaymentMethod"
+        cash_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Default la sessione aperta della cassa (obbligatoria per i contanti, 409 cash_session_closed).
+        tendered_amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Contanti ricevuti in centesimi, per calcolare il resto (solo cash).
+    DailySaleQuoteRequest:
+      type: object
+      description: >-
+        Dove: spot_id (spot-first, postazione precisa) oppure zone_id (zone-first, es. "Prima fila"); esattamente
+        uno dei due. Formula dalla fascia: FULL = giornata intera, AM = mattina, PM = pomeriggio.
+      required: [date, slots, pack_id]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        extras:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+    DailySaleQuote:
+      type: object
+      required: [breakdown, total, available, conflicts]
+      properties:
+        breakdown:
+          $ref: "#/components/schemas/PriceBreakdown"
+        total:
+          $ref: "#/components/schemas/Money"
+        available:
+          type: boolean
+          description: La postazione è libera o la zona ha ancora posti per la fascia.
+        zone_free:
+          type: integer
+          minimum: 0
+          description: Posti residui della zona (solo zone-first).
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+    DailySaleCreate:
+      type: object
+      description: Come DailySaleQuoteRequest, più pagamento e nome facoltativo.
+      required: [date, slots, pack_id, payment]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        extras:
+          type: array
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/SimulateExtra"
+        payment:
+          $ref: "#/components/schemas/DailySalePayment"
+        holder:
+          $ref: "#/components/schemas/DailySaleHolder"
+        expected_total:
+          $ref: "#/components/schemas/Money"
+        notes_internal:
+          type: string
+          maxLength: 2000
+    DailySaleResult:
+      type: object
+      required: [ticket, booking_id, payment_id]
+      properties:
+        ticket:
+          $ref: "#/components/schemas/Ticket"
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        payment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        change_amount:
+          $ref: "#/components/schemas/Money"
+    TicketExtra:
+      type: object
+      required: [extra_id, name, quantity, total]
+      properties:
+        extra_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        quantity:
+          type: integer
+          minimum: 1
+        total:
+          $ref: "#/components/schemas/Money"
+    TicketEntryItem:
+      type: object
+      required: [entry_ticket_type_id, name, quantity, total]
+      properties:
+        entry_ticket_type_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        quantity:
+          type: integer
+          minimum: 1
+        total:
+          $ref: "#/components/schemas/Money"
+    Ticket:
+      type: object
+      required: [id, kind, status, state, ticket_date, ticket_number, number_label, booking_id, booking_code, zone_id, zone_name,
+        needs_assignment, slots, formula, extras, entry_items, total_amount, vat, payment_method, print_count, version, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        kind:
+          $ref: "#/components/schemas/TicketKind"
+        status:
+          $ref: "#/components/schemas/TicketStatus"
+        state:
+          $ref: "#/components/schemas/TicketState"
+        ticket_date:
+          $ref: "#/components/schemas/Date"
+        ticket_number:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Progressivo del giorno (riparte da 1 ogni giorno, unico per stabilimento).
+        number_label:
+          type: string
+          description: Numero formattato a tre cifre con cancelletto (es. "#037"), usato in mappa e in stampa.
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_code:
+          type: string
+          description: Codice della prenotazione, contenuto del QR.
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_name:
+          $ref: "#/components/schemas/I18nText"
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Postazione assegnata (assente se da assegnare o per gli ingressi).
+        spot_label:
+          type: string
+        needs_assignment:
+          type: boolean
+          description: Vendita zone-first non ancora collocata ("da assegnare").
+        holder_name:
+          type: string
+          description: Nome facoltativo per l'etichetta in mappa.
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_name:
+          $ref: "#/components/schemas/I18nText"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketExtra"
+        entry_items:
+          type: array
+          description: Righe per tipo di ingresso (solo kind=entry).
+          items:
+            $ref: "#/components/schemas/TicketEntryItem"
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        vat:
+          type: array
+          items:
+            $ref: "#/components/schemas/VatBreakdown"
+        payment_method:
+          $ref: "#/components/schemas/TicketPaymentMethod"
+        payment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        cash_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        print_count:
+          type: integer
+          minimum: 0
+        created_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        voided_at:
+          type: string
+          format: date-time
+        void_reason:
+          type: string
+        refund_payment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        entered_at:
+          type: string
+          format: date-time
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+    TicketMethodTotal:
+      type: object
+      required: [method, count, amount]
+      properties:
+        method:
+          $ref: "#/components/schemas/TicketPaymentMethod"
+        count:
+          type: integer
+          minimum: 0
+        amount:
+          $ref: "#/components/schemas/Money"
+    TicketDaySummary:
+      type: object
+      description: Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso).
+      required: [issued, voided, unassigned, entered, total_amount, by_method, vat]
+      properties:
+        issued:
+          type: integer
+          minimum: 0
+        voided:
+          type: integer
+          minimum: 0
+        unassigned:
+          type: integer
+          minimum: 0
+        entered:
+          type: integer
+          minimum: 0
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        by_method:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketMethodTotal"
+        vat:
+          type: array
+          items:
+            $ref: "#/components/schemas/VatBreakdown"
+    TicketList:
+      type: object
+      required: [items, summary]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+        summary:
+          $ref: "#/components/schemas/TicketDaySummary"
+        next_cursor:
+          type: string
+    UnassignedTicketList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+    TicketAssignRequest:
+      type: object
+      required: [spot_id]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        version:
+          $ref: "#/components/schemas/Version"
+    TicketAutoAssignRequest:
+      type: object
+      required: [date]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Solo questa zona (default tutte).
+        dry_run:
+          type: boolean
+    TicketAutoAssignment:
+      type: object
+      required: [ticket_id, ticket_number, spot_id, spot_label]
+      properties:
+        ticket_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        ticket_number:
+          type: integer
+          format: int64
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+    TicketAutoUnassigned:
+      type: object
+      required: [ticket_id, ticket_number, reason]
+      properties:
+        ticket_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        ticket_number:
+          type: integer
+          format: int64
+        reason:
+          type: string
+          enum: [no_free_spot, conflict]
+    TicketAutoAssignResult:
+      type: object
+      required: [applied, assigned, unassigned]
+      properties:
+        applied:
+          type: boolean
+        assigned:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketAutoAssignment"
+        unassigned:
+          type: array
+          items:
+            $ref: "#/components/schemas/TicketAutoUnassigned"
+    TicketVoidRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        refund:
+          type: string
+          enum: [refund, credit, none]
+          description: >-
+            refund (default) restituisce l'importo con il metodo del biglietto tramite i pagamenti; credit lo accredita
+            al cliente (solo se il biglietto ha un cliente con nome); none annulla senza rimborso.
+        version:
+          $ref: "#/components/schemas/Version"
+    TicketReprintRequest:
+      type: object
+      properties:
+        format:
+          $ref: "#/components/schemas/TicketPrintFormat"
+    TicketPrintEstablishment:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        legal_name:
+          type: string
+        vat_number:
+          type: string
+        address:
+          type: string
+        logo_url:
+          type: string
+    TicketPrintData:
+      type: object
+      required: [format, ticket, establishment, qr_payload, reprint, issued_at]
+      properties:
+        format:
+          $ref: "#/components/schemas/TicketPrintFormat"
+        ticket:
+          $ref: "#/components/schemas/Ticket"
+        establishment:
+          $ref: "#/components/schemas/TicketPrintEstablishment"
+        qr_payload:
+          type: string
+          description: Contenuto del QR (codice della prenotazione).
+        reprint:
+          type: boolean
+          description: Stampa successiva alla prima (dicitura "Ristampa").
+        footer_text:
+          type: string
+        issued_at:
+          type: string
+          format: date-time
+    DailySaleSettings:
+      type: object
+      required: [print_format, auto_print, zone_first_enabled, footer_text, version]
+      properties:
+        print_format:
+          $ref: "#/components/schemas/TicketPrintFormat"
+        auto_print:
+          type: boolean
+          description: Apre la stampa subito dopo la vendita.
+        zone_first_enabled:
+          type: boolean
+          description: Consente la vendita per zona (da assegnare).
+        footer_text:
+          $ref: "#/components/schemas/I18nText"
+        version:
+          $ref: "#/components/schemas/Version"
+    DailySaleSettingsUpdate:
+      type: object
+      required: [print_format, auto_print, zone_first_enabled, footer_text]
+      properties:
+        print_format:
+          $ref: "#/components/schemas/TicketPrintFormat"
+        auto_print:
+          type: boolean
+        zone_first_enabled:
+          type: boolean
+        footer_text:
+          $ref: "#/components/schemas/I18nText"
+    GateCheckInRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Contenuto del QR scansionato (codice della prenotazione).
+    GateCheckInResult:
+      type: object
+      required: [outcome]
+      properties:
+        outcome:
+          type: string
+          enum: [admitted, already_entered, voided, wrong_date]
+        ticket:
+          $ref: "#/components/schemas/Ticket"
+    EntryTicketType:
+      type: object
+      required: [id, code, name, description, pack_id, zone_id, sort_order, active, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Pack prezzato dal motore dei prezzi per periodo tariffario.
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Zona in modalità quantity; il suo pool è la capienza giornaliera condivisa con l'online.
+        sort_order:
+          type: integer
+        active:
+          type: boolean
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    EntryTicketTypeInput:
+      type: object
+      required: [code, name, pack_id, zone_id]
+      properties:
+        code:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9_-]{0,39}$
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        sort_order:
+          type: integer
+        active:
+          type: boolean
+    EntryTicketTypeUpdate:
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        sort_order:
+          type: integer
+        active:
+          type: boolean
+    EntryTicketTypeList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EntryTicketType"
+    EntrySaleItem:
+      type: object
+      required: [entry_ticket_type_id, quantity]
+      properties:
+        entry_ticket_type_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+    EntrySaleQuoteRequest:
+      type: object
+      required: [date, slots, items]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        items:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/EntrySaleItem"
+    EntrySaleQuote:
+      type: object
+      required: [breakdown, total, available, remaining, conflicts]
+      properties:
+        breakdown:
+          $ref: "#/components/schemas/PriceBreakdown"
+        total:
+          $ref: "#/components/schemas/Money"
+        available:
+          type: boolean
+        remaining:
+          type: integer
+          minimum: 0
+          description: Capienza residua minima delle zone coinvolte per la fascia.
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+    EntrySaleCreate:
+      type: object
+      required: [date, slots, items, payment]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        items:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/EntrySaleItem"
+        payment:
+          $ref: "#/components/schemas/DailySalePayment"
+        holder:
+          $ref: "#/components/schemas/DailySaleHolder"
+        expected_total:
+          $ref: "#/components/schemas/Money"
     HoldItem:
       type: object
       description: "Una risorsa da bloccare: spot_id (postazione), zone_id + quantity (capacità di zona) o pool_id + quantity."
@@ -15672,6 +17203,10 @@ components:
           type: boolean
         require_phone:
           type: boolean
+          deprecated: true
+          description: >-
+            Sempre false: il telefono è facoltativo ovunque (decisione del gestore, ADR 0020). Il campo resta per
+            compatibilità con i client esistenti.
         terms:
           $ref: "#/components/schemas/PublicTerms"
     PublicCalendarDay:
@@ -16287,7 +17822,7 @@ components:
         phone:
           type: string
           maxLength: 32
-          description: E.164 o numero italiano; obbligatorio se `require_phone`.
+          description: E.164 o numero italiano; facoltativo (ADR 0020), usato per la deduplica solo se presente.
         locale:
           type: string
           pattern: ^[a-z]{2}$
@@ -16573,6 +18108,9 @@ components:
           type: boolean
         require_phone:
           type: boolean
+          deprecated: true
+          description: >-
+            Ignorato e salvato sempre come false: il telefono è facoltativo ovunque (ADR 0020).
     EmbedSnippets:
       type: object
       required: [page_url, iframe, script]

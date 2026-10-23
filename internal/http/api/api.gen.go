@@ -1017,6 +1017,30 @@ func (e Formula) Valid() bool {
 	}
 }
 
+// Defines values for GateCheckInResultOutcome.
+const (
+	GateCheckInResultOutcomeAdmitted       GateCheckInResultOutcome = "admitted"
+	GateCheckInResultOutcomeAlreadyEntered GateCheckInResultOutcome = "already_entered"
+	GateCheckInResultOutcomeVoided         GateCheckInResultOutcome = "voided"
+	GateCheckInResultOutcomeWrongDate      GateCheckInResultOutcome = "wrong_date"
+)
+
+// Valid indicates whether the value is a known member of the GateCheckInResultOutcome enum.
+func (e GateCheckInResultOutcome) Valid() bool {
+	switch e {
+	case GateCheckInResultOutcomeAdmitted:
+		return true
+	case GateCheckInResultOutcomeAlreadyEntered:
+		return true
+	case GateCheckInResultOutcomeVoided:
+		return true
+	case GateCheckInResultOutcomeWrongDate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for HealthStatusStatus.
 const (
 	HealthStatusStatusOk HealthStatusStatus = "ok"
@@ -1694,6 +1718,7 @@ func (e PricingUnit) Valid() bool {
 
 // Defines values for ProblemType.
 const (
+	ProblemTypeAssignmentConflict         ProblemType = "assignment_conflict"
 	ProblemTypeBadRequest                 ProblemType = "bad_request"
 	ProblemTypeBookingOutsidePeriod       ProblemType = "booking_outside_period"
 	ProblemTypeCashSessionAlreadyOpen     ProblemType = "cash_session_already_open"
@@ -1721,6 +1746,7 @@ const (
 	ProblemTypePolicyViolation            ProblemType = "policy_violation"
 	ProblemTypePoolExhausted              ProblemType = "pool_exhausted"
 	ProblemTypePreconditionRequired       ProblemType = "precondition_required"
+	ProblemTypePriceChanged               ProblemType = "price_changed"
 	ProblemTypeQuotaExceeded              ProblemType = "quota_exceeded"
 	ProblemTypeRateLimited                ProblemType = "rate_limited"
 	ProblemTypeRenewalExpired             ProblemType = "renewal_expired"
@@ -1729,6 +1755,9 @@ const (
 	ProblemTypeSetupTokenInvalid          ProblemType = "setup_token_invalid"
 	ProblemTypeSpotHasFutureAllocations   ProblemType = "spot_has_future_allocations"
 	ProblemTypeSpotUnavailable            ProblemType = "spot_unavailable"
+	ProblemTypeTicketAlreadyEntered       ProblemType = "ticket_already_entered"
+	ProblemTypeTicketNumberConflict       ProblemType = "ticket_number_conflict"
+	ProblemTypeTicketVoided               ProblemType = "ticket_voided"
 	ProblemTypeTotpAlreadyEnabled         ProblemType = "totp_already_enabled"
 	ProblemTypeTotpEnrolmentRequired      ProblemType = "totp_enrolment_required"
 	ProblemTypeTotpRequired               ProblemType = "totp_required"
@@ -1739,11 +1768,14 @@ const (
 	ProblemTypeWaitlistDisabled           ProblemType = "waitlist_disabled"
 	ProblemTypeWaitlistOfferExpired       ProblemType = "waitlist_offer_expired"
 	ProblemTypeWebhookSignatureInvalid    ProblemType = "webhook_signature_invalid"
+	ProblemTypeZoneFull                   ProblemType = "zone_full"
 )
 
 // Valid indicates whether the value is a known member of the ProblemType enum.
 func (e ProblemType) Valid() bool {
 	switch e {
+	case ProblemTypeAssignmentConflict:
+		return true
 	case ProblemTypeBadRequest:
 		return true
 	case ProblemTypeBookingOutsidePeriod:
@@ -1798,6 +1830,8 @@ func (e ProblemType) Valid() bool {
 		return true
 	case ProblemTypePreconditionRequired:
 		return true
+	case ProblemTypePriceChanged:
+		return true
 	case ProblemTypeQuotaExceeded:
 		return true
 	case ProblemTypeRateLimited:
@@ -1813,6 +1847,12 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeSpotHasFutureAllocations:
 		return true
 	case ProblemTypeSpotUnavailable:
+		return true
+	case ProblemTypeTicketAlreadyEntered:
+		return true
+	case ProblemTypeTicketNumberConflict:
+		return true
+	case ProblemTypeTicketVoided:
 		return true
 	case ProblemTypeTotpAlreadyEnabled:
 		return true
@@ -1833,6 +1873,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeWaitlistOfferExpired:
 		return true
 	case ProblemTypeWebhookSignatureInvalid:
+		return true
+	case ProblemTypeZoneFull:
 		return true
 	default:
 		return false
@@ -2748,6 +2790,150 @@ func (e ThemeRadius) Valid() bool {
 	}
 }
 
+// Defines values for TicketAutoUnassignedReason.
+const (
+	TicketAutoUnassignedReasonConflict   TicketAutoUnassignedReason = "conflict"
+	TicketAutoUnassignedReasonNoFreeSpot TicketAutoUnassignedReason = "no_free_spot"
+)
+
+// Valid indicates whether the value is a known member of the TicketAutoUnassignedReason enum.
+func (e TicketAutoUnassignedReason) Valid() bool {
+	switch e {
+	case TicketAutoUnassignedReasonConflict:
+		return true
+	case TicketAutoUnassignedReasonNoFreeSpot:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TicketKind.
+const (
+	Entry TicketKind = "entry"
+	Sale  TicketKind = "sale"
+)
+
+// Valid indicates whether the value is a known member of the TicketKind enum.
+func (e TicketKind) Valid() bool {
+	switch e {
+	case Entry:
+		return true
+	case Sale:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TicketPaymentMethod.
+const (
+	TicketPaymentMethodCard TicketPaymentMethod = "card"
+	TicketPaymentMethodCash TicketPaymentMethod = "cash"
+)
+
+// Valid indicates whether the value is a known member of the TicketPaymentMethod enum.
+func (e TicketPaymentMethod) Valid() bool {
+	switch e {
+	case TicketPaymentMethodCard:
+		return true
+	case TicketPaymentMethodCash:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TicketPrintFormat.
+const (
+	A4        TicketPrintFormat = "a4"
+	A5        TicketPrintFormat = "a5"
+	Thermal58 TicketPrintFormat = "thermal_58"
+	Thermal80 TicketPrintFormat = "thermal_80"
+)
+
+// Valid indicates whether the value is a known member of the TicketPrintFormat enum.
+func (e TicketPrintFormat) Valid() bool {
+	switch e {
+	case A4:
+		return true
+	case A5:
+		return true
+	case Thermal58:
+		return true
+	case Thermal80:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TicketState.
+const (
+	TicketStateAssigned   TicketState = "assigned"
+	TicketStateEntered    TicketState = "entered"
+	TicketStateIssued     TicketState = "issued"
+	TicketStateUnassigned TicketState = "unassigned"
+	TicketStateVoided     TicketState = "voided"
+)
+
+// Valid indicates whether the value is a known member of the TicketState enum.
+func (e TicketState) Valid() bool {
+	switch e {
+	case TicketStateAssigned:
+		return true
+	case TicketStateEntered:
+		return true
+	case TicketStateIssued:
+		return true
+	case TicketStateUnassigned:
+		return true
+	case TicketStateVoided:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TicketStatus.
+const (
+	TicketStatusValid  TicketStatus = "valid"
+	TicketStatusVoided TicketStatus = "voided"
+)
+
+// Valid indicates whether the value is a known member of the TicketStatus enum.
+func (e TicketStatus) Valid() bool {
+	switch e {
+	case TicketStatusValid:
+		return true
+	case TicketStatusVoided:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TicketVoidRequestRefund.
+const (
+	TicketVoidRequestRefundCredit TicketVoidRequestRefund = "credit"
+	TicketVoidRequestRefundNone   TicketVoidRequestRefund = "none"
+	TicketVoidRequestRefundRefund TicketVoidRequestRefund = "refund"
+)
+
+// Valid indicates whether the value is a known member of the TicketVoidRequestRefund enum.
+func (e TicketVoidRequestRefund) Valid() bool {
+	switch e {
+	case TicketVoidRequestRefundCredit:
+		return true
+	case TicketVoidRequestRefundNone:
+		return true
+	case TicketVoidRequestRefundRefund:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TopCustomersSort.
 const (
 	TopCustomersSortBookings TopCustomersSort = "bookings"
@@ -3417,7 +3603,7 @@ type BookingCreate struct {
 	// Channel Canale di vendita.
 	Channel *Channel `json:"channel,omitempty"`
 
-	// Customer Dati minimi per una prenotazione dal pannello. Email lowercase, telefono E.164.
+	// Customer Dati minimi per una prenotazione dal pannello: solo il cognome è obbligatorio. Email lowercase; telefono E.164 facoltativo (ADR 0020), usato per la deduplica solo se presente.
 	Customer   *CustomerInput `json:"customer,omitempty"`
 	CustomerId *string        `json:"customer_id,omitempty"`
 
@@ -3933,7 +4119,7 @@ type CheckoutCustomerInput struct {
 	MarketingConsent bool    `json:"marketing_consent"`
 	Notes            *string `json:"notes,omitempty"`
 
-	// Phone E.164 o numero italiano; obbligatorio se `require_phone`.
+	// Phone E.164 o numero italiano; facoltativo (ADR 0020), usato per la deduplica solo se presente.
 	Phone     *string `json:"phone,omitempty"`
 	PromoCode *string `json:"promo_code,omitempty"`
 }
@@ -4329,7 +4515,7 @@ type CustomerExport struct {
 	Payments   []Payment        `json:"payments"`
 }
 
-// CustomerInput Dati minimi per una prenotazione dal pannello. Email lowercase, telefono E.164.
+// CustomerInput Dati minimi per una prenotazione dal pannello: solo il cognome è obbligatorio. Email lowercase; telefono E.164 facoltativo (ADR 0020), usato per la deduplica solo se presente.
 type CustomerInput struct {
 	AgreementId *string              `json:"agreement_id,omitempty"`
 	Email       *openapi_types.Email `json:"email,omitempty"`
@@ -4379,6 +4565,114 @@ type CustomerStats struct {
 
 	// TotalSpent Importo in centesimi di euro (IVA inclusa).
 	TotalSpent Money `json:"total_spent"`
+}
+
+// DailySaleCreate Come DailySaleQuoteRequest, più pagamento e nome facoltativo.
+type DailySaleCreate struct {
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date Date `json:"date"`
+
+	// ExpectedTotal Importo in centesimi di euro (IVA inclusa).
+	ExpectedTotal *Money           `json:"expected_total,omitempty"`
+	Extras        *[]SimulateExtra `json:"extras,omitempty"`
+
+	// Holder Dati facoltativi del cliente, solo per l'etichetta in mappa (nessun telefono né email).
+	Holder        *DailySaleHolder `json:"holder,omitempty"`
+	NotesInternal *string          `json:"notes_internal,omitempty"`
+	PackId        string           `json:"pack_id"`
+	Payment       DailySalePayment `json:"payment"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots  Slots   `json:"slots"`
+	SpotId *string `json:"spot_id,omitempty"`
+	ZoneId *string `json:"zone_id,omitempty"`
+}
+
+// DailySaleHolder Dati facoltativi del cliente, solo per l'etichetta in mappa (nessun telefono né email).
+type DailySaleHolder struct {
+	FirstName *string `json:"first_name,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+}
+
+// DailySalePayment defines model for DailySalePayment.
+type DailySalePayment struct {
+	// CashSessionId Default la sessione aperta della cassa (obbligatoria per i contanti, 409 cash_session_closed).
+	CashSessionId *string `json:"cash_session_id,omitempty"`
+
+	// Method Metodo della vendita rapida (driver manuale; i contanti richiedono una sessione di cassa aperta).
+	Method TicketPaymentMethod `json:"method"`
+
+	// TenderedAmount Contanti ricevuti in centesimi, per calcolare il resto (solo cash).
+	TenderedAmount *int64 `json:"tendered_amount,omitempty"`
+}
+
+// DailySaleQuote defines model for DailySaleQuote.
+type DailySaleQuote struct {
+	// Available La postazione è libera o la zona ha ancora posti per la fascia.
+	Available bool `json:"available"`
+
+	// Breakdown Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo.
+	Breakdown PriceBreakdown       `json:"breakdown"`
+	Conflicts []AllocationConflict `json:"conflicts"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money `json:"total"`
+
+	// ZoneFree Posti residui della zona (solo zone-first).
+	ZoneFree *int `json:"zone_free,omitempty"`
+}
+
+// DailySaleQuoteRequest Dove: spot_id (spot-first, postazione precisa) oppure zone_id (zone-first, es. "Prima fila"); esattamente uno dei due. Formula dalla fascia: FULL = giornata intera, AM = mattina, PM = pomeriggio.
+type DailySaleQuoteRequest struct {
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date   Date             `json:"date"`
+	Extras *[]SimulateExtra `json:"extras,omitempty"`
+	PackId string           `json:"pack_id"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots  Slots   `json:"slots"`
+	SpotId *string `json:"spot_id,omitempty"`
+	ZoneId *string `json:"zone_id,omitempty"`
+}
+
+// DailySaleResult defines model for DailySaleResult.
+type DailySaleResult struct {
+	BookingId string `json:"booking_id"`
+
+	// ChangeAmount Importo in centesimi di euro (IVA inclusa).
+	ChangeAmount *Money `json:"change_amount,omitempty"`
+	PaymentId    string `json:"payment_id"`
+	Ticket       Ticket `json:"ticket"`
+}
+
+// DailySaleSettings defines model for DailySaleSettings.
+type DailySaleSettings struct {
+	// AutoPrint Apre la stampa subito dopo la vendita.
+	AutoPrint bool `json:"auto_print"`
+
+	// FooterText Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	FooterText I18nText `json:"footer_text"`
+
+	// PrintFormat Scontrino termico 80 o 58 mm, oppure foglio A4 o A5.
+	PrintFormat TicketPrintFormat `json:"print_format"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+
+	// ZoneFirstEnabled Consente la vendita per zona (da assegnare).
+	ZoneFirstEnabled bool `json:"zone_first_enabled"`
+}
+
+// DailySaleSettingsUpdate defines model for DailySaleSettingsUpdate.
+type DailySaleSettingsUpdate struct {
+	AutoPrint bool `json:"auto_print"`
+
+	// FooterText Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	FooterText I18nText `json:"footer_text"`
+
+	// PrintFormat Scontrino termico 80 o 58 mm, oppure foglio A4 o A5.
+	PrintFormat      TicketPrintFormat `json:"print_format"`
+	ZoneFirstEnabled bool              `json:"zone_first_enabled"`
 }
 
 // Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
@@ -4688,6 +4982,113 @@ type EmbedSnippets struct {
 	// PageUrl `<ARENILE_BASE_URL>/b/<slug>`
 	PageUrl string `json:"page_url"`
 	Script  string `json:"script"`
+}
+
+// EntrySaleCreate defines model for EntrySaleCreate.
+type EntrySaleCreate struct {
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date Date `json:"date"`
+
+	// ExpectedTotal Importo in centesimi di euro (IVA inclusa).
+	ExpectedTotal *Money `json:"expected_total,omitempty"`
+
+	// Holder Dati facoltativi del cliente, solo per l'etichetta in mappa (nessun telefono né email).
+	Holder  *DailySaleHolder `json:"holder,omitempty"`
+	Items   []EntrySaleItem  `json:"items"`
+	Payment DailySalePayment `json:"payment"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+}
+
+// EntrySaleItem defines model for EntrySaleItem.
+type EntrySaleItem struct {
+	EntryTicketTypeId string `json:"entry_ticket_type_id"`
+	Quantity          int    `json:"quantity"`
+}
+
+// EntrySaleQuote defines model for EntrySaleQuote.
+type EntrySaleQuote struct {
+	Available bool `json:"available"`
+
+	// Breakdown Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo.
+	Breakdown PriceBreakdown       `json:"breakdown"`
+	Conflicts []AllocationConflict `json:"conflicts"`
+
+	// Remaining Capienza residua minima delle zone coinvolte per la fascia.
+	Remaining int `json:"remaining"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money `json:"total"`
+}
+
+// EntrySaleQuoteRequest defines model for EntrySaleQuoteRequest.
+type EntrySaleQuoteRequest struct {
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date  Date            `json:"date"`
+	Items []EntrySaleItem `json:"items"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+}
+
+// EntryTicketType defines model for EntryTicketType.
+type EntryTicketType struct {
+	Active    bool      `json:"active"`
+	Code      string    `json:"code"`
+	CreatedAt time.Time `json:"created_at"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description I18nText `json:"description"`
+	Id          string   `json:"id"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name I18nText `json:"name"`
+
+	// PackId Pack prezzato dal motore dei prezzi per periodo tariffario.
+	PackId    string    `json:"pack_id"`
+	SortOrder int       `json:"sort_order"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+
+	// ZoneId Zona in modalità quantity; il suo pool è la capienza giornaliera condivisa con l'online.
+	ZoneId string `json:"zone_id"`
+}
+
+// EntryTicketTypeInput defines model for EntryTicketTypeInput.
+type EntryTicketTypeInput struct {
+	Active *bool  `json:"active,omitempty"`
+	Code   string `json:"code"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description *I18nText `json:"description,omitempty"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name      I18nText `json:"name"`
+	PackId    string   `json:"pack_id"`
+	SortOrder *int     `json:"sort_order,omitempty"`
+	ZoneId    string   `json:"zone_id"`
+}
+
+// EntryTicketTypeList defines model for EntryTicketTypeList.
+type EntryTicketTypeList struct {
+	Items []EntryTicketType `json:"items"`
+}
+
+// EntryTicketTypeUpdate defines model for EntryTicketTypeUpdate.
+type EntryTicketTypeUpdate struct {
+	Active *bool `json:"active,omitempty"`
+
+	// Description Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Description *I18nText `json:"description,omitempty"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name      *I18nText `json:"name,omitempty"`
+	PackId    *string   `json:"pack_id,omitempty"`
+	SortOrder *int      `json:"sort_order,omitempty"`
+	ZoneId    *string   `json:"zone_id,omitempty"`
 }
 
 // Establishment defines model for Establishment.
@@ -5066,6 +5467,21 @@ type FixedPriceList struct {
 
 // Formula Formula di durata.
 type Formula string
+
+// GateCheckInRequest defines model for GateCheckInRequest.
+type GateCheckInRequest struct {
+	// Code Contenuto del QR scansionato (codice della prenotazione).
+	Code string `json:"code"`
+}
+
+// GateCheckInResult defines model for GateCheckInResult.
+type GateCheckInResult struct {
+	Outcome GateCheckInResultOutcome `json:"outcome"`
+	Ticket  *Ticket                  `json:"ticket,omitempty"`
+}
+
+// GateCheckInResultOutcome defines model for GateCheckInResult.Outcome.
+type GateCheckInResultOutcome string
 
 // Geo defines model for Geo.
 type Geo struct {
@@ -5651,7 +6067,10 @@ type OnlineFlowConfig struct {
 	// MaxDaysAhead Limite di prenotabilità in giorni (oltre alla policy).
 	MaxDaysAhead      *int `json:"max_days_ahead,omitempty"`
 	PromoCodesEnabled bool `json:"promo_codes_enabled"`
-	RequirePhone      bool `json:"require_phone"`
+
+	// RequirePhone Ignorato e salvato sempre come false: il telefono è facoltativo ovunque (ADR 0020).
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	RequirePhone bool `json:"require_phone"`
 
 	// ShowRatePeriods Evidenzia i periodi tariffari nel calendario pubblico.
 	ShowRatePeriods bool `json:"show_rate_periods"`
@@ -6864,9 +7283,12 @@ type PublicOnlineConfig struct {
 	MinDate           *Date               `json:"min_date,omitempty"`
 	Payment           PublicPaymentConfig `json:"payment"`
 	PromoCodesEnabled bool                `json:"promo_codes_enabled"`
-	RequirePhone      bool                `json:"require_phone"`
-	ShowPricesOnMap   bool                `json:"show_prices_on_map"`
-	ShowRatePeriods   bool                `json:"show_rate_periods"`
+
+	// RequirePhone Sempre false: il telefono è facoltativo ovunque (decisione del gestore, ADR 0020). Il campo resta per compatibilità con i client esistenti.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	RequirePhone    bool `json:"require_phone"`
+	ShowPricesOnMap bool `json:"show_prices_on_map"`
+	ShowRatePeriods bool `json:"show_rate_periods"`
 
 	// Slots Fasce prenotabili online.
 	Slots []Slots `json:"slots"`
@@ -8552,6 +8974,239 @@ type ThemeFontFamily string
 // ThemeRadius defines model for Theme.Radius.
 type ThemeRadius string
 
+// Ticket defines model for Ticket.
+type Ticket struct {
+	// BookingCode Codice della prenotazione, contenuto del QR.
+	BookingCode     string     `json:"booking_code"`
+	BookingId       string     `json:"booking_id"`
+	CashSessionId   *string    `json:"cash_session_id,omitempty"`
+	CreatedAt       time.Time  `json:"created_at"`
+	CreatedByUserId *string    `json:"created_by_user_id,omitempty"`
+	EnteredAt       *time.Time `json:"entered_at,omitempty"`
+
+	// EntryItems Righe per tipo di ingresso (solo kind=entry).
+	EntryItems []TicketEntryItem `json:"entry_items"`
+	Extras     []TicketExtra     `json:"extras"`
+
+	// Formula Formula di durata.
+	Formula Formula `json:"formula"`
+
+	// HolderName Nome facoltativo per l'etichetta in mappa.
+	HolderName *string `json:"holder_name,omitempty"`
+	Id         string  `json:"id"`
+
+	// Kind sale = vendita giornaliera di una postazione; entry = biglietto d'ingresso.
+	Kind TicketKind `json:"kind"`
+
+	// NeedsAssignment Vendita zone-first non ancora collocata ("da assegnare").
+	NeedsAssignment bool `json:"needs_assignment"`
+
+	// NumberLabel Numero formattato a tre cifre con cancelletto (es. "#037"), usato in mappa e in stampa.
+	NumberLabel string  `json:"number_label"`
+	PackId      *string `json:"pack_id,omitempty"`
+
+	// PackName Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	PackName  *I18nText `json:"pack_name,omitempty"`
+	PaymentId *string   `json:"payment_id,omitempty"`
+
+	// PaymentMethod Metodo della vendita rapida (driver manuale; i contanti richiedono una sessione di cassa aperta).
+	PaymentMethod   TicketPaymentMethod `json:"payment_method"`
+	PrintCount      int                 `json:"print_count"`
+	RefundPaymentId *string             `json:"refund_payment_id,omitempty"`
+
+	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
+	Slots Slots `json:"slots"`
+
+	// SpotId Postazione assegnata (assente se da assegnare o per gli ingressi).
+	SpotId    *string `json:"spot_id,omitempty"`
+	SpotLabel *string `json:"spot_label,omitempty"`
+
+	// State Stato mostrato (derivato): assigned = vendita su una postazione; unassigned = zone-first da assegnare; issued = ingresso non ancora entrato; entered = ingresso registrato al varco; voided = annullato.
+	State TicketState `json:"state"`
+
+	// Status Stato memorizzato; un biglietto annullato mantiene il suo numero.
+	Status TicketStatus `json:"status"`
+
+	// TicketDate Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	TicketDate Date `json:"ticket_date"`
+
+	// TicketNumber Progressivo del giorno (riparte da 1 ogni giorno, unico per stabilimento).
+	TicketNumber int64 `json:"ticket_number"`
+
+	// TotalAmount Importo in centesimi di euro (IVA inclusa).
+	TotalAmount Money          `json:"total_amount"`
+	Vat         []VatBreakdown `json:"vat"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version    Version    `json:"version"`
+	VoidReason *string    `json:"void_reason,omitempty"`
+	VoidedAt   *time.Time `json:"voided_at,omitempty"`
+	ZoneId     string     `json:"zone_id"`
+
+	// ZoneName Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	ZoneName I18nText `json:"zone_name"`
+}
+
+// TicketAssignRequest defines model for TicketAssignRequest.
+type TicketAssignRequest struct {
+	SpotId string `json:"spot_id"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version *Version `json:"version,omitempty"`
+}
+
+// TicketAutoAssignRequest defines model for TicketAutoAssignRequest.
+type TicketAutoAssignRequest struct {
+	// Date Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
+	Date   Date  `json:"date"`
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// ZoneId Solo questa zona (default tutte).
+	ZoneId *string `json:"zone_id,omitempty"`
+}
+
+// TicketAutoAssignResult defines model for TicketAutoAssignResult.
+type TicketAutoAssignResult struct {
+	Applied    bool                   `json:"applied"`
+	Assigned   []TicketAutoAssignment `json:"assigned"`
+	Unassigned []TicketAutoUnassigned `json:"unassigned"`
+}
+
+// TicketAutoAssignment defines model for TicketAutoAssignment.
+type TicketAutoAssignment struct {
+	SpotId       string `json:"spot_id"`
+	SpotLabel    string `json:"spot_label"`
+	TicketId     string `json:"ticket_id"`
+	TicketNumber int64  `json:"ticket_number"`
+}
+
+// TicketAutoUnassigned defines model for TicketAutoUnassigned.
+type TicketAutoUnassigned struct {
+	Reason       TicketAutoUnassignedReason `json:"reason"`
+	TicketId     string                     `json:"ticket_id"`
+	TicketNumber int64                      `json:"ticket_number"`
+}
+
+// TicketAutoUnassignedReason defines model for TicketAutoUnassigned.Reason.
+type TicketAutoUnassignedReason string
+
+// TicketDaySummary Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso).
+type TicketDaySummary struct {
+	ByMethod []TicketMethodTotal `json:"by_method"`
+	Entered  int                 `json:"entered"`
+	Issued   int                 `json:"issued"`
+
+	// TotalAmount Importo in centesimi di euro (IVA inclusa).
+	TotalAmount Money          `json:"total_amount"`
+	Unassigned  int            `json:"unassigned"`
+	Vat         []VatBreakdown `json:"vat"`
+	Voided      int            `json:"voided"`
+}
+
+// TicketEntryItem defines model for TicketEntryItem.
+type TicketEntryItem struct {
+	EntryTicketTypeId string `json:"entry_ticket_type_id"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name     I18nText `json:"name"`
+	Quantity int      `json:"quantity"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money `json:"total"`
+}
+
+// TicketExtra defines model for TicketExtra.
+type TicketExtra struct {
+	ExtraId string `json:"extra_id"`
+
+	// Name Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
+	Name     I18nText `json:"name"`
+	Quantity int      `json:"quantity"`
+
+	// Total Importo in centesimi di euro (IVA inclusa).
+	Total Money `json:"total"`
+}
+
+// TicketKind sale = vendita giornaliera di una postazione; entry = biglietto d'ingresso.
+type TicketKind string
+
+// TicketList defines model for TicketList.
+type TicketList struct {
+	Items      []Ticket `json:"items"`
+	NextCursor *string  `json:"next_cursor,omitempty"`
+
+	// Summary Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso).
+	Summary TicketDaySummary `json:"summary"`
+}
+
+// TicketMethodTotal defines model for TicketMethodTotal.
+type TicketMethodTotal struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount Money `json:"amount"`
+	Count  int   `json:"count"`
+
+	// Method Metodo della vendita rapida (driver manuale; i contanti richiedono una sessione di cassa aperta).
+	Method TicketPaymentMethod `json:"method"`
+}
+
+// TicketPaymentMethod Metodo della vendita rapida (driver manuale; i contanti richiedono una sessione di cassa aperta).
+type TicketPaymentMethod string
+
+// TicketPrintData defines model for TicketPrintData.
+type TicketPrintData struct {
+	Establishment TicketPrintEstablishment `json:"establishment"`
+	FooterText    *string                  `json:"footer_text,omitempty"`
+
+	// Format Scontrino termico 80 o 58 mm, oppure foglio A4 o A5.
+	Format   TicketPrintFormat `json:"format"`
+	IssuedAt time.Time         `json:"issued_at"`
+
+	// QrPayload Contenuto del QR (codice della prenotazione).
+	QrPayload string `json:"qr_payload"`
+
+	// Reprint Stampa successiva alla prima (dicitura "Ristampa").
+	Reprint bool   `json:"reprint"`
+	Ticket  Ticket `json:"ticket"`
+}
+
+// TicketPrintEstablishment defines model for TicketPrintEstablishment.
+type TicketPrintEstablishment struct {
+	Address   *string `json:"address,omitempty"`
+	LegalName *string `json:"legal_name,omitempty"`
+	LogoUrl   *string `json:"logo_url,omitempty"`
+	Name      string  `json:"name"`
+	VatNumber *string `json:"vat_number,omitempty"`
+}
+
+// TicketPrintFormat Scontrino termico 80 o 58 mm, oppure foglio A4 o A5.
+type TicketPrintFormat string
+
+// TicketReprintRequest defines model for TicketReprintRequest.
+type TicketReprintRequest struct {
+	// Format Scontrino termico 80 o 58 mm, oppure foglio A4 o A5.
+	Format *TicketPrintFormat `json:"format,omitempty"`
+}
+
+// TicketState Stato mostrato (derivato): assigned = vendita su una postazione; unassigned = zone-first da assegnare; issued = ingresso non ancora entrato; entered = ingresso registrato al varco; voided = annullato.
+type TicketState string
+
+// TicketStatus Stato memorizzato; un biglietto annullato mantiene il suo numero.
+type TicketStatus string
+
+// TicketVoidRequest defines model for TicketVoidRequest.
+type TicketVoidRequest struct {
+	Reason string `json:"reason"`
+
+	// Refund refund (default) restituisce l'importo con il metodo del biglietto tramite i pagamenti; credit lo accredita al cliente (solo se il biglietto ha un cliente con nome); none annulla senza rimborso.
+	Refund *TicketVoidRequestRefund `json:"refund,omitempty"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version *Version `json:"version,omitempty"`
+}
+
+// TicketVoidRequestRefund refund (default) restituisce l'importo con il metodo del biglietto tramite i pagamenti; credit lo accredita al cliente (solo se il biglietto ha un cliente con nome); none annulla senza rimborso.
+type TicketVoidRequestRefund string
+
 // TopCustomerRow defines model for TopCustomerRow.
 type TopCustomerRow struct {
 	Bookings   int    `json:"bookings"`
@@ -8593,6 +9248,11 @@ type TotpEnrollment struct {
 
 	// Secret Segreto base32 da inserire manualmente.
 	Secret string `json:"secret"`
+}
+
+// UnassignedTicketList defines model for UnassignedTicketList.
+type UnassignedTicketList struct {
+	Items []Ticket `json:"items"`
 }
 
 // User defines model for User.
@@ -9015,6 +9675,9 @@ type ApiKeyID = string
 // BackupName defines model for BackupName.
 type BackupName = string
 
+// BookingCode defines model for BookingCode.
+type BookingCode = string
+
 // BookingID defines model for BookingID.
 type BookingID = string
 
@@ -9041,6 +9704,9 @@ type CustomerID = string
 
 // DeviceID defines model for DeviceID.
 type DeviceID = string
+
+// EntryTicketTypeID defines model for EntryTicketTypeID.
+type EntryTicketTypeID = string
 
 // EstablishmentID defines model for EstablishmentID.
 type EstablishmentID = string
@@ -9128,6 +9794,9 @@ type SpotBlockID = string
 
 // TeamUserID defines model for TeamUserID.
 type TeamUserID = string
+
+// TicketID defines model for TicketID.
+type TicketID = string
 
 // WaitlistEntryID defines model for WaitlistEntryID.
 type WaitlistEntryID = string
@@ -9753,6 +10422,35 @@ type CreateCustomerCreditParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// UpdateDailySaleSettingsParams defines parameters for UpdateDailySaleSettings.
+type UpdateDailySaleSettingsParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
+// CreateDailySaleParams defines parameters for CreateDailySale.
+type CreateDailySaleParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// QuoteDailySaleParams defines parameters for QuoteDailySale.
+type QuoteDailySaleParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListDevicesParams defines parameters for ListDevices.
 type ListDevicesParams struct {
 	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
@@ -9792,6 +10490,56 @@ type SendTestEmailParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CheckInEntryTicketParams defines parameters for CheckInEntryTicket.
+type CheckInEntryTicketParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CreateEntrySaleParams defines parameters for CreateEntrySale.
+type CreateEntrySaleParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// QuoteEntrySaleParams defines parameters for QuoteEntrySale.
+type QuoteEntrySaleParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CreateEntryTicketTypeParams defines parameters for CreateEntryTicketType.
+type CreateEntryTicketTypeParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteEntryTicketTypeParams defines parameters for DeleteEntryTicketType.
+type DeleteEntryTicketTypeParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateEntryTicketTypeParams defines parameters for UpdateEntryTicketType.
+type UpdateEntryTicketTypeParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
 }
 
 // ListExtrasParams defines parameters for ListExtras.
@@ -10924,6 +11672,85 @@ type PublishTermsVersionParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListTicketsParams defines parameters for ListTickets.
+type ListTicketsParams struct {
+	// Date Giorno dei biglietti.
+	Date Date `form:"date" json:"date"`
+
+	// State Filtro sullo stato.
+	State *TicketState `form:"state,omitempty" json:"state,omitempty"`
+
+	// Kind Filtro sul tipo.
+	Kind *TicketKind `form:"kind,omitempty" json:"kind,omitempty"`
+
+	// ZoneId Filtro sulla zona.
+	ZoneId *string `form:"zone_id,omitempty" json:"zone_id,omitempty"`
+
+	// Format Formato (default json; in alternativa Accept: text/csv).
+	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// AutoAssignTicketsParams defines parameters for AutoAssignTickets.
+type AutoAssignTicketsParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListUnassignedTicketsParams defines parameters for ListUnassignedTickets.
+type ListUnassignedTicketsParams struct {
+	// Date Giorno.
+	Date Date `form:"date" json:"date"`
+
+	// ZoneId Solo questa zona.
+	ZoneId *string `form:"zone_id,omitempty" json:"zone_id,omitempty"`
+}
+
+// AssignTicketParams defines parameters for AssignTicket.
+type AssignTicketParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// MoveTicketParams defines parameters for MoveTicket.
+type MoveTicketParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// GetTicketPrintParams defines parameters for GetTicketPrint.
+type GetTicketPrintParams struct {
+	// Format Formato (default dalle impostazioni).
+	Format *TicketPrintFormat `form:"format,omitempty" json:"format,omitempty"`
+}
+
+// ReprintTicketParams defines parameters for ReprintTicket.
+type ReprintTicketParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// VoidTicketParams defines parameters for VoidTicket.
+type VoidTicketParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // ListWaitlistEntriesParams defines parameters for ListWaitlistEntries.
 type ListWaitlistEntriesParams struct {
 	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
@@ -11416,6 +12243,15 @@ type UpdateCustomerJSONRequestBody = CustomerInput
 // CreateCustomerCreditJSONRequestBody defines body for CreateCustomerCredit for application/json ContentType.
 type CreateCustomerCreditJSONRequestBody = CustomerCreditCreate
 
+// UpdateDailySaleSettingsJSONRequestBody defines body for UpdateDailySaleSettings for application/json ContentType.
+type UpdateDailySaleSettingsJSONRequestBody = DailySaleSettingsUpdate
+
+// CreateDailySaleJSONRequestBody defines body for CreateDailySale for application/json ContentType.
+type CreateDailySaleJSONRequestBody = DailySaleCreate
+
+// QuoteDailySaleJSONRequestBody defines body for QuoteDailySale for application/json ContentType.
+type QuoteDailySaleJSONRequestBody = DailySaleQuoteRequest
+
 // CreateDevicePairingCodeJSONRequestBody defines body for CreateDevicePairingCode for application/json ContentType.
 type CreateDevicePairingCodeJSONRequestBody = DevicePairingCodeRequest
 
@@ -11424,6 +12260,21 @@ type UpdateEmailSettingsJSONRequestBody = EmailSettingsInput
 
 // SendTestEmailJSONRequestBody defines body for SendTestEmail for application/json ContentType.
 type SendTestEmailJSONRequestBody = EmailTestRequest
+
+// CheckInEntryTicketJSONRequestBody defines body for CheckInEntryTicket for application/json ContentType.
+type CheckInEntryTicketJSONRequestBody = GateCheckInRequest
+
+// CreateEntrySaleJSONRequestBody defines body for CreateEntrySale for application/json ContentType.
+type CreateEntrySaleJSONRequestBody = EntrySaleCreate
+
+// QuoteEntrySaleJSONRequestBody defines body for QuoteEntrySale for application/json ContentType.
+type QuoteEntrySaleJSONRequestBody = EntrySaleQuoteRequest
+
+// CreateEntryTicketTypeJSONRequestBody defines body for CreateEntryTicketType for application/json ContentType.
+type CreateEntryTicketTypeJSONRequestBody = EntryTicketTypeInput
+
+// UpdateEntryTicketTypeJSONRequestBody defines body for UpdateEntryTicketType for application/json ContentType.
+type UpdateEntryTicketTypeJSONRequestBody = EntryTicketTypeUpdate
 
 // CreateExtraJSONRequestBody defines body for CreateExtra for application/json ContentType.
 type CreateExtraJSONRequestBody = ExtraInput
@@ -11553,6 +12404,21 @@ type UpdateTeamMemberJSONRequestBody = TeamMemberUpdate
 
 // PublishTermsVersionJSONRequestBody defines body for PublishTermsVersion for application/json ContentType.
 type PublishTermsVersionJSONRequestBody = TermsVersionInput
+
+// AutoAssignTicketsJSONRequestBody defines body for AutoAssignTickets for application/json ContentType.
+type AutoAssignTicketsJSONRequestBody = TicketAutoAssignRequest
+
+// AssignTicketJSONRequestBody defines body for AssignTicket for application/json ContentType.
+type AssignTicketJSONRequestBody = TicketAssignRequest
+
+// MoveTicketJSONRequestBody defines body for MoveTicket for application/json ContentType.
+type MoveTicketJSONRequestBody = TicketAssignRequest
+
+// ReprintTicketJSONRequestBody defines body for ReprintTicket for application/json ContentType.
+type ReprintTicketJSONRequestBody = TicketReprintRequest
+
+// VoidTicketJSONRequestBody defines body for VoidTicket for application/json ContentType.
+type VoidTicketJSONRequestBody = TicketVoidRequest
 
 // CreateWaitlistEntryJSONRequestBody defines body for CreateWaitlistEntry for application/json ContentType.
 type CreateWaitlistEntryJSONRequestBody = WaitlistEntryCreate
@@ -11832,6 +12698,18 @@ type ServerInterface interface {
 	// ExportCustomer Esportazione GDPR dei dati del cliente (JSON)
 	// (GET /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/export)
 	ExportCustomer(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID)
+	// GetDailySaleSettings Impostazioni della vendita giornaliera e della stampa del biglietto
+	// (GET /api/admin/v1/establishments/{establishmentId}/daily-sale-settings)
+	GetDailySaleSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// UpdateDailySaleSettings Aggiorna le impostazioni della vendita giornaliera
+	// (PUT /api/admin/v1/establishments/{establishmentId}/daily-sale-settings)
+	UpdateDailySaleSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateDailySaleSettingsParams)
+	// CreateDailySale Vendita giornaliera rapida: biglietto numerato e prenotazione confermata
+	// (POST /api/admin/v1/establishments/{establishmentId}/daily-sales)
+	CreateDailySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateDailySaleParams)
+	// QuoteDailySale Prezzo e disponibilità di una vendita giornaliera (nessuna scrittura)
+	// (POST /api/admin/v1/establishments/{establishmentId}/daily-sales/quote)
+	QuoteDailySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params QuoteDailySaleParams)
 	// ListDevices Dispositivi abbinati allo stabilimento
 	// (GET /api/admin/v1/establishments/{establishmentId}/devices)
 	ListDevices(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListDevicesParams)
@@ -11850,6 +12728,30 @@ type ServerInterface interface {
 	// SendTestEmail Invia un'email di prova
 	// (POST /api/admin/v1/establishments/{establishmentId}/email-settings/test)
 	SendTestEmail(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SendTestEmailParams)
+	// CheckInEntryTicket Ingresso al varco: scansione del QR del biglietto
+	// (POST /api/admin/v1/establishments/{establishmentId}/entry-gate/check-in)
+	CheckInEntryTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CheckInEntryTicketParams)
+	// CreateEntrySale Vendita di biglietti d'ingresso (stessa numerazione giornaliera)
+	// (POST /api/admin/v1/establishments/{establishmentId}/entry-sales)
+	CreateEntrySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateEntrySaleParams)
+	// QuoteEntrySale Prezzo e capienza residua di una vendita di ingressi
+	// (POST /api/admin/v1/establishments/{establishmentId}/entry-sales/quote)
+	QuoteEntrySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params QuoteEntrySaleParams)
+	// ListEntryTicketTypes Tipi di biglietto d'ingresso (Adulto, Ridotto, Bambino, ...)
+	// (GET /api/admin/v1/establishments/{establishmentId}/entry-ticket-types)
+	ListEntryTicketTypes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// CreateEntryTicketType Crea un tipo di biglietto d'ingresso
+	// (POST /api/admin/v1/establishments/{establishmentId}/entry-ticket-types)
+	CreateEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateEntryTicketTypeParams)
+	// DeleteEntryTicketType Elimina il tipo (o disattivalo se ha già biglietti venduti)
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId})
+	DeleteEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryTicketTypeId EntryTicketTypeID, params DeleteEntryTicketTypeParams)
+	// GetEntryTicketType Dettaglio del tipo di biglietto d'ingresso
+	// (GET /api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId})
+	GetEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryTicketTypeId EntryTicketTypeID)
+	// UpdateEntryTicketType Modifica il tipo di biglietto d'ingresso
+	// (PATCH /api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId})
+	UpdateEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryTicketTypeId EntryTicketTypeID, params UpdateEntryTicketTypeParams)
 	// ListExtras Elenco extra
 	// (GET /api/admin/v1/establishments/{establishmentId}/extras)
 	ListExtras(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListExtrasParams)
@@ -12195,6 +13097,36 @@ type ServerInterface interface {
 	// PublishTermsVersion Pubblica una nuova versione delle condizioni (immutabile)
 	// (POST /api/admin/v1/establishments/{establishmentId}/terms-versions)
 	PublishTermsVersion(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PublishTermsVersionParams)
+	// ListTickets Ticket del giorno (JSON o CSV)
+	// (GET /api/admin/v1/establishments/{establishmentId}/tickets)
+	ListTickets(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListTicketsParams)
+	// AutoAssignTickets Assegna automaticamente i biglietti da assegnare del giorno
+	// (POST /api/admin/v1/establishments/{establishmentId}/tickets/auto-assign)
+	AutoAssignTickets(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params AutoAssignTicketsParams)
+	// GetTicketByCode Biglietto dal codice del QR (controllo)
+	// (GET /api/admin/v1/establishments/{establishmentId}/tickets/by-code/{bookingCode})
+	GetTicketByCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingCode BookingCode)
+	// ListUnassignedTickets Biglietti da assegnare (pannello Da assegnare della mappa e Oggi)
+	// (GET /api/admin/v1/establishments/{establishmentId}/tickets/unassigned)
+	ListUnassignedTickets(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListUnassignedTicketsParams)
+	// GetTicket Dettaglio del biglietto
+	// (GET /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId})
+	GetTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID)
+	// AssignTicket Assegna un biglietto da assegnare a una postazione libera della sua zona
+	// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/assign)
+	AssignTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params AssignTicketParams)
+	// MoveTicket Sposta il biglietto su un'altra postazione
+	// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/move)
+	MoveTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params MoveTicketParams)
+	// GetTicketPrint Dati di stampa del biglietto (scontrino 80/58 mm, A4, A5)
+	// (GET /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/print)
+	GetTicketPrint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params GetTicketPrintParams)
+	// ReprintTicket Ristampa del biglietto (conteggio e audit)
+	// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/reprint)
+	ReprintTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params ReprintTicketParams)
+	// VoidTicket Annulla il biglietto (mantiene il numero, rimborso tramite pagamenti)
+	// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/void)
+	VoidTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params VoidTicketParams)
 	// ListWaitlistEntries Lista d'attesa in ordine di priorità
 	// (GET /api/admin/v1/establishments/{establishmentId}/waitlist)
 	ListWaitlistEntries(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListWaitlistEntriesParams)
@@ -12804,6 +13736,30 @@ func (_ Unimplemented) ExportCustomer(w http.ResponseWriter, r *http.Request, es
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// GetDailySaleSettings Impostazioni della vendita giornaliera e della stampa del biglietto
+// (GET /api/admin/v1/establishments/{establishmentId}/daily-sale-settings)
+func (_ Unimplemented) GetDailySaleSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateDailySaleSettings Aggiorna le impostazioni della vendita giornaliera
+// (PUT /api/admin/v1/establishments/{establishmentId}/daily-sale-settings)
+func (_ Unimplemented) UpdateDailySaleSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateDailySaleSettingsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateDailySale Vendita giornaliera rapida: biglietto numerato e prenotazione confermata
+// (POST /api/admin/v1/establishments/{establishmentId}/daily-sales)
+func (_ Unimplemented) CreateDailySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateDailySaleParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// QuoteDailySale Prezzo e disponibilità di una vendita giornaliera (nessuna scrittura)
+// (POST /api/admin/v1/establishments/{establishmentId}/daily-sales/quote)
+func (_ Unimplemented) QuoteDailySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params QuoteDailySaleParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListDevices Dispositivi abbinati allo stabilimento
 // (GET /api/admin/v1/establishments/{establishmentId}/devices)
 func (_ Unimplemented) ListDevices(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListDevicesParams) {
@@ -12837,6 +13793,54 @@ func (_ Unimplemented) UpdateEmailSettings(w http.ResponseWriter, r *http.Reques
 // SendTestEmail Invia un'email di prova
 // (POST /api/admin/v1/establishments/{establishmentId}/email-settings/test)
 func (_ Unimplemented) SendTestEmail(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SendTestEmailParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CheckInEntryTicket Ingresso al varco: scansione del QR del biglietto
+// (POST /api/admin/v1/establishments/{establishmentId}/entry-gate/check-in)
+func (_ Unimplemented) CheckInEntryTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CheckInEntryTicketParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateEntrySale Vendita di biglietti d'ingresso (stessa numerazione giornaliera)
+// (POST /api/admin/v1/establishments/{establishmentId}/entry-sales)
+func (_ Unimplemented) CreateEntrySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateEntrySaleParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// QuoteEntrySale Prezzo e capienza residua di una vendita di ingressi
+// (POST /api/admin/v1/establishments/{establishmentId}/entry-sales/quote)
+func (_ Unimplemented) QuoteEntrySale(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params QuoteEntrySaleParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListEntryTicketTypes Tipi di biglietto d'ingresso (Adulto, Ridotto, Bambino, ...)
+// (GET /api/admin/v1/establishments/{establishmentId}/entry-ticket-types)
+func (_ Unimplemented) ListEntryTicketTypes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateEntryTicketType Crea un tipo di biglietto d'ingresso
+// (POST /api/admin/v1/establishments/{establishmentId}/entry-ticket-types)
+func (_ Unimplemented) CreateEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateEntryTicketTypeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteEntryTicketType Elimina il tipo (o disattivalo se ha già biglietti venduti)
+// (DELETE /api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId})
+func (_ Unimplemented) DeleteEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryTicketTypeId EntryTicketTypeID, params DeleteEntryTicketTypeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetEntryTicketType Dettaglio del tipo di biglietto d'ingresso
+// (GET /api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId})
+func (_ Unimplemented) GetEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryTicketTypeId EntryTicketTypeID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateEntryTicketType Modifica il tipo di biglietto d'ingresso
+// (PATCH /api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId})
+func (_ Unimplemented) UpdateEntryTicketType(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, entryTicketTypeId EntryTicketTypeID, params UpdateEntryTicketTypeParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -13527,6 +14531,66 @@ func (_ Unimplemented) ListTermsVersions(w http.ResponseWriter, r *http.Request,
 // PublishTermsVersion Pubblica una nuova versione delle condizioni (immutabile)
 // (POST /api/admin/v1/establishments/{establishmentId}/terms-versions)
 func (_ Unimplemented) PublishTermsVersion(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PublishTermsVersionParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListTickets Ticket del giorno (JSON o CSV)
+// (GET /api/admin/v1/establishments/{establishmentId}/tickets)
+func (_ Unimplemented) ListTickets(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListTicketsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// AutoAssignTickets Assegna automaticamente i biglietti da assegnare del giorno
+// (POST /api/admin/v1/establishments/{establishmentId}/tickets/auto-assign)
+func (_ Unimplemented) AutoAssignTickets(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params AutoAssignTicketsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetTicketByCode Biglietto dal codice del QR (controllo)
+// (GET /api/admin/v1/establishments/{establishmentId}/tickets/by-code/{bookingCode})
+func (_ Unimplemented) GetTicketByCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingCode BookingCode) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListUnassignedTickets Biglietti da assegnare (pannello Da assegnare della mappa e Oggi)
+// (GET /api/admin/v1/establishments/{establishmentId}/tickets/unassigned)
+func (_ Unimplemented) ListUnassignedTickets(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListUnassignedTicketsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetTicket Dettaglio del biglietto
+// (GET /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId})
+func (_ Unimplemented) GetTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// AssignTicket Assegna un biglietto da assegnare a una postazione libera della sua zona
+// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/assign)
+func (_ Unimplemented) AssignTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params AssignTicketParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// MoveTicket Sposta il biglietto su un'altra postazione
+// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/move)
+func (_ Unimplemented) MoveTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params MoveTicketParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetTicketPrint Dati di stampa del biglietto (scontrino 80/58 mm, A4, A5)
+// (GET /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/print)
+func (_ Unimplemented) GetTicketPrint(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params GetTicketPrintParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ReprintTicket Ristampa del biglietto (conteggio e audit)
+// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/reprint)
+func (_ Unimplemented) ReprintTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params ReprintTicketParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// VoidTicket Annulla il biglietto (mantiene il numero, rimborso tramite pagamenti)
+// (POST /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/void)
+func (_ Unimplemented) VoidTicket(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ticketId TicketID, params VoidTicketParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -18066,6 +19130,220 @@ func (siw *ServerInterfaceWrapper) ExportCustomer(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// GetDailySaleSettings operation middleware
+func (siw *ServerInterfaceWrapper) GetDailySaleSettings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetDailySaleSettings(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateDailySaleSettings operation middleware
+func (siw *ServerInterfaceWrapper) UpdateDailySaleSettings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateDailySaleSettingsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateDailySaleSettings(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateDailySale operation middleware
+func (siw *ServerInterfaceWrapper) CreateDailySale(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateDailySaleParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateDailySale(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// QuoteDailySale operation middleware
+func (siw *ServerInterfaceWrapper) QuoteDailySale(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params QuoteDailySaleParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.QuoteDailySale(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListDevices operation middleware
 func (siw *ServerInterfaceWrapper) ListDevices(w http.ResponseWriter, r *http.Request) {
 
@@ -18379,6 +19657,423 @@ func (siw *ServerInterfaceWrapper) SendTestEmail(w http.ResponseWriter, r *http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.SendTestEmail(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CheckInEntryTicket operation middleware
+func (siw *ServerInterfaceWrapper) CheckInEntryTicket(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CheckInEntryTicketParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CheckInEntryTicket(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateEntrySale operation middleware
+func (siw *ServerInterfaceWrapper) CreateEntrySale(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateEntrySaleParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateEntrySale(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// QuoteEntrySale operation middleware
+func (siw *ServerInterfaceWrapper) QuoteEntrySale(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params QuoteEntrySaleParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.QuoteEntrySale(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListEntryTicketTypes operation middleware
+func (siw *ServerInterfaceWrapper) ListEntryTicketTypes(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListEntryTicketTypes(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateEntryTicketType operation middleware
+func (siw *ServerInterfaceWrapper) CreateEntryTicketType(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateEntryTicketTypeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateEntryTicketType(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteEntryTicketType operation middleware
+func (siw *ServerInterfaceWrapper) DeleteEntryTicketType(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryTicketTypeId" -------------
+	var entryTicketTypeId EntryTicketTypeID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryTicketTypeId", chi.URLParam(r, "entryTicketTypeId"), &entryTicketTypeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryTicketTypeId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteEntryTicketTypeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteEntryTicketType(w, r, establishmentId, entryTicketTypeId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetEntryTicketType operation middleware
+func (siw *ServerInterfaceWrapper) GetEntryTicketType(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryTicketTypeId" -------------
+	var entryTicketTypeId EntryTicketTypeID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryTicketTypeId", chi.URLParam(r, "entryTicketTypeId"), &entryTicketTypeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryTicketTypeId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetEntryTicketType(w, r, establishmentId, entryTicketTypeId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateEntryTicketType operation middleware
+func (siw *ServerInterfaceWrapper) UpdateEntryTicketType(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "entryTicketTypeId" -------------
+	var entryTicketTypeId EntryTicketTypeID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "entryTicketTypeId", chi.URLParam(r, "entryTicketTypeId"), &entryTicketTypeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "entryTicketTypeId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateEntryTicketTypeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateEntryTicketType(w, r, establishmentId, entryTicketTypeId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -26167,6 +27862,607 @@ func (siw *ServerInterfaceWrapper) PublishTermsVersion(w http.ResponseWriter, r 
 	handler.ServeHTTP(w, r)
 }
 
+// ListTickets operation middleware
+func (siw *ServerInterfaceWrapper) ListTickets(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListTicketsParams
+
+	// ------------- Required query parameter "date" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "date", r.URL.Query(), &params.Date, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "date"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "date", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "state" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "state", r.URL.Query(), &params.State, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "state"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "state", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "kind" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "kind", r.URL.Query(), &params.Kind, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "kind"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "zone_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "zone_id", r.URL.Query(), &params.ZoneId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "zone_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zone_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListTickets(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AutoAssignTickets operation middleware
+func (siw *ServerInterfaceWrapper) AutoAssignTickets(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AutoAssignTicketsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AutoAssignTickets(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetTicketByCode operation middleware
+func (siw *ServerInterfaceWrapper) GetTicketByCode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "bookingCode" -------------
+	var bookingCode BookingCode
+
+	err = runtime.BindStyledParameterWithOptions("simple", "bookingCode", chi.URLParam(r, "bookingCode"), &bookingCode, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "bookingCode", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetTicketByCode(w, r, establishmentId, bookingCode)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListUnassignedTickets operation middleware
+func (siw *ServerInterfaceWrapper) ListUnassignedTickets(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListUnassignedTicketsParams
+
+	// ------------- Required query parameter "date" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "date", r.URL.Query(), &params.Date, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "date"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "date", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "zone_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "zone_id", r.URL.Query(), &params.ZoneId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "zone_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "zone_id", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListUnassignedTickets(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetTicket operation middleware
+func (siw *ServerInterfaceWrapper) GetTicket(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ticketId" -------------
+	var ticketId TicketID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ticketId", chi.URLParam(r, "ticketId"), &ticketId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ticketId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetTicket(w, r, establishmentId, ticketId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AssignTicket operation middleware
+func (siw *ServerInterfaceWrapper) AssignTicket(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ticketId" -------------
+	var ticketId TicketID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ticketId", chi.URLParam(r, "ticketId"), &ticketId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ticketId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AssignTicketParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AssignTicket(w, r, establishmentId, ticketId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// MoveTicket operation middleware
+func (siw *ServerInterfaceWrapper) MoveTicket(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ticketId" -------------
+	var ticketId TicketID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ticketId", chi.URLParam(r, "ticketId"), &ticketId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ticketId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params MoveTicketParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.MoveTicket(w, r, establishmentId, ticketId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetTicketPrint operation middleware
+func (siw *ServerInterfaceWrapper) GetTicketPrint(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ticketId" -------------
+	var ticketId TicketID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ticketId", chi.URLParam(r, "ticketId"), &ticketId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ticketId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTicketPrintParams
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetTicketPrint(w, r, establishmentId, ticketId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReprintTicket operation middleware
+func (siw *ServerInterfaceWrapper) ReprintTicket(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ticketId" -------------
+	var ticketId TicketID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ticketId", chi.URLParam(r, "ticketId"), &ticketId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ticketId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ReprintTicketParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReprintTicket(w, r, establishmentId, ticketId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// VoidTicket operation middleware
+func (siw *ServerInterfaceWrapper) VoidTicket(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "ticketId" -------------
+	var ticketId TicketID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ticketId", chi.URLParam(r, "ticketId"), &ticketId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ticketId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params VoidTicketParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.VoidTicket(w, r, establishmentId, ticketId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListWaitlistEntries operation middleware
 func (siw *ServerInterfaceWrapper) ListWaitlistEntries(w http.ResponseWriter, r *http.Request) {
 
@@ -30269,6 +32565,72 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/assignments/auto", wrapper.AutoAssign)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/daily-sales/quote", wrapper.QuoteDailySale)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/daily-sales", wrapper.CreateDailySale)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/daily-sale-settings", wrapper.GetDailySaleSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/daily-sale-settings", wrapper.UpdateDailySaleSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets", wrapper.ListTickets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/unassigned", wrapper.ListUnassignedTickets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/auto-assign", wrapper.AutoAssignTickets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/by-code/{bookingCode}", wrapper.GetTicketByCode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}", wrapper.GetTicket)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/print", wrapper.GetTicketPrint)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/reprint", wrapper.ReprintTicket)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/void", wrapper.VoidTicket)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/assign", wrapper.AssignTicket)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/move", wrapper.MoveTicket)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-gate/check-in", wrapper.CheckInEntryTicket)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-ticket-types", wrapper.ListEntryTicketTypes)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-ticket-types", wrapper.CreateEntryTicketType)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId}", wrapper.DeleteEntryTicketType)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId}", wrapper.GetEntryTicketType)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-ticket-types/{entryTicketTypeId}", wrapper.UpdateEntryTicketType)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-sales/quote", wrapper.QuoteEntrySale)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/entry-sales", wrapper.CreateEntrySale)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/payments", wrapper.ListBookingPayments)

@@ -364,6 +364,27 @@ const corrispettiviRoute = createRoute({
   path: 'cassa/corrispettivi',
   component: lazyRouteComponent(() => import('./features/cash'), 'CorrispettiviPage'),
 });
+// ---- Daily sale, tickets and entry tickets (ADR 0020) ----------------------
+const dailySaleRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'vendita-rapida',
+  component: lazyRouteComponent(() => import('./features/daily-sale'), 'DailySalePage'),
+});
+const ticketsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'ticket',
+  component: lazyRouteComponent(() => import('./features/daily-sale'), 'TicketsPage'),
+});
+const entryGateRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'ticket/varco',
+  component: lazyRouteComponent(() => import('./features/entry-tickets'), 'EntryGatePage'),
+});
+const entryTicketTypesRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/entry-tickets',
+  component: lazyRouteComponent(() => import('./features/entry-tickets'), 'EntryTicketTypesPage'),
+});
 const reportsRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'report',
@@ -430,6 +451,10 @@ const routeTree = rootRoute.addChildren([
       seasonRolloverRoute,
       cashRoute,
       corrispettiviRoute,
+      dailySaleRoute,
+      ticketsRoute,
+      entryGateRoute,
+      entryTicketTypesRoute,
       reportsRoute,
       apiKeysRoute,
       webhooksRoute,

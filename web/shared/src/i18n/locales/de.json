@@ -127,6 +127,9 @@
     "renewals": "Verlängerungen",
     "waitlist": "Warteliste",
     "cash": "Kasse",
+    "dailySale": "Schnellverkauf",
+    "tickets": "Tickets des Tages",
+    "entryGate": "Eingang",
     "reports": "Berichte",
     "settings": "Einstellungen",
     "openMenu": "Menü öffnen",
@@ -152,7 +155,8 @@
       "desktop": "Desktop-App",
       "apiKeys": "API-Schlüssel",
       "webhooks": "Webhooks",
-      "seasonRollover": "Neue Saison"
+      "seasonRollover": "Neue Saison",
+      "entryTickets": "Eintrittskarten"
     },
     "operations": "Tagesgeschäft",
     "configGroup": "Konfiguration",
@@ -173,6 +177,8 @@
       "renewals": "Verlängerungskampagnen für Saisonabos mit Vorkaufsrecht.",
       "waitlist": "Anfragen ohne Verfügbarkeit und automatische Angebote bei frei werdenden Plätzen.",
       "cash": "Kassensitzung, Zahlungen und Abschlüsse.",
+      "dailySale": "Tagesverkauf am Schalter: Platz oder Zone, Preis, Zahlung und nummeriertes Ticket.",
+      "tickets": "Heute ausgestellte, zuzuweisende, stornierte und eingelöste Tickets; CSV-Export.",
       "reports": "Auslastung, Umsatz, Kanäle und Exporte.",
       "settings": "Saisons, Pläne, Zonen, Katalog, Preise, Richtlinien, öffentliche Seite und Zahlungen."
     },

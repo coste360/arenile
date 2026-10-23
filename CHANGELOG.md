@@ -13,6 +13,17 @@ offline).
 
 ### Added
 
+- Contratto della **vendita giornaliera** (ADR 0020, spec 14.3): API `daily-sales` (preventivo e vendita su
+  postazione o zona, pagamento contanti/carta, nome facoltativo), `tickets` (Ticket del giorno con riepilogo ed
+  esportazione CSV, dati di stampa, ristampa, annullamento con rimborso, assegnazione, spostamento, assegnazione
+  automatica, ricerca dal QR), `entry-ticket-types`, `entry-sales` ed `entry-gate/check-in`; nuovi tipi di problema
+  `zone_full`, `assignment_conflict`, `ticket_number_conflict`, `ticket_voided`, `ticket_already_entered`,
+  `price_changed`. Migrazione **00010** (SQLite e PostgreSQL): `daily_ticket_counters` (numero progressivo del
+  giorno con upsert atomico), `tickets` con `UNIQUE (establishment_id, ticket_date, ticket_number)`,
+  `entry_ticket_types`, `daily_sale_settings`. Le operazioni rispondono 501 finché i servizi non sono pronti;
+  voci di menu Vendita rapida, Ticket del giorno e Biglietti d'ingresso.
+- Telefono **facoltativo ovunque** (checkout pubblico e pannello): `require_phone` è deprecato e vale sempre false.
+
 - App desktop per macOS: oltre al `.dmg` universale, la CI produce i `.dmg` **solo Apple Silicon**
   (`_macos_arm64`) e **solo Intel** (`_macos_x86_64`), circa metà dimensione, ognuno firmato, notarizzato e
   graffettato, tutti nel bundle per il portale. Se la notarizzazione Apple non finisce entro `NOTARY_TIMEOUT`, il

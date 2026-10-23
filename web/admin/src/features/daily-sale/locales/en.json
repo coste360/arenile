@@ -1,0 +1,28 @@
+{
+  "scaffold": "Feature in preparation.",
+  "sale": {
+    "title": "Quick sale",
+    "description": "Full day, morning or afternoon on a spot or just a zone: price, payment and numbered ticket in one step."
+  },
+  "tickets": {
+    "title": "Today's tickets",
+    "description": "Tickets issued today with number, time, spot or zone, status, amount and method; CSV export."
+  },
+  "assign": {
+    "title": "To assign",
+    "description": "Tickets sold for a zone: pick one, then tap a free spot in its zone."
+  },
+  "print": {
+    "label": "Ticket {{number}}",
+    "reprint": "Reprint",
+    "unassigned": "To assign"
+  },
+  "problems": {
+    "zone_full": "No free spot left in the zone for the chosen slot.",
+    "assignment_conflict": "The spot was just taken: pick another one.",
+    "ticket_number_conflict": "Ticket number already used, please retry.",
+    "ticket_voided": "The ticket is voided.",
+    "ticket_already_entered": "The ticket has already been used to enter.",
+    "price_changed": "The price has changed: check the new total."
+  }
+}

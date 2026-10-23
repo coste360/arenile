@@ -40,7 +40,8 @@
 - Campo codice promozionale.
 
 **Passo 4 — Chi e pagamento**
-- Nome, cognome, email, telefono; nessun account.
+- Nome, cognome ed email obbligatori (servono per la conferma e il link di gestione); telefono facoltativo, usato per
+  la deduplica dei clienti solo se presente (ADR 0020); nessun account.
 - Accettazione delle condizioni (testo dal gestore, versionato) e consenso marketing separato e facoltativo.
 - Countdown visibile della validità del blocco.
 - Pagamento o conferma.

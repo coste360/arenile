@@ -1,0 +1,11 @@
+{
+  "scaffold": "Feature in preparation.",
+  "types": {
+    "title": "Entry tickets",
+    "description": "Entry types (Adult, Reduced, Child, ...) for equipped free beach and pool: price by period and daily capacity shared with online sales."
+  },
+  "gate": {
+    "title": "Gate",
+    "description": "Scan the ticket QR code: one entry per ticket."
+  }
+}

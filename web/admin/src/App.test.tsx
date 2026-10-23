@@ -162,6 +162,8 @@ describe('admin app', () => {
       'Rinnovi',
       "Lista d'attesa",
       'Cassa',
+      'Vendita rapida',
+      'Ticket del giorno',
       'Report',
     ];
     await waitFor(() =>
@@ -266,6 +268,10 @@ describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
     ['/admin/e/e1/abbonamenti', 'Abbonamenti'],
     ['/admin/e/e1/cassa', 'Cassa'],
     ['/admin/e/e1/cassa/corrispettivi', 'Corrispettivi'],
+    ['/admin/e/e1/vendita-rapida', 'Vendita rapida'],
+    ['/admin/e/e1/ticket', 'Ticket del giorno'],
+    ['/admin/e/e1/ticket/varco', 'Varco'],
+    ['/admin/e/e1/config/entry-tickets', "Biglietti d'ingresso"],
     ['/admin/e/e1/report', 'Report'],
     ['/admin/e/e1/config/api-keys', 'Chiavi API'],
     ['/admin/e/e1/config/webhooks', 'Webhook'],

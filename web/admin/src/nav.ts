@@ -27,6 +27,8 @@ import {
   WalletIcon,
   WebhookIcon,
   BanIcon,
+  ReceiptIcon,
+  ZapIcon,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -125,6 +127,25 @@ export const NAV_ITEMS = [
     icon: WalletIcon,
     available: true,
   },
+  // Daily sale (ADR 0020): quick sale and today's tickets, next to Cassa.
+  {
+    to: '/e/$establishmentId/vendita-rapida',
+    section: 'vendita-rapida',
+    labelKey: 'nav.dailySale',
+    descriptionKey: 'admin.placeholder.dailySale',
+    milestone: 'M5',
+    icon: ZapIcon,
+    available: true,
+  },
+  {
+    to: '/e/$establishmentId/ticket',
+    section: 'ticket',
+    labelKey: 'nav.tickets',
+    descriptionKey: 'admin.placeholder.tickets',
+    milestone: 'M5',
+    icon: ReceiptIcon,
+    available: true,
+  },
   {
     to: '/e/$establishmentId/report',
     section: 'report',
@@ -177,6 +198,11 @@ export const CONFIG_NAV_ITEMS = [
     to: '/e/$establishmentId/config/catalog',
     labelKey: 'nav.config.catalog',
     icon: CreditCardIcon,
+  },
+  {
+    to: '/e/$establishmentId/config/entry-tickets',
+    labelKey: 'nav.config.entryTickets',
+    icon: TicketIcon,
   },
   { to: '/e/$establishmentId/pricing', labelKey: 'nav.config.pricing', icon: EuroIcon },
   {
@@ -243,4 +269,5 @@ export type ConfigNavPath = (typeof CONFIG_NAV_ITEMS)[number]['to'];
 export const BREADCRUMB_ONLY_ITEMS = [
   { to: '/e/$establishmentId/config/devices/lan', labelKey: 'nav.config.devicesLan' },
   { to: '/e/$establishmentId/config/seasons/rollover', labelKey: 'nav.config.seasonRollover' },
+  { to: '/e/$establishmentId/ticket/varco', labelKey: 'nav.entryGate' },
 ] as const satisfies readonly { to: string; labelKey: string }[];

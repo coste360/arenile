@@ -274,6 +274,9 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		ope *booking.OutsidePeriodError
 		dup *customer.DuplicateError
 	)
+	if writeTicketing(w, r, err) {
+		return
+	}
 	switch {
 	case errors.As(err, &rl):
 		Write(w, r, RateLimited, RetryAfter(rl.RetryAfter))

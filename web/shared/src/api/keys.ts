@@ -28,7 +28,9 @@ export type EstablishmentArea =
   // M5B: renewal campaigns/proposals, waitlist, customer credit ledgers.
   | 'renewals'
   | 'waitlist'
-  | 'credits';
+  | 'credits'
+  // Daily sale tickets and entry tickets (ADR 0020).
+  | 'tickets';
 
 export const establishmentKeys = {
   /** Every operational query of one establishment. */
@@ -62,6 +64,7 @@ export const TOPIC_AREAS: Record<StreamTopicName, readonly EstablishmentArea[]> 
     'renewals',
     'waitlist',
     'credits',
+    'tickets',
   ],
   'allocation.changed': [
     'operations',
@@ -71,9 +74,10 @@ export const TOPIC_AREAS: Record<StreamTopicName, readonly EstablishmentArea[]> 
     'bookings',
     'season-passes',
     'waitlist',
+    'tickets',
   ],
   'hold.changed': ['operations', 'planning', 'availability', 'holds', 'waitlist'],
-  'cash.changed': ['cash', 'payments', 'fiscal', 'operations', 'bookings'],
+  'cash.changed': ['cash', 'payments', 'fiscal', 'operations', 'bookings', 'tickets'],
   'customer.changed': ['customers', 'bookings', 'operations', 'season-passes', 'credits'],
   'config.changed': ['operations', 'planning', 'availability'],
   event: [],

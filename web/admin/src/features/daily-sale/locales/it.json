@@ -1,0 +1,28 @@
+{
+  "scaffold": "Funzione in preparazione.",
+  "sale": {
+    "title": "Vendita rapida",
+    "description": "Giornata, mattina o pomeriggio su una postazione o solo su una zona: prezzo, incasso e biglietto numerato in un passaggio."
+  },
+  "tickets": {
+    "title": "Ticket del giorno",
+    "description": "Biglietti emessi oggi con numero, ora, postazione o zona, stato, importo e metodo; esportazione CSV."
+  },
+  "assign": {
+    "title": "Da assegnare",
+    "description": "Biglietti venduti per zona: scegline uno e tocca una postazione libera della sua zona."
+  },
+  "print": {
+    "label": "Biglietto {{number}}",
+    "reprint": "Ristampa",
+    "unassigned": "Da assegnare"
+  },
+  "problems": {
+    "zone_full": "Nessun posto libero nella zona per la fascia scelta.",
+    "assignment_conflict": "La postazione è stata appena occupata: scegline un'altra.",
+    "ticket_number_conflict": "Numero del biglietto già usato, riprova.",
+    "ticket_voided": "Il biglietto è annullato.",
+    "ticket_already_entered": "Il biglietto è già stato usato per entrare.",
+    "price_changed": "Il prezzo è cambiato: controlla il nuovo totale."
+  }
+}

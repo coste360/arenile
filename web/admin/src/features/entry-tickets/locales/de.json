@@ -1,0 +1,11 @@
+{
+  "scaffold": "Funktion in Vorbereitung.",
+  "types": {
+    "title": "Eintrittskarten",
+    "description": "Eintrittsarten (Erwachsene, Ermäßigt, Kinder, ...) für ausgestatteten freien Strand und Pool: Preis je Zeitraum und Tageskapazität, geteilt mit dem Online-Verkauf."
+  },
+  "gate": {
+    "title": "Eingang",
+    "description": "QR-Code des Tickets scannen: ein Eintritt pro Ticket."
+  }
+}
