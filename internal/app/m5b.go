@@ -54,5 +54,6 @@ func (a *App) renewalJobs() []jobs.Job {
 }
 
 // renewalSinks are the in-process event sinks of the M5B services: the
-// waitlist offers freed inventory and forgets anonymised customers.
-func (a *App) renewalSinks() []ext.EventSink { return []ext.EventSink{a.Waitlist} }
+// waitlist offers freed inventory and forgets anonymised customers; the
+// renewals convert a proposal as soon as its booking is confirmed.
+func (a *App) renewalSinks() []ext.EventSink { return []ext.EventSink{a.Waitlist, a.Renewals} }

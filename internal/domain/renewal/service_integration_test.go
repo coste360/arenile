@@ -135,11 +135,23 @@ func TestRenewal_CampaignLifecycle(t *testing.T) {
 			t.Fatalf("sync before the webhook: %d %v", n, err)
 		}
 		webhookConfirm(t, x, props[1].BookingID)
-		if n, err := x.rn.Sync(ctx); err != nil || n != 1 {
-			t.Fatalf("sync after the webhook: %d %v", n, err)
+		// The booking.confirmed event converts the proposal at once (event
+		// sink); a redelivery and the next job run change nothing more.
+		var confirmed store.OutboxEvent
+		if err := db.NewSelect().Model(&confirmed).Where("type = ?", event.BookingConfirmed).
+			Where("CAST(payload AS TEXT) LIKE ?", "%"+props[1].BookingID+"%").OrderExpr("occurred_at DESC").Limit(1).Scan(ctx); err != nil {
+			t.Fatalf("booking.confirmed of the renewal: %v", err)
+		}
+		for range 2 {
+			if err := x.rn.Handle(ctx, event.FromRow(confirmed)); err != nil {
+				t.Fatalf("renewal sink: %v", err)
+			}
 		}
 		if p := x.proposal(props[1].ID); p.Status != store.RenewalConverted || *p.ResponseChannel != store.RenewalResponseOnline {
 			t.Fatalf("online proposal: %+v", p)
+		}
+		if n, err := x.rn.Sync(ctx); err != nil || n != 0 {
+			t.Fatalf("sync after the sink: %d %v", n, err)
 		}
 
 		// 2: declined by the customer: spot free again.
