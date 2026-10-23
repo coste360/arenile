@@ -3,25 +3,29 @@ package main
 import (
 	"context"
 	"log/slog"
+	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/coste360/arenile/internal/desktop"
 )
 
-// headlessUI implements desktop.UI without a tray: it logs the panel URL
-// and blocks until Quit or ctx is done. It is the UI of CGO-free builds and
-// the fallback when the tray cannot start (e.g. Linux without a status
-// notifier).
+// headlessUI implements desktop.UI without a tray: it opens the panel in
+// the default browser (unless disabled), logs the URL and blocks until
+// Quit or ctx is done. It is the UI of CGO-free builds and of servers
+// started with -no-tray; the tray UI reuses it for browser, folder and
+// notification handling.
 type headlessUI struct {
-	log  *slog.Logger
-	once sync.Once
-	quit chan struct{}
+	log     *slog.Logger
+	browser bool
+	once    sync.Once
+	quit    chan struct{}
 }
 
 var _ desktop.UI = (*headlessUI)(nil)
 
-func newHeadlessUI(log *slog.Logger) *headlessUI {
-	return &headlessUI{log: log, quit: make(chan struct{})}
+func newHeadlessUI(log *slog.Logger, browser bool) *headlessUI {
+	return &headlessUI{log: log, browser: browser, quit: make(chan struct{})}
 }
 
 func (h *headlessUI) Run(ctx context.Context, _ []desktop.MenuItem) error {
@@ -34,29 +38,36 @@ func (h *headlessUI) Run(ctx context.Context, _ []desktop.MenuItem) error {
 
 func (h *headlessUI) SetMenu([]desktop.MenuItem) {}
 
-// OpenURL logs the URL (never with the first-run token: the launcher passes
-// it in the fragment and the headless UI strips it).
+// OpenURL opens the URL and logs it without the fragment: the first-run
+// token travels in the fragment and never reaches a log.
 func (h *headlessUI) OpenURL(url string) error {
-	h.log.Info("arenile desktop: open the panel in the browser", slog.String("url", stripFragment(url)))
-	return nil
+	h.log.Info("arenile desktop: panel", slog.String("url", stripFragment(url)))
+	if !h.browser {
+		return nil
+	}
+	return desktop.OpenTarget(context.Background(), runtime.GOOS, url)
 }
 
 func (h *headlessUI) OpenFolder(path string) error {
 	h.log.Info("arenile desktop: data folder", slog.String("path", path))
-	return nil
+	if !h.browser {
+		return nil
+	}
+	return desktop.OpenTarget(context.Background(), runtime.GOOS, path)
 }
 
 func (h *headlessUI) Notify(title, message string) {
-	h.log.Info(title, slog.String("message", message))
+	h.log.Info("arenile desktop: notification", slog.String("title", title), slog.String("message", message))
+	if h.browser {
+		_ = desktop.Notify(context.Background(), runtime.GOOS, title, message)
+	}
 }
 
 func (h *headlessUI) Quit() { h.once.Do(func() { close(h.quit) }) }
 
 func stripFragment(u string) string {
-	for i := 0; i < len(u); i++ {
-		if u[i] == '#' {
-			return u[:i]
-		}
+	if i := strings.IndexByte(u, '#'); i >= 0 {
+		return u[:i]
 	}
 	return u
 }
