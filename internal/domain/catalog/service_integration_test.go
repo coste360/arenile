@@ -3,10 +3,10 @@
 package catalog_test
 
 import (
-	"reflect"
 	"context"
 	"encoding/json"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
