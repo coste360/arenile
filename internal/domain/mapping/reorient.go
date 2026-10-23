@@ -43,6 +43,16 @@ const (
 
 // ReorientTransform returns the transform that moves the sea from one side
 // to another (pure). Opposite sides mirror, adjacent sides rotate.
+//
+// Product decision (ADR 0014, point 7): a mirror for opposite sides keeps
+// the order along the shore (A1 stays on the left when the sea moves from
+// top to bottom), which is what the manager expects of "the same lido drawn
+// the other way up". The price is that transforms do not compose across
+// paths: top -> right -> bottom (two quarter turns, a 180° rotation) reverses
+// the order along the shore while top -> bottom (mirror) keeps it, so the
+// same map can end in two different layouts depending on the path taken.
+// Each single step is reversible (TestReorientLayout_PropertyRoundTripIsIdentity);
+// TestReorientLayout_PathsDoNotCompose documents the difference.
 func ReorientTransform(from, to string) Transform {
 	if from == to {
 		return TransformNone

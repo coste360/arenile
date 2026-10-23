@@ -137,6 +137,41 @@ func TestReorientLayout_MirrorKeepsShoreOrder(t *testing.T) {
 	}
 }
 
+// TestReorientLayout_PathsDoNotCompose pins the documented product decision:
+// top -> bottom is a mirror (shore order kept) while top -> right -> bottom is
+// two quarter turns (shore order reversed), so the two paths differ.
+func TestReorientLayout_PathsDoNotCompose(t *testing.T) {
+	direct, tr, err := ReorientLayout(reorientFixture(), SeaBottom)
+	if err != nil || tr != TransformMirrorY {
+		t.Fatalf("direct: %s %v", tr, err)
+	}
+	viaRight, _, err := ReorientLayout(reorientFixture(), SeaRight)
+	if err != nil {
+		t.Fatal(err)
+	}
+	twoTurns, tr2, err := ReorientLayout(viaRight, SeaBottom)
+	if err != nil || tr2 != TransformRotateCW {
+		t.Fatalf("second turn: %s %v", tr2, err)
+	}
+	if twoTurns.Map.SeaSide != direct.Map.SeaSide || twoTurns.Map.Width != direct.Map.Width {
+		t.Fatalf("same side and size expected: %+v vs %+v", twoTurns.Map, direct.Map)
+	}
+	d1, d2 := direct.Spots[0], direct.Spots[1]     // A1, A2 after the mirror
+	r1, r2 := twoTurns.Spots[0], twoTurns.Spots[1] // A1, A2 after two turns
+	if !(d1.X < d2.X) {
+		t.Fatalf("mirror must keep A1 left of A2: %v %v", d1.X, d2.X)
+	}
+	if !(r1.X > r2.X) {
+		t.Fatalf("two quarter turns must reverse the shore order: %v %v", r1.X, r2.X)
+	}
+	for _, sp := range []struct{ a, b SpotInput }{{d1, r1}, {d2, r2}} {
+		if math.Abs(seaDistance(SeaBottom, sp.a.X, sp.a.Y, float64(direct.Map.Width), float64(direct.Map.Height))-
+			seaDistance(SeaBottom, sp.b.X, sp.b.Y, float64(twoTurns.Map.Width), float64(twoTurns.Map.Height))) > 1e-6 {
+			t.Fatalf("both paths keep the distance from the sea: %+v %+v", sp.a, sp.b)
+		}
+	}
+}
+
 func TestReorientLayout_RotationsAndTiles(t *testing.T) {
 	in := reorientFixture()
 	tests := []struct {

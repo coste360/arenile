@@ -22,6 +22,13 @@ import (
 //
 // Customer data: only first_name, last_name and anonymized_at are ever
 // selected (spec 23); never email, phone, notes or address.
+//
+// TODO(M5 part B, spec 15.4): test bookings must be excluded from every
+// report and export. The bookings table has no test flag yet; when the
+// column lands, add the filter to every query of this file (through
+// ReportNotSoldStatuses-like shared predicate) and drop the guard
+// TestReportQueries_TestBookingsFlagNotYetFiltered, which fails as soon as
+// a test column appears on bookings without this file being updated.
 
 // Booking statuses as stored in bookings.status (the state machine lives in
 // internal/domain/booking; the reports only read them).
