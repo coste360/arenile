@@ -1,0 +1,45 @@
+Subject: Buchung LD-2027-000001 bestätigt – Lido Delfino
+
+Ihre Buchung ist bestätigt
+==========================
+
+Hallo Mario, vielen Dank, dass Sie sich für Lido Delfino entschieden haben. Hier ist die Übersicht Ihrer Buchung.
+
+Code: LD-2027-000001
+Gebucht von: Mario Rossi
+Datum: Von Samstag, 10. Juli 2027 bis Montag, 12. Juli 2027
+Zeitfenster: Ganzer Tag
+Bereich: Erste Reihe
+Plätze: A1
+Paket: Ombrellone e 2 lettini
+Extras: Zusätzliche Liege × 2
+Gesamt: 1.234,50 €
+Bezahlt: 300,00 €
+Fällige Anzahlung: 70,00 €
+Offener Betrag: 934,50 €
+
+Zeigen Sie diesen Code bei Ihrer Ankunft an der Kasse vor.
+LD-2027-000001
+
+Buchung verwalten:
+https://arenile.example/b/lido-delfino/m/TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_A
+
+Auf der Buchungsseite sehen Sie alle Details, können den Restbetrag zahlen und die Buchung im Rahmen der Bedingungen ändern oder stornieren. Der Link ist persönlich und bis Freitag, 13. August 2027 gültig.
+
+Mit der angehängten Datei können Sie die Buchung Ihrem Kalender hinzufügen.
+
+Stornobedingungen
+- Bis 7 Tage vor Ankunft: 100 % Erstattung
+- Bis 2 Tage vor Ankunft: 50 % Guthaben
+- Nach diesen Fristen ist der bezahlte Betrag nicht erstattungsfähig.
+- Sie können die Buchung bis 3 Tage vor Ankunft ändern.
+
+Bis bald am Strand!
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Service-E-Mail zu Ihrer Buchung bei Lido Delfino. Sie enthält weder Werbung noch Tracking.

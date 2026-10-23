@@ -1,0 +1,16 @@
+Subject: Test-E-Mail von Lido Delfino
+
+Test-E-Mail
+===========
+
+Wenn Sie diese Nachricht lesen, funktioniert der E-Mail-Versand von Lido Delfino.
+
+Absender, Antwortadresse und Benachrichtigungen werden unter Konfiguration › E-Mail eingestellt.
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Automatische Arenile-Benachrichtigung für Lido Delfino.

@@ -15,6 +15,9 @@
 #   docker compose exec -e ARENILE_ADMIN_PASSWORD=password-di-prova arenile \
 #     /arenile admin create --email titolare@lido.test --name "Mario Rossi" --org "Lido Prova"
 #
+# Le email transazionali (conferme, link di gestione, prove) vanno a Mailpit,
+# che le cattura senza consegnarle: interfaccia su http://localhost:8025.
+#
 # NON usare questo file in produzione: vedi deploy/docker-compose.yml.
 name: arenile-dev
 
@@ -40,6 +43,10 @@ services:
       ARENILE_BOOTSTRAP_OWNER_NAME: "${ARENILE_BOOTSTRAP_OWNER_NAME:-}"
       ARENILE_BOOTSTRAP_OWNER_ORG: "${ARENILE_BOOTSTRAP_OWNER_ORG:-}"
       ARENILE_ADMIN_PASSWORD: "${ARENILE_ADMIN_PASSWORD:-}"
+      ARENILE_SMTP_URL: "${ARENILE_SMTP_URL:-smtp://mailpit:1025}"
+      ARENILE_MAIL_FROM: "${ARENILE_MAIL_FROM:-noreply@arenile.localhost}"
+    depends_on:
+      - mailpit
     read_only: true
     tmpfs:
       - /tmp
@@ -47,6 +54,16 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+
+  # SMTP di sviluppo (MIT): cattura le email di Arenile, non le consegna mai.
+  mailpit:
+    image: axllent/mailpit:v1.21.0
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    environment:
+      MP_MAX_MESSAGES: "500"
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   arenile-dev-data:

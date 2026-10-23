@@ -1,0 +1,27 @@
+Subject: Anfrage LD-2027-000001 freigeben
+
+Buchung freigeben
+=================
+
+Die Anfrage LD-2027-000001 von Mario Rossi wartet im Verwaltungsbereich (Buchungen) auf Ihre Freigabe.
+
+Code: LD-2027-000001
+Gebucht von: Mario Rossi
+Datum: Von Samstag, 10. Juli 2027 bis Montag, 12. Juli 2027
+Zeitfenster: Ganzer Tag
+Bereich: Erste Reihe
+Plätze: A1
+Paket: Ombrellone e 2 lettini
+Extras: Zusätzliche Liege × 2
+Gesamt: 1.234,50 €
+Bezahlt: 300,00 €
+Fällige Anzahlung: 70,00 €
+Offener Betrag: 934,50 €
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Automatische Arenile-Benachrichtigung für Lido Delfino.

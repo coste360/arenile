@@ -1,0 +1,27 @@
+Subject: Nuova prenotazione online LD-2027-000001
+
+Nuova prenotazione online
+=========================
+
+È arrivata la prenotazione online LD-2027-000001 di Mario Rossi.
+
+Codice: LD-2027-000001
+Intestatario: Mario Rossi
+Date: Dal sabato 10 luglio 2027 al lunedì 12 luglio 2027
+Fascia: Giornata intera
+Zona: Prima fila
+Postazioni: A1
+Pacchetto: Ombrellone e 2 lettini
+Extra: Lettino aggiuntivo × 2
+Totale: 1.234,50 €
+Pagato: 300,00 €
+Acconto richiesto: 70,00 €
+Saldo da pagare: 934,50 €
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Notifica automatica di Arenile per Lido Delfino.

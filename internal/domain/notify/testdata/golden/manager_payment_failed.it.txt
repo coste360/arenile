@@ -1,0 +1,14 @@
+Subject: Pagamento non riuscito per LD-2027-000001
+
+Pagamento non riuscito
+======================
+
+Il pagamento online di 370,00 € per la prenotazione LD-2027-000001 non è andato a buon fine. Il cliente può riprovare finché il blocco è valido; controlla la prenotazione dal pannello.
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Notifica automatica di Arenile per Lido Delfino.

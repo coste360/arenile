@@ -21,7 +21,12 @@ type Job struct {
 	RunOnStart bool
 	// Timeout bounds one run (default: Interval, at least 30s).
 	Timeout time.Duration
-	Run     func(ctx context.Context) error
+	// Wake is optional: every receive runs the job right away instead of
+	// waiting for the next tick (a producer signals new work, e.g. a queued
+	// email). Signals that arrive while the job runs are coalesced by the
+	// producer's buffered channel.
+	Wake <-chan struct{}
+	Run  func(ctx context.Context) error
 }
 
 // ErrUnknownJob is returned by RunNow for unregistered jobs.
@@ -116,6 +121,8 @@ func (r *Runner) loop(ctx context.Context, j Job) {
 		case <-ctx.Done():
 			return
 		case <-t.C:
+			_ = r.runOnce(ctx, j)
+		case <-j.Wake: // nil channel: never ready
 			_ = r.runOnce(ctx, j)
 		}
 	}

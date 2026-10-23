@@ -106,3 +106,26 @@ func TestRunner_TimeoutCancelsRun(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestRunner_WakeRunsEarly(t *testing.T) {
+	r := NewRunner(nil)
+	wake := make(chan struct{}, 1)
+	ran := make(chan struct{}, 4)
+	if err := r.Register(Job{Name: "w", Interval: time.Hour, Wake: wake, Run: func(context.Context) error {
+		ran <- struct{}{}
+		return nil
+	}}); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	r.Start(ctx)
+	defer func() { cancel(); r.Wait() }()
+	for i := range 2 {
+		wake <- struct{}{}
+		select {
+		case <-ran:
+		case <-time.After(2 * time.Second):
+			t.Fatalf("wake %d did not run the job (interval is one hour)", i)
+		}
+	}
+}
