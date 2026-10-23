@@ -45,7 +45,7 @@ func (h *headlessUI) OpenURL(url string) error {
 	if !h.browser {
 		return nil
 	}
-	return desktop.OpenTarget(context.Background(), runtime.GOOS, url)
+	return desktop.OpenURL(context.Background(), runtime.GOOS, url)
 }
 
 func (h *headlessUI) OpenFolder(path string) error {
@@ -53,7 +53,7 @@ func (h *headlessUI) OpenFolder(path string) error {
 	if !h.browser {
 		return nil
 	}
-	return desktop.OpenTarget(context.Background(), runtime.GOOS, path)
+	return desktop.OpenFolder(context.Background(), runtime.GOOS, path)
 }
 
 func (h *headlessUI) Notify(title, message string) {

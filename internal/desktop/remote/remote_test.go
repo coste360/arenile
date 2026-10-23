@@ -78,6 +78,22 @@ func TestWindowHelpers(t *testing.T) {
 	if !IsExternal("http://127.0.0.1:5/admin/", "https://coste360.it/") || IsExternal("http://127.0.0.1:5/admin/", "http://127.0.0.1:5/x") {
 		t.Fatal("IsExternal")
 	}
+	// The binding opens web links of other origins only: never local
+	// programs, files or custom schemes, even though they are "external".
+	panel := "http://127.0.0.1:5/admin/"
+	for _, ok := range []string{"https://coste360.it/", "mailto:info@lido.example", "http://192.168.1.20:8443/admin/"} {
+		if !AllowExternal(panel, ok) {
+			t.Errorf("AllowExternal(%q) = false", ok)
+		}
+	}
+	for _, bad := range []string{
+		"http://127.0.0.1:5/other", "file:/Applications/Terminal.app", "/Applications/Calculator.app",
+		`C:\Windows\System32\calc.exe`, `\\host\share\evil.exe`, "javascript:alert(1)", "arenile://pair?d=x", "-n",
+	} {
+		if AllowExternal(panel, bad) {
+			t.Errorf("AllowExternal(%q) = true", bad)
+		}
+	}
 	args := KioskArgs("http://127.0.0.1:5/admin/", "/tmp/p")
 	if args[0] != "--kiosk" || args[1] != "--app=http://127.0.0.1:5/admin/" || args[len(args)-1] != "--user-data-dir=/tmp/p" {
 		t.Fatal(args)

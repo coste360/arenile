@@ -43,8 +43,9 @@ func (webviewWindow) Open(ctx context.Context, o WindowOptions) error {
 	}
 	w.SetSize(o.Width, o.Height, hint)
 	if o.OpenExternal != nil {
+		// Security boundary: see AllowExternal (window.go).
 		_ = w.Bind("arenileOpenExternal", func(u string) error {
-			if !IsExternal(o.URL, u) {
+			if !AllowExternal(o.URL, u) {
 				return nil
 			}
 			return o.OpenExternal(u)

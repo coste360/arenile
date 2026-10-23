@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+
+	"github.com/coste360/arenile/internal/desktop"
 )
 
 // WindowOptions configure the panel window of the remote mode.
@@ -64,6 +66,17 @@ func IsExternal(panelURL, target string) bool {
 		return false
 	}
 	return t.Scheme+"://"+t.Host != p.Scheme+"://"+p.Host
+}
+
+// AllowExternal is the policy of the arenileOpenExternal binding (pure):
+// the window hands to the default browser only web links (http, https,
+// mailto: desktop.IsWebLink) of another origin. The binding stays
+// callable by any script in the window, including a page the window was
+// navigated to, so this check, not the injected click handler, is the
+// security boundary: no file:, path, UNC path or custom scheme ever
+// reaches the operating system.
+func AllowExternal(panelURL, target string) bool {
+	return desktop.IsWebLink(target) && IsExternal(panelURL, target)
 }
 
 // BrowserWindow is the fallback Window: the default browser, or, in kiosk

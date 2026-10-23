@@ -64,10 +64,51 @@ func TestOpenCommand_PerOS(t *testing.T) {
 			t.Errorf("%s %s: %s %v", tt.goos, tt.target, name, args)
 		}
 	}
-	for _, bad := range []string{"file:///etc/passwd", "javascript://x", "-n"} {
-		if err := OpenTarget(context.Background(), "linux", bad); !errors.Is(err, ErrUnsafeTarget) {
-			t.Errorf("%q: %v", bad, err)
+}
+
+// TestOpenURL_OnlyWebLinks: the opener reachable from the remote-mode
+// window (arenileOpenExternal) refuses everything that could start a local
+// program or file: file: URLs, absolute paths, UNC paths, flags, custom
+// schemes and credentials in the URL.
+func TestOpenURL_OnlyWebLinks(t *testing.T) {
+	bad := []string{
+		"file:///etc/passwd", "file:/Applications/Terminal.app", "javascript://x", "-n", "",
+		"/Applications/Calculator.app", `C:\Windows\System32\calc.exe`, `\\host\share\evil.exe`,
+		"arenile://pair?d=x", "ftp://host/x", "http://", "http:///path", "https://user:pw@host/", "mailto:",
+		"vbscript:msgbox(1)", "data:text/html,<script>1</script>",
+	}
+	for _, s := range bad {
+		if IsWebLink(s) {
+			t.Errorf("IsWebLink(%q) = true", s)
 		}
+		for _, goos := range []string{"darwin", "windows", "linux"} {
+			if err := OpenURL(context.Background(), goos, s); !errors.Is(err, ErrUnsafeTarget) {
+				t.Errorf("OpenURL(%s, %q): %v", goos, s, err)
+			}
+		}
+	}
+	for _, s := range []string{"https://coste360.it/", "http://127.0.0.1:5/admin/", "mailto:info@lido.example", "HTTPS://Lido.Example/x?y=1#f"} {
+		if !IsWebLink(s) {
+			t.Errorf("IsWebLink(%q) = false", s)
+		}
+	}
+}
+
+// TestOpenFolder_OnlyExistingDirectories: the tray "data folder" opener
+// accepts an existing absolute directory and nothing else.
+func TestOpenFolder_OnlyExistingDirectories(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "f.txt")
+	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, bad := range []string{"", "relative/dir", file, filepath.Join(dir, "missing"), "https://coste360.it/", `\\host\share`, "-" + dir} {
+		if err := OpenFolder(context.Background(), "linux", bad); !errors.Is(err, ErrUnsafeTarget) {
+			t.Errorf("OpenFolder(%q): %v", bad, err)
+		}
+	}
+	if err := checkFolder(dir); err != nil {
+		t.Errorf("checkFolder(%q): %v", dir, err)
 	}
 }
 
