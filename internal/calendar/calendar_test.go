@@ -53,6 +53,31 @@ func TestDate_TextRoundTrip(t *testing.T) {
 	}
 }
 
+func TestDate_BindQueryParameter(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      string
+		want    Date
+		wantErr bool
+	}{
+		{name: "valid", in: "2026-08-15", want: New(2026, time.August, 15)},
+		{name: "invalid", in: "15/08/2026", wantErr: true},
+		{name: "empty", in: "", wantErr: true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var d Date
+			err := d.Bind(tc.in)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("Bind(%q) err = %v, wantErr %v", tc.in, err, tc.wantErr)
+			}
+			if !tc.wantErr && !d.Equal(tc.want) {
+				t.Fatalf("Bind(%q) = %v, want %v", tc.in, d, tc.want)
+			}
+		})
+	}
+}
+
 func TestDate_SQLRoundTrip(t *testing.T) {
 	rome, err := time.LoadLocation("Europe/Rome")
 	if err != nil {

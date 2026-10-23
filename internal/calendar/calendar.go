@@ -104,6 +104,10 @@ func (d *Date) UnmarshalText(b []byte) error {
 	return nil
 }
 
+// Bind implements the oapi-codegen runtime Binder interface, so generated
+// handlers can read a Date from query and path parameters ("YYYY-MM-DD").
+func (d *Date) Bind(src string) error { return d.UnmarshalText([]byte(src)) }
+
 // Value implements driver.Valuer (stored as "YYYY-MM-DD" text / DATE).
 func (d Date) Value() (driver.Value, error) { return d.String(), nil }
 
