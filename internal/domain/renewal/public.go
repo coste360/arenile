@@ -176,6 +176,9 @@ func (s *Service) AcceptByToken(ctx context.Context, slug, token string, in Publ
 		if err := checkOpen(prop, now); err != nil {
 			return err
 		}
+		if err := sourceRenewable(ctx, tx, es, prop); err != nil {
+			return err
+		}
 		if err := s.d.Bookings.AcceptRenewalTerms(ctx, tx, actor, es, prop.BookingID, in.AcceptTermsVersion); err != nil {
 			return err
 		}
@@ -314,6 +317,9 @@ func (s *Service) DeclineByToken(ctx context.Context, slug, token, reason string
 //     converted;
 //   - booking cancelled, expired or rejected (hold elapsed, staff action)
 //     -> expired (season.renewal_expired);
+//   - source pass cancelled after the campaign (nothing to renew) -> the
+//     booking expires through the booking service and the proposal expires
+//     (reason source_pass_cancelled), also before the deadline (INV-68);
 //   - deadline passed with the hold elapsed -> the booking expires through
 //     the booking service (spot released for general sale) and the
 //     proposal expires. A payment hold still running past the deadline is
@@ -369,6 +375,16 @@ func (s *Service) syncOne(ctx context.Context, tx bun.IDB, es store.Establishmen
 		}
 		return true, s.record(ctx, tx, es, actor, "renewal_proposal.converted", prop, map[string]any{"booking_status": b.Status}, "", "")
 	case "held", "pending_payment":
+		// The source pass is locked too: a cancellation of the pass and this
+		// sync serialise, so a revoked pass never keeps its pre-emption.
+		if _, err := store.LockBooking(ctx, tx, es, prop.SourceBookingID); err != nil {
+			return false, err
+		}
+		if err := sourceRenewable(ctx, tx, es, prop); errors.Is(err, ErrSourceCancelled) {
+			return true, s.expire(ctx, tx, actor, es, prop, "source_pass_cancelled", now)
+		} else if err != nil {
+			return false, err
+		}
 		if prop.DeadlineAt.After(now) || (b.HoldExpiresAt != nil && b.HoldExpiresAt.After(now)) {
 			return false, nil
 		}

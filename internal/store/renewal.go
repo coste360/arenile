@@ -210,6 +210,19 @@ func GetRenewalProposalByBooking(ctx context.Context, db bun.IDB, es Establishme
 	return p, wrapRead("get renewal proposal by booking", err)
 }
 
+// GetOpenRenewalProposalBySource loads the open proposal (proposed or
+// accepted) whose source pass is sourceBookingID (at most one: partial
+// unique index), ErrNotFound when none.
+func GetOpenRenewalProposalBySource(ctx context.Context, db bun.IDB, es EstablishmentScope, sourceBookingID string) (*RenewalProposal, error) {
+	if err := es.mustBeValid(); err != nil {
+		return nil, err
+	}
+	p := new(RenewalProposal)
+	err := db.NewSelect().Model(p).Where("rnp.source_booking_id = ?", sourceBookingID).Where("rnp.establishment_id = ?", es.ID()).
+		Where("rnp.status IN (?)", bun.List([]string{RenewalProposed, RenewalAccepted})).Limit(1).Scan(ctx)
+	return p, wrapRead("get renewal proposal by source", err)
+}
+
 // LockRenewalProposal takes a write lock on a proposal row and returns it.
 func LockRenewalProposal(ctx context.Context, db bun.IDB, es EstablishmentScope, id string) (*RenewalProposal, error) {
 	if err := es.mustBeValid(); err != nil {
@@ -475,15 +488,19 @@ type RenewalProposalRef struct {
 }
 
 // RenewalProposalsToSync returns open proposals (proposed or accepted)
-// whose pre-emption deadline passed or whose booking is no longer held or
-// pending payment, across establishments (system job), oldest first.
+// whose pre-emption deadline passed, whose booking is no longer held or
+// pending payment, or whose source pass is no longer renewable (cancelled
+// after the campaign was created), across establishments (system job),
+// oldest first.
 func RenewalProposalsToSync(ctx context.Context, db bun.IDB, now time.Time, limit int) ([]RenewalProposalRef, error) {
 	var refs []RenewalProposalRef
 	err := db.NewSelect().TableExpr("renewal_proposals AS rnp").
 		ColumnExpr("rnp.id AS id, rnp.establishment_id AS establishment_id").
 		Join("JOIN bookings AS bk ON bk.id = rnp.booking_id").
+		Join("JOIN bookings AS src ON src.id = rnp.source_booking_id").
 		Where("rnp.status IN (?)", bun.List([]string{RenewalProposed, RenewalAccepted})).
-		Where("(rnp.deadline_at <= ? OR bk.status NOT IN (?))", now.UTC(), bun.List([]string{"held", "pending_payment"})).
+		Where("(rnp.deadline_at <= ? OR bk.status NOT IN (?) OR src.status NOT IN (?))", now.UTC(),
+			bun.List([]string{"held", "pending_payment"}), bun.List(RenewableBookingStatuses)).
 		OrderExpr("rnp.deadline_at ASC, rnp.id ASC").Limit(int64(limit)).
 		Scan(ctx, &refs)
 	if err != nil && !isNoRows(err) {

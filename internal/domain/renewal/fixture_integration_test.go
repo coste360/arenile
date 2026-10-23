@@ -20,6 +20,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -76,7 +77,9 @@ func newFx(t *testing.T, db *store.DB, passes int) *fx {
 		t.Fatalf("rollover: %v created=%v", err, created)
 	}
 	x.target = res.Season
-	x.rn = renewal.NewService(renewal.Deps{DB: db, Clock: f.Clock, Bookings: e.Book, Checkout: e.Svc, Notify: x.notes})
+	x.rn = renewal.NewService(renewal.Deps{
+		DB: db, Clock: f.Clock, Bookings: e.Book, Checkout: e.Svc, Notify: x.notes, Credits: e.Credits, CreditApplier: e.Credits,
+	})
 	return x
 }
 
@@ -128,6 +131,26 @@ func (x *fx) sale(spot *store.Spot, day string) error {
 	in.Force = true
 	_, err := x.Book.Create(x.ctx, x.F.Owner, x.F.Est.ID, in)
 	return err
+}
+
+// grant gives amount of goodwill credit to a customer.
+func (x *fx) grant(customerID string, amount money.Cents) {
+	x.t.Helper()
+	if err := store.RunInTx(x.ctx, x.DB, func(ctx context.Context, tx bun.Tx) error {
+		return x.Credits.GrantCredit(ctx, tx, x.ES, &store.CustomerCredit{CustomerID: customerID, Amount: amount, Source: store.CreditSourceGoodwill})
+	}); err != nil {
+		x.t.Fatal(err)
+	}
+}
+
+// balance is the stored credit balance of a customer.
+func (x *fx) balance(customerID string) money.Cents {
+	x.t.Helper()
+	bal, err := store.GetCustomerCreditBalance(x.ctx, x.DB, x.ES, customerID)
+	if err != nil {
+		x.t.Fatal(err)
+	}
+	return bal
 }
 
 func (x *fx) proposal(id string) *store.RenewalProposal {

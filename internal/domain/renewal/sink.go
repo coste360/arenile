@@ -19,14 +19,16 @@ const SinkName = "renewal"
 // Name implements ext.EventSink.
 func (s *Service) Name() string { return SinkName }
 
-// Handle implements ext.EventSink: when the held booking of an accepted
+// Handle implements ext.EventSink. When the held booking of an accepted
 // proposal is confirmed (payment webhook or manual driver, INV-19), the
 // proposal becomes converted right away instead of at the next
 // renewals.sync run, so the customer coming back from the payment page
-// sees the renewal confirmed. Same transition as the job (syncOne), so a
+// sees the renewal confirmed. When a season pass is cancelled, the open
+// proposal that would renew it (if any) expires at once and its spot is
+// released (INV-68). Same transitions as the job (syncOne), so a
 // redelivered event or a concurrent job run changes nothing more.
 func (s *Service) Handle(ctx context.Context, ev ext.Event) error {
-	if ev.Type != event.BookingConfirmed {
+	if ev.Type != event.BookingConfirmed && ev.Type != event.BookingCancelled {
 		return nil
 	}
 	var data event.BookingChange
@@ -43,7 +45,12 @@ func (s *Service) Handle(ctx context.Context, ev ext.Event) error {
 		}
 		return fmt.Errorf("renewal: %w", err)
 	}
-	prop, err := store.GetRenewalProposalByBooking(ctx, s.d.DB, es, data.BookingID)
+	var prop *store.RenewalProposal
+	if ev.Type == event.BookingCancelled {
+		prop, err = store.GetOpenRenewalProposalBySource(ctx, s.d.DB, es, data.BookingID)
+	} else {
+		prop, err = store.GetRenewalProposalByBooking(ctx, s.d.DB, es, data.BookingID)
+	}
 	if errors.Is(err, store.ErrNotFound) {
 		return nil
 	}

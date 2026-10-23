@@ -97,12 +97,21 @@ func (s *Service) Accept(ctx context.Context, p *auth.Principal, establishmentID
 	}
 	actor := p.Actor(in.IP)
 	return s.change(ctx, es, id, expected, func(ctx context.Context, tx bun.Tx, prop *store.RenewalProposal, now time.Time) error {
-		return s.acceptLocked(ctx, tx, actor, es, prop, in, now)
+		err := s.acceptLocked(ctx, tx, actor, es, prop, in, now)
+		if errors.Is(err, errSkipped) {
+			// Already accepted and still waiting for the payment: a repeated
+			// (double-clicked) accept is idempotent and returns the view.
+			return nil
+		}
+		return err
 	})
 }
 
 func (s *Service) acceptLocked(ctx context.Context, tx bun.IDB, actor audit.Actor, es store.EstablishmentScope, prop *store.RenewalProposal, in AcceptInput, now time.Time) error {
 	if err := checkOpen(prop, now); err != nil {
+		return err
+	}
+	if err := sourceRenewable(ctx, tx, es, prop); err != nil {
 		return err
 	}
 	version, wasProposed := prop.Version, prop.Status == store.RenewalProposed

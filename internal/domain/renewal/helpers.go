@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -144,6 +145,20 @@ func (s *Service) record(ctx context.Context, tx bun.IDB, es store.Establishment
 	}
 	if _, err := s.d.Outbox.Write(ctx, tx, eventType, es.ID(), 1, data); err != nil {
 		return fmt.Errorf("renewal: outbox: %w", err)
+	}
+	return nil
+}
+
+// sourceRenewable checks that the source pass of prop can still be renewed
+// (confirmed, checked in or completed: store.RenewableBookingStatuses). A
+// pass cancelled after the campaign was created is ErrSourceCancelled.
+func sourceRenewable(ctx context.Context, db bun.IDB, es store.EstablishmentScope, prop *store.RenewalProposal) error {
+	src, err := store.GetBooking(ctx, db, es, prop.SourceBookingID)
+	if err != nil {
+		return fmt.Errorf("renewal: source pass: %w", err)
+	}
+	if !slices.Contains(store.RenewableBookingStatuses, src.Status) {
+		return ErrSourceCancelled
 	}
 	return nil
 }
