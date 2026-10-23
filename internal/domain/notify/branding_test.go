@@ -1,7 +1,6 @@
 package notify
 
 import (
-	"html"
 	"strings"
 	"testing"
 
@@ -126,12 +125,10 @@ func TestMarkdown_ItalicDoesNotTouchVariables(t *testing.T) {
 // variable is checked again once the value is known: only http(s), mailto
 // and tel become a link, anything else (user input) points nowhere.
 func TestMarkdown_VariableLinkTargetScheme(t *testing.T) {
-	src, names := protectVars("[Gestisci]({{manage_url}}) e [Nota]({{note}})")
-	block := mdBlock{kind: "p", lines: []string{src}}
-	got := blockHTML(block, mdStyle{Link: "#000"}, nil)
-	got = sanitizeHrefs(restoreVars(got, names, map[string]string{
+	block := mdBlock{kind: "p", lines: []string{"[Gestisci]({{manage_url}}) e [Nota]({{note}})"}}
+	got := blockHTML(block, mdStyle{Link: "#000"}, map[string]string{
 		"manage_url": "https://lido.example/b/lido/m/tok", "note": "javascript:alert(1)",
-	}, html.EscapeString))
+	})
 	if !strings.Contains(got, `href="https://lido.example/b/lido/m/tok"`) {
 		t.Fatalf("server url must stay a link: %s", got)
 	}
