@@ -160,23 +160,39 @@ func TestRunUpdateChecks_NoNetworkWhenDisabled(t *testing.T) {
 	defer srv.Close()
 	u := UpdateChecker{URL: srv.URL, Current: "1.4.0", Client: srv.Client()}
 	var enabled atomic.Bool
+	// Every check reads enabled once: the test waits for that read after
+	// each tick, so flipping the switch never races with a check in flight.
+	reads := make(chan bool, 16)
+	isEnabled := func() bool {
+		v := enabled.Load()
+		reads <- v
+		return v
+	}
 	notified := make(chan string, 4)
 	tick := make(chan time.Time)
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() {
-		RunUpdateChecks(ctx, u, enabled.Load, func(v string) { notified <- v }, tick)
+		RunUpdateChecks(ctx, u, isEnabled, func(v string) { notified <- v }, tick)
 		close(done)
 	}()
-	tick <- time.Now()
-	tick <- time.Now()
+	<-reads // the initial check
+	for range 2 {
+		tick <- time.Now()
+		<-reads
+	}
 	if hits.Load() != 0 {
 		t.Fatalf("network call while disabled: %d", hits.Load())
 	}
 	enabled.Store(true)
+	for range 3 { // same version every time: notified once
+		tick <- time.Now()
+		<-reads
+	}
+	// One more tick is received only after the previous check finished.
+	enabled.Store(false)
 	tick <- time.Now()
-	tick <- time.Now() // same version: notified once
-	tick <- time.Now()
+	<-reads
 	cancel()
 	<-done
 	if hits.Load() != 3 || len(notified) != 1 || <-notified != "1.5.0" {
