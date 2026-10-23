@@ -22,6 +22,8 @@ import waitlistIt from '../features/waitlist/locales/it.json';
 import creditsIt from '../features/credits/locales/it.json';
 import seasonRolloverIt from '../features/season-rollover/locales/it.json';
 import setupWizardIt from '../features/setup-wizard/locales/it.json';
+import importsIt from '../features/imports/locales/it.json';
+import testModeIt from '../features/test-mode/locales/it.json';
 
 type Messages = Record<string, unknown>;
 type Loader = () => Promise<{ default: Messages }>;
@@ -249,6 +251,25 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/season-rollover/locales/en.json'),
       de: () => import('../features/season-rollover/locales/de.json'),
       fr: () => import('../features/season-rollover/locales/fr.json'),
+    },
+  },
+  // Deferred features (ADR 0019).
+  {
+    ns: 'imports',
+    it: importsIt,
+    load: {
+      en: () => import('../features/imports/locales/en.json'),
+      de: () => import('../features/imports/locales/de.json'),
+      fr: () => import('../features/imports/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'testMode',
+    it: testModeIt,
+    load: {
+      en: () => import('../features/test-mode/locales/en.json'),
+      de: () => import('../features/test-mode/locales/de.json'),
+      fr: () => import('../features/test-mode/locales/fr.json'),
     },
   },
 ];

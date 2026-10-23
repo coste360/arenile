@@ -384,6 +384,25 @@ const webhooksRoute = createRoute({
   component: lazyRouteComponent(() => import('./features/integrations'), 'WebhooksPage'),
 });
 
+// ---- Deferred features (ADR 0019) ---------------------------------------------
+// Test mode, CSV imports and cash registers (owned by their builders).
+
+const testModeRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/test-mode',
+  component: lazyRouteComponent(() => import('./features/test-mode'), 'TestModePage'),
+});
+const importsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/import',
+  component: lazyRouteComponent(() => import('./features/imports'), 'ImportsPage'),
+});
+const cashRegistersRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/cash-registers',
+  component: lazyRouteComponent(() => import('./features/cash'), 'CashRegistersPage'),
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   firstRunRoute,
@@ -433,6 +452,9 @@ const routeTree = rootRoute.addChildren([
       reportsRoute,
       apiKeysRoute,
       webhooksRoute,
+      testModeRoute,
+      importsRoute,
+      cashRegistersRoute,
     ]),
   ]),
 ]);

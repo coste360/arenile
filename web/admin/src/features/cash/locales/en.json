@@ -179,5 +179,9 @@
   },
   "registers": {
     "main": "Main register"
+  },
+  "registersPage": {
+    "title": "Cash registers",
+    "description": "Cash registers of the establishment: one open session per register, Z closing and reports per register."
   }
 }

@@ -34,21 +34,24 @@ func (t MethodTotals) Sum() money.Cents {
 type CashSession struct {
 	bun.BaseModel `bun:"table:cash_sessions,alias:cs"`
 
-	ID              string       `bun:"id,pk"`
-	EstablishmentID string       `bun:"establishment_id,notnull"`
-	Register        string       `bun:"register,notnull"`
-	OpenedBy        *string      `bun:"opened_by"`
-	ClosedBy        *string      `bun:"closed_by"`
-	OpenedAt        time.Time    `bun:"opened_at,notnull"`
-	ClosedAt        *time.Time   `bun:"closed_at"`
-	OpeningFloat    money.Cents  `bun:"opening_float,notnull"`
-	ExpectedTotals  MethodTotals `bun:"expected_totals,type:json,notnull"`
-	CountedTotals   MethodTotals `bun:"counted_totals,type:json,nullzero"`
-	Difference      *money.Cents `bun:"difference"`
-	Notes           string       `bun:"notes,notnull"`
-	Version         int64        `bun:"version,notnull"`
-	CreatedAt       time.Time    `bun:"created_at,notnull"`
-	UpdatedAt       time.Time    `bun:"updated_at,notnull"`
+	ID              string `bun:"id,pk"`
+	EstablishmentID string `bun:"establishment_id,notnull"`
+	Register        string `bun:"register,notnull"`
+	// RegisterID is the cash register (00009); NULL only for rows written
+	// by code that predates registers (backfilled by the migration).
+	RegisterID     *string      `bun:"register_id"`
+	OpenedBy       *string      `bun:"opened_by"`
+	ClosedBy       *string      `bun:"closed_by"`
+	OpenedAt       time.Time    `bun:"opened_at,notnull"`
+	ClosedAt       *time.Time   `bun:"closed_at"`
+	OpeningFloat   money.Cents  `bun:"opening_float,notnull"`
+	ExpectedTotals MethodTotals `bun:"expected_totals,type:json,notnull"`
+	CountedTotals  MethodTotals `bun:"counted_totals,type:json,nullzero"`
+	Difference     *money.Cents `bun:"difference"`
+	Notes          string       `bun:"notes,notnull"`
+	Version        int64        `bun:"version,notnull"`
+	CreatedAt      time.Time    `bun:"created_at,notnull"`
+	UpdatedAt      time.Time    `bun:"updated_at,notnull"`
 }
 
 // Cash movement kinds.

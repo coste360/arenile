@@ -179,5 +179,9 @@
   },
   "registers": {
     "main": "Caisse principale"
+  },
+  "registersPage": {
+    "title": "Caisses",
+    "description": "Caisses de l'établissement : une session ouverte par caisse, clôture Z et rapports par caisse."
   }
 }

@@ -13,6 +13,16 @@ offline).
 
 ### Added
 
+- Contratto delle funzioni rinviate (ADR 0019), endpoint ancora `501 not_implemented`: modalità prova
+  (`/test-mode`, anteprima, eliminazione in blocco), rimborsi garantiti (`/refund-requests`), casse multiple
+  (`/cash-registers`, `register_id` sulle sessioni) e chiusura Z stampabile (`/cash-sessions/{id}/z-report`), prezzo
+  manuale degli abbonamenti (`/season-passes/{id}/price-override`), notifiche del pannello (`/notifications`),
+  storico dei tentativi webhook, esportazione elenchi CSV/XLSX (`/exports/{list}`, `format=xlsx` su report e
+  corrispettivi), importazione CSV di clienti e abbonamenti (`/imports`). Migrazione 00009 (entrambi i dialetti):
+  `bookings.test`, `payments.test`, `test_mode_settings`, `refund_requests`, `cash_registers` con "Cassa principale"
+  per ogni stabilimento, `webhook_delivery_attempts`, `import_jobs`, `admin_notifications`. I report escludono già
+  prenotazioni e pagamenti di prova. Pannello: pagine segnaposto Configurazione → Casse, Modalità prova, Importa dati.
+
 - App desktop per macOS: oltre al `.dmg` universale, la CI produce i `.dmg` **solo Apple Silicon**
   (`_macos_arm64`) e **solo Intel** (`_macos_x86_64`), circa metà dimensione, ognuno firmato, notarizzato e
   graffettato, tutti nel bundle per il portale. Se la notarizzazione Apple non finisce entro `NOTARY_TIMEOUT`, il

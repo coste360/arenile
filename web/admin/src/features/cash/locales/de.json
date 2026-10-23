@@ -179,5 +179,9 @@
   },
   "registers": {
     "main": "Hauptkasse"
+  },
+  "registersPage": {
+    "title": "Kassen",
+    "description": "Kassen des Betriebs: eine offene Sitzung pro Kasse, Z-Abschluss und Berichte pro Kasse."
   }
 }

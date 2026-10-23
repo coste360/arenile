@@ -91,6 +91,14 @@ const (
 	SeasonRolloverConflict = api.ProblemType("season_rollover_conflict")
 )
 
+// Deferred-features type slugs (test mode, imports, guaranteed refunds; ADR 0019).
+const (
+	TestModePreviewRequired = api.ProblemType("test_mode_preview_required")
+	ImportInvalid           = api.ProblemType("import_invalid")
+	ImportAlreadyApplied    = api.ProblemType("import_already_applied")
+	RefundInProgress        = api.ProblemType("refund_in_progress")
+)
+
 type meta struct {
 	status int
 	title  string
@@ -140,11 +148,15 @@ var catalog = map[api.ProblemType]meta{
 	SetupTokenInvalid:     {http.StatusForbidden, "Collegamento di configurazione non valido: riapri Arenile dal menu"},
 	SetupCompleted:        {http.StatusConflict, "Configurazione iniziale già completata"},
 	// M5B.
-	RenewalExpired:         {http.StatusGone, "Il termine per rinnovare l'abbonamento è scaduto"},
-	WaitlistOfferExpired:   {http.StatusGone, "L'offerta dalla lista d'attesa è scaduta"},
-	WaitlistDisabled:       {http.StatusConflict, "La lista d'attesa non è attiva"},
-	CreditInsufficient:     {http.StatusUnprocessableEntity, "Credito del cliente insufficiente"},
-	SeasonRolloverConflict: {http.StatusConflict, "Esiste già una stagione per l'anno scelto"},
+	RenewalExpired:          {http.StatusGone, "Il termine per rinnovare l'abbonamento è scaduto"},
+	WaitlistOfferExpired:    {http.StatusGone, "L'offerta dalla lista d'attesa è scaduta"},
+	WaitlistDisabled:        {http.StatusConflict, "La lista d'attesa non è attiva"},
+	CreditInsufficient:      {http.StatusUnprocessableEntity, "Credito del cliente insufficiente"},
+	SeasonRolloverConflict:  {http.StatusConflict, "Esiste già una stagione per l'anno scelto"},
+	TestModePreviewRequired: {http.StatusForbidden, "Prenotazioni in prova solo dal link di anteprima"},
+	ImportInvalid:           {http.StatusUnprocessableEntity, "Il file da importare contiene errori"},
+	ImportAlreadyApplied:    {http.StatusConflict, "Questo file è già stato importato"},
+	RefundInProgress:        {http.StatusConflict, "C'è già un rimborso in corso per questa prenotazione"},
 }
 
 // Option customises a problem.

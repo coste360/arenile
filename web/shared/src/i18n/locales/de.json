@@ -152,7 +152,10 @@
       "desktop": "Desktop-App",
       "apiKeys": "API-Schlüssel",
       "webhooks": "Webhooks",
-      "seasonRollover": "Neue Saison"
+      "seasonRollover": "Neue Saison",
+      "cashRegisters": "Kassen",
+      "imports": "Daten importieren",
+      "testMode": "Testmodus"
     },
     "operations": "Tagesgeschäft",
     "configGroup": "Konfiguration",

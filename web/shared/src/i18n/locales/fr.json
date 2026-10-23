@@ -152,7 +152,10 @@
       "desktop": "Application de bureau",
       "apiKeys": "Clés API",
       "webhooks": "Webhooks",
-      "seasonRollover": "Nouvelle saison"
+      "seasonRollover": "Nouvelle saison",
+      "cashRegisters": "Caisses",
+      "imports": "Importer des données",
+      "testMode": "Mode test"
     },
     "operations": "Exploitation",
     "configGroup": "Configuration",

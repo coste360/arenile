@@ -1,0 +1,6 @@
+{
+  "page": {
+    "title": "Import data",
+    "description": "Import customers and season passes from a CSV file exported by other software: preview, validation report and all-or-nothing apply."
+  }
+}

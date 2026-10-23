@@ -2,3 +2,4 @@
 // ONLY these names. The feature builder owns everything inside features/cash/.
 export { CashPage } from './CashPage';
 export { CorrispettiviPage } from './CorrispettiviPage';
+export { CashRegistersPage } from './CashRegistersPage';

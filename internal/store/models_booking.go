@@ -91,9 +91,19 @@ type Booking struct {
 	CheckedInAt     *time.Time `bun:"checked_in_at"`
 	CancelledAt     *time.Time `bun:"cancelled_at"`
 	CancelReason    *string    `bun:"cancel_reason"`
-	Version         int64      `bun:"version,notnull"`
-	CreatedAt       time.Time  `bun:"created_at,notnull"`
-	UpdatedAt       time.Time  `bun:"updated_at,notnull"`
+	// Test marks a booking created in test mode (00009, spec 15.4): excluded
+	// from reports, KPIs, corrispettivi and exports; purged in bulk.
+	Test bool `bun:"test,notnull"`
+	// Manual price of a season pass (00009): the total decided by the
+	// manager, the engine total it replaced, the reason and who/when.
+	PriceOverrideAmount       *money.Cents `bun:"price_override_amount"`
+	PriceOverrideEngineAmount *money.Cents `bun:"price_override_engine_amount"`
+	PriceOverrideReason       *string      `bun:"price_override_reason"`
+	PriceOverrideByUserID     *string      `bun:"price_override_by_user_id"`
+	PriceOverrideAt           *time.Time   `bun:"price_override_at"`
+	Version                   int64        `bun:"version,notnull"`
+	CreatedAt                 time.Time    `bun:"created_at,notnull"`
+	UpdatedAt                 time.Time    `bun:"updated_at,notnull"`
 }
 
 // BalanceDue is what remains to be collected (never negative).

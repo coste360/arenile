@@ -23,12 +23,10 @@ import (
 // Customer data: only first_name, last_name and anonymized_at are ever
 // selected (spec 23); never email, phone, notes or address.
 //
-// TODO(M5 part B, spec 15.4): test bookings must be excluded from every
-// report and export. The bookings table has no test flag yet; when the
-// column lands, add the filter to every query of this file (through
-// ReportNotSoldStatuses-like shared predicate) and drop the guard
-// TestReportQueries_TestBookingsFlagNotYetFiltered, which fails as soon as
-// a test column appears on bookings without this file being updated.
+// Test mode (spec 15.4, migration 00009): rows with bookings.test or
+// payments.test are excluded from every query of this file; allocations
+// of test bookings count as free. Guarded by
+// TestReportQueries_TestBookingsExcluded.
 
 // Booking statuses as stored in bookings.status (the state machine lives in
 // internal/domain/booking; the reports only read them).
@@ -142,6 +140,7 @@ func ReportAllocationCounts(ctx context.Context, db bun.IDB, es EstablishmentSco
 		Where("sa.date >= ?", from).Where("sa.date <= ?", to).
 		Where("sa.kind IN (?)", bun.List([]string{AllocationBooking, AllocationSeason, AllocationBlock})).
 		Where("s.active = ?", true).
+		Where("NOT EXISTS (SELECT 1 FROM bookings AS tb WHERE tb.id = sa.booking_id AND tb.test = ?)", true).
 		GroupExpr("sa.date, sa.slot, sa.kind, s.zone_id, s.row_label")
 	q = f.apply(q, "s")
 	if err := q.Scan(ctx, &out); err != nil && !isNoRows(err) {
@@ -241,6 +240,7 @@ func ReportPayments(ctx context.Context, db bun.IDB, es EstablishmentScope, from
 		ColumnExpr("pm.business_date, pm.method, pm.direction, pm.amount, pm.vat_breakdown, pm.booking_id, bk.channel").
 		Where("pm.establishment_id = ?", es.ID()).
 		Where("pm.status = ?", PaymentSucceeded).
+		Where("pm.test = ?", false).
 		Where("pm.business_date >= ?", from).Where("pm.business_date <= ?", to).
 		OrderExpr("pm.business_date ASC, pm.id ASC").
 		Scan(ctx, &out)
@@ -311,6 +311,7 @@ func ReportBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, w Re
 			"WHERE p.booking_id = bk.id AND p.direction = ? AND p.status = ?) ELSE 0 END AS refunded",
 			reportStatusCancelled, PaymentDirectionRefund, PaymentSucceeded).
 		Where("bk.establishment_id = ?", es.ID()).
+		Where("bk.test = ?", false).
 		Where("bk.status NOT IN (?)", bun.List(ReportNotSoldStatuses)).
 		WhereGroup(" AND ", func(q *bun.SelectQuery) *bun.SelectQuery {
 			return q.
@@ -340,6 +341,7 @@ type ReportCatalogRevenue struct {
 // booked statuses confirmed in [from, to) (UTC).
 func bookedWindow(q *bun.SelectQuery, es EstablishmentScope, from, to time.Time) *bun.SelectQuery {
 	return q.Where("bk.establishment_id = ?", es.ID()).
+		Where("bk.test = ?", false).
 		Where("bk.status IN (?)", bun.List(ReportBookedStatuses)).
 		Where("bk.confirmed_at >= ?", from).Where("bk.confirmed_at < ?", to)
 }
@@ -409,7 +411,8 @@ func ReportReleases(ctx context.Context, db bun.IDB, es EstablishmentScope, from
 	out := []ReportRelease{}
 	err := db.NewSelect().TableExpr("season_releases AS sr").
 		Join("JOIN spots AS s ON s.id = sr.spot_id").
-		Join("LEFT JOIN spot_allocations AS sa ON sa.spot_id = sr.spot_id AND sa.date = sr.date AND sa.slot = sr.slot AND sa.kind = ?", AllocationBooking).
+		Join("LEFT JOIN spot_allocations AS sa ON sa.spot_id = sr.spot_id AND sa.date = sr.date AND sa.slot = sr.slot AND sa.kind = ? "+
+			"AND NOT EXISTS (SELECT 1 FROM bookings AS tb WHERE tb.id = sa.booking_id AND tb.test = ?)", AllocationBooking, true).
 		Join("LEFT JOIN booking_lines AS bl ON bl.id = sa.booking_line_id").
 		ColumnExpr("sr.date, sr.slot, s.zone_id, sr.credit_amount, sa.booking_line_id AS resold_line_id").
 		ColumnExpr("COALESCE(bl.line_total, 0) AS line_total").
@@ -458,6 +461,7 @@ func ReportTopCustomers(ctx context.Context, db bun.IDB, es EstablishmentScope, 
 		ColumnExpr("SUM(CASE WHEN bk.status = ? THEN 0 ELSE 1 END) AS bookings", reportStatusCancelled).
 		ColumnExpr("SUM(bk.paid_amount) AS revenue, MAX(bk.starts_on) AS last_booking_on").
 		Where("bk.establishment_id = ?", es.ID()).
+		Where("bk.test = ?", false).
 		Where("bk.status NOT IN (?)", bun.List(ReportNotSoldStatuses)).
 		Where("bk.starts_on >= ?", from).Where("bk.starts_on <= ?", to).
 		GroupExpr("bk.customer_id, cu.first_name, cu.last_name, cu.anonymized_at").
@@ -488,7 +492,8 @@ func ReportCustomerSpotDays(ctx context.Context, db bun.IDB, es EstablishmentSco
 		Where("sa.establishment_id = ?", es.ID()).
 		Where("sa.date >= ?", from).Where("sa.date <= ?", to).
 		Where("sa.kind IN (?)", bun.List([]string{AllocationBooking, AllocationSeason})).
-		Where("bk.customer_id IN (?)", bun.List(ids))
+		Where("bk.customer_id IN (?)", bun.List(ids)).
+		Where("bk.test = ?", false)
 	var rows []struct {
 		CustomerID string `bun:"customer_id"`
 		Days       int    `bun:"days"`
@@ -533,6 +538,7 @@ func ReportOpenBalances(ctx context.Context, db bun.IDB, es EstablishmentScope, 
 		ColumnExpr("bk.id, bk.code, bk.customer_id, cu.first_name, cu.last_name, cu.anonymized_at").
 		ColumnExpr("bk.status, bk.starts_on, bk.ends_on, bk.total_amount, bk.paid_amount").
 		Where("bk.establishment_id = ?", es.ID()).
+		Where("bk.test = ?", false).
 		Where("bk.status IN (?)", bun.List(ReportBookedStatuses)).
 		Where("bk.total_amount > bk.paid_amount").
 		Where("bk.starts_on >= ?", from).Where("bk.starts_on <= ?", to).

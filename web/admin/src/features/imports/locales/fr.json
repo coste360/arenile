@@ -1,0 +1,6 @@
+{
+  "page": {
+    "title": "Importer des données",
+    "description": "Importez clients et abonnements depuis un fichier CSV exporté d'un autre logiciel : aperçu, rapport de validation et application tout ou rien."
+  }
+}

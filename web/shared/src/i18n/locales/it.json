@@ -152,7 +152,10 @@
       "desktop": "App desktop",
       "apiKeys": "Chiavi API",
       "webhooks": "Webhook",
-      "seasonRollover": "Nuova stagione"
+      "seasonRollover": "Nuova stagione",
+      "cashRegisters": "Casse",
+      "imports": "Importa dati",
+      "testMode": "Modalità prova"
     },
     "operations": "Operatività",
     "configGroup": "Configurazione",

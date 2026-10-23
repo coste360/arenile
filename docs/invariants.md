@@ -631,3 +631,17 @@ Verificata da: `TestConcurrency_WaitlistOffer` (100 consegne concorrenti dello s
 solo hold), `TestWaitlist_CancellationOffersToFirstEntryAndAcceptGoesToCheckout`,
 `TestWaitlist_ExpiredOfferMovesToNextEntry`, `TestWaitlist_PanelOperations`, `TestWaitlist_PublicJoinAndAnonymisation`
 (`internal/domain/waitlist`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-73 — Una sola sessione aperta per cassa.**
+Ogni stabilimento ha una cassa predefinita attiva (indice unico parziale su `cash_registers.is_default`) e al massimo
+una sessione aperta per cassa (`cash_sessions_register_open_uidx` su `register_id` con `closed_at IS NULL`, accanto
+all'indice di 00003 sul codice). La migrazione 00009 assegna `register_id` a ogni sessione esistente.
+Verificata da: `TestMigration00009_CashRegisterBackfill` (`internal/store`, tag `integration`, SQLite e PostgreSQL).
+Stato: implemented (schema); la concorrenza dell'apertura per cassa è a carico del servizio cassa
+(`TestConcurrency_*` del costruttore D).
+
+**INV-74 — Le righe di prova non entrano nei numeri.**
+Prenotazioni e pagamenti creati in modalità prova (`bookings.test`, `payments.test`, spec 15.4) sono esclusi da ogni
+query dei report; le loro allocazioni contano come libere. Lo stesso vale per corrispettivi, KPI ed esportazioni.
+Verificata da: `TestReportQueries_TestBookingsExcluded` (`internal/store`, tag `integration`, SQLite e PostgreSQL).
+Stato: implemented per i report; corrispettivi, KPI ed esportazioni a carico del costruttore A.

@@ -179,5 +179,9 @@
   },
   "registers": {
     "main": "Cassa principale"
+  },
+  "registersPage": {
+    "title": "Casse",
+    "description": "Casse dello stabilimento: una sessione aperta per cassa, chiusura Z e report per cassa."
   }
 }

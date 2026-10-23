@@ -882,6 +882,48 @@ func (e EmailSettingsTransport) Valid() bool {
 	}
 }
 
+// Defines values for ExportFormat.
+const (
+	ExportFormatCSV  ExportFormat = "csv"
+	ExportFormatXLSX ExportFormat = "xlsx"
+)
+
+// Valid indicates whether the value is a known member of the ExportFormat enum.
+func (e ExportFormat) Valid() bool {
+	switch e {
+	case ExportFormatCSV:
+		return true
+	case ExportFormatXLSX:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ExportListKind.
+const (
+	ExportListBookings     ExportListKind = "bookings"
+	ExportListCustomers    ExportListKind = "customers"
+	ExportListPayments     ExportListKind = "payments"
+	ExportListSeasonPasses ExportListKind = "season-passes"
+)
+
+// Valid indicates whether the value is a known member of the ExportListKind enum.
+func (e ExportListKind) Valid() bool {
+	switch e {
+	case ExportListBookings:
+		return true
+	case ExportListCustomers:
+		return true
+	case ExportListPayments:
+		return true
+	case ExportListSeasonPasses:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ExtraAttachTo.
 const (
 	ExtraAttachToBooking ExtraAttachTo = "booking"
@@ -1050,6 +1092,75 @@ func (e HoldStatus) Valid() bool {
 	case HoldStatusExpired:
 		return true
 	case HoldStatusReleased:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportJobStatus.
+const (
+	ImportJobStatusApplied   ImportJobStatus = "applied"
+	ImportJobStatusApplying  ImportJobStatus = "applying"
+	ImportJobStatusDiscarded ImportJobStatus = "discarded"
+	ImportJobStatusFailed    ImportJobStatus = "failed"
+	ImportJobStatusUploaded  ImportJobStatus = "uploaded"
+	ImportJobStatusValidated ImportJobStatus = "validated"
+)
+
+// Valid indicates whether the value is a known member of the ImportJobStatus enum.
+func (e ImportJobStatus) Valid() bool {
+	switch e {
+	case ImportJobStatusApplied:
+		return true
+	case ImportJobStatusApplying:
+		return true
+	case ImportJobStatusDiscarded:
+		return true
+	case ImportJobStatusFailed:
+		return true
+	case ImportJobStatusUploaded:
+		return true
+	case ImportJobStatusValidated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportKind.
+const (
+	Customers    ImportKind = "customers"
+	SeasonPasses ImportKind = "season_passes"
+)
+
+// Valid indicates whether the value is a known member of the ImportKind enum.
+func (e ImportKind) Valid() bool {
+	switch e {
+	case Customers:
+		return true
+	case SeasonPasses:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportOptionsMatchBy.
+const (
+	Email       ImportOptionsMatchBy = "email"
+	ExternalRef ImportOptionsMatchBy = "external_ref"
+	Phone       ImportOptionsMatchBy = "phone"
+)
+
+// Valid indicates whether the value is a known member of the ImportOptionsMatchBy enum.
+func (e ImportOptionsMatchBy) Valid() bool {
+	switch e {
+	case Email:
+		return true
+	case ExternalRef:
+		return true
+	case Phone:
 		return true
 	default:
 		return false
@@ -1233,6 +1344,54 @@ const (
 func (e MetaProduct) Valid() bool {
 	switch e {
 	case Arenile:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for NotificationKind.
+const (
+	ImportCompleted         NotificationKind = "import_completed"
+	ImportFailed            NotificationKind = "import_failed"
+	RefundFailed            NotificationKind = "refund_failed"
+	TestModeEnabled         NotificationKind = "test_mode_enabled"
+	WebhookEndpointDisabled NotificationKind = "webhook_endpoint_disabled"
+)
+
+// Valid indicates whether the value is a known member of the NotificationKind enum.
+func (e NotificationKind) Valid() bool {
+	switch e {
+	case ImportCompleted:
+		return true
+	case ImportFailed:
+		return true
+	case RefundFailed:
+		return true
+	case TestModeEnabled:
+		return true
+	case WebhookEndpointDisabled:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for NotificationSeverity.
+const (
+	Error   NotificationSeverity = "error"
+	Info    NotificationSeverity = "info"
+	Warning NotificationSeverity = "warning"
+)
+
+// Valid indicates whether the value is a known member of the NotificationSeverity enum.
+func (e NotificationSeverity) Valid() bool {
+	switch e {
+	case Error:
+		return true
+	case Info:
+		return true
+	case Warning:
 		return true
 	default:
 		return false
@@ -1706,6 +1865,8 @@ const (
 	ProblemTypeHoldExpired                ProblemType = "hold_expired"
 	ProblemTypeIdempotencyInProgress      ProblemType = "idempotency_in_progress"
 	ProblemTypeIdempotencyKeyReused       ProblemType = "idempotency_key_reused"
+	ProblemTypeImportAlreadyApplied       ProblemType = "import_already_applied"
+	ProblemTypeImportInvalid              ProblemType = "import_invalid"
 	ProblemTypeInternalError              ProblemType = "internal_error"
 	ProblemTypeInvalidCredentials         ProblemType = "invalid_credentials"
 	ProblemTypeInvalidTotp                ProblemType = "invalid_totp"
@@ -1723,12 +1884,14 @@ const (
 	ProblemTypePreconditionRequired       ProblemType = "precondition_required"
 	ProblemTypeQuotaExceeded              ProblemType = "quota_exceeded"
 	ProblemTypeRateLimited                ProblemType = "rate_limited"
+	ProblemTypeRefundInProgress           ProblemType = "refund_in_progress"
 	ProblemTypeRenewalExpired             ProblemType = "renewal_expired"
 	ProblemTypeSeasonRolloverConflict     ProblemType = "season_rollover_conflict"
 	ProblemTypeSetupCompleted             ProblemType = "setup_completed"
 	ProblemTypeSetupTokenInvalid          ProblemType = "setup_token_invalid"
 	ProblemTypeSpotHasFutureAllocations   ProblemType = "spot_has_future_allocations"
 	ProblemTypeSpotUnavailable            ProblemType = "spot_unavailable"
+	ProblemTypeTestModePreviewRequired    ProblemType = "test_mode_preview_required"
 	ProblemTypeTotpAlreadyEnabled         ProblemType = "totp_already_enabled"
 	ProblemTypeTotpEnrolmentRequired      ProblemType = "totp_enrolment_required"
 	ProblemTypeTotpRequired               ProblemType = "totp_required"
@@ -1768,6 +1931,10 @@ func (e ProblemType) Valid() bool {
 		return true
 	case ProblemTypeIdempotencyKeyReused:
 		return true
+	case ProblemTypeImportAlreadyApplied:
+		return true
+	case ProblemTypeImportInvalid:
+		return true
 	case ProblemTypeInternalError:
 		return true
 	case ProblemTypeInvalidCredentials:
@@ -1802,6 +1969,8 @@ func (e ProblemType) Valid() bool {
 		return true
 	case ProblemTypeRateLimited:
 		return true
+	case ProblemTypeRefundInProgress:
+		return true
 	case ProblemTypeRenewalExpired:
 		return true
 	case ProblemTypeSeasonRolloverConflict:
@@ -1813,6 +1982,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeSpotHasFutureAllocations:
 		return true
 	case ProblemTypeSpotUnavailable:
+		return true
+	case ProblemTypeTestModePreviewRequired:
 		return true
 	case ProblemTypeTotpAlreadyEnabled:
 		return true
@@ -2106,6 +2277,54 @@ func (e RefundPreviewAs) Valid() bool {
 	}
 }
 
+// Defines values for RefundRequestReason.
+const (
+	CustomerCancellation RefundRequestReason = "customer_cancellation"
+	ExpiredHold          RefundRequestReason = "expired_hold"
+	PanelCancellation    RefundRequestReason = "panel_cancellation"
+)
+
+// Valid indicates whether the value is a known member of the RefundRequestReason enum.
+func (e RefundRequestReason) Valid() bool {
+	switch e {
+	case CustomerCancellation:
+		return true
+	case ExpiredHold:
+		return true
+	case PanelCancellation:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RefundRequestStatus.
+const (
+	RefundRequestStatusCancelled  RefundRequestStatus = "cancelled"
+	RefundRequestStatusFailed     RefundRequestStatus = "failed"
+	RefundRequestStatusPending    RefundRequestStatus = "pending"
+	RefundRequestStatusProcessing RefundRequestStatus = "processing"
+	RefundRequestStatusSucceeded  RefundRequestStatus = "succeeded"
+)
+
+// Valid indicates whether the value is a known member of the RefundRequestStatus enum.
+func (e RefundRequestStatus) Valid() bool {
+	switch e {
+	case RefundRequestStatusCancelled:
+		return true
+	case RefundRequestStatusFailed:
+		return true
+	case RefundRequestStatusPending:
+		return true
+	case RefundRequestStatusProcessing:
+		return true
+	case RefundRequestStatusSucceeded:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RenewalBulkAction.
 const (
 	RenewalBulkActionAccept         RenewalBulkAction = "accept"
@@ -2233,6 +2452,7 @@ func (e RenewalSkipReason) Valid() bool {
 const (
 	ReportFormatCSV  ReportFormat = "csv"
 	ReportFormatJSON ReportFormat = "json"
+	ReportFormatXLSX ReportFormat = "xlsx"
 )
 
 // Valid indicates whether the value is a known member of the ReportFormat enum.
@@ -2241,6 +2461,8 @@ func (e ReportFormat) Valid() bool {
 	case ReportFormatCSV:
 		return true
 	case ReportFormatJSON:
+		return true
+	case ReportFormatXLSX:
 		return true
 	default:
 		return false
@@ -3012,6 +3234,24 @@ func (e QrFormat) Valid() bool {
 	}
 }
 
+// Defines values for GetCashSessionZReportParamsPaper.
+const (
+	A4        GetCashSessionZReportParamsPaper = "a4"
+	Receipt80 GetCashSessionZReportParamsPaper = "receipt80"
+)
+
+// Valid indicates whether the value is a known member of the GetCashSessionZReportParamsPaper enum.
+func (e GetCashSessionZReportParamsPaper) Valid() bool {
+	switch e {
+	case A4:
+		return true
+	case Receipt80:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetCorrispettiviParamsGroupBy.
 const (
 	GetCorrispettiviParamsGroupByDay   GetCorrispettiviParamsGroupBy = "day"
@@ -3034,6 +3274,7 @@ func (e GetCorrispettiviParamsGroupBy) Valid() bool {
 const (
 	Csv  GetCorrispettiviParamsFormat = "csv"
 	Json GetCorrispettiviParamsFormat = "json"
+	Xlsx GetCorrispettiviParamsFormat = "xlsx"
 )
 
 // Valid indicates whether the value is a known member of the GetCorrispettiviParamsFormat enum.
@@ -3042,6 +3283,8 @@ func (e GetCorrispettiviParamsFormat) Valid() bool {
 	case Csv:
 		return true
 	case Json:
+		return true
+	case Xlsx:
 		return true
 	default:
 		return false
@@ -3508,7 +3751,10 @@ type BookingDetail struct {
 	// PriceSnapshot Dettaglio completo del calcolo (spec 8.6), con le regole applicate passo per passo.
 	PriceSnapshot PriceBreakdown `json:"price_snapshot"`
 	PromoCode     *string        `json:"promo_code,omitempty"`
-	SeasonId      *string        `json:"season_id,omitempty"`
+
+	// Refunds Rimborsi garantiti verso il provider (stato visibile, mai persi né doppi).
+	Refunds  *[]RefundRequest `json:"refunds,omitempty"`
+	SeasonId *string          `json:"season_id,omitempty"`
 
 	// Slots Fasce prenotate: mattina, pomeriggio o giorno intero.
 	Slots Slots `json:"slots"`
@@ -3518,6 +3764,9 @@ type BookingDetail struct {
 
 	// Status Stato della prenotazione (spec 10.2).
 	Status BookingStatus `json:"status"`
+
+	// Test Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni.
+	Test *bool `json:"test,omitempty"`
 
 	// TotalAmount Importo in centesimi di euro (IVA inclusa).
 	TotalAmount Money     `json:"total_amount"`
@@ -3735,6 +3984,9 @@ type BookingSummary struct {
 	// Status Stato della prenotazione (spec 10.2).
 	Status BookingStatus `json:"status"`
 
+	// Test Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni.
+	Test *bool `json:"test,omitempty"`
+
 	// TotalAmount Importo in centesimi di euro (IVA inclusa).
 	TotalAmount Money `json:"total_amount"`
 
@@ -3842,6 +4094,41 @@ type CashMovementInput struct {
 // CashMovementInputKind defines model for CashMovementInput.Kind.
 type CashMovementInputKind string
 
+// CashRegister defines model for CashRegister.
+type CashRegister struct {
+	Active bool `json:"active"`
+
+	// Code Codice stabile (main per la cassa predefinita), uguale a CashSession.register.
+	Code      string    `json:"code"`
+	CreatedAt time.Time `json:"created_at"`
+	Id        string    `json:"id"`
+	IsDefault bool      `json:"is_default"`
+	Name      string    `json:"name"`
+
+	// OpenSessionId Sessione aperta della cassa, se c'è (al massimo una, vincolo del database).
+	OpenSessionId *string   `json:"open_session_id,omitempty"`
+	SortOrder     int       `json:"sort_order"`
+	UpdatedAt     time.Time `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// CashRegisterInput defines model for CashRegisterInput.
+type CashRegisterInput struct {
+	Active *bool `json:"active,omitempty"`
+
+	// Code Solo in creazione (default: dal nome); ignorato in modifica.
+	Code      *string `json:"code,omitempty"`
+	Name      string  `json:"name"`
+	SortOrder *int    `json:"sort_order,omitempty"`
+}
+
+// CashRegisterList defines model for CashRegisterList.
+type CashRegisterList struct {
+	Items []CashRegister `json:"items"`
+}
+
 // CashSession defines model for CashSession.
 type CashSession struct {
 	ClosedAt *time.Time `json:"closed_at,omitempty"`
@@ -3861,8 +4148,12 @@ type CashSession struct {
 	OpenedBy       string       `json:"opened_by"`
 
 	// OpeningFloat Importo in centesimi di euro (IVA inclusa).
-	OpeningFloat Money             `json:"opening_float"`
+	OpeningFloat Money `json:"opening_float"`
+
+	// Register Codice della cassa (CashRegister.code).
 	Register     string            `json:"register"`
+	RegisterId   *string           `json:"register_id,omitempty"`
+	RegisterName *string           `json:"register_name,omitempty"`
 	Status       CashSessionStatus `json:"status"`
 
 	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
@@ -3897,8 +4188,11 @@ type CashSessionOpen struct {
 	Notes        *string `json:"notes,omitempty"`
 	OpeningFloat int64   `json:"opening_float"`
 
-	// Register Default main.
+	// Register Codice della cassa (deprecato: usare register_id). Default main.
 	Register *string `json:"register,omitempty"`
+
+	// RegisterId Cassa da aprire (default: la cassa predefinita). Una sola sessione aperta per cassa.
+	RegisterId *string `json:"register_id,omitempty"`
 }
 
 // CashSessionStatus defines model for CashSessionStatus.
@@ -4788,6 +5082,12 @@ type EstablishmentUpdate struct {
 	Timezone *string `json:"timezone,omitempty"`
 }
 
+// ExportFormat defines model for ExportFormat.
+type ExportFormat string
+
+// ExportListKind defines model for ExportListKind.
+type ExportListKind string
+
 // Extra Aggiunta opzionale a un pack o alla prenotazione.
 type Extra struct {
 	Active         bool          `json:"active"`
@@ -5138,6 +5438,89 @@ type HoldItem struct {
 // I18nText Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
 type I18nText map[string]string
 
+// ImportIssue defines model for ImportIssue.
+type ImportIssue struct {
+	// Code Es. required, invalid_email, invalid_date, unknown_spot, spot_unavailable, duplicate_in_file.
+	Code    string  `json:"code"`
+	Column  *string `json:"column,omitempty"`
+	Message *string `json:"message,omitempty"`
+
+	// Row Numero di riga del file (1 = intestazione).
+	Row int `json:"row"`
+}
+
+// ImportJob defines model for ImportJob.
+type ImportJob struct {
+	AppliedAt       *time.Time      `json:"applied_at,omitempty"`
+	CreatedAt       time.Time       `json:"created_at"`
+	CreatedByUserId *string         `json:"created_by_user_id,omitempty"`
+	Filename        string          `json:"filename"`
+	Id              string          `json:"id"`
+	Kind            ImportKind      `json:"kind"`
+	Options         ImportOptions   `json:"options"`
+	Report          *ImportReport   `json:"report,omitempty"`
+	Sha256          string          `json:"sha256"`
+	SizeBytes       int64           `json:"size_bytes"`
+	Status          ImportJobStatus `json:"status"`
+	UpdatedAt       time.Time       `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// ImportJobList defines model for ImportJobList.
+type ImportJobList struct {
+	Items      []ImportJob `json:"items"`
+	NextCursor *string     `json:"next_cursor,omitempty"`
+}
+
+// ImportJobStatus defines model for ImportJobStatus.
+type ImportJobStatus string
+
+// ImportKind defines model for ImportKind.
+type ImportKind string
+
+// ImportOptions defines model for ImportOptions.
+type ImportOptions struct {
+	// CreateMissingCustomers season_passes: crea i clienti non trovati (default true).
+	CreateMissingCustomers *bool `json:"create_missing_customers,omitempty"`
+
+	// MarketingConsentDefault Consenso marketing quando la colonna manca (default false: mai presunto).
+	MarketingConsentDefault *bool `json:"marketing_consent_default,omitempty"`
+
+	// MatchBy Criterio per riconoscere un cliente già presente (default email).
+	MatchBy *ImportOptionsMatchBy `json:"match_by,omitempty"`
+
+	// PackId Pacchetto predefinito per season_passes quando la colonna manca.
+	PackId *string `json:"pack_id,omitempty"`
+
+	// SeasonId Obbligatoria per season_passes.
+	SeasonId *string `json:"season_id,omitempty"`
+
+	// UpdateExisting true = aggiorna i clienti trovati; false = li salta (default).
+	UpdateExisting *bool `json:"update_existing,omitempty"`
+}
+
+// ImportOptionsMatchBy Criterio per riconoscere un cliente già presente (default email).
+type ImportOptionsMatchBy string
+
+// ImportReport defines model for ImportReport.
+type ImportReport struct {
+	// Columns Intestazioni riconosciute nel file.
+	Columns  *[]string     `json:"columns,omitempty"`
+	Created  *int          `json:"created,omitempty"`
+	Errors   []ImportIssue `json:"errors"`
+	Invalid  int           `json:"invalid"`
+	Rows     int           `json:"rows"`
+	Skipped  *int          `json:"skipped,omitempty"`
+	ToCreate int           `json:"to_create"`
+	ToSkip   int           `json:"to_skip"`
+	ToUpdate int           `json:"to_update"`
+	Updated  *int          `json:"updated,omitempty"`
+	Valid    int           `json:"valid"`
+	Warnings []ImportIssue `json:"warnings"`
+}
+
 // IntRange Intervallo intero inclusivo; un estremo assente è aperto.
 type IntRange struct {
 	Max *int `json:"max,omitempty"`
@@ -5207,14 +5590,17 @@ type ManageBooking struct {
 	Code                string         `json:"code"`
 
 	// CreditAvailable Importo in centesimi di euro (IVA inclusa).
-	CreditAvailable *Money                 `json:"credit_available,omitempty"`
-	Customer        ManageCustomer         `json:"customer"`
-	IsSeasonPass    bool                   `json:"is_season_pass"`
-	LinkExpiresAt   time.Time              `json:"link_expires_at"`
-	QrPayload       string                 `json:"qr_payload"`
-	QrSvg           *string                `json:"qr_svg,omitempty"`
-	Releases        *[]ManageRelease       `json:"releases,omitempty"`
-	Renewal         *PublicRenewalProposal `json:"renewal,omitempty"`
+	CreditAvailable *Money         `json:"credit_available,omitempty"`
+	Customer        ManageCustomer `json:"customer"`
+	IsSeasonPass    bool           `json:"is_season_pass"`
+	LinkExpiresAt   time.Time      `json:"link_expires_at"`
+	QrPayload       string         `json:"qr_payload"`
+	QrSvg           *string        `json:"qr_svg,omitempty"`
+
+	// Refund Stato del rimborso visibile al cliente nell'area gestione (nessun dettaglio del provider).
+	Refund   *ManageRefundStatus    `json:"refund,omitempty"`
+	Releases *[]ManageRelease       `json:"releases,omitempty"`
+	Renewal  *PublicRenewalProposal `json:"renewal,omitempty"`
 
 	// Status Stato della prenotazione (spec 10.2).
 	Status  BookingStatus        `json:"status"`
@@ -5304,6 +5690,17 @@ type ManageModifyResult struct {
 	PreviousTotal Money             `json:"previous_total"`
 	Quote         *PublicQuote      `json:"quote,omitempty"`
 	Violations    []PolicyViolation `json:"violations"`
+}
+
+// ManageRefundStatus Stato del rimborso visibile al cliente nell'area gestione (nessun dettaglio del provider).
+type ManageRefundStatus struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount      Money      `json:"amount"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	RequestedAt time.Time  `json:"requested_at"`
+
+	// Status pending: riservato, in attesa di invio (o di nuovo tentativo); processing: inviato al provider, in attesa di conferma; succeeded: confermato dal provider (riga refund nel registro pagamenti); failed: tentativi esauriti, serve un intervento (notifica al gestore); cancelled: annullato dal gestore (rimborso fatto altrove).
+	Status RefundRequestStatus `json:"status"`
 }
 
 // ManageRelease defines model for ManageRelease.
@@ -5606,6 +6003,33 @@ type Money = int64
 // MonthDay Ricorrenza annuale `MM-DD`.
 type MonthDay = string
 
+// Notification Il client compone titolo e testo dalle chiavi i18n del kind con params (solo identificativi ed etichette non personali: nessuna email, telefono o token).
+type Notification struct {
+	CreatedAt  time.Time         `json:"created_at"`
+	Id         string            `json:"id"`
+	Kind       NotificationKind  `json:"kind"`
+	Params     map[string]string `json:"params"`
+	ReadAt     *time.Time        `json:"read_at,omitempty"`
+	ResourceId *string           `json:"resource_id,omitempty"`
+
+	// ResourceType Es. webhook_endpoint, booking, import_job.
+	ResourceType *string              `json:"resource_type,omitempty"`
+	Severity     NotificationSeverity `json:"severity"`
+}
+
+// NotificationKind defines model for NotificationKind.
+type NotificationKind string
+
+// NotificationList defines model for NotificationList.
+type NotificationList struct {
+	Items       []Notification `json:"items"`
+	NextCursor  *string        `json:"next_cursor,omitempty"`
+	UnreadCount int64          `json:"unread_count"`
+}
+
+// NotificationSeverity defines model for NotificationSeverity.
+type NotificationSeverity string
+
 // OccupancyGroupBy defines model for OccupancyGroupBy.
 type OccupancyGroupBy string
 
@@ -5770,6 +6194,9 @@ type OperationalBooking struct {
 
 	// Status Stato della prenotazione (spec 10.2).
 	Status BookingStatus `json:"status"`
+
+	// Test Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni.
+	Test *bool `json:"test,omitempty"`
 
 	// TotalAmount Importo in centesimi di euro (IVA inclusa).
 	TotalAmount Money `json:"total_amount"`
@@ -6776,6 +7203,9 @@ type PublicEstablishment struct {
 	Season *PublicSeason `json:"season,omitempty"`
 	Slug   string        `json:"slug"`
 
+	// TestMode Modalità prova attiva per questa richiesta (anteprima): la pagina mostra il banner.
+	TestMode *bool `json:"test_mode,omitempty"`
+
 	// Theme Tema della pagina pubblica (specifica 12.5).
 	Theme    Theme  `json:"theme"`
 	Timezone string `json:"timezone"`
@@ -7384,6 +7814,48 @@ type RefundPreview struct {
 // RefundPreviewAs defines model for RefundPreview.As.
 type RefundPreviewAs string
 
+// RefundRequest defines model for RefundRequest.
+type RefundRequest struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount        Money      `json:"amount"`
+	Attempts      int        `json:"attempts"`
+	BookingCode   *string    `json:"booking_code,omitempty"`
+	BookingId     string     `json:"booking_id"`
+	CompletedAt   *time.Time `json:"completed_at,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
+	Id            string     `json:"id"`
+	LastError     *string    `json:"last_error,omitempty"`
+	NextAttemptAt *time.Time `json:"next_attempt_at,omitempty"`
+
+	// PaymentId Riga refund del registro pagamenti (dopo la conferma).
+	PaymentId *string `json:"payment_id,omitempty"`
+
+	// PaymentIntentId Intent di pagamento rimborsato.
+	PaymentIntentId *string             `json:"payment_intent_id,omitempty"`
+	Provider        string              `json:"provider"`
+	Reason          RefundRequestReason `json:"reason"`
+
+	// RefundIntentId Intent di rimborso presso il provider (dopo il primo invio).
+	RefundIntentId *string `json:"refund_intent_id,omitempty"`
+
+	// Status pending: riservato, in attesa di invio (o di nuovo tentativo); processing: inviato al provider, in attesa di conferma; succeeded: confermato dal provider (riga refund nel registro pagamenti); failed: tentativi esauriti, serve un intervento (notifica al gestore); cancelled: annullato dal gestore (rimborso fatto altrove).
+	Status    RefundRequestStatus `json:"status"`
+	Test      *bool               `json:"test,omitempty"`
+	UpdatedAt time.Time           `json:"updated_at"`
+}
+
+// RefundRequestReason defines model for RefundRequest.Reason.
+type RefundRequestReason string
+
+// RefundRequestList defines model for RefundRequestList.
+type RefundRequestList struct {
+	Items      []RefundRequest `json:"items"`
+	NextCursor *string         `json:"next_cursor,omitempty"`
+}
+
+// RefundRequestStatus pending: riservato, in attesa di invio (o di nuovo tentativo); processing: inviato al provider, in attesa di conferma; succeeded: confermato dal provider (riga refund nel registro pagamenti); failed: tentativi esauriti, serve un intervento (notifica al gestore); cancelled: annullato dal gestore (rimborso fatto altrove).
+type RefundRequestStatus string
+
 // RenewalBulkAction defines model for RenewalBulkAction.
 type RenewalBulkAction string
 
@@ -7894,7 +8366,8 @@ type SeasonPass struct {
 	PackId string `json:"pack_id"`
 
 	// PaidAmount Importo in centesimi di euro (IVA inclusa).
-	PaidAmount Money `json:"paid_amount"`
+	PaidAmount    Money                    `json:"paid_amount"`
+	PriceOverride *SeasonPassPriceOverride `json:"price_override,omitempty"`
 
 	// ReleasedDays Mezze giornate rilasciate e non revocate.
 	ReleasedDays int    `json:"released_days"`
@@ -7910,6 +8383,9 @@ type SeasonPass struct {
 
 	// Status Stato della prenotazione (spec 10.2).
 	Status BookingStatus `json:"status"`
+
+	// Test Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni.
+	Test *bool `json:"test,omitempty"`
 
 	// TotalAmount Importo in centesimi di euro (IVA inclusa).
 	TotalAmount Money `json:"total_amount"`
@@ -7949,6 +8425,25 @@ type SeasonPassDetail struct {
 type SeasonPassList struct {
 	Items      []SeasonPass `json:"items"`
 	NextCursor *string      `json:"next_cursor,omitempty"`
+}
+
+// SeasonPassPriceOverride defines model for SeasonPassPriceOverride.
+type SeasonPassPriceOverride struct {
+	// Amount Importo in centesimi di euro (IVA inclusa).
+	Amount Money `json:"amount"`
+
+	// EngineAmount Totale calcolato dal motore al momento dell'override.
+	EngineAmount Money     `json:"engine_amount"`
+	Reason       string    `json:"reason"`
+	SetAt        time.Time `json:"set_at"`
+	SetByUserId  *string   `json:"set_by_user_id,omitempty"`
+}
+
+// SeasonPassPriceOverrideInput defines model for SeasonPassPriceOverrideInput.
+type SeasonPassPriceOverrideInput struct {
+	// Amount Nuovo totale in centesimi.
+	Amount int64  `json:"amount"`
+	Reason string `json:"reason"`
 }
 
 // SeasonPassUpdate defines model for SeasonPassUpdate.
@@ -8532,6 +9027,52 @@ type TermsVersionList struct {
 	Items []TermsVersion `json:"items"`
 }
 
+// TestBookingsPurgeRequest defines model for TestBookingsPurgeRequest.
+type TestBookingsPurgeRequest struct {
+	DryRun *bool `json:"dry_run,omitempty"`
+}
+
+// TestBookingsPurgeResult defines model for TestBookingsPurgeResult.
+type TestBookingsPurgeResult struct {
+	Bookings int64 `json:"bookings"`
+
+	// Deleted false con dry_run.
+	Deleted  bool  `json:"deleted"`
+	Payments int64 `json:"payments"`
+}
+
+// TestMode defines model for TestMode.
+type TestMode struct {
+	Enabled         bool       `json:"enabled"`
+	EnabledAt       *time.Time `json:"enabled_at,omitempty"`
+	EnabledByUserId *string    `json:"enabled_by_user_id,omitempty"`
+
+	// PublicEnabled true = anche i clienti senza link di anteprima prenotano in prova.
+	PublicEnabled bool `json:"public_enabled"`
+
+	// StripeTestConfigured Esiste una configurazione Stripe mode=test (usata automaticamente in prova).
+	StripeTestConfigured bool  `json:"stripe_test_configured"`
+	TestBookingsCount    int64 `json:"test_bookings_count"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// TestModeInput defines model for TestModeInput.
+type TestModeInput struct {
+	Enabled bool `json:"enabled"`
+
+	// PublicEnabled Default false.
+	PublicEnabled *bool `json:"public_enabled,omitempty"`
+}
+
+// TestModePreviewLink defines model for TestModePreviewLink.
+type TestModePreviewLink struct {
+	ExpiresAt time.Time `json:"expires_at"`
+	Token     string    `json:"token"`
+	Url       string    `json:"url"`
+}
+
 // Theme Tema della pagina pubblica (specifica 12.5).
 type Theme struct {
 	AccentColor *string `json:"accent_color,omitempty"`
@@ -8803,6 +9344,26 @@ type WebhookDelivery struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
+// WebhookDeliveryAttempt defines model for WebhookDeliveryAttempt.
+type WebhookDeliveryAttempt struct {
+	Attempt     int       `json:"attempt"`
+	AttemptedAt time.Time `json:"attempted_at"`
+	DeliveryId  string    `json:"delivery_id"`
+	DurationMs  int64     `json:"duration_ms"`
+	Error       *string   `json:"error,omitempty"`
+	Id          string    `json:"id"`
+
+	// ResponseExcerpt Primi 1024 byte della risposta.
+	ResponseExcerpt *string `json:"response_excerpt,omitempty"`
+	StatusCode      *int    `json:"status_code,omitempty"`
+}
+
+// WebhookDeliveryAttemptList defines model for WebhookDeliveryAttemptList.
+type WebhookDeliveryAttemptList struct {
+	Items      []WebhookDeliveryAttempt `json:"items"`
+	NextCursor *string                  `json:"next_cursor,omitempty"`
+}
+
 // WebhookDeliveryDetail defines model for WebhookDeliveryDetail.
 type WebhookDeliveryDetail struct {
 	Attempts    int        `json:"attempts"`
@@ -9021,6 +9582,9 @@ type BookingID = string
 // CSRFToken defines model for CSRFToken.
 type CSRFToken = string
 
+// CashRegisterID defines model for CashRegisterID.
+type CashRegisterID = string
+
 // CashSessionID defines model for CashSessionID.
 type CashSessionID = string
 
@@ -9069,6 +9633,9 @@ type IfMatchRequired = string
 // IfNoneMatch defines model for IfNoneMatch.
 type IfNoneMatch = string
 
+// ImportJobID defines model for ImportJobID.
+type ImportJobID = string
+
 // Limit defines model for Limit.
 type Limit = int
 
@@ -9078,6 +9645,9 @@ type ManageToken = string
 // MapID defines model for MapID.
 type MapID = string
 
+// NotificationID defines model for NotificationID.
+type NotificationID = string
+
 // PackID defines model for PackID.
 type PackID = string
 
@@ -9086,6 +9656,9 @@ type PolicyID = string
 
 // PoolID defines model for PoolID.
 type PoolID = string
+
+// PreviewToken defines model for PreviewToken.
+type PreviewToken = string
 
 // PriceRuleID defines model for PriceRuleID.
 type PriceRuleID = string
@@ -9098,6 +9671,9 @@ type QrFormat string
 
 // RatePeriodID defines model for RatePeriodID.
 type RatePeriodID = string
+
+// RefundRequestID defines model for RefundRequestID.
+type RefundRequestID = string
 
 // ReleaseID defines model for ReleaseID.
 type ReleaseID = string
@@ -9339,6 +9915,9 @@ type GetAvailabilityParams struct {
 
 // ListBookingsParams defines parameters for ListBookings.
 type ListBookingsParams struct {
+	// Test true = solo prenotazioni di prova, false = solo reali (default: tutte, con badge).
+	Test *bool `form:"test,omitempty" json:"test,omitempty"`
+
 	// From Prenotazioni che terminano in questa data o dopo.
 	From *Date `form:"from,omitempty" json:"from,omitempty"`
 
@@ -9530,10 +10109,51 @@ type ResendBookingConfirmationParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListCashRegistersParams defines parameters for ListCashRegisters.
+type ListCashRegistersParams struct {
+	// IncludeInactive Includi le casse disattivate.
+	IncludeInactive *bool `form:"include_inactive,omitempty" json:"include_inactive,omitempty"`
+}
+
+// CreateCashRegisterParams defines parameters for CreateCashRegister.
+type CreateCashRegisterParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeleteCashRegisterParams defines parameters for DeleteCashRegister.
+type DeleteCashRegisterParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateCashRegisterParams defines parameters for UpdateCashRegister.
+type UpdateCashRegisterParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListCashSessionsParams defines parameters for ListCashSessions.
 type ListCashSessionsParams struct {
 	// Status Aperte o chiuse.
 	Status *CashSessionStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// RegisterId Solo la cassa.
+	RegisterId *string `form:"register_id,omitempty" json:"register_id,omitempty"`
 
 	// Register Cassa (default tutte).
 	Register *string `form:"register,omitempty" json:"register,omitempty"`
@@ -9565,6 +10185,9 @@ type OpenCashSessionParams struct {
 
 // GetCurrentCashSessionParams defines parameters for GetCurrentCashSession.
 type GetCurrentCashSessionParams struct {
+	// RegisterId Solo la cassa.
+	RegisterId *string `form:"register_id,omitempty" json:"register_id,omitempty"`
+
 	// Register Cassa (default main).
 	Register *string `form:"register,omitempty" json:"register,omitempty"`
 }
@@ -9590,6 +10213,15 @@ type AddCashMovementParams struct {
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
+
+// GetCashSessionZReportParams defines parameters for GetCashSessionZReport.
+type GetCashSessionZReportParams struct {
+	// Paper Formato carta (default a4).
+	Paper *GetCashSessionZReportParamsPaper `form:"paper,omitempty" json:"paper,omitempty"`
+}
+
+// GetCashSessionZReportParamsPaper defines parameters for GetCashSessionZReport.
+type GetCashSessionZReportParamsPaper string
 
 // ListClosureDaysParams defines parameters for ListClosureDays.
 type ListClosureDaysParams struct {
@@ -9794,6 +10426,18 @@ type SendTestEmailParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ExportListParams defines parameters for ExportList.
+type ExportListParams struct {
+	// Format Formato del file (default csv).
+	Format *ExportFormat `form:"format,omitempty" json:"format,omitempty"`
+
+	// From Primo giorno (bookings, payments).
+	From *Date `form:"from,omitempty" json:"from,omitempty"`
+
+	// To Ultimo giorno incluso (bookings, payments).
+	To *Date `form:"to,omitempty" json:"to,omitempty"`
+}
+
 // ListExtrasParams defines parameters for ListExtras.
 type ListExtrasParams struct {
 	// Active Filtra per stato.
@@ -9848,6 +10492,9 @@ type GetCorrispettiviParams struct {
 
 	// GroupBy Raggruppamento (default day).
 	GroupBy *GetCorrispettiviParamsGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
+
+	// RegisterId Solo la cassa.
+	RegisterId *string `form:"register_id,omitempty" json:"register_id,omitempty"`
 
 	// Format Formato (default json; in alternativa Accept: text/csv).
 	Format *GetCorrispettiviParamsFormat `form:"format,omitempty" json:"format,omitempty"`
@@ -9943,6 +10590,60 @@ type ReleaseHoldParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListImportJobsParams defines parameters for ListImportJobs.
+type ListImportJobsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// CreateImportJobParams defines parameters for CreateImportJob.
+type CreateImportJobParams struct {
+	// Kind Cosa contiene il file.
+	Kind ImportKind `form:"kind" json:"kind"`
+
+	// Filename Nome del file originale (solo etichetta).
+	Filename *string `form:"filename,omitempty" json:"filename,omitempty"`
+
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DiscardImportJobParams defines parameters for DiscardImportJob.
+type DiscardImportJobParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ApplyImportJobParams defines parameters for ApplyImportJob.
+type ApplyImportJobParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// PreviewImportJobParams defines parameters for PreviewImportJob.
+type PreviewImportJobParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListMapsParams defines parameters for ListMaps.
 type ListMapsParams struct {
 	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
@@ -10014,6 +10715,32 @@ type ListMessagesParams struct {
 
 	// Limit Numero massimo di elementi (default 50).
 	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// ListNotificationsParams defines parameters for ListNotifications.
+type ListNotificationsParams struct {
+	// Unread Solo da leggere.
+	Unread *bool `form:"unread,omitempty" json:"unread,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// MarkAllNotificationsReadParams defines parameters for MarkAllNotificationsRead.
+type MarkAllNotificationsReadParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// MarkNotificationReadParams defines parameters for MarkNotificationRead.
+type MarkNotificationReadParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
 // UpdateOnlineSettingsParams defines parameters for UpdateOnlineSettings.
@@ -10426,6 +11153,28 @@ type UpdateRatePeriodParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListRefundRequestsParams defines parameters for ListRefundRequests.
+type ListRefundRequestsParams struct {
+	// Status Filtra per stato.
+	Status *RefundRequestStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// BookingId Solo la prenotazione.
+	BookingId *string `form:"booking_id,omitempty" json:"booking_id,omitempty"`
+
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// RetryRefundRequestParams defines parameters for RetryRefundRequest.
+type RetryRefundRequestParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListRenewalCampaignsParams defines parameters for ListRenewalCampaigns.
 type ListRenewalCampaignsParams struct {
 	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
@@ -10544,7 +11293,7 @@ type GetBookingsReportParams struct {
 	// GroupBy Raggruppamento (default channel).
 	GroupBy *BookingsReportGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10559,7 +11308,7 @@ type GetCancellationsReportParams struct {
 	// GroupBy Raggruppamento (default month).
 	GroupBy *CancellationsGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10580,7 +11329,7 @@ type GetYearComparisonReportParams struct {
 	// Align Allineamento del periodo di confronto (default calendar).
 	Align *ComparisonAlign `form:"align,omitempty" json:"align,omitempty"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10601,7 +11350,7 @@ type GetOccupancyReportParams struct {
 	// MapId Limita a una mappa.
 	MapId *string `form:"map_id,omitempty" json:"map_id,omitempty"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10613,7 +11362,7 @@ type GetOpenBalancesReportParams struct {
 	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
 	To ReportTo `form:"to" json:"to"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10631,7 +11380,7 @@ type GetRevenueReportParams struct {
 	// Basis Base di calcolo (default collected).
 	Basis *RevenueBasis `form:"basis,omitempty" json:"basis,omitempty"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10646,7 +11395,7 @@ type GetSeasonPassesReportParams struct {
 	// GroupBy Raggruppamento delle righe dei rilasci (default month).
 	GroupBy *SeasonPassesGroupBy `form:"group_by,omitempty" json:"group_by,omitempty"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10658,7 +11407,7 @@ type GetReportSummaryParams struct {
 	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
 	To ReportTo `form:"to" json:"to"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10676,7 +11425,7 @@ type GetTopCustomersReportParams struct {
 	// Limit Numero di clienti (default 20).
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// Format Formato (default json; in alternativa Accept: text/csv).
+	// Format Formato (default json; csv o xlsx, oppure Accept: text/csv).
 	Format *ReportFormat `form:"format,omitempty" json:"format,omitempty"`
 }
 
@@ -10717,6 +11466,26 @@ type CreateSeasonPassParams struct {
 type UpdateSeasonPassParams struct {
 	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ClearSeasonPassPriceOverrideParams defines parameters for ClearSeasonPassPriceOverride.
+type ClearSeasonPassPriceOverrideParams struct {
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
+	IfMatch IfMatchRequired `json:"If-Match"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// SetSeasonPassPriceOverrideParams defines parameters for SetSeasonPassPriceOverride.
+type SetSeasonPassPriceOverrideParams struct {
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
+	IfMatch IfMatchRequired `json:"If-Match"`
 
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
@@ -10924,6 +11693,30 @@ type PublishTermsVersionParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// PurgeTestBookingsParams defines parameters for PurgeTestBookings.
+type PurgeTestBookingsParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateTestModeParams defines parameters for UpdateTestMode.
+type UpdateTestModeParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CreateTestModePreviewLinkParams defines parameters for CreateTestModePreviewLink.
+type CreateTestModePreviewLinkParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListWaitlistEntriesParams defines parameters for ListWaitlistEntries.
 type ListWaitlistEntriesParams struct {
 	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
@@ -11045,6 +11838,15 @@ type ListWebhookDeliveriesParams struct {
 	// Status Filtra per stato.
 	Status *WebhookDeliveryStatus `form:"status,omitempty" json:"status,omitempty"`
 
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// ListWebhookDeliveryAttemptsParams defines parameters for ListWebhookDeliveryAttempts.
+type ListWebhookDeliveryAttemptsParams struct {
 	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
 	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
 
@@ -11176,6 +11978,9 @@ type CreatePublicBookingParams struct {
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
 	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XArenilePreview Token del link di anteprima (createTestModePreviewLink) inoltrato dalla pagina pubblica. Con la modalità prova attiva e public_enabled=false, senza un token valido le creazioni rispondono 403 test_mode_preview_required. Letto da tutte le operazioni pubbliche (dichiarato dove decide).
+	XArenilePreview *PreviewToken `json:"X-Arenile-Preview,omitempty"`
 }
 
 // AbandonPublicBookingParams defines parameters for AbandonPublicBooking.
@@ -11386,6 +12191,12 @@ type RecordBookingRefundJSONRequestBody = RefundInput
 // RejectBookingJSONRequestBody defines body for RejectBooking for application/json ContentType.
 type RejectBookingJSONRequestBody = BookingActionRequest
 
+// CreateCashRegisterJSONRequestBody defines body for CreateCashRegister for application/json ContentType.
+type CreateCashRegisterJSONRequestBody = CashRegisterInput
+
+// UpdateCashRegisterJSONRequestBody defines body for UpdateCashRegister for application/json ContentType.
+type UpdateCashRegisterJSONRequestBody = CashRegisterInput
+
 // OpenCashSessionJSONRequestBody defines body for OpenCashSession for application/json ContentType.
 type OpenCashSessionJSONRequestBody = CashSessionOpen
 
@@ -11439,6 +12250,9 @@ type UpdateFixedPriceJSONRequestBody = FixedPriceInput
 
 // CreateHoldJSONRequestBody defines body for CreateHold for application/json ContentType.
 type CreateHoldJSONRequestBody = HoldCreate
+
+// PreviewImportJobJSONRequestBody defines body for PreviewImportJob for application/json ContentType.
+type PreviewImportJobJSONRequestBody = ImportOptions
 
 // CreateMapJSONRequestBody defines body for CreateMap for application/json ContentType.
 type CreateMapJSONRequestBody = MapInput
@@ -11521,6 +12335,9 @@ type CreateSeasonPassJSONRequestBody = SeasonPassCreate
 // UpdateSeasonPassJSONRequestBody defines body for UpdateSeasonPass for application/json ContentType.
 type UpdateSeasonPassJSONRequestBody = SeasonPassUpdate
 
+// SetSeasonPassPriceOverrideJSONRequestBody defines body for SetSeasonPassPriceOverride for application/json ContentType.
+type SetSeasonPassPriceOverrideJSONRequestBody = SeasonPassPriceOverrideInput
+
 // CreateSeasonPassReleasesJSONRequestBody defines body for CreateSeasonPassReleases for application/json ContentType.
 type CreateSeasonPassReleasesJSONRequestBody = SeasonReleaseCreate
 
@@ -11553,6 +12370,12 @@ type UpdateTeamMemberJSONRequestBody = TeamMemberUpdate
 
 // PublishTermsVersionJSONRequestBody defines body for PublishTermsVersion for application/json ContentType.
 type PublishTermsVersionJSONRequestBody = TermsVersionInput
+
+// PurgeTestBookingsJSONRequestBody defines body for PurgeTestBookings for application/json ContentType.
+type PurgeTestBookingsJSONRequestBody = TestBookingsPurgeRequest
+
+// UpdateTestModeJSONRequestBody defines body for UpdateTestMode for application/json ContentType.
+type UpdateTestModeJSONRequestBody = TestModeInput
 
 // CreateWaitlistEntryJSONRequestBody defines body for CreateWaitlistEntry for application/json ContentType.
 type CreateWaitlistEntryJSONRequestBody = WaitlistEntryCreate
@@ -11760,6 +12583,21 @@ type ServerInterface interface {
 	// ResendBookingConfirmation Reinvia l'email di conferma (con un nuovo link di gestione)
 	// (POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/resend-confirmation)
 	ResendBookingConfirmation(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, bookingId BookingID, params ResendBookingConfirmationParams)
+	// ListCashRegisters Casse dello stabilimento
+	// (GET /api/admin/v1/establishments/{establishmentId}/cash-registers)
+	ListCashRegisters(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListCashRegistersParams)
+	// CreateCashRegister Crea una cassa
+	// (POST /api/admin/v1/establishments/{establishmentId}/cash-registers)
+	CreateCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateCashRegisterParams)
+	// DeleteCashRegister Elimina una cassa mai usata
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId})
+	DeleteCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, registerId CashRegisterID, params DeleteCashRegisterParams)
+	// GetCashRegister Dettaglio della cassa
+	// (GET /api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId})
+	GetCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, registerId CashRegisterID)
+	// UpdateCashRegister Modifica nome, ordine o stato della cassa
+	// (PUT /api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId})
+	UpdateCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, registerId CashRegisterID, params UpdateCashRegisterParams)
 	// ListCashSessions Storico delle sessioni di cassa
 	// (GET /api/admin/v1/establishments/{establishmentId}/cash-sessions)
 	ListCashSessions(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListCashSessionsParams)
@@ -11778,6 +12616,9 @@ type ServerInterface interface {
 	// AddCashMovement Versamento o prelievo di contanti
 	// (POST /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/movements)
 	AddCashMovement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, cashSessionId CashSessionID, params AddCashMovementParams)
+	// GetCashSessionZReport Chiusura Z stampabile (HTML pronto per la stampa / PDF)
+	// (GET /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/z-report)
+	GetCashSessionZReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, cashSessionId CashSessionID, params GetCashSessionZReportParams)
 	// ListClosureDays Elenco giorni di chiusura
 	// (GET /api/admin/v1/establishments/{establishmentId}/closure-days)
 	ListClosureDays(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListClosureDaysParams)
@@ -11850,6 +12691,9 @@ type ServerInterface interface {
 	// SendTestEmail Invia un'email di prova
 	// (POST /api/admin/v1/establishments/{establishmentId}/email-settings/test)
 	SendTestEmail(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SendTestEmailParams)
+	// ExportList Esportazione di un elenco in CSV o XLSX
+	// (GET /api/admin/v1/establishments/{establishmentId}/exports/{list})
+	ExportList(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, list ExportListKind, params ExportListParams)
 	// ListExtras Elenco extra
 	// (GET /api/admin/v1/establishments/{establishmentId}/extras)
 	ListExtras(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListExtrasParams)
@@ -11898,6 +12742,27 @@ type ServerInterface interface {
 	// GetHold Stato di un hold
 	// (GET /api/admin/v1/establishments/{establishmentId}/holds/{holdId})
 	GetHold(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, holdId HoldID)
+	// ListImportJobs Importazioni CSV
+	// (GET /api/admin/v1/establishments/{establishmentId}/imports)
+	ListImportJobs(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListImportJobsParams)
+	// CreateImportJob Carica un file CSV da importare
+	// (POST /api/admin/v1/establishments/{establishmentId}/imports)
+	CreateImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateImportJobParams)
+	// GetImportTemplate Modello CSV con le intestazioni attese
+	// (GET /api/admin/v1/establishments/{establishmentId}/imports/templates/{kind})
+	GetImportTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind ImportKind)
+	// DiscardImportJob Scarta l'importazione (cancella il file caricato)
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/imports/{importId})
+	DiscardImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID, params DiscardImportJobParams)
+	// GetImportJob Stato e rapporto dell'importazione
+	// (GET /api/admin/v1/establishments/{establishmentId}/imports/{importId})
+	GetImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID)
+	// ApplyImportJob Applica l'importazione validata
+	// (POST /api/admin/v1/establishments/{establishmentId}/imports/{importId}/apply)
+	ApplyImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID, params ApplyImportJobParams)
+	// PreviewImportJob Anteprima (dry run) con rapporto di validazione
+	// (POST /api/admin/v1/establishments/{establishmentId}/imports/{importId}/preview)
+	PreviewImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID, params PreviewImportJobParams)
 	// ListMaps Elenco mappe
 	// (GET /api/admin/v1/establishments/{establishmentId}/maps)
 	ListMaps(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMapsParams)
@@ -11922,6 +12787,15 @@ type ServerInterface interface {
 	// ListMessages Registro dei messaggi inviati (message_log)
 	// (GET /api/admin/v1/establishments/{establishmentId}/messages)
 	ListMessages(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMessagesParams)
+	// ListNotifications Notifiche del pannello
+	// (GET /api/admin/v1/establishments/{establishmentId}/notifications)
+	ListNotifications(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListNotificationsParams)
+	// MarkAllNotificationsRead Segna tutte le notifiche come lette
+	// (POST /api/admin/v1/establishments/{establishmentId}/notifications/read-all)
+	MarkAllNotificationsRead(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params MarkAllNotificationsReadParams)
+	// MarkNotificationRead Segna una notifica come letta
+	// (POST /api/admin/v1/establishments/{establishmentId}/notifications/{notificationId}/read)
+	MarkNotificationRead(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, notificationId NotificationID, params MarkNotificationReadParams)
 	// GetOnlineSettings Impostazioni della pagina pubblica (tema, origini dell'incorporamento, flusso)
 	// (GET /api/admin/v1/establishments/{establishmentId}/online-settings)
 	GetOnlineSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
@@ -12054,6 +12928,12 @@ type ServerInterface interface {
 	// UpdateRatePeriod Sostituisce periodo tariffario
 	// (PUT /api/admin/v1/establishments/{establishmentId}/rate-periods/{ratePeriodId})
 	UpdateRatePeriod(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, ratePeriodId RatePeriodID, params UpdateRatePeriodParams)
+	// ListRefundRequests Rimborsi garantiti verso il gestore di pagamento
+	// (GET /api/admin/v1/establishments/{establishmentId}/refund-requests)
+	ListRefundRequests(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRefundRequestsParams)
+	// RetryRefundRequest Riprova subito un rimborso fallito
+	// (POST /api/admin/v1/establishments/{establishmentId}/refund-requests/{refundRequestId}/retry)
+	RetryRefundRequest(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, refundRequestId RefundRequestID, params RetryRefundRequestParams)
 	// ListRenewalCampaigns Campagne di rinnovo degli abbonamenti
 	// (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns)
 	ListRenewalCampaigns(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRenewalCampaignsParams)
@@ -12123,6 +13003,12 @@ type ServerInterface interface {
 	// UpdateSeasonPass Modifica note dell'abbonamento
 	// (PATCH /api/admin/v1/establishments/{establishmentId}/season-passes/{passId})
 	UpdateSeasonPass(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID, params UpdateSeasonPassParams)
+	// ClearSeasonPassPriceOverride Torna al prezzo del listino
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override)
+	ClearSeasonPassPriceOverride(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID, params ClearSeasonPassPriceOverrideParams)
+	// SetSeasonPassPriceOverride Prezzo manuale dell'abbonamento
+	// (PUT /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override)
+	SetSeasonPassPriceOverride(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID, params SetSeasonPassPriceOverrideParams)
 	// ListSeasonPassReleases Giorni rilasciati
 	// (GET /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/releases)
 	ListSeasonPassReleases(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID)
@@ -12195,6 +13081,18 @@ type ServerInterface interface {
 	// PublishTermsVersion Pubblica una nuova versione delle condizioni (immutabile)
 	// (POST /api/admin/v1/establishments/{establishmentId}/terms-versions)
 	PublishTermsVersion(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PublishTermsVersionParams)
+	// PurgeTestBookings Eliminazione in blocco delle prenotazioni di prova
+	// (POST /api/admin/v1/establishments/{establishmentId}/test-bookings/purge)
+	PurgeTestBookings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PurgeTestBookingsParams)
+	// GetTestMode Stato della modalità prova
+	// (GET /api/admin/v1/establishments/{establishmentId}/test-mode)
+	GetTestMode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// UpdateTestMode Attiva o disattiva la modalità prova
+	// (PUT /api/admin/v1/establishments/{establishmentId}/test-mode)
+	UpdateTestMode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateTestModeParams)
+	// CreateTestModePreviewLink Link di anteprima della pagina pubblica in prova
+	// (POST /api/admin/v1/establishments/{establishmentId}/test-mode/preview-link)
+	CreateTestModePreviewLink(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateTestModePreviewLinkParams)
 	// ListWaitlistEntries Lista d'attesa in ordine di priorità
 	// (GET /api/admin/v1/establishments/{establishmentId}/waitlist)
 	ListWaitlistEntries(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListWaitlistEntriesParams)
@@ -12246,6 +13144,9 @@ type ServerInterface interface {
 	// GetWebhookDelivery Dettaglio di una consegna con corpo inviato ed estratto della risposta
 	// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId})
 	GetWebhookDelivery(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID)
+	// ListWebhookDeliveryAttempts Storico completo dei tentativi di una consegna
+	// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/attempts)
+	ListWebhookDeliveryAttempts(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID, params ListWebhookDeliveryAttemptsParams)
 	// RedeliverWebhook Rimette in coda una consegna (fallita o già consegnata) per un nuovo invio
 	// (POST /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/redeliver)
 	RedeliverWebhook(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID, params RedeliverWebhookParams)
@@ -12660,6 +13561,36 @@ func (_ Unimplemented) ResendBookingConfirmation(w http.ResponseWriter, r *http.
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListCashRegisters Casse dello stabilimento
+// (GET /api/admin/v1/establishments/{establishmentId}/cash-registers)
+func (_ Unimplemented) ListCashRegisters(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListCashRegistersParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateCashRegister Crea una cassa
+// (POST /api/admin/v1/establishments/{establishmentId}/cash-registers)
+func (_ Unimplemented) CreateCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateCashRegisterParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeleteCashRegister Elimina una cassa mai usata
+// (DELETE /api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId})
+func (_ Unimplemented) DeleteCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, registerId CashRegisterID, params DeleteCashRegisterParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetCashRegister Dettaglio della cassa
+// (GET /api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId})
+func (_ Unimplemented) GetCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, registerId CashRegisterID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateCashRegister Modifica nome, ordine o stato della cassa
+// (PUT /api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId})
+func (_ Unimplemented) UpdateCashRegister(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, registerId CashRegisterID, params UpdateCashRegisterParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListCashSessions Storico delle sessioni di cassa
 // (GET /api/admin/v1/establishments/{establishmentId}/cash-sessions)
 func (_ Unimplemented) ListCashSessions(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListCashSessionsParams) {
@@ -12693,6 +13624,12 @@ func (_ Unimplemented) CloseCashSession(w http.ResponseWriter, r *http.Request, 
 // AddCashMovement Versamento o prelievo di contanti
 // (POST /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/movements)
 func (_ Unimplemented) AddCashMovement(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, cashSessionId CashSessionID, params AddCashMovementParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetCashSessionZReport Chiusura Z stampabile (HTML pronto per la stampa / PDF)
+// (GET /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/z-report)
+func (_ Unimplemented) GetCashSessionZReport(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, cashSessionId CashSessionID, params GetCashSessionZReportParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -12840,6 +13777,12 @@ func (_ Unimplemented) SendTestEmail(w http.ResponseWriter, r *http.Request, est
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ExportList Esportazione di un elenco in CSV o XLSX
+// (GET /api/admin/v1/establishments/{establishmentId}/exports/{list})
+func (_ Unimplemented) ExportList(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, list ExportListKind, params ExportListParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListExtras Elenco extra
 // (GET /api/admin/v1/establishments/{establishmentId}/extras)
 func (_ Unimplemented) ListExtras(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListExtrasParams) {
@@ -12936,6 +13879,48 @@ func (_ Unimplemented) GetHold(w http.ResponseWriter, r *http.Request, establish
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListImportJobs Importazioni CSV
+// (GET /api/admin/v1/establishments/{establishmentId}/imports)
+func (_ Unimplemented) ListImportJobs(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListImportJobsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateImportJob Carica un file CSV da importare
+// (POST /api/admin/v1/establishments/{establishmentId}/imports)
+func (_ Unimplemented) CreateImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateImportJobParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetImportTemplate Modello CSV con le intestazioni attese
+// (GET /api/admin/v1/establishments/{establishmentId}/imports/templates/{kind})
+func (_ Unimplemented) GetImportTemplate(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, kind ImportKind) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DiscardImportJob Scarta l'importazione (cancella il file caricato)
+// (DELETE /api/admin/v1/establishments/{establishmentId}/imports/{importId})
+func (_ Unimplemented) DiscardImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID, params DiscardImportJobParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetImportJob Stato e rapporto dell'importazione
+// (GET /api/admin/v1/establishments/{establishmentId}/imports/{importId})
+func (_ Unimplemented) GetImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ApplyImportJob Applica l'importazione validata
+// (POST /api/admin/v1/establishments/{establishmentId}/imports/{importId}/apply)
+func (_ Unimplemented) ApplyImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID, params ApplyImportJobParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// PreviewImportJob Anteprima (dry run) con rapporto di validazione
+// (POST /api/admin/v1/establishments/{establishmentId}/imports/{importId}/preview)
+func (_ Unimplemented) PreviewImportJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, importId ImportJobID, params PreviewImportJobParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListMaps Elenco mappe
 // (GET /api/admin/v1/establishments/{establishmentId}/maps)
 func (_ Unimplemented) ListMaps(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMapsParams) {
@@ -12981,6 +13966,24 @@ func (_ Unimplemented) ReorientMap(w http.ResponseWriter, r *http.Request, estab
 // ListMessages Registro dei messaggi inviati (message_log)
 // (GET /api/admin/v1/establishments/{establishmentId}/messages)
 func (_ Unimplemented) ListMessages(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListMessagesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListNotifications Notifiche del pannello
+// (GET /api/admin/v1/establishments/{establishmentId}/notifications)
+func (_ Unimplemented) ListNotifications(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListNotificationsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// MarkAllNotificationsRead Segna tutte le notifiche come lette
+// (POST /api/admin/v1/establishments/{establishmentId}/notifications/read-all)
+func (_ Unimplemented) MarkAllNotificationsRead(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params MarkAllNotificationsReadParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// MarkNotificationRead Segna una notifica come letta
+// (POST /api/admin/v1/establishments/{establishmentId}/notifications/{notificationId}/read)
+func (_ Unimplemented) MarkNotificationRead(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, notificationId NotificationID, params MarkNotificationReadParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -13248,6 +14251,18 @@ func (_ Unimplemented) UpdateRatePeriod(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListRefundRequests Rimborsi garantiti verso il gestore di pagamento
+// (GET /api/admin/v1/establishments/{establishmentId}/refund-requests)
+func (_ Unimplemented) ListRefundRequests(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRefundRequestsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RetryRefundRequest Riprova subito un rimborso fallito
+// (POST /api/admin/v1/establishments/{establishmentId}/refund-requests/{refundRequestId}/retry)
+func (_ Unimplemented) RetryRefundRequest(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, refundRequestId RefundRequestID, params RetryRefundRequestParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListRenewalCampaigns Campagne di rinnovo degli abbonamenti
 // (GET /api/admin/v1/establishments/{establishmentId}/renewal-campaigns)
 func (_ Unimplemented) ListRenewalCampaigns(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListRenewalCampaignsParams) {
@@ -13383,6 +14398,18 @@ func (_ Unimplemented) GetSeasonPass(w http.ResponseWriter, r *http.Request, est
 // UpdateSeasonPass Modifica note dell'abbonamento
 // (PATCH /api/admin/v1/establishments/{establishmentId}/season-passes/{passId})
 func (_ Unimplemented) UpdateSeasonPass(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID, params UpdateSeasonPassParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ClearSeasonPassPriceOverride Torna al prezzo del listino
+// (DELETE /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override)
+func (_ Unimplemented) ClearSeasonPassPriceOverride(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID, params ClearSeasonPassPriceOverrideParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SetSeasonPassPriceOverride Prezzo manuale dell'abbonamento
+// (PUT /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override)
+func (_ Unimplemented) SetSeasonPassPriceOverride(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, passId SeasonPassID, params SetSeasonPassPriceOverrideParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -13530,6 +14557,30 @@ func (_ Unimplemented) PublishTermsVersion(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// PurgeTestBookings Eliminazione in blocco delle prenotazioni di prova
+// (POST /api/admin/v1/establishments/{establishmentId}/test-bookings/purge)
+func (_ Unimplemented) PurgeTestBookings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params PurgeTestBookingsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetTestMode Stato della modalità prova
+// (GET /api/admin/v1/establishments/{establishmentId}/test-mode)
+func (_ Unimplemented) GetTestMode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateTestMode Attiva o disattiva la modalità prova
+// (PUT /api/admin/v1/establishments/{establishmentId}/test-mode)
+func (_ Unimplemented) UpdateTestMode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdateTestModeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateTestModePreviewLink Link di anteprima della pagina pubblica in prova
+// (POST /api/admin/v1/establishments/{establishmentId}/test-mode/preview-link)
+func (_ Unimplemented) CreateTestModePreviewLink(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateTestModePreviewLinkParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ListWaitlistEntries Lista d'attesa in ordine di priorità
 // (GET /api/admin/v1/establishments/{establishmentId}/waitlist)
 func (_ Unimplemented) ListWaitlistEntries(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListWaitlistEntriesParams) {
@@ -13629,6 +14680,12 @@ func (_ Unimplemented) ListWebhookDeliveries(w http.ResponseWriter, r *http.Requ
 // GetWebhookDelivery Dettaglio di una consegna con corpo inviato ed estratto della risposta
 // (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId})
 func (_ Unimplemented) GetWebhookDelivery(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListWebhookDeliveryAttempts Storico completo dei tentativi di una consegna
+// (GET /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/attempts)
+func (_ Unimplemented) ListWebhookDeliveryAttempts(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, endpointId WebhookEndpointID, deliveryId WebhookDeliveryID, params ListWebhookDeliveryAttemptsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -15102,6 +16159,19 @@ func (siw *ServerInterfaceWrapper) ListBookings(w http.ResponseWriter, r *http.R
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ListBookingsParams
 
+	// ------------- Optional query parameter "test" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "test", r.URL.Query(), &params.Test, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "test"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "test", Err: err})
+		}
+		return
+	}
+
 	// ------------- Optional query parameter "from" -------------
 
 	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
@@ -16457,6 +17527,308 @@ func (siw *ServerInterfaceWrapper) ResendBookingConfirmation(w http.ResponseWrit
 	handler.ServeHTTP(w, r)
 }
 
+// ListCashRegisters operation middleware
+func (siw *ServerInterfaceWrapper) ListCashRegisters(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListCashRegistersParams
+
+	// ------------- Optional query parameter "include_inactive" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "include_inactive", r.URL.Query(), &params.IncludeInactive, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "include_inactive"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "include_inactive", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListCashRegisters(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateCashRegister operation middleware
+func (siw *ServerInterfaceWrapper) CreateCashRegister(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateCashRegisterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateCashRegister(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteCashRegister operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCashRegister(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "registerId" -------------
+	var registerId CashRegisterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "registerId", chi.URLParam(r, "registerId"), &registerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "registerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteCashRegisterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteCashRegister(w, r, establishmentId, registerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetCashRegister operation middleware
+func (siw *ServerInterfaceWrapper) GetCashRegister(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "registerId" -------------
+	var registerId CashRegisterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "registerId", chi.URLParam(r, "registerId"), &registerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "registerId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetCashRegister(w, r, establishmentId, registerId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateCashRegister operation middleware
+func (siw *ServerInterfaceWrapper) UpdateCashRegister(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "registerId" -------------
+	var registerId CashRegisterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "registerId", chi.URLParam(r, "registerId"), &registerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "registerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateCashRegisterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateCashRegister(w, r, establishmentId, registerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListCashSessions operation middleware
 func (siw *ServerInterfaceWrapper) ListCashSessions(w http.ResponseWriter, r *http.Request) {
 
@@ -16484,6 +17856,19 @@ func (siw *ServerInterfaceWrapper) ListCashSessions(w http.ResponseWriter, r *ht
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "register_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "register_id", r.URL.Query(), &params.RegisterId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "register_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "register_id", Err: err})
 		}
 		return
 	}
@@ -16650,6 +18035,19 @@ func (siw *ServerInterfaceWrapper) GetCurrentCashSession(w http.ResponseWriter, 
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetCurrentCashSessionParams
+
+	// ------------- Optional query parameter "register_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "register_id", r.URL.Query(), &params.RegisterId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "register_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "register_id", Err: err})
+		}
+		return
+	}
 
 	// ------------- Optional query parameter "register" -------------
 
@@ -16857,6 +18255,57 @@ func (siw *ServerInterfaceWrapper) AddCashMovement(w http.ResponseWriter, r *htt
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.AddCashMovement(w, r, establishmentId, cashSessionId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetCashSessionZReport operation middleware
+func (siw *ServerInterfaceWrapper) GetCashSessionZReport(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "cashSessionId" -------------
+	var cashSessionId CashSessionID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "cashSessionId", chi.URLParam(r, "cashSessionId"), &cashSessionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cashSessionId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCashSessionZReportParams
+
+	// ------------- Optional query parameter "paper" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "paper", r.URL.Query(), &params.Paper, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "paper"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "paper", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetCashSessionZReport(w, r, establishmentId, cashSessionId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -18388,6 +19837,83 @@ func (siw *ServerInterfaceWrapper) SendTestEmail(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r)
 }
 
+// ExportList operation middleware
+func (siw *ServerInterfaceWrapper) ExportList(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "list" -------------
+	var list ExportListKind
+
+	err = runtime.BindStyledParameterWithOptions("simple", "list", chi.URLParam(r, "list"), &list, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "list", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ExportListParams
+
+	// ------------- Optional query parameter "format" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "format", r.URL.Query(), &params.Format, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "format"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "format", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ExportList(w, r, establishmentId, list, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListExtras operation middleware
 func (siw *ServerInterfaceWrapper) ListExtras(w http.ResponseWriter, r *http.Request) {
 
@@ -18795,6 +20321,19 @@ func (siw *ServerInterfaceWrapper) GetCorrispettivi(w http.ResponseWriter, r *ht
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "group_by"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "group_by", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "register_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "register_id", r.URL.Query(), &params.RegisterId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "register_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "register_id", Err: err})
 		}
 		return
 	}
@@ -19421,6 +20960,441 @@ func (siw *ServerInterfaceWrapper) GetHold(w http.ResponseWriter, r *http.Reques
 	handler.ServeHTTP(w, r)
 }
 
+// ListImportJobs operation middleware
+func (siw *ServerInterfaceWrapper) ListImportJobs(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListImportJobsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListImportJobs(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateImportJob operation middleware
+func (siw *ServerInterfaceWrapper) CreateImportJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateImportJobParams
+
+	// ------------- Required query parameter "kind" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "kind", r.URL.Query(), &params.Kind, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "kind"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "filename" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "filename", r.URL.Query(), &params.Filename, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "filename"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "filename", Err: err})
+		}
+		return
+	}
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateImportJob(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetImportTemplate operation middleware
+func (siw *ServerInterfaceWrapper) GetImportTemplate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "kind" -------------
+	var kind ImportKind
+
+	err = runtime.BindStyledParameterWithOptions("simple", "kind", chi.URLParam(r, "kind"), &kind, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "kind", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetImportTemplate(w, r, establishmentId, kind)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DiscardImportJob operation middleware
+func (siw *ServerInterfaceWrapper) DiscardImportJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "importId" -------------
+	var importId ImportJobID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "importId", chi.URLParam(r, "importId"), &importId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "importId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DiscardImportJobParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DiscardImportJob(w, r, establishmentId, importId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetImportJob operation middleware
+func (siw *ServerInterfaceWrapper) GetImportJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "importId" -------------
+	var importId ImportJobID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "importId", chi.URLParam(r, "importId"), &importId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "importId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetImportJob(w, r, establishmentId, importId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ApplyImportJob operation middleware
+func (siw *ServerInterfaceWrapper) ApplyImportJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "importId" -------------
+	var importId ImportJobID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "importId", chi.URLParam(r, "importId"), &importId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "importId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ApplyImportJobParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ApplyImportJob(w, r, establishmentId, importId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PreviewImportJob operation middleware
+func (siw *ServerInterfaceWrapper) PreviewImportJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "importId" -------------
+	var importId ImportJobID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "importId", chi.URLParam(r, "importId"), &importId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "importId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PreviewImportJobParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PreviewImportJob(w, r, establishmentId, importId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListMaps operation middleware
 func (siw *ServerInterfaceWrapper) ListMaps(w http.ResponseWriter, r *http.Request) {
 
@@ -19972,6 +21946,183 @@ func (siw *ServerInterfaceWrapper) ListMessages(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListMessages(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListNotifications operation middleware
+func (siw *ServerInterfaceWrapper) ListNotifications(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListNotificationsParams
+
+	// ------------- Optional query parameter "unread" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "unread", r.URL.Query(), &params.Unread, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "unread"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "unread", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListNotifications(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// MarkAllNotificationsRead operation middleware
+func (siw *ServerInterfaceWrapper) MarkAllNotificationsRead(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params MarkAllNotificationsReadParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.MarkAllNotificationsRead(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// MarkNotificationRead operation middleware
+func (siw *ServerInterfaceWrapper) MarkNotificationRead(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "notificationId" -------------
+	var notificationId NotificationID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "notificationId", chi.URLParam(r, "notificationId"), &notificationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "notificationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params MarkNotificationReadParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.MarkNotificationRead(w, r, establishmentId, notificationId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -22896,6 +25047,146 @@ func (siw *ServerInterfaceWrapper) UpdateRatePeriod(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// ListRefundRequests operation middleware
+func (siw *ServerInterfaceWrapper) ListRefundRequests(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListRefundRequestsParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "booking_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "booking_id", r.URL.Query(), &params.BookingId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "booking_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "booking_id", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListRefundRequests(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RetryRefundRequest operation middleware
+func (siw *ServerInterfaceWrapper) RetryRefundRequest(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "refundRequestId" -------------
+	var refundRequestId RefundRequestID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "refundRequestId", chi.URLParam(r, "refundRequestId"), &refundRequestId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "refundRequestId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RetryRefundRequestParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RetryRefundRequest(w, r, establishmentId, refundRequestId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListRenewalCampaigns operation middleware
 func (siw *ServerInterfaceWrapper) ListRenewalCampaigns(w http.ResponseWriter, r *http.Request) {
 
@@ -24711,6 +27002,170 @@ func (siw *ServerInterfaceWrapper) UpdateSeasonPass(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// ClearSeasonPassPriceOverride operation middleware
+func (siw *ServerInterfaceWrapper) ClearSeasonPassPriceOverride(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "passId" -------------
+	var passId SeasonPassID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "passId", chi.URLParam(r, "passId"), &passId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "passId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ClearSeasonPassPriceOverrideParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatchRequired
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = IfMatch
+
+	} else {
+		err := fmt.Errorf("Header parameter If-Match is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
+		return
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ClearSeasonPassPriceOverride(w, r, establishmentId, passId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SetSeasonPassPriceOverride operation middleware
+func (siw *ServerInterfaceWrapper) SetSeasonPassPriceOverride(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "passId" -------------
+	var passId SeasonPassID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "passId", chi.URLParam(r, "passId"), &passId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "passId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SetSeasonPassPriceOverrideParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatchRequired
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = IfMatch
+
+	} else {
+		err := fmt.Errorf("Header parameter If-Match is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
+		return
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SetSeasonPassPriceOverride(w, r, establishmentId, passId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListSeasonPassReleases operation middleware
 func (siw *ServerInterfaceWrapper) ListSeasonPassReleases(w http.ResponseWriter, r *http.Request) {
 
@@ -26167,6 +28622,201 @@ func (siw *ServerInterfaceWrapper) PublishTermsVersion(w http.ResponseWriter, r 
 	handler.ServeHTTP(w, r)
 }
 
+// PurgeTestBookings operation middleware
+func (siw *ServerInterfaceWrapper) PurgeTestBookings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PurgeTestBookingsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PurgeTestBookings(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetTestMode operation middleware
+func (siw *ServerInterfaceWrapper) GetTestMode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetTestMode(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateTestMode operation middleware
+func (siw *ServerInterfaceWrapper) UpdateTestMode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateTestModeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateTestMode(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateTestModePreviewLink operation middleware
+func (siw *ServerInterfaceWrapper) CreateTestModePreviewLink(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateTestModePreviewLinkParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateTestModePreviewLink(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListWaitlistEntries operation middleware
 func (siw *ServerInterfaceWrapper) ListWaitlistEntries(w http.ResponseWriter, r *http.Request) {
 
@@ -27192,6 +29842,79 @@ func (siw *ServerInterfaceWrapper) GetWebhookDelivery(w http.ResponseWriter, r *
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetWebhookDelivery(w, r, establishmentId, endpointId, deliveryId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListWebhookDeliveryAttempts operation middleware
+func (siw *ServerInterfaceWrapper) ListWebhookDeliveryAttempts(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "endpointId" -------------
+	var endpointId WebhookEndpointID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "deliveryId" -------------
+	var deliveryId WebhookDeliveryID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "deliveryId", chi.URLParam(r, "deliveryId"), &deliveryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deliveryId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListWebhookDeliveryAttemptsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListWebhookDeliveryAttempts(w, r, establishmentId, endpointId, deliveryId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -28272,6 +30995,25 @@ func (siw *ServerInterfaceWrapper) CreatePublicBooking(w http.ResponseWriter, r 
 		}
 
 		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-Arenile-Preview" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Arenile-Preview")]; found {
+		var XArenilePreview PreviewToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Arenile-Preview", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Arenile-Preview", valueList[0], &XArenilePreview, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Arenile-Preview", Err: err})
+			return
+		}
+
+		params.XArenilePreview = &XArenilePreview
 
 	}
 
@@ -30704,6 +33446,84 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/public/v1/{slug}/waitlist/{waitlistToken}/decline", wrapper.DeclineWaitlistOffer)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/test-mode", wrapper.GetTestMode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/test-mode", wrapper.UpdateTestMode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/test-mode/preview-link", wrapper.CreateTestModePreviewLink)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/test-bookings/purge", wrapper.PurgeTestBookings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/refund-requests", wrapper.ListRefundRequests)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/refund-requests/{refundRequestId}/retry", wrapper.RetryRefundRequest)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/cash-registers", wrapper.ListCashRegisters)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/cash-registers", wrapper.CreateCashRegister)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId}", wrapper.DeleteCashRegister)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId}", wrapper.GetCashRegister)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId}", wrapper.UpdateCashRegister)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/z-report", wrapper.GetCashSessionZReport)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override", wrapper.ClearSeasonPassPriceOverride)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override", wrapper.SetSeasonPassPriceOverride)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/notifications", wrapper.ListNotifications)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/notifications/{notificationId}/read", wrapper.MarkNotificationRead)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/notifications/read-all", wrapper.MarkAllNotificationsRead)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/attempts", wrapper.ListWebhookDeliveryAttempts)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/exports/{list}", wrapper.ExportList)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports", wrapper.ListImportJobs)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports", wrapper.CreateImportJob)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports/templates/{kind}", wrapper.GetImportTemplate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports/{importId}", wrapper.DiscardImportJob)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports/{importId}", wrapper.GetImportJob)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports/{importId}/preview", wrapper.PreviewImportJob)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports/{importId}/apply", wrapper.ApplyImportJob)
 	})
 
 	return r
