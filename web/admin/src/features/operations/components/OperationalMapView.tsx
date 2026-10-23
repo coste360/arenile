@@ -16,7 +16,8 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@arenile/shared/ui/input-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
+import { ResponsiveTabsList } from '@arenile/shared/ui/patterns';
 import { ArrowRightLeftIcon, SearchIcon, XIcon } from 'lucide-react';
 import { lazy, Suspense, useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -78,6 +79,7 @@ export function OperationalMapView({
   className,
 }: OperationalMapViewProps) {
   const { t } = useTranslation('operations');
+  const [view, setView] = useState('map');
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -196,11 +198,16 @@ export function OperationalMapView({
         </Alert>
       )}
 
-      <Tabs defaultValue="map">
-        <TabsList>
-          <TabsTrigger value="map">{t('map.viewMap')}</TabsTrigger>
-          <TabsTrigger value="list">{t('map.viewList')}</TabsTrigger>
-        </TabsList>
+      <Tabs value={view} onValueChange={setView}>
+        <ResponsiveTabsList
+          label={t('map.views')}
+          value={view}
+          onValueChange={setView}
+          options={[
+            { value: 'map', label: t('map.viewMap') },
+            { value: 'list', label: t('map.viewList') },
+          ]}
+        />
         <TabsContent value="map" className="space-y-2">
           {/* Legend first: readable before scrolling past the drawing (spec 11.3). */}
           <div className="flex flex-wrap items-start gap-x-6 gap-y-2">

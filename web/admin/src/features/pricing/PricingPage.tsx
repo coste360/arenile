@@ -1,5 +1,5 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui';
-import { EmptyState, QueryState } from '@arenile/shared/ui/patterns';
+import { Tabs, TabsContent } from '@arenile/shared/ui';
+import { EmptyState, QueryState, ResponsiveTabsList } from '@arenile/shared/ui/patterns';
 import { CalendarXIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -71,13 +71,13 @@ export function PricingPage() {
       )}
       {common && (
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="gap-4">
-          <TabsList variant="line" aria-label={t('tabs.label')}>
-            {TABS.map((id) => (
-              <TabsTrigger key={id} value={id}>
-                {t(`tabs.${id}`)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <ResponsiveTabsList
+            variant="line"
+            label={t('tabs.label')}
+            value={tab}
+            onValueChange={(v) => setTab(v as Tab)}
+            options={TABS.map((id) => ({ value: id, label: t(`tabs.${id}`) }))}
+          />
           <TabsContent value="rules">
             <RulesTab {...common} />
           </TabsContent>

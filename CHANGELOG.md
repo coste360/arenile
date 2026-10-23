@@ -167,6 +167,12 @@ Completamento della stagione**.
 
 ### Changed
 
+- Pannello: un solo aspetto per ogni componente (standard in `web/shared/src/ui/README.md`, "UI standard"):
+  tutte le pagine usano `Page` (intestazione, azioni, avvisi), le tabelle sono sempre `DataTable` (filtri nella
+  barra della tabella, numeri e importi allineati a destra, raggruppamento per gli abbonamenti per zona, totali
+  in fondo ai corrispettivi, "Carica altri" comune), sezioni in `SectionCard`, KPI in `StatCard`, schede dei
+  prezzi come `NavTabs`; schede e controlli segmentati scorrono in orizzontale su telefono e nessuna pagina
+  scorre più di lato a 390 px; `Alert` con varianti `success` e `warning` al posto degli stili di pagina.
 - Pagina pubblica: il passo "Quando" e il selettore della lingua (NativeSelect) fanno parte del primo caricamento, il corpo del calendario si carica all'apertura del campo; `npm run budget` conta ogni chunk del primo schermo seguendo il manifest di Vite (JS 141 KB gzip su 150, CSS 12,8 KB su 25) e la scansione di Tailwind è limitata ai componenti usati. I passi successivi restano disattivati con "In arrivo".
 - Pannello: nomi al posto dei codici per periodi e categorie di prezzo (riepiloghi delle regole, matrice con colonna "Codice" nascosta, simulatore, policy, linea temporale delle stagioni); Policy come scheda della barra prezzi; barra laterale con le sezioni non ancora disponibili raccolte in un gruppo "In arrivo" chiuso e voce "Tutti gli stabilimenti"; mappa condivisa con un solo punto di tabulazione (frecce, PagSu/PagGiù, Home/Fine tra le postazioni) ed etichette mai sotto i 9 px; procedura guidata senza riferimenti alle milestone interne.
 

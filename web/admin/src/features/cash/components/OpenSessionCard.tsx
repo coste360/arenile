@@ -1,17 +1,9 @@
 import { problemMessageKey } from '@arenile/shared/api';
 import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@arenile/shared/ui/card';
 import { Spinner } from '@arenile/shared/ui/spinner';
 import { Textarea } from '@arenile/shared/ui/textarea';
-import { MoneyInput } from '@arenile/shared/ui/patterns';
+import { MoneyInput, SectionCard } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LockOpenIcon } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
@@ -44,16 +36,25 @@ export function OpenSessionCard({ establishmentId }: { establishmentId: string }
   });
   const errors = form.formState.errors;
   return (
-    <Card className="max-w-xl">
-      <form noValidate onSubmit={submit} aria-labelledby="open-session-title">
-        <CardHeader>
-          <CardTitle id="open-session-title" className="flex items-center gap-2">
-            <LockOpenIcon aria-hidden="true" className="size-5" />
-            {t('open.title')}
-          </CardTitle>
-          <CardDescription>{t('open.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5 pt-5">
+    <form
+      noValidate
+      onSubmit={submit}
+      aria-labelledby="open-session-title"
+      className="max-w-xl min-w-0"
+    >
+      <SectionCard
+        title={t('open.title')}
+        titleId="open-session-title"
+        description={t('open.description')}
+        icon={LockOpenIcon}
+        footer={
+          <Button type="submit" disabled={open.isPending}>
+            {open.isPending && <Spinner />}
+            {t('open.submit')}
+          </Button>
+        }
+      >
+        <div className="space-y-5">
           {open.error && (
             <Alert variant="destructive">
               <AlertDescription>
@@ -87,14 +88,8 @@ export function OpenSessionCard({ establishmentId }: { establishmentId: string }
               {...form.register('notes')}
             />
           </CashField>
-        </CardContent>
-        <CardFooter className="justify-end pt-5">
-          <Button type="submit" disabled={open.isPending}>
-            {open.isPending && <Spinner />}
-            {t('open.submit')}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+        </div>
+      </SectionCard>
+    </form>
   );
 }

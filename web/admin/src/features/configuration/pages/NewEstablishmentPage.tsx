@@ -1,12 +1,11 @@
 import { useEstablishments, useMe } from '@arenile/shared/api';
 import { Button } from '@arenile/shared/ui/button';
-import { Card, CardContent, CardFooter } from '@arenile/shared/ui/card';
 import { FieldDescription, FieldSeparator } from '@arenile/shared/ui/field';
 import { Input } from '@arenile/shared/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
 import { Spinner } from '@arenile/shared/ui/spinner';
-import { EmptyState, QueryState } from '@arenile/shared/ui/patterns';
-import { LockIcon } from 'lucide-react';
+import { EmptyState, QueryState, SectionCard } from '@arenile/shared/ui/patterns';
+import { Building2Icon, LockIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -105,8 +104,20 @@ function NewEstablishmentForm({
 
   return (
     <form noValidate onSubmit={onSubmit} className="max-w-3xl">
-      <Card>
-        <CardContent className="space-y-6">
+      <SectionCard
+        icon={Building2Icon}
+        title={t('establishment.general.title')}
+        footer={
+          <>
+            <FieldDescription className="mr-auto">{t('new.afterCreate')}</FieldDescription>
+            <Button type="submit" disabled={create.isPending}>
+              {create.isPending && <Spinner />}
+              {t('new.submit')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
           <FormAlert state={alert} />
           {orgs.length > 1 && (
             <SelectField
@@ -198,15 +209,8 @@ function NewEstablishmentForm({
               />
             </Field>
           </div>
-        </CardContent>
-        <CardFooter className="flex-wrap justify-between gap-3 border-t">
-          <FieldDescription>{t('new.afterCreate')}</FieldDescription>
-          <Button type="submit" disabled={create.isPending}>
-            {create.isPending && <Spinner />}
-            {t('new.submit')}
-          </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </SectionCard>
     </form>
   );
 }

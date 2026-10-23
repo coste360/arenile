@@ -1,9 +1,14 @@
 import { MapLegend } from '@arenile/shared/map';
 import { Button } from '@arenile/shared/ui/button';
 import { ButtonGroup } from '@arenile/shared/ui/button-group';
-import { DatePicker, EmptyState, PageHeader, QueryState } from '@arenile/shared/ui/patterns';
+import {
+  DatePicker,
+  EmptyState,
+  Page,
+  QueryState,
+  SegmentedControl,
+} from '@arenile/shared/ui/patterns';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
-import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import { useNavigate } from '@tanstack/react-router';
 import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon } from 'lucide-react';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
@@ -88,19 +93,18 @@ export function PlanningPage() {
     });
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-        actions={
-          permissions.canWriteBookings && (
-            <Button onClick={() => setNewBooking({ none: true })}>
-              <PlusIcon aria-hidden="true" />
-              {t('newBooking')}
-            </Button>
-          )
-        }
-      />
+    <Page
+      title={t('title')}
+      description={t('description')}
+      actions={
+        permissions.canWriteBookings && (
+          <Button onClick={() => setNewBooking({ none: true })}>
+            <PlusIcon aria-hidden="true" />
+            {t('newBooking')}
+          </Button>
+        )
+      }
+    >
       <div
         role="toolbar"
         aria-label={t('toolbar.label')}
@@ -133,19 +137,15 @@ export function PlanningPage() {
           aria-label={t('toolbar.from')}
           className="sm:w-44"
         />
-        <ToggleGroup
-          type="single"
-          variant="outline"
+        <SegmentedControl
+          label={t('toolbar.length')}
           value={String(length)}
-          onValueChange={(v) => v && setLength(Number(v) as RangeLength)}
-          aria-label={t('toolbar.length')}
-        >
-          {RANGE_LENGTHS.map((n) => (
-            <ToggleGroupItem key={n} value={String(n)} className="px-3">
-              {t('toolbar.days', { count: n })}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          onValueChange={(v) => setLength(Number(v) as RangeLength)}
+          options={RANGE_LENGTHS.map((n) => ({
+            value: String(n),
+            label: t('toolbar.days', { count: n }),
+          }))}
+        />
       </div>
 
       <QueryState
@@ -205,7 +205,7 @@ export function PlanningPage() {
           />
         </Suspense>
       )}
-    </div>
+    </Page>
   );
 }
 

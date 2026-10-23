@@ -175,7 +175,7 @@ describe('admin app', () => {
       'aria-disabled',
       'true',
     );
-    expect(await screen.findByRole('rowheader', { name: 'Lido Demo' })).toBeInTheDocument();
+    expect(await screen.findByRole('cell', { name: 'Lido Demo' })).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: /^\/b\/lido-demo\s*Apri la pagina pubblica di Lido Demo$/ }),
     ).toHaveAttribute('href', '/b/lido-demo');

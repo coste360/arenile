@@ -38,7 +38,12 @@ function setup(rules: PolicyRules) {
       <Harness rules={rules} onSave={(r) => saved.push(r)} />
     </I18nextProvider>,
   );
-  return { user, saved, tiers: () => screen.queryAllByTestId('cancellation-tier') };
+  // Data rows of the tiers table (the first row is the header).
+  const tiers = () => {
+    const table = screen.queryByRole('table', { name: 'Fasce di rimborso' });
+    return table ? within(table).getAllByRole('row').slice(1) : [];
+  };
+  return { user, saved, tiers };
 }
 
 const daysOf = (row: HTMLElement) =>

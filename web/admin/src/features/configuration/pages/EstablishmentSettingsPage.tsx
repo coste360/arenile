@@ -1,6 +1,6 @@
 import { Button } from '@arenile/shared/ui/button';
-import { QueryState } from '@arenile/shared/ui/patterns';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { QueryState, ResponsiveTabsList } from '@arenile/shared/ui/patterns';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { Link } from '@tanstack/react-router';
 import {
   Building2Icon,
@@ -73,15 +73,17 @@ export function EstablishmentSettingsPage() {
     >
       {/* Keyed by id: switching establishment remounts the forms with fresh defaults.
           Every panel stays mounted (hidden) so unsaved edits survive a tab change. */}
-      <Tabs key={est.id} value={tab} onValueChange={setTab} className="gap-6">
-        <TabsList aria-label={t('establishment.tabsLabel')} className="h-auto flex-wrap">
-          {TABS.map(({ id, icon: Icon }) => (
-            <TabsTrigger key={id} value={id}>
-              <Icon aria-hidden="true" />
-              {t(`establishment.tabs.${id}`)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs key={est.id} value={tab} onValueChange={setTab} className="gap-4">
+        <ResponsiveTabsList
+          label={t('establishment.tabsLabel')}
+          value={tab}
+          onValueChange={setTab}
+          options={TABS.map(({ id, icon }) => ({
+            value: id,
+            icon,
+            label: t(`establishment.tabs.${id}`),
+          }))}
+        />
         <TabsContent value="general" forceMount hidden={tab !== 'general'}>
           <GeneralSection {...props} part="details" />
         </TabsContent>

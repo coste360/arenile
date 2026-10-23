@@ -1,7 +1,6 @@
 import { Button } from '@arenile/shared/ui/button';
 import { ButtonGroup } from '@arenile/shared/ui/button-group';
-import { DatePicker, OptionSelect } from '@arenile/shared/ui/patterns';
-import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
+import { DatePicker, OptionSelect, SegmentedControl } from '@arenile/shared/ui/patterns';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { addDays } from '../lib/dates';
@@ -71,19 +70,13 @@ export function DayToolbar({
         aria-label={t('toolbar.date')}
         className="sm:w-44"
       />
-      <ToggleGroup
-        type="single"
-        variant="outline"
+      <SegmentedControl
+        collapseOnNarrow
+        label={t('toolbar.slot')}
         value={slot}
-        onValueChange={(v) => v && onChange({ slot: v as SlotChoice })}
-        aria-label={t('toolbar.slot')}
-      >
-        {SLOTS.map((s) => (
-          <ToggleGroupItem key={s} value={s} className="px-3">
-            {t(`slot.${s}`)}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+        onValueChange={(v) => onChange({ slot: v as SlotChoice })}
+        options={SLOTS.map((s) => ({ value: s, label: t(`slot.${s}`) }))}
+      />
       {maps && maps.length > 1 && onMapChange && (
         <OptionSelect
           value={mapId ?? ''}

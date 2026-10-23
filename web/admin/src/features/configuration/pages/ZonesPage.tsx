@@ -89,11 +89,7 @@ export function ZonesPage() {
       accessorKey: 'price_category',
       meta: { label: t('zones.fields.price_category') },
       header: t('zones.fields.price_category'),
-      cell: ({ row }) => (
-        <Badge variant="outline" className="font-mono">
-          {row.original.price_category}
-        </Badge>
-      ),
+      cell: ({ row }) => <Badge variant="outline">{row.original.price_category}</Badge>,
     },
     {
       id: 'online',
@@ -120,13 +116,8 @@ export function ZonesPage() {
     },
     {
       accessorKey: 'spot_count',
-      meta: { label: t('zones.spots') },
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('zones.spots')} className="justify-end" />
-      ),
-      cell: ({ row }) => (
-        <span className="block text-right tabular-nums">{row.original.spot_count}</span>
-      ),
+      meta: { label: t('zones.spots'), align: 'right' },
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('zones.spots')} />,
     },
     {
       id: 'actions',

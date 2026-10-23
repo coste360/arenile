@@ -15,14 +15,15 @@ import {
   InputGroupInput,
   InputGroupText,
   Switch,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from '@arenile/shared/ui';
-import { MultiSelect, OptionSelect, type Option } from '@arenile/shared/ui/patterns';
+import {
+  type ColumnDef,
+  DataTable,
+  MultiSelect,
+  OptionSelect,
+  RowActions,
+  type Option,
+} from '@arenile/shared/ui/patterns';
 import {
   ArrowDownIcon,
   ArrowDownWideNarrowIcon,
@@ -30,8 +31,14 @@ import {
   PlusIcon,
   Trash2Icon,
 } from 'lucide-react';
-import { useId, type ComponentProps, type ReactNode } from 'react';
-import { useFieldArray, useWatch, type Control, type Path } from 'react-hook-form';
+import { useId, useMemo, type ComponentProps, type ReactNode } from 'react';
+import {
+  useFieldArray,
+  useWatch,
+  type Control,
+  type FieldArrayWithId,
+  type Path,
+} from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { EuroTextInput, TextRow } from '../pricing/kit';
 import { nextTier, sortTiers, type RulesValues } from './policy.schema';
@@ -439,6 +446,124 @@ function TiersTable({ control }: { control: Control<RulesValues> }) {
   const tiers = useFieldArray({ control, name: 'cancellation' });
   const tierValues = useWatch({ control, name: 'cancellation' });
   const captionId = useId();
+  const { move, remove } = tiers;
+  const count = tiers.fields.length;
+  // Memoized: flexRender mounts cell functions as components, so new column
+  // objects on every render would remount the inputs and drop their focus.
+  const columns = useMemo<ColumnDef<FieldArrayWithId<RulesValues, 'cancellation'>>[]>(
+    () => [
+      {
+        id: 'until_days_before',
+        meta: { label: t('fields.until_days_before') },
+        header: t('fields.until_days_before'),
+        cell: ({ row }) => (
+          <FormField
+            control={control}
+            name={`cancellation.${row.index}.until_days_before`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <InputGroupLike
+                    ariaLabel={t('fields.until_days_before')}
+                    suffix={t('daysShort')}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ),
+      },
+      {
+        id: 'refund_percent',
+        meta: { label: t('fields.refund_percent') },
+        header: t('fields.refund_percent'),
+        cell: ({ row }) => (
+          <FormField
+            control={control}
+            name={`cancellation.${row.index}.refund_percent`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <InputGroupLike ariaLabel={t('fields.refund_percent')} suffix="%" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ),
+      },
+      {
+        id: 'as',
+        meta: { label: t('fields.refund_as') },
+        header: t('fields.refund_as'),
+        cell: ({ row }) => (
+          <FormField
+            control={control}
+            name={`cancellation.${row.index}.as`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <OptionSelect
+                    aria-label={t('fields.refund_as')}
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="min-w-32"
+                    options={[
+                      { value: 'refund', label: t('refundAs.refund') },
+                      { value: 'credit', label: t('refundAs.credit') },
+                    ]}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        ),
+      },
+      {
+        id: 'actions',
+        enableHiding: false,
+        header: () => <span className="sr-only">{t('actions')}</span>,
+        cell: ({ row }) => {
+          const i = row.index;
+          return (
+            <RowActions>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('moveTierUp', { n: i + 1 })}
+                disabled={i === 0}
+                onClick={() => move(i, i - 1)}
+              >
+                <ArrowUpIcon aria-hidden="true" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('moveTierDown', { n: i + 1 })}
+                disabled={i === count - 1}
+                onClick={() => move(i, i + 1)}
+              >
+                <ArrowDownIcon aria-hidden="true" />
+              </Button>
+              {/* Same look as the shared DeleteButton (no confirmation: the form is not saved yet). */}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('removeTier', { n: i + 1 })}
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => remove(i)}
+              >
+                <Trash2Icon aria-hidden="true" />
+              </Button>
+            </RowActions>
+          );
+        },
+      },
+    ],
+    [control, t, count, move, remove],
+  );
   return (
     <div className="space-y-3">
       {tiers.fields.length === 0 ? (
@@ -446,115 +571,14 @@ function TiersTable({ control }: { control: Control<RulesValues> }) {
           {t('noRefund')}
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <Table aria-describedby={captionId}>
-            <TableHeader className="bg-muted/50">
-              <TableRow className="hover:bg-transparent">
-                <TableHead>{t('fields.until_days_before')}</TableHead>
-                <TableHead>{t('fields.refund_percent')}</TableHead>
-                <TableHead>{t('fields.refund_as')}</TableHead>
-                <TableHead>
-                  <span className="sr-only">{t('actions')}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tiers.fields.map((f, i) => (
-                <TableRow key={f.id} data-testid="cancellation-tier" className="align-top">
-                  <TableCell>
-                    <FormField
-                      control={control}
-                      name={`cancellation.${i}.until_days_before`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <InputGroupLike
-                              ariaLabel={t('fields.until_days_before')}
-                              suffix={t('daysShort')}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <FormField
-                      control={control}
-                      name={`cancellation.${i}.refund_percent`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <InputGroupLike
-                              ariaLabel={t('fields.refund_percent')}
-                              suffix="%"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <FormField
-                      control={control}
-                      name={`cancellation.${i}.as`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <OptionSelect
-                              aria-label={t('fields.refund_as')}
-                              value={field.value}
-                              onChange={field.onChange}
-                              className="min-w-32"
-                              options={[
-                                { value: 'refund', label: t('refundAs.refund') },
-                                { value: 'credit', label: t('refundAs.credit') },
-                              ]}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-0.5">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={t('moveTierUp', { n: i + 1 })}
-                        disabled={i === 0}
-                        onClick={() => tiers.move(i, i - 1)}
-                      >
-                        <ArrowUpIcon aria-hidden="true" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={t('moveTierDown', { n: i + 1 })}
-                        disabled={i === tiers.fields.length - 1}
-                        onClick={() => tiers.move(i, i + 1)}
-                      >
-                        <ArrowDownIcon aria-hidden="true" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={t('removeTier', { n: i + 1 })}
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => tiers.remove(i)}
-                      >
-                        <Trash2Icon aria-hidden="true" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          caption={t('tiersCaption')}
+          columns={columns}
+          data={tiers.fields}
+          getRowId={(f) => f.id}
+          pageSize={0}
+          columnToggle={false}
+        />
       )}
       <div className="flex flex-wrap gap-2">
         <Button

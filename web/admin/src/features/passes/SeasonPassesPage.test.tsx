@@ -116,15 +116,15 @@ describe('SeasonPassesPage', () => {
         }),
     };
     renderApp(`/e/${EST_ID}/abbonamenti`, routes);
-    const table = await screen.findByRole('table', { name: 'Abbonamenti della zona Prima fila' });
+    const table = await screen.findByRole('table', { name: 'Abbonamenti' });
     const rows = within(table)
       .getAllByRole('row')
       .slice(1)
       .map((r) => r.textContent ?? '');
-    expect(rows[0]).toBe('Fila A');
+    expect(rows[0]).toBe('Prima fila · Fila A2 abbonamenti');
     expect(rows[1]).toMatch(/^A1Rossi Mario/);
     expect(rows[2]).toMatch(/^A2Bianchi Luca.*4.*24,00\s€/);
-    expect(rows[3]).toBe('Fila B');
+    expect(rows[3]).toBe('Prima fila · Fila B1 abbonamento');
     expect(rows[4]).toMatch(/^B1Neri Anna/);
     expect(screen.getAllByText('3 abbonamenti')).not.toHaveLength(0);
 

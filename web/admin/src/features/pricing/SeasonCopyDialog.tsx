@@ -145,7 +145,7 @@ export function SeasonCopyForm({
           </AlertDescription>
         </Alert>
         {result.warnings.length > 0 && (
-          <Alert className="border-warning/50 bg-warning/10">
+          <Alert variant="warning">
             <TriangleAlertIcon aria-hidden="true" />
             <AlertTitle>{t('copy.warnings')}</AlertTitle>
             <AlertDescription>

@@ -1,4 +1,4 @@
-import { PageHeader } from '@arenile/shared/ui/patterns';
+import { Page } from '@arenile/shared/ui/patterns';
 import { useTranslation } from 'react-i18next';
 import { PlaceholderPage } from '../components/PlaceholderPage';
 import { EstablishmentsPage } from './EstablishmentsPage';
@@ -7,8 +7,7 @@ import { EstablishmentsPage } from './EstablishmentsPage';
 export function SettingsPage() {
   const { t } = useTranslation();
   return (
-    <div className="space-y-8">
-      <PageHeader title={t('nav.settings')} description={t('admin.placeholder.settings')} />
+    <Page title={t('nav.settings')} description={t('admin.placeholder.settings')}>
       <EstablishmentsPage />
       <PlaceholderPage
         titleKey="admin.placeholder.title"
@@ -16,6 +15,6 @@ export function SettingsPage() {
         milestone="M1"
         asPage={false}
       />
-    </div>
+    </Page>
   );
 }

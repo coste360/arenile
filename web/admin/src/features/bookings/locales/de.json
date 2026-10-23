@@ -5,7 +5,6 @@
     "empty": "Noch keine Buchungen.",
     "emptyFiltered": "Keine Buchung entspricht den Filtern.",
     "loadMore": "Weitere laden",
-    "loadingMore": "Wird geladen…",
     "pass": "Saisonabo"
   },
   "detail": {
@@ -27,6 +26,7 @@
     "where": "Was und wo",
     "targetSpots": "Plätze auf der Karte",
     "targetZone": "Zone oder Menge",
+    "target": "Zuweisung",
     "perSpot": "pro Platz",
     "customer": "Kunde",
     "customerExisting": "Kunde suchen",
@@ -128,8 +128,6 @@
     "balance": "Offen"
   },
   "filters": {
-    "title": "Filter",
-    "search": "Suche",
     "searchPlaceholder": "Code, Kunde oder Telefon",
     "period": "Zeitraum",
     "status": "Status",

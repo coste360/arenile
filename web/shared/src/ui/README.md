@@ -52,6 +52,9 @@ Hard-coded English strings in generated code must go through `t('ui.…')`.
 - `dialog`: optional `closeLabel` prop; close/sheet/sidebar/breadcrumb/pagination/command/
   spinner strings are translated (`ui.*` keys).
 - `form`: `FormMessage` translates the zod message (messages are i18n keys).
+- `alert`: extra `success` and `warning` variants (never restyle an Alert with `className`).
+- `tabs`: the trigger classes are exported as `tabsTriggerClasses` for `NavTabs` (no visual
+  change). Narrow screens are handled by `ResponsiveTabsList`, never by scrolling.
 - `sonner`: uses our `useTheme` (no next-themes); `breadcrumb`: `BreadcrumbPage` has no fake
   `role="link"`; `hooks/use-mobile`: `useSyncExternalStore` version.
 
@@ -177,23 +180,131 @@ const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues });
 </Form>;
 ```
 
-| Pattern                                                          | Contract                                                                                                                                                        |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PageHeader`                                                     | `title` (the page `<h1 id="page-title">`), `description`, `actions`, `eyebrow`                                                                                  |
-| `EmptyState`                                                     | `icon` (lucide), `title`, `description`, `action`, `children`, `bordered`                                                                                       |
-| `ConfirmDialog`                                                  | `title`, `description`, `confirmLabel`, `destructive`, `onConfirm` (async: spinner, closes on success), `trigger` or `open`/`onOpenChange`                      |
-| `DataTable`                                                      | see above; `onRowClick`, `getRowId`, `pageSize` (0 = no pagination), `initialSorting`                                                                           |
-| `FormSection` / `FieldRow`                                       | settings layout; `FieldRow` = FormField+FormItem+FormLabel+FormControl+FormDescription+FormMessage                                                              |
-| `MoneyInput`                                                     | `value: number \| null` **integer cents** ⇄ "1.234,50 €"; exact parsing (no floats); `null` when empty/invalid (+ `aria-invalid`, the typed text stays visible) |
-| `PercentInput`                                                   | integer **basis points** ⇄ "5,5 %"                                                                                                                              |
-| `DatePicker`                                                     | `value: "YYYY-MM-DD"`; dd/MM/yyyy; UI language, Monday first; `min`/`max` (year dropdown: ±10 years), `clearable`. Never `<input type="date">`                  |
-| `DateRangePicker`                                                | `value: { from, to? }` ISO dates, two months                                                                                                                    |
-| `I18nTextInput`                                                  | `value: Record<locale, string>`; tabs it/en/de/fr, default locale first, "da tradurre" marker                                                                   |
-| `StatusBadge`                                                    | `tone: neutral \| info \| success \| warning \| danger \| highlight` or `spotStatus`; dot + text                                                                |
-| `ThemeProvider` / `ThemeToggle` / `ThemeRadioItems` / `useTheme` | colour scheme                                                                                                                                                   |
+| Pattern                                                          | Contract                                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PageHeader`                                                     | `title` (the page `<h1 id="page-title">`), `description`, `actions`, `eyebrow`                                                                                                                                                                              |
+| `EmptyState`                                                     | `icon` (lucide), `title`, `description`, `action`, `children`, `bordered`                                                                                                                                                                                   |
+| `ConfirmDialog`                                                  | `title`, `description`, `confirmLabel`, `destructive`, `onConfirm` (async: spinner, closes on success), `trigger` or `open`/`onOpenChange`                                                                                                                  |
+| `DataTable`                                                      | see above; `onRowClick`, `getRowLabel`, `getRowId`, `pageSize` (0 = no pagination), `loadMore`, `filters`, `searchValue`/`onSearchChange`, `groupBy`/`renderGroup`, `embedded`, `stickyHeader`, `error`, column `meta.align` and `footer`, `initialSorting` |
+| `Page` / `BackLink` / `PageToolbar`                              | page skeleton (section + PageHeader + `notice`), back link for `eyebrow`, row of page-scope controls                                                                                                                                                        |
+| `SectionCard`                                                    | titled card: `title`, `description`, `icon`, `actions`, `footer`, `flush` (for `DataTable embedded`), `as`                                                                                                                                                  |
+| `StatCard`                                                       | KPI tile: `label`, `value`, `hint`, `icon`, `tone` (`default` \| `danger` \| `success`), `children`                                                                                                                                                         |
+| `NavTabs` / `NavTab`                                             | route links with the `TabsList` look (`NavTab active` wraps the router link), a Select below `sm` (`options`, `value`, `onValueChange`)                                                                                                                     |
+| `ResponsiveTabsList` / `SegmentedControl`                        | tab bar / single-choice toggle that become a full-width Select below `sm` (`collapseOnNarrow` for segmented controls); `useIsNarrow`, `NARROW_QUERY`                                                                                                        |
+| `FormSection` / `FieldRow`                                       | settings layout; `FieldRow` = FormField+FormItem+FormLabel+FormControl+FormDescription+FormMessage                                                                                                                                                          |
+| `MoneyInput`                                                     | `value: number \| null` **integer cents** ⇄ "1.234,50 €"; exact parsing (no floats); `null` when empty/invalid (+ `aria-invalid`, the typed text stays visible)                                                                                             |
+| `PercentInput`                                                   | integer **basis points** ⇄ "5,5 %"                                                                                                                                                                                                                          |
+| `DatePicker`                                                     | `value: "YYYY-MM-DD"`; dd/MM/yyyy; UI language, Monday first; `min`/`max` (year dropdown: ±10 years), `clearable`. Never `<input type="date">`                                                                                                              |
+| `DateRangePicker`                                                | `value: { from, to? }` ISO dates, two months                                                                                                                                                                                                                |
+| `I18nTextInput`                                                  | `value: Record<locale, string>`; tabs it/en/de/fr, default locale first, "da tradurre" marker                                                                                                                                                               |
+| `StatusBadge`                                                    | `tone: neutral \| info \| success \| warning \| danger \| highlight` or `spotStatus`; dot + text                                                                                                                                                            |
+| `ThemeProvider` / `ThemeToggle` / `ThemeRadioItems` / `useTheme` | colour scheme                                                                                                                                                                                                                                               |
 
 Display formatting: `formatCents(cents)` → "1.234,50 €", `formatBasisPoints(bp)`,
 `formatIsoDate('2026-07-14')` → "14/07/2026" (all Italian conventions, `Intl` it-IT).
+
+## UI standard (one look per component)
+
+Every admin screen is built from the same pieces, so a component looks the same on every page.
+**Never restyle a shared component from a page** (`className` that changes colour, size, padding,
+radius, shadow or typography of `Tabs`, `Table`, `Card`, `PageHeader`, `Badge`, `Button`…): if a
+page needs a different look, add a variant/prop to the shared component or pattern and use it
+everywhere it applies. Page-level `className` is for layout only (grid, gap, width, `min-w-0`).
+
+### Page skeleton
+
+```tsx
+<Page
+  title={t('x.title')}            // <h1 id="page-title"> text-2xl, the only h1
+  description={t('x.description')}
+  eyebrow={<BackLink><Link to="…"><ArrowLeftIcon aria-hidden="true" />{t('x.back')}</Link></BackLink>}
+  actions={<>…secondary (outline)… <Button>primary</Button></>}
+  notice={readOnly && <ReadOnlyNotice …/>}
+>
+  <PageToolbar>…season / date / period controls…</PageToolbar>
+  …content…
+</Page>
+```
+
+- `Page` = `<section aria-labelledby="page-title" class="space-y-6">` + `PageHeader`; every
+  page (configuration pages through `ConfigPage`, pricing through `PricingLayout`) uses it, same
+  width (the shell's `max-w-7xl`), same 24px gap between blocks.
+- Header actions: right of the title on desktop, under it on mobile, wrapping. Order: secondary
+  `outline` buttons first, the one primary (`default`) last; a destructive page action uses
+  `variant="destructive"` and comes first. Icons: lucide, `aria-hidden`, before the text.
+- Back link: `BackLink` in `eyebrow` (ghost, small, muted, aligned to the title).
+- Page-scope selectors (season, day navigation, Giorno/Mese, Fasce): one `PageToolbar` row under
+  the header; selects use an inline muted label (`SeasonSelect` style) or `aria-label`, toggles are
+  `ToggleGroup variant="outline"`; no stacked "label above field" filter grids.
+
+### Tabs
+
+- In-page tabs: a controlled `<Tabs value onValueChange>` with `ResponsiveTabsList` (`label`,
+  `value`, `onValueChange`, `options: { value, label, icon? }[]`) and `TabsContent`. From `sm` up it
+  is the shadcn `TabsList`; below `sm` (`NARROW_QUERY`, `useIsNarrow`) a full-width `Select` with
+  icon + label drives the same value. Never a raw `TabsList`, never wrapping or scrolling, no
+  scrollbars anywhere. Same behaviour on every tabbed page.
+- Tabs that switch route (Listino / Simulatore / Matrice / Copertura / Policy): `NavTabs` + `NavTab`
+  with `options`/`value`/`onValueChange` (navigate) for the narrow Select.
+- A second level of tabs inside a tab: `ResponsiveTabsList variant="line"`.
+- Segmented controls (Giorno intero/Mattina/Pomeriggio, Giorno/Mese, formulas): `SegmentedControl`;
+  pass `collapseOnNarrow` when the options do not fit in 288px (320px screen minus gutters), it then
+  becomes the same Select below `sm`. Field-level toggles inside forms (`MultiToggle`,
+  `SingleToggle`) wrap instead.
+
+### Lists (tables)
+
+- Always `DataTable`, also for small read-only tables in detail pages. No hand-rolled `<Table>`.
+- Container: card surface (`rounded-xl border bg-card shadow-sm`), muted header row, first/last
+  column aligned to 16px. Inside a `SectionCard flush` use `DataTable embedded`
+  (no own border, columns aligned with the card title).
+- Toolbar (one row above the table): search left (`searchable`; server-side lists pass
+  `searchValue`/`onSearchChange`), then `filters` (selects, switches, date range: compact, with
+  `aria-label`), right side `toolbar` actions and the "Colonne" menu.
+- Column headers: `DataTableColumnHeader` for sortable columns, plain text otherwise; every column
+  has `meta.label`.
+- Numbers and money: `meta: { align: 'right' }` (right-aligned + `tabular-nums`, header too);
+  money `formatCents`, dates `formatIsoDate` (ranges `dd/MM/yyyy → dd/MM/yyyy`), "—" for none;
+  an amount still due is `text-destructive font-medium`, zero is `text-muted-foreground`.
+- Status: `StatusBadge` (tone from the domain map); tags and codes: `Badge variant="outline"`.
+- Row actions: last column, `RowActions` (`EditButton`/`DeleteButton` icon buttons), right
+  aligned. Clickable rows: `onRowClick` + `getRowLabel` (focusable, Enter opens) and a real link in
+  the first cell when there is a page to go to.
+- Grouping (season passes by zone): `groupBy` + `renderGroup` heading rows, not one table per card.
+  Totals: column `footer` (rendered as the table footer row).
+- Paging: client lists paginate (`pageSize`, default 20); cursor lists use `loadMore` and have no
+  client-side sorting or search (they would only cover the loaded rows): filters go to the server.
+- Empty: `empty={<EmptyState bordered={false} …/>}` inside the table; loading: `loading` (skeleton
+  rows); error: `error={<QueryState …/>}`, shown in the table body so the toolbar stays usable.
+- Mobile: the table scrolls horizontally inside its container; the toolbar wraps (search full width).
+- Editable cells (an input per row, e.g. the cash count) keep a plain shadcn `Table`: inline
+  `cell` functions of columns rebuilt on every render remount and lose focus. Use the same
+  surface and header classes as DataTable there.
+
+### Sections, KPIs, forms, dialogs
+
+- Titled block (detail sections, breakdowns, timelines, settings groups): `SectionCard` (`title`,
+  `description`, `actions`, `footer` with right-aligned buttons, `icon`, `flush`). No ad-hoc
+  `Card`/`CardHeader` compositions in pages.
+- KPI tiles: `StatCard` (`label`, `value`, `hint`, `icon`, `tone`) in
+  `grid grid-cols-2 gap-4 lg:grid-cols-4` (or `lg:grid-cols-3`); never bespoke big numbers.
+- Forms: `Form` + `FieldRow` (label above, help text under, message under that, "(facoltativo)"
+  marker instead of asterisks); two columns on `sm+` with `grid gap-4 sm:grid-cols-2`, one on
+  mobile. Save bar = `SectionCard footer` (or `FormSection footer`) aligned right; in dialogs and
+  sheets `FormDialog`/`FormSheet` footer: Annulla (outline) then the primary action, right aligned.
+- Buttons: default size everywhere (page header, SectionCard actions, toolbars, footers);
+  `size="sm"` only inside table rows and dense toolbars of the map editor; icon-only buttons use
+  `size="icon-sm"` with `aria-label`.
+- Notices: `Alert` (`default`, `destructive`, `success`, `warning`), `role="status"` for
+  non-errors.
+- Confirmations: `ConfirmDialog` (`destructive` for deletions). Feedback: `toast` from sonner.
+- Empty / not available: `EmptyState` (bordered when standalone). Loading/error: `QueryState`.
+- Typography: page title `text-2xl font-semibold`, section title `font-semibold` (16px),
+  descriptions `text-sm text-muted-foreground`, table text `text-sm`, hints `text-xs`.
+- Spacing: 24px (`space-y-6`/`gap-6`) between page blocks, 16px (`gap-4`) inside grids of cards,
+  8px (`gap-2`) inside toolbars.
+- Mobile (390px): no horizontal page scroll; grids collapse to one column (`min-w-0` on grid
+  children holding tables), tab bars and long segmented controls become a Select, header actions wrap.
 
 ## Rules for new screens
 

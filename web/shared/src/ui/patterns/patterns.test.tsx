@@ -1,7 +1,8 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Tabs, TabsContent } from '../tabs';
 import { renderWithI18n } from '../../testing';
 import {
   ConfirmDialog,
@@ -10,8 +11,16 @@ import {
   DatePicker,
   I18nTextInput,
   MoneyInput,
+  NARROW_QUERY,
+  NavTab,
+  NavTabs,
+  Page,
   PageHeader,
   PercentInput,
+  ResponsiveTabsList,
+  SectionCard,
+  SegmentedControl,
+  StatCard,
   ThemeProvider,
   ThemeToggle,
   type ColumnDef,
@@ -156,6 +165,323 @@ describe('DataTable', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Decrescente' }));
     const firstCell = screen.getAllByRole('row')[1];
     expect(firstCell).toHaveTextContent('Ombrellone 03');
+  });
+
+  interface Pass {
+    id: string;
+    zone: string;
+    spot: string;
+    cents: number;
+  }
+  const passes: Pass[] = [
+    { id: 'a1', zone: 'Prima fila', spot: 'A1', cents: 100 },
+    { id: 'b1', zone: 'Seconda fila', spot: 'B1', cents: 250 },
+    { id: 'a2', zone: 'Prima fila', spot: 'A2', cents: 50 },
+  ];
+  const passColumns: ColumnDef<Pass>[] = [
+    {
+      accessorKey: 'spot',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Postazione" />,
+      footer: 'Totale',
+    },
+    {
+      accessorKey: 'cents',
+      header: 'Saldo',
+      meta: { align: 'right' },
+      footer: ({ table }) => table.getRowModel().rows.reduce((sum, r) => sum + r.original.cents, 0),
+    },
+  ];
+
+  it('groups rows by key in order of first appearance, with a heading row', () => {
+    renderWithI18n(
+      <DataTable
+        columns={passColumns}
+        data={passes}
+        caption="Abbonamenti"
+        groupBy={(p) => p.zone}
+        renderGroup={(zone, rows) => `${zone} (${rows.length})`}
+      />,
+    );
+    const rows = screen.getAllByRole('row').map((r) => r.textContent);
+    expect(rows.slice(1, 6)).toEqual([
+      'Prima fila (2)',
+      'A1100',
+      'A250',
+      'Seconda fila (1)',
+      'B1250',
+    ]);
+  });
+
+  it('right-aligns numeric columns and renders the footer totals', () => {
+    renderWithI18n(<DataTable columns={passColumns} data={passes} caption="Abbonamenti" />);
+    const header = screen.getByRole('columnheader', { name: 'Saldo' });
+    expect(header).toHaveClass('text-right', 'tabular-nums');
+    expect(screen.getByRole('cell', { name: '250' })).toHaveClass('text-right');
+    const footer = screen.getAllByRole('row').at(-1)!;
+    expect(footer).toHaveTextContent('Totale400');
+  });
+
+  it('delegates search to the server, shows filters and loads more', async () => {
+    const user = userEvent.setup();
+    const onSearch = vi.fn();
+    const onLoadMore = vi.fn();
+    renderWithI18n(
+      <DataTable
+        columns={passColumns}
+        data={passes}
+        caption="Abbonamenti"
+        searchable
+        searchValue=""
+        onSearchChange={onSearch}
+        filters={<button type="button">Stato</button>}
+        loadMore={{ hasMore: true, onLoadMore }}
+      />,
+    );
+    await user.type(screen.getByRole('searchbox', { name: 'Filtra…' }), 'z');
+    expect(onSearch).toHaveBeenCalledWith('z');
+    // Rows are not filtered client-side.
+    expect(screen.getByText('B1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Stato' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Carica altri' }));
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens a clickable row with the keyboard', async () => {
+    const user = userEvent.setup();
+    const onRowClick = vi.fn();
+    renderWithI18n(
+      <DataTable
+        columns={passColumns}
+        data={passes}
+        caption="Abbonamenti"
+        onRowClick={onRowClick}
+        getRowLabel={(p) => `Apri ${p.spot}`}
+      />,
+    );
+    screen.getByRole('row', { name: 'Apri B1' }).focus();
+    await user.keyboard('{Enter}');
+    expect(onRowClick).toHaveBeenCalledWith(passes[1]);
+  });
+
+  it('does not open the row when Enter is pressed on a control inside it', async () => {
+    const user = userEvent.setup();
+    const onRowClick = vi.fn();
+    const onEdit = vi.fn();
+    const withAction: ColumnDef<Pass>[] = [
+      ...passColumns,
+      {
+        id: 'actions',
+        cell: ({ row }) => (
+          <button type="button" onClick={(e) => (e.stopPropagation(), onEdit(row.original.id))}>
+            Modifica {row.original.spot}
+          </button>
+        ),
+      },
+    ];
+    renderWithI18n(
+      <DataTable
+        columns={withAction}
+        data={passes}
+        caption="Abbonamenti"
+        onRowClick={onRowClick}
+      />,
+    );
+    screen.getByRole('button', { name: 'Modifica A1' }).focus();
+    await user.keyboard('{Enter}');
+    expect(onEdit).toHaveBeenCalledWith('a1');
+    expect(onRowClick).not.toHaveBeenCalled();
+  });
+
+  it('shows an error in the body and keeps the toolbar', () => {
+    renderWithI18n(
+      <DataTable
+        columns={passColumns}
+        data={passes}
+        caption="Abbonamenti"
+        searchable
+        error={<p>Errore di rete</p>}
+        loadMore={{ hasMore: true, onLoadMore: () => {} }}
+      />,
+    );
+    expect(screen.getByText('Errore di rete')).toBeInTheDocument();
+    expect(screen.getByRole('searchbox', { name: 'Filtra…' })).toBeInTheDocument();
+    expect(screen.queryByText('A1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Totale')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Carica altri' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Page / SectionCard / StatCard / NavTabs', () => {
+  it('labels the page section by its title and renders sections and KPIs', () => {
+    renderWithI18n(
+      <Page
+        title="Cassa"
+        description="Sessione corrente"
+        actions={<button type="button">Incassa</button>}
+      >
+        <StatCard label="Totale incassi" value="157,80 €" tone="danger" hint="oggi" />
+        <SectionCard
+          title="Incassi per metodo"
+          description="Per metodo"
+          actions={<button type="button">Esporta</button>}
+        >
+          <p>contenuto</p>
+        </SectionCard>
+      </Page>,
+    );
+    expect(screen.getByRole('region', { name: 'Cassa' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Cassa' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Incassi per metodo' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('157,80 €')).toHaveClass('text-destructive', 'tabular-nums');
+    expect(screen.getByRole('button', { name: 'Esporta' })).toBeInTheDocument();
+  });
+
+  const navOptions = [
+    { value: '/a', label: 'Listino' },
+    { value: '/b', label: 'Matrice' },
+  ];
+  function Nav({ onValueChange = () => {} }: { onValueChange?: (v: string) => void }) {
+    return (
+      <NavTabs
+        label="Strumenti prezzi"
+        options={navOptions}
+        value="/a"
+        onValueChange={onValueChange}
+      >
+        <NavTab active>
+          <a href="/a">Listino</a>
+        </NavTab>
+        <NavTab active={false}>
+          <a href="/b">Matrice</a>
+        </NavTab>
+      </NavTabs>
+    );
+  }
+
+  it('marks the active route tab', () => {
+    renderWithI18n(<Nav />);
+    const nav = screen.getByRole('navigation', { name: 'Strumenti prezzi' });
+    expect(nav).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Listino' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Matrice' })).toHaveAttribute('data-state', 'inactive');
+  });
+
+  describe('on a narrow screen', () => {
+    const original = window.matchMedia;
+    beforeEach(() => {
+      window.matchMedia = ((query: string) => ({
+        matches: query === NARROW_QUERY,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      })) as typeof window.matchMedia;
+    });
+    afterEach(() => {
+      window.matchMedia = original;
+    });
+
+    it('route tabs become a Select that navigates', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      renderWithI18n(<Nav onValueChange={onValueChange} />);
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      const select = screen.getByRole('combobox', { name: 'Strumenti prezzi' });
+      expect(select).toHaveTextContent('Listino');
+      await user.click(select);
+      await user.click(await screen.findByRole('option', { name: 'Matrice' }));
+      expect(onValueChange).toHaveBeenCalledWith('/b');
+    });
+
+    it('tabs become a Select driving the same Tabs value', async () => {
+      const user = userEvent.setup();
+      function Harness() {
+        const [tab, setTab] = useState('general');
+        const options = [
+          { value: 'general', label: 'Generale' },
+          { value: 'pricing', label: 'Prezzi e IVA' },
+        ];
+        return (
+          <Tabs value={tab} onValueChange={setTab}>
+            <ResponsiveTabsList
+              label="Sezioni"
+              value={tab}
+              onValueChange={setTab}
+              options={options}
+            />
+            <TabsContent value="general">Pannello generale</TabsContent>
+            <TabsContent value="pricing">Pannello prezzi</TabsContent>
+          </Tabs>
+        );
+      }
+      renderWithI18n(<Harness />);
+      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+      expect(screen.getByText('Pannello generale')).toBeInTheDocument();
+      await user.click(screen.getByRole('combobox', { name: 'Sezioni' }));
+      await user.click(await screen.findByRole('option', { name: 'Prezzi e IVA' }));
+      expect(await screen.findByText('Pannello prezzi')).toBeInTheDocument();
+    });
+
+    it('collapses a long segmented control, keeps a short one', () => {
+      const options = [
+        { value: 'FULL', label: 'Giorno intero' },
+        { value: 'AM', label: 'Mattina' },
+        { value: 'PM', label: 'Pomeriggio' },
+      ];
+      renderWithI18n(
+        <>
+          <SegmentedControl
+            collapseOnNarrow
+            label="Fasce"
+            value="AM"
+            onValueChange={() => {}}
+            options={options}
+          />
+          <SegmentedControl label="Periodo" value="AM" onValueChange={() => {}} options={options} />
+        </>,
+      );
+      expect(screen.getByRole('combobox', { name: 'Fasce' })).toHaveTextContent('Mattina');
+      expect(screen.getByRole('radiogroup', { name: 'Periodo' })).toBeInTheDocument();
+    });
+  });
+
+  it('renders tabs and a segmented control on a wide screen', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    renderWithI18n(
+      <>
+        <Tabs value="general">
+          <ResponsiveTabsList
+            label="Sezioni"
+            value="general"
+            onValueChange={() => {}}
+            options={[
+              { value: 'general', label: 'Generale' },
+              { value: 'pricing', label: 'Prezzi e IVA' },
+            ]}
+          />
+        </Tabs>
+        <SegmentedControl
+          collapseOnNarrow
+          label="Fasce"
+          value="FULL"
+          onValueChange={onValueChange}
+          options={[
+            { value: 'FULL', label: 'Giorno intero' },
+            { value: 'AM', label: 'Mattina' },
+          ]}
+        />
+      </>,
+    );
+    expect(screen.getByRole('tablist', { name: 'Sezioni' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Generale' })).toHaveAttribute('aria-selected', 'true');
+    await user.click(screen.getByRole('radio', { name: 'Mattina' }));
+    expect(onValueChange).toHaveBeenCalledWith('AM');
   });
 });
 

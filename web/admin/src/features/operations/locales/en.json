@@ -28,6 +28,7 @@
     "closedDescription": "Closing day or off season: spots cannot be booked.",
     "viewMap": "Map",
     "viewList": "List",
+    "views": "View",
     "aria": "Operational map {{name}}, {{date}}, {{slot}}"
   },
   "slot": {

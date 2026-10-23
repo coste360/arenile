@@ -1,19 +1,19 @@
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arenile/shared/ui/card';
-import { Label } from '@arenile/shared/ui/label';
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@arenile/shared/ui/table';
-import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
-import { DatePicker, EmptyState, PageHeader, QueryState } from '@arenile/shared/ui/patterns';
+  BackLink,
+  DataTable,
+  DatePicker,
+  EmptyState,
+  Page,
+  PageToolbar,
+  QueryState,
+  SectionCard,
+  StatCard,
+  type ColumnDef,
+  SegmentedControl,
+} from '@arenile/shared/ui/patterns';
 import { dateToIso, formatIsoDate } from '@arenile/shared/lib/dates';
 import { formatBasisPoints } from '@arenile/shared/lib/money';
 import { Link } from '@tanstack/react-router';
@@ -28,9 +28,13 @@ import {
   sumVat,
   totalsByMethod,
   type CorrispettiviReport,
+  type CorrispettiviRow,
+  type MethodRow,
   type Period,
 } from './lib/corrispettivi';
 import { useCashContext, type CashContext } from './useCashContext';
+
+type VatRow = CorrispettiviReport['totals'][number];
 
 function currentMonth(today: string): string {
   return today.slice(0, 7);
@@ -53,33 +57,33 @@ export function CorrispettiviPage() {
   const report = useCorrispettivi(ctx.establishmentId, q, ctx.canReport);
 
   const back = (
-    <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
+    <BackLink>
       <Link to="/e/$establishmentId/cassa" params={{ establishmentId: ctx.establishmentId }}>
         <ArrowLeftIcon aria-hidden="true" />
         {t('session.title')}
       </Link>
-    </Button>
+    </BackLink>
   );
 
   if (ctx.loading) return <QueryState isLoading error={null} rows={4} />;
   if (!ctx.canReport) {
     return (
-      <section aria-labelledby="page-title" className="space-y-6">
-        <PageHeader
-          title={t('corrispettivi.title')}
-          description={t('corrispettivi.description')}
-          eyebrow={back}
-        />
+      <Page
+        title={t('corrispettivi.title')}
+        description={t('corrispettivi.description')}
+        eyebrow={back}
+      >
         <Alert>
           <LockIcon aria-hidden="true" />
           <AlertTitle>{t('perm.forbiddenTitle')}</AlertTitle>
           <AlertDescription>{t('perm.reportsForbidden')}</AlertDescription>
         </Alert>
-      </section>
+      </Page>
     );
   }
 
-  const downloads = (['csv', 'json'] as const).map((format) => (
+  // Secondary (JSON) first, primary (CSV) last.
+  const downloads = (['json', 'csv'] as const).map((format) => (
     <Button key={format} variant={format === 'csv' ? 'default' : 'outline'} asChild>
       <a href={exportUrl(ctx.establishmentId, q, format)} download={exportFileName(q, format)}>
         <DownloadIcon aria-hidden="true" />
@@ -89,38 +93,32 @@ export function CorrispettiviPage() {
   ));
 
   return (
-    <section aria-labelledby="page-title" className="space-y-6">
-      <PageHeader
-        title={t('corrispettivi.title')}
-        description={t('corrispettivi.description')}
-        eyebrow={back}
-        actions={downloads}
-      />
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="space-y-2">
-          <span id="corr-mode-label" className="block text-sm leading-none font-medium">
-            {t('corrispettivi.period')}
-          </span>
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            aria-labelledby="corr-mode-label"
-            value={mode}
-            onValueChange={(v) => v && setMode(v as Period['mode'])}
-          >
-            <ToggleGroupItem value="day">{t('corrispettivi.day')}</ToggleGroupItem>
-            <ToggleGroupItem value="month">{t('corrispettivi.month')}</ToggleGroupItem>
-          </ToggleGroup>
-        </div>
+    <Page
+      title={t('corrispettivi.title')}
+      description={t('corrispettivi.description')}
+      eyebrow={back}
+      actions={downloads}
+    >
+      <PageToolbar>
+        <SegmentedControl
+          label={t('corrispettivi.period')}
+          value={mode}
+          onValueChange={(v) => setMode(v as Period['mode'])}
+          options={[
+            { value: 'day', label: t('corrispettivi.day') },
+            { value: 'month', label: t('corrispettivi.month') },
+          ]}
+        />
         {mode === 'day' ? (
-          <div className="space-y-2">
-            <Label htmlFor="corr-date">{t('corrispettivi.date')}</Label>
-            <DatePicker id="corr-date" value={date} onChange={(v) => v && setDate(v)} />
-          </div>
+          <DatePicker
+            aria-label={t('corrispettivi.date')}
+            value={date}
+            onChange={(v) => v && setDate(v)}
+          />
         ) : (
           <MonthPicker value={month} onChange={setMonth} today={today} />
         )}
-      </div>
+      </PageToolbar>
 
       {report.error ? (
         <QueryState isLoading={false} error={report.error} onRetry={() => void report.refetch()} />
@@ -134,7 +132,7 @@ export function CorrispettiviPage() {
         <InfoIcon aria-hidden="true" />
         <AlertDescription>{t('corrispettivi.disclaimer')}</AlertDescription>
       </Alert>
-    </section>
+    </Page>
   );
 }
 
@@ -153,39 +151,33 @@ function MonthPicker({
   const years = [thisYear - 2, thisYear - 1, thisYear, thisYear + 1];
   const monthName = new Intl.DateTimeFormat(i18n.language, { month: 'long', timeZone: 'UTC' });
   return (
-    <div className="flex items-end gap-2">
-      <div className="space-y-2">
-        <Label htmlFor="corr-month">{t('corrispettivi.monthLabel')}</Label>
-        <NativeSelect
-          id="corr-month"
-          value={mm}
-          onChange={(e) => onChange(`${year}-${e.target.value}`)}
-        >
-          {Array.from({ length: 12 }, (_, i) => {
-            const v = String(i + 1).padStart(2, '0');
-            return (
-              <NativeSelectOption key={v} value={v}>
-                {monthName.format(new Date(Date.UTC(2000, i, 1)))}
-              </NativeSelectOption>
-            );
-          })}
-        </NativeSelect>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="corr-year">{t('corrispettivi.year')}</Label>
-        <NativeSelect
-          id="corr-year"
-          value={year}
-          onChange={(e) => onChange(`${e.target.value}-${mm}`)}
-        >
-          {years.map((y) => (
-            <NativeSelectOption key={y} value={String(y)}>
-              {y}
+    <>
+      <NativeSelect
+        aria-label={t('corrispettivi.monthLabel')}
+        value={mm}
+        onChange={(e) => onChange(`${year}-${e.target.value}`)}
+      >
+        {Array.from({ length: 12 }, (_, i) => {
+          const v = String(i + 1).padStart(2, '0');
+          return (
+            <NativeSelectOption key={v} value={v}>
+              {monthName.format(new Date(Date.UTC(2000, i, 1)))}
             </NativeSelectOption>
-          ))}
-        </NativeSelect>
-      </div>
-    </div>
+          );
+        })}
+      </NativeSelect>
+      <NativeSelect
+        aria-label={t('corrispettivi.year')}
+        value={year}
+        onChange={(e) => onChange(`${e.target.value}-${mm}`)}
+      >
+        {years.map((y) => (
+          <NativeSelectOption key={y} value={String(y)}>
+            {y}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
+    </>
   );
 }
 
@@ -214,140 +206,143 @@ function ReportView({
     report.from === report.to
       ? formatIsoDate(report.from)
       : `${formatIsoDate(report.from)} – ${formatIsoDate(report.to)}`;
+  const money = (label: string, value: (r: VatRow) => number, total: number) =>
+    ({
+      id: label,
+      meta: { label: t(`corrispettivi.${label}`), align: 'right' },
+      header: t(`corrispettivi.${label}`),
+      cell: ({ row }) => ctx.money(value(row.original)),
+      footer: ctx.money(total),
+    }) satisfies ColumnDef<VatRow>;
+
+  const vatColumns: ColumnDef<VatRow>[] = [
+    {
+      id: 'rate',
+      meta: { label: t('corrispettivi.rate') },
+      header: t('corrispettivi.rate'),
+      cell: ({ row }) => formatBasisPoints(row.original.vat_rate_bp),
+      footer: t('corrispettivi.total'),
+    },
+    money('taxable', (r) => r.taxable, vatSum.taxable),
+    money('tax', (r) => r.tax, vatSum.tax),
+    money('gross', (r) => r.gross, vatSum.gross),
+  ];
+
+  const methodColumns: ColumnDef<MethodRow>[] = [
+    {
+      id: 'method',
+      meta: { label: t('fields.method') },
+      header: t('fields.method'),
+      cell: ({ row }) => t(`method.${row.original.method}`),
+      footer: t('corrispettivi.total'),
+    },
+    {
+      id: 'count',
+      meta: { label: t('corrispettivi.count'), align: 'right' },
+      header: t('corrispettivi.count'),
+      cell: ({ row }) => row.original.count,
+      footer: String(methods.reduce((n, m) => n + m.count, 0)),
+    },
+    {
+      id: 'gross',
+      meta: { label: t('corrispettivi.gross'), align: 'right' },
+      header: t('corrispettivi.gross'),
+      cell: ({ row }) => ctx.money(row.original.gross),
+      footer: ctx.money(methods.reduce((n, m) => n + m.gross, 0)),
+    },
+  ];
+
+  const detailColumns: ColumnDef<CorrispettiviRow>[] = [
+    {
+      id: 'period',
+      meta: { label: t('corrispettivi.periodColumn') },
+      header: t('corrispettivi.periodColumn'),
+      cell: ({ row }) => <span className="tabular-nums">{periodLabel(row.original.period)}</span>,
+    },
+    {
+      id: 'rate',
+      meta: { label: t('corrispettivi.rate') },
+      header: t('corrispettivi.rate'),
+      cell: ({ row }) => formatBasisPoints(row.original.vat_rate_bp),
+    },
+    {
+      id: 'method',
+      meta: { label: t('fields.method') },
+      header: t('fields.method'),
+      cell: ({ row }) => t(`method.${row.original.method}`),
+    },
+    {
+      id: 'count',
+      meta: { label: t('corrispettivi.count'), align: 'right' },
+      header: t('corrispettivi.count'),
+      cell: ({ row }) => row.original.count,
+    },
+    {
+      id: 'taxable',
+      meta: { label: t('corrispettivi.taxable'), align: 'right' },
+      header: t('corrispettivi.taxable'),
+      cell: ({ row }) => ctx.money(row.original.taxable),
+    },
+    {
+      id: 'tax',
+      meta: { label: t('corrispettivi.tax'), align: 'right' },
+      header: t('corrispettivi.tax'),
+      cell: ({ row }) => ctx.money(row.original.tax),
+    },
+    {
+      id: 'gross',
+      meta: { label: t('corrispettivi.gross'), align: 'right' },
+      header: t('corrispettivi.gross'),
+      cell: ({ row }) => ctx.money(row.original.gross),
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <Card className="gap-1 py-4">
-        <CardHeader className="px-4">
-          <CardDescription>{t('corrispettivi.grandTotal', { period: span })}</CardDescription>
-        </CardHeader>
-        <CardContent className="px-4">
-          <p
-            data-testid="grand-total"
-            className="text-3xl font-semibold tracking-tight tabular-nums"
-          >
-            {ctx.money(report.grand_total)}
-          </p>
-        </CardContent>
-      </Card>
-
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <Card className="gap-3">
-          <CardHeader>
-            <CardTitle>{t('corrispettivi.byVat')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <caption className="sr-only">{t('corrispettivi.byVat')}</caption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('corrispettivi.rate')}</TableHead>
-                  <TableHead className="text-right">{t('corrispettivi.taxable')}</TableHead>
-                  <TableHead className="text-right">{t('corrispettivi.tax')}</TableHead>
-                  <TableHead className="text-right">{t('corrispettivi.gross')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vat.map((v) => (
-                  <TableRow key={v.vat_rate_bp}>
-                    <TableCell>{formatBasisPoints(v.vat_rate_bp)}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {ctx.money(v.taxable)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">{ctx.money(v.tax)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{ctx.money(v.gross)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell>{t('corrispettivi.total')}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {ctx.money(vatSum.taxable)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{ctx.money(vatSum.tax)}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {ctx.money(vatSum.gross)}
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card className="gap-3">
-          <CardHeader>
-            <CardTitle>{t('corrispettivi.byMethod')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <caption className="sr-only">{t('corrispettivi.byMethod')}</caption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('fields.method')}</TableHead>
-                  <TableHead className="text-right">{t('corrispettivi.count')}</TableHead>
-                  <TableHead className="text-right">{t('corrispettivi.gross')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {methods.map((m) => (
-                  <TableRow key={m.method}>
-                    <TableCell>{t(`method.${m.method}`)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{m.count}</TableCell>
-                    <TableCell className="text-right tabular-nums">{ctx.money(m.gross)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell>{t('corrispettivi.total')}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {methods.reduce((n, m) => n + m.count, 0)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {ctx.money(methods.reduce((n, m) => n + m.gross, 0))}
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          className="col-span-2"
+          label={t('corrispettivi.grandTotal', { period: span })}
+          value={<span data-testid="grand-total">{ctx.money(report.grand_total)}</span>}
+        />
       </div>
 
-      <Card className="gap-3">
-        <CardHeader>
-          <CardTitle>{t('corrispettivi.detail')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <caption className="sr-only">{t('corrispettivi.detail')}</caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('corrispettivi.periodColumn')}</TableHead>
-                <TableHead>{t('corrispettivi.rate')}</TableHead>
-                <TableHead>{t('fields.method')}</TableHead>
-                <TableHead className="text-right">{t('corrispettivi.count')}</TableHead>
-                <TableHead className="text-right">{t('corrispettivi.taxable')}</TableHead>
-                <TableHead className="text-right">{t('corrispettivi.tax')}</TableHead>
-                <TableHead className="text-right">{t('corrispettivi.gross')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow key={`${r.period}-${r.vat_rate_bp}-${r.method}`}>
-                  <TableCell className="tabular-nums">{periodLabel(r.period)}</TableCell>
-                  <TableCell>{formatBasisPoints(r.vat_rate_bp)}</TableCell>
-                  <TableCell>{t(`method.${r.method}`)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{r.count}</TableCell>
-                  <TableCell className="text-right tabular-nums">{ctx.money(r.taxable)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{ctx.money(r.tax)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{ctx.money(r.gross)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <SectionCard title={t('corrispettivi.byVat')} flush>
+          <DataTable
+            embedded
+            caption={t('corrispettivi.byVat')}
+            columns={vatColumns}
+            data={vat}
+            getRowId={(v) => String(v.vat_rate_bp)}
+            pageSize={0}
+            columnToggle={false}
+          />
+        </SectionCard>
+        <SectionCard title={t('corrispettivi.byMethod')} flush>
+          <DataTable
+            embedded
+            caption={t('corrispettivi.byMethod')}
+            columns={methodColumns}
+            data={methods}
+            getRowId={(m) => m.method}
+            pageSize={0}
+            columnToggle={false}
+          />
+        </SectionCard>
+      </div>
+
+      <SectionCard title={t('corrispettivi.detail')} flush>
+        <DataTable
+          embedded
+          caption={t('corrispettivi.detail')}
+          columns={detailColumns}
+          data={rows}
+          getRowId={(r) => `${r.period}-${r.vat_rate_bp}-${r.method}`}
+          pageSize={0}
+          columnToggle={false}
+        />
+      </SectionCard>
     </div>
   );
 }

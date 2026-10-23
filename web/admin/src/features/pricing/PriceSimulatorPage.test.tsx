@@ -136,7 +136,12 @@ describe('PriceSimulatorPage', () => {
     expect(
       within(result).getByText('6,31 €', { normalizer: (s) => s.replace(/\u00a0/g, ' ') }),
     ).toBeInTheDocument();
-    expect(within(result).getByText(/Da pagare alla prenotazione/)).toHaveTextContent('35,00');
+    // KPI tile: label and value live in the same card.
+    expect(
+      within(result)
+        .getByText(/Da pagare alla prenotazione/)
+        .closest('[data-slot="card"]'),
+    ).toHaveTextContent('35,00');
   });
 
   it('explains a missing price', async () => {

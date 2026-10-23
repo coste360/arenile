@@ -18,7 +18,6 @@
     "noSeasons": "No season configured.",
     "otherZone": "Other spots",
     "row": "Row {{row}}",
-    "zoneCaption": "Season passes of zone {{zone}}",
     "openAria": "Open season pass {{spot}} of {{customer}}",
     "loadMore": "Load more"
   },

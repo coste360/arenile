@@ -2,32 +2,21 @@ import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { formatCents } from '@arenile/shared/lib/money';
 import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arenile/shared/ui/card';
 import { Form } from '@arenile/shared/ui/form';
 import { Input } from '@arenile/shared/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@arenile/shared/ui/table';
 import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import {
+  BackLink,
   ConfirmDialog,
+  DataTable,
   EmptyState,
   FieldRow,
-  PageHeader,
+  Page,
   QueryState,
+  SectionCard,
+  StatCard,
   StatusBadge,
+  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useParams } from '@tanstack/react-router';
@@ -37,6 +26,7 @@ import {
   CalendarRangeIcon,
   CheckIcon,
   HistoryIcon,
+  LayersIcon,
   LogInIcon,
   MoveIcon,
   ThumbsDownIcon,
@@ -73,6 +63,13 @@ import { useEstablishmentSpots } from './spots';
 import { useCatalogNames } from './usePackName';
 
 type DialogName = 'cancel' | 'pay' | 'refund' | 'dates' | 'move' | null;
+type Line = BookingDetail['lines'][number];
+type BookingExtra = BookingDetail['extras'][number];
+type Payment = BookingDetail['payments'][number];
+type Allocation = BookingDetail['allocations'][number];
+
+/** One row of the "Righe" table: a spot/pool line or an extra on the whole booking. */
+type LineRow = { kind: 'line'; line: Line } | { kind: 'extra'; extra: BookingExtra };
 
 const ACTION_ICONS: Record<BookingAction, typeof CheckIcon> = {
   confirm: CheckIcon,
@@ -82,6 +79,14 @@ const ACTION_ICONS: Record<BookingAction, typeof CheckIcon> = {
   'no-show': UserXIcon,
   cancel: BanIcon,
 };
+
+const PRIMARY_ACTIONS: BookingAction[] = ['confirm', 'approve', 'check-in'];
+
+/** Header order (UI standard): destructive first, secondary outline, primary last. */
+function actionRank(a: BookingAction): number {
+  if (a === 'cancel') return 0;
+  return PRIMARY_ACTIONS.includes(a) ? 2 : 1;
+}
 
 /** Prenotazione: header with status and actions, lines, allocations, payments, history, notes. */
 export function BookingDetailPage() {
@@ -102,26 +107,24 @@ export function BookingDetailPage() {
   };
 
   const back = (
-    <Button variant="ghost" size="sm" asChild>
+    <BackLink>
       <Link to="/e/$establishmentId/prenotazioni" params={{ establishmentId }}>
         <ArrowLeftIcon aria-hidden="true" />
         {t('detail.back')}
       </Link>
-    </Button>
+    </BackLink>
   );
 
   if (!query.data) {
     return (
-      <section aria-labelledby="page-title" className="space-y-6">
-        {back}
-        <PageHeader title={t('detail.title')} />
+      <Page eyebrow={back} title={t('detail.title')}>
         <QueryState
           isLoading={query.isPending}
           error={query.error}
           onRetry={() => void query.refetch()}
           rows={6}
         />
-      </section>
+      </Page>
     );
   }
 
@@ -130,7 +133,9 @@ export function BookingDetailPage() {
     startsOn: b.starts_on,
     endsOn: b.ends_on,
     today: todayIso(),
-  }).filter((a) => (a === 'check-in' || a === 'no-show' ? perms.canOperate : perms.canWrite));
+  })
+    .filter((a) => (a === 'check-in' || a === 'no-show' ? perms.canOperate : perms.canWrite))
+    .sort((x, y) => actionRank(x) - actionRank(y));
   const active = ACTIVE_STATUSES.includes(b.status);
   const run = async (action: TransitionVars['action']) => {
     setFailure(null);
@@ -141,97 +146,104 @@ export function BookingDetailPage() {
       setFailure(describeProblem(err, t));
     }
   };
+  const canChangeDates = perms.canWrite && active && !b.is_season_pass;
+
+  const actionButton = (a: BookingAction) => {
+    const Icon = ACTION_ICONS[a];
+    if (a === 'cancel') {
+      return (
+        <Button key={a} variant="destructive" onClick={() => setDialog('cancel')}>
+          <Icon aria-hidden="true" />
+          {t('actions.cancel')}
+        </Button>
+      );
+    }
+    return (
+      <ConfirmDialog
+        key={a}
+        title={t(`actions.confirmTitle.${a}`, { code: b.code })}
+        description={t(`actions.confirmText.${a}`)}
+        confirmLabel={t(`actions.${a}`)}
+        destructive={a === 'reject' || a === 'no-show'}
+        onConfirm={() => run(a)}
+        trigger={
+          <Button variant={PRIMARY_ACTIONS.includes(a) ? 'default' : 'outline'}>
+            <Icon aria-hidden="true" />
+            {t(`actions.${a}`)}
+          </Button>
+        }
+      />
+    );
+  };
 
   return (
-    <section aria-labelledby="page-title" className="space-y-6">
-      {back}
-      <PageHeader
-        eyebrow={b.is_season_pass ? t('detail.pass') : t(`channel.${b.channel}`)}
-        title={
-          <span className="flex flex-wrap items-center gap-3">
-            {b.code}
-            <StatusBadge tone={STATUS_TONE[b.status]}>{t(`status.${b.status}`)}</StatusBadge>
-          </span>
-        }
-        description={
+    <Page
+      eyebrow={back}
+      title={
+        <span className="flex flex-wrap items-center gap-3">
+          {b.code}
+          <StatusBadge tone={STATUS_TONE[b.status]}>{t(`status.${b.status}`)}</StatusBadge>
+          <Badge variant="outline">
+            {b.is_season_pass ? t('detail.pass') : t(`channel.${b.channel}`)}
+          </Badge>
+        </span>
+      }
+      description={
+        <>
+          <Link
+            to="/e/$establishmentId/clienti/$customerId"
+            params={{ establishmentId, customerId: b.customer.id }}
+            className="font-medium text-primary-on-surface underline-offset-4 hover:underline"
+          >
+            {b.customer.display_name}
+          </Link>
+          {' · '}
+          {formatIsoDate(b.starts_on)}
+          {b.ends_on !== b.starts_on && ` → ${formatIsoDate(b.ends_on)}`}
+          {' · '}
+          {t(`slots.${b.slots}`)} · {t(`formula.${b.formula}`)}
+        </>
+      }
+      actions={
+        (actions.length > 0 || canChangeDates) && (
           <>
-            <Link
-              to="/e/$establishmentId/clienti/$customerId"
-              params={{ establishmentId, customerId: b.customer.id }}
-              className="font-medium text-primary-on-surface underline-offset-4 hover:underline"
-            >
-              {b.customer.display_name}
-            </Link>
-            {' · '}
-            {formatIsoDate(b.starts_on)}
-            {b.ends_on !== b.starts_on && ` → ${formatIsoDate(b.ends_on)}`}
-            {' · '}
-            {t(`slots.${b.slots}`)} · {t(`formula.${b.formula}`)}
-          </>
-        }
-        actions={
-          <div className="flex flex-wrap gap-2">
-            {actions.map((a) => {
-              const Icon = ACTION_ICONS[a];
-              if (a === 'cancel') {
-                return (
-                  <Button key={a} variant="destructive" onClick={() => setDialog('cancel')}>
-                    <Icon aria-hidden="true" />
-                    {t('actions.cancel')}
-                  </Button>
-                );
-              }
-              const destructive = a === 'reject' || a === 'no-show';
-              return (
-                <ConfirmDialog
-                  key={a}
-                  title={t(`actions.confirmTitle.${a}`, { code: b.code })}
-                  description={t(`actions.confirmText.${a}`)}
-                  confirmLabel={t(`actions.${a}`)}
-                  destructive={destructive}
-                  onConfirm={() => run(a)}
-                  trigger={
-                    <Button
-                      variant={
-                        a === 'confirm' || a === 'approve' || a === 'check-in'
-                          ? 'default'
-                          : 'outline'
-                      }
-                    >
-                      <Icon aria-hidden="true" />
-                      {t(`actions.${a}`)}
-                    </Button>
-                  }
-                />
-              );
-            })}
-            {perms.canWrite && active && !b.is_season_pass && (
+            {actions.filter((a) => actionRank(a) < 2).map(actionButton)}
+            {canChangeDates && (
               <Button variant="outline" onClick={() => setDialog('dates')}>
                 <CalendarRangeIcon aria-hidden="true" />
                 {t('actions.dates')}
               </Button>
             )}
-          </div>
-        }
-      />
-      <ProblemAlert problem={failure} onReload={reload} />
-      {b.hold_expires_at && (
-        <p className="text-sm text-muted-foreground">
-          {t('detail.holdExpires', {
-            at: fmt.dateTime(b.hold_expires_at),
-          })}
-        </p>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Amount label={t('detail.total')} value={b.total_amount} />
-        <Amount label={t('detail.paid')} value={b.paid_amount} />
-        <Amount label={t('detail.balance')} value={b.balance_due} emphasis={b.balance_due > 0} />
-        <Amount label={t('detail.deposit')} value={b.deposit_due} />
+            {actions.filter((a) => actionRank(a) === 2).map(actionButton)}
+          </>
+        )
+      }
+      notice={
+        <>
+          <ProblemAlert problem={failure} onReload={reload} />
+          {b.hold_expires_at && (
+            <p className="text-sm text-muted-foreground">
+              {t('detail.holdExpires', {
+                at: fmt.dateTime(b.hold_expires_at),
+              })}
+            </p>
+          )}
+        </>
+      }
+    >
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label={t('detail.total')} value={formatCents(b.total_amount)} />
+        <StatCard label={t('detail.paid')} value={formatCents(b.paid_amount)} />
+        <StatCard
+          label={t('detail.balance')}
+          value={formatCents(b.balance_due)}
+          tone={b.balance_due > 0 ? 'danger' : 'default'}
+        />
+        <StatCard label={t('detail.deposit')} value={formatCents(b.deposit_due)} />
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-3">
-        <div className="space-y-6 xl:col-span-2">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-6">
           <LinesCard
             establishmentId={establishmentId}
             booking={b}
@@ -250,7 +262,7 @@ export function BookingDetailPage() {
           />
           <AllocationsCard booking={b} spotLabel={(id) => inventory.spotById.get(id)?.label} />
         </div>
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <NotesCard establishmentId={establishmentId} booking={b} canWrite={perms.canWrite} />
           <HistoryCard booking={b} />
         </div>
@@ -293,49 +305,7 @@ export function BookingDetailPage() {
         onOpenChange={(o) => setDialog(o ? 'move' : null)}
         onReload={reload}
       />
-    </section>
-  );
-}
-
-function Amount({ label, value, emphasis }: { label: string; value: number; emphasis?: boolean }) {
-  return (
-    <Card className="gap-1 py-4">
-      <CardContent className="px-4">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p
-          className={
-            emphasis
-              ? 'text-xl font-semibold text-destructive tabular-nums'
-              : 'text-xl font-semibold tabular-nums'
-          }
-        >
-          {formatCents(value)}
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SectionCard({
-  title,
-  description,
-  action,
-  children,
-}: {
-  title: string;
-  description?: string;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <Card className="gap-0 py-0">
-      <CardHeader className="border-b py-4">
-        <CardTitle className="text-base">{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-        {action && <CardAction>{action}</CardAction>}
-      </CardHeader>
-      {children}
-    </Card>
+    </Page>
   );
 }
 
@@ -352,64 +322,101 @@ function LinesCard({
 }) {
   const { t } = useTranslation('bookings');
   const names = useCatalogNames(establishmentId);
+  const rows: LineRow[] = [
+    ...booking.lines.map((line): LineRow => ({ kind: 'line', line })),
+    ...booking.extras.map((extra): LineRow => ({ kind: 'extra', extra })),
+  ];
+  const columns: ColumnDef<LineRow>[] = [
+    {
+      id: 'spot',
+      header: t('lines.spot'),
+      meta: { label: t('lines.spot') },
+      cell: ({ row: { original: r } }) => {
+        if (r.kind === 'extra') {
+          return (
+            <span className="text-muted-foreground">
+              {t('lines.bookingExtra', { code: r.extra.extra_code ?? '', qty: r.extra.quantity })}
+            </span>
+          );
+        }
+        const l = r.line;
+        return (
+          <span className="font-medium">
+            {l.spot_label ??
+              (l.assignment_status === 'pending' ? (
+                <StatusBadge tone="warning">{t('lines.pending')}</StatusBadge>
+              ) : (
+                t('lines.quantity', { count: l.quantity })
+              ))}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'pack',
+      header: t('lines.pack'),
+      meta: { label: t('lines.pack') },
+      cell: ({ row: { original: r } }) =>
+        r.kind === 'line' ? names.pack(r.line.pack_code) || '—' : null,
+    },
+    {
+      id: 'extras',
+      header: t('lines.extras'),
+      meta: { label: t('lines.extras') },
+      cell: ({ row: { original: r } }) =>
+        r.kind === 'line' ? (
+          <span className="text-muted-foreground">
+            {r.line.extras.map((x) => `${names.extra(x.extra_code)} ×${x.quantity}`).join(', ') ||
+              '—'}
+          </span>
+        ) : null,
+    },
+    {
+      id: 'total',
+      header: t('lines.total'),
+      meta: { label: t('lines.total'), align: 'right' },
+      cell: ({ row: { original: r } }) =>
+        formatCents(r.kind === 'line' ? r.line.line_total : r.extra.total),
+    },
+    {
+      id: 'actions',
+      header: () => <span className="sr-only">{t('lines.actions')}</span>,
+      meta: { label: t('lines.actions'), align: 'right' },
+      cell: ({ row: { original: r } }) => {
+        if (r.kind !== 'line') return null;
+        const l = r.line;
+        return canMove && l.assignment_status !== 'not_applicable' ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onMove(l.id)}
+            aria-label={t('move.aria', { label: l.spot_label ?? t('lines.pending') })}
+          >
+            <MoveIcon aria-hidden="true" />
+            {l.assignment_status === 'pending' ? t('move.assign') : t('move.short')}
+          </Button>
+        ) : null;
+      },
+    },
+  ];
   return (
-    <SectionCard title={t('lines.title')}>
-      <Table>
-        <caption className="sr-only">{t('lines.title')}</caption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="pl-6">{t('lines.spot')}</TableHead>
-            <TableHead>{t('lines.pack')}</TableHead>
-            <TableHead>{t('lines.extras')}</TableHead>
-            <TableHead className="text-right">{t('lines.total')}</TableHead>
-            <TableHead className="pr-6">
-              <span className="sr-only">{t('lines.actions')}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {booking.lines.map((l) => (
-            <TableRow key={l.id}>
-              <TableCell className="pl-6 font-medium">
-                {l.spot_label ??
-                  (l.assignment_status === 'pending' ? (
-                    <StatusBadge tone="warning">{t('lines.pending')}</StatusBadge>
-                  ) : (
-                    t('lines.quantity', { count: l.quantity })
-                  ))}
-              </TableCell>
-              <TableCell>{names.pack(l.pack_code) || '—'}</TableCell>
-              <TableCell className="text-muted-foreground">
-                {l.extras.map((x) => `${names.extra(x.extra_code)} ×${x.quantity}`).join(', ') ||
-                  '—'}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">{formatCents(l.line_total)}</TableCell>
-              <TableCell className="pr-6 text-right">
-                {canMove && l.assignment_status !== 'not_applicable' && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onMove(l.id)}
-                    aria-label={t('move.aria', { label: l.spot_label ?? t('lines.pending') })}
-                  >
-                    <MoveIcon aria-hidden="true" />
-                    {l.assignment_status === 'pending' ? t('move.assign') : t('move.short')}
-                  </Button>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-          {booking.extras.map((x) => (
-            <TableRow key={x.id}>
-              <TableCell className="pl-6 text-muted-foreground" colSpan={3}>
-                {t('lines.bookingExtra', { code: x.extra_code ?? '', qty: x.quantity })}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">{formatCents(x.total)}</TableCell>
-              <TableCell className="pr-6" />
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <SectionCard flush title={t('lines.title')}>
+      <DataTable
+        embedded
+        caption={t('lines.title')}
+        columns={columns}
+        data={rows}
+        getRowId={(r) => (r.kind === 'line' ? r.line.id : `extra-${r.extra.id}`)}
+        columnToggle={false}
+        pageSize={0}
+        empty={
+          <EmptyState
+            icon={LayersIcon}
+            bordered={false}
+            title={t('ui.table.empty', { ns: 'translation' })}
+          />
+        }
+      />
     </SectionCard>
   );
 }
@@ -429,71 +436,80 @@ function PaymentsCard({
 }) {
   const { t } = useTranslation('bookings');
   const fmt = useInstantFormat();
+  const columns: ColumnDef<Payment>[] = [
+    {
+      id: 'when',
+      header: t('payments.when'),
+      meta: { label: t('payments.when') },
+      cell: ({ row }) => (
+        <span className="tabular-nums">{fmt.dateTime(row.original.created_at)}</span>
+      ),
+    },
+    {
+      id: 'method',
+      header: t('fields.method'),
+      meta: { label: t('fields.method') },
+      cell: ({ row: { original: p } }) => (
+        <span className="flex items-center gap-2">
+          {t(`method.${p.method}`)}
+          {p.direction === 'refund' && <Badge variant="outline">{t('payments.refundBadge')}</Badge>}
+        </span>
+      ),
+    },
+    {
+      id: 'status',
+      header: t('payments.status'),
+      meta: { label: t('payments.status') },
+      cell: ({ row: { original: p } }) => (
+        <StatusBadge
+          tone={
+            p.status === 'succeeded' ? 'success' : p.status === 'pending' ? 'warning' : 'danger'
+          }
+        >
+          {t(`payments.statuses.${p.status}`)}
+        </StatusBadge>
+      ),
+    },
+    {
+      id: 'amount',
+      header: t('fields.amount'),
+      meta: { label: t('fields.amount'), align: 'right' },
+      cell: ({ row: { original: p } }) =>
+        p.direction === 'refund' ? `−${formatCents(p.amount)}` : formatCents(p.amount),
+    },
+  ];
   return (
     <SectionCard
+      flush
       title={t('payments.title')}
-      action={
-        <div className="flex gap-2">
-          {canRefund && (
-            <Button size="sm" variant="outline" onClick={onRefund}>
-              {t('payments.refund')}
-            </Button>
-          )}
-          {canPay && (
-            <Button size="sm" onClick={onPay}>
-              <WalletIcon aria-hidden="true" />
-              {t('payments.record')}
-            </Button>
-          )}
-        </div>
+      actions={
+        (canRefund || canPay) && (
+          <>
+            {canRefund && (
+              <Button size="sm" variant="outline" onClick={onRefund}>
+                {t('payments.refund')}
+              </Button>
+            )}
+            {canPay && (
+              <Button size="sm" onClick={onPay}>
+                <WalletIcon aria-hidden="true" />
+                {t('payments.record')}
+              </Button>
+            )}
+          </>
+        )
       }
     >
-      {booking.payments.length === 0 ? (
-        <EmptyState icon={WalletIcon} bordered={false} title={t('payments.empty')} />
-      ) : (
-        <Table>
-          <caption className="sr-only">{t('payments.title')}</caption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-6">{t('payments.when')}</TableHead>
-              <TableHead>{t('fields.method')}</TableHead>
-              <TableHead>{t('payments.status')}</TableHead>
-              <TableHead className="pr-6 text-right">{t('fields.amount')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {booking.payments.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell className="pl-6 tabular-nums">{fmt.dateTime(p.created_at)}</TableCell>
-                <TableCell>
-                  {t(`method.${p.method}`)}
-                  {p.direction === 'refund' && (
-                    <Badge variant="outline" className="ml-2">
-                      {t('payments.refundBadge')}
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge
-                    tone={
-                      p.status === 'succeeded'
-                        ? 'success'
-                        : p.status === 'pending'
-                          ? 'warning'
-                          : 'danger'
-                    }
-                  >
-                    {t(`payments.statuses.${p.status}`)}
-                  </StatusBadge>
-                </TableCell>
-                <TableCell className="pr-6 text-right tabular-nums">
-                  {p.direction === 'refund' ? `−${formatCents(p.amount)}` : formatCents(p.amount)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <DataTable
+        embedded
+        caption={t('payments.title')}
+        columns={columns}
+        data={booking.payments}
+        getRowId={(p) => p.id}
+        columnToggle={false}
+        pageSize={0}
+        empty={<EmptyState icon={WalletIcon} bordered={false} title={t('payments.empty')} />}
+      />
     </SectionCard>
   );
 }
@@ -509,42 +525,54 @@ function AllocationsCard({
   const rows = [...booking.allocations].sort(
     (a, b) => a.date.localeCompare(b.date) || a.slot.localeCompare(b.slot),
   );
+  const columns: ColumnDef<Allocation>[] = [
+    {
+      id: 'date',
+      header: t('allocations.date'),
+      meta: { label: t('allocations.date') },
+      cell: ({ row }) => <span className="tabular-nums">{formatIsoDate(row.original.date)}</span>,
+    },
+    {
+      id: 'slot',
+      header: t('allocations.slot'),
+      meta: { label: t('allocations.slot') },
+      cell: ({ row }) => t(`slots.${row.original.slot}`),
+    },
+    {
+      id: 'resource',
+      header: t('allocations.resource'),
+      meta: { label: t('allocations.resource') },
+      cell: ({ row: { original: a } }) =>
+        a.spot_id
+          ? (spotLabel(a.spot_id) ?? '—')
+          : t('allocations.pool', { count: a.quantity ?? 1 }),
+    },
+    {
+      id: 'kind',
+      header: t('allocations.kind'),
+      meta: { label: t('allocations.kind') },
+      cell: ({ row }) => t(`allocations.kinds.${row.original.kind}`),
+    },
+  ];
   return (
     <SectionCard
+      flush
       title={t('allocations.title')}
       description={t('allocations.description', { count: rows.length })}
     >
-      {rows.length === 0 ? (
-        <EmptyState bordered={false} title={t('allocations.empty')} />
-      ) : (
-        <div className="max-h-80 overflow-y-auto">
-          <Table>
-            <caption className="sr-only">{t('allocations.title')}</caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-6">{t('allocations.date')}</TableHead>
-                <TableHead>{t('allocations.slot')}</TableHead>
-                <TableHead>{t('allocations.resource')}</TableHead>
-                <TableHead className="pr-6">{t('allocations.kind')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((a, i) => (
-                <TableRow key={`${a.date}-${a.slot}-${a.spot_id ?? a.pool_id}-${i}`}>
-                  <TableCell className="pl-6 tabular-nums">{formatIsoDate(a.date)}</TableCell>
-                  <TableCell>{t(`slots.${a.slot}`)}</TableCell>
-                  <TableCell>
-                    {a.spot_id
-                      ? (spotLabel(a.spot_id) ?? '—')
-                      : t('allocations.pool', { count: a.quantity ?? 1 })}
-                  </TableCell>
-                  <TableCell className="pr-6">{t(`allocations.kinds.${a.kind}`)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      {/* Long stays (season passes: ~300 rows) scroll inside the card. */}
+      <div className="max-h-80 overflow-y-auto">
+        <DataTable
+          embedded
+          caption={t('allocations.title')}
+          columns={columns}
+          data={rows}
+          getRowId={(a, i) => `${a.date}-${a.slot}-${a.spot_id ?? a.pool_id}-${i}`}
+          columnToggle={false}
+          pageSize={0}
+          empty={<EmptyState bordered={false} title={t('allocations.empty')} />}
+        />
+      </div>
     </SectionCard>
   );
 }
@@ -577,19 +605,9 @@ function NotesCard({
   });
   return (
     <SectionCard title={t('notes.title')}>
-      <CardContent className="space-y-4 py-4">
-        <div className="space-y-1 text-sm">
-          <p className="font-medium">{t('notes.internal')}</p>
-          <p className="whitespace-pre-line text-muted-foreground">
-            {booking.notes_internal || '—'}
-          </p>
-        </div>
-        <div className="space-y-1 text-sm">
-          <p className="font-medium">{t('notes.customer')}</p>
-          <p className="whitespace-pre-line text-muted-foreground">
-            {booking.notes_customer || '—'}
-          </p>
-        </div>
+      <div className="space-y-4">
+        <NoteText label={t('notes.internal')}>{booking.notes_internal || '—'}</NoteText>
+        <NoteText label={t('notes.customer')}>{booking.notes_customer || '—'}</NoteText>
         {canWrite && (
           <Form {...form}>
             <form noValidate onSubmit={(e) => void onSubmit(e)} className="space-y-3">
@@ -618,8 +636,17 @@ function NotesCard({
             </form>
           </Form>
         )}
-      </CardContent>
+      </div>
     </SectionCard>
+  );
+}
+
+function NoteText({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1 text-sm">
+      <p className="font-medium">{label}</p>
+      <p className="whitespace-pre-line text-muted-foreground">{children}</p>
+    </div>
   );
 }
 
@@ -632,31 +659,29 @@ function HistoryCard({ booking }: { booking: BookingDetail }) {
       {entries.length === 0 ? (
         <EmptyState icon={HistoryIcon} bordered={false} title={t('history.empty')} />
       ) : (
-        <CardContent className="py-4">
-          <ol className="space-y-4 border-l pl-4" aria-label={t('history.title')}>
-            {entries.map((e, i) => (
-              <li key={`${e.at}-${i}`} className="relative">
-                <span
-                  aria-hidden="true"
-                  className="absolute top-1.5 -left-5.5 size-3 rounded-full border-2 border-background bg-primary"
-                />
-                <p className="text-sm font-medium">
-                  {t(`history.actions.${e.action}`, { defaultValue: e.action })}
+        <ol className="space-y-4 border-l pl-4" aria-label={t('history.title')}>
+          {entries.map((e, i) => (
+            <li key={`${e.at}-${i}`} className="relative">
+              <span
+                aria-hidden="true"
+                className="absolute top-1.5 -left-5.5 size-3 rounded-full border-2 border-background bg-primary"
+              />
+              <p className="text-sm font-medium">
+                {t(`history.actions.${e.action}`, { defaultValue: e.action })}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {fmt.dateTime(e.at)}
+                {' · '}
+                {e.actor_name ?? t(`history.actor.${e.actor_type}`)}
+              </p>
+              {typeof e.details?.text === 'string' && (
+                <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">
+                  {e.details.text}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {fmt.dateTime(e.at)}
-                  {' · '}
-                  {e.actor_name ?? t(`history.actor.${e.actor_type}`)}
-                </p>
-                {typeof e.details?.text === 'string' && (
-                  <p className="mt-1 text-sm whitespace-pre-line text-muted-foreground">
-                    {e.details.text}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ol>
-        </CardContent>
+              )}
+            </li>
+          ))}
+        </ol>
       )}
     </SectionCard>
   );

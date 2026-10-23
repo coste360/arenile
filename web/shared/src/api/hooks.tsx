@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from '@tanstack/react-query';
 import { createContext, useContext, type ReactNode } from 'react';
 import {
   ApiProblem,
@@ -89,6 +95,23 @@ export function useEstablishments(params: { cursor?: string; limit?: number } = 
     queryKey: queryKeys.establishments(params),
     queryFn: () =>
       call(() => client.GET('/api/admin/v1/establishments', { params: { query: params } })),
+    retry: shouldRetry,
+  });
+}
+
+/** All establishment pages loaded so far (cursor pagination, "Carica altri"). */
+export function useEstablishmentPages(limit?: number) {
+  const client = useApiClient();
+  return useInfiniteQuery({
+    queryKey: ['establishments', 'pages', { limit }] as const,
+    queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+      call(() =>
+        client.GET('/api/admin/v1/establishments', {
+          params: { query: { limit, cursor: pageParam } },
+        }),
+      ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last: EstablishmentList) => last.next_cursor ?? undefined,
     retry: shouldRetry,
   });
 }

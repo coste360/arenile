@@ -269,7 +269,9 @@
       "sortAsc": "Aufsteigend",
       "sortDesc": "Absteigend",
       "sortBy": "Nach {{column}} sortieren",
-      "hideColumn": "Spalte ausblenden"
+      "hideColumn": "Spalte ausblenden",
+      "loadMore": "Mehr laden",
+      "loadingMore": "Wird geladen…"
     },
     "confirm": {
       "confirm": "Bestätigen",

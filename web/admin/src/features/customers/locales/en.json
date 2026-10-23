@@ -5,8 +5,7 @@
     "new": "New customer",
     "empty": "No customers yet.",
     "emptyFiltered": "No customers match the search.",
-    "loadMore": "Load more",
-    "loadingMore": "Loading…"
+    "loadMore": "Load more"
   },
   "detail": {
     "title": "Customer",
@@ -24,8 +23,6 @@
     "consent": "Marketing"
   },
   "filters": {
-    "title": "Filters",
-    "search": "Search",
     "searchPlaceholder": "Name, phone or email",
     "tag": "Tag",
     "byTag": "Filter by tag {{tag}}",
@@ -93,6 +90,12 @@
   "passes": {
     "title": "Season passes",
     "empty": "No season passes.",
+    "columns": {
+      "pass": "Pass",
+      "period": "Period",
+      "released": "Releases",
+      "status": "Status"
+    },
     "released_one": "{{count}} half-day released",
     "released_other": "{{count}} half-days released"
   },
@@ -100,6 +103,8 @@
     "title": "Credits",
     "balance": "Balance: {{amount}}",
     "empty": "No movements.",
+    "movement": "Movement",
+    "amount": "Amount",
     "expires": "expires on {{date}}",
     "source": {
       "cancellation": "Cancellation",

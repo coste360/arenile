@@ -2,23 +2,16 @@ import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { formatCents } from '@arenile/shared/lib/money';
 import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { Label } from '@arenile/shared/ui/label';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@arenile/shared/ui/table';
-import {
+  DataTable,
   EmptyState,
   FormSheet,
   OptionSelect,
-  PageHeader,
+  Page,
   QueryState,
   StatusBadge,
+  type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { Link } from '@tanstack/react-router';
 import { ExternalLinkIcon, PlusIcon, TicketIcon } from 'lucide-react';
@@ -100,38 +93,121 @@ export function SeasonPassesPage() {
   const [creating, setCreating] = useState(false);
   const [openId, setOpenId] = useState<string | undefined>();
 
+  // One table grouped by zone (and by row when a zone has several), in map order.
+  const groupKey = new Map<string, string>();
+  const groupLabel = new Map<string, string>();
+  const rows: SeasonPass[] = [];
+  for (const g of groups) {
+    for (const { row, passes: rowPasses } of g.rows) {
+      const key = `${g.zoneId}|${row}`;
+      groupLabel.set(
+        key,
+        row && g.rows.length > 1 ? `${g.name} · ${t('list.row', { row })}` : g.name,
+      );
+      for (const p of rowPasses) {
+        groupKey.set(p.id, key);
+        rows.push(p);
+      }
+    }
+  }
+
+  const columns: ColumnDef<SeasonPass>[] = [
+    {
+      accessorKey: 'spot_label',
+      sortingFn: 'alphanumeric',
+      header: t('columns.spot'),
+      meta: { label: t('columns.spot') },
+      cell: ({ row }) => (
+        <span className="flex items-center gap-2 font-medium">
+          {row.original.spot_label}
+          {row.original.slots !== 'FULL' && (
+            <Badge variant="outline">{t(`bookings:slots.${row.original.slots}`)}</Badge>
+          )}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'customer_display_name',
+      header: t('columns.customer'),
+      meta: { label: t('columns.customer') },
+    },
+    {
+      id: 'period',
+      header: t('columns.period'),
+      meta: { label: t('columns.period') },
+      cell: ({ row }) => (
+        <span className="tabular-nums">
+          {formatIsoDate(row.original.starts_on)} → {formatIsoDate(row.original.ends_on)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: t('columns.status'),
+      meta: { label: t('columns.status') },
+      cell: ({ row }) => (
+        <StatusBadge tone={STATUS_TONE[row.original.status]}>
+          {t(`bookings:status.${row.original.status}`)}
+        </StatusBadge>
+      ),
+    },
+    {
+      accessorKey: 'released_days',
+      header: t('columns.released'),
+      meta: { label: t('columns.released'), align: 'right' },
+      cell: ({ row }) => row.original.released_days || '—',
+    },
+    {
+      accessorKey: 'credit_amount',
+      header: t('columns.credit'),
+      meta: { label: t('columns.credit'), align: 'right' },
+      cell: ({ row }) =>
+        row.original.credit_amount ? formatCents(row.original.credit_amount) : '—',
+    },
+    {
+      accessorKey: 'balance_due',
+      header: t('columns.balance'),
+      meta: { label: t('columns.balance'), align: 'right' },
+      cell: ({ row }) =>
+        row.original.balance_due > 0 ? (
+          <span className="font-medium text-destructive">
+            {formatCents(row.original.balance_due)}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">{formatCents(row.original.balance_due)}</span>
+        ),
+    },
+  ];
+
   return (
-    <section aria-labelledby="page-title" className="space-y-6">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-        actions={
-          perms.canWrite && (
+    <Page
+      title={t('title')}
+      description={t('description')}
+      actions={
+        <>
+          {seasons.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Label htmlFor="passes-season" className="text-muted-foreground">
+                {t('fields.season')}
+              </Label>
+              <OptionSelect
+                id="passes-season"
+                value={seasonId}
+                onChange={setSeasonChoice}
+                options={seasons.map((s) => ({ value: s.id, label: String(s.year) }))}
+                className="w-32"
+              />
+            </div>
+          )}
+          {perms.canWrite && (
             <Button onClick={() => setCreating(true)} disabled={seasons.length === 0}>
               <PlusIcon aria-hidden="true" />
               {t('create.title')}
             </Button>
-          )
-        }
-      />
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="passes-season">{t('fields.season')}</Label>
-          <OptionSelect
-            id="passes-season"
-            value={seasonId}
-            onChange={setSeasonChoice}
-            options={seasons.map((s) => ({ value: s.id, label: String(s.year) }))}
-            className="w-40"
-          />
-        </div>
-        {passes.length > 0 && (
-          <p className="pb-2 text-sm text-muted-foreground">
-            {t('list.count', { count: passes.length })}
-          </p>
-        )}
-      </div>
-
+          )}
+        </>
+      }
+    >
       <QueryState
         isLoading={seasonList.isPending || (!!seasonId && list.isPending)}
         error={seasonList.error ?? list.error}
@@ -144,103 +220,38 @@ export function SeasonPassesPage() {
         <EmptyState icon={TicketIcon} title={t('list.empty')} description={t('list.emptyHint')} />
       )}
 
-      {groups.map((g) => (
-        <Card key={g.zoneId || 'other'} className="gap-0 py-0">
-          <CardHeader className="border-b py-4">
-            <CardTitle className="text-base">{g.name}</CardTitle>
-            <CardDescription>{t('list.count', { count: g.count })}</CardDescription>
-          </CardHeader>
-          <Table>
-            <caption className="sr-only">{t('list.zoneCaption', { zone: g.name })}</caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-6">{t('columns.spot')}</TableHead>
-                <TableHead>{t('columns.customer')}</TableHead>
-                <TableHead>{t('columns.period')}</TableHead>
-                <TableHead>{t('columns.status')}</TableHead>
-                <TableHead>{t('columns.released')}</TableHead>
-                <TableHead className="text-right">{t('columns.credit')}</TableHead>
-                <TableHead className="pr-6 text-right">{t('columns.balance')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {g.rows.flatMap(({ row, passes: rowPasses }) => [
-                ...(row && g.rows.length > 1
-                  ? [
-                      <TableRow key={`row-${row}`} className="bg-muted/40 hover:bg-muted/40">
-                        <TableCell
-                          colSpan={7}
-                          className="pl-6 text-xs font-medium text-muted-foreground"
-                        >
-                          {t('list.row', { row })}
-                        </TableCell>
-                      </TableRow>,
-                    ]
-                  : []),
-                ...rowPasses.map((p) => (
-                  <TableRow
-                    key={p.id}
-                    className="cursor-pointer"
-                    onClick={() => setOpenId(p.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setOpenId(p.id);
-                      }
-                    }}
-                    tabIndex={0}
-                    aria-label={t('list.openAria', {
-                      spot: p.spot_label,
-                      customer: p.customer_display_name,
-                    })}
-                  >
-                    <TableCell className="pl-6 font-medium">
-                      {p.spot_label}
-                      {p.slots !== 'FULL' && (
-                        <Badge variant="outline" className="ml-2">
-                          {t(`bookings:slots.${p.slots}`)}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{p.customer_display_name}</TableCell>
-                    <TableCell className="tabular-nums">
-                      {formatIsoDate(p.starts_on)} → {formatIsoDate(p.ends_on)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge tone={STATUS_TONE[p.status]}>
-                        {t(`bookings:status.${p.status}`)}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell className="tabular-nums">{p.released_days || '—'}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {p.credit_amount ? formatCents(p.credit_amount) : '—'}
-                    </TableCell>
-                    <TableCell
-                      className={
-                        p.balance_due > 0
-                          ? 'pr-6 text-right font-medium text-destructive tabular-nums'
-                          : 'pr-6 text-right text-muted-foreground tabular-nums'
-                      }
-                    >
-                      {formatCents(p.balance_due)}
-                    </TableCell>
-                  </TableRow>
-                )),
-              ])}
-            </TableBody>
-          </Table>
-        </Card>
-      ))}
-      {list.hasNextPage && (
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            onClick={() => void list.fetchNextPage()}
-            disabled={list.isFetchingNextPage}
-          >
-            {t('list.loadMore')}
-          </Button>
-        </div>
+      {rows.length > 0 && (
+        <DataTable
+          caption={t('title')}
+          columns={columns}
+          data={rows}
+          pageSize={0}
+          getRowId={(p) => p.id}
+          toolbar={
+            <span className="text-sm text-muted-foreground">
+              {t('list.count', { count: passes.length })}
+            </span>
+          }
+          groupBy={(p) => groupKey.get(p.id) ?? ''}
+          renderGroup={(key, items) => (
+            <span className="flex flex-wrap items-baseline gap-x-2">
+              {groupLabel.get(key)}
+              <span className="font-normal text-muted-foreground">
+                {t('list.count', { count: items.length })}
+              </span>
+            </span>
+          )}
+          onRowClick={(p) => setOpenId(p.id)}
+          getRowLabel={(p) =>
+            t('list.openAria', { spot: p.spot_label, customer: p.customer_display_name })
+          }
+          loadMore={{
+            hasMore: !!list.hasNextPage,
+            loading: list.isFetchingNextPage,
+            onLoadMore: () => void list.fetchNextPage(),
+            label: t('list.loadMore'),
+          }}
+        />
       )}
 
       <CreatePassDialog
@@ -258,7 +269,7 @@ export function SeasonPassesPage() {
         onClose={() => setOpenId(undefined)}
         canWrite={perms.canWrite}
       />
-    </section>
+    </Page>
   );
 }
 

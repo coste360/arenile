@@ -120,5 +120,6 @@
     "warnNoPeak": "Nessun periodo di agosto trovato: scegli i periodi a mano.",
     "warnNoGazebo": "Nessun pack gazebo trovato: scegli i pack a mano."
   },
-  "daysShort": "gg"
+  "daysShort": "gg",
+  "tiersCaption": "Fasce di rimborso"
 }

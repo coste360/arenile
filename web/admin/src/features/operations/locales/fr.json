@@ -28,6 +28,7 @@
     "closedDescription": "Jour de fermeture ou hors saison : les emplacements ne sont pas réservables.",
     "viewMap": "Plan",
     "viewList": "Liste",
+    "views": "Vue",
     "aria": "Plan opérationnel {{name}}, {{date}}, {{slot}}"
   },
   "slot": {

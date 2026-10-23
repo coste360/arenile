@@ -269,7 +269,9 @@
       "sortAsc": "Croissant",
       "sortDesc": "Décroissant",
       "sortBy": "Trier par {{column}}",
-      "hideColumn": "Masquer la colonne"
+      "hideColumn": "Masquer la colonne",
+      "loadMore": "Charger plus",
+      "loadingMore": "Chargement…"
     },
     "confirm": {
       "confirm": "Confirmer",

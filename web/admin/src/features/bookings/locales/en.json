@@ -5,7 +5,6 @@
     "empty": "No bookings yet.",
     "emptyFiltered": "No bookings match the filters.",
     "loadMore": "Load more",
-    "loadingMore": "Loading…",
     "pass": "Season pass"
   },
   "detail": {
@@ -27,6 +26,7 @@
     "where": "What and where",
     "targetSpots": "Spots on the map",
     "targetZone": "Zone or quantity",
+    "target": "Assignment",
     "perSpot": "per spot",
     "customer": "Customer",
     "customerExisting": "Find customer",
@@ -128,8 +128,6 @@
     "balance": "Balance"
   },
   "filters": {
-    "title": "Filters",
-    "search": "Search",
     "searchPlaceholder": "Code, customer or phone",
     "period": "Period",
     "status": "Status",

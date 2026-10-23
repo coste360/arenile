@@ -102,7 +102,7 @@ export function MapsListPage() {
         cell: ({ row }) => {
           const Icon = SEA_ICONS[row.original.sea_side];
           return (
-            <Badge variant="outline" className="font-normal">
+            <Badge variant="outline">
               <Icon aria-hidden="true" />
               {t(`seaSides.${row.original.sea_side}`)}
             </Badge>
@@ -112,13 +112,8 @@ export function MapsListPage() {
       {
         id: 'spots',
         accessorKey: 'spot_count',
-        meta: { label: t('maps.spots') },
+        meta: { label: t('maps.spots'), align: 'right' },
         header: ({ column }) => <DataTableColumnHeader column={column} title={t('maps.spots')} />,
-        cell: ({ row }) => (
-          <Badge variant="secondary" className="tabular-nums">
-            {row.original.spot_count}
-          </Badge>
-        ),
       },
       {
         id: 'actions',
@@ -185,7 +180,7 @@ export function MapsListPage() {
           data={items}
           loading={list.isPending}
           getRowId={(m) => m.id}
-          searchable={items.length > 5}
+          searchable
           searchPlaceholder={t('maps.searchPlaceholder')}
           columnToggle={false}
           empty={

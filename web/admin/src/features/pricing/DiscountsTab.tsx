@@ -1,12 +1,6 @@
 import {
   Badge,
   Button,
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Form,
   FormControl,
   FormField,
@@ -26,6 +20,7 @@ import {
   FormSheet,
   QueryState,
   RowActions,
+  SectionCard,
   SheetForm,
 } from '@arenile/shared/ui/patterns';
 import { formatIsoDate } from '@arenile/shared/lib/dates';
@@ -93,7 +88,7 @@ function PromoSection(p: PricingTabProps) {
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('fields.code')} />,
       cell: ({ row }) => (
         <div className="flex items-center gap-1.5">
-          <Badge variant="secondary" className="font-mono">
+          <Badge variant="outline" className="font-mono">
             {row.original.code}
           </Badge>
           <ActiveBadge active={row.original.active} />
@@ -114,7 +109,7 @@ function PromoSection(p: PricingTabProps) {
     },
     {
       accessorKey: 'uses',
-      meta: { label: t('promo.uses') },
+      meta: { label: t('promo.uses'), align: 'right' },
       header: ({ column }) => <DataTableColumnHeader column={column} title={t('promo.uses')} />,
       cell: ({ row }) => (
         <span className="tabular-nums">
@@ -153,35 +148,36 @@ function PromoSection(p: PricingTabProps) {
     </Button>
   );
   return (
-    <Card aria-labelledby="promo-title" role="region">
-      <CardHeader>
-        <CardTitle id="promo-title" className="flex items-center gap-2 text-lg">
-          <TicketPercentIcon aria-hidden="true" className="size-5 text-muted-foreground" />
-          {t('promo.title')}
-        </CardTitle>
-        <CardDescription>{t('promo.description')}</CardDescription>
-        {add && <CardAction>{add}</CardAction>}
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <QueryState
-          isLoading={list.isPending}
-          error={list.error}
-          onRetry={() => void list.refetch()}
+    <section aria-labelledby="promo-title">
+      <SectionCard
+        titleId="promo-title"
+        icon={TicketPercentIcon}
+        title={t('promo.title')}
+        description={t('promo.description')}
+        flush
+      >
+        <DataTable
+          loading={list.isPending}
+          error={
+            list.error ? (
+              <QueryState
+                isLoading={false}
+                error={list.error}
+                onRetry={() => void list.refetch()}
+              />
+            ) : undefined
+          }
+          embedded
+          caption={t('promo.title')}
+          columns={columns}
+          data={items}
+          getRowId={(x) => x.id}
+          searchable={items.length > 5}
+          toolbar={add}
+          initialSorting={[{ id: 'code', desc: false }]}
+          empty={<EmptyState icon={TicketPercentIcon} title={t('promo.empty')} bordered={false} />}
         />
-        {list.data && (
-          <DataTable
-            caption={t('promo.title')}
-            columns={columns}
-            data={items}
-            getRowId={(x) => x.id}
-            searchable={items.length > 5}
-            initialSorting={[{ id: 'code', desc: false }]}
-            empty={
-              <EmptyState icon={TicketPercentIcon} title={t('promo.empty')} bordered={false} />
-            }
-          />
-        )}
-      </CardContent>
+      </SectionCard>
       <FormSheet
         size="lg"
         padded={false}
@@ -191,7 +187,7 @@ function PromoSection(p: PricingTabProps) {
       >
         <PromoForm key={editor.key} {...p} item={editor.item} onDone={editor.close} />
       </FormSheet>
-    </Card>
+    </section>
   );
 }
 
@@ -335,7 +331,7 @@ function AgreementSection(p: PricingTabProps) {
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="font-medium">{row.original.name}</span>
           {row.original.code && (
-            <Badge variant="secondary" className="font-mono">
+            <Badge variant="outline" className="font-mono">
               {row.original.code}
             </Badge>
           )}
@@ -392,35 +388,36 @@ function AgreementSection(p: PricingTabProps) {
     </Button>
   );
   return (
-    <Card aria-labelledby="agreements-title" role="region">
-      <CardHeader>
-        <CardTitle id="agreements-title" className="flex items-center gap-2 text-lg">
-          <HandshakeIcon aria-hidden="true" className="size-5 text-muted-foreground" />
-          {t('agreements.title')}
-        </CardTitle>
-        <CardDescription>{t('agreements.description')}</CardDescription>
-        {add && <CardAction>{add}</CardAction>}
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <QueryState
-          isLoading={list.isPending}
-          error={list.error}
-          onRetry={() => void list.refetch()}
+    <section aria-labelledby="agreements-title">
+      <SectionCard
+        titleId="agreements-title"
+        icon={HandshakeIcon}
+        title={t('agreements.title')}
+        description={t('agreements.description')}
+        flush
+      >
+        <DataTable
+          loading={list.isPending}
+          error={
+            list.error ? (
+              <QueryState
+                isLoading={false}
+                error={list.error}
+                onRetry={() => void list.refetch()}
+              />
+            ) : undefined
+          }
+          embedded
+          caption={t('agreements.title')}
+          columns={columns}
+          data={items}
+          getRowId={(x) => x.id}
+          searchable={items.length > 5}
+          toolbar={add}
+          initialSorting={[{ id: 'name', desc: false }]}
+          empty={<EmptyState icon={HandshakeIcon} title={t('agreements.empty')} bordered={false} />}
         />
-        {list.data && (
-          <DataTable
-            caption={t('agreements.title')}
-            columns={columns}
-            data={items}
-            getRowId={(x) => x.id}
-            searchable={items.length > 5}
-            initialSorting={[{ id: 'name', desc: false }]}
-            empty={
-              <EmptyState icon={HandshakeIcon} title={t('agreements.empty')} bordered={false} />
-            }
-          />
-        )}
-      </CardContent>
+      </SectionCard>
       <FormSheet
         size="lg"
         padded={false}
@@ -432,7 +429,7 @@ function AgreementSection(p: PricingTabProps) {
       >
         <AgreementForm key={editor.key} {...p} item={editor.item} onDone={editor.close} />
       </FormSheet>
-    </Card>
+    </section>
   );
 }
 

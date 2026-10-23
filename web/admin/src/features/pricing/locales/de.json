@@ -166,10 +166,12 @@
     "editAria": "Regel {{name}} bearbeiten",
     "deleteAria": "Regel {{name}} löschen",
     "deleteConfirm": "Regel {{name}} wird gelöscht.",
-    "emptyStage": "Keine Regeln in dieser Stufe.",
-    "stageCaption": "Regeln der Stufe {{stage}}",
     "summary": "Kurzfassung",
-    "previewIncomplete": "Pflichtfelder ausfüllen, um die Zusammenfassung zu sehen."
+    "previewIncomplete": "Pflichtfelder ausfüllen, um die Zusammenfassung zu sehen.",
+    "tabDescription": "Regeln in der Reihenfolge ihrer Anwendung: Grundpreis, Modifikatoren, Rabatte.",
+    "caption": "Preisregeln",
+    "count_one": "{{count}} Regel",
+    "count_other": "{{count}} Regeln"
   },
   "fixed": {
     "title": "Festpreise",
@@ -183,7 +185,8 @@
     "deleteConfirm": "Preis {{name}} wird gelöscht.",
     "noPacks": "Lege zuerst mindestens ein Paket im Katalog an.",
     "noCategories": "Noch keine Preiskategorie: weise sie den Zonen zu oder füge einen Festpreis hinzu.",
-    "addAria": "Preis für {{name}} hinzufügen"
+    "addAria": "Preis für {{name}} hinzufügen",
+    "caption": "Festpreise nach Dauer · {{formula}}"
   },
   "promo": {
     "title": "Aktionscodes",
@@ -257,7 +260,8 @@
     "vatRate": "Satz und Bemessungsgrundlage",
     "vatTax": "Steuer",
     "showAll": "Alle {{count}} Tage anzeigen",
-    "showLess": "Weniger Tage anzeigen"
+    "showLess": "Weniger Tage anzeigen",
+    "adjustments": "Extras und Rabatte"
   },
   "matrix": {
     "title": "Preismatrix",

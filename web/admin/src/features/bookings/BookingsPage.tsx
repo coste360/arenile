@@ -2,7 +2,6 @@ import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { formatCents } from '@arenile/shared/lib/money';
 import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
 import { Label } from '@arenile/shared/ui/label';
 import { Switch } from '@arenile/shared/ui/switch';
 import {
@@ -11,14 +10,14 @@ import {
   EmptyState,
   MultiSelect,
   OptionSelect,
-  PageHeader,
+  Page,
   QueryState,
   StatusBadge,
   type ColumnDef,
   type IsoDateRange,
 } from '@arenile/shared/ui/patterns';
 import { useNavigate } from '@tanstack/react-router';
-import { CalendarCheckIcon, FilterXIcon, PlusIcon, SearchIcon } from 'lucide-react';
+import { CalendarCheckIcon, FilterXIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRequiredEstablishmentId } from '../../establishment';
@@ -141,27 +140,21 @@ export function BookingsPage() {
     },
     {
       accessorKey: 'total_amount',
-      header: () => <span className="block text-right">{t('columns.total')}</span>,
-      meta: { label: t('columns.total') },
-      cell: ({ row }) => (
-        <span className="block text-right tabular-nums">
-          {formatCents(row.original.total_amount)}
-        </span>
-      ),
+      header: t('columns.total'),
+      meta: { label: t('columns.total'), align: 'right' },
+      cell: ({ row }) => formatCents(row.original.total_amount),
     },
     {
       accessorKey: 'balance_due',
-      header: () => <span className="block text-right">{t('columns.balance')}</span>,
-      meta: { label: t('columns.balance') },
+      header: t('columns.balance'),
+      meta: { label: t('columns.balance'), align: 'right' },
       cell: ({ row }) =>
         row.original.balance_due > 0 ? (
-          <span className="block text-right font-medium text-destructive tabular-nums">
+          <span className="font-medium text-destructive">
             {formatCents(row.original.balance_due)}
           </span>
         ) : (
-          <span className="block text-right text-muted-foreground tabular-nums">
-            {formatCents(0)}
-          </span>
+          <span className="text-muted-foreground">{formatCents(0)}</span>
         ),
     },
   ];
@@ -169,151 +162,130 @@ export function BookingsPage() {
   const spots = [...inventory.spots].sort(compareSpots);
 
   return (
-    <section aria-labelledby="page-title" className="space-y-6">
-      <PageHeader
-        title={t('list.title')}
-        description={t('list.description')}
-        actions={
-          perms.canWrite && (
-            <Button onClick={() => setSheetOpen(true)}>
-              <PlusIcon aria-hidden="true" />
-              {t('new.title')}
-            </Button>
-          )
+    <Page
+      title={t('list.title')}
+      description={t('list.description')}
+      actions={
+        perms.canWrite && (
+          <Button onClick={() => setSheetOpen(true)}>
+            <PlusIcon aria-hidden="true" />
+            {t('new.title')}
+          </Button>
+        )
+      }
+    >
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('list.title')}
+        columns={columns}
+        data={rows}
+        loading={list.isPending}
+        pageSize={0}
+        getRowId={(r) => r.id}
+        searchable
+        searchPlaceholder={t('filters.searchPlaceholder')}
+        searchValue={search}
+        onSearchChange={setSearch}
+        filters={
+          <>
+            <Label htmlFor="bookings-range" className="sr-only">
+              {t('filters.period')}
+            </Label>
+            <DateRangePicker id="bookings-range" value={range} onChange={setRange} clearable />
+            <Label htmlFor="bookings-status" className="sr-only">
+              {t('filters.status')}
+            </Label>
+            <MultiSelect
+              id="bookings-status"
+              value={statuses}
+              onChange={setStatuses}
+              options={BOOKING_STATUSES.map((s) => ({ value: s, label: t(`status.${s}`) }))}
+              placeholder={t('filters.allStatuses')}
+              className="w-44"
+            />
+            <OptionSelect
+              id="bookings-channel"
+              className="w-auto"
+              aria-label={t('filters.channel')}
+              value={channel}
+              onChange={setChannel}
+              options={[
+                { value: ALL, label: t('filters.allChannels') },
+                ...CHANNELS.map((c) => ({ value: c, label: t(`channel.${c}`) })),
+              ]}
+            />
+            <OptionSelect
+              id="bookings-spot"
+              className="w-auto"
+              aria-label={t('filters.spot')}
+              value={spotId}
+              onChange={setSpotId}
+              options={[
+                { value: ALL, label: t('filters.allSpots') },
+                ...spots.map((s) => ({ value: s.id, label: s.label })),
+              ]}
+            />
+            <OptionSelect
+              id="bookings-kind"
+              className="w-auto"
+              aria-label={t('filters.kind')}
+              value={kind}
+              onChange={setKind}
+              options={[
+                { value: ALL, label: t('filters.allKinds') },
+                { value: 'booking', label: t('filters.onlyBookings') },
+                { value: 'pass', label: t('filters.onlyPasses') },
+              ]}
+            />
+            <div className="flex items-center gap-2">
+              <Switch id="bookings-balance" checked={balanceDue} onCheckedChange={setBalanceDue} />
+              <Label htmlFor="bookings-balance">{t('filters.balanceDue')}</Label>
+            </div>
+            {filtered && (
+              <Button variant="ghost" size="sm" onClick={reset}>
+                <FilterXIcon aria-hidden="true" />
+                {t('filters.reset')}
+              </Button>
+            )}
+          </>
+        }
+        loadMore={{
+          hasMore: !!list.hasNextPage,
+          loading: list.isFetchingNextPage,
+          onLoadMore: () => void list.fetchNextPage(),
+          label: t('list.loadMore'),
+        }}
+        getRowLabel={(r) => `${r.code}, ${r.customer_display_name}`}
+        onRowClick={(r) =>
+          void navigate({
+            to: '/e/$establishmentId/prenotazioni/$bookingId',
+            params: { establishmentId, bookingId: r.id },
+          })
+        }
+        empty={
+          <EmptyState
+            icon={CalendarCheckIcon}
+            bordered={false}
+            title={filtered ? t('list.emptyFiltered') : t('list.empty')}
+            action={
+              filtered ? (
+                <Button variant="outline" onClick={reset}>
+                  {t('filters.reset')}
+                </Button>
+              ) : undefined
+            }
+          />
         }
       />
-      <div
-        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-        role="search"
-        aria-label={t('filters.title')}
-      >
-        <div className="space-y-1.5">
-          <Label htmlFor="bookings-q">{t('filters.search')}</Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <SearchIcon aria-hidden="true" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="bookings-q"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('filters.searchPlaceholder')}
-            />
-          </InputGroup>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="bookings-range">{t('filters.period')}</Label>
-          <DateRangePicker id="bookings-range" value={range} onChange={setRange} clearable />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="bookings-status">{t('filters.status')}</Label>
-          <MultiSelect
-            id="bookings-status"
-            value={statuses}
-            onChange={setStatuses}
-            options={BOOKING_STATUSES.map((s) => ({ value: s, label: t(`status.${s}`) }))}
-            placeholder={t('filters.allStatuses')}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="bookings-channel">{t('filters.channel')}</Label>
-          <OptionSelect
-            id="bookings-channel"
-            value={channel}
-            onChange={setChannel}
-            options={[
-              { value: ALL, label: t('filters.allChannels') },
-              ...CHANNELS.map((c) => ({ value: c, label: t(`channel.${c}`) })),
-            ]}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="bookings-spot">{t('filters.spot')}</Label>
-          <OptionSelect
-            id="bookings-spot"
-            value={spotId}
-            onChange={setSpotId}
-            options={[
-              { value: ALL, label: t('filters.allSpots') },
-              ...spots.map((s) => ({ value: s.id, label: s.label })),
-            ]}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="bookings-kind">{t('filters.kind')}</Label>
-          <OptionSelect
-            id="bookings-kind"
-            value={kind}
-            onChange={setKind}
-            options={[
-              { value: ALL, label: t('filters.allKinds') },
-              { value: 'booking', label: t('filters.onlyBookings') },
-              { value: 'pass', label: t('filters.onlyPasses') },
-            ]}
-          />
-        </div>
-        <div className="flex items-end gap-3 pb-2">
-          <Switch id="bookings-balance" checked={balanceDue} onCheckedChange={setBalanceDue} />
-          <Label htmlFor="bookings-balance">{t('filters.balanceDue')}</Label>
-        </div>
-        <div className="flex items-end">
-          {filtered && (
-            <Button variant="ghost" onClick={reset}>
-              <FilterXIcon aria-hidden="true" />
-              {t('filters.reset')}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('list.title')}
-          columns={columns}
-          data={rows}
-          loading={list.isPending}
-          pageSize={0}
-          getRowId={(r) => r.id}
-          onRowClick={(r) =>
-            void navigate({
-              to: '/e/$establishmentId/prenotazioni/$bookingId',
-              params: { establishmentId, bookingId: r.id },
-            })
-          }
-          empty={
-            <EmptyState
-              icon={CalendarCheckIcon}
-              bordered={false}
-              title={filtered ? t('list.emptyFiltered') : t('list.empty')}
-              action={
-                filtered ? (
-                  <Button variant="outline" onClick={reset}>
-                    {t('filters.reset')}
-                  </Button>
-                ) : undefined
-              }
-            />
-          }
-        />
-      )}
-      {list.hasNextPage && (
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            onClick={() => void list.fetchNextPage()}
-            disabled={list.isFetchingNextPage}
-          >
-            {list.isFetchingNextPage ? t('list.loadingMore') : t('list.loadMore')}
-          </Button>
-        </div>
-      )}
       <NewBookingSheet
         establishmentId={establishmentId}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
       />
-    </section>
+    </Page>
   );
 }

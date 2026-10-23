@@ -18,7 +18,6 @@
     "noSeasons": "Nessuna stagione configurata.",
     "otherZone": "Altre postazioni",
     "row": "Fila {{row}}",
-    "zoneCaption": "Abbonamenti della zona {{zone}}",
     "openAria": "Apri l'abbonamento {{spot}} di {{customer}}",
     "loadMore": "Carica altri"
   },

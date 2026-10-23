@@ -1,7 +1,5 @@
-import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
 import { Calendar } from '@arenile/shared/ui/calendar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { FieldDescription, FieldLabel, Field as UiField } from '@arenile/shared/ui/field';
 import { Input } from '@arenile/shared/ui/input';
 import { Label } from '@arenile/shared/ui/label';
@@ -21,8 +19,10 @@ import {
   EmptyState,
   FormActions,
   FormDialog,
+  PageToolbar,
   QueryState,
   RowActions,
+  SectionCard,
   StatusBadge,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -152,8 +152,10 @@ export function ClosuresPage() {
       readOnly={readOnly}
       actions={addButton}
     >
-      <div className="flex items-center gap-3">
-        <Label htmlFor="closures-year">{t('closures.year')}</Label>
+      <PageToolbar>
+        <Label htmlFor="closures-year" className="text-muted-foreground">
+          {t('closures.year')}
+        </Label>
         <Select value={String(year)} onValueChange={(v) => changeYear(Number(v))}>
           <SelectTrigger id="closures-year" className="w-28">
             <SelectValue />
@@ -166,19 +168,16 @@ export function ClosuresPage() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </PageToolbar>
       {list.error ? (
         <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
       ) : (
         <div className="grid items-start gap-6 xl:grid-cols-[auto_1fr]">
-          <Card className="gap-3">
-            <CardHeader>
-              <CardTitle>{t('closures.calendarTitle', { year })}</CardTitle>
-              <CardDescription>
-                {readOnly ? t('closures.calendarHintReadOnly') : t('closures.calendarHint')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-3">
+          <SectionCard
+            title={t('closures.calendarTitle', { year })}
+            description={readOnly ? t('closures.calendarHintReadOnly') : t('closures.calendarHint')}
+          >
+            <div className="flex flex-col items-center gap-3">
               <Calendar
                 month={month}
                 onMonthChange={setMonth}
@@ -206,18 +205,14 @@ export function ClosuresPage() {
               />
               <ul className="flex flex-wrap gap-2 text-xs" aria-label={t('closures.legend')}>
                 <li>
-                  <Badge variant="secondary" className="bg-destructive/15 text-destructive">
-                    {t('closures.wholeDay')}
-                  </Badge>
+                  <StatusBadge tone="danger">{t('closures.wholeDay')}</StatusBadge>
                 </li>
                 <li>
-                  <Badge variant="secondary" className="bg-warning/25 text-foreground">
-                    {t('closures.oneSlot')}
-                  </Badge>
+                  <StatusBadge tone="warning">{t('closures.oneSlot')}</StatusBadge>
                 </li>
               </ul>
-            </CardContent>
-          </Card>
+            </div>
+          </SectionCard>
           <DataTable
             caption={t('closures.title')}
             columns={columns}

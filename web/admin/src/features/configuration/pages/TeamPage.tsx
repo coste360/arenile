@@ -281,7 +281,7 @@ function CreatedNotice({ created, onClose }: { created: TeamMemberCreated; onClo
     }
   };
   return (
-    <Alert role="status" className="border-success/40 bg-success/10">
+    <Alert role="status" variant="success">
       <KeyRoundIcon aria-hidden="true" />
       <AlertTitle className="pr-8">
         {created.user_created

@@ -3,7 +3,7 @@ import { Button } from '@arenile/shared/ui/button';
 import { ButtonGroup } from '@arenile/shared/ui/button-group';
 import { FieldDescription, FieldLegend, FieldSeparator, FieldSet } from '@arenile/shared/ui/field';
 import { Input } from '@arenile/shared/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import {
   type ColumnDef,
   DataTable,
@@ -15,6 +15,7 @@ import {
   QueryState,
   RowActions,
   StatusBadge,
+  ResponsiveTabsList,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -93,14 +94,16 @@ export function CatalogPage() {
       readOnly={!ctx.canConfigure}
     >
       <Tabs value={tab} onValueChange={setTab} className="gap-4">
-        <TabsList aria-label={t('catalog.title')}>
-          {TABS.map(({ id, icon: Icon }) => (
-            <TabsTrigger key={id} value={id}>
-              <Icon aria-hidden="true" />
-              {t(`catalog.tabs.${id}`)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <ResponsiveTabsList
+          label={t('catalog.title')}
+          value={tab}
+          onValueChange={setTab}
+          options={TABS.map(({ id, icon }) => ({
+            value: id,
+            icon,
+            label: t(`catalog.tabs.${id}`),
+          }))}
+        />
         <TabsContent value="components">
           <ComponentsTab ctx={ctx} />
         </TabsContent>
@@ -115,14 +118,9 @@ export function CatalogPage() {
   );
 }
 
-/** Hint + "Nuovo" button above each tab's table. */
-function TabToolbar({ hint, action }: { hint: string; action: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <p className="max-w-2xl text-sm text-muted-foreground">{hint}</p>
-      {action}
-    </div>
-  );
+/** Hint above each tab's table (the "Nuovo" button sits in the table toolbar). */
+function TabHint({ children }: { children: ReactNode }) {
+  return <p className="max-w-2xl text-sm text-muted-foreground">{children}</p>;
 }
 
 function NameCell({ name, code, icon }: { name: string; code: string; icon?: ReactNode }) {
@@ -219,23 +217,23 @@ function ComponentsTab({ ctx }: { ctx: ConfigContext }) {
   );
   return (
     <div className="space-y-4">
-      <TabToolbar hint={t('catalog.componentsHint')} action={add} />
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('catalog.tabs.components')}
-          columns={columns}
-          data={list.data ?? []}
-          loading={list.isPending}
-          getRowId={(c) => c.id}
-          searchable
-          pageSize={0}
-          empty={
-            <EmptyState icon={BoxIcon} title={t('catalog.emptyComponents')} bordered={false} />
-          }
-        />
-      )}
+      <TabHint>{t('catalog.componentsHint')}</TabHint>
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('catalog.tabs.components')}
+        toolbar={add || undefined}
+        columns={columns}
+        data={list.data ?? []}
+        loading={list.isPending}
+        getRowId={(c) => c.id}
+        searchable
+        pageSize={0}
+        empty={<EmptyState icon={BoxIcon} title={t('catalog.emptyComponents')} bordered={false} />}
+      />
       <FormDialog
         open={editor.open}
         onOpenChange={editor.setOpen}
@@ -367,7 +365,7 @@ function PacksTab({ ctx }: { ctx: ConfigContext }) {
             })}
           >
             {entries.map(([code, qty]) => (
-              <Badge key={code} variant="secondary" className="gap-1 tabular-nums">
+              <Badge key={code} variant="secondary">
                 {qty}×
                 <ComponentIcon code={code} className="size-3.5" />
               </Badge>
@@ -415,21 +413,23 @@ function PacksTab({ ctx }: { ctx: ConfigContext }) {
   );
   return (
     <div className="space-y-4">
-      <TabToolbar hint={t('catalog.packsHint')} action={add} />
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('catalog.tabs.packs')}
-          columns={columns}
-          data={items}
-          loading={list.isPending}
-          getRowId={(p) => p.id}
-          searchable
-          pageSize={0}
-          empty={<EmptyState icon={PackageIcon} title={t('catalog.emptyPacks')} bordered={false} />}
-        />
-      )}
+      <TabHint>{t('catalog.packsHint')}</TabHint>
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('catalog.tabs.packs')}
+        toolbar={add || undefined}
+        columns={columns}
+        data={items}
+        loading={list.isPending}
+        getRowId={(p) => p.id}
+        searchable
+        pageSize={0}
+        empty={<EmptyState icon={PackageIcon} title={t('catalog.emptyPacks')} bordered={false} />}
+      />
       <FormSheet
         open={editor.open}
         onOpenChange={editor.setOpen}
@@ -767,21 +767,23 @@ function ExtrasTab({ ctx }: { ctx: ConfigContext }) {
   );
   return (
     <div className="space-y-4">
-      <TabToolbar hint={t('catalog.extrasHint')} action={add} />
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('catalog.tabs.extras')}
-          columns={columns}
-          data={items}
-          loading={list.isPending}
-          getRowId={(x) => x.id}
-          searchable
-          pageSize={0}
-          empty={<EmptyState icon={PuzzleIcon} title={t('catalog.emptyExtras')} bordered={false} />}
-        />
-      )}
+      <TabHint>{t('catalog.extrasHint')}</TabHint>
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('catalog.tabs.extras')}
+        toolbar={add || undefined}
+        columns={columns}
+        data={items}
+        loading={list.isPending}
+        getRowId={(x) => x.id}
+        searchable
+        pageSize={0}
+        empty={<EmptyState icon={PuzzleIcon} title={t('catalog.emptyExtras')} bordered={false} />}
+      />
       <FormSheet
         open={editor.open}
         onOpenChange={editor.setOpen}
