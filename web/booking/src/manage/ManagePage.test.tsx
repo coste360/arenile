@@ -1,6 +1,6 @@
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseBookingLocation } from '../location';
 import {
   BASE,
@@ -60,12 +60,17 @@ function spyWindow() {
   return { win: proxy, assign };
 }
 
-function renderManage(routes: Record<string, Handler>, token: string | null = TOKEN, win?: Window) {
+function renderManage(
+  routes: Record<string, Handler>,
+  token: string | null = TOKEN,
+  win?: Window,
+  path = token ? `/b/lido-demo/m/${token}` : '/b/lido-demo/m/x',
+) {
   const { api, fetchMock } = fakeApi({
     [`GET ${BASE}`]: () => json(200, establishmentFixture()),
     ...routes,
   });
-  const location = parseBookingLocation(token ? `/b/lido-demo/m/${token}` : '/b/lido-demo/m/x', '');
+  const location = parseBookingLocation(path, '');
   render(
     <Providers api={api}>
       <ManagePage location={location} win={win} now={() => Date.parse('2099-06-20T10:00:00Z')} />
@@ -75,6 +80,32 @@ function renderManage(routes: Record<string, Handler>, token: string | null = TO
 }
 
 describe('ManagePage', () => {
+  afterEach(() => {
+    window.sessionStorage.clear();
+  });
+
+  it('resumes from the stored token at /m after a balance payment (token never in the return URL)', async () => {
+    // Opening the link stores the token for this tab...
+    renderManage({ [`GET ${MANAGE}`]: () => json(200, booking()) });
+    expect(await screen.findByRole('heading', { name: 'La tua prenotazione' })).toBeInTheDocument();
+    expect(window.sessionStorage.getItem('arenile:manage:lido-demo')).toBe(TOKEN);
+    cleanup();
+    // ...so the provider's return URL, without the token, reopens the booking.
+    const { fetchMock } = renderManage(
+      { [`GET ${MANAGE}`]: () => json(200, booking()) },
+      null,
+      undefined,
+      '/b/lido-demo/m',
+    );
+    expect(await screen.findByText('AR-7Q2K')).toBeInTheDocument();
+    expect(callsTo(fetchMock, 'GET', MANAGE)).toHaveLength(1);
+    cleanup();
+    // Without a stored token the page asks for a new link.
+    window.sessionStorage.clear();
+    renderManage({}, null, undefined, '/b/lido-demo/m');
+    expect(await screen.findByRole('alert')).toHaveTextContent(/link/i);
+  });
+
   it('shows details, QR, calendar file and link expiry', async () => {
     renderManage({ [`GET ${MANAGE}`]: () => json(200, booking()) });
     expect(await screen.findByRole('heading', { name: 'La tua prenotazione' })).toBeInTheDocument();

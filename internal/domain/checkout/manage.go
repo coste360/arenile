@@ -118,6 +118,14 @@ func (s *Service) ManageDocument(ctx context.Context, slug, token, kind string) 
 
 func (s *Service) manageURL(slug, token string) string { return s.pageURL(slug) + "/m/" + token }
 
+// manageReturnURL is where the provider sends the customer back after a
+// balance payment: the manage area WITHOUT the magic link token (the page
+// keeps the token in its own storage and resumes from there), so the token
+// never reaches the provider's session objects, dashboard or logs.
+func (s *Service) manageReturnURL(slug, bookingID string) string {
+	return s.pageURL(slug) + "/m?paid=1&booking=" + bookingID
+}
+
 // ManagePay starts the payment of the balance with the online provider.
 func (s *Service) ManagePay(ctx context.Context, slug, token, idempotencyKey string) (*PayOutcome, error) {
 	pe, l, d, err := s.link(ctx, slug, token)
@@ -141,7 +149,7 @@ func (s *Service) ManagePay(ctx context.Context, slug, token, idempotencyKey str
 		locale = *b.Locale
 	}
 	s.d.Log.InfoContext(ctx, "balance payment requested", slog.String("booking_id", b.ID), slog.String("link_id", l.ID))
-	return s.providerPayment(ctx, pe, d, gateway.PurposeBalance, balance, s.manageURL(pe.Establishment.Slug, token)+"?paid=1", locale)
+	return s.providerPayment(ctx, pe, d, gateway.PurposeBalance, balance, s.manageReturnURL(pe.Establishment.Slug, b.ID), locale)
 }
 
 // ManageModify previews or applies a modification within the policy:

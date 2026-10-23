@@ -43,6 +43,7 @@ import { CancelSection } from './CancelSection';
 import { ModifySection } from './ModifySection';
 import { ReleaseSection } from './ReleaseSection';
 import { RequestLinkForm } from './RequestLinkForm';
+import { resolveManageToken } from './token';
 
 export interface ManagePageProps {
   location: BookingLocation;
@@ -134,7 +135,7 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
   const { t: tc } = useTranslation();
   const { query: est, establishment, env } = usePublicPage(location, win, now);
   const slug = location.slug ?? '';
-  const token = location.manageToken;
+  const token = resolveManageToken(win, slug, location.manageToken);
   const booking = useManagedBooking(slug, token);
 
   const invalid =

@@ -10,7 +10,12 @@ export type BookingView = 'book' | 'manage';
 export interface BookingLocation {
   slug: string | null;
   view: BookingView;
-  /** Magic link token of the manage area (`/b/{slug}/m/{token}`), never logged. */
+  /**
+   * Magic link token of the manage area (`/b/{slug}/m/{token}`), never
+   * logged. `/b/{slug}/m` without a token (the return from a balance
+   * payment: the token is never sent to the provider) resumes from the
+   * token the page stored when the link was opened.
+   */
   manageToken: string | null;
   /**
    * Booking id of a checkout to resume (`?checkout=<id>`): the return URL of
@@ -76,7 +81,7 @@ export function parseBookingLocation(pathname: string, search: string): BookingL
   }
   const q = new URLSearchParams(search);
   const embed = q.get('embed');
-  const manage = /^\/b\/[^/?#]+\/m\/([^/?#]+)\/?$/.exec(pathname);
+  const manage = /^\/b\/[^/?#]+\/m(?:\/([^/?#]*))?\/?$/.exec(pathname);
   const manageToken = manage?.[1] && TOKEN_RE.test(manage[1]) ? manage[1] : null;
   const checkout = q.get('checkout');
   const preview = q.get('preview');

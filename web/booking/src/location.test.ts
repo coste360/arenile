@@ -47,6 +47,13 @@ describe('parseBookingLocation', () => {
       view: 'manage',
       manageToken: null,
     });
+    // Return from a balance payment: the manage area without the token.
+    expect(parseBookingLocation('/b/lido/m', '?paid=1&booking=b1')).toMatchObject({
+      slug: 'lido',
+      view: 'manage',
+      manageToken: null,
+    });
+    expect(parseBookingLocation('/b/lido/m/', '')).toMatchObject({ view: 'manage', manageToken: null });
   });
 
   it('reads the host page of the widget only in embed mode', () => {

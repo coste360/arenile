@@ -15,6 +15,8 @@ import (
 	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/checkout/checkouttest"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/online"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
@@ -268,6 +270,41 @@ func TestManage_SeasonPassRelease(t *testing.T) {
 		}
 		if _, err := e.Svc.ManageRelease(ctx, slug, link.Token, checkout.ReleaseInput{Days: []checkout.ReleaseDay{day}}); err == nil {
 			t.Fatal("double release accepted")
+		}
+	})
+}
+
+// TestManage_PayBalanceNeverSendsTokenToProvider: the return and cancel
+// URLs handed to the payment provider for a balance payment never carry
+// the magic link token (Stripe stores them with the session, visible in
+// its dashboard and logs): the page resumes the manage area from its own
+// storage.
+func TestManage_PayBalanceNeverSendsTokenToProvider(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		ctx := e.Ctx
+		s, token := confirmed(e, e.F.Spots[0], "2027-07-20")
+		sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
+			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		out, err := e.Svc.ManagePay(ctx, slug, token, "")
+		if err != nil || out.Mode != checkout.PayRedirect || out.Amount != 2000 {
+			t.Fatalf("pay balance: %v %+v", err, out)
+		}
+		req := e.Pay.Starts[0]
+		for _, u := range []string{req.ReturnURL, req.CancelURL} {
+			if strings.Contains(u, token) || strings.Contains(u, "/m/") {
+				t.Fatalf("magic link token sent to the provider: %s", u)
+			}
+			if !strings.HasPrefix(u, "https://prenota.example.org/b/lido-delfino/m?paid=1&booking="+s.BookingID) {
+				t.Fatalf("return url %s", u)
+			}
+		}
+		if !strings.HasSuffix(req.CancelURL, "&cancelled=1") || req.Purpose != gateway.PurposeBalance {
+			t.Fatalf("cancel url %s purpose %s", req.CancelURL, req.Purpose)
 		}
 	})
 }
