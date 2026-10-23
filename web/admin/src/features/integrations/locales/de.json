@@ -171,6 +171,8 @@
     "booking": "Buchungen",
     "allocation": "Plätze",
     "season": "Saisonabos",
+    "waitlist": "Warteliste",
+    "credit": "Guthaben",
     "payment": "Zahlungen",
     "customer": "Kunden",
     "cash_session": "Kasse",
@@ -196,7 +198,22 @@
       },
       "season": {
         "day_released": "Tag vom Abonnenten freigegeben",
-        "renewal_offered": "Verlängerung angeboten"
+        "renewal_offered": "Verlängerung angeboten",
+        "renewal_accepted": "Verlängerung angenommen",
+        "renewal_declined": "Verlängerung abgelehnt",
+        "renewal_expired": "Verlängerung abgelaufen",
+        "rolled_over": "Neue Saison erstellt"
+      },
+      "waitlist": {
+        "joined": "Auf die Warteliste gesetzt",
+        "offered": "Platz angeboten",
+        "offer_expired": "Angebot abgelaufen",
+        "converted": "Buchung von der Warteliste"
+      },
+      "credit": {
+        "issued": "Guthaben gewährt",
+        "consumed": "Guthaben verwendet",
+        "expired": "Guthaben abgelaufen"
       },
       "payment": {
         "succeeded": "Zahlung erfolgreich",

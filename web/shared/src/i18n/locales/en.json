@@ -124,6 +124,8 @@
     "calendar": "Calendar",
     "customers": "Customers",
     "seasonPasses": "Season passes",
+    "renewals": "Renewals",
+    "waitlist": "Waitlist",
     "cash": "Cash desk",
     "reports": "Reports",
     "settings": "Settings",
@@ -149,7 +151,8 @@
       "devicesLan": "Local network",
       "desktop": "Desktop app",
       "apiKeys": "API keys",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "seasonRollover": "New season"
     },
     "operations": "Operations",
     "configGroup": "Configuration",
@@ -167,6 +170,8 @@
       "calendar": "Spots × days planning grid for long stays.",
       "customers": "Customer records, history, credits and season passes.",
       "seasonPasses": "Season passes, daily releases and renewals.",
+      "renewals": "Season pass renewal campaigns with right of pre-emption.",
+      "waitlist": "Requests with no availability and automatic offers when a spot frees up.",
       "cash": "Cash session, payments and closures.",
       "reports": "Occupancy, revenue, channels and exports.",
       "settings": "Seasons, maps, zones, catalogue, prices, policies, public page and payments."

@@ -19,6 +19,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
+	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
@@ -32,9 +33,12 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/rollover"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/fiscalbridge"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/middleware"
@@ -95,6 +99,13 @@ type Handlers struct {
 	Meta         *meta.Service
 	Devices      *device.Service
 	FiscalBridge *fiscalbridge.Service
+
+	// M5B: season rollover (rollover.go), renewals (renewals.go), waitlist
+	// (waitlist.go) and customer credits (credits.go); own block.
+	Rollover *rollover.Service
+	Renewals *renewal.Service
+	Waitlist *waitlist.Service
+	Credits  *credit.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.

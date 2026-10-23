@@ -124,6 +124,8 @@
     "calendar": "Calendrier",
     "customers": "Clients",
     "seasonPasses": "Abonnements",
+    "renewals": "Renouvellements",
+    "waitlist": "Liste d'attente",
     "cash": "Caisse",
     "reports": "Rapports",
     "settings": "Configuration",
@@ -149,7 +151,8 @@
       "devicesLan": "Réseau local",
       "desktop": "Application de bureau",
       "apiKeys": "Clés API",
-      "webhooks": "Webhooks"
+      "webhooks": "Webhooks",
+      "seasonRollover": "Nouvelle saison"
     },
     "operations": "Exploitation",
     "configGroup": "Configuration",
@@ -167,6 +170,8 @@
       "calendar": "Grille de planning emplacements × jours pour les longs séjours.",
       "customers": "Fiches clients, historique, crédits et abonnements.",
       "seasonPasses": "Abonnements saisonniers, libérations journalières et renouvellements.",
+      "renewals": "Campagnes de renouvellement des abonnements avec droit de préemption.",
+      "waitlist": "Demandes sans disponibilité et offres automatiques lorsqu'une place se libère.",
       "cash": "Session de caisse, encaissements et clôtures.",
       "reports": "Occupation, revenus, canaux et exports.",
       "settings": "Saisons, plans, zones, catalogue, prix, règles, page publique et paiements."

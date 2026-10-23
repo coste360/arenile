@@ -8,6 +8,7 @@ import {
   CreditCardIcon,
   EuroIcon,
   GlobeIcon,
+  HourglassIcon,
   KeyRoundIcon,
   LayersIcon,
   LayoutGridIcon,
@@ -15,6 +16,7 @@ import {
   MapIcon,
   MonitorIcon,
   PackageIcon,
+  RefreshCwIcon,
   ShieldCheckIcon,
   SmartphoneIcon,
   SparklesIcon,
@@ -93,6 +95,25 @@ export const NAV_ITEMS = [
     descriptionKey: 'admin.placeholder.seasonPasses',
     milestone: 'M3',
     icon: TicketIcon,
+    available: true,
+  },
+  // M5B: renewals next to the season passes, then the waitlist.
+  {
+    to: '/e/$establishmentId/rinnovi',
+    section: 'rinnovi',
+    labelKey: 'nav.renewals',
+    descriptionKey: 'admin.placeholder.renewals',
+    milestone: 'M5',
+    icon: RefreshCwIcon,
+    available: true,
+  },
+  {
+    to: '/e/$establishmentId/lista-attesa',
+    section: 'lista-attesa',
+    labelKey: 'nav.waitlist',
+    descriptionKey: 'admin.placeholder.waitlist',
+    milestone: 'M5',
+    icon: HourglassIcon,
     available: true,
   },
   {
@@ -221,4 +242,5 @@ export type ConfigNavPath = (typeof CONFIG_NAV_ITEMS)[number]['to'];
  */
 export const BREADCRUMB_ONLY_ITEMS = [
   { to: '/e/$establishmentId/config/devices/lan', labelKey: 'nav.config.devicesLan' },
+  { to: '/e/$establishmentId/config/seasons/rollover', labelKey: 'nav.config.seasonRollover' },
 ] as const satisfies readonly { to: string; labelKey: string }[];

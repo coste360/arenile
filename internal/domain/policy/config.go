@@ -177,7 +177,20 @@ func (r Rules) CheckConfig() error {
 	if c := r.SeasonReleaseCredit; c != nil && c.Percent != nil {
 		pct("season_release_credit.percent", *c.Percent)
 	}
+	if d := r.CreditValidityDays; d != nil && (*d < 0 || *d > 3650) {
+		bad("credit_validity_days must be between 0 and 3650")
+	}
 	return errors.Join(errs...)
+}
+
+// CreditExpiry returns the expiry of a credit issued on day under r (nil =
+// never: credit_validity_days absent or 0).
+func (r Rules) CreditExpiry(day calendar.Date) *calendar.Date {
+	if r.CreditValidityDays == nil || *r.CreditValidityDays <= 0 {
+		return nil
+	}
+	d := day.AddDays(*r.CreditValidityDays)
+	return &d
 }
 
 // RequiresApproval reports the effective approval_required flag (default false).

@@ -337,6 +337,23 @@ const seasonPassesRoute = createRoute({
   path: 'abbonamenti',
   component: lazyRouteComponent(() => import('./features/passes'), 'SeasonPassesPage'),
 });
+// M5B: renewals and waitlist (Operatività), season rollover wizard.
+const renewalsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'rinnovi',
+  component: lazyRouteComponent(() => import('./features/renewals'), 'RenewalsPage'),
+});
+const waitlistRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'lista-attesa',
+  component: lazyRouteComponent(() => import('./features/waitlist'), 'WaitlistPage'),
+});
+const seasonRolloverRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/seasons/rollover',
+  validateSearch: validateSeasonSearch,
+  component: lazyRouteComponent(() => import('./features/season-rollover'), 'SeasonRolloverPage'),
+});
 const cashRoute = createRoute({
   getParentRoute: () => establishmentRoute,
   path: 'cassa',
@@ -408,6 +425,9 @@ const routeTree = rootRoute.addChildren([
       customersRoute,
       customerDetailRoute,
       seasonPassesRoute,
+      renewalsRoute,
+      waitlistRoute,
+      seasonRolloverRoute,
       cashRoute,
       corrispettiviRoute,
       reportsRoute,

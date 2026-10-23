@@ -25,6 +25,11 @@ import (
 	"github.com/coste360/arenile/internal/domain/report"
 	"github.com/coste360/arenile/internal/domain/webhook"
 
+	"github.com/coste360/arenile/internal/domain/credit"
+	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/waitlist"
+
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/coste360/arenile/internal/clock"
@@ -149,6 +154,12 @@ type App struct {
 	Devices      *device.Service
 	FiscalBridge *fiscalbridge.Service
 
+	// M5B services (wired by wireRenewals, see m5b.go); own block.
+	Rollover *rollover.Service
+	Renewals *renewal.Service
+	Waitlist *waitlist.Service
+	Credits  *credit.Service
+
 	mu    sync.Mutex
 	addr  string
 	ready chan struct{}
@@ -264,6 +275,7 @@ func (a *App) wire() error {
 		Egress: event.EgressPolicy{AllowPrivate: a.cfg.WebhooksAllowPrivate},
 	})
 	a.wireSeason(aw, deliverer)
+	a.wireRenewals(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -271,7 +283,7 @@ func (a *App) wire() error {
 		bus = x.EventBus
 	}
 	a.Bus = sse.NewReplayBus(bus, 0)
-	sinks := append(slices.Clone(x.EventSinks), a.onlineSinks()...)
+	sinks := slices.Concat(x.EventSinks, a.onlineSinks(), a.renewalSinks())
 	dispatcher := event.NewDispatcher(a.db, c, sinks, a.Bus, a.log)
 
 	a.runner = jobs.NewRunner(a.log)
@@ -288,7 +300,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs()) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -305,6 +317,7 @@ func (a *App) wire() error {
 		Meta: a.Meta, Devices: a.Devices, FiscalBridge: a.FiscalBridge,
 		Desktop: a.opts.desktop, DesktopUsers: usersCounter{db: a.db},
 		Reports: a.Reports, APIKeys: a.APIKeys, Webhooks: a.Webhooks,
+		Rollover: a.Rollover, Renewals: a.Renewals, Waitlist: a.Waitlist, Credits: a.Credits,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

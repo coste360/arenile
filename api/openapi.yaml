@@ -58,6 +58,10 @@ tags:
     description: Vista operativa del giorno e calendario planning
   - name: passes
     description: Abbonamenti stagionali e rilasci
+  - name: renewals
+    description: Campagne di rinnovo degli abbonamenti e diritto di prelazione (spec 10.4)
+  - name: waitlist
+    description: Lista d'attesa e offerte con hold riservato (spec 10.5)
   - name: payments
     description: Pagamenti manuali, rimborsi e vendite di cassa
   - name: cash
@@ -8222,6 +8226,1278 @@ paths:
         "501":
           $ref: "#/components/responses/NotImplemented"
 
+  # ---- M5 part B: season rollover, renewals, waitlist, customer credits ----
+  /api/admin/v1/establishments/{establishmentId}/seasons/{seasonId}/rollover:
+    post:
+      operationId: rolloverSeason
+      tags: [seasons]
+      summary: "Fine stagione: crea la stagione successiva copiando la configurazione (anteprima e applicazione)"
+      description: >-
+        Spec 8.7, 10.4, 28 (M5). `dry_run = true` (default) restituisce l'anteprima senza scrivere. L'applicazione
+        crea in una transazione la stagione dell'anno indicato copiando periodi tariffari, chiusure (spostate
+        sull'anno), regole di prezzo, prezzi fissi e policy; catalogo e mappe non dipendono dalla stagione e restano
+        invariati. Idempotente: un secondo `apply` con lo stesso anno restituisce 200 con il risultato già registrato
+        (`already_applied = true`); 409 `season_rollover_conflict` se esiste già una stagione di quell'anno non
+        creata da questo passaggio. Permesso establishment.configure.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonRolloverRequest"
+      responses:
+        "200":
+          description: "Anteprima o passaggio già applicato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonRolloverResult"
+        "201":
+          description: "Passaggio applicato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonRolloverResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/season-rollovers:
+    get:
+      operationId: listSeasonRollovers
+      tags: [seasons]
+      summary: "Storico dei passaggi di stagione"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Passaggi"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonRolloverList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-campaigns:
+    get:
+      operationId: listRenewalCampaigns
+      tags: [renewals]
+      summary: "Campagne di rinnovo degli abbonamenti"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: target_season_id
+          in: query
+          required: false
+          description: "Stagione di destinazione."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: status
+          in: query
+          required: false
+          description: "Stato della campagna."
+          schema:
+            $ref: "#/components/schemas/RenewalCampaignStatus"
+      responses:
+        "200":
+          description: "Pagina di campagne"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalCampaignList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createRenewalCampaign
+      tags: [renewals]
+      summary: "Proponi rinnovi: crea la campagna e una proposta per ogni abbonato (anteprima con dry_run)"
+      description: >-
+        Spec 10.4. Per ogni abbonamento confermato della stagione di origine (o solo `pass_ids`) crea una proposta
+        con la stessa postazione e lo stesso pack, prezzo calcolato dal listino della stagione di destinazione, e una
+        prenotazione `held` (`renewal_of_booking_id` = abbonamento di origine) con hold fino alla scadenza della
+        prelazione: la postazione resta riservata dai vincoli del database (allocazioni) e in mappa appare come
+        `renewal_offer`. Gli abbonamenti senza prezzo o con postazione non disponibile finiscono in `skipped`.
+        `dry_run = true` non scrive. Una sola campagna per coppia origine/destinazione (409 conflict). Le email
+        partono solo con l'azione `send`. Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewalCampaignCreate"
+      responses:
+        "200":
+          description: "Anteprima (dry_run)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalCampaignResult"
+        "201":
+          description: "Campagna creata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalCampaignResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}:
+    get:
+      operationId: getRenewalCampaign
+      tags: [renewals]
+      summary: "Dettaglio della campagna con i conteggi per stato"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalCampaignID"
+      responses:
+        "200":
+          description: "Campagna"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalCampaign"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updateRenewalCampaign
+      tags: [renewals]
+      summary: "Modifica nome, note o scadenza predefinita; chiude la campagna"
+      description: >-
+        Una nuova `deadline_at` vale per le proposte future e per quelle ancora `proposed` con la scadenza precedente
+        (gli hold vengono prorogati nella stessa transazione). `status = closed` rilascia le proposte ancora aperte
+        come `expired`.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalCampaignID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewalCampaignUpdate"
+      responses:
+        "200":
+          description: "Campagna aggiornata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalCampaign"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals:
+    get:
+      operationId: listRenewalProposals
+      tags: [renewals]
+      summary: "Proposte di rinnovo della campagna (filtri)"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalCampaignID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          required: false
+          description: "Stato della proposta."
+          schema:
+            $ref: "#/components/schemas/RenewalProposalStatus"
+        - name: sent
+          in: query
+          required: false
+          description: "true = solo inviate, false = solo da inviare."
+          schema:
+            type: boolean
+        - name: zone_id
+          in: query
+          required: false
+          description: "Zona della postazione."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: q
+          in: query
+          required: false
+          description: "Ricerca per cliente, codice o postazione."
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        "200":
+          description: "Pagina di proposte"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalProposalList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-campaigns/{campaignId}/proposals/bulk:
+    post:
+      operationId: bulkRenewalProposals
+      tags: [renewals]
+      summary: "Azioni di massa sulle proposte (invio, accettazione, rifiuto, proroga, rilascio)"
+      description: >-
+        Applica `action` alle proposte indicate (`proposal_ids`) oppure a tutte quelle della campagna nello stato
+        `status`. Ogni proposta è una transazione separata: gli errori sono riportati per proposta. `release`
+        rilascia (come `expired`) le proposte `proposed` con prelazione scaduta o, con `force`, anche non scaduta.
+        Permesso bookings.write.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalCampaignID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewalBulkRequest"
+      responses:
+        "200":
+          description: "Esito per proposta"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalBulkResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}:
+    get:
+      operationId: getRenewalProposal
+      tags: [renewals]
+      summary: "Dettaglio della proposta di rinnovo"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalProposalID"
+      responses:
+        "200":
+          description: "Proposta"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalProposal"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/accept:
+    post:
+      operationId: acceptRenewalProposal
+      tags: [renewals]
+      summary: "Accetta il rinnovo per conto del cliente (dal pannello)"
+      description: >-
+        La prenotazione `held` passa dal servizio prenotazioni: con `confirm = true` (default) viene confermata come
+        una prenotazione del banco (driver manuale, audit e outbox nella stessa transazione) e la proposta diventa
+        `converted`; con `confirm = false` resta in attesa di pagamento (`accepted`). Un eventuale incasso si
+        registra con POST /bookings/{id}/payments (anche metodo `credit`).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalProposalID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewalStaffAcceptRequest"
+      responses:
+        "200":
+          description: "Proposta accettata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalProposal"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/decline:
+    post:
+      operationId: declineRenewalProposal
+      tags: [renewals]
+      summary: "Registra il rifiuto del rinnovo e libera la postazione"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalProposalID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewalDeclineRequest"
+      responses:
+        "200":
+          description: "Proposta rifiutata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalProposal"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/renewal-proposals/{proposalId}/send:
+    post:
+      operationId: sendRenewalProposal
+      tags: [renewals]
+      summary: "Invia (o reinvia) al cliente l'email della proposta con il link magico"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RenewalProposalID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "Proposta inviata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewalProposal"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/waitlist:
+    get:
+      operationId: listWaitlistEntries
+      tags: [waitlist]
+      summary: "Lista d'attesa in ordine di priorità"
+      description: >-
+        Ordine: `priority` crescente, poi data di iscrizione (spec 10.5).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          required: false
+          description: "Stato dell'iscrizione."
+          schema:
+            $ref: "#/components/schemas/WaitlistEntryStatus"
+        - name: zone_id
+          in: query
+          required: false
+          description: "Zona richiesta."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: pack_id
+          in: query
+          required: false
+          description: "Pack richiesto."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: from
+          in: query
+          required: false
+          description: "Iscrizioni che si sovrappongono al periodo da questa data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          description: "Iscrizioni che si sovrappongono al periodo fino a questa data."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: q
+          in: query
+          required: false
+          description: "Ricerca per cliente."
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        "200":
+          description: "Pagina di iscrizioni"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistEntryList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createWaitlistEntry
+      tags: [waitlist]
+      summary: "Iscrive un cliente alla lista d'attesa dal pannello"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitlistEntryCreate"
+      responses:
+        "201":
+          description: "Iscrizione creata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}:
+    get:
+      operationId: getWaitlistEntry
+      tags: [waitlist]
+      summary: "Dettaglio dell'iscrizione con le offerte"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WaitlistEntryID"
+      responses:
+        "200":
+          description: "Iscrizione"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistEntryDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updateWaitlistEntry
+      tags: [waitlist]
+      summary: "Modifica l'iscrizione (periodo, zona, pack, priorità, note)"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WaitlistEntryID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitlistEntryUpdate"
+      responses:
+        "200":
+          description: "Iscrizione aggiornata"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: removeWaitlistEntry
+      tags: [waitlist]
+      summary: "Rimuove l'iscrizione (stato removed); un'offerta attiva viene revocata e il suo hold rilasciato"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WaitlistEntryID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Rimossa"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/waitlist/reorder:
+    post:
+      operationId: reorderWaitlist
+      tags: [waitlist]
+      summary: "Riordina la lista d'attesa"
+      description: >-
+        Assegna `priority` 10, 20, 30, ... alle iscrizioni nell'ordine dato; quelle non elencate mantengono la
+        priorità attuale.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitlistReorderRequest"
+      responses:
+        "204":
+          description: "Riordinata"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offer:
+    post:
+      operationId: offerWaitlistEntry
+      tags: [waitlist]
+      summary: "Offre subito un posto all'iscritto (hold riservato a tempo e email con link)"
+      description: >-
+        Crea un hold sulle risorse compatibili (o sulla postazione indicata) con i vincoli del database e invia
+        l'offerta. 409 spot_unavailable / pool_exhausted se non c'è disponibilità.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WaitlistEntryID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitlistOfferCreate"
+      responses:
+        "201":
+          description: "Offerta creata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistOffer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/waitlist/{entryId}/offers/{offerId}/revoke:
+    post:
+      operationId: revokeWaitlistOffer
+      tags: [waitlist]
+      summary: "Revoca un'offerta attiva e rilascia il suo hold"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WaitlistEntryID"
+        - $ref: "#/components/parameters/WaitlistOfferID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "Offerta revocata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistOffer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/waitlist-settings:
+    get:
+      operationId: getWaitlistSettings
+      tags: [waitlist]
+      summary: "Impostazioni della lista d'attesa"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: "Impostazioni"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateWaitlistSettings
+      tags: [waitlist]
+      summary: "Aggiorna le impostazioni della lista d'attesa"
+      description: >-
+        Permesso establishment.configure.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitlistSettingsInput"
+      responses:
+        "200":
+          description: "Impostazioni aggiornate"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WaitlistSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/credits:
+    get:
+      operationId: getCustomerCredits
+      tags: [customers]
+      summary: "Saldo e movimenti dei crediti del cliente"
+      description: >-
+        Spec 13.4. `balance` = somma dei movimenti; `available` = saldo spendibile oggi (al netto dei crediti scaduti
+        non ancora registrati come `expiry`); `expiring` = crediti in scadenza per data.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Saldo e movimenti"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCreditLedger"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createCustomerCredit
+      tags: [customers]
+      summary: "Riconosce un credito (cortesia, manuale) o registra una rettifica"
+      description: >-
+        Permesso refunds.issue. `amount` > 0 accredita, < 0 (solo `adjustment`) riduce il saldo, che non può mai
+        diventare negativo (422 credit_insufficient). Audit e outbox `credit.issued` nella stessa transazione.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CustomerID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerCreditCreate"
+      responses:
+        "201":
+          description: "Movimento registrato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCredit"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/renewal:
+    get:
+      operationId: getManagedRenewal
+      tags: [public]
+      summary: "Proposta di rinnovo dal link magico"
+      description: >-
+        Il link magico della prenotazione `held` creata dalla proposta. 404 se la prenotazione non è una proposta di
+        rinnovo (o token sconosciuto, scaduto, revocato).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+      responses:
+        "200":
+          description: "Proposta"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicRenewalProposal"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/renewal/accept:
+    post:
+      operationId: acceptManagedRenewal
+      tags: [public]
+      summary: "Accetta il rinnovo e avvia il pagamento (acconto o saldo) con il provider online"
+      description: >-
+        La conferma arriva solo dal webhook del provider (o dal driver manuale): il ritorno del browser non conferma.
+        Con `use_credit` il saldo crediti disponibile viene applicato prima del pagamento online; se copre l'importo
+        dovuto non c'è passo online (`pay.mode = none`). 410 renewal_expired dopo la scadenza della prelazione.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicRenewalAcceptRequest"
+      responses:
+        "200":
+          description: "Istruzioni per completare"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicRenewalAcceptResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/public/v1/{slug}/manage/{token}/renewal/decline:
+    post:
+      operationId: declineManagedRenewal
+      tags: [public]
+      summary: "Rifiuta il rinnovo: la postazione torna disponibile"
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicRenewalDeclineRequest"
+      responses:
+        "200":
+          description: "Proposta rifiutata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicRenewalProposal"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/credits:
+    get:
+      operationId: getManagedCredits
+      tags: [public]
+      summary: "Saldo crediti del cliente della prenotazione"
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+      responses:
+        "200":
+          description: "Saldo"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCreditBalance"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/apply-credit:
+    post:
+      operationId: applyManagedCredit
+      tags: [public]
+      summary: "Usa il saldo crediti per pagare (in parte) la prenotazione"
+      description: >-
+        Registra un pagamento con metodo `credit` (servizio pagamenti, stessa transazione del movimento
+        `redemption`). Senza `amount` usa il minimo tra saldo disponibile e importo dovuto.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicApplyCreditRequest"
+      responses:
+        "200":
+          description: "Prenotazione aggiornata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManageBooking"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/waitlist:
+    post:
+      operationId: joinWaitlist
+      tags: [public]
+      summary: "Iscrizione alla lista d'attesa quando la richiesta non trova disponibilità"
+      description: >-
+        Spec 10.5. Risponde sempre 202 senza dati (nessuna enumerazione); l'email di conferma contiene il link
+        personale della lista d'attesa (token 256 bit salvato come hash). 409 waitlist_disabled se lo stabilimento
+        non accetta iscrizioni online.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicWaitlistJoin"
+      responses:
+        "202":
+          description: "Iscrizione ricevuta"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/waitlist/{waitlistToken}:
+    get:
+      operationId: getPublicWaitlistEntry
+      tags: [public]
+      summary: "Iscrizione alla lista d'attesa dal link personale, con l'eventuale offerta attiva"
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/WaitlistToken"
+      responses:
+        "200":
+          description: "Iscrizione"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicWaitlistEntry"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: leaveWaitlist
+      tags: [public]
+      summary: "Cancella l'iscrizione alla lista d'attesa"
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/WaitlistToken"
+      responses:
+        "204":
+          description: "Cancellata"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/waitlist/{waitlistToken}/accept:
+    post:
+      operationId: acceptWaitlistOffer
+      tags: [public]
+      summary: "Accetta l'offerta: la prenotazione nasce dall'hold riservato e prosegue nel checkout"
+      description: >-
+        Converte l'hold dell'offerta in una prenotazione `held` con sessione di checkout (stessa risposta di
+        createPublicBooking): il cliente prosegue con `X-Arenile-Checkout` (dati, pagamento). 410
+        waitlist_offer_expired se l'offerta è scaduta.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/WaitlistToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201":
+          description: "Prenotazione provvisoria creata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/waitlist/{waitlistToken}/decline:
+    post:
+      operationId: declineWaitlistOffer
+      tags: [public]
+      summary: "Rifiuta l'offerta (l'iscrizione resta in attesa, salvo `leave`)"
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/WaitlistToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicWaitlistDeclineRequest"
+      responses:
+        "200":
+          description: "Offerta rifiutata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicWaitlistEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
 
 components:
   securitySchemes:
@@ -8247,6 +9523,46 @@ components:
         dispositivo. Revocabile dal pannello (spec 29.2).
 
   parameters:
+    RenewalCampaignID:
+      name: campaignId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    RenewalProposalID:
+      name: proposalId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    WaitlistEntryID:
+      name: entryId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    WaitlistOfferID:
+      name: offerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    WaitlistToken:
+      name: waitlistToken
+      in: path
+      required: true
+      description: Token del link personale della lista d'attesa (256 bit, base64url).
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{32,128}$
     DeviceID:
       name: deviceId
       in: path
@@ -8744,6 +10060,11 @@ components:
         - loopback_required
         - setup_token_invalid
         - setup_completed
+        - renewal_expired
+        - waitlist_offer_expired
+        - waitlist_disabled
+        - credit_insufficient
+        - season_rollover_conflict
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -11133,6 +12454,13 @@ components:
           type: boolean
         season_release_credit:
           $ref: "#/components/schemas/PolicySeasonReleaseCredit"
+        credit_validity_days:
+          type: integer
+          minimum: 0
+          maximum: 3650
+          description: >-
+            Validità in giorni dei crediti emessi da questa policy (cancellazione, meteo, rilascio):
+            expires_on = giorno di emissione + giorni. Assente o 0 = nessuna scadenza (spec 9, 13.4).
     BookingPolicyInput:
       type: object
       required:
@@ -12476,7 +13804,16 @@ components:
           $ref: "#/components/schemas/Money"
         source:
           type: string
-          enum: [cancellation, season_release, weather, manual, redemption]
+          enum: [cancellation, season_release, weather, manual, redemption, goodwill, expiry, adjustment]
+          description: >-
+            Origine: cancellation, season_release, weather, manual, goodwill (crediti; goodwill sempre > 0, le altre negative solo come storno); redemption
+            (uso come metodo di pagamento `credit`) ed expiry (scadenza) hanno amount < 0; adjustment è una
+            rettifica del gestore con segno libero.
+        reference_credit_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "expiry: il credito scaduto a cui si riferisce."
         booking_id:
           type: string
           format: uuid
@@ -15070,6 +16407,10 @@ components:
         link_expires_at:
           type: string
           format: date-time
+        renewal:
+          $ref: "#/components/schemas/PublicRenewalProposal"
+        credit_available:
+          $ref: "#/components/schemas/Money"
         version:
           $ref: "#/components/schemas/Version"
     ManageModifyRequest:
@@ -16190,6 +17531,17 @@ components:
         - allocation.released
         - season.day_released
         - season.renewal_offered
+        - season.renewal_accepted
+        - season.renewal_declined
+        - season.renewal_expired
+        - season.rolled_over
+        - waitlist.joined
+        - waitlist.offered
+        - waitlist.offer_expired
+        - waitlist.converted
+        - credit.issued
+        - credit.consumed
+        - credit.expired
         - payment.succeeded
         - payment.failed
         - payment.refunded
@@ -17007,3 +18359,979 @@ components:
           $ref: "#/components/schemas/DesktopBackup"
         restart_required:
           type: boolean
+    # ---- M5 part B: season rollover, renewals, waitlist, credits ----------
+    SeasonRolloverRequest:
+      type: object
+      description: "Passaggio di fine stagione (spec 8.7, 10.4, 28): copia della configurazione sulla stagione successiva."
+      required: [target_year]
+      properties:
+        target_year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+        opens_on:
+          $ref: "#/components/schemas/Date"
+        closes_on:
+          $ref: "#/components/schemas/Date"
+        include_rate_periods:
+          type: boolean
+          description: Default true.
+        include_closure_days:
+          type: boolean
+          description: "Default true: le chiusure dentro la stagione di origine, spostate sull'anno nuovo."
+        include_price_rules:
+          type: boolean
+          description: Default true.
+        include_fixed_prices:
+          type: boolean
+          description: Default true.
+        include_policies:
+          type: boolean
+          description: Default true.
+        dry_run:
+          type: boolean
+          description: Default true (solo anteprima); false applica.
+    SeasonRolloverCounts:
+      type: object
+      required: [rate_periods, closure_days, price_rules, fixed_prices, policies]
+      properties:
+        rate_periods:
+          type: integer
+        closure_days:
+          type: integer
+        price_rules:
+          type: integer
+        fixed_prices:
+          type: integer
+        policies:
+          type: integer
+    SeasonRolloverResult:
+      type: object
+      required: [dry_run, already_applied, source_season_id, target_year, opens_on, closes_on, counts, warnings]
+      properties:
+        dry_run:
+          type: boolean
+        already_applied:
+          type: boolean
+          description: "true se il passaggio era già stato applicato (risposta idempotente)."
+        rollover_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Assente in anteprima.
+        source_season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        target_year:
+          type: integer
+        opens_on:
+          $ref: "#/components/schemas/Date"
+        closes_on:
+          $ref: "#/components/schemas/Date"
+        season:
+          $ref: "#/components/schemas/Season"
+        counts:
+          $ref: "#/components/schemas/SeasonRolloverCounts"
+        season_passes:
+          type: integer
+          description: "Abbonamenti confermati della stagione di origine, candidati al rinnovo."
+        warnings:
+          type: array
+          items:
+            type: string
+    SeasonRollover:
+      type: object
+      required: [id, source_season_id, target_season_id, target_year, counts, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        source_season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        target_season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        target_year:
+          type: integer
+        counts:
+          $ref: "#/components/schemas/SeasonRolloverCounts"
+        created_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        created_at:
+          type: string
+          format: date-time
+    SeasonRolloverList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeasonRollover"
+        next_cursor:
+          type: string
+    RenewalCampaignStatus:
+      type: string
+      description: "open: proposte in corso; closed: chiusa dal gestore o con tutte le proposte concluse."
+      enum: [open, closed]
+    RenewalProposalStatus:
+      type: string
+      description: >-
+        proposed: prenotazione held in prelazione; accepted: accettata, in attesa di pagamento
+        (pending_payment); converted: prenotazione confermata (nuovo abbonamento); declined: rifiutata,
+        postazione liberata; expired: prelazione scaduta o campagna chiusa, postazione liberata.
+      enum: [proposed, accepted, declined, expired, converted]
+    RenewalStatusCounts:
+      type: object
+      required: [proposed, accepted, declined, expired, converted, sent]
+      properties:
+        proposed:
+          type: integer
+        accepted:
+          type: integer
+        declined:
+          type: integer
+        expired:
+          type: integer
+        converted:
+          type: integer
+        sent:
+          type: integer
+          description: Proposte con almeno un invio.
+    RenewalCampaign:
+      type: object
+      required: [id, name, status, source_season_id, target_season_id, deadline_at, counts, total_amount, converted_amount, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/RenewalCampaignStatus"
+        source_season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        target_season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        deadline_at:
+          type: string
+          format: date-time
+          description: Scadenza predefinita della prelazione (istante UTC).
+        notes:
+          type: string
+        counts:
+          $ref: "#/components/schemas/RenewalStatusCounts"
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        converted_amount:
+          $ref: "#/components/schemas/Money"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        closed_at:
+          type: string
+          format: date-time
+    RenewalCampaignList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalCampaign"
+        next_cursor:
+          type: string
+    RenewalCampaignCreate:
+      type: object
+      required: [source_season_id, target_season_id, deadline_at]
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          description: Default "Rinnovi <anno>".
+        source_season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        target_season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        deadline_at:
+          type: string
+          format: date-time
+          description: Scadenza della prelazione; deve essere futura e precedere l'apertura della stagione di destinazione.
+        pass_ids:
+          type: array
+          maxItems: 2000
+          description: Solo questi abbonamenti della stagione di origine (default tutti i confermati).
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        notes:
+          type: string
+          maxLength: 2000
+        dry_run:
+          type: boolean
+          description: Default false.
+    RenewalCampaignUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        notes:
+          type: string
+          maxLength: 2000
+        deadline_at:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/RenewalCampaignStatus"
+    RenewalSkipReason:
+      type: string
+      enum: [spot_unavailable, spot_inactive, no_price, already_renewed, customer_anonymized, not_confirmed]
+    RenewalSkipped:
+      type: object
+      required: [source_pass_id, reason]
+      properties:
+        source_pass_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        spot_label:
+          type: string
+        reason:
+          $ref: "#/components/schemas/RenewalSkipReason"
+        detail:
+          type: string
+    RenewalProposalPreview:
+      type: object
+      required: [source_pass_id, customer_id, customer_display_name, spot_id, spot_label, pack_id, starts_on, ends_on, slots, previous_amount, total_amount, deposit_due]
+      properties:
+        source_pass_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        previous_amount:
+          $ref: "#/components/schemas/Money"
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+    RenewalCampaignResult:
+      type: object
+      required: [dry_run, proposals, skipped]
+      properties:
+        dry_run:
+          type: boolean
+        campaign:
+          $ref: "#/components/schemas/RenewalCampaign"
+        proposals:
+          type: array
+          description: Proposte create (o che verrebbero create in anteprima).
+          items:
+            $ref: "#/components/schemas/RenewalProposalPreview"
+        skipped:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalSkipped"
+    RenewalProposal:
+      type: object
+      required: [id, campaign_id, status, source_pass_id, booking_id, booking_code, customer_id, customer_display_name, spot_id, spot_label, pack_id, starts_on, ends_on, slots, previous_amount, total_amount, deposit_due, paid_amount, deadline_at, send_count, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        campaign_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        status:
+          $ref: "#/components/schemas/RenewalProposalStatus"
+        source_pass_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Abbonamento della stagione di origine.
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Prenotazione della nuova stagione (held finché la proposta è aperta).
+        booking_code:
+          type: string
+        booking_status:
+          $ref: "#/components/schemas/BookingStatus"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        customer_has_email:
+          type: boolean
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        previous_amount:
+          $ref: "#/components/schemas/Money"
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        deadline_at:
+          type: string
+          format: date-time
+          description: Scadenza della prelazione su questa postazione (= hold della prenotazione).
+        send_count:
+          type: integer
+        last_sent_at:
+          type: string
+          format: date-time
+        responded_at:
+          type: string
+          format: date-time
+        response_channel:
+          type: string
+          enum: [online, desk, system]
+          description: "online: dal link magico; desk: dal pannello; system: scadenza o chiusura."
+        decline_reason:
+          type: string
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    RenewalProposalList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalProposal"
+        next_cursor:
+          type: string
+    RenewalBulkAction:
+      type: string
+      enum: [send, accept, decline, extend_deadline, release]
+    RenewalBulkRequest:
+      type: object
+      required: [action]
+      description: "proposal_ids oppure status (almeno uno); con entrambi vale l'intersezione."
+      properties:
+        action:
+          $ref: "#/components/schemas/RenewalBulkAction"
+        proposal_ids:
+          type: array
+          maxItems: 2000
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        status:
+          $ref: "#/components/schemas/RenewalProposalStatus"
+        only_unsent:
+          type: boolean
+          description: "send: salta le proposte già inviate (default true)."
+        deadline_at:
+          type: string
+          format: date-time
+          description: Obbligatoria per extend_deadline.
+        confirm:
+          type: boolean
+          description: "accept: come RenewalStaffAcceptRequest.confirm (default true)."
+        force:
+          type: boolean
+          description: "release: rilascia anche le proposte con prelazione non ancora scaduta."
+    RenewalBulkFailure:
+      type: object
+      required: [proposal_id, type]
+      properties:
+        proposal_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        type:
+          $ref: "#/components/schemas/ProblemType"
+        detail:
+          type: string
+    RenewalBulkResult:
+      type: object
+      required: [action, matched, succeeded, skipped, failed]
+      properties:
+        action:
+          $ref: "#/components/schemas/RenewalBulkAction"
+        matched:
+          type: integer
+        succeeded:
+          type: integer
+        skipped:
+          type: integer
+          description: Proposte non applicabili (stato diverso, già inviate con only_unsent).
+        failed:
+          type: array
+          items:
+            $ref: "#/components/schemas/RenewalBulkFailure"
+    RenewalStaffAcceptRequest:
+      type: object
+      properties:
+        confirm:
+          type: boolean
+          description: Default true (conferma subito, driver manuale); false lascia la prenotazione in attesa di pagamento.
+        note:
+          type: string
+          maxLength: 1000
+    RenewalDeclineRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+    PublicRenewalProposal:
+      type: object
+      required: [status, season_year, spot_label, starts_on, ends_on, slots, previous_amount, total_amount, deposit_due, paid_amount, deadline_at, allowed]
+      properties:
+        status:
+          $ref: "#/components/schemas/RenewalProposalStatus"
+        season_year:
+          type: integer
+        spot_label:
+          type: string
+        zone_name:
+          type: string
+        pack_name:
+          type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        previous_amount:
+          $ref: "#/components/schemas/Money"
+        total_amount:
+          $ref: "#/components/schemas/Money"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+        paid_amount:
+          $ref: "#/components/schemas/Money"
+        credit_available:
+          $ref: "#/components/schemas/Money"
+        deadline_at:
+          type: string
+          format: date-time
+        terms_version:
+          type: string
+          description: Versione corrente delle condizioni da accettare.
+        allowed:
+          type: object
+          required: [accept, decline, pay_deposit, pay_full, use_credit]
+          properties:
+            accept:
+              type: boolean
+            decline:
+              type: boolean
+            pay_deposit:
+              type: boolean
+            pay_full:
+              type: boolean
+            use_credit:
+              type: boolean
+    PublicRenewalAcceptRequest:
+      type: object
+      required: [payment, accept_terms_version]
+      properties:
+        payment:
+          type: string
+          enum: [deposit, full]
+          description: "deposit: acconto da policy della nuova stagione (se previsto); full: intero importo."
+        use_credit:
+          type: boolean
+          description: Applica prima il saldo crediti disponibile.
+        accept_terms_version:
+          type: string
+          maxLength: 40
+    PublicRenewalAcceptResult:
+      type: object
+      required: [proposal, pay]
+      properties:
+        proposal:
+          $ref: "#/components/schemas/PublicRenewalProposal"
+        credit_applied:
+          $ref: "#/components/schemas/Money"
+        pay:
+          $ref: "#/components/schemas/PayResult"
+    PublicRenewalDeclineRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+    WaitlistEntryStatus:
+      type: string
+      description: >-
+        waiting: in attesa; offered: offerta attiva con hold; converted: prenotazione creata dall'offerta;
+        expired: periodo richiesto passato; removed: cancellata dal cliente o dal gestore.
+      enum: [waiting, offered, converted, expired, removed]
+    WaitlistOfferStatus:
+      type: string
+      enum: [pending, accepted, declined, expired, revoked]
+    WaitlistOffer:
+      type: object
+      required: [id, entry_id, status, hold_id, expires_at, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        entry_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        status:
+          $ref: "#/components/schemas/WaitlistOfferStatus"
+        hold_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_label:
+          type: string
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Prenotazione creata all'accettazione.
+        cause:
+          type: string
+          enum: [cancellation, release, expiry, manual]
+          description: Evento che ha liberato l'inventario.
+        expires_at:
+          type: string
+          format: date-time
+        responded_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    WaitlistEntry:
+      type: object
+      required: [id, status, channel, customer_id, customer_display_name, starts_on, ends_on, slots, pack_id, quantity, priority, position, offer_count, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        status:
+          $ref: "#/components/schemas/WaitlistEntryStatus"
+        channel:
+          $ref: "#/components/schemas/Channel"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        customer_display_name:
+          type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+        priority:
+          type: integer
+          description: Ordine manuale (crescente); a parità vale la data di iscrizione.
+        position:
+          type: integer
+          description: Posizione corrente tra le iscrizioni in attesa (1 = prima).
+        note:
+          type: string
+        offer_count:
+          type: integer
+        active_offer:
+          $ref: "#/components/schemas/WaitlistOffer"
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    WaitlistEntryList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/WaitlistEntry"
+        next_cursor:
+          type: string
+    WaitlistEntryDetail:
+      type: object
+      required: [entry, offers]
+      properties:
+        entry:
+          $ref: "#/components/schemas/WaitlistEntry"
+        offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/WaitlistOffer"
+    WaitlistEntryCreate:
+      type: object
+      required: [customer_id, starts_on, ends_on, slots, pack_id]
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 20
+          description: Default 1.
+        channel:
+          $ref: "#/components/schemas/Channel"
+        note:
+          type: string
+          maxLength: 1000
+    WaitlistEntryUpdate:
+      type: object
+      properties:
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 20
+        priority:
+          type: integer
+        note:
+          type: string
+          maxLength: 1000
+    WaitlistReorderRequest:
+      type: object
+      required: [entry_ids]
+      properties:
+        entry_ids:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+    WaitlistOfferCreate:
+      type: object
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        hold_minutes:
+          type: integer
+          minimum: 5
+          maximum: 10080
+          description: Default `offer_hold_minutes` delle impostazioni.
+    WaitlistSettings:
+      type: object
+      required: [enabled, public_join, auto_offer, offer_hold_minutes, version]
+      properties:
+        enabled:
+          type: boolean
+        public_join:
+          type: boolean
+          description: Iscrizione dalla pagina pubblica quando non c'è disponibilità.
+        auto_offer:
+          type: boolean
+          description: Offerta automatica quando si libera inventario (cancellazione, rilascio, scadenza).
+        offer_hold_minutes:
+          type: integer
+          minimum: 5
+          maximum: 10080
+        version:
+          $ref: "#/components/schemas/Version"
+    WaitlistSettingsInput:
+      type: object
+      required: [enabled, public_join, auto_offer, offer_hold_minutes]
+      properties:
+        enabled:
+          type: boolean
+        public_join:
+          type: boolean
+        auto_offer:
+          type: boolean
+        offer_hold_minutes:
+          type: integer
+          minimum: 5
+          maximum: 10080
+    PublicWaitlistJoin:
+      type: object
+      required: [starts_on, ends_on, slots, pack_id, customer]
+      properties:
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 20
+        customer:
+          type: object
+          required: [first_name, last_name, email, accept_terms_version]
+          properties:
+            first_name:
+              type: string
+              minLength: 1
+              maxLength: 100
+            last_name:
+              type: string
+              minLength: 1
+              maxLength: 100
+            email:
+              type: string
+              format: email
+              maxLength: 254
+            phone:
+              type: string
+              maxLength: 32
+            locale:
+              type: string
+              pattern: ^[a-z]{2}$
+            accept_terms_version:
+              type: string
+              maxLength: 40
+    PublicWaitlistOffer:
+      type: object
+      required: [status, expires_at]
+      properties:
+        status:
+          $ref: "#/components/schemas/WaitlistOfferStatus"
+        spot_label:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    PublicWaitlistEntry:
+      type: object
+      required: [status, starts_on, ends_on, slots, pack_name]
+      properties:
+        status:
+          $ref: "#/components/schemas/WaitlistEntryStatus"
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        pack_name:
+          type: string
+        zone_name:
+          type: string
+        quantity:
+          type: integer
+        offer:
+          $ref: "#/components/schemas/PublicWaitlistOffer"
+    PublicWaitlistDeclineRequest:
+      type: object
+      properties:
+        leave:
+          type: boolean
+          description: true = cancella anche l'iscrizione.
+    CustomerCreditExpiring:
+      type: object
+      required: [expires_on, amount]
+      properties:
+        expires_on:
+          $ref: "#/components/schemas/Date"
+        amount:
+          $ref: "#/components/schemas/Money"
+    CustomerCreditLedger:
+      type: object
+      required: [customer_id, balance, available, expiring, items]
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        balance:
+          $ref: "#/components/schemas/Money"
+        available:
+          $ref: "#/components/schemas/Money"
+        expiring:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerCreditExpiring"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerCredit"
+        next_cursor:
+          type: string
+    CustomerCreditCreate:
+      type: object
+      required: [amount, source]
+      properties:
+        amount:
+          $ref: "#/components/schemas/Money"
+        source:
+          type: string
+          enum: [goodwill, manual, adjustment]
+          description: "goodwill: credito di cortesia; manual: altro credito; adjustment: rettifica (anche negativa)."
+        expires_on:
+          $ref: "#/components/schemas/Date"
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        note:
+          type: string
+          maxLength: 500
+    PublicCreditBalance:
+      type: object
+      required: [available, expiring]
+      properties:
+        available:
+          $ref: "#/components/schemas/Money"
+        expiring:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerCreditExpiring"
+    PublicApplyCreditRequest:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Money"

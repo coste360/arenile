@@ -13,6 +13,12 @@ offline).
 
 ### Added
 
+- M5 parte B, contratto e schema (in corso, [ADR 0017](docs/adr/0017-scelte-m5b.md)): API per passaggio di
+  stagione, campagne di rinnovo con diritto di prelazione, lista d'attesa con offerte e crediti dei clienti (pannello
+  e link magico); migrazione 00008 (`season_rollovers`, `renewal_campaigns`, `renewal_proposals`, `waitlist_*`,
+  estensione di `customer_credits` e saldo `customer_credit_balances` mai negativo); policy `credit_validity_days`;
+  nuovi eventi webhook `season.renewal_*`, `season.rolled_over`, `waitlist.*`, `credit.*`. Gli endpoint rispondono
+  501 finché non sono implementati.
 - M5 parte A, report completi (spec 15.3): riepilogo, occupazione per giorno/zona/fila/fascia, ricavi incassati o
   venduti per periodo/canale/pack/extra/metodo/aliquota, prenotazioni per canale/anticipo/formula, cancellazioni e
   no-show, abbonamenti con rilasci e rivendite, clienti migliori (solo nome), saldi aperti e confronto con l'anno

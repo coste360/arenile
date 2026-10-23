@@ -43,6 +43,8 @@ func TestCheckConfig_Table(t *testing.T) {
 		{"bad weather as", Rules{WeatherPolicy: &WeatherPolicy{As: Ptr(Compensation("cash"))}}, true},
 		{"zero max spots", Rules{MaxSpotsPerBooking: Ptr(0)}, true},
 		{"season credit percent > 100", Rules{SeasonReleaseCredit: &SeasonReleaseCredit{Percent: Ptr(101)}}, true},
+		{"credit validity negative", Rules{CreditValidityDays: Ptr(-1)}, true},
+		{"credit validity ten years", Rules{CreditValidityDays: Ptr(3650)}, false},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -113,5 +115,19 @@ func TestParseSnapshot_Errors(t *testing.T) {
 				t.Fatalf("err = %v", err)
 			}
 		})
+	}
+}
+
+func TestCreditExpiry_Scenarios(t *testing.T) {
+	day := calendar.MustParse("2026-08-10")
+	if got := (Rules{}).CreditExpiry(day); got != nil {
+		t.Fatalf("no validity: got %v", got)
+	}
+	if got := (Rules{CreditValidityDays: Ptr(0)}).CreditExpiry(day); got != nil {
+		t.Fatalf("zero validity: got %v", got)
+	}
+	got := (Rules{CreditValidityDays: Ptr(365)}).CreditExpiry(day)
+	if got == nil || got.String() != "2027-08-10" {
+		t.Fatalf("365 days: got %v", got)
 	}
 }

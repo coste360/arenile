@@ -12,6 +12,9 @@
 //     .ics) (checkout builder);
 //   - manage.go: manage area via magic link and new-link requests
 //     (checkout builder; QR/.ics rendering and links come from notify).
+//
+// M5B: renewal.go (renewal builder), waitlist.go (waitlist builder),
+// credits.go (credit builder).
 package public
 
 import (
@@ -19,8 +22,11 @@ import (
 	"net/http"
 
 	"github.com/coste360/arenile/internal/domain/checkout"
+	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/online"
+	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/pkg/ext"
 )
@@ -36,6 +42,12 @@ type Handlers struct {
 	// TenantResolver optionally maps a custom domain to a slug.
 	TenantResolver ext.TenantResolver
 	Log            *slog.Logger
+
+	// M5B: renewal proposals (renewal.go), waitlist (waitlist.go) and
+	// customer credits (credits.go) from the customer links; nil = 501.
+	Renewals *renewal.Service
+	Waitlist *waitlist.Service
+	Credits  *credit.Service
 }
 
 // noStore marks responses that carry session or customer data.

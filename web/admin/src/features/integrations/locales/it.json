@@ -171,6 +171,8 @@
     "booking": "Prenotazioni",
     "allocation": "Postazioni",
     "season": "Abbonamenti",
+    "waitlist": "Lista d'attesa",
+    "credit": "Crediti",
     "payment": "Pagamenti",
     "customer": "Clienti",
     "cash_session": "Cassa",
@@ -196,7 +198,22 @@
       },
       "season": {
         "day_released": "Giorno rilasciato dall'abbonato",
-        "renewal_offered": "Rinnovo proposto"
+        "renewal_offered": "Rinnovo proposto",
+        "renewal_accepted": "Rinnovo accettato",
+        "renewal_declined": "Rinnovo rifiutato",
+        "renewal_expired": "Rinnovo scaduto",
+        "rolled_over": "Nuova stagione creata"
+      },
+      "waitlist": {
+        "joined": "Iscrizione alla lista d'attesa",
+        "offered": "Posto offerto",
+        "offer_expired": "Offerta scaduta",
+        "converted": "Prenotazione dalla lista d'attesa"
+      },
+      "credit": {
+        "issued": "Credito riconosciuto",
+        "consumed": "Credito usato",
+        "expired": "Credito scaduto"
       },
       "payment": {
         "succeeded": "Pagamento riuscito",

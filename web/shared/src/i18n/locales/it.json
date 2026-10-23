@@ -124,6 +124,8 @@
     "calendar": "Calendario",
     "customers": "Clienti",
     "seasonPasses": "Abbonamenti",
+    "renewals": "Rinnovi",
+    "waitlist": "Lista d'attesa",
     "cash": "Cassa",
     "reports": "Report",
     "settings": "Configurazione",
@@ -149,7 +151,8 @@
       "devicesLan": "Rete locale",
       "desktop": "App desktop",
       "apiKeys": "Chiavi API",
-      "webhooks": "Webhook"
+      "webhooks": "Webhook",
+      "seasonRollover": "Nuova stagione"
     },
     "operations": "Operatività",
     "configGroup": "Configurazione",
@@ -167,6 +170,8 @@
       "calendar": "Planning a griglia postazioni × giorni per collocare i soggiorni lunghi.",
       "customers": "Anagrafica clienti, storico, crediti e abbonamenti.",
       "seasonPasses": "Abbonamenti stagionali, rilasci giornalieri e rinnovi.",
+      "renewals": "Campagne di rinnovo degli abbonamenti con diritto di prelazione.",
+      "waitlist": "Richieste senza disponibilità e offerte automatiche quando si libera un posto.",
       "cash": "Sessione di cassa, incassi e chiusure.",
       "reports": "Occupazione, ricavi, canali ed esportazioni.",
       "settings": "Stagioni, mappe, zone, catalogo, prezzi, policy, pagina pubblica e pagamenti."
