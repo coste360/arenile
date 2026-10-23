@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Packages the desktop edition for Windows (amd64): arenile-desktop.exe with
-# icon/version/manifest resources, optional Authenticode signature, Inno Setup
-# installer. Runs in Git Bash on windows-latest (or locally on Windows); the
-# `binary` stage also cross-builds from macOS/Linux when no build tags are set.
+# Packages the desktop edition for Windows (amd64 or arm64): arenile-desktop.exe
+# with icon/version/manifest resources, optional Authenticode signature, Inno
+# Setup installer. Runs in Git Bash on windows-latest (x64) or windows-11-arm
+# (arm64, Snapdragon PCs), or locally on Windows; the `binary` stage also
+# cross-builds from macOS/Linux when no build tags are set.
 #
 #   scripts/desktop/package-windows.sh [all|binary|sign FILE...|installer|checksums]
 #
@@ -11,6 +12,10 @@
 # `all` (default) runs them in order with the PFX signer.
 #
 # Environment (besides common.sh):
+#   WINDOWS_GOARCH                 amd64 (default) or arm64. The arm64 window build needs
+#                                  CGO with an aarch64 Windows C/C++ toolchain: llvm-mingw
+#                                  (CC=aarch64-w64-mingw32-clang CXX=...-clang++, see
+#                                  desktop.yml); the x64 one uses the runner's MinGW gcc.
 #   ISCC, SIGNTOOL, WINDRES        tool paths (auto-detected)
 #   Signing (optional; without it the installer is named -unsigned):
 #   WINDOWS_CERTIFICATE_PFX_BASE64 Authenticode certificate + key (.pfx, base64)
@@ -25,7 +30,13 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 # signtool use /switches, so disable the conversion for native tools.
 export MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*'
 
-GOARCH_WIN=amd64
+GOARCH_WIN="${WINDOWS_GOARCH:-amd64}"
+case "$GOARCH_WIN" in
+amd64) WINDRES_CANDIDATES="windres x86_64-w64-mingw32-windres" WINDRES_TARGET="--target=pe-x86-64" ;;
+# llvm-mingw's triple-prefixed llvm-windres defaults to the arm64 COFF machine.
+arm64) WINDRES_CANDIDATES="aarch64-w64-mingw32-windres" WINDRES_TARGET="" ;;
+*) die "WINDOWS_GOARCH must be amd64 or arm64 (got $GOARCH_WIN)" ;;
+esac
 EXE="$DIST_DIR/bin/windows_${GOARCH_WIN}/arenile-desktop.exe"
 SYSO="$DESKTOP_ROOT/cmd/arenile-desktop/zz_arenile_windows_${GOARCH_WIN}.syso"
 TIMESTAMP_URL="${WINDOWS_TIMESTAMP_URL:-http://timestamp.digicert.com}"
@@ -82,7 +93,7 @@ stage_binary() {
 	v="$(numeric_version)"
 	windres="${WINDRES:-}"
 	if [ -z "$windres" ]; then
-		for c in windres x86_64-w64-mingw32-windres; do
+		for c in $WINDRES_CANDIDATES; do
 			command -v "$c" >/dev/null && { windres="$c"; break; }
 		done
 	fi
@@ -92,13 +103,14 @@ stage_binary() {
 			-e "s|@MANIFEST@|$(mixpath "$PKG_DIR/windows/arenile.exe.manifest")|" \
 			-e "s|@V_COMMA@|${v//./,}|g" -e "s|@V_DOT@|$v|g" -e "s|@VERSION@|$VERSION|g" \
 			"$PKG_DIR/windows/arenile.rc.in" >"$rc"
-		"$windres" --target=pe-x86-64 -O coff -i "$rc" -o "$SYSO"
+		# shellcheck disable=SC2086 # empty target on arm64
+		"$windres" $WINDRES_TARGET -O coff -i "$rc" -o "$SYSO"
 		log "resources compiled with $windres"
 	else
 		log "WARNING: windres (MinGW) not found: the .exe has no icon nor version info"
 	fi
 	local extra=""
-	# The tray build is a GUI app: no console window behind the tray icon.
+	# The window/tray build is a GUI app: no console window behind it.
 	[ -n "$DESKTOP_TAGS" ] && extra="-H windowsgui"
 	mkdir -p "$(dirname "$EXE")"
 	go_build_launcher "$EXE" windows "$GOARCH_WIN" "$extra"
@@ -129,11 +141,11 @@ stage_installer() {
 	iscc="$(find_iscc)"
 	out="$(installer_path)"
 	name="$(basename "$out" .exe)"
-	rm -f "$DIST_DIR/${APP_NAME}_${VERSION_SAFE}_windows_"*_setup*.exe*
+	rm -f "$DIST_DIR/${APP_NAME}_${VERSION_SAFE}_windows_${GOARCH_WIN}_setup"*.exe*
 	args=(
 		"/DAppVersion=$(numeric_version)" "/DAppVersionTag=$VERSION"
 		"/DRepoRoot=$(winpath "$DESKTOP_ROOT")" "/DSourceExe=$(winpath "$EXE")"
-		"/DOutputDir=$(winpath "$DIST_DIR")" "/DOutputName=$name"
+		"/DOutputDir=$(winpath "$DIST_DIR")" "/DOutputName=$name" "/DArch=$GOARCH_WIN"
 	)
 	if [ "$(signing_mode)" = pfx ]; then
 		# Inno signs the embedded uninstaller and the setup with this tool.

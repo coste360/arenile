@@ -2,7 +2,7 @@
 ;
 ; Built by scripts/desktop/package-windows.sh (never by hand in CI):
 ;   ISCC.exe /DAppVersion=1.4.0 /DAppVersionTag=v1.4.0 /DSourceExe=...\arenile-desktop.exe
-;            /DRepoRoot=... /DOutputDir=... /DOutputName=Arenile_v1.4.0_windows_amd64_setup
+;            /DRepoRoot=... /DOutputDir=... /DOutputName=Arenile_v1.4.0_windows_amd64_setup /DArch=amd64
 ;            [/DSign "/Ssigntool=signtool.exe sign ... $f"] arenile.iss
 ;
 ; Why Inno Setup and not WiX: one readable script, preinstalled on the GitHub
@@ -24,14 +24,17 @@
 #ifndef RepoRoot
   #define RepoRoot "..\..\.."
 #endif
+#ifndef Arch
+  #define Arch "amd64"
+#endif
 #ifndef SourceExe
-  #define SourceExe RepoRoot + "\dist\desktop\bin\windows_amd64\arenile-desktop.exe"
+  #define SourceExe RepoRoot + "\dist\desktop\bin\windows_" + Arch + "\arenile-desktop.exe"
 #endif
 #ifndef OutputDir
   #define OutputDir RepoRoot + "\dist\desktop"
 #endif
 #ifndef OutputName
-  #define OutputName "Arenile_" + AppVersionTag + "_windows_amd64_setup"
+  #define OutputName "Arenile_" + AppVersionTag + "_windows_" + Arch + "_setup"
 #endif
 
 [Setup]
@@ -53,8 +56,15 @@ DisableProgramGroupPage=yes
 ; Per-user install by default, no UAC prompt; an administrator can still choose "all users".
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
+; amd64: x64 PCs, and Windows 11 on Arm through the x64 emulation; arm64: native
+; build for Snapdragon PCs (Surface Pro), offered next to it on the portal.
+#if Arch == "arm64"
+ArchitecturesAllowed=arm64
+ArchitecturesInstallIn64BitMode=arm64
+#else
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+#endif
 MinVersion=10.0
 OutputDir={#OutputDir}
 OutputBaseFilename={#OutputName}

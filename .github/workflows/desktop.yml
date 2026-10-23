@@ -1,7 +1,8 @@
 name: Desktop packages
 
 # Builds the desktop edition (spec 29.1) on the native runner of each OS:
-# Windows installer (Inno Setup), macOS universal .app in a .dmg, Linux AppImage.
+# Windows installers (Inno Setup) for x64 and arm64, macOS universal .app in a
+# .dmg, Linux AppImage.
 #
 # - Pull requests touching the desktop code: the packages are built and smoke
 #   tested but NOT uploaded (a public repository: an Actions artifact would be
@@ -151,14 +152,30 @@ jobs:
           if-no-files-found: error
 
   windows:
-    name: Windows (installer .exe)
+    name: Windows ${{ matrix.arch }} (installer .exe)
     needs: web
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # x64: MinGW gcc of the runner image for CGO (webview_go is C++).
+          - arch: amd64
+            runner: windows-latest
+          # arm64 (Snapdragon PCs, Surface Pro): native build on the GitHub-hosted
+          # Windows 11 Arm runner, CGO with llvm-mingw (aarch64 host and target,
+          # the toolchain Go's own windows/arm64 builders use; pinned, sha256
+          # checked). Go, Git Bash, Inno Setup (x86, emulated) and signtool run there.
+          - arch: arm64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     defaults:
       run:
         shell: bash
     env:
+      WINDOWS_GOARCH: ${{ matrix.arch }}
+      LLVM_MINGW_VERSION: "20260922"
+      LLVM_MINGW_SHA256: a317514a7a63badd692032c0c2b8e165f630bbaebbe7a3254348051f43a64949
       WINDOWS_CERTIFICATE_PFX_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
       WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
       # Non-secret switch for the Trusted Signing steps (secrets are not allowed in `if:`).
@@ -189,10 +206,31 @@ jobs:
             cp -R "web/$app/dist/." "$dest/"
           done
 
-      - name: Tools (MinGW gcc/windres for CGO and resources, Inno Setup 6)
+      - name: llvm-mingw (arm64 CGO toolchain, pinned)
+        if: matrix.arch == 'arm64'
         run: |
-          gcc --version | head -n1
-          windres --version | head -n1
+          name="llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-aarch64"
+          curl -fsSL -o "$RUNNER_TEMP/llvm-mingw.zip" \
+            "https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/${name}.zip"
+          echo "${LLVM_MINGW_SHA256}  $RUNNER_TEMP/llvm-mingw.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/llvm-mingw.zip" -d "$RUNNER_TEMP"
+          bin="$(cygpath -m "$RUNNER_TEMP/$name/bin")"
+          echo "$bin" >> "$GITHUB_PATH"
+          {
+            echo "CC=aarch64-w64-mingw32-clang"
+            echo "CXX=aarch64-w64-mingw32-clang++"
+          } >> "$GITHUB_ENV"
+
+      - name: Tools (C/C++ compiler and windres for CGO and resources, Inno Setup 6)
+        run: |
+          if [ "$WINDOWS_GOARCH" = arm64 ]; then
+            aarch64-w64-mingw32-clang --version | head -n1
+            aarch64-w64-mingw32-windres --version | head -n1
+          else
+            gcc --version | head -n1
+            windres --version | head -n1
+          fi
+          go env GOARCH
           if [ ! -x "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" ]; then
             choco install innosetup --no-progress -y
           fi
@@ -205,7 +243,7 @@ jobs:
         run: scripts/desktop/package-windows.sh binary
 
       - name: Sign the executable (PFX)
-        run: scripts/desktop/package-windows.sh sign dist/desktop/bin/windows_amd64/arenile-desktop.exe
+        run: scripts/desktop/package-windows.sh sign "dist/desktop/bin/windows_${WINDOWS_GOARCH}/arenile-desktop.exe"
 
       - name: Sign the executable (Azure Artifact Signing, ex Trusted Signing)
         if: env.TRUSTED_SIGNING == 'true'
@@ -217,7 +255,7 @@ jobs:
           endpoint: ${{ secrets.AZURE_TRUSTED_SIGNING_ENDPOINT }}
           signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT }}
           certificate-profile-name: ${{ secrets.AZURE_TRUSTED_SIGNING_PROFILE }}
-          files-folder: ${{ github.workspace }}\dist\desktop\bin\windows_amd64
+          files-folder: ${{ github.workspace }}\dist\desktop\bin\windows_${{ matrix.arch }}
           files-folder-filter: exe
           file-digest: SHA256
           timestamp-digest: SHA256
@@ -247,12 +285,20 @@ jobs:
       - name: Checksums and smoke test
         run: |
           scripts/desktop/package-windows.sh checksums
-          dist/desktop/bin/windows_amd64/arenile-desktop.exe -version
+          exe="dist/desktop/bin/windows_${WINDOWS_GOARCH}/arenile-desktop.exe"
+          # The smoke test runs natively on both runners (arm64 on windows-11-arm).
+          # -version prints to stderr; capture first (no SIGPIPE under pipefail).
+          out="$("$exe" -version 2>&1)"
+          echo "$out"
+          case "$out" in *"(window)"*) ;; *) echo "::error::not the window build"; exit 1 ;; esac
+          info="$(go version -m "$exe")"
+          echo "$info" | grep -E "GOARCH=$WINDOWS_GOARCH$|CGO_ENABLED=1$"
+          [ "$(echo "$info" | grep -cE "GOARCH=$WINDOWS_GOARCH$|CGO_ENABLED=1$")" = 2 ] || { echo "::error::wrong GOARCH or CGO off"; exit 1; }
 
       - uses: actions/upload-artifact@v7
         if: env.UPLOAD == 'true'
         with:
-          name: desktop-windows
+          name: desktop-windows-${{ matrix.arch }}
           path: |
             dist/desktop/*.exe
             dist/desktop/*.exe.sha256

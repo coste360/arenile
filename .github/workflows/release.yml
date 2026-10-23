@@ -194,19 +194,22 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Desktop packages (Windows installer, macOS dmg, Linux AppImage)
-        if: needs.desktop.result == 'success'
+      # Taken also when one desktop job failed (e.g. only Windows arm64): the packages
+      # that were built still reach the bundle, with the warning below.
+      - name: Desktop packages (Windows x64/arm64 installers, macOS dmg, Linux AppImage)
+        if: needs.desktop.result == 'success' || needs.desktop.result == 'failure'
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
-          pattern: desktop-{windows,macos,linux}
+          pattern: desktop-{windows-amd64,windows-arm64,macos,linux}
           path: dist
           merge-multiple: true
 
       - name: Note missing desktop packages
         if: needs.desktop.result != 'success'
         run: |
-          echo "::warning::desktop packages missing (desktop job: ${{ needs.desktop.result }}); the bundle has the server binaries only"
-          echo "Desktop packages missing: desktop job ended with **${{ needs.desktop.result }}**. Re-run desktop.yml with version ${{ github.ref_name }}." >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::desktop packages missing or incomplete (desktop job: ${{ needs.desktop.result }}); check the bundle contents"
+          echo "Desktop packages missing or incomplete: desktop job ended with **${{ needs.desktop.result }}**. Re-run desktop.yml with version ${{ github.ref_name }}." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checksums
         working-directory: dist
