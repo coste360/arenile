@@ -1,0 +1,194 @@
+---
+title: Mappe ed editor
+description: Disegna la spiaggia con il kit grafico Coste360 - generatore di file, postazioni, passerelle modulari, bandiera, allineamenti, rinumerazione e scorciatoie da tastiera.
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+import { LiveMap } from '~/components';
+
+**Dove:** Configurazione → **Mappe**. **Chi:** proprietari e gestori modificano; gli altri ruoli possono solo
+**Visualizza**.
+
+La mappa è il disegno della tua spiaggia: le **postazioni** prenotabili (ombrelloni, gazebo, tende, palme,
+lettini, daybed, cabane, amache) e gli **elementi** non prenotabili (passerelle, docce, bar, torretta del
+bagnino, bandiera, WC, defibrillatore…). La stessa mappa diventa la vista operativa del giorno, la mini mappa
+della nuova prenotazione e la mappa che i clienti vedono online.
+
+<LiveMap />
+
+## Elenco delle mappe
+
+<Screenshot name="admin-maps-list" alt="Elenco delle mappe con dimensioni, numero di postazioni e azioni" />
+
+Uno stabilimento può avere più mappe (ad esempio **Spiaggia** e **Piscina**). L'elenco mostra dimensioni e
+numero di postazioni; **Apri editor** entra nell'editor. Per eliminare una mappa conferma il nome: con la mappa
+vengono eliminate le sue postazioni e le zone della mappa, ma l'operazione è rifiutata se qualche zona è ancora
+usata da regole di prezzo, pack, policy o se ci sono postazioni con prenotazioni future.
+
+### Nuova mappa
+
+**Nuova mappa** chiede:
+
+| Campo | Significato |
+|---|---|
+| **Nome** | Ad esempio "Spiaggia". |
+| **Larghezza**, **Altezza** | Dimensioni in unità della mappa (non metri: è una scala di disegno). |
+| **Passo griglia** | Le postazioni trascinate si agganciano alla griglia. Un passo che divide 60 (10, 12, 15, 20, 30, 60) fa agganciare anche le passerelle. |
+| **Lato del mare** | **In alto**, **In basso**, **A sinistra** o **A destra**: decide dove si disegna il mare e da che parte partono le file. |
+
+**Crea e apri l'editor** porta direttamente al disegno.
+
+<Aside type="caution" title="Prima le zone">
+  Ogni postazione appartiene a una zona. Se la mappa non ha zone a posto scelto o a zona collegate, l'editor lo
+  segnala (*Nessuna zona disponibile*): creale in [Zone](/gestore/zone/).
+</Aside>
+
+## L'editor
+
+<Screenshot name="admin-map-editor" alt="Editor della mappa con tavolozza del kit, mappa e pannello delle proprietà" />
+
+L'editor ha tre aree: la **barra degli strumenti** in alto, la **mappa** al centro e il pannello **Proprietà** a
+destra (si nasconde con **Mostra o nascondi le proprietà**). Il titolo indica quante postazioni ci sono e se ci
+sono **modifiche non salvate**.
+
+### Barra degli strumenti
+
+| Strumento | Cosa fa |
+|---|---|
+| **Salva mappa** | Salva tutto in un'unica operazione (vedi [Salvare](#salvare-e-conflitti)). |
+| **Annulla** / **Ripeti** | Tutta la cronologia delle modifiche dall'ultimo caricamento. |
+| **Aggiungi alla mappa** | La tavolozza del kit: **Postazione** o **Elemento**. |
+| **Generatore di file** | Crea in un colpo N file di M postazioni. |
+| **Impostazioni mappa** | Nome, dimensioni, passo della griglia e lato del mare. |
+| **Ruota −15°** / **Ruota +15°** | Ruota la selezione. |
+| **Allinea** | A sinistra, al centro, a destra, in alto, al centro verticale, in basso. |
+| **Distribuisci in orizzontale** / **in verticale** | Spaziatura uniforme tra tre o più elementi. |
+| **Duplica** | Copia la selezione. |
+| **Rinumera fila** | Rinumera le postazioni selezionate lungo la riva. |
+| **Elimina** | Elimina la selezione (le postazioni con prenotazioni future non si eliminano: vedi sotto). |
+
+### Il kit di elementi
+
+La tavolozza propone le illustrazioni originali del **kit Coste360**, con ricerca e categorie: **Postazioni**,
+**Percorsi**, **Strutture**, **Servizi**, **Salvataggio**, **Nautica**, **Sport e relax**, **Arredi**,
+**Ambiente**, **Segnaletica**. Qualche esempio:
+
+<CardGrid>
+  <Card title="Postazioni">
+    Ombrellone (navy, sabbia, salvia, corallo), ombrellone con 1–4 lettini, con 2 sdraio o 2 sedie regista,
+    ombrellone in paglia, quadrato, con tavolino, lettino, lettino matrimoniale, daybed, gazebo, cabana, tenda a
+    righe, amaca, pouf.
+  </Card>
+  <Card title="Percorsi e strutture">
+    Passerelle (verticale, orizzontale, angolo, T, croce, curva, terminale, ingresso), pedana in legno, rampa
+    accessibile, gradini, pontile, staccionata; bar, ristorante, reception, cassa, cabine, pergola, piscina.
+  </Card>
+  <Card title="Servizi e sicurezza">
+    Doccia, lavapiedi, WC e WC accessibile, fontanella, primo soccorso, defibrillatore DAE, sedia JOB, torretta
+    del bagnino, pattino e gommone di salvataggio, salvagente, boa, **bandiera dello stato del mare**.
+  </Card>
+  <Card title="Sport, ambiente, segnaletica">
+    Beach volley, beach tennis, area giochi, yoga, massaggi, kayak, SUP, pedalò; palme, alberi, fioriere, dune,
+    scogli; ingresso, check-in, parcheggio, biciclette, area cani, rosa dei venti.
+  </Card>
+</CardGrid>
+
+<Aside type="tip" title="Tipo e illustrazione">
+  Il **tipo** di una postazione (ombrellone, gazebo, lettino…) è un'informazione di vendita: i pack possono
+  richiedere un tipo (ad esempio il pack Gazebo solo sui gazebo). L'**illustrazione** è il disegno. Scegliere
+  un'illustrazione di un'altra famiglia cambia il tipo, e il pannello te lo dice; cambiare il tipo riporta
+  un'illustrazione di un altro tipo a quella predefinita.
+</Aside>
+
+### Generatore di file
+
+Il modo più veloce per disegnare un lido a file.
+
+<Steps>
+
+1. Apri **Generatore di file** e scegli la **Zona** delle nuove postazioni.
+2. **Disposizione**: **File**, **Postazioni per fila**, **Origine X/Y** (la prima postazione), **Distanza tra
+   postazioni**, **Distanza tra file**. Le file si allontanano dal mare secondo il lato del mare della mappa:
+   la fila A è la più vicina al mare.
+3. **Etichette**: **Numerazione** da sinistra a destra o da destra a sinistra; **Nomi delle file** con lettere
+   (A, B, …) o numeri; **Prima fila** e **Primo numero**; numeri che **ripartono a ogni fila** o **continui**;
+   **Formato etichetta** (ad esempio `{row}{number}` → `A1`, `A2`…). Scegli anche l'illustrazione.
+4. Controlla l'**Anteprima** ("120 postazioni, da A1 a H15"). Se un'etichetta esiste già, il generatore la
+   segnala e non procede.
+5. **Aggiungi N postazioni**.
+
+</Steps>
+
+### Proprietà di una postazione
+
+Seleziona una postazione (o più, con <kbd>Maiusc</kbd>) per modificarla. Con più elementi selezionati, i campi
+con valori diversi mostrano **— diversi —**.
+
+- **Identificazione**: **Etichetta**, **Fila**, **Numero**, **Zona**, **Tipo**, **Illustrazione**.
+- **Posizione e dimensione**: coordinate, **Dimensione**, rotazione.
+- **Prenotazione**: **Attiva (prenotabile)**, **Categoria di prezzo (eccezione)** (per una postazione con un
+  prezzo diverso dalla sua zona), **Attributi** separati da virgola (ad esempio `ombra, vicino_bar`, usabili
+  dalle regole di prezzo), **Capienza e massimo di extra per componente**.
+
+### Passerelle modulari
+
+Le passerelle sono **tessere di 60 unità**: i tratti dritti sono lunghi un numero intero di tessere e i pezzi
+(angolo, T, croce, curva, terminale) si raccordano. Con un passo griglia che divide 60 si agganciano alla
+griglia delle tessere; altrimenti mantengono la posizione dove le lasci.
+
+### Bandiera dello stato del mare
+
+L'elemento **Bandiera stato del mare** ha la proprietà **Colore della bandiera**: **Verde**, **Gialla** o
+**Rossa**. Sulla mappa è nominata e descritta con il colore, anche per chi usa un lettore di schermo.
+
+### Rinumerare una fila
+
+Seleziona le postazioni di una fila e usa **Rinumera fila**: vengono ordinate lungo la riva e numerate di
+seguito. **Numera dal lato opposto** parte da destra (o dal basso). L'esempio mostra il risultato prima di
+applicare.
+
+## Salvare e conflitti
+
+Il salvataggio è **unico e transazionale**: o va a buon fine tutto, o niente.
+
+- Prima di salvare l'editor elenca cosa correggere (*Da correggere prima di salvare*): postazioni senza zona,
+  senza etichetta o con etichette ripetute.
+- Se nel frattempo un collega ha salvato la stessa mappa, compare **Mappa modificata da un altro utente** con
+  la differenza (postazioni aggiunte, eliminate, spostate, modificate): scegli **Ricarica la versione salvata**
+  (perdi le tue modifiche), **Sovrascrivi con la mia** o **Continua a modificare**.
+- Una **postazione con prenotazioni future non si può eliminare**: disattivala (togli **Attiva**). La mappa
+  operativa la mostrerà come non attiva e non sarà più prenotabile.
+
+## Scorciatoie da tastiera
+
+L'editor si usa anche solo da tastiera. La mappa è un solo punto di tabulazione.
+
+| Tasti | Azione |
+|---|---|
+| <kbd>Tab</kbd> | Entra ed esce dalla mappa |
+| <kbd>PagSu</kbd> / <kbd>PagGiù</kbd>, <kbd>Home</kbd> / <kbd>Fine</kbd> | Passa da un elemento all'altro |
+| <kbd>Invio</kbd> | Seleziona |
+| Frecce | Muove la selezione (<kbd>Maiusc</kbd> ×5, <kbd>Alt</kbd> di 1 unità) |
+| <kbd>Canc</kbd> | Elimina |
+| <kbd>Ctrl/⌘</kbd>+<kbd>Z</kbd> | Annulla |
+| <kbd>Maiusc</kbd>+<kbd>Ctrl/⌘</kbd>+<kbd>Z</kbd> | Ripeti |
+| <kbd>Ctrl/⌘</kbd>+<kbd>D</kbd> | Duplica |
+| <kbd>Ctrl/⌘</kbd>+<kbd>A</kbd> | Seleziona tutto |
+| <kbd>Ctrl/⌘</kbd>+<kbd>S</kbd> | Salva mappa |
+| <kbd>Esc</kbd> | Deseleziona |
+| Trascinamento sulla sabbia | Seleziona un'area |
+
+## Domande frequenti
+
+**Quante postazioni regge una mappa?**
+Fino a 1.000 elementi restano fluidi anche su un tablet di fascia media.
+
+**Posso caricare la planimetria come sfondo?**
+Lo sfondo con immagine caricata o con il perimetro della concessione è previsto dalla specifica ma non ancora
+disponibile.
+
+**Ho spostato un ombrellone: le prenotazioni restano?**
+Sì: le prenotazioni sono legate alla postazione, non alla sua posizione sul disegno.

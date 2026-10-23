@@ -1,0 +1,102 @@
+---
+title: Zones
+description: The three sales modes (chosen spot, zone, quantity), automatic spot assignment, price categories and online quotas.
+sidebar:
+  order: 6
+---
+
+import { Steps, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Zones**. **Who:** owners and managers.
+
+A **zone** groups spots or equipment sold in the same way: "Front row", "Gazebos", "Pool", "Free sunbeds". For each
+zone you decide **how** it is sold, **at what price** (category) and **how much** can be sold online.
+
+<Screenshot name="admin-zones" alt="List of zones with assignment mode, map, spots and online quota" />
+
+## The three assignment modes
+
+<CardGrid>
+  <Card title="Chosen spot" icon="approve-check">
+    The customer picks **the exact spot** on the map. The classic case of numbered rows.
+  </Card>
+  <Card title="Zone" icon="puzzle">
+    The customer picks **the zone**; the spot is assigned later, by staff or automatically. Ideal for premium areas or
+    to fill rows compactly.
+  </Card>
+  <Card title="Quantity" icon="list-format">
+    Only **a number of items**, without position (for example free sunbeds): availability is a counter on a
+    [pool](/en/gestore/pool/). A quantity zone has no spots on the map.
+  </Card>
+</CardGrid>
+
+You can combine the modes in the same establishment: the public page adapts by itself and shows the map only if at
+least one zone visible online is chosen-spot, zone cards for "Zone" zones and the quantity selector for quantity
+zones.
+
+## Creating or editing a zone
+
+<Steps>
+
+1. Press **New zone** (or the pencil of an existing zone).
+2. **Code** (lowercase letters, digits, hyphens or underscores) and **Name** in the enabled languages.
+3. **Assignment mode**: **Chosen spot**, **Zone** or **Quantity**.
+4. **Map**: the map holding the zone's spots (not needed for quantity zones).
+5. **Price category**: the key used by price rules, for example `row1`. Several zones can share a category.
+6. "Zone" mode only: **Automatic assignment** (see below).
+7. **Visible on the public page**: untick it to sell the zone at the desk only.
+8. **Online quota**: **No limit**, **Percentage** or **Number**, and the **Quota value**.
+
+</Steps>
+
+In the list each zone shows its mode, map, number of spots and an online sales label: **All online**, **Online
+30%**, **Online max 20** or **Desk only**.
+
+## Automatic assignment (Zone mode)
+
+A zone in **Zone** mode sells **capacity**: a counter equal to the number of active spots, created and kept in sync
+by the system. The booking line is created **to assign** and the spot is chosen:
+
+- **automatically on confirmation**, if the zone has **Automatic assignment** (online paid bookings too: the
+  assignment happens in the same operation as the confirmation);
+- **by hand** by staff: the [Today](/en/gestore/oggi/) page lists the lines **To assign** and the booking detail has
+  the **Assign** button on each pending line.
+
+The automatic algorithm sorts the lines from the longest to the shortest (the hardest to place) and for each one
+picks, among the spots free on **all** dates, the one with the best score: continuity with the same customer's
+previous booking, closeness to the other lines of the same booking, customer preferences and compact filling of the
+rows. If no spot is free for the whole period, the line stays to assign and staff place it by hand (splitting over
+several spots is allowed only if the policy allows a spot change during the stay).
+
+<Aside type="note" title="Guarantee">
+  In a "Zone" zone the sum of assigned and unassigned lines never exceeds the active spots, for every date and slot:
+  you never sell more than you can place.
+</Aside>
+
+## Online quotas
+
+The quota limits how much of a zone can be sold **online** (and through the **API**), for each date and slot. The
+**desk ignores the quota**: staff can always sell anything free.
+
+| Type | Example | Available online |
+|---|---|---|
+| **No limit** | — | everything free |
+| **Percentage** | 30% of 40 spots | at most 12 sold online, minus those already sold online that day |
+| **Number** | 20 | at most 20 sold online |
+
+As a formula: `available online = min(total free, quota − already sold online)`. When the quota is used up the
+customer sees "No more online spots for these dates", while the zone remains sellable at the desk.
+
+<Aside type="tip">
+  Quotas keep places for regulars who arrive without booking, or for tomorrow's pass holders. Starting with a cautious
+  quota in August and widening it as you watch the trend is a good strategy.
+</Aside>
+
+## Frequently asked questions
+
+**Can I change a zone from "Chosen spot" to "Quantity"?**
+A quantity zone cannot have spots on the map: first move or delete its spots.
+
+**Why can't I delete a zone?**
+Because it is used by price rules, promo codes, agreements, packs or policies: the error lists what to change first.

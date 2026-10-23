@@ -1,0 +1,106 @@
+---
+title: Reverse proxy and HTTPS
+description: HTTPS is mandatory in production. Caddy, Nginx, Traefik or automatic certificates built into the binary, with the real client IP.
+sidebar:
+  order: 14
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+HTTPS is **mandatory in production**: it protects passwords and customer data, enables the panel's secure cookies
+and is required by browsers to pay inside an iframe. There are two ways.
+
+## A. Reverse proxy (recommended)
+
+The proxy receives HTTPS traffic and forwards it to Arenile on `127.0.0.1:8080`.
+
+<Tabs>
+  <TabItem label="Caddy">
+    Caddy obtains and renews the certificate on its own:
+
+    ```txt title="/etc/caddy/Caddyfile"
+    prenota.mio-lido.it {
+        reverse_proxy 127.0.0.1:8080
+    }
+    ```
+  </TabItem>
+  <TabItem label="Nginx">
+    ```nginx title="/etc/nginx/sites-available/arenile"
+    server {
+        listen 443 ssl http2;
+        server_name prenota.mio-lido.it;
+        ssl_certificate     /etc/letsencrypt/live/prenota.mio-lido.it/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/prenota.mio-lido.it/privkey.pem;
+
+        client_max_body_size 2m;
+
+        location / {
+            proxy_pass http://127.0.0.1:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Real-time updates of the panel (Server-Sent Events)
+        location /api/admin/v1/stream {
+            proxy_pass http://127.0.0.1:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_buffering off;
+            proxy_read_timeout 1h;
+        }
+    }
+    ```
+  </TabItem>
+  <TabItem label="Traefik">
+    ```yaml title="docker-compose.yml (excerpt)"
+    services:
+      arenile:
+        labels:
+          - traefik.enable=true
+          - traefik.http.routers.arenile.rule=Host(`prenota.mio-lido.it`)
+          - traefik.http.routers.arenile.entrypoints=websecure
+          - traefik.http.routers.arenile.tls.certresolver=letsencrypt
+          - traefik.http.services.arenile.loadbalancer.server.port=8080
+    ```
+  </TabItem>
+</Tabs>
+
+Then, **always**, tell Arenile which proxies to trust to read the real client IP:
+
+```ini title=".env"
+ARENILE_TRUSTED_PROXIES=127.0.0.1/32
+# or the proxy's Docker network, for example 172.18.0.0/16
+```
+
+<Aside type="caution" title="Why ARENILE_TRUSTED_PROXIES matters">
+  The request limits of the public page and the sign-in attempts are **per IP**. Without this variable, behind a
+  proxy every customer seems to come from the same address and they would end up blocking each other. Conversely,
+  never trust networks you do not control: anyone could spoof the IP.
+</Aside>
+
+## B. Automatic certificates in the binary
+
+Without a proxy, Arenile can obtain and renew Let's Encrypt certificates on its own:
+
+```ini title=".env"
+ARENILE_TLS_AUTOCERT_DOMAINS=prenota.mio-lido.it
+```
+
+Ports **80 and 443** of the server must reach the container: in the official compose file uncomment the
+`"80:80"` and `"443:443"` lines. Certificates are saved in the data folder.
+
+## Security headers already included
+
+Arenile sets the security headers itself, whatever the proxy:
+
+| Header | Value |
+|---|---|
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` (HTTPS only) |
+| `Content-Security-Policy` | strict on the panel and the APIs; on the public page `frame-ancestors` is built from the establishment's allowed websites |
+| `X-Content-Type-Options` | `nosniff` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+
+Do not add an `X-Frame-Options` or a different `frame-ancestors` from the proxy: it would prevent embedding the
+widget in the allowed websites.

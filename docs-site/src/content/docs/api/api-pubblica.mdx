@@ -1,0 +1,166 @@
+---
+title: API pubblica e checkout
+description: Il flusso di prenotazione pubblica passo per passo - profilo, disponibilità, preventivo, prenotazione con blocco, dati cliente, pagamento, stato, QR, .ics e area di gestione.
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { ApiOperation } from '~/components';
+
+L'API pubblica `/api/public/v1/{slug}` è quella che usa la pagina di prenotazione. Non richiede login, non usa
+cookie e **non restituisce mai dati di altri clienti**: i dati di una prenotazione si leggono solo con il token
+della sessione di checkout o con il token del link magico.
+
+## Il flusso
+
+```text
+1. GET   /{slug}                         profilo, tema, lingue, configurazione del flusso (ETag)
+2. GET   /{slug}/calendar?month=         disponibilità sintetica per giorno
+   GET   /{slug}/maps/{mapId}            geometria della mappa (senza dati sensibili)
+   GET   /{slug}/availability            disponibilità dettagliata per zona e postazione
+   GET   /{slug}/catalog                 pack ed extra vendibili online
+3. POST  /{slug}/quote                   prezzo e policy (nessuna scrittura)
+4. POST  /{slug}/bookings                prenotazione "held" + blocco + checkout_token
+5. PATCH /{slug}/bookings/{id}           dati cliente, consensi, extra, codice promo
+6. POST  /{slug}/bookings/{id}/pay       pagamento (redirect Stripe) o conferma senza pagamento
+7.       webhook del provider            ⇒ confermata (lato server, mai dal browser)
+8. GET   /{slug}/bookings/{id}           polling dello stato fino a "done"
+9. GET   /{slug}/bookings/{id}/qr  /ics  documenti della prenotazione
+```
+
+<Steps>
+
+1. **Profilo.** `GET /api/public/v1/lido-demo` restituisce nome, contatti, tema, lingue, stagione attiva e la
+   configurazione del flusso: zone visibili online con la loro modalità, mappe, formule e fasce prenotabili,
+   date minime e massime, durata del blocco (`hold_minutes`), pagamento (provider, online sì/no, modalità
+   incorporata, modalità test), opzioni (prezzi sulla mappa, periodi evidenziati, codici promo, telefono
+   obbligatorio) e la versione corrente delle condizioni. Supporta `If-None-Match` → `304`.
+
+2. **Disponibilità.** Per le zone a posto scelto, l'elenco delle postazioni `available | unavailable` per
+   l'intero intervallo (una postazione è disponibile solo se libera in **tutte** le date e fasce); per le zone
+   "zona" e "quantità", la quantità minima disponibile nell'intervallo. La disponibilità online tiene conto
+   delle quote.
+
+3. **Preventivo.** `POST /quote` con la selezione:
+
+   ```json
+   {
+     "starts_on": "2027-08-14",
+     "ends_on": "2027-08-16",
+     "slots": "FULL",
+     "formula": "multi_day",
+     "lines": [{ "pack_id": "…", "spot_id": "…" }],
+     "extras": [],
+     "promo_code": "BENVENUTO10"
+   }
+   ```
+
+   Ogni riga indica `spot_id` (zona a posto scelto), `zone_id` (zona "zona") oppure `zone_id` e `quantity`
+   (zona a quantità). La risposta ha totale, acconto, dettaglio e condizioni applicate, oppure
+   `policy_violation` / `no_price`. Non scrive nulla e conta come lettura nei limiti per IP.
+
+4. **Prenotazione con blocco.** `POST /bookings` con la stessa selezione (più `locale`) e un
+   `Idempotency-Key`. Crea la prenotazione in stato `held`, blocca le risorse e risponde con `booking_id`,
+   **`checkout_token`**, `hold_expires_at` e il preventivo. Se una risorsa è appena stata presa:
+   `409 spot_unavailable` / `pool_exhausted` / `quota_exceeded` con le mezze giornate in conflitto.
+
+5. **Dati del cliente.** `PATCH /bookings/{id}` con l'header `X-Arenile-Checkout: <checkout_token>`:
+
+   ```json
+   {
+     "first_name": "Giulia",
+     "last_name": "Rossi",
+     "email": "giulia@example.com",
+     "phone": "+39 333 1234567",
+     "accept_terms_version": "2027-1",
+     "marketing_consent": false
+   }
+   ```
+
+   `accept_terms_version` deve essere la versione corrente delle condizioni; `phone` è obbligatorio se il flusso
+   lo richiede.
+
+6. **Pagamento.** `POST /bookings/{id}/pay` (con `X-Arenile-Checkout` e `Idempotency-Key`). La risposta indica
+   cosa fare:
+
+   | `mode` | Cosa fa il client |
+   |---|---|
+   | `redirect` | Apre `redirect_url` (Stripe Checkout) **nella finestra principale**: dentro un iframe, tramite il messaggio `arenile:navigate` |
+   | `embedded` | Monta il Payment Element con `client_secret` e `publishable_key` |
+   | `none` | Nessun passo online: pagamento in loco o approvazione |
+
+   Lo stato passa a `pending_payment` e il blocco viene esteso (al massimo 30 minuti). Al ritorno da Stripe la
+   pagina riapre `/b/{slug}?checkout=<booking_id>` e riprende la sessione dal `sessionStorage`.
+
+   Dal widget incorporato il corpo può indicare `return_to`, l'indirizzo della pagina ospitante: la sua origine
+   deve essere tra gli `allowed_embed_origins` (altrimenti 422). Stripe riporta il cliente lì con
+   `?arenile_checkout=<booking_id>` ed `embed.js` riapre il widget sull'esito, dove il token è ancora nel
+   `sessionStorage` dell'iframe.
+
+7. **Conferma.** Arriva **solo** dal webhook firmato del provider (o dalla riconciliazione). Vedi
+   [Webhook dei pagamenti](/api/webhook-pagamenti/).
+
+8. **Stato.** `GET /bookings/{id}` con `X-Arenile-Checkout` restituisce stato, stato della sessione (`open`,
+   `paying`, `completed`, `expired`, `abandoned`), pagamento e **`next_action`**:
+
+   | `next_action` | Significato |
+   |---|---|
+   | `details` | Mancano i dati del cliente o l'accettazione delle condizioni |
+   | `pay` | Pronta per il pagamento |
+   | `wait` | Pagamento o approvazione in corso: continua il polling |
+   | `done` | Confermata (con codice e conferma) |
+   | `expired` | Blocco scaduto o checkout abbandonato |
+   | `rejected` | Rifiutata dal gestore |
+
+   Questa chiamata **non conferma mai** nulla.
+
+9. **Documenti.** `GET /bookings/{id}/qr` (codice QR della prenotazione) e `GET /bookings/{id}/ics` (evento
+   calendario RFC 5545).
+
+</Steps>
+
+`DELETE /bookings/{id}` abbandona il checkout e rilascia subito il blocco.
+
+### Le operazioni nel riferimento
+
+<ApiOperation ids={['getPublicEstablishment', 'getPublicCalendar', 'getPublicMap', 'getPublicAvailability', 'getPublicCatalog', 'quotePublicBooking', 'createPublicBooking', 'updatePublicBooking', 'payPublicBooking', 'getPublicBooking', 'abandonPublicBooking', 'getPublicBookingQr', 'getPublicBookingIcs']} />
+
+<Aside type="caution" title="Il token di checkout">
+  Il `checkout_token` (256 bit) è restituito **una sola volta** dalla creazione ed è salvato solo come hash.
+  Conservalo in `sessionStorage` (o in memoria) e invialo nell'header `X-Arenile-Checkout`: niente cookie, così
+  il flusso funziona anche dentro iframe di terze parti. Un token errato, di un'altra prenotazione o di un altro
+  stabilimento risponde sempre `404 checkout_not_found`, senza distinzioni.
+</Aside>
+
+## Area di gestione (link magico)
+
+| Metodo | Percorso | Cosa fa |
+|---|---|---|
+| GET | `/{slug}/manage/{token}` | Prenotazione dal link magico |
+| GET | `/{slug}/manage/{token}/qr`, `/ics` | QR e file calendario |
+| POST | `/{slug}/manage/{token}/pay` | Pagamento del saldo |
+| POST | `/{slug}/manage/{token}/modify` | Modifica entro i limiti della policy |
+| POST | `/{slug}/manage/{token}/cancel` | Cancellazione con rimborso o credito da condizioni |
+| POST | `/{slug}/manage/{token}/releases` | Rilascio di giorni (abbonati) |
+| POST | `/{slug}/manage-links` | Richiesta di un nuovo link con email e codice prenotazione: **sempre `202`** |
+
+<ApiOperation ids={['getManagedBooking', 'getManagedBookingQr', 'getManagedBookingIcs', 'payManagedBookingBalance', 'modifyManagedBooking', 'cancelManagedBooking', 'releaseManagedSeasonDays', 'requestManageLink']} />
+
+Un token sconosciuto, scaduto o revocato risponde allo stesso modo; la richiesta di un nuovo link non rivela mai
+se una prenotazione esiste ed è limitata per IP e per prenotazione.
+
+## Limiti
+
+| Tipo | Limite per IP |
+|---|---|
+| Letture (`GET`, e `POST /quote`) | 60 al minuto |
+| Creazioni e modifiche | 10 al minuto |
+
+Oltre il limite: `429 rate_limited` con `Retry-After`.
+
+<Aside type="tip" title="Vuoi costruire la tua pagina di prenotazione?">
+  Puoi: l'API pubblica è stabile e documentata nel [riferimento](/api/riferimento/). Ricorda di rispettare le
+  stesse regole della pagina ufficiale: condizioni accettate esplicitamente, consenso marketing separato,
+  pagamento a tutta finestra, nessuna conferma lato client.
+</Aside>

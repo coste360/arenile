@@ -1,0 +1,81 @@
+---
+title: Stagioni e periodi
+description: Stagioni di apertura, periodi tariffari (bassa, media, alta, picco) senza sovrapposizioni, festività locali e copia della stagione.
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Stagioni e periodi**. **Chi:** proprietari e gestori.
+
+- La **stagione** è il periodo di apertura di un anno (ad esempio dal 1 maggio al 30 settembre).
+- I **periodi tariffari** dividono la stagione in fasce di prezzo: bassa, media, alta stagione, picco
+  (Ferragosto) o codici liberi. Le regole di prezzo li usano come condizione.
+- Le **festività locali** si aggiungono alle festività nazionali italiane già incluse.
+
+<Screenshot name="admin-seasons" alt="Stagioni con la linea temporale colorata dei periodi tariffari" />
+
+## Creare una stagione
+
+<Steps>
+
+1. Premi **Nuova stagione**.
+2. Indica **Anno**, **Apre il**, **Chiude il**.
+3. Scegli lo **Stato**: **Bozza** (in preparazione), **Attiva** (in vendita) o **Chiusa**.
+4. Salva.
+
+</Steps>
+
+La pagina pubblica limita il calendario alla stagione attiva. Fuori stagione la mappa del giorno mostra
+"Stabilimento chiuso".
+
+## Periodi tariffari
+
+Ogni giorno della stagione appartiene **al massimo a un periodo**: Arenile rifiuta un intervallo che si
+sovrappone a un altro periodo (*L'intervallo si sovrappone a un altro periodo della stagione*) o che esce dalle
+date della stagione.
+
+<Steps>
+
+1. Nella stagione premi **Nuovo periodo**, oppure usa i **Periodi tipici** (**Bassa stagione**,
+   **Media stagione**, **Alta stagione**, **Picco**) per partire da un codice già pronto.
+2. **Codice**: `low`, `mid`, `high`, `peak` o un codice libero (ad esempio `ferragosto`).
+3. **Colore**: quello con cui il periodo appare nella linea temporale e nel calendario pubblico (se abiliti
+   l'evidenziazione dei periodi).
+4. **Intervalli di date**: uno o più intervalli **Dal**/**Al** (**Aggiungi intervallo**). Un periodo può
+   avere intervalli separati, ad esempio "media" a giugno e nella prima metà di settembre.
+
+</Steps>
+
+La **Vista dei periodi** alterna **Linea temporale** e **Calendario**. Se qualche giorno della stagione non è
+coperto da alcun periodo, un avviso lo conta: le regole legate ai periodi non si applicheranno a quei giorni.
+
+<Aside type="caution">
+  Eliminare un periodo fa sì che le regole che lo usano non si applichino più a quei giorni: controlla poi la
+  [verifica di copertura](/gestore/prezzi/#verifica-di-copertura).
+</Aside>
+
+## Festività locali
+
+Giorni trattati come festivi dalle regole di prezzo con la condizione "Festivi", oltre alle festività nazionali
+già incluse nel programma.
+
+- **Date specifiche**: un giorno preciso (**Aggiungi data**), ad esempio un evento.
+- **Ricorrenze annuali**: formato `MM-GG` (**Aggiungi ricorrenza**), ad esempio `08-16` per il santo patrono.
+
+## Copiare la stagione sull'anno successivo
+
+La copia del listino (periodi, regole, prezzi fissi, policy) si fa da [Prezzi → Copia stagione](/gestore/prezzi/#copia-di-stagione):
+le date si spostano mantenendo il giorno della settimana dove ha senso e la stagione di destinazione nasce in
+bozza.
+
+## Domande frequenti
+
+**Posso avere due stagioni nello stesso anno?**
+Una stagione per anno. Per una riapertura invernale usa i periodi e le [chiusure](/gestore/chiusure/).
+
+**Il Ferragosto deve essere un periodo a sé?**
+Non è obbligatorio: puoi fare un periodo `peak` per tutto agosto e una regola con un intervallo di date
+specifico per il 14–16 agosto. Scegli la strada più leggibile per te.

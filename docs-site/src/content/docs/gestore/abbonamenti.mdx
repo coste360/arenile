@@ -1,0 +1,76 @@
+---
+title: Abbonamenti e rilasci
+description: Abbonamenti stagionali per zona e fila, rilascio dei giorni con rivendita della postazione, revoca e crediti per l'abbonato.
+sidebar:
+  order: 25
+---
+
+import { Steps, Aside, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Abbonamenti**. **Chi:** cassieri, gestori e proprietari; i rilasci anche il personale
+di spiaggia.
+
+Un **abbonamento stagionale** riserva una postazione a un cliente per tutta la stagione. Quando l'abbonato non
+viene, può **rilasciare** il giorno: la postazione torna in vendita e, se viene rivenduta, l'abbonato matura un
+credito.
+
+<Screenshot name="admin-passes" alt="Abbonamenti della stagione raggruppati per zona e fila, con rilasci, credito e saldo" />
+
+## Elenco
+
+Gli abbonamenti della stagione sono raggruppati per zona e fila, con **Postazione**, **Abbonato**, **Periodo**,
+**Stato**, **Rilasci**, **Credito** e **Saldo**.
+
+## Nuovo abbonamento
+
+<Steps>
+
+1. **Nuovo abbonamento**.
+2. Scegli l'**Abbonato**, la **Stagione**, il **Pack** e la **Fascia**.
+3. Scegli la **Postazione** tra quelle libere **per tutta la stagione**.
+4. Facoltativo: **Dal** / **Al** (vuoto = apertura e chiusura della stagione) e **Note interne**.
+5. Controlla il **Prezzo da listino** e l'acconto richiesto, poi **Crea abbonamento**.
+
+</Steps>
+
+Il prezzo è calcolato dal listino con la formula **Stagione** (di solito un
+[prezzo a durata fissa](/gestore/prezzi/#prezzi-a-durata-fissa)). Per un prezzo concordato usa una convenzione o
+una regola di prezzo dedicata. Pagamenti e cancellazione si gestiscono dalla prenotazione collegata (**Apri la
+prenotazione**).
+
+## Rilasciare giorni
+
+<Steps>
+
+1. Apri l'abbonamento: il calendario dei rilasci mostra i giorni **Rilasciato**, **Rivenduto** e quelli che stai
+   **Selezionando**.
+2. Tocca i giorni da rilasciare e scegli la **Parte della giornata da rilasciare**.
+3. Facoltativo: una **Nota**.
+4. **Rilascia N giorni**: la postazione è subito prenotabile in cassa e online.
+
+</Steps>
+
+Il rilascio di un solo giorno si fa anche dalla [mappa del giorno](/gestore/mappa-del-giorno/) con **Rilascia
+giorno**; la postazione appare come **Abbonato assente oggi**.
+
+Se la [policy](/gestore/policy/) lo consente (**Il cliente può liberare giorni dell'abbonamento**), l'abbonato
+rilascia i giorni da solo dall'area di gestione con il link magico.
+
+### Revocare un rilascio
+
+**Revoca** (nell'elenco **Giorni rilasciati**) riporta la postazione all'abbonato. Non è possibile se il giorno è
+già stato rivenduto.
+
+### Credito per i giorni rivenduti
+
+Con **Credito per giorni liberati** attivo nella policy, ogni giorno rilasciato **e rivenduto** fa maturare
+all'abbonato un credito pari alla percentuale scelta: lo vedi in **Credito maturato** e nella scheda cliente.
+Il credito non va mai sotto zero.
+
+## In arrivo
+
+| Funzione | Stato |
+|---|---|
+| Proposta dei rinnovi in blocco per la nuova stagione, con prelazione sulla stessa postazione | <Badge text="In arrivo (M5)" variant="caution" /> |
+| Uso del credito come metodo di pagamento dalla pagina pubblica | <Badge text="In arrivo (M5)" variant="caution" /> |

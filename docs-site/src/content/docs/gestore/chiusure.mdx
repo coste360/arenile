@@ -1,0 +1,37 @@
+---
+title: Chiusure
+description: Giorni o mezze giornate di chiusura straordinaria per maltempo, eventi o lavori, con il calendario dell'anno.
+sidebar:
+  order: 4
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Chiusure**. **Chi:** proprietari e gestori; gli altri ruoli vedono i giorni
+evidenziati.
+
+Maltempo, eventi o lavori: nelle fasce di chiusura le postazioni **non sono prenotabili**, né in cassa né
+online, e la mappa del giorno mostra lo stabilimento chiuso.
+
+<Screenshot name="admin-closures" alt="Calendario dell'anno con i giorni di chiusura evidenziati" />
+
+## Aggiungere una o più chiusure
+
+<Steps>
+
+1. Scegli l'**Anno** e tocca uno o più giorni nel **Calendario**.
+2. Scegli le **Fasce**: **Giornata intera** oppure solo **Mattina** o **Pomeriggio**.
+3. Scrivi il **Motivo** (ad esempio "allerta meteo"): resta nello storico.
+4. Premi **Crea N chiusure**.
+
+</Steps>
+
+Toccando un giorno già chiuso apri **Modifica chiusura**; da lì puoi anche eliminarla.
+
+<Aside type="caution" title="E le prenotazioni già fatte?">
+  Una chiusura impedisce le **nuove** prenotazioni in quelle fasce, ma non cancella quelle esistenti. Se chiudi
+  per maltempo un giorno già venduto, gestisci le prenotazioni dalla [mappa del giorno](/gestore/mappa-del-giorno/)
+  o dall'[elenco prenotazioni](/gestore/prenotazioni/): la cancellazione offre l'opzione **Cancellazione per
+  maltempo**, che applica la tutela meteo prevista dalla [policy](/gestore/policy/).
+</Aside>

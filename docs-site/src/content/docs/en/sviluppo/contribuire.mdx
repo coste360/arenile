@@ -1,0 +1,116 @@
+---
+title: Contributing
+description: Development environment, make commands, workflow, technical rules, Conventional Commits, pull requests and CLA for contributing to Arenile.
+sidebar:
+  order: 7
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Code, translations, documentation, payment, fiscal and notification drivers are welcome, and so are field reports from
+people who run a beach. Before starting, read the Code of Conduct.
+
+## How to help
+
+- **Bugs**: "Bug report" issue with version, database (SQLite or PostgreSQL), steps to reproduce and logs without
+  personal data.
+- **Features**: "Feature request" issue, starting from the beach's concrete problem.
+- **New driver** (payment, fiscal, notifications): "New driver" issue to agree on the interface.
+- **Translations**: Italian is the source language; English, German and French are the first translations.
+- **Vulnerabilities**: **never** in a public issue, follow `SECURITY.md`.
+
+## Development environment
+
+Prerequisites: Go 1.27+, Node.js 22+, npm 10+, Docker, `make`. Or the included devcontainer.
+
+```bash
+make setup   # once: Go and Node dependencies, golangci-lint, Playwright browsers
+make seed    # demo data (Lido Demo)
+make dev     # backend with reload + Vite for panel and public page
+```
+
+The `Makefile` is the only supported interface:
+
+| Command | When |
+|---|---|
+| `make gen` | After every change to `api/openapi.yaml` or the map kit |
+| `make check` | After every change: generated code up to date, lint, tests (under 2 minutes) |
+| `make test` | Go unit tests and Vitest (no Docker, no network) |
+| `make test-db` | Integration on SQLite and PostgreSQL (ephemeral container) |
+| `make test-race` | `TestConcurrency_*` concurrency tests with `-race` |
+| `make e2e` | Playwright end-to-end tests |
+| `make check-full` | Before the pull request: `check` + `test-db` + `test-race` + `e2e` |
+| `make docs-dev`, `make docs-build`, `make docs-screenshots` | This documentation site |
+
+`make check-full` is **mandatory** for changes to availability, prices, payments, migrations or the public booking
+flow.
+
+## Workflow
+
+<Steps>
+
+1. Look for or open an issue; for non-trivial changes wait for feedback from the maintainers.
+2. Read the specification sections (`docs/spec/`), ADRs and invariants relevant to the work. Changing an existing
+   decision requires a new ADR.
+3. Fork and create a descriptive branch (`feat/pricing-free-days`, `fix/hold-expiry`).
+4. Write code **and tests**: a bug fix includes a test that fails without the fix.
+5. Update the documentation (this site, `docs/`) and the `CHANGELOG.md` (`[Unreleased]` section).
+6. `make check` (and `make check-full` when required), then open the pull request filling in the template.
+
+</Steps>
+
+## Technical rules in short
+
+<Tabs>
+  <TabItem label="API and migrations">
+    - Contract `api/openapi.yaml` first, then `make gen`, then the handler. Never edit generated files.
+    - Errors as `application/problem+json` with a stable `type`.
+    - New migrations for **both** dialects with the same number; never modify a migration on `main`.
+  </TabItem>
+  <TabItem label="Go backend">
+    - `int64` amounts in cents, `YYYY-MM-DD` dates, UTC instants, injected clock (never `time.Now()` in the domain).
+    - Pure pricing engine; availability guaranteed by database constraints.
+    - Every booking status change through `internal/domain/booking`, with audit and event in the same transaction.
+    - Queries always filtered by `establishment_id`; errors wrapped with `%w`; logs with `slog`, never personal data.
+    - Table-driven tests `TestXxx_Scenario`; comments and identifiers in English.
+  </TabItem>
+  <TabItem label="Frontend">
+    - Strict TypeScript, generated API client.
+    - UI with shadcn/ui and Tailwind on theme tokens only: no custom CSS or arbitrary colours (checked by
+      `npm run lint`).
+    - Texts through i18n keys, Italian as the source.
+    - Public page under 150 KB of gzipped JS on first load; WCAG AA accessibility.
+  </TabItem>
+  <TabItem label="Dependencies">
+    No new runtime dependency without explaining why in the pull request, with a license compatible with BSL 1.1 and
+    AGPL-3.0 (MIT, BSD, Apache-2.0, ISC).
+  </TabItem>
+</Tabs>
+
+## Commits and pull requests
+
+[Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): the release changelog is generated from the
+messages.
+
+```text
+feat(pricing): support the free_days action
+fix(availability): release the expired hold before renewal
+docs(guide): add Raspberry Pi installation
+```
+
+Small, focused pull requests, description following the template (what changes, how it was tested, open questions),
+green CI, squash merge.
+
+## CLA
+
+Contributions require signing the **Contributor License Agreement**: on the first pull request the CLA Assistant bot
+posts a comment with the instructions, and the signature covers all later contributions. The CLA allows Coste360 SRL
+to distribute contributions under the BSL 1.1, under commercial licenses and under the AGPL-3.0 at the conversion date;
+you keep the copyright.
+
+<Aside type="note">
+  Contributing grants no resale rights: offering Arenile as a service to third parties still requires a commercial
+  license (see [License](/en/sviluppo/licenza/)).
+</Aside>
+
+General questions: Discussions on GitHub. Confidential matters: info@coste360.it.

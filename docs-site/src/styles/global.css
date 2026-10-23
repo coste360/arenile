@@ -1,9 +1,83 @@
-/* Tailwind v4 with the official Starlight integration: Starlight theme
-   tokens drive the utilities, and the shared components keep their own
-   shadcn tokens (web/shared/src/styles/globals.css is imported by the
-   component islands, not here). */
+/*
+ * Documentation theme. Integration layer only, no new design:
+ *
+ * - Tailwind v4 with the official Starlight integration, in Starlight's layer
+ *   order (Starlight styles stay below the utilities, Tailwind's full preflight
+ *   is NOT loaded so Starlight keeps its typography);
+ * - the shared Arenile theme (generated from web/shared/src/styles/globals.css
+ *   by scripts/sync-theme.mjs): the same shadcn tokens, font and beach map
+ *   palette as the panel and the booking page, dark mode on data-theme;
+ * - Starlight's own colours mapped onto those tokens (brand = --primary), so
+ *   prose, sidebar and the live components share one palette;
+ * - the few preflight rules the shadcn components rely on, scoped to the
+ *   islands (.arenile-island), at the lowest layer.
+ */
 @layer base, starlight, theme, components, utilities;
 
 @import '@astrojs/starlight-tailwind';
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
+@import './generated/shared-theme.css';
+
+@source '../components';
+
+/* Starlight colours from the Arenile tokens (unlayered: they win over the
+   defaults that @astrojs/starlight-tailwind sets in the utilities layer). */
+:root {
+  --sl-font: var(--app-font);
+  --sl-color-accent-low: var(--accent);
+  --sl-color-accent: var(--primary);
+  --sl-color-accent-high: var(--primary-on-surface);
+  --sl-color-black: var(--background);
+  --sl-color-bg-nav: var(--background);
+  --sl-color-bg-sidebar: var(--background);
+  --sl-color-hairline-light: var(--border);
+  --sl-color-hairline: var(--border);
+  --sl-color-hairline-shade: var(--border);
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: var(--accent);
+  --sl-color-accent: var(--primary);
+  --sl-color-accent-high: var(--accent-foreground);
+  --sl-color-black: var(--background);
+  --sl-color-white: var(--foreground);
+  --sl-color-bg-nav: var(--background);
+  --sl-color-bg-sidebar: var(--background);
+}
+
+@layer base {
+  /* Islands render shadcn components: give them the app base styles. */
+  .arenile-island {
+    font-family: var(--app-font);
+    color: var(--foreground);
+    line-height: 1.5;
+  }
+  :where(.arenile-island) *,
+  :where(.arenile-island) ::before,
+  :where(.arenile-island) ::after {
+    border-color: var(--border);
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+  :where(.arenile-island) :is(h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, ol, ul) {
+    margin: 0;
+  }
+  :where(.arenile-island) :is(ol, ul, menu) {
+    list-style: none;
+    padding: 0;
+  }
+  :where(.arenile-island) :is(button, input, select, optgroup, textarea) {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    background-color: transparent;
+    border-radius: 0;
+  }
+  :where(.arenile-island) :is(img, svg, video, canvas) {
+    display: block;
+    vertical-align: middle;
+  }
+  :where(.arenile-island) table {
+    border-collapse: collapse;
+    text-indent: 0;
+  }
+}

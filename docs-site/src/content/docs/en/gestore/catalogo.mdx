@@ -1,0 +1,88 @@
+---
+title: Catalogue
+description: Components, packs and extras - what you sell, what it is made of, on which channels and with which VAT.
+sidebar:
+  order: 8
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Catalogue**. **Who:** owners and managers.
+
+The catalogue describes **what you sell**, on three levels:
+
+```text
+Components (physical items)  →  Packs (sellable products)        +  Extras (additions)
+umbrella, sunbed, deckchair     Basic = 1 umbrella + 2 sunbeds      extra sunbed, cabin, towel
+```
+
+<Screenshot name="admin-catalog" alt="Catalogue with the Components, Packs and Extras tabs" />
+
+<Tabs>
+  <TabItem label="Components">
+    Physical items: umbrella, sunbed, deckchair, cabin, parking space. The **Code** (for example `umbrella`,
+    `sunbed`, `deckchair`) also picks the icon.
+
+    | Field | Meaning |
+    |---|---|
+    | **Code**, **Name** | Identifier and name in the enabled languages. |
+    | **Stock tracked** | If on, bookings use the availability of the chosen **Pool**. Leave it off for items that are already part of the spot (the umbrella of a row). |
+    | **Pool** | The pool used, if tracked. |
+  </TabItem>
+  <TabItem label="Packs">
+    The products customers buy, made of components.
+
+    | Field | Meaning |
+    |---|---|
+    | **Code**, **Name**, **Description** | Shown at the desk and online, in the enabled languages. |
+    | **Composition** | Components and quantities, for example 1 umbrella + 2 sunbeds. At least one component is needed. |
+    | **Allowed formulas** | Half day, Day, Several days, Week, Fortnight, Month, Season. No selection = all. |
+    | **Sales channels** | Desk, Online, API. No selection = all. |
+    | **Compatible spot types** | For example Gazebo only for the Gazebo pack. No selection = all. |
+    | **Allowed zones** | Limits the pack to some zones. |
+    | **Maximum per booking** | How many units of the pack in one booking. |
+    | **Image URL** | Optional, for the public page. |
+    | **VAT (%)** | Empty = the establishment's default VAT. |
+    | **Requires approval** | The booking stays **Awaiting approval** until the manager decides. |
+    | **Active** | An inactive pack cannot be sold. |
+  </TabItem>
+  <TabItem label="Extras">
+    Optional additions to a pack or to the booking.
+
+    | Field | Meaning |
+    |---|---|
+    | **Added to** | **Spot** (for each line, for example one more sunbed by the umbrella) or **Booking** (once, for example parking). |
+    | **Pricing unit** | **Per booking**, **Per day**, **Per slot**. |
+    | **Component used** | Optional: the tracked component the extra uses (e.g. `sunbed` from the sunbed pool). |
+    | **Maximum quantity** | Per line or per booking. |
+    | **Compatible packs** | Limits the extra to some packs. No selection = all. |
+    | **VAT (%)**, **Sales channels**, **Active** | As for packs. |
+  </TabItem>
+</Tabs>
+
+## The price is not in the catalogue
+
+Packs and extras have no price in the catalogue: prices are computed by the engine from the
+[price rules](/en/gestore/prezzi/), per day, period, row, duration and channel. An active pack without price rules
+**cannot be sold** on those days: the [coverage check](/en/gestore/prezzi/#coverage-check) tells you.
+
+<Aside type="note" title="Deleting or archiving">
+  A component, pack or extra already used by bookings or rules is not silently deleted: it is archived (no longer
+  sellable) and the history stays readable.
+</Aside>
+
+## Example: the Lido Demo
+
+| Pack | Composition | Notes |
+|---|---|---|
+| **Basic** | 1 umbrella, 2 sunbeds | on umbrella-type spots, max 4 per booking |
+| **Comfort** | 1 umbrella, 1 sunbed, 1 deckchair | on umbrella-type spots |
+| **Gazebo** | 2 sunbeds, 2 deckchairs | gazebos only, **requires approval**, max 1 |
+
+| Extra | Added to | Unit | Uses |
+|---|---|---|---|
+| Extra sunbed | Spot | Per day | sunbed (max 2) |
+| Changing cabin | Booking | Per day | cabin, pool of 10 |
+| Beach towel | Spot | Per booking | — |
+| Parking | Booking | Per day | parking space, pool of 30 |

@@ -4,6 +4,8 @@ Grazie per voler contribuire ad Arenile, il gestionale gratuito per stabilimenti
 
 Prima di iniziare leggi il [Codice di condotta](CODE_OF_CONDUCT.md). Partecipando al progetto accetti di rispettarlo.
 
+La sezione [Sviluppo ed estensioni](https://docs.arenile.it/sviluppo/) della documentazione (sorgente in [`docs-site/`](docs-site/), in locale `make docs-dev`) spiega architettura, invarianti, punti di estensione, driver di pagamento e sviluppo con agenti AI: è il punto di partenza consigliato prima di una pull request.
+
 ## Indice
 
 - [Come posso aiutare](#come-posso-aiutare)

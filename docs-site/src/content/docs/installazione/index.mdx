@@ -1,0 +1,51 @@
+---
+title: Installazione e operatività
+description: Da zero a un lido operativo e online, poi tutto quello che serve per farlo girare bene per tutta la stagione.
+sidebar:
+  order: 0
+  label: Panoramica
+---
+
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+
+Arenile è **un solo programma**: un binario che contiene il pannello del gestore, la pagina di prenotazione
+pubblica, le API e il database (SQLite, oppure PostgreSQL se preferisci). Non servono Redis, code di messaggi
+o servizi a pagamento: un server piccolo basta per un lido intero.
+
+Questa sezione è divisa in due parti.
+
+## Inizia
+
+Il percorso consigliato per chi installa Arenile per la prima volta, nell'ordine.
+
+<CardGrid>
+  <LinkCard title="1. Cos'è Arenile" href="/installazione/cos-e-arenile/" description="Cosa fa, a chi serve, licenza BSL 1.1 e cosa significa per te." />
+  <LinkCard title="2. Scegli come installare" href="/installazione/scegli-come-installare/" description="Online, server in sede, desktop o hosting gestito: confronto e consigli." />
+  <LinkCard title="3. Installazione con Docker" href="/installazione/docker/" description="L'installazione standard su VPS o mini PC con Docker Compose." />
+  <LinkCard title="4. Compilare dai sorgenti" href="/installazione/compilare-dai-sorgenti/" description="Per sviluppatori e per chi vuole il binario senza Docker." />
+  <LinkCard title="5. Primo avvio e configurazione guidata" href="/installazione/primo-avvio/" description="Primo utente, primo stabilimento, mappa e listino in pochi minuti." />
+  <LinkCard title="6. Dati demo" href="/installazione/dati-demo/" description="Uno stabilimento completo per provare tutto senza rischi." />
+</CardGrid>
+
+## Operatività
+
+Quando Arenile è in produzione: configurazione, sicurezza e manutenzione.
+
+<CardGrid>
+  <LinkCard title="Configurazione" href="/installazione/configurazione/" description="Tutte le variabili d'ambiente, con valori predefiniti ed esempi." />
+  <LinkCard title="Backup e ripristino" href="/installazione/backup-e-ripristino/" description="Copie consistenti, regola 3-2-1, prova di ripristino." />
+  <LinkCard title="Aggiornamenti" href="/installazione/aggiornamenti/" description="Aggiornare senza sorprese, anche in alta stagione." />
+  <LinkCard title="SQLite o PostgreSQL" href="/installazione/database/" description="Quale database scegliere e come passare dall'uno all'altro." />
+  <LinkCard title="Reverse proxy e HTTPS" href="/installazione/reverse-proxy-https/" description="Caddy, Nginx, Traefik o certificati automatici integrati." />
+  <LinkCard title="Monitoraggio e log" href="/installazione/monitoraggio-e-log/" description="Endpoint di salute, log strutturati, cosa tenere d'occhio." />
+  <LinkCard title="Sicurezza" href="/installazione/sicurezza/" description="Segreti cifrati, ruoli, 2FA, limiti e buone pratiche." />
+  <LinkCard title="Privacy e GDPR" href="/installazione/privacy/" description="Ruoli, dati trattati, diritti degli interessati, modello di informativa." />
+  <LinkCard title="Novità" href="/installazione/novita/" description="Cosa è cambiato in ogni versione." />
+</CardGrid>
+
+<Aside type="note" title="Dove si scarica Arenile">
+  Su **GitHub** trovi il codice sorgente e le istruzioni per compilarlo ed eseguirlo: i binari pronti non vengono
+  pubblicati lì. L'**immagine Docker** su GitHub Container Registry (`ghcr.io/coste360/arenile`) è pubblica e
+  gratuita. I **pacchetti pronti** per Windows, macOS e Linux (edizione desktop) saranno scaricabili dal
+  portale Coste360 previo accesso.
+</Aside>

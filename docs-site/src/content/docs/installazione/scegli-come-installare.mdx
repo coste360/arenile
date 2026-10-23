@@ -1,0 +1,86 @@
+---
+title: Scegli come installare Arenile
+description: Online su VPS o Docker, server in sede, edizione desktop o hosting gestito Arenile Pro. Confronto, consigli e come passare da una soluzione all'altra.
+sidebar:
+  order: 2
+  label: Scegli come installare
+---
+
+import { Card, CardGrid, Aside, Badge, LinkCard } from '@astrojs/starlight/components';
+
+Ogni lido ha **un solo server**, che contiene l'archivio (prenotazioni, clienti, incassi). Le soluzioni si
+distinguono per **dove gira quel server**; i dispositivi del personale (PC della cassa, tablet, telefoni) si
+collegano tutti allo stesso modo, dal browser.
+
+## Le quattro soluzioni
+
+| Dove gira il server | Internet | Prenotazione online | Stato | Note |
+|---|---|---|---|---|
+| **Online**: VPS, hosting o Docker | necessaria | sì | <Badge text="Disponibile" variant="success" /> | La soluzione standard, consigliata per quasi tutti i lidi. |
+| **Server in sede**: mini PC, NAS o Raspberry Pi nel lido, con Docker | facoltativa | solo se esposto su internet (dominio o tunnel) | <Badge text="Disponibile" variant="success" /> | Stessa immagine dell'installazione online. |
+| **Desktop locale**: app sul PC della cassa | non necessaria | no | <Badge text="In arrivo (M6)" variant="caution" /> | Per chi lavora solo in cassa, con modalità rete locale per gli altri dispositivi. |
+| **Hosting gestito da Coste360 (Arenile Pro)** | necessaria | sì | <Badge text="Futuro" variant="note" /> | Offerta commerciale per chi non vuole gestire un server. |
+
+<CardGrid>
+  <Card title="Online (consigliata)" icon="rocket">
+    Un VPS da pochi euro al mese con Docker. Il lido è raggiungibile da ovunque, la pagina di prenotazione
+    funziona 24 ore su 24 e i pagamenti con Stripe arrivano anche di notte. Serve un dominio (ad esempio
+    `prenota.mio-lido.it`).
+  </Card>
+  <Card title="Server in sede" icon="server">
+    Un mini PC o un Raspberry Pi nel lido, con la stessa immagine Docker. Funziona anche se internet cade, ma
+    per la prenotazione online deve essere raggiungibile da fuori (dominio con porte aperte o un tunnel). Pensa
+    a gruppo di continuità e backup fuori sede.
+  </Card>
+  <Card title="Desktop locale (in arrivo)" icon="laptop">
+    Un file da scaricare e un doppio clic sul PC della cassa: niente server, niente terminale. Senza internet,
+    quindi senza pagina pubblica né pagamenti online. I pacchetti per Windows, macOS e Linux saranno
+    scaricabili dal portale Coste360 previo accesso.
+  </Card>
+  <Card title="Arenile Pro (futuro)" icon="star">
+    Hosting gestito da Coste360 per chi non vuole occuparsi di server, aggiornamenti e backup. Prodotto
+    separato e commerciale; il core resta completo e gratuito per chi gestisce da sé i propri stabilimenti.
+  </Card>
+</CardGrid>
+
+## Come scegliere
+
+1. **Vuoi le prenotazioni online?** Ti serve un server raggiungibile da internet: scegli **Online** (o
+   **Server in sede** esposto con un dominio o un tunnel).
+2. **Hai già un VPS o qualcuno che lo sa gestire?** Online con Docker è la strada più semplice e robusta.
+3. **Il lido ha una connessione instabile e lavori soprattutto in cassa?** Server in sede oggi, edizione
+   desktop quando sarà disponibile.
+4. **Non vuoi occuparti di nulla?** Valuta l'hosting gestito quando sarà disponibile.
+
+<Aside type="tip" title="Requisiti minimi">
+  1 vCPU e 512 MB di RAM bastano per un lido; 1 GB di disco più lo spazio per i backup. Linux `amd64` o
+  `arm64` (anche Raspberry Pi 4 o 5 con sistema a 64 bit).
+</Aside>
+
+## I client
+
+Valgono per ogni soluzione:
+
+- **il browser**: pannello web, nessuna installazione, su PC, tablet e telefono;
+- **l'app desktop in modalità remota** <Badge text="In arrivo (M6)" variant="caution" />: finestra dedicata e
+  ponte verso stampante e registratore telematico locali;
+- **l'app mobile per lo staff** <Badge text="In arrivo (M7)" variant="caution" />: mappa del giorno, check-in con
+  QR, incassi, anche offline.
+
+## Cosa è escluso, e perché
+
+Non esistono modelli ibridi con **due server sincronizzati** (ad esempio desktop offline più VPS). Due archivi
+che si sincronizzano dovrebbero risolvere conflitti tra prenotazioni, e la garanzia che una postazione non venga
+mai venduta due volte non potrebbe più essere assoluta. Per passare da una soluzione all'altra si usano
+**backup e ripristino**: il backup di SQLite è lo stesso file in ogni edizione.
+
+<Aside type="note" title="Dove si scarica cosa">
+  - **GitHub**: codice sorgente e istruzioni per compilarlo. Nessun binario pronto viene pubblicato su GitHub.
+  - **GitHub Container Registry**: l'immagine Docker `ghcr.io/coste360/arenile`, pubblica e gratuita.
+  - **Portale Coste360**: i pacchetti desktop pronti (Windows, macOS, Linux), previo accesso, quando saranno disponibili.
+</Aside>
+
+<CardGrid>
+  <LinkCard title="Installazione con Docker" href="/installazione/docker/" description="Online o in sede: la procedura completa." />
+  <LinkCard title="Compilare dai sorgenti" href="/installazione/compilare-dai-sorgenti/" description="Il binario senza Docker." />
+</CardGrid>

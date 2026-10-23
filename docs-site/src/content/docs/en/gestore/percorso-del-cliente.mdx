@@ -1,0 +1,133 @@
+---
+title: The customer journey
+description: What an online customer sees - the four steps on a smartphone, the spot hold, payment, confirmation with QR code and the manage area via magic link.
+sidebar:
+  order: 14
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot, StatusBadges } from '~/components';
+
+Knowing the customer journey helps you answer the phone and configure the page well. It is built for a smartphone,
+even inside the beach's website: **a complete booking takes less than two minutes**. No account, no fees.
+
+## The four steps
+
+<Tabs>
+  <TabItem label="1. When">
+    <Screenshot name="public-when-mobile" alt="When step on a smartphone: the season calendar with the selected period" />
+
+    The customer picks the first and last day (for a single day, they tap the same day twice). The calendar is
+    limited to the season and the bookable dates and shows **Availability** day by day (**Available**, **Last
+    spots**, **Full**, **Closed**); if you enabled it, it highlights the **Rate periods**. Then they choose the
+    **Package type** and the **Time of day** among those you offer online.
+  </TabItem>
+  <TabItem label="2. Where">
+    <Screenshot name="public-where-mobile" alt="Where step on a smartphone: map with the free spots and the price legend" />
+
+    The page adapts to your zones:
+    - **Map**, if at least one online zone is chosen-spot: free spots highlighted, price legend by row ("from €25"),
+      list alternative by row for screen reader users or small screens;
+    - **Areas**: one card per zone with a "from" price and indicative availability ("Last 3 spots", "Sold out");
+    - **Quantity**: a selector for the number of items.
+
+    With zones of different modes they appear together.
+  </TabItem>
+  <TabItem label="3. What">
+    <Screenshot name="public-what-mobile" alt="What step on a smartphone: packages, extras and price summary" />
+
+    Packages compatible with the choice (with their composition), extras with quantity, the **Promo code** field. The
+    **Summary** with **Total**, **Due now** and **Balance later** updates at every change.
+  </TabItem>
+  <TabItem label="4. Details and payment">
+    <Screenshot name="public-who-mobile" alt="Details step on a smartphone: customer details, consents and remaining hold time" />
+
+    **Your details**: **First name**, **Last name**, **Email** (where the confirmation and manage link arrive) and
+    **Phone** (optional unless you require it). The mandatory tick **I have read and accept the booking conditions**
+    (with **Read the conditions** and the **Privacy notice**) and the optional **I want to receive offers and news**.
+    The **Spot held for…** countdown shows how much of the hold is left.
+
+    The final button depends on your rules: **Pay …** (online payment), **Confirm booking** (payment at the beach) or
+    **Send the request** (approval). In Stripe test mode the page says so: *Test mode: no real charge*.
+  </TabItem>
+</Tabs>
+
+## The spot hold
+
+When the customer moves from the "What" step to "Details and payment", the spot (or the quantity) is **held for
+them**: nobody else can take it, neither online nor at the desk. The hold lasts `ARENILE_HOLD_TTL` (10 minutes by
+default) and is extended during payment up to a maximum of 30 minutes. If it expires the spot becomes free again and
+the customer sees *The time to complete the booking is over: please choose again*. In the panel that spot appears as
+**Pending** while the hold is active.
+
+## Payment and confirmation
+
+<Steps>
+
+1. With Stripe the page says *Secure payment with Stripe: you will be redirected and then brought back here* and opens
+   the payment page at full window, even when embedded in your website. If the host website prevents it, the buttons
+   **Open the payment page** and **Open in a new tab** appear.
+2. On return the page shows *Waiting for the payment confirmation…* (*Do not close the page: it usually takes a few
+   seconds*) until Stripe tells Arenile the outcome.
+3. Then **Booking confirmed** appears with the **Booking code**, the **QR code to show at the entrance**, the details
+   (paid, **Still to pay**, spots **Being assigned** for zones with automatic assignment) and the **Add to calendar**
+   button (`.ics` file). The customer receives the email with the manage link.
+
+</Steps>
+
+| Outcome | What the customer sees |
+|---|---|
+| Payment failed or abandoned | **Payment failed** / **Payment not completed**: the spot is still held and they can **Try the payment again** |
+| Approval required | **Request sent**: the beach will reply shortly; you find it **Awaiting approval** in the panel |
+| Hold expired | **Booking expired**: the spot has been released |
+| Rejected by the manager | **Request not accepted** |
+| Slow confirmation | *You will receive an email as soon as the payment is confirmed* (reconciliation recovers lost webhooks) |
+
+<Screenshot name="public-confirmation-mobile" alt="Booking confirmation on a smartphone with code, QR code and add-to-calendar button" />
+
+## The statuses the customer goes through
+
+<StatusBadges />
+
+| Status | For the customer |
+|---|---|
+| **Held** | Has picked the spot and is filling in the form: spot held |
+| **Pending payment** | Is on Stripe: hold extended |
+| **Awaiting approval** | Request sent, awaiting your decision |
+| **Confirmed** | Paid (or confirmed without online payment) |
+| **Expired** | The hold expired before payment |
+
+## The manage area
+
+<Screenshot name="public-manage-mobile" alt="The Your booking area on a smartphone with details, QR code and actions" />
+
+From the link in the email the customer opens **Your booking** and can:
+
+<CardGrid>
+  <Card title="View and show" icon="document">Status, **Booked by**, details, QR code to show at the entrance, **Documents** (QR and calendar file), link expiry.</Card>
+  <Card title="Pay the balance" icon="approve-check">If only a deposit was paid, pay the rest online.</Card>
+  <Card title="Change" icon="pencil">**Change dates** within the policy deadline: **Calculate the new price** shows the new total, the difference to pay or in their favour and any change fee.</Card>
+  <Card title="Cancel" icon="close">**See the refund** shows refund or credit per the accepted terms; where allowed they choose **Refund to the payment method** or **Credit for a future booking**.</Card>
+  <Card title="Release days" icon="random">For pass holders, if the policy allows it: they pick the days, **Calculate the credit** and release them; the spot goes back on sale.</Card>
+  <Card title="Request a new link" icon="email">With the email used to book and the booking code, if the link expired or was lost.</Card>
+</CardGrid>
+
+If the policy does not allow changes, the area says so: *For changes please contact the beach directly*.
+
+<Aside type="note" title="Link privacy">
+  If the link is invalid or expired the page only says *The link is invalid or has expired*. Requesting a new link
+  always answers *If the details match a booking, you will receive a new link by email*: nobody can find out whether
+  an email address has booked.
+</Aside>
+
+## If something goes wrong
+
+| The customer sees | What happened |
+|---|---|
+| *The spot has just been booked by someone else.* | Another customer or the desk took it a moment earlier: they pick another spot |
+| *No more online spots for these dates.* | Online quota used up (the zone may still be free at the desk) |
+| *Quantity not available for these dates.* | Pool exhausted |
+| *The request does not meet the beach's booking rules.* | Policy: lead time, duration, start day… |
+| *The payment service is not responding: try again shortly.* | Stripe temporarily unreachable |
+| *Booking session not found: please start again.* | They closed the tab or the session expired |
+| *Too many requests: please wait a few seconds.* | Per-IP request limit |

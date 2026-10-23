@@ -1,0 +1,54 @@
+---
+title: Calendario planning
+description: La griglia postazioni × giorni per vedere e collocare i soggiorni lunghi, con trascinamento, selezione e tastiera.
+sidebar:
+  order: 22
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Calendario**. **Chi:** tutti vedono; cassieri, gestori e proprietari modificano.
+
+Il planning mostra le **postazioni in riga** (raggruppate per zona e fila) e i **giorni in colonna**: è la vista
+giusta per collocare i soggiorni lunghi senza lasciare buchi di un giorno.
+
+<Screenshot name="admin-planning" alt="Calendario planning con postazioni in riga, giorni in colonna e prenotazioni come barre" />
+
+## Navigare
+
+La barra in alto: giorni prima e dopo, **Oggi**, **Dal giorno** e **Giorni visibili** (fino a 62). La data
+iniziale resta nell'indirizzo della pagina: puoi salvarla nei preferiti o condividerla con un collega.
+
+Ogni prenotazione è una barra sulla sua postazione; le celle vuote sono libere, quelle dei giorni di chiusura
+sono segnate come chiuse.
+
+## Creare una prenotazione dal planning
+
+<Steps>
+
+1. Seleziona un intervallo di celle libere sulla stessa postazione (trascinando, o con <kbd>Maiusc</kbd>+frecce).
+2. Premi <kbd>Invio</kbd> o **Nuova prenotazione**: si apre il foglio con postazione e date già compilate.
+
+</Steps>
+
+## Spostare una prenotazione
+
+Trascina la barra su un'altra postazione o su altre date (oppure, da tastiera, <kbd>M</kbd> sulla prenotazione
+sotto il cursore, frecce e <kbd>Invio</kbd>). Arenile mostra l'anteprima **Modificare la prenotazione…?** con
+postazione di partenza e arrivo, nuove date, conflitti e differenza di prezzo; **Conferma spostamento** applica.
+
+<Aside type="note">
+  Se un collega ha modificato la prenotazione nel frattempo, compare **Prenotazione modificata da un altro
+  utente**: **Ricarica** e ricalcola lo spostamento. Nessuna modifica viene mai sovrascritta in silenzio.
+</Aside>
+
+## Tastiera
+
+| Tasti | Azione |
+|---|---|
+| Frecce | Spostarsi tra le celle |
+| <kbd>Maiusc</kbd>+frecce | Selezionare |
+| <kbd>Invio</kbd> | Aprire la prenotazione o crearne una sulla selezione |
+| <kbd>M</kbd> | Spostare la prenotazione sotto il cursore |
+| <kbd>Esc</kbd> | Annullare |

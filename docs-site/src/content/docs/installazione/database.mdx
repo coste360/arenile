@@ -1,0 +1,60 @@
+---
+title: SQLite o PostgreSQL
+description: Quale database scegliere per Arenile, cosa cambia e cosa no, e come passare dall'uno all'altro.
+sidebar:
+  order: 13
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Arenile funziona con **SQLite** (predefinito) o **PostgreSQL**, con lo stesso codice e le stesse garanzie: ogni
+test di integrazione e di concorrenza gira su entrambi.
+
+<CardGrid>
+  <Card title="SQLite (predefinito)" icon="document">
+    Un file (`/data/arenile.db`) in modalità WAL, nessun servizio in più da gestire, backup con un comando.
+    Ideale per uno o pochi stabilimenti: un lido intero, con la cassa, la spiaggia e le prenotazioni online
+    nello stesso momento, è un carico piccolo per SQLite.
+  </Card>
+  <Card title="PostgreSQL" icon="database">
+    Consigliato con molti stabilimenti nella stessa installazione, con più istanze di Arenile in parallelo o se
+    hai già un PostgreSQL gestito con backup e monitoraggio. Si attiva con `DATABASE_URL`.
+  </Card>
+</CardGrid>
+
+## Cosa non cambia
+
+- **Nessuna doppia vendita** su entrambi: l'unicità di una postazione per data e fascia è un vincolo del
+  database, e i contatori a quantità usano aggiornamenti condizionali, identici nei due dialetti.
+- Stesse funzioni, stesse API, stesse migrazioni (una coppia per ogni versione dello schema).
+- Date di calendario come `YYYY-MM-DD`, istanti in UTC, importi in centesimi interi.
+
+## Cosa cambia
+
+| | SQLite | PostgreSQL |
+|---|---|---|
+| Servizi da gestire | nessuno | un server PostgreSQL |
+| Backup | `arenile backup --out FILE` | `pg_dump` / `pg_restore` |
+| Più istanze di Arenile | no | possibile (il tempo reale tra istanze richiede un'estensione `EventBus`) |
+| Variabile | nessuna | `DATABASE_URL=postgres://...` |
+
+## Attivare PostgreSQL
+
+```ini title=".env"
+DATABASE_URL=postgres://arenile:password@db:5432/arenile?sslmode=disable
+```
+
+Oppure usa direttamente `deploy/docker-compose.postgres.yml`, che avvia PostgreSQL 17 e imposta
+`DATABASE_URL` per te (vedi [Installazione con Docker](/installazione/docker/)).
+
+<Aside type="caution">
+  Nella `DATABASE_URL` scritta a mano i caratteri speciali della password vanno codificati (`@` → `%40`,
+  `:` → `%3A`, `/` → `%2F`). Più semplice: genera una password con soli caratteri sicuri, ad esempio
+  `openssl rand -hex 24`.
+</Aside>
+
+## Passare da SQLite a PostgreSQL
+
+Il passaggio di un'installazione esistente non è automatico. Il modo più sicuro è farlo **fuori stagione**:
+esporta i dati che ti servono, avvia una nuova installazione su PostgreSQL e reimporta la configurazione.
+Se gestisci un solo lido, rimanere su SQLite è quasi sempre la scelta migliore.

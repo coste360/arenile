@@ -1,0 +1,164 @@
+---
+title: Public API and checkout
+description: The public booking flow step by step - profile, availability, quote, booking with hold, customer details, payment, status, QR, .ics and manage area.
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { ApiOperation } from '~/components';
+
+The public API `/api/public/v1/{slug}` is what the booking page uses. It requires no sign-in, uses no cookies and
+**never returns other customers' data**: a booking's data can be read only with the checkout session token or the
+magic link token.
+
+## The flow
+
+```text
+1. GET   /{slug}                         profile, theme, languages, flow configuration (ETag)
+2. GET   /{slug}/calendar?month=         summary availability per day
+   GET   /{slug}/maps/{mapId}            map geometry (no sensitive data)
+   GET   /{slug}/availability            detailed availability per zone and spot
+   GET   /{slug}/catalog                 packs and extras sold online
+3. POST  /{slug}/quote                   price and policy (no writes)
+4. POST  /{slug}/bookings                "held" booking + hold + checkout_token
+5. PATCH /{slug}/bookings/{id}           customer details, consents, extras, promo code
+6. POST  /{slug}/bookings/{id}/pay       payment (Stripe redirect) or confirmation without payment
+7.       provider webhook                ⇒ confirmed (server side, never from the browser)
+8. GET   /{slug}/bookings/{id}           status polling until "done"
+9. GET   /{slug}/bookings/{id}/qr  /ics  booking documents
+```
+
+<Steps>
+
+1. **Profile.** `GET /api/public/v1/lido-demo` returns name, contacts, theme, languages, active season and the flow
+   configuration: zones visible online with their mode, maps, bookable formulas and slots, minimum and maximum dates,
+   hold duration (`hold_minutes`), payment (provider, online yes/no, embedded mode, test mode), options (prices on the
+   map, highlighted periods, promo codes, phone required) and the current version of the conditions. Supports
+   `If-None-Match` → `304`.
+
+2. **Availability.** For chosen-spot zones, the list of spots `available | unavailable` for the whole range (a spot is
+   available only if free on **all** requested dates and slots); for "zone" and "quantity" zones, the minimum
+   quantity available over the range. Online availability takes quotas into account.
+
+3. **Quote.** `POST /quote` with the selection:
+
+   ```json
+   {
+     "starts_on": "2027-08-14",
+     "ends_on": "2027-08-16",
+     "slots": "FULL",
+     "formula": "multi_day",
+     "lines": [{ "pack_id": "…", "spot_id": "…" }],
+     "extras": [],
+     "promo_code": "BENVENUTO10"
+   }
+   ```
+
+   Each line gives `spot_id` (chosen-spot zone), `zone_id` ("zone" zone) or `zone_id` and `quantity` (quantity zone).
+   The response has total, deposit, breakdown and applied conditions, or `policy_violation` / `no_price`. It writes
+   nothing and counts as a read in the per-IP limits.
+
+4. **Booking with hold.** `POST /bookings` with the same selection (plus `locale`) and an `Idempotency-Key`. It
+   creates the booking in `held` status, holds the resources and answers with `booking_id`, **`checkout_token`**,
+   `hold_expires_at` and the quote. If a resource has just been taken: `409 spot_unavailable` / `pool_exhausted` /
+   `quota_exceeded` with the conflicting half-days.
+
+5. **Customer details.** `PATCH /bookings/{id}` with the `X-Arenile-Checkout: <checkout_token>` header:
+
+   ```json
+   {
+     "first_name": "Giulia",
+     "last_name": "Rossi",
+     "email": "giulia@example.com",
+     "phone": "+39 333 1234567",
+     "accept_terms_version": "2027-1",
+     "marketing_consent": false
+   }
+   ```
+
+   `accept_terms_version` must be the current version of the conditions; `phone` is required if the flow asks for it.
+
+6. **Payment.** `POST /bookings/{id}/pay` (with `X-Arenile-Checkout` and `Idempotency-Key`). The response says what to
+   do:
+
+   | `mode` | What the client does |
+   |---|---|
+   | `redirect` | Opens `redirect_url` (Stripe Checkout) **in the top window**: inside an iframe, through the `arenile:navigate` message |
+   | `embedded` | Mounts the Payment Element with `client_secret` and `publishable_key` |
+   | `none` | No online step: payment on site or approval |
+
+   The status moves to `pending_payment` and the hold is extended (up to 30 minutes). On return from Stripe the page
+   reopens `/b/{slug}?checkout=<booking_id>` and resumes the session from `sessionStorage`.
+
+   From the embedded widget the body may carry `return_to`, the address of the host page: its origin must be one
+   of the `allowed_embed_origins` (otherwise 422). Stripe brings the customer back there with
+   `?arenile_checkout=<booking_id>` and `embed.js` reopens the widget on the outcome, where the token is still in
+   the iframe's `sessionStorage`.
+
+7. **Confirmation.** It comes **only** from the provider's signed webhook (or reconciliation). See
+   [Payment webhooks](/en/api/webhook-pagamenti/).
+
+8. **Status.** `GET /bookings/{id}` with `X-Arenile-Checkout` returns status, session state (`open`, `paying`,
+   `completed`, `expired`, `abandoned`), payment and **`next_action`**:
+
+   | `next_action` | Meaning |
+   |---|---|
+   | `details` | Customer details or acceptance of the conditions are missing |
+   | `pay` | Ready for payment |
+   | `wait` | Payment or approval in progress: keep polling |
+   | `done` | Confirmed (with code and confirmation) |
+   | `expired` | Hold expired or checkout abandoned |
+   | `rejected` | Rejected by the manager |
+
+   This call **never confirms** anything.
+
+9. **Documents.** `GET /bookings/{id}/qr` (the booking's QR code) and `GET /bookings/{id}/ics` (RFC 5545 calendar
+   event).
+
+</Steps>
+
+`DELETE /bookings/{id}` abandons the checkout and releases the hold immediately.
+
+### The operations in the reference
+
+<ApiOperation ids={['getPublicEstablishment', 'getPublicCalendar', 'getPublicMap', 'getPublicAvailability', 'getPublicCatalog', 'quotePublicBooking', 'createPublicBooking', 'updatePublicBooking', 'payPublicBooking', 'getPublicBooking', 'abandonPublicBooking', 'getPublicBookingQr', 'getPublicBookingIcs']} />
+
+<Aside type="caution" title="The checkout token">
+  The `checkout_token` (256 bits) is returned **only once** by the creation and stored only as a hash. Keep it in
+  `sessionStorage` (or in memory) and send it in the `X-Arenile-Checkout` header: no cookies, so the flow works inside
+  third-party iframes too. A wrong token, one of another booking or of another establishment always answers
+  `404 checkout_not_found`, with no distinction.
+</Aside>
+
+## Manage area (magic link)
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/{slug}/manage/{token}` | Booking from the magic link |
+| GET | `/{slug}/manage/{token}/qr`, `/ics` | QR code and calendar file |
+| POST | `/{slug}/manage/{token}/pay` | Balance payment |
+| POST | `/{slug}/manage/{token}/modify` | Change within the policy limits |
+| POST | `/{slug}/manage/{token}/cancel` | Cancellation with refund or credit per the terms |
+| POST | `/{slug}/manage/{token}/releases` | Day releases (season pass holders) |
+| POST | `/{slug}/manage-links` | Request for a new link with email and booking code: **always `202`** |
+
+<ApiOperation ids={['getManagedBooking', 'getManagedBookingQr', 'getManagedBookingIcs', 'payManagedBookingBalance', 'modifyManagedBooking', 'cancelManagedBooking', 'releaseManagedSeasonDays', 'requestManageLink']} />
+
+An unknown, expired or revoked token answers the same way; requesting a new link never reveals whether a booking
+exists and is limited per IP and per booking.
+
+## Limits
+
+| Type | Limit per IP |
+|---|---|
+| Reads (`GET`, and `POST /quote`) | 60 per minute |
+| Creations and changes | 10 per minute |
+
+Beyond the limit: `429 rate_limited` with `Retry-After`.
+
+<Aside type="tip" title="Want to build your own booking page?">
+  You can: the public API is stable and documented in the [reference](/api/riferimento/). Remember to follow the same
+  rules as the official page: conditions explicitly accepted, separate marketing consent, full-window payment, no
+  client-side confirmation.
+</Aside>

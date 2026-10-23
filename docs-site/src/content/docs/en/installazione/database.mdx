@@ -1,0 +1,59 @@
+---
+title: SQLite or PostgreSQL
+description: Which database to choose for Arenile, what changes and what does not, and how to move from one to the other.
+sidebar:
+  order: 13
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Arenile works with **SQLite** (default) or **PostgreSQL**, with the same code and the same guarantees: every
+integration and concurrency test runs on both.
+
+<CardGrid>
+  <Card title="SQLite (default)" icon="document">
+    One file (`/data/arenile.db`) in WAL mode, no extra service to run, backups with one command. Ideal for one or a
+    few establishments: a whole beach, with desk, beach staff and online bookings at the same time, is a light load
+    for SQLite.
+  </Card>
+  <Card title="PostgreSQL" icon="database">
+    Recommended with many establishments in the same installation, with several Arenile instances in parallel, or
+    if you already have a managed PostgreSQL with backups and monitoring. Enabled with `DATABASE_URL`.
+  </Card>
+</CardGrid>
+
+## What does not change
+
+- **No double selling** on either: the uniqueness of a spot per date and slot is a database constraint, and
+  quantity counters use conditional updates, identical in both dialects.
+- Same features, same APIs, same migrations (one pair for each schema version).
+- Calendar dates as `YYYY-MM-DD`, instants in UTC, amounts in integer cents.
+
+## What changes
+
+| | SQLite | PostgreSQL |
+|---|---|---|
+| Services to run | none | a PostgreSQL server |
+| Backup | `arenile backup --out FILE` | `pg_dump` / `pg_restore` |
+| Several Arenile instances | no | possible (real time across instances needs an `EventBus` extension) |
+| Variable | none | `DATABASE_URL=postgres://...` |
+
+## Enabling PostgreSQL
+
+```ini title=".env"
+DATABASE_URL=postgres://arenile:password@db:5432/arenile?sslmode=disable
+```
+
+Or use `deploy/docker-compose.postgres.yml` directly, which starts PostgreSQL 17 and sets `DATABASE_URL` for you
+(see [Install with Docker](/en/installazione/docker/)).
+
+<Aside type="caution">
+  In a hand-written `DATABASE_URL`, special characters in the password must be encoded (`@` → `%40`, `:` → `%3A`,
+  `/` → `%2F`). Simpler: generate a password with URL-safe characters only, for example `openssl rand -hex 24`.
+</Aside>
+
+## Moving from SQLite to PostgreSQL
+
+Moving an existing installation is not automatic. The safest way is to do it **off season**: export the data you
+need, start a new installation on PostgreSQL and re-create the configuration. If you run a single beach, staying
+on SQLite is almost always the best choice.

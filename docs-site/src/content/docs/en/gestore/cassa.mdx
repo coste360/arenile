@@ -1,0 +1,69 @@
+---
+title: Cash desk and closing
+description: Opening with a float, takings by method, quick payment, movements, closing with count and difference, printable Z report and history.
+sidebar:
+  order: 26
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Cash desk**. **Who:** cashiers, managers and owners operate; other roles with access to
+reports browse the history read-only.
+
+Arenile's cash desk records what comes in and goes out during the day, by method, and at closing compares the count
+with the expected amount. It is for management control and reconciliation with the fiscal register, POS and Stripe;
+**it does not replace tax obligations** (see [Daily takings](/en/gestore/corrispettivi/)).
+
+<Screenshot name="admin-cash" alt="Cash desk with the open session, totals by method, takings and movements" />
+
+## Opening the cash desk
+
+<Steps>
+
+1. Count the cash in the drawer.
+2. Enter the **Opening float** and press **Open session**.
+
+</Steps>
+
+There is one open session per register (**Main register**). Without an open session cash payments cannot be recorded
+(*The cash desk is closed: open it to record cash payments*).
+
+## During the day
+
+The session panel shows **Opening float**, **Total takings**, **Cash in − cash out**, **Expected cash in drawer**
+(float + cash takings + cash in − cash out) and **Takings by method**.
+
+- **Take payment**: find the booking by code or customer; the proposed amount is the **Balance due**. Choose the
+  method and **Record payment**.
+- **Movement**: **Cash in** or **Cash out**, always with a **Reason** (change, bank deposit…).
+- Payments recorded elsewhere (booking detail, spot sheet) while the session is open end up in the same session.
+  **Counter sales** without a booking appear as such.
+
+The **Takings** and **Movements** tabs list everything that happened in the session.
+
+<Aside type="note" title="What about online payments?">
+  Stripe payments go to the Stripe account and are recorded on the booking with the online method: they do not pass
+  through the drawer and do not change the expected cash.
+</Aside>
+
+## Closing the cash desk
+
+<Steps>
+
+1. **Close cash desk**.
+2. For each method Arenile shows the **Expected** amount: enter the **Counted** one.
+3. The **Difference** is computed by itself: **Balanced**, **Surplus** or **Shortfall**. Add a note if needed (for
+   example the reason for the difference).
+4. **Close session**.
+
+</Steps>
+
+After closing, **Print Z report** produces the printable summary: register, opening and closing, float, cash in, cash
+out, takings by method, notes and number of transactions. During the day **Print summary** prints the current
+situation.
+
+## Session history
+
+**Session history** lists the sessions with opening, closing and status. **Session detail** reopens the closing
+summary, takings and movements of a past session.

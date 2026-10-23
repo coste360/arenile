@@ -1,0 +1,40 @@
+---
+/**
+ * <LiveMap /> — the real beach map of web/shared (BeachMap + Coste360 map
+ * kit) on the demo snapshot (src/data/demo-map.json, generated from
+ * `seed demo` by make docs-screenshots). Hydrated when it scrolls into view.
+ *
+ * Props: height (CSS, default 32rem), filters (status chips, default true).
+ */
+import LiveMapIsland from './islands/LiveMapIsland';
+import { docsLocale } from './islands/i18n';
+
+interface Props {
+  height?: string;
+  filters?: boolean;
+}
+
+const { height, filters = true } = Astro.props;
+const t = Astro.locals.t;
+const locale = docsLocale(Astro.currentLocale ?? Astro.locals.starlightRoute?.lang);
+const labels = {
+  live: t('arenile.live.badge'),
+  demo: t('arenile.live.demo'),
+  filter: t('arenile.live.filter'),
+  all: t('arenile.live.all'),
+  selected: t('arenile.live.selected'),
+  hint: t('arenile.live.mapHint'),
+  row: t('arenile.live.row', { row: '{{row}}', interpolation: { escapeValue: false } }),
+  spots: t('arenile.live.spots'),
+};
+---
+
+<div class="not-content arenile-island arenile-live">
+  <LiveMapIsland client:visible locale={locale} labels={labels} height={height} filters={filters} />
+</div>
+
+<style>
+  .arenile-live {
+    margin-block: 1.5rem;
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+title: Pool
+description: Inventario a quantità senza posizione - lettini liberi, cabine, posti auto - con capacità per periodo.
+sidebar:
+  order: 7
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Pool**. **Chi:** proprietari e gestori.
+
+Un **pool** è un inventario a quantità, senza posizione sulla mappa: "Lettini liberi: 200", "Cabine: 10",
+"Parcheggio: 30". Ogni prenotazione che consuma quel componente scala la disponibilità del giorno e della
+fascia; quando arriva a zero, non si vende più. Come per le postazioni, la garanzia è del database: anche con
+cassa e online in contemporanea il pool non supera mai la capacità.
+
+<Screenshot name="admin-pools" alt="Elenco dei pool con componente, zona e capacità" />
+
+## Creare un pool
+
+<Steps>
+
+1. Premi **Nuovo pool**.
+2. Scegli il **Componente** che il pool conta (ad esempio `sunbed`, `cabin`, `parking`).
+3. Facoltativo: la **Zona a quantità** a cui appartiene.
+4. Indica la **Capacità**.
+5. Facoltativo: **Capacità per periodo** (**Aggiungi variazione**) per capacità diverse in alcune date, ad
+   esempio lettini aggiuntivi ad agosto.
+
+</Steps>
+
+Poi, nel [Catalogo](/gestore/catalogo/), segna il componente come **Tracciato a magazzino** e collegalo al pool:
+da quel momento ogni pack o extra che lo contiene consuma il pool.
+
+## Pool gestiti dal sistema
+
+Le zone in modalità **Zona** hanno un pool implicito, pari alle postazioni attive, che il sistema crea e
+aggiorna da solo. Nell'elenco appare come **Gestito dal sistema**: si modifica dalla zona, non da qui.
+
+<Aside type="tip">
+  Un pool non deve essere per forza un'attrezzatura da spiaggia: posti auto, ingressi in piscina o noleggi
+  (kayak, SUP) funzionano allo stesso modo, come extra con un componente tracciato.
+</Aside>

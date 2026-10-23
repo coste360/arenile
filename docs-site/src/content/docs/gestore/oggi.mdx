@@ -1,0 +1,51 @@
+---
+title: Oggi
+description: Il cruscotto della giornata - occupazione, arrivi, check-in, abbonati attesi, incassi, saldi aperti e righe da assegnare, in tempo reale.
+sidebar:
+  order: 20
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Oggi** (è anche la pagina iniziale del pannello). **Chi:** tutti i ruoli; le azioni
+dipendono dai permessi.
+
+La pagina della mattina: la situazione della spiaggia **in tempo reale** e la lista delle cose da fare. Si
+aggiorna da sola quando un collega fa un check-in o un cliente prenota online.
+
+<Screenshot name="admin-today" alt="Pagina Oggi con indicatori, grafico delle postazioni per stato, mappa del giorno e liste da fare" />
+
+## Indicatori del giorno
+
+| Indicatore | Cosa mostra |
+|---|---|
+| **Occupazione** | Percentuale di postazioni occupate (es. "92 postazioni occupate su 124") |
+| **Arrivi** | Prenotazioni che iniziano oggi, con il numero di partenze |
+| **Check-in da fare** | Arrivi non ancora registrati, con quanti sono già presenti |
+| **Abbonati attesi** | Abbonati che oggi occupano la loro postazione |
+| **Postazioni rilasciate** | Giorni di abbonati rimessi in vendita oggi |
+| **Incassi di oggi** | Totale incassato, con i **Saldi aperti** |
+
+Il grafico **Postazioni per stato** usa gli stessi colori della mappa.
+
+## Mappa del giorno
+
+Una versione compatta della [mappa operativa](/gestore/mappa-del-giorno/) su oggi: tocca una postazione per
+aprirne la scheda. Le scorciatoie **Mappa**, **Calendario** e **Cassa** portano alle pagine complete.
+
+## Da fare
+
+Tre liste, ciascuna con il suo contatore:
+
+- **Check-in**: chi arriva oggi e non è ancora registrato. Il pulsante accanto al nome registra l'arrivo con un
+  tocco.
+- **Saldi**: prenotazioni di oggi con un saldo da incassare. Apri la prenotazione o vai in cassa.
+- **Da assegnare**: righe di zone in modalità "Zona" ancora senza postazione. Aprile e usa **Assegna** (vedi
+  [Zone](/gestore/zone/#assegnazione-automatica-modalità-zona)).
+
+<Aside type="tip" title="Il giro della mattina">
+  Prima dell'apertura: svuota **Da assegnare**, controlla gli **Abbonati attesi** e le postazioni rilasciate,
+  apri la [cassa](/gestore/cassa/). Durante la giornata la lista **Check-in** si svuota da sola man mano che il
+  personale registra gli arrivi, anche dal telefono.
+</Aside>

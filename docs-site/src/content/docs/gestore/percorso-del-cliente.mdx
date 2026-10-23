@@ -1,0 +1,137 @@
+---
+title: Il percorso del cliente
+description: Cosa vede chi prenota online - i quattro passi da smartphone, il blocco del posto, il pagamento, la conferma con QR e l'area di gestione con link magico.
+sidebar:
+  order: 14
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+import { StatusBadges } from '~/components';
+
+Conoscere il percorso del cliente ti aiuta a rispondere al telefono e a configurare bene la pagina. È pensato
+per uno smartphone, anche dentro il sito del lido: **una prenotazione completa richiede meno di due minuti**.
+Nessun account, nessuna commissione.
+
+## I quattro passi
+
+<Tabs>
+  <TabItem label="1. Quando">
+    <Screenshot name="public-when-mobile" alt="Passo Quando su smartphone: calendario della stagione con il periodo selezionato" />
+
+    Il cliente sceglie il primo e l'ultimo giorno (per una sola giornata tocca due volte lo stesso giorno). Il
+    calendario è limitato alla stagione e alle date prenotabili e mostra la **Disponibilità** giorno per giorno
+    (**Disponibile**, **Ultimi posti**, **Pieno**, **Chiuso**); se lo hai abilitato, evidenzia i **Periodi
+    tariffari**. Poi sceglie la **Formula** e la **Fascia** tra quelle che proponi online.
+  </TabItem>
+  <TabItem label="2. Dove">
+    <Screenshot name="public-where-mobile" alt="Passo Dove su smartphone: mappa con le postazioni libere e legenda dei prezzi" />
+
+    La pagina si adatta alle tue zone:
+    - **Mappa**, se almeno una zona online è a posto scelto: postazioni libere evidenziate, legenda dei prezzi per
+      fila ("da 25 €"), alternativa a elenco per fila per chi usa un lettore di schermo o uno schermo piccolo;
+    - **Zone**: una scheda per zona con prezzo "da" e disponibilità indicativa ("Ultimi 3 posti", "Esaurito");
+    - **Quantità**: un selettore del numero di attrezzature.
+
+    Con zone di modalità diverse compaiono insieme.
+  </TabItem>
+  <TabItem label="3. Cosa">
+    <Screenshot name="public-what-mobile" alt="Passo Cosa su smartphone: pacchetti, extra e riepilogo del prezzo" />
+
+    Pacchetti compatibili con la scelta (con la composizione), extra con quantità, campo **Codice
+    promozionale**. Il **Riepilogo** con **Totale**, **Da pagare ora** e **Saldo successivo** si aggiorna a ogni
+    modifica.
+  </TabItem>
+  <TabItem label="4. Chi e pagamento">
+    <Screenshot name="public-who-mobile" alt="Passo Chi su smartphone: dati del cliente, consensi e tempo residuo del blocco" />
+
+    **I tuoi dati**: **Nome**, **Cognome**, **Email** (lì arrivano conferma e link di gestione) e **Telefono**
+    (facoltativo se non lo rendi obbligatorio). La spunta obbligatoria **Ho letto e accetto le condizioni di
+    prenotazione** (con **Leggi le condizioni** e l'**Informativa sulla privacy**) e quella facoltativa **Voglio
+    ricevere offerte e novità**. Il conto alla rovescia **Posto riservato per…** mostra quanto resta del blocco.
+
+    Il pulsante finale dipende dalle tue regole: **Paga …** (pagamento online), **Conferma la prenotazione**
+    (pagamento allo stabilimento) o **Invia la richiesta** (approvazione). In modalità test Stripe la pagina lo
+    dice: *Modalità di prova: nessun addebito reale*.
+  </TabItem>
+</Tabs>
+
+## Il blocco del posto
+
+Quando il cliente passa dal passo "Cosa" al passo "Chi e pagamento", la postazione (o la quantità) è **bloccata per lui**: nessun
+altro può prenderla, né online né in cassa. Il blocco dura `ARENILE_HOLD_TTL` (10 minuti di default) e viene
+esteso durante il pagamento fino a un massimo di 30 minuti. Se scade, il posto torna libero e il cliente vede
+*Il tempo per completare la prenotazione è scaduto: scegli di nuovo*. Nel pannello quella postazione appare
+**In attesa** finché il blocco è attivo.
+
+## Pagamento e conferma
+
+<Steps>
+
+1. Con Stripe la pagina avvisa *Pagamento sicuro con Stripe: verrai reindirizzato e poi riportato qui* e apre la
+   pagina di pagamento a tutta finestra, anche se è incorporata nel tuo sito. Se il sito ospitante impedisce
+   l'apertura, compaiono i pulsanti **Apri la pagina di pagamento** e **Apri in una nuova scheda**.
+2. Al ritorno la pagina mostra *Stiamo aspettando la conferma del pagamento…* (*Non chiudere la pagina: di
+   solito bastano pochi secondi*) finché Stripe non comunica l'esito ad Arenile.
+3. Poi compare **Prenotazione confermata** con il **Codice prenotazione**, il **QR da mostrare all'ingresso**, i
+   dettagli (pagato, **Da saldare**, postazioni **In assegnazione** per le zone con assegnazione automatica) e il
+   pulsante **Aggiungi al calendario** (file `.ics`). Il cliente riceve l'email con il link di gestione.
+
+</Steps>
+
+| Esito | Cosa vede il cliente |
+|---|---|
+| Pagamento fallito o annullato | **Pagamento non riuscito** / **Pagamento non completato**: il posto è ancora riservato e può **Riprova il pagamento** |
+| Approvazione richiesta | **Richiesta inviata**: lo stabilimento risponderà a breve; tu la trovi **Da approvare** nel pannello |
+| Blocco scaduto | **Prenotazione scaduta**: il posto è stato liberato |
+| Rifiutata dal gestore | **Richiesta non accettata** |
+| Conferma lenta | *Riceverai un'email appena il pagamento è confermato* (la riconciliazione recupera i webhook persi) |
+
+<Screenshot name="public-confirmation-mobile" alt="Conferma della prenotazione su smartphone con codice, QR e pulsante per aggiungere al calendario" />
+
+## Gli stati che il cliente attraversa
+
+<StatusBadges />
+
+| Stato | Per il cliente |
+|---|---|
+| **In attesa** | Ha scelto il posto e sta compilando: posto bloccato |
+| **In attesa di pagamento** | È su Stripe: blocco esteso |
+| **Da approvare** | Richiesta inviata, attende la tua decisione |
+| **Confermata** | Pagata (o confermata senza pagamento online) |
+| **Scaduta** | Il blocco è scaduto prima del pagamento |
+
+## L'area di gestione
+
+<Screenshot name="public-manage-mobile" alt="Area La tua prenotazione su smartphone con dettagli, QR e azioni" />
+
+Dal link nell'email il cliente apre **La tua prenotazione** e può:
+
+<CardGrid>
+  <Card title="Vedere e mostrare" icon="document">Stato, **Intestatario**, dettagli, QR da mostrare all'ingresso, **Documenti** (QR e file calendario), scadenza del link.</Card>
+  <Card title="Paga il saldo" icon="approve-check">Se ha versato solo un acconto, paga il resto online.</Card>
+  <Card title="Modifica" icon="pencil">**Cambia date** entro il termine della policy: **Calcola il nuovo prezzo** mostra il nuovo totale, la differenza da pagare o a suo favore e l'eventuale penale.</Card>
+  <Card title="Cancella" icon="close">**Vedi rimborso** mostra rimborso o credito dalle condizioni accettate; se previsto sceglie **Rimborso sul metodo di pagamento** o **Credito per una prossima prenotazione**.</Card>
+  <Card title="Rilascia giorni" icon="random">Per gli abbonati, se la policy lo consente: sceglie i giorni, **Calcola il credito** e li rilascia; il posto torna in vendita.</Card>
+  <Card title="Richiedi un nuovo link" icon="email">Con l'email usata per prenotare e il codice prenotazione, se il link è scaduto o perso.</Card>
+</CardGrid>
+
+Se la policy non consente modifiche, l'area lo dice: *Per modifiche contatta direttamente lo stabilimento*.
+
+<Aside type="note" title="Privacy del link">
+  Se il link non è valido o è scaduto la pagina dice solo *Il link non è valido o è scaduto*. La richiesta di un
+  nuovo link risponde sempre *Se i dati corrispondono a una prenotazione, riceverai un nuovo link via email*:
+  nessuno può scoprire se un'email ha prenotato.
+</Aside>
+
+## Se qualcosa va storto
+
+| Il cliente vede | Cosa è successo |
+|---|---|
+| *La postazione è appena stata prenotata da qualcun altro.* | Un altro cliente o la cassa l'ha presa un istante prima: sceglie un'altra postazione |
+| *Posti online esauriti per queste date.* | Quota online esaurita (in cassa la zona può essere ancora libera) |
+| *Quantità non disponibile per queste date.* | Pool esaurito |
+| *La richiesta non rispetta le regole di prenotazione dello stabilimento.* | Policy: anticipo, durata, giorno di inizio… |
+| *Il servizio di pagamento non risponde: riprova tra poco.* | Stripe temporaneamente non raggiungibile |
+| *Sessione di prenotazione non trovata: ricomincia dall'inizio.* | Ha chiuso la scheda o la sessione è scaduta |
+| *Troppe richieste: attendi qualche secondo.* | Limite di richieste per IP |

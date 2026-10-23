@@ -1,0 +1,210 @@
+---
+title: Pagina pubblica e widget
+description: Attiva la prenotazione online, personalizza il tema, scegli i siti autorizzati, pubblica le condizioni e incorpora il widget nel sito del lido con embed.js o iframe.
+sidebar:
+  order: 11
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Pagina pubblica**, con quattro schede: **Prenotazioni online**, **Tema e anteprima**, **Condizioni**, **Incorpora**. **Chi:** proprietari e gestori.
+
+Ogni stabilimento ha una pagina di prenotazione all'indirizzo `https://<tuo-dominio>/b/<indirizzo>`: pensata
+per lo smartphone, veloce anche in spiaggia con il 4G, nei tuoi colori. Puoi condividerla come link (sito,
+social, Google Business, QR stampati) o **incorporarla** nel sito del lido. Il cliente non crea account e non
+paga commissioni; tu non paghi percentuali a nessuno.
+
+
+## Attiva la prenotazione online
+
+Nella scheda **Prenotazioni online** accendi **Accetta prenotazioni online**. Se è spenta, la pagina pubblica
+resta visibile con nome e contatti dello stabilimento ma non si può prenotare.
+
+<Screenshot name="admin-online-settings" alt="Scheda Prenotazioni online della pagina pubblica" />
+
+Cosa si vende online lo decidono le altre impostazioni, che la pagina rispetta sempre:
+
+| Cosa | Dove si decide |
+|---|---|
+| Quali zone compaiono | **Visibile nella pagina pubblica** e **Quota online** di ogni [zona](/gestore/zone/) |
+| Quali pack ed extra | **Canali di vendita** del [catalogo](/gestore/catalogo/) (canale Online) |
+| Prezzi | [regole di prezzo](/gestore/prezzi/), anche con la condizione Canali = Online |
+| Anticipo, durata, acconto, cancellazione | [policy](/gestore/policy/) con ambito canale Online |
+| Come si paga | [Pagamenti online](/gestore/pagamenti-online/): Stripe o pagamento in loco |
+
+## Opzioni del flusso
+
+Nella sezione **Flusso di prenotazione** della stessa scheda decidi:
+
+- **Formule proposte online** (nessuna selezionata = tutte quelle ammesse dai pacchetti venduti online);
+- **Fasce prenotabili online** (giornata intera, mattina, pomeriggio);
+- **Prenotabile fino a** N giorni (fino a 730), in aggiunta all'anticipo massimo della policy online: il
+  calendario pubblico non propone mai date che la policy rifiuterebbe;
+- **Evidenzia i periodi tariffari nel calendario**;
+- **Campo codice promozionale**;
+- **Telefono obbligatorio** (l'email lo è sempre, perché serve per la conferma e il link di gestione).
+
+## Personalizza il tema
+
+Nella scheda **Tema e anteprima** i campi sono a sinistra e l'**Anteprima dal vivo** a destra, con i
+pulsanti **Telefono**/**Computer** e **Chiaro**/**Scuro**.
+
+
+<Tabs>
+  <TabItem label="Colori e forma">
+    | Campo | Note |
+    |---|---|
+    | **Colore principale** | Pulsanti, link, elementi attivi. Esadecimale, ad esempio `#0e6ba8`. |
+    | **Colore di accento** | Postazioni selezionate ed evidenze. |
+    | **Carattere** | **Inter**, **Di sistema** o **Con grazie**. |
+    | **Arrotondamento** | **Nessuno**, **Piccolo**, **Medio**, **Grande**. |
+    | **URL del logo** | Un indirizzo `https://` dell'immagine. |
+  </TabItem>
+  <TabItem label="Opzioni">
+    | Campo | Note |
+    |---|---|
+    | **Mostra i prezzi sulla mappa** | La legenda dei prezzi per fila ("da 25 €"). |
+    | **Nascondi l'intestazione quando la pagina è incorporata** | Dentro il tuo sito il logo è già nella pagina: risparmia spazio. |
+    | **Testo introduttivo** | Per ogni lingua attiva, sopra il primo passo. |
+  </TabItem>
+</Tabs>
+
+L'**Anteprima dal vivo** è la pagina vera, in modalità prova: si aggiorna mentre modifichi, prima di salvare, e
+non prenota nulla. Puoi aprirla anche in una nuova scheda.
+
+<Aside type="tip" title="Contrasto sempre leggibile (WCAG AA)">
+  Scegli il colore che vuoi: Arenile calcola il contrasto. Se il colore principale è troppo chiaro sul bianco
+  (sotto 4,5:1), link e testi usano automaticamente una variante più scura e il pannello te lo dice; ti avvisa
+  anche se l'accento ha poco contrasto o se i due colori sono troppo simili.
+</Aside>
+
+## Condizioni e informativa
+
+Prima di confermare, il cliente deve spuntare **Ho letto e accetto le condizioni di prenotazione**. Il testo
+lo scrivi tu, per ogni lingua attiva, insieme all'informativa privacy e al testo del consenso marketing
+facoltativo.
+
+<Steps>
+
+1. Nella scheda **Condizioni** premi **Nuova versione**.
+2. Scrivi **Condizioni di prenotazione** (obbligatorie nella lingua predefinita), **Informativa sulla privacy** e
+   **Testo del consenso marketing** (facoltativo, accanto a una casella separata e mai preselezionata).
+3. Dai un nome alla **Versione** (ad esempio `2027-1`), lascia attivo **Rendi corrente** e premi **Pubblica**:
+   dal prossimo checkout i clienti accettano questa versione.
+
+</Steps>
+
+<Aside type="caution">
+  Pubblica le condizioni prima di aprire le prenotazioni online. I dati dimostrativi (`arenile seed demo`)
+  includono una versione di esempio, `demo-2027`.
+</Aside>
+
+Le versioni pubblicate sono **immutabili**: per correggere un testo pubblichi una nuova versione. Ogni
+prenotazione salva la versione accettata e l'istante dell'accettazione, così puoi sempre dimostrare cosa ha
+accettato il cliente. Un modello di informativa è in [Privacy e GDPR](/installazione/privacy/#modello-di-informativa).
+
+## Incorpora il widget nel tuo sito
+
+<Steps>
+
+1. Nella scheda **Prenotazioni online** aggiungi il tuo sito ai **Siti autorizzati a incorporare la pagina**,
+   una origine per riga, ad esempio `https://www.mio-lido.it` (senza percorso; niente caratteri jolly; fino a 20
+   origini). Vuoto: solo il link diretto. Per provare il widget su un sito in locale è accettato anche
+   `http://localhost:<porta>` o `http://127.0.0.1:<porta>`.
+2. Nella scheda **Incorpora** copia il **Codice consigliato** (script) o l'iframe.
+3. Incollalo nella pagina del tuo sito.
+
+</Steps>
+
+<Tabs>
+  <TabItem label="Script (consigliato)">
+    Gestisce da solo l'altezza e i parametri:
+
+    ```html
+    <div data-arenile="lido-demo" data-lang="it"></div>
+    <script src="https://prenota.mio-lido.it/embed.js" async></script>
+    ```
+
+    Attributi facoltativi del `div`: `data-lang` (`it`, `en`, `de`, `fr`), `data-from` e `data-to`
+    (`AAAA-MM-GG`, date precompilate), `data-pack` (codice del pack), `data-title` (titolo accessibile
+    dell'iframe). `embed.js` pesa meno di 3 KB.
+  </TabItem>
+  <TabItem label="Iframe">
+    Funziona ovunque sia consentito incollare HTML:
+
+    ```html
+    <iframe src="https://prenota.mio-lido.it/b/lido-demo?embed=1"
+            style="width:100%;border:0;min-height:720px" allow="payment" loading="lazy"
+            title="Prenota il tuo posto"></iframe>
+    ```
+
+    Con l'iframe l'altezza è fissa: preferisci lo script se puoi.
+  </TabItem>
+  <TabItem label="Link diretto">
+    ```text
+    https://prenota.mio-lido.it/b/lido-demo
+    https://prenota.mio-lido.it/b/lido-demo?lang=en&from=2027-07-10&to=2027-07-12&pack=base
+    ```
+
+    Parametri facoltativi: `lang`, `from`, `to`, `pack`. Fuori dall'incorporamento la pagina è indicizzabile dai
+    motori di ricerca (titolo, descrizione e dati strutturati `LocalBusiness`).
+  </TabItem>
+</Tabs>
+
+<Screenshot name="public-embed" alt="Il widget di prenotazione dentro la pagina del sito del lido" />
+
+### Dove incollarlo
+
+<CardGrid>
+  <Card title="WordPress">Blocco **HTML personalizzato** nella pagina "Prenota".</Card>
+  <Card title="Wix, Squarespace, Jimdo">Elemento "Incorpora codice" / "HTML".</Card>
+  <Card title="Joomla, Drupal, siti statici">Un modulo o direttamente nel file HTML.</Card>
+  <Card title="Social e QR">Il link diretto, anche con le date precompilate per una promozione.</Card>
+</CardGrid>
+
+### Tracciare le prenotazioni sul tuo sito
+
+`embed.js` rilancia sulla pagina ospitante tre eventi (`CustomEvent` che risalgono dal `div`), utili per Google
+Analytics o il pixel che usi già:
+
+| Evento | `detail` | Quando |
+|---|---|---|
+| `arenile:resize` | `{ height }` | L'altezza del contenuto cambia (lo script la applica da solo) |
+| `arenile:booked` | `{ code }` | Prenotazione completata: solo il codice, mai dati personali |
+| `arenile:navigate` | `{ url }` | La pagina deve aprirsi a tutta finestra (ad esempio il pagamento Stripe). Con `preventDefault()` gestisci tu la navigazione |
+
+```html
+<script>
+  document.addEventListener('arenile:booked', (e) => {
+    gtag('event', 'purchase', { transaction_id: e.detail.code });
+  });
+</script>
+```
+
+## Sicurezza dell'incorporamento
+
+- La pagina si lascia incorporare **solo** dai siti autorizzati (header `frame-ancestors` costruito per il tuo
+  stabilimento): nessuno può mettere la tua pagina di prenotazione dentro un sito che non hai scelto.
+- I messaggi tra la pagina e il tuo sito sono accettati solo dalle origini verificate.
+- **Nessun cookie di terze parti**: la prenotazione in corso vive nella scheda del browser, quindi funziona
+  anche con Safari e i browser che bloccano i cookie nei siti incorporati.
+- Il pagamento Stripe si apre **a tutta finestra** (non dentro l'iframe): è la soluzione più robusta su ogni
+  browser. Al termine Stripe riporta il cliente **sulla pagina del tuo sito**: `embed.js` riapre il widget
+  sull'esito (codice e QR), senza cookie di terze parti. Solo le pagine dei siti autorizzati possono essere
+  usate come ritorno.
+
+## Domande frequenti
+
+**Il widget non compare, vedo un riquadro vuoto o un errore di rifiuto.**
+Il dominio del sito non è tra i siti autorizzati, oppure hai scritto l'origine con un percorso
+(`https://www.mio-lido.it/prenota` invece di `https://www.mio-lido.it`), oppure manca la variante con o senza
+`www`.
+
+**Posso avere la pagina su un dominio mio, tipo `prenota.mio-lido.it`?**
+Sì: è il dominio dell'installazione (`ARENILE_BASE_URL`). Con più stabilimenti nella stessa installazione ognuno
+ha il suo indirizzo `/b/<indirizzo>`.
+
+**In che lingua si apre la pagina?**
+Quella del parametro `lang` o `data-lang`, altrimenti quella del browser se è tra le lingue attive, altrimenti
+la lingua predefinita dello stabilimento. Il cliente può cambiarla dal selettore.

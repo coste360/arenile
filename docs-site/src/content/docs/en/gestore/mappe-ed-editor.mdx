@@ -1,0 +1,190 @@
+---
+title: Maps and editor
+description: Draw the beach with the Coste360 map kit - row generator, spots, modular walkways, flag, alignment, renumbering and keyboard shortcuts.
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot, LiveMap } from '~/components';
+
+**Where:** Configuration → **Maps**. **Who:** owners and managers edit; other roles can only **View**.
+
+The map is the drawing of your beach: bookable **spots** (umbrellas, gazebos, tents, palms, sunbeds, daybeds,
+cabanas, hammocks) and non-bookable **elements** (walkways, showers, bar, lifeguard tower, flag, toilets,
+defibrillator…). The same map becomes the operational view of the day, the mini-map of a new booking and the map
+customers see online.
+
+<LiveMap />
+
+## Map list
+
+<Screenshot name="admin-maps-list" alt="List of maps with size, number of spots and actions" />
+
+An establishment can have several maps (for example **Beach** and **Pool**). The list shows size and number of
+spots; **Open editor** enters the editor. To delete a map confirm its name: its spots and the map's zones are
+deleted with it, but the operation is refused if a zone is still used by price rules, packs or policies, or if
+there are spots with future bookings.
+
+### New map
+
+**New map** asks for:
+
+| Field | Meaning |
+|---|---|
+| **Name** | For example "Beach". |
+| **Width**, **Height** | Size in map units (not metres: it is a drawing scale). |
+| **Grid step** | Dragged spots snap to the grid. A step that divides 60 (10, 12, 15, 20, 30, 60) makes walkways snap too. |
+| **Sea side** | **Top**, **Bottom**, **Left** or **Right**: decides where the sea is drawn and which way the rows start. |
+
+**Create and open the editor** takes you straight to drawing.
+
+<Aside type="caution" title="Zones first">
+  Every spot belongs to a zone. If the map has no chosen-spot or zone-mode zones linked to it, the editor says so
+  (*No zone available*): create them in [Zones](/en/gestore/zone/).
+</Aside>
+
+## The editor
+
+<Screenshot name="admin-map-editor" alt="Map editor with the kit palette, the map and the properties panel" />
+
+The editor has three areas: the **toolbar** at the top, the **map** in the middle and the **Properties** panel on
+the right (hidden with **Show or hide properties**). The title shows how many spots there are and whether there are
+**unsaved changes**.
+
+### Toolbar
+
+| Tool | What it does |
+|---|---|
+| **Save map** | Saves everything in a single operation (see [Saving](#saving-and-conflicts)). |
+| **Undo** / **Redo** | The full history of changes since the last load. |
+| **Add to the map** | The kit palette: **Spot** or **Element**. |
+| **Row generator** | Creates N rows of M spots in one go. |
+| **Map settings** | Name, size, grid step and sea side. |
+| **Rotate −15°** / **Rotate +15°** | Rotates the selection. |
+| **Align** | Left, centre, right, top, vertical centre, bottom. |
+| **Distribute horizontally** / **vertically** | Even spacing between three or more elements. |
+| **Duplicate** | Copies the selection. |
+| **Renumber row** | Renumbers the selected spots along the shoreline. |
+| **Delete** | Deletes the selection (spots with future bookings cannot be deleted: see below). |
+
+### The element kit
+
+The palette offers the original illustrations of the **Coste360 kit**, with search and categories: **Spots**,
+**Paths**, **Structures**, **Services**, **Rescue**, **Watersports**, **Sport and relax**, **Furniture**,
+**Nature**, **Signage**. Some examples:
+
+<CardGrid>
+  <Card title="Spots">
+    Umbrella (navy, sand, sage, coral), umbrella with 1–4 sunbeds, with 2 deckchairs or 2 director's chairs, straw,
+    square and table umbrellas, sunbed, double sunbed, daybed, gazebo, cabana, striped beach tent, hammock, bean bag.
+  </Card>
+  <Card title="Paths and structures">
+    Walkways (vertical, horizontal, corner, T, cross, curve, end, entrance), wooden deck, accessible ramp, steps,
+    pier, fence; bar, restaurant, reception, cash desk, cabins, pergola, pool.
+  </Card>
+  <Card title="Services and safety">
+    Shower, foot wash, toilets and accessible toilets, drinking fountain, first aid, AED defibrillator, JOB beach
+    wheelchair, lifeguard tower, rescue boats, life ring, buoy, **sea condition flag**.
+  </Card>
+  <Card title="Sport, nature, signage">
+    Beach volley, beach tennis, playground, yoga, massage, kayak, SUP, pedalo; palms, trees, planters, dunes, rocks;
+    entrance, check-in, parking, bikes, dog area, compass rose.
+  </Card>
+</CardGrid>
+
+<Aside type="tip" title="Type and illustration">
+  A spot's **type** (umbrella, gazebo, sunbed…) is sales information: packs can require a type (for example the
+  Gazebo pack only on gazebos). The **illustration** is the drawing. Choosing an illustration from another family
+  changes the type, and the panel tells you; changing the type resets an illustration of another type to the
+  default one.
+</Aside>
+
+### Row generator
+
+The fastest way to draw a lido with rows.
+
+<Steps>
+
+1. Open **Row generator** and choose the **Zone** of the new spots.
+2. **Layout**: **Rows**, **Spots per row**, **Origin X/Y** (the first spot), **Spacing between spots**, **Spacing
+   between rows**. Rows move away from the sea according to the map's sea side: row A is the closest to the sea.
+3. **Labels**: **Numbering direction** left to right or right to left; **Row names** with letters (A, B, …) or
+   numbers; **First row** and **First number**; numbers that **Restart on each row** or are **Continuous**; **Label
+   format** (for example `{row}{number}` → `A1`, `A2`…). Choose the illustration too.
+4. Check the **Preview** ("120 spots, from A1 to H15"). If a label already exists the generator says so and does not
+   proceed.
+5. **Add N spots**.
+
+</Steps>
+
+### Spot properties
+
+Select a spot (or several, with <kbd>Shift</kbd>) to edit it. With several elements selected, fields with
+different values show **— mixed —**.
+
+- **Identification**: **Label**, **Row**, **Number**, **Zone**, **Type**, **Illustration**.
+- **Position and size**: coordinates, **Size**, rotation.
+- **Booking**: **Active (bookable)**, **Price category (override)** (for a spot priced differently from its zone),
+  comma-separated **Attributes** (for example `shade, near_bar`, usable by price rules), **Capacity and maximum
+  extras per component**.
+
+### Modular walkways
+
+Walkways are **60-unit tiles**: straight runs are a whole number of tiles long and the pieces (corner, T, cross,
+curve, end) join up. With a grid step that divides 60 they snap to the tile grid; otherwise they stay where you
+drop them.
+
+### Sea condition flag
+
+The **Sea condition flag** element has the **Flag colour** property: **Green**, **Yellow** or **Red**. On the map it
+is named and described with its colour, also for screen reader users.
+
+### Renumbering a row
+
+Select the spots of a row and use **Renumber row**: they are ordered along the shoreline and numbered in sequence.
+**Number from the opposite end** starts from the right (or the bottom). The example shows the result before
+applying.
+
+## Saving and conflicts
+
+Saving is **single and transactional**: either everything succeeds, or nothing does.
+
+- Before saving the editor lists what to fix (*Fix before saving*): spots without a zone, without a label or with
+  repeated labels.
+- If a colleague saved the same map in the meantime, **Map changed by another user** appears with the difference
+  (spots added, removed, moved, changed): choose **Reload the saved version** (you lose your changes),
+  **Overwrite with mine** or **Keep editing**.
+- A **spot with future bookings cannot be deleted**: deactivate it (untick **Active**). The operational map will
+  show it as inactive and it will no longer be bookable.
+
+## Keyboard shortcuts
+
+The editor can be used with the keyboard alone. The map is a single tab stop.
+
+| Keys | Action |
+|---|---|
+| <kbd>Tab</kbd> | Enter and leave the map |
+| <kbd>PageUp</kbd> / <kbd>PageDown</kbd>, <kbd>Home</kbd> / <kbd>End</kbd> | Move between elements |
+| <kbd>Enter</kbd> | Select |
+| Arrows | Move the selection (<kbd>Shift</kbd> ×5, <kbd>Alt</kbd> by 1 unit) |
+| <kbd>Delete</kbd> | Delete |
+| <kbd>Ctrl/⌘</kbd>+<kbd>Z</kbd> | Undo |
+| <kbd>Shift</kbd>+<kbd>Ctrl/⌘</kbd>+<kbd>Z</kbd> | Redo |
+| <kbd>Ctrl/⌘</kbd>+<kbd>D</kbd> | Duplicate |
+| <kbd>Ctrl/⌘</kbd>+<kbd>A</kbd> | Select all |
+| <kbd>Ctrl/⌘</kbd>+<kbd>S</kbd> | Save map |
+| <kbd>Esc</kbd> | Deselect |
+| Drag on the sand | Select an area |
+
+## Frequently asked questions
+
+**How many spots can a map handle?**
+Up to 1,000 elements stay smooth even on a mid-range tablet.
+
+**Can I upload the site plan as a background?**
+A background with an uploaded image or the concession perimeter is foreseen by the specification but not available
+yet.
+
+**I moved an umbrella: do the bookings stay?**
+Yes: bookings are tied to the spot, not to its position in the drawing.

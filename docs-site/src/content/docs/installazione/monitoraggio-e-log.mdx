@@ -1,0 +1,70 @@
+---
+title: Monitoraggio e log
+description: Endpoint di salute, log JSON senza dati personali, request ID, job in background e segnali da tenere d'occhio durante la stagione.
+sidebar:
+  order: 15
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Endpoint di salute
+
+| Endpoint | Risponde | Uso |
+|---|---|---|
+| `GET /healthz` | `200` se il processo è vivo | *liveness*: riavvia il container se non risponde |
+| `GET /readyz` | `200` se il database è raggiungibile e le migrazioni sono allineate, altrimenti `503` | *readiness*: manda traffico solo quando è pronto; monitoraggio esterno |
+
+L'immagine Docker è *distroless* e non contiene `curl`: l'healthcheck va configurato nell'orchestratore, nel
+reverse proxy o in un servizio di monitoraggio esterno (Uptime Kuma, Healthchecks, il monitor della tua
+piattaforma).
+
+```bash
+curl -fsS https://prenota.mio-lido.it/readyz
+```
+
+## Log
+
+Arenile scrive log **JSON strutturati** (`log/slog`) sullo standard output: con Docker li leggi con
+`docker compose logs -f arenile`; il compose ufficiale li ruota (5 file da 10 MB).
+
+- Livello con `ARENILE_LOG_LEVEL` (`debug`, `info`, `warn`, `error`). Usa `debug` solo per il tempo
+  necessario a capire un problema.
+- Ogni richiesta ha un **request ID**, restituito nell'header `X-Request-ID` e nel campo `request_id` degli
+  errori dell'API: citandolo trovi subito la riga di log corrispondente.
+- **Mai dati personali o segreti in chiaro**: email e telefoni sono mascherati, token, chiavi, firme e corpi
+  dei webhook non vengono mai registrati.
+
+<Aside type="tip">
+  Prima di allegare log a una segnalazione pubblica controlla comunque che non contengano informazioni del tuo
+  stabilimento che preferisci non condividere.
+</Aside>
+
+## Lavori in background
+
+Il binario esegue da sé i lavori periodici, senza cron né code esterne. Se un lavoro arriva in ritardo nessuna
+vendita viene bloccata: gli hold scaduti, per esempio, vengono ignorati e ripuliti anche al momento del
+conflitto.
+
+| Lavoro | Cosa fa |
+|---|---|
+| Rilascio degli hold scaduti | Libera ogni 30 secondi i posti bloccati da checkout non completati e porta la prenotazione in `Scaduta` |
+| Completamento | Chiude le prenotazioni a fine soggiorno |
+| Consegna degli eventi | Distribuisce gli eventi dell'outbox a tempo reale, notifiche ed estensioni (almeno una volta) |
+| Notifiche | Invia le email in coda, con tentativi ed attesa crescente fino a 8 volte |
+| Riconciliazione dei pagamenti | Ogni 15 minuti chiede a Stripe l'esito dei pagamenti in sospeso da più di 10 minuti |
+| Pulizia | Sessioni scadute e chiavi di idempotenza oltre le 24 ore |
+
+## Cosa tenere d'occhio
+
+| Segnale | Dove | Cosa fare |
+|---|---|---|
+| `/readyz` in errore | monitor esterno | Database, disco pieno, migrazioni: vedi i log all'avvio |
+| Email non consegnate | **Configurazione → Email e notifiche**, registro invii | SMTP, SPF/DKIM, indirizzi sbagliati |
+| Pagamenti con problemi | report di riconciliazione ([Pagamenti online](/gestore/pagamenti-online/#riconciliazione)) | Webhook non configurato o segreto errato |
+| Errori del webhook di Stripe | dashboard Stripe, sezione webhook | URL o segreto del webhook |
+| Spazio su disco | sistema operativo | Backup locali da ruotare, log Docker |
+
+<Aside type="note">
+  L'endpoint `/metrics` in formato Prometheus è previsto dalla specifica (disattivato di default e protetto da
+  token) ma non è ancora attivabile nel binario ufficiale.
+</Aside>

@@ -1,0 +1,53 @@
+---
+title: Planning calendar
+description: The spots × days grid to see and place long stays, with drag and drop, selection and keyboard.
+sidebar:
+  order: 22
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Calendar**. **Who:** everyone views; cashiers, managers and owners edit.
+
+The planning shows **spots as rows** (grouped by zone and row) and **days as columns**: the right view to place long
+stays without leaving one-day gaps.
+
+<Screenshot name="admin-planning" alt="Planning calendar with spots as rows, days as columns and bookings as bars" />
+
+## Navigating
+
+The bar at the top: days earlier and later, **Today**, **From** and **Visible days** (up to 62). The start date stays
+in the page address: you can bookmark it or share it with a colleague.
+
+Each booking is a bar on its spot; empty cells are free, closure days are marked as closed.
+
+## Creating a booking from the planning
+
+<Steps>
+
+1. Select a range of free cells on the same spot (by dragging, or with <kbd>Shift</kbd>+arrows).
+2. Press <kbd>Enter</kbd> or **New booking**: the sheet opens with spot and dates already filled in.
+
+</Steps>
+
+## Moving a booking
+
+Drag the bar onto another spot or other dates (or, with the keyboard, <kbd>M</kbd> on the booking under the cursor,
+arrows and <kbd>Enter</kbd>). Arenile shows the **Change booking…?** preview with origin and destination spot, new
+dates, conflicts and price difference; **Confirm move** applies it.
+
+<Aside type="note">
+  If a colleague changed the booking in the meantime, **Booking changed by another user** appears: **Reload** and
+  recompute the move. No change is ever silently overwritten.
+</Aside>
+
+## Keyboard
+
+| Keys | Action |
+|---|---|
+| Arrows | Move between cells |
+| <kbd>Shift</kbd>+arrows | Select |
+| <kbd>Enter</kbd> | Open the booking or create one on the selection |
+| <kbd>M</kbd> | Move the booking under the cursor |
+| <kbd>Esc</kbd> | Cancel |

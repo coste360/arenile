@@ -1,0 +1,107 @@
+---
+title: Zone
+description: Le tre modalità di vendita (posto scelto, zona, quantità), l'assegnazione automatica della postazione, le categorie di prezzo e le quote online.
+sidebar:
+  order: 6
+---
+
+import { Steps, Aside, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Zone**. **Chi:** proprietari e gestori.
+
+Una **zona** raggruppa postazioni o attrezzature che si vendono allo stesso modo: "Prima fila", "Gazebo",
+"Piscina", "Lettini liberi". Per ogni zona decidi **come** si vende, **a che prezzo** (categoria) e **quanto**
+si può vendere online.
+
+<Screenshot name="admin-zones" alt="Elenco delle zone con modalità di assegnazione, mappa, postazioni e quota online" />
+
+## Le tre modalità di assegnazione
+
+<CardGrid>
+  <Card title="Posto scelto" icon="approve-check">
+    Il cliente sceglie **la postazione esatta** sulla mappa. Il caso classico delle file numerate.
+  </Card>
+  <Card title="Zona" icon="puzzle">
+    Il cliente sceglie **la zona**; la postazione viene assegnata dopo, dal personale o in automatico. Ideale per
+    aree premium o per riempire le file in modo compatto.
+  </Card>
+  <Card title="Quantità" icon="list-format">
+    Solo **numero di attrezzature**, senza posizione (ad esempio lettini liberi): la disponibilità è un
+    contatore su un [pool](/gestore/pool/). Una zona a quantità non ha postazioni sulla mappa.
+  </Card>
+</CardGrid>
+
+Puoi combinare le modalità nello stesso stabilimento: la pagina pubblica si adatta da sola e mostra la mappa
+solo se almeno una zona visibile online è a posto scelto, le schede delle zone per le zone "Zona" e il selettore
+di quantità per quelle a quantità.
+
+## Creare o modificare una zona
+
+<Steps>
+
+1. Premi **Nuova zona** (o la matita di una zona esistente).
+2. **Codice** (lettere minuscole, numeri, trattini o underscore) e **Nome** nelle lingue attive.
+3. **Modalità di assegnazione**: **Posto scelto**, **Zona** o **Quantità**.
+4. **Mappa**: la mappa su cui stanno le postazioni della zona (non serve per le zone a quantità).
+5. **Categoria di prezzo**: la chiave usata dalle regole di prezzo, ad esempio `row1`. Più zone possono
+   condividere la stessa categoria.
+6. Solo per le zone "Zona": **Assegnazione automatica** (vedi sotto).
+7. **Visibile nella pagina pubblica**: togli la spunta per vendere la zona solo in cassa.
+8. **Quota online**: **Nessun limite**, **Percentuale** o **Numero** e il **Valore della quota**.
+
+</Steps>
+
+Nell'elenco ogni zona mostra la modalità, la mappa, il numero di postazioni e un'etichetta di vendita online:
+**Tutte online**, **Online 30%**, **Online max 20** o **Solo cassa**.
+
+## Assegnazione automatica (modalità Zona)
+
+Una zona in modalità **Zona** vende **capacità**: un contatore pari al numero di postazioni attive, che il
+sistema crea e mantiene allineato da solo. La riga della prenotazione nasce **da assegnare** e la postazione
+viene scelta:
+
+- **in automatico alla conferma**, se la zona ha **Assegnazione automatica** (anche per le prenotazioni
+  online pagate: l'assegnazione avviene nella stessa operazione della conferma);
+- **a mano** dal personale: la pagina [Oggi](/gestore/oggi/) elenca le righe **Da assegnare** e il dettaglio
+  della prenotazione ha il pulsante **Assegna** su ogni riga in attesa.
+
+L'algoritmo automatico ordina le righe dalla più lunga alla più corta (le più difficili da collocare) e per
+ciascuna sceglie, tra le postazioni libere per **tutte** le date, quella con il punteggio migliore: continuità
+con la prenotazione precedente dello stesso cliente, vicinanza alle altre righe della stessa prenotazione,
+preferenze del cliente e riempimento compatto delle file. Se nessuna postazione è libera per l'intero periodo,
+la riga resta da assegnare e il personale la colloca a mano (lo spezzamento su più postazioni è ammesso solo se
+la policy consente il cambio postazione durante il soggiorno).
+
+<Aside type="note" title="Garanzia">
+  In una zona "Zona" la somma delle righe assegnate e da assegnare non supera mai le postazioni attive, per
+  ogni data e fascia: non si vende mai più di quanto si può collocare.
+</Aside>
+
+## Quote online
+
+La quota limita quanto di una zona si può vendere **online** (e tramite **API**), per ogni data e fascia. La
+**cassa ignora la quota**: il personale può sempre vendere tutto ciò che è libero.
+
+| Tipo | Esempio | Disponibile online |
+|---|---|---|
+| **Nessun limite** | — | tutto il libero |
+| **Percentuale** | 30% di 40 postazioni | al massimo 12 vendute online, meno di quelle già vendute online quel giorno |
+| **Numero** | 20 | al massimo 20 vendute online |
+
+In formula: `disponibili online = min(liberi totali, quota − già venduti online)`. Quando la quota è esaurita il
+cliente vede "Posti online esauriti per queste date", mentre in cassa la zona resta vendibile.
+
+<Aside type="tip">
+  Le quote servono a tenere posti per i clienti abituali che arrivano senza prenotare, o per gli abbonati di
+  domani. Partire con una quota prudente ad agosto e allargarla quando vedi l'andamento è una buona strategia.
+</Aside>
+
+## Domande frequenti
+
+**Posso cambiare una zona da "Posto scelto" a "Quantità"?**
+Una zona a quantità non può avere postazioni sulla mappa: prima sposta o elimina le sue postazioni.
+
+**Perché non riesco a eliminare una zona?**
+Perché è usata da regole di prezzo, codici promo, convenzioni, pack o policy: l'errore elenca cosa modificare
+prima.

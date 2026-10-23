@@ -1,0 +1,53 @@
+---
+title: Daily takings
+description: Daily or monthly summary of takings by VAT rate and payment method, as CSV or JSON for the accountant, and what Arenile does not do on the tax side.
+sidebar:
+  order: 27
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Cash desk** → **Daily takings** (*corrispettivi*). **Who:** roles with access to reports
+and exports (owners, managers, read only).
+
+<Screenshot name="admin-corrispettivi" alt="Daily takings by VAT rate and by payment method" />
+
+## Producing the summary
+
+<Steps>
+
+1. Choose the **Period**: **Day** (with the **Date**) or **Month** (with **Month** and **Year**).
+2. Read the **Total takings**, then the **By VAT rate** table (**Rate**, **Taxable**, **Tax**, **Total**) and the
+   **By payment method** table (**Transactions**, **Total**).
+3. **Download CSV** (ready for an Italian Excel: `;` separator, decimal comma, Italian headers) or **Download JSON**.
+
+</Steps>
+
+Amounts **include VAT**, split by rate from the price breakdown stored with each booking; refunds are negative. The
+total always equals the period's takings.
+
+## What Arenile does and does not do
+
+<Aside type="caution">
+  **Fiscal compliance of the setup remains the responsibility of the operator and their accountant.** Arenile is a
+  management tool: it does not provide tax advice.
+</Aside>
+
+| Question | Answer |
+|---|---|
+| Is Arenile a fiscal register (*registratore telematico*)? | **No.** It neither stores nor transmits takings to the Italian Revenue Agency. |
+| Does it issue the commercial document (*documento commerciale*)? | **No**, today: it is issued with your fiscal register or the procedure you already use. |
+| Do its receipts and summaries have fiscal value? | **No**, they are non-fiscal documents. |
+| Does it help with daily takings? | **Yes**: the summary by rate and method, to hand to the accountant. |
+| Are VAT rates preset? | **No**: you set them, per establishment, pack and extra. |
+
+The fiscal module is built around a driver interface: the default driver issues no documents (you use your register),
+and drivers for the families of fiscal registers may arrive as contributions (see
+[Extensions](/en/sviluppo/estensioni/)).
+
+## Online payments
+
+With Stripe, online takings go to the establishment's Stripe account and appear in the daily takings with the
+matching method. The tax and accounting treatment of online deposits, balances and refunds must be agreed with the
+accountant.

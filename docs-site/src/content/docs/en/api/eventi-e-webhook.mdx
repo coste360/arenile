@@ -1,0 +1,191 @@
+---
+title: Events and outgoing webhooks
+description: Arenile's domain events, the versioned format, the transactional outbox, at-least-once delivery, the Arenile-Signature signature and the real-time stream.
+sidebar:
+  order: 7
+---
+
+import { Aside, Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+Every relevant change (a confirmed booking, a payment, a price list change) produces a **domain event**. Events feed
+the panel's real time, emails, extensions and outgoing webhooks towards your systems.
+
+## Outbox: no phantom events
+
+The event is written to the `outbox_events` table **in the same transaction** as the change that produces it. So:
+
+- the event exists **if and only if** the change was committed: no event for a rolled-back operation, no change
+  without an event;
+- a job then delivers it to consumers, **at least once**: consumers must be idempotent on the event `id`.
+
+## Format
+
+```json
+{
+  "id": "evt_01JB7K3Q9X…",
+  "type": "booking.confirmed",
+  "establishment_id": "0192f…",
+  "occurred_at": "2027-07-01T09:12:44Z",
+  "data": { "...": "..." },
+  "version": 1
+}
+```
+
+`version` is the payload version of that type: an incompatible change creates a new version. Payloads contain
+identifiers, dates, amounts and statuses; **never** personal data in clear or secrets.
+
+## Event types
+
+| Area | Events |
+|---|---|
+| Bookings | `booking.created`, `booking.held`, `booking.confirmed`, `booking.modified`, `booking.cancelled`, `booking.checked_in`, `booking.no_show`, `booking.completed`, `booking.approval_requested`, `booking.rejected`, `booking.expired` |
+| Availability | `allocation.released`, `allocation.assigned`, `hold.created`, `hold.released`, `hold.converted`, `spot_block.created`, `spot_block.deleted` |
+| Season passes | `season.day_released`, `season.day_release_revoked`, `season.renewal_offered` |
+| Payments | `payment.pending`, `payment.succeeded`, `payment.failed`, `payment.refunded`, `payment.refund_scheduled` (automatic refund started: late or double payment) |
+| Customers | `customer.created`, `customer.updated`, `customer.anonymized` |
+| Cash and fiscal | `cash_session.opened`, `cash_session.closed`, `cash_movement.recorded`, `fiscal_document.recorded` |
+| Configuration | `config.pricing_changed`, `config.map_changed`, `config.online_changed` |
+| Notifications | `message.failed` |
+
+### Configuration events
+
+`config.pricing_changed`, `config.map_changed` and `config.online_changed` share payload version 1: whoever receives
+them treats them as "reload the establishment's configuration".
+
+```json
+{
+  "type": "config.pricing_changed",
+  "version": 1,
+  "data": {
+    "entity": "price_rule",
+    "entity_id": "01J…",
+    "change": "updated",
+    "season_id": "01J…",
+    "version": 3
+  }
+}
+```
+
+- `entity`: for prices `price_rule`, `fixed_price`, `promo_code`, `agreement`, `booking_policy`, `season_copy`,
+  `season`, `rate_period`, `establishment_settings`, `pack`, `extra`, `setup`; for the map `map`, `zone`, `pool`,
+  `setup`; for the public page `online_settings`, `terms_version`, `payment_settings`, `email_settings` (never the
+  secret values).
+- `change`: `created`, `updated`, `deleted`, `archived`, `copied`, `saved`, `rows_generated`, `applied`.
+- The guided setup writes a single event per type, with `reason` (`setup_template`, `quick_pricelist`), `template`,
+  `map_ids`, `zone_ids` and `counts`.
+
+## Outgoing webhooks <Badge text="Configuration coming (M5)" variant="caution" />
+
+The delivery engine for outgoing webhooks is already in the core; configuring endpoints from the panel (with event
+filters, delivery log and redelivery) arrives with milestone M5. This is how delivery works:
+
+| Aspect | Behaviour |
+|---|---|
+| Request | JSON `POST` with the event as body, `User-Agent: Arenile-Webhooks/1` |
+| Headers | `Arenile-Signature`, `Arenile-Event-Id`, `Arenile-Event-Type` |
+| Retries | Exponential back-off up to 24 hours |
+| Disabling | After 20 consecutive failed deliveries the endpoint is disabled, with an activity log entry |
+| Several instances | Each attempt is "claimed": two instances on the same database never send twice |
+
+### Verifying the signature
+
+```http
+Arenile-Signature: t=1782896564,v1=5f2b8c…
+```
+
+`v1` is the hex HMAC-SHA256 of `"<t>.<raw body>"` with the endpoint secret (`whsec_…`). The timestamp is part of the
+signed message: reject requests whose `t` is too far from the current time (5 minutes is a good value). During a secret
+rotation there may be several `v1` values: one match is enough.
+
+<Tabs>
+  <TabItem label="Node.js">
+    ```js
+    import crypto from 'node:crypto';
+
+    export function verify(secret, header, rawBody, toleranceSec = 300) {
+      const parts = Object.groupBy(header.split(','), (p) => p.split('=')[0]);
+      const t = parts.t?.[0]?.slice(2);
+      const sigs = (parts.v1 ?? []).map((p) => p.slice(3));
+      if (!t || Math.abs(Date.now() / 1000 - Number(t)) > toleranceSec) return false;
+      const want = crypto.createHmac('sha256', secret).update(`${t}.${rawBody}`).digest('hex');
+      return sigs.some((s) => s.length === want.length &&
+        crypto.timingSafeEqual(Buffer.from(s), Buffer.from(want)));
+    }
+    ```
+  </TabItem>
+  <TabItem label="Go">
+    ```go
+    func Verify(secret, header string, body []byte, now time.Time) bool {
+        var ts string
+        var sigs []string
+        for _, p := range strings.Split(header, ",") {
+            k, v, _ := strings.Cut(strings.TrimSpace(p), "=")
+            switch k {
+            case "t":
+                ts = v
+            case "v1":
+                sigs = append(sigs, v)
+            }
+        }
+        sec, err := strconv.ParseInt(ts, 10, 64)
+        if err != nil || now.Sub(time.Unix(sec, 0)).Abs() > 5*time.Minute {
+            return false
+        }
+        m := hmac.New(sha256.New, []byte(secret))
+        m.Write([]byte(ts + "."))
+        m.Write(body)
+        want := hex.EncodeToString(m.Sum(nil))
+        for _, s := range sigs {
+            if hmac.Equal([]byte(s), []byte(want)) {
+                return true
+            }
+        }
+        return false
+    }
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    import hashlib, hmac, time
+
+    def verify(secret: str, header: str, raw_body: bytes, tolerance: int = 300) -> bool:
+        items = [p.strip().split("=", 1) for p in header.split(",") if "=" in p]
+        ts = next((v for k, v in items if k == "t"), None)
+        sigs = [v for k, v in items if k == "v1"]
+        if ts is None or abs(time.time() - int(ts)) > tolerance:
+            return False
+        want = hmac.new(secret.encode(), f"{ts}.".encode() + raw_body, hashlib.sha256).hexdigest()
+        return any(hmac.compare_digest(s, want) for s in sigs)
+    ```
+  </TabItem>
+</Tabs>
+
+## Real time in the panel (SSE)
+
+`GET /api/admin/v1/stream` is a **Server-Sent Events** stream authenticated with the session. The SSE event name is a
+*topic* and the content is light, with no personal data:
+
+| Topic | Produced by |
+|---|---|
+| `booking.changed` | bookings and payments |
+| `allocation.changed` | occupations, releases, blocks |
+| `hold.changed` | temporary holds |
+| `cash.changed` | cash desk and fiscal documents |
+| `customer.changed` | customers |
+| `config.changed` | configuration |
+
+```text
+event: allocation.changed
+id: 01JB7K…
+data: {"type":"booking.confirmed","booking_id":"…","spot_ids":["…"],"dates":["2027-08-14"]}
+```
+
+The client invalidates the affected data and reloads it. After a disconnection, the browser reconnects with
+`Last-Event-ID` and receives the missed events (if they are no longer in memory, the panel reloads its data). Several
+instances in parallel need an `EventBus` extension (for example PostgreSQL `LISTEN/NOTIFY`).
+
+## Internal consumers
+
+Go extensions receive every event through the `ext.EventSink` interface (see [Extensions](/en/sviluppo/estensioni/)).
+Transactional emails are an internal consumer too: each email has a per-event de-duplication key, so at-least-once
+delivery never sends two emails.

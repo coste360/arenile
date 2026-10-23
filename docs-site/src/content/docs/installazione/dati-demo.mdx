@@ -1,0 +1,75 @@
+---
+title: Dati demo
+description: Carica il Lido Demo, uno stabilimento completo con mappa, listino, clienti, abbonamenti, prenotazioni e incassi, per provare Arenile senza rischi.
+sidebar:
+  order: 6
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import { LiveMap } from '~/components';
+
+Il comando `arenile seed demo` crea il **Lido Demo**: uno stabilimento completo e realistico per esplorare ogni
+funzione, fare formazione al personale o provare una configurazione prima di applicarla al tuo lido. Gli
+screenshot e gli esempi interattivi di questa documentazione sono generati proprio su questi dati.
+
+<Aside type="caution">
+  Carica i dati demo su un'istanza di prova, non su quella di produzione: crea clienti, prenotazioni e incassi
+  fittizi che finirebbero nei tuoi corrispettivi.
+</Aside>
+
+## Come caricarli
+
+<Tabs>
+  <TabItem label="Docker">
+    ```bash
+    docker compose exec arenile /arenile seed demo
+    ```
+  </TabItem>
+  <TabItem label="Binario">
+    ```bash
+    ./bin/arenile seed demo
+    ```
+  </TabItem>
+  <TabItem label="Sviluppo">
+    ```bash
+    make seed
+    ```
+  </TabItem>
+</Tabs>
+
+Il comando stampa l'indirizzo della pagina pubblica (`/b/lido-demo`) e del pannello, e crea l'utente
+**demo@lido-demo.example** (Gestore Demo, proprietario). La password è quella di `ARENILE_ADMIN_PASSWORD`
+se impostata, altrimenti viene generata e **mostrata una sola volta**.
+
+Il comando è **idempotente**: lanciato di nuovo non duplica nulla.
+
+## Cosa contiene
+
+| Area | Contenuto |
+|---|---|
+| Stabilimento | **Lido Demo**, indirizzo pubblico `lido-demo`, IVA 22% |
+| Stagione | Stagione corrente (o la prossima) dal 1 maggio al 30 settembre, attiva; periodi bassa (maggio e dal 16 settembre), media (giugno e 1–15 settembre), alta (luglio), picco (agosto) |
+| Mappa | Modello "Lido classico a file": 8 file da 15 ombrelloni (A–H, fila A sul mare) più una fila di 4 gazebo, con le illustrazioni del kit Coste360 |
+| Zone | Prima fila, Seconda fila, File successive, Gazebo (tutte a posto scelto) |
+| Catalogo | Componenti ombrellone, lettino, sdraio, cabina (pool da 10), posto auto (pool da 30); pack **Base** (1 ombrellone e 2 lettini), **Comfort** (1 ombrellone, 1 lettino, 1 sdraio), **Gazebo** (su approvazione); extra lettino aggiuntivo, cabina, telo mare, parcheggio |
+| Listino | Prezzo giornaliero per fila e periodo (es. prima fila da 25 € in bassa a 45 € a Ferragosto), mezza giornata a 0,6, settimane di agosto e abbonamenti stagionali a prezzo fisso, "Weekend alta stagione +10%" |
+| Sconti | Codice promozionale **BENVENUTO10** (10% a maggio e giugno), convenzione **Hotel Mare** |
+| Policy | "Online: pagamento completo", "Cassa: pagamento all'arrivo", "Gazebo: approvazione del gestore", "Agosto online: settimane da sabato a sabato" |
+| Operatività | 40 clienti, 25 abbonamenti stagionali (alcuni con giorni rilasciati), circa 70 prenotazioni nei 30 giorni intorno a oggi, pagamenti e sessioni di cassa |
+
+## La mappa demo, dal vivo
+
+Questa è la mappa del Lido Demo disegnata con lo stesso componente del pannello: puoi spostarla, ingrandirla e
+toccare le postazioni.
+
+<LiveMap />
+
+## Ricominciare da capo
+
+Con SQLite il modo più rapido è cancellare il volume dei dati dell'istanza di prova e rilanciare il comando:
+
+```bash
+docker compose down -v      # elimina il volume: tutti i dati dell'istanza vanno persi
+docker compose up -d
+docker compose exec arenile /arenile seed demo
+```

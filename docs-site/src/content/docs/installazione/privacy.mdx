@@ -1,0 +1,129 @@
+---
+title: Privacy e GDPR
+description: Ruoli di titolare e responsabile, dati trattati da Arenile, strumenti per i diritti degli interessati e modello di informativa da adattare.
+sidebar:
+  order: 17
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Questa pagina aiuta il gestore a usare Arenile nel rispetto del Regolamento (UE) 2016/679 (GDPR) e del Codice
+in materia di protezione dei dati personali.
+
+<Aside type="caution">
+  Ha valore **informativo** e non costituisce consulenza legale. Il modello di informativa va adattato alla tua
+  attività e, se possibile, verificato con un consulente privacy o con il tuo DPO. La conformità del trattamento
+  resta responsabilità del titolare.
+</Aside>
+
+## Chi fa cosa
+
+| Soggetto | Ruolo GDPR | Note |
+|---|---|---|
+| **Gestore dello stabilimento** | **Titolare del trattamento** | Decide finalità e mezzi, risponde agli interessati. |
+| **Chi ospita il servizio** (provider del VPS, informatico che amministra il server per conto del gestore) | **Responsabile del trattamento** (art. 28) | Serve un accordo di nomina (DPA). |
+| **Stripe** (se attivi i pagamenti online) | Secondo i termini di Stripe | Verifica l'accordo sul trattamento dei dati nel tuo account Stripe. |
+| **Provider SMTP** (se invii email) | Responsabile del trattamento | Verifica il DPA del fornitore. |
+| **Coste360 SRL** | Nessun ruolo nell'installazione autogestita | Sviluppa il software ma **non riceve né tratta** i dati delle tue installazioni. Nessuna telemetria di default. |
+
+## Quali dati tratta Arenile
+
+| Categoria | Dati | Finalità | Base giuridica (indicativa) |
+|---|---|---|---|
+| Prenotazione online | Nome, cognome, email, telefono (facoltativo se lo decidi tu) | Gestire la prenotazione, inviare conferma e link di gestione | Esecuzione del contratto |
+| Clienti al banco e abbonati | Come sopra, più note interne e storico | Gestione del rapporto e degli abbonamenti | Esecuzione del contratto |
+| Pagamenti | Importi, metodo, riferimenti della transazione (i dati della carta restano a Stripe) | Incasso, rimborsi, contabilità | Contratto e obbligo legale |
+| Marketing | Consenso separato e facoltativo, con data, fonte e versione del testo | Offerte e novità | Consenso |
+| Utenti del pannello | Email, ruolo, accessi, registro attività | Sicurezza e tracciabilità | Legittimo interesse |
+| Dati tecnici | IP per i limiti di richieste, log senza email e telefoni in chiaro | Sicurezza del servizio | Legittimo interesse |
+
+Arenile **non richiede** dati particolari (art. 9). Evita di scrivere nelle note informazioni sulla salute; se
+servono per l'accessibilità, limita il dato al minimo (ad esempio "postazione accessibile").
+
+## Come Arenile ti aiuta
+
+- **Minimizzazione**: per prenotare online bastano nome, cognome ed email; il telefono si può rendere
+  obbligatorio o no. Nessun account per il cliente.
+- **Condizioni e informativa versionate**: ogni versione pubblicata è immutabile e ogni prenotazione salva la
+  versione accettata e l'istante dell'accettazione.
+- **Consenso marketing separato**, facoltativo, mai preselezionato, con data, fonte e versione del testo.
+- **Esportazione** dei dati di un cliente in JSON dalla sua scheda (diritto di accesso e portabilità).
+- **Anonimizzazione** su richiesta: nome, contatti, note e consensi sostituiti in modo definitivo, mentre
+  prenotazioni e pagamenti restano per gli obblighi contabili (art. 17.3).
+- **Destinatari protetti**: gli indirizzi delle email inviate sono salvati cifrati e mascherati nel registro.
+- **Nessun cookie di terze parti** nel widget e nessun tracciamento di default.
+
+<Aside type="note">
+  L'anonimizzazione automatica dei clienti senza prenotazioni da N anni (predefinito 5) è prevista dalla
+  specifica ma non ancora disponibile: fino ad allora anonimizza a mano dalla scheda cliente.
+</Aside>
+
+## Cosa devi fare tu
+
+<Steps>
+
+1. **Pubblica l'informativa** e le condizioni nella pagina pubblica (**Configurazione → Pagina pubblica**,
+   sezione condizioni) e aggiorna la versione a ogni modifica.
+2. **Nomina i responsabili** (hosting, SMTP, eventuale assistenza) con un accordo ex art. 28.
+3. **Tieni il registro dei trattamenti** (art. 30) se obbligato: è comunque una buona pratica.
+4. **Assegna i ruoli** del pannello con il minimo privilegio (personale di spiaggia, cassiere, sola lettura).
+5. **Proteggi i backup**: contengono dati personali.
+6. **Gestisci le richieste** degli interessati entro un mese con esportazione e anonimizzazione (vedi
+   [Clienti e GDPR](/gestore/clienti/)).
+7. **Violazioni**: valuta la notifica al Garante entro 72 ore (art. 33).
+8. Se aggiungi strumenti di analisi o pixel pubblicitari al tuo sito, gestisci il consenso ai cookie sul sito:
+   sono fuori da Arenile.
+
+</Steps>
+
+## Modello di informativa
+
+Usa questa traccia come base per l'informativa ai sensi degli artt. 13 e 14 GDPR. Sostituisci le parti tra
+parentesi quadre.
+
+```markdown
+# Informativa sul trattamento dei dati personali — [Nome dello stabilimento]
+
+## 1. Titolare del trattamento
+[Ragione sociale], [indirizzo], P.IVA [...], email [...], PEC [...].
+[Eventuale DPO: nome e contatti.]
+
+## 2. Dati trattati
+Nome, cognome, email e/o telefono; dati della prenotazione (date, postazione,
+servizi); dati relativi ai pagamenti (importi, esito, riferimenti della
+transazione: i dati della carta sono trattati direttamente da [Stripe]);
+eventuale consenso al marketing.
+
+## 3. Finalità e basi giuridiche
+a) gestione della prenotazione e del servizio — esecuzione del contratto;
+b) adempimenti fiscali e contabili — obbligo legale;
+c) comunicazioni di servizio (conferme, promemoria) — esecuzione del contratto;
+d) invio di offerte e newsletter — consenso, facoltativo e revocabile;
+e) sicurezza del sistema di prenotazione — legittimo interesse.
+
+## 4. Natura del conferimento
+Il conferimento dei dati di cui alle lettere a)–c) è necessario per prenotare;
+il consenso di cui alla lettera d) è facoltativo e il rifiuto non ha conseguenze
+sulla prenotazione.
+
+## 5. Destinatari
+Fornitore del servizio di hosting [nome], fornitore del servizio email [nome],
+gestore dei pagamenti [Stripe], commercialista, autorità ove previsto dalla legge.
+I responsabili del trattamento sono nominati ai sensi dell'art. 28 GDPR.
+
+## 6. Trasferimenti extra UE
+[Indicare se presenti e le garanzie adottate.]
+
+## 7. Conservazione
+Dati della prenotazione: per la durata del rapporto e successivamente per [N]
+anni; documenti contabili: per il periodo previsto dalla legge; dati per
+marketing: fino alla revoca del consenso o per [N] mesi dall'ultimo contatto.
+
+## 8. Diritti dell'interessato
+Accesso, rettifica, cancellazione, limitazione, portabilità, opposizione, revoca
+del consenso in qualsiasi momento, scrivendo a [email]. Diritto di proporre
+reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it).
+
+## 9. Versione
+Versione [x], aggiornata al [data].
+```

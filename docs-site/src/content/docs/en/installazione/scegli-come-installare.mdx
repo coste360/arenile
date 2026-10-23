@@ -1,0 +1,86 @@
+---
+title: Choose how to install Arenile
+description: Online on a VPS or Docker, on-site server, desktop edition or managed hosting (Arenile Pro). Comparison, advice and how to move from one to another.
+sidebar:
+  order: 2
+  label: Choose how to install
+---
+
+import { Card, CardGrid, Aside, Badge, LinkCard } from '@astrojs/starlight/components';
+
+Each beach has **a single server**, holding the archive (bookings, customers, takings). The options differ in
+**where that server runs**; staff devices (desk PC, tablets, phones) all connect the same way, from the browser.
+
+## The four options
+
+| Where the server runs | Internet | Online booking | Status | Notes |
+|---|---|---|---|---|
+| **Online**: VPS, hosting or Docker | required | yes | <Badge text="Available" variant="success" /> | The standard option, recommended for almost every beach. |
+| **On-site server**: mini PC, NAS or Raspberry Pi at the beach, with Docker | optional | only if exposed to the internet (domain or tunnel) | <Badge text="Available" variant="success" /> | Same image as the online installation. |
+| **Local desktop**: app on the desk PC | not required | no | <Badge text="Coming (M6)" variant="caution" /> | For those who work mainly at the desk, with a local network mode for other devices. |
+| **Hosting managed by Coste360 (Arenile Pro)** | required | yes | <Badge text="Future" variant="note" /> | Commercial offering for those who do not want to manage a server. |
+
+<CardGrid>
+  <Card title="Online (recommended)" icon="rocket">
+    A VPS costing a few euros a month, with Docker. The beach is reachable from anywhere, the booking page works
+    around the clock and Stripe payments arrive even at night. You need a domain (for example
+    `prenota.mio-lido.it`).
+  </Card>
+  <Card title="On-site server" icon="server">
+    A mini PC or Raspberry Pi at the beach, with the same Docker image. It keeps working when the internet drops,
+    but for online booking it must be reachable from outside (a domain with open ports, or a tunnel). Think about
+    a UPS and off-site backups.
+  </Card>
+  <Card title="Local desktop (coming)" icon="laptop">
+    A file to download and a double click on the desk PC: no server, no terminal. No internet, therefore no public
+    page or online payments. Packages for Windows, macOS and Linux will be downloadable from the Coste360 portal
+    after signing in.
+  </Card>
+  <Card title="Arenile Pro (future)" icon="star">
+    Hosting managed by Coste360 for those who do not want to deal with servers, upgrades and backups. A separate,
+    commercial product; the core stays complete and free for those who run their own establishments.
+  </Card>
+</CardGrid>
+
+## How to choose
+
+1. **Do you want online bookings?** You need a server reachable from the internet: choose **Online** (or an
+   **On-site server** exposed through a domain or tunnel).
+2. **Do you already have a VPS, or someone who can manage one?** Online with Docker is the simplest and most
+   robust path.
+3. **Unreliable connection at the beach and mostly desk work?** On-site server today, desktop edition when it is
+   available.
+4. **You do not want to deal with anything?** Consider managed hosting when it becomes available.
+
+<Aside type="tip" title="Minimum requirements">
+  1 vCPU and 512 MB of RAM are enough for one beach; 1 GB of disk plus room for backups. Linux `amd64` or `arm64`
+  (including Raspberry Pi 4 or 5 with a 64-bit system).
+</Aside>
+
+## Clients
+
+Valid for every option:
+
+- **the browser**: web panel, nothing to install, on PC, tablet and phone;
+- **the desktop app in remote mode** <Badge text="Coming (M6)" variant="caution" />: dedicated window and bridge
+  to the local receipt printer and fiscal register;
+- **the mobile app for staff** <Badge text="Coming (M7)" variant="caution" />: map of the day, QR check-in,
+  payments, even offline.
+
+## What is excluded, and why
+
+There are no hybrid models with **two synchronised servers** (for example offline desktop plus VPS). Two
+synchronising archives would have to resolve conflicts between bookings, and the guarantee that a spot is never
+sold twice could no longer be absolute. To move from one option to another you use **backup and restore**: the
+SQLite backup is the same file in every edition.
+
+<Aside type="note" title="Where to get what">
+  - **GitHub**: source code and build instructions. No prebuilt binaries are published on GitHub.
+  - **GitHub Container Registry**: the Docker image `ghcr.io/coste360/arenile`, public and free.
+  - **Coste360 portal**: ready-made desktop packages (Windows, macOS, Linux), after signing in, once available.
+</Aside>
+
+<CardGrid>
+  <LinkCard title="Install with Docker" href="/en/installazione/docker/" description="Online or on site: the complete procedure." />
+  <LinkCard title="Build from source" href="/en/installazione/compilare-dai-sorgenti/" description="The binary without Docker." />
+</CardGrid>

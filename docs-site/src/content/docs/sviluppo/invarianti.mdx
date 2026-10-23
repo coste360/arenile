@@ -1,0 +1,106 @@
+---
+title: Invarianti
+description: Le proprietà di dominio che devono valere sempre, qualunque sia la sequenza di operazioni - disponibilità, prezzi, prenotazioni, pagamenti, sicurezza ed eventi.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Le **invarianti** sono le proprietà che devono valere **sempre**. Ognuna ha un numero stabile e il test che la
+verifica; l'elenco completo, con stato e nome dei test, è in `docs/invariants.md`. Un cambiamento che tocca
+disponibilità, prezzi, prenotazioni o pagamenti deve lasciarle tutte valide (in Claude Code lo controlla il
+subagent `invariants-guardian`).
+
+## Disponibilità
+
+| # | Invariante |
+|---|---|
+| INV-01 | Nessuna doppia allocazione di una postazione, anche con 100 richieste parallele, su SQLite e PostgreSQL |
+| INV-02 | Il pool non supera la capacità effettiva |
+| INV-03 | `pool_usage` coincide con il dettaglio delle allocazioni |
+| INV-04 | Una postazione è occupata se e solo se esiste un'allocazione valida |
+| INV-05 | Gli hold scaduti non bloccano mai le vendite |
+| INV-06 | `expires_at` solo sugli hold |
+| INV-07 | Il giorno intero occupa entrambe le fasce |
+| INV-08 | Capacità delle zone in modalità Zona rispettata |
+| INV-09 | Quota online rispettata |
+| INV-10 | Rilasci degli abbonati coerenti |
+
+## Prezzi
+
+| # | Invariante |
+|---|---|
+| INV-11 | Il motore prezzi è deterministico e puro |
+| INV-12 | Snapshot riproducibile |
+| INV-13 | Totale non negativo e coerente |
+| INV-14 | Gli sconti non aumentano mai il prezzo |
+| INV-15 | Nessun prezzo, nessuna vendita |
+| INV-16 | Scorporo IVA esatto |
+
+## Prenotazioni
+
+| # | Invariante |
+|---|---|
+| INV-17 | Solo transizioni di stato ammesse |
+| INV-18 | Audit e outbox nella stessa transazione |
+| INV-19 | Conferma solo dal pagamento (webhook, riconciliazione o driver manuale), mai dal browser |
+| INV-20 | Risorse coerenti con lo stato |
+| INV-21 | Snapshot immutabili dopo la conferma |
+
+## Pagamenti e cassa
+
+| # | Invariante |
+|---|---|
+| INV-22 | `paid_amount` coerente con i pagamenti |
+| INV-23 | Webhook elaborati una sola volta |
+| INV-24 | Rimborsi entro il pagato |
+| INV-25 | Chiusura di cassa coerente |
+| INV-44 | Corrispettivi uguali agli incassi |
+| INV-47 | Credito cliente mai negativo |
+
+## Multi-stabilimento, sicurezza, privacy
+
+| # | Invariante |
+|---|---|
+| INV-26 | Isolamento per stabilimento |
+| INV-27 | Permessi verificati nel dominio |
+| INV-28 | API pubblica senza dati dei clienti |
+| INV-29 | Segreti mai in chiaro |
+| INV-30 | Audit log solo in inserimento |
+| INV-31 | Idempotenza delle creazioni |
+
+## Eventi, primitive, configurazione, operatività
+
+| # | Invariante |
+|---|---|
+| INV-32 | Ogni evento dell'outbox viene consegnato almeno una volta |
+| INV-33 | Aritmetica monetaria intera con arrotondamento half-even |
+| INV-34 | Date di calendario canoniche |
+| INV-35 | Periodi tariffari senza sovrapposizioni |
+| INV-36 | Sempre almeno un proprietario attivo |
+| INV-37 | Salvataggio della mappa con versione ottimistica |
+| INV-38 | Pool implicito allineato alle postazioni |
+| INV-39 | Modifiche di configurazione con audit ed evento atomici |
+| INV-40 | Matrice e simulatore coerenti |
+| INV-41 | Una zona a quantità non ha mai postazioni |
+| INV-42 | Nessuna cancellazione silenziosa nella configurazione |
+| INV-43 | Giornata simulata coerente |
+| INV-45 | Flusso SSE dopo il commit e senza dati personali |
+| INV-46 | Dati dimostrativi coerenti e idempotenti |
+| INV-48 | Illustrazioni della mappa solo dal kit, sanificate al build |
+
+## Come si verificano
+
+- **Unit**, table-driven, `TestXxx_Scenario`; **di proprietà** con `pgregory.net/rapid` per prezzi e disponibilità.
+- **Integrazione** con build tag `integration`: SQLite in memoria sempre, PostgreSQL quando è impostata
+  `ARENILE_TEST_POSTGRES_URL` (`make test-db` avvia il container).
+- **Concorrenza**: test `TestConcurrency_*` con `-race` e almeno 100 tentativi paralleli sulla stessa risorsa
+  (`make test-race`), incluso quello tra cassa e online sulla stessa postazione.
+- **Accettazione**: `internal/acceptance` avvia l'applicazione reale con un orologio finto, la usa solo dalle API
+  (centinaia di operazioni, raffiche concorrenti) e controlla le invarianti sul database, su entrambi i dialetti.
+
+<Aside type="note">
+  Una nuova invariante si aggiunge in coda con il numero successivo, insieme al suo test; i numeri non si
+  riusano.
+</Aside>

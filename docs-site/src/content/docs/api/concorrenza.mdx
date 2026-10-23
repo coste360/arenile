@@ -1,0 +1,58 @@
+---
+title: ETag e If-Match
+description: Concorrenza ottimistica su configurazione, mappe e prenotazioni con ETag, If-Match e 412 version_conflict, più le risposte 304 dell'API pubblica.
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Due persone modificano la stessa risorsa nello stesso momento: chi salva per secondo non deve cancellare senza
+saperlo il lavoro del primo. Arenile usa la **concorrenza ottimistica**: ogni risorsa versionata ha un numero di
+versione, esposto come `ETag`.
+
+<Steps>
+
+1. Leggi la risorsa: la risposta ha l'header `ETag: "3"` (e il campo `version`).
+
+   ```bash
+   curl -i -b cookies.txt https://prenota.mio-lido.it/api/admin/v1/establishments/$ES/online-settings
+   # ETag: "3"
+   ```
+
+2. Modifica inviando la versione letta in `If-Match`:
+
+   ```bash
+   curl -X PUT -b cookies.txt -H "X-CSRF-Token: $CSRF" \
+     -H 'If-Match: "3"' -H 'Content-Type: application/json' \
+     -d @impostazioni.json \
+     https://prenota.mio-lido.it/api/admin/v1/establishments/$ES/online-settings
+   ```
+
+3. Se nel frattempo qualcuno ha salvato la versione 4, la risposta è `412` `version_conflict` con
+   `current_version: 4`: rileggi, applica di nuovo le tue modifiche e riprova.
+
+</Steps>
+
+## Dove si usa
+
+| Risorsa | `If-Match` |
+|---|---|
+| Impostazioni dello stabilimento, pagina pubblica, pagamenti, email | facoltativo ma consigliato |
+| Configurazione (stagioni, zone, pool, catalogo, regole, policy…) | facoltativo ma consigliato |
+| **Mappe** (`PUT /maps/{id}`) | **obbligatorio**: senza, `428` `precondition_required` |
+| Modifiche di una prenotazione | facoltativo; il pannello lo usa sempre |
+
+Forme accettate: `"3"`, la forma debole `W/"3"` (prodotta dai proxy che comprimono le risposte) e `*` (qualsiasi
+versione: sovrascrive consapevolmente).
+
+<Aside type="note" title="Nel pannello">
+  È questo meccanismo a far comparire "Un altro utente ha modificato questi dati" o la finestra di conflitto
+  dell'editor della mappa, con la differenza tra le due versioni.
+</Aside>
+
+## ETag e 304 nell'API pubblica
+
+Il profilo pubblico dello stabilimento (`GET /api/public/v1/{slug}`) ha un `ETag` calcolato sul contenuto:
+inviando `If-None-Match` con l'ultimo valore ricevuto, la risposta è `304 Not Modified` senza corpo. La pagina di
+prenotazione lo usa per caricarsi più in fretta.

@@ -1,0 +1,95 @@
+---
+title: problem+json errors
+description: The error format (RFC 9457), the additional fields and the complete list of stable types on which to base client code.
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Every API error is an `application/problem+json` document (RFC 9457):
+
+```json
+{
+  "type": "spot_unavailable",
+  "title": "Postazione non disponibile",
+  "status": 409,
+  "detail": "La postazione A12 non è disponibile per le date scelte.",
+  "request_id": "01JB7K…",
+  "conflicts": [
+    { "spot_id": "0192f…", "date": "2027-08-14", "slot": "AM", "reason": "spot_unavailable" }
+  ]
+}
+```
+
+<Aside type="caution" title="Rely on the type, never on the text">
+  `type` is a **stable slug**: client code must decide based on it alone. `title` and `detail` are human-readable texts
+  (in Italian, the source language) and may change.
+</Aside>
+
+## Additional fields
+
+| Field | Present with | Content |
+|---|---|---|
+| `request_id` | always | The same value as the `X-Request-ID` header: quote it in reports |
+| `errors` | `validation_failed` | Per-field errors (`field`, `message`) |
+| `retry_after` | `rate_limited` | Seconds to wait (also in the `Retry-After` header) |
+| `current_version` | `version_conflict` | Current version of the resource |
+| `conflicts` | `spot_unavailable`, `pool_exhausted`, `quota_exceeded` | The unavailable half-days |
+| `violations` | `policy_violation` | The policy constraints broken |
+| `spot_ids` | `spot_has_future_allocations` | Spots with future bookings |
+| `current_status` | `invalid_transition` | Current booking status |
+| `existing_customer_id` | `conflict` on customer creation | The existing customer with the same email or phone |
+| `period` | `booking_outside_period` | Dates of the stay and the establishment's current date |
+
+## List of types
+
+### General
+
+| `type` | HTTP | When |
+|---|---|---|
+| `bad_request` | 400 | Malformed request |
+| `validation_failed` | 400 | Invalid fields (see `errors`) |
+| `unauthorized` | 401 | Missing or expired session |
+| `invalid_credentials` | 401 | Wrong email or password |
+| `totp_required` | 401 | The two-step verification code is needed |
+| `invalid_totp` | 401 | Wrong verification code |
+| `totp_enrolment_required` | 403 | The owner must enable 2FA |
+| `totp_already_enabled` | 409 | 2FA already enabled |
+| `forbidden` | 403 | Missing permission |
+| `csrf_failed` | 403 | `X-CSRF-Token` missing or different from the cookie |
+| `not_found` | 404 | Resource does not exist (or belongs to another establishment) |
+| `conflict` | 409 | Conflict with existing data (e.g. code already in use) |
+| `method_not_allowed` | 405 | Method not supported |
+| `unsupported_media_type` | 415 | `application/json` is required |
+| `rate_limited` | 429 | Too many requests |
+| `idempotency_key_reused` | 422 | Same `Idempotency-Key` with a different request |
+| `idempotency_in_progress` | 409 | Request with the same key still running |
+| `version_conflict` | 412 | `If-Match` does not match the current version |
+| `precondition_required` | 428 | `If-Match` required and missing |
+| `not_implemented` | 501 | Feature not available yet |
+| `internal_error` | 500 | Unexpected error (see the logs with the `request_id`) |
+
+### Availability, prices, bookings
+
+| `type` | HTTP | When |
+|---|---|---|
+| `spot_unavailable` | 409 | Spot already occupied in one or more half-days |
+| `pool_exhausted` | 409 | Quantity sold out |
+| `quota_exceeded` | 409 | Online quota used up |
+| `hold_expired` | 410 | The temporary hold has expired |
+| `no_price` | 422 | No price for the dates or the pack |
+| `policy_violation` | 422 | The request breaks the policy (see `violations`) |
+| `invalid_transition` | 409 | Action not allowed in the current status |
+| `booking_outside_period` | 422 | Check-in or no-show outside the days of the stay |
+| `spot_has_future_allocations` | 409 | Spot with future bookings: it can only be deactivated |
+| `cash_session_closed` | 409 | An open cash session is required |
+| `cash_session_already_open` | 409 | A session is already open |
+
+### Public page and payments
+
+| `type` | HTTP | When |
+|---|---|---|
+| `checkout_not_found` | 404 | Checkout token wrong, of another booking or of another establishment (no distinction) |
+| `payment_provider_unavailable` | 503 | The payment provider is not responding (with `Retry-After`) |
+| `webhook_signature_invalid` | 400 | Webhook signature missing or wrong |

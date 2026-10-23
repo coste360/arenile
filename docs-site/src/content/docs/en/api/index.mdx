@@ -1,0 +1,54 @@
+---
+title: API and webhooks
+description: Arenile's REST APIs - panel and public page - with conventions, authentication, errors, idempotency, concurrency, webhooks and events.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+
+Arenile is **API-first**: the manager panel and the booking page use exclusively the same APIs documented here.
+Everything you see in the panel can also be done by an integration.
+
+The contract is a single file, `api/openapi.yaml` (**OpenAPI 3.1**), the source of truth from which both the Go
+server code and the TypeScript client are generated. This site's [API reference](/api/riferimento/) (with the contract's descriptions, written in Italian) is generated from
+the same file at every build: it cannot drift.
+
+## The surfaces
+
+| Surface | Prefix | Used by | Authentication |
+|---|---|---|---|
+| Panel API | `/api/admin/v1` | panel, integrations | session cookie (+ CSRF) or API key |
+| Public API | `/api/public/v1/{slug}` | booking page, widget | none; checkout session token or magic link token |
+| Payment webhooks | `/webhooks/payments/{provider}/{establishment_id}` | Stripe and other providers | provider signature |
+| Real time | `/api/admin/v1/stream` | panel | session (Server-Sent Events) |
+| Operations | `/healthz`, `/readyz` | monitoring | none |
+
+## Conventions
+
+- **JSON** in requests and responses, version in the path (`v1`).
+- **Errors** as `application/problem+json` (RFC 9457) with a stable `type`: see [Errors](/en/api/errori/).
+- **Cursor pagination**: `?cursor=&limit=` (default 50, maximum 200); the response contains `next_cursor`.
+- **`Idempotency-Key`** on `POST`s that create resources or payments: see [Idempotency](/en/api/idempotenza/).
+- **Optimistic concurrency** with `ETag` and `If-Match` on configuration and maps: see
+  [ETag and If-Match](/en/api/concorrenza/).
+- **Calendar dates** `YYYY-MM-DD` in the establishment's time zone; **instants** RFC 3339 in UTC.
+- **Amounts** in **integer cents** (`2500` = €25.00), VAT included.
+- Every operational record belongs to an establishment: `establishmentId` in the path, checked against the user's
+  permissions.
+- Every response has the `X-Request-ID` header, repeated as `request_id` in errors.
+
+<CardGrid>
+  <LinkCard title="Authentication" href="/en/api/autenticazione/" description="Session, CSRF, API keys, permissions." />
+  <LinkCard title="Public API and checkout" href="/en/api/api-pubblica/" description="The booking flow step by step." />
+  <LinkCard title="Payment webhooks" href="/en/api/webhook-pagamenti/" description="Signature, de-duplication, confirmation and reconciliation." />
+  <LinkCard title="Events and outgoing webhooks" href="/en/api/eventi-e-webhook/" description="Event types, format, Arenile-Signature." />
+  <LinkCard title="Errors" href="/en/api/errori/" description="problem+json and the list of types." />
+  <LinkCard title="API reference" href="/api/riferimento/" description="Every operation, generated from openapi.yaml." />
+</CardGrid>
+
+<Aside type="tip" title="The contract, locally">
+  The repository's `api/openapi.yaml` describes exactly the APIs of that version. You can generate a client in any
+  language with standard OpenAPI tools.
+</Aside>

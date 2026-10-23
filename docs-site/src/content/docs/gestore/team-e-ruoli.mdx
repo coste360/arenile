@@ -1,0 +1,84 @@
+---
+title: Team e ruoli
+description: Utenti dello stabilimento, i cinque ruoli e la matrice completa dei permessi, password iniziale, ambito, disattivazione e verifica in due passaggi.
+sidebar:
+  order: 30
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Utenti**. **Chi:** solo i **proprietari**.
+
+Ogni persona che usa il pannello ha il suo utente, con un **ruolo** che decide cosa può fare. I permessi sono
+verificati nel cuore del programma, non solo nascondendo i pulsanti: un ruolo non può fare ciò che non gli è
+consentito nemmeno chiamando le API.
+
+<Screenshot name="admin-team" alt="Utenti dello stabilimento con ruolo, stato e verifica in due passaggi" />
+
+## I ruoli
+
+| Ruolo | Per chi |
+|---|---|
+| **Proprietario** | Il titolare: tutto, compresi utenti e credenziali di pagamento. |
+| **Gestore** | Chi dirige lo stabilimento: configurazione, prezzi, prenotazioni, cassa, rimborsi, report. |
+| **Cassiere** | Chi sta al banco: prenotazioni, incassi e cassa, check-in. |
+| **Personale di spiaggia** | Chi fa il giro: mappa, check-in, rilasci. |
+| **Sola lettura** | Chi deve solo consultare: commercialista, socio. Mappa, prenotazioni, report. |
+
+## Matrice dei permessi
+
+| Permesso | Proprietario | Gestore | Cassiere | Personale di spiaggia | Sola lettura |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Configurazione dello stabilimento, prezzi, policy, pagina pubblica, email | ✔ | ✔ | | | |
+| Utenti e ruoli | ✔ | | | | |
+| Pagamenti online e credenziali del provider | ✔ | | | | |
+| Creare e modificare prenotazioni | ✔ | ✔ | ✔ | | |
+| Incassi e cassa | ✔ | ✔ | ✔ | | |
+| Rimborsi | ✔ | ✔ | | | |
+| Check-in, rilasci, blocchi postazione | ✔ | ✔ | ✔ | ✔ | |
+| Vista mappa e prenotazioni | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Report ed esportazioni (corrispettivi) | ✔ | ✔ | | | ✔ |
+
+## Aggiungere un utente
+
+<Steps>
+
+1. **Invita utente**.
+2. **Email**, **Nome**, **Ruolo**, **Lingua** del pannello.
+3. **Ambito**: **Questo stabilimento** oppure **Tutta l'organizzazione** (tutti gli stabilimenti
+   dell'organizzazione).
+4. **Password iniziale**: facoltativa. Se la lasci vuota viene generata e **mostrata una sola volta**:
+   comunicala in modo sicuro.
+5. **Aggiungi utente**.
+
+</Steps>
+
+Se l'email ha già un account (ad esempio un collega di un altro stabilimento), l'utente riceve solo il nuovo
+ruolo e usa la password che ha già.
+
+## Gestire gli utenti
+
+- **Ruolo di…**: cambia il ruolo dall'elenco.
+- **Disattiva** / **Riattiva**: un utente disattivato non può accedere e le sue sessioni aperte vengono chiuse
+  subito. Disattiva sempre chi non lavora più al lido.
+- **Revoca l'accesso**: toglie l'accesso a questo stabilimento.
+- La colonna **2FA** dice chi ha attivato la verifica in due passaggi.
+
+<Aside type="note" title="Sempre almeno un proprietario">
+  Arenile impedisce di togliere, disattivare o declassare l'ultimo proprietario attivo: lo stabilimento non resta
+  mai senza qualcuno che possa gestire utenti e pagamenti.
+</Aside>
+
+## Verifica in due passaggi
+
+Con la verifica in due passaggi (TOTP) all'accesso serve anche il codice a 6 cifre di un'app di autenticazione.
+Chi amministra il server può renderla obbligatoria per i proprietari con
+`ARENILE_REQUIRE_TOTP_FOR_OWNERS=true`: in quel caso un proprietario senza 2FA viene invitato ad attivarla prima
+di continuare.
+
+## Buone pratiche
+
+- Un utente per persona: mai account condivisi, così il registro attività dice chi ha fatto cosa.
+- Il ruolo minimo necessario: il personale di spiaggia non ha bisogno della cassa.
+- Il commercialista con **Sola lettura**: vede i corrispettivi senza poter modificare nulla.

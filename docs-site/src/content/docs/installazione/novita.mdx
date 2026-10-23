@@ -1,0 +1,83 @@
+---
+title: Novità
+description: Cosa cambia in ogni versione di Arenile, milestone per milestone, con le note di aggiornamento.
+sidebar:
+  order: 20
+---
+
+import { Aside, Badge, Steps } from '@astrojs/starlight/components';
+
+Arenile segue il versionamento semantico; le modifiche complete, voce per voce, sono nel `CHANGELOG.md` del
+repository. Questa pagina racconta le novità dal punto di vista di chi usa il programma.
+
+<Aside type="note">
+  Nessuna versione è ancora stata rilasciata: le milestone qui sotto sono completate nel ramo di sviluppo. Le
+  note di aggiornamento si applicano a partire dal primo rilascio.
+</Aside>
+
+## M4 — Pagina pubblica e pagamenti online <Badge text="MVP pubblico" variant="success" />
+
+- **Pagina di prenotazione pubblica** su `/b/<indirizzo>`, ottimizzata per smartphone, nelle tre modalità
+  (posto scelto sulla mappa, zona, quantità) anche miste, in quattro passi: Quando, Dove, Cosa, Chi e pagamento.
+- **Widget `embed.js`** (meno di 3 KB) e iframe per incorporarla in qualsiasi sito, con **tema** dello
+  stabilimento (colori, carattere, arrotondamento, logo, testi) e siti autorizzati.
+- **Pagamenti online con Stripe Checkout** con le chiavi dello stabilimento, cifrate; conferma solo dal webhook
+  firmato, deduplica degli eventi, **riconciliazione** automatica ogni 15 minuti, **rimborsi** tramite Stripe.
+- **Email transazionali** dal tuo server SMTP: conferma con QR e file calendario `.ics`, cancellazione,
+  rimborso, notifiche al gestore; registro degli invii ed email di prova.
+- **Area di gestione del cliente** con link magico: dettagli e QR, saldo, modifica e cancellazione entro le
+  regole, rilascio dei giorni per gli abbonati, richiesta di un nuovo link.
+- **Condizioni versionate**: ogni prenotazione salva la versione accettata.
+- **Assegnazione automatica** della postazione per le zone in modalità "Zona".
+- Nessuna doppia vendita tra cassa e online, verificata da test di concorrenza con carico parallelo.
+- Questa **documentazione**, in italiano e inglese, con screenshot sempre aggiornati e componenti interattivi.
+
+**Note di aggiornamento:** nuova migrazione del database (applicata in automatico all'avvio); nuova variabile
+facoltativa `ARENILE_MAIL_DIR`. Per i pagamenti online configura Stripe e il webhook (vedi
+[Pagamenti online con Stripe](/gestore/pagamenti-online/)).
+
+## Kit grafico della mappa
+
+- Le 107 illustrazioni originali Coste360 sostituiscono pallini e rettangoli in editor, mappa operativa e mini
+  mappa delle prenotazioni.
+- Tavolozza con ricerca e categorie, illustrazione e colore della bandiera nelle proprietà, passerelle
+  modulari che si raccordano.
+- Lo stato delle postazioni è un anello intorno al disegno più un simbolo per ogni stato: si legge anche senza
+  colori.
+
+**Note di aggiornamento:** su SQLite la migrazione ricostruisce la tabella delle postazioni (pochi secondi);
+fai un backup prima di aggiornare.
+
+## M3 — Prenotazioni dal pannello e cassa
+
+- Pagina **Oggi**, **Mappa** operativa in tempo reale, **Calendario** planning con trascinamento e tastiera.
+- **Prenotazioni** con anteprima del prezzo, modifiche, spostamenti, cancellazioni con rimborso o credito
+  secondo le condizioni accettate, check-in.
+- **Clienti** con esportazione e anonimizzazione GDPR, **abbonamenti** stagionali con rilascio e rivendita dei
+  giorni.
+- **Cassa** con apertura, movimenti, chiusura con conteggio e riepilogo Z; **corrispettivi** in CSV e JSON.
+
+## M2 — Prezzi e policy
+
+- Regole di prezzo, prezzi a durata fissa, codici promozionali, convenzioni.
+- Policy di prenotazione: anticipo, durata, pagamento, cancellazione, approvazione.
+- Simulatore, matrice di listino, verifica di copertura, copia di stagione.
+
+## M1 — Inventario e mappa
+
+- Più stabilimenti, stagioni, periodi tariffari, chiusure, utenti e ruoli.
+- Editor della mappa con generatore di file, zone, postazioni, decorazioni, pool; catalogo.
+- Configurazione guidata con quattro modelli e listino rapido; dati demo.
+
+## M0 — Fondamenta
+
+- Binario unico, immagine Docker, SQLite o PostgreSQL, migrazioni automatiche, CLI.
+- Accesso con verifica in due passaggi facoltativa, ruoli, registro attività, eventi.
+
+## In arrivo
+
+| Milestone | Contenuto |
+|---|---|
+| M5 | Rinnovi degli abbonamenti, lista d'attesa, crediti come metodo di pagamento, report completi, pannello utilizzabile offline, webhook in uscita configurabili, chiavi API |
+| M6 | Edizione desktop per Windows, macOS e Linux, con modalità rete locale |
+| M7 | App mobile per lo staff |

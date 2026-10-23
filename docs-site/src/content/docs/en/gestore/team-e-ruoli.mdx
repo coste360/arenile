@@ -1,0 +1,81 @@
+---
+title: Team and roles
+description: The establishment's users, the five roles and the full permission matrix, initial password, scope, deactivation and two-step verification.
+sidebar:
+  order: 30
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Users**. **Who:** **owners** only.
+
+Everyone who uses the panel has their own user, with a **role** that decides what they can do. Permissions are checked
+in the core of the program, not just by hiding buttons: a role cannot do what it is not allowed to, not even by calling
+the APIs.
+
+<Screenshot name="admin-team" alt="The establishment's users with role, status and two-step verification" />
+
+## Roles
+
+| Role | For whom |
+|---|---|
+| **Owner** | The owner: everything, including users and payment credentials. |
+| **Manager** | Whoever runs the establishment: configuration, prices, bookings, cash desk, refunds, reports. |
+| **Cashier** | Whoever works the desk: bookings, payments and cash desk, check-in. |
+| **Beach staff** | Whoever does the rounds: map, check-in, releases. |
+| **Read only** | Whoever only needs to look: accountant, partner. Map, bookings, reports. |
+
+## Permission matrix
+
+| Permission | Owner | Manager | Cashier | Beach staff | Read only |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Establishment configuration, prices, policies, public page, email | ✔ | ✔ | | | |
+| Users and roles | ✔ | | | | |
+| Online payments and provider credentials | ✔ | | | | |
+| Create and edit bookings | ✔ | ✔ | ✔ | | |
+| Payments and cash desk | ✔ | ✔ | ✔ | | |
+| Refunds | ✔ | ✔ | | | |
+| Check-in, releases, spot blocks | ✔ | ✔ | ✔ | ✔ | |
+| View map and bookings | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Reports and exports (daily takings) | ✔ | ✔ | | | ✔ |
+
+## Adding a user
+
+<Steps>
+
+1. **Invite user**.
+2. **Email**, **Name**, **Role**, panel **Language**.
+3. **Scope**: **This establishment** or **Whole organization** (all the organization's establishments).
+4. **Initial password**: optional. If you leave it empty one is generated and **shown only once**: share it securely.
+5. **Add user**.
+
+</Steps>
+
+If the email already has an account (for example a colleague from another establishment), the user only gets the new
+role and keeps their password.
+
+## Managing users
+
+- **Role of…**: change the role from the list.
+- **Deactivate** / **Reactivate**: a deactivated user cannot sign in and their open sessions are closed at once.
+  Always deactivate people who no longer work at the beach.
+- **Revoke access**: removes access to this establishment.
+- The **2FA** column shows who has two-step verification enabled.
+
+<Aside type="note" title="Always at least one owner">
+  Arenile prevents removing, deactivating or demoting the last active owner: the establishment is never left without
+  someone who can manage users and payments.
+</Aside>
+
+## Two-step verification
+
+With two-step verification (TOTP), signing in also requires the 6-digit code of an authenticator app. Whoever runs the
+server can make it mandatory for owners with `ARENILE_REQUIRE_TOTP_FOR_OWNERS=true`: in that case an owner without 2FA
+is asked to enable it before continuing.
+
+## Good practice
+
+- One user per person: never shared accounts, so the activity log says who did what.
+- The minimum role needed: beach staff do not need the cash desk.
+- The accountant as **Read only**: they see the daily takings without being able to change anything.

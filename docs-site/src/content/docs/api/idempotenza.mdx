@@ -1,0 +1,45 @@
+---
+title: Idempotenza
+description: L'header Idempotency-Key sui POST che creano risorse o pagamenti - come funziona, quanto dura e come gestire i casi limite.
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Le reti cadono, i clienti premono due volte, i client ritentano. Per i `POST` che creano risorse o avviano
+pagamenti Arenile accetta l'header **`Idempotency-Key`**: la stessa richiesta inviata più volte con la stessa
+chiave produce **un solo effetto**.
+
+```bash
+curl https://prenota.mio-lido.it/api/public/v1/lido-demo/bookings \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: 6f1c2b8e-0d5a-4c1e-9f7a-2b3c4d5e6f70' \
+  -d @selezione.json
+```
+
+## Regole
+
+| Caso | Risposta |
+|---|---|
+| Prima richiesta con quella chiave | Eseguita normalmente; la risposta viene memorizzata |
+| Stessa chiave, **stessa richiesta** (metodo, percorso, query e corpo) | La risposta memorizzata, con l'header `Idempotent-Replayed: true` |
+| Stessa chiave, **richiesta diversa** | `422` `idempotency_key_reused` |
+| Stessa chiave mentre la prima è ancora in corso | `409` `idempotency_in_progress`: riprova tra poco |
+| La prima richiesta è fallita con un errore `5xx` | Nessuna risposta memorizzata: puoi riprovare con la stessa chiave |
+
+- La chiave deve avere tra **8 e 128 caratteri**: usa un UUID generato dal client per ogni operazione logica.
+- Le chiavi sono legate all'utente o alla sessione che le ha usate e valgono **24 ore**.
+- Le risposte `4xx` vengono memorizzate come quelle di successo: correggi la richiesta e usa una **nuova** chiave.
+
+<Aside type="tip" title="Una chiave per operazione, non per tentativo">
+  Genera la chiave quando l'utente decide di fare l'operazione (ad esempio al tocco su "Conferma") e riusala per
+  tutti i tentativi di quella stessa operazione. Una nuova chiave per ogni tentativo vanifica la protezione.
+</Aside>
+
+## Idempotenza verso i provider di pagamento
+
+Anche le chiamate di Arenile verso Stripe sono idempotenti: ogni tentativo di pagamento di una prenotazione usa
+la chiave `<booking_id>:<tentativo>`, così un riavvio a metà operazione non crea due sessioni di pagamento. E i
+webhook in arrivo sono deduplicati per identificativo dell'evento (vedi
+[Webhook dei pagamenti](/api/webhook-pagamenti/)).

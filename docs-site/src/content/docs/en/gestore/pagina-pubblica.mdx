@@ -1,0 +1,203 @@
+---
+title: Public page and widget
+description: Turn on online booking, customise the theme, choose the allowed websites, publish the terms and embed the widget in the beach's website with embed.js or an iframe.
+sidebar:
+  order: 11
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Public page**, with four tabs: **Online bookings**, **Theme and preview**, **Conditions**, **Embed**. **Who:** owners and managers.
+
+Every establishment has a booking page at `https://<your-domain>/b/<address>`: built for smartphones, fast even on
+the beach with 4G, in your colours. You can share it as a link (website, social media, Google Business, printed QR
+codes) or **embed** it in the beach's website. The customer creates no account and pays no fees; you pay no
+percentages to anyone.
+
+## Turn on online booking
+
+In the **Online bookings** tab switch on **Accept online bookings**. When it is off, the public page stays visible
+with the establishment's name and contacts, but nobody can book.
+
+<Screenshot name="admin-online-settings" alt="Online bookings tab of the public page settings" />
+
+What is sold online is decided by the other settings, which the page always respects:
+
+| What | Where it is decided |
+|---|---|
+| Which zones appear | **Visible on the public page** and **Online quota** of each [zone](/en/gestore/zone/) |
+| Which packs and extras | **Sales channels** in the [catalogue](/en/gestore/catalogo/) (Online channel) |
+| Prices | [price rules](/en/gestore/prezzi/), including the Channels = Online condition |
+| Lead time, duration, deposit, cancellation | [policies](/en/gestore/policy/) scoped to the Online channel |
+| How customers pay | [Online payments](/en/gestore/pagamenti-online/): Stripe or payment on site |
+
+## Flow options
+
+In the **Booking flow** section of the same tab you decide:
+
+- **Package types offered online** (none selected = all those allowed by the packages sold online);
+- **Time slots bookable online** (full day, morning, afternoon);
+- **Bookable up to** N days (up to 730), on top of the maximum lead time of the online policy: the public
+  calendar never offers dates the policy would refuse;
+- **Highlight rate periods in the calendar**;
+- **Promo code field**;
+- **Phone required** (email always is, because it carries the confirmation and the manage link).
+
+## Customise the theme
+
+<Tabs>
+  <TabItem label="Colours and shape">
+    | Field | Notes |
+    |---|---|
+    | **Primary colour** | Buttons, links, active elements. Hexadecimal, for example `#0e6ba8`. |
+    | **Accent colour** | Selected spots and highlights. |
+    | **Font** | **Inter**, **System** or **Serif**. |
+    | **Corner radius** | **None**, **Small**, **Medium**, **Large**. |
+    | **Logo URL** | An `https://` address of the image. |
+  </TabItem>
+  <TabItem label="Options">
+    | Field | Notes |
+    |---|---|
+    | **Show prices on the map** | The price legend by row ("from €25"). |
+    | **Hide the header when the page is embedded** | Inside your website the logo is already on the page: it saves space. |
+    | **Intro text** | For each enabled language, above the first step. |
+  </TabItem>
+</Tabs>
+
+In the **Theme and preview** tab the fields are on the left and the **Live preview** on the right, with the
+**Phone**/**Computer** and **Light**/**Dark** switches. The preview is the real page in test mode: it updates while
+you edit, before saving, and books nothing.
+
+<Aside type="tip" title="Always readable contrast (WCAG AA)">
+  Pick the colour you like: Arenile computes the contrast. If the primary colour is too light on white (below 4.5:1),
+  links and text automatically use a darker variant and the panel tells you; it also warns if the accent has low
+  contrast or if the two colours are too similar.
+</Aside>
+
+## Terms and privacy notice
+
+Before confirming, the customer must tick **I have read and accept the booking conditions**. You write the text, for
+each enabled language, together with the privacy notice and the text of the optional marketing consent.
+
+<Steps>
+
+1. In the **Conditions** tab press **New version**.
+2. Write the **Booking conditions** (required in the default language), the **Privacy notice** and the **Marketing
+   consent text** (optional, next to a separate box that is never pre-ticked).
+3. Name the **Version** (for example `2027-1`), keep **Make current** on and press **Publish**: from the next
+   checkout customers accept this version.
+
+</Steps>
+
+<Aside type="caution">
+  Publish the conditions before opening online bookings. The demo data (`arenile seed demo`) include an example
+  version, `demo-2027`.
+</Aside>
+
+Published versions are **immutable**: to fix a text you publish a new version. Every booking stores the accepted
+version and the moment of acceptance, so you can always prove what the customer accepted. A privacy notice template is
+in [Privacy and GDPR](/en/installazione/privacy/#privacy-notice-template).
+
+## Embed the widget in your website
+
+<Steps>
+
+1. In the **Online bookings** tab add your website to the **Websites allowed to embed the page**, one origin per
+   line, for example `https://www.mio-lido.it` (no path; no wildcards; up to 20 origins). Empty: direct link only.
+   To try the widget on a local site, `http://localhost:<port>` and `http://127.0.0.1:<port>` are accepted too.
+2. In the **Embed** tab copy the **Recommended code** (script) or the iframe.
+3. Paste it into your website's page.
+
+</Steps>
+
+<Tabs>
+  <TabItem label="Script (recommended)">
+    It handles height and parameters by itself:
+
+    ```html
+    <div data-arenile="lido-demo" data-lang="en"></div>
+    <script src="https://prenota.mio-lido.it/embed.js" async></script>
+    ```
+
+    Optional attributes of the `div`: `data-lang` (`it`, `en`, `de`, `fr`), `data-from` and `data-to`
+    (`YYYY-MM-DD`, prefilled dates), `data-pack` (pack code), `data-title` (accessible title of the iframe).
+    `embed.js` weighs less than 3 KB.
+  </TabItem>
+  <TabItem label="Iframe">
+    Works wherever HTML can be pasted:
+
+    ```html
+    <iframe src="https://prenota.mio-lido.it/b/lido-demo?embed=1"
+            style="width:100%;border:0;min-height:720px" allow="payment" loading="lazy"
+            title="Book your spot"></iframe>
+    ```
+
+    With an iframe the height is fixed: prefer the script if you can.
+  </TabItem>
+  <TabItem label="Direct link">
+    ```text
+    https://prenota.mio-lido.it/b/lido-demo
+    https://prenota.mio-lido.it/b/lido-demo?lang=en&from=2027-07-10&to=2027-07-12&pack=base
+    ```
+
+    Optional parameters: `lang`, `from`, `to`, `pack`. Outside embedding the page can be indexed by search engines
+    (title, description and `LocalBusiness` structured data).
+  </TabItem>
+</Tabs>
+
+<Screenshot name="public-embed" alt="The booking widget inside the beach's website" />
+
+### Where to paste it
+
+<CardGrid>
+  <Card title="WordPress">A **Custom HTML** block on the "Book" page.</Card>
+  <Card title="Wix, Squarespace, Jimdo">The "Embed code" / "HTML" element.</Card>
+  <Card title="Joomla, Drupal, static sites">A module, or directly in the HTML file.</Card>
+  <Card title="Social media and QR codes">The direct link, even with prefilled dates for a promotion.</Card>
+</CardGrid>
+
+### Tracking bookings on your website
+
+`embed.js` re-dispatches three events on the host page (`CustomEvent`s bubbling from the `div`), useful for Google
+Analytics or the pixel you already use:
+
+| Event | `detail` | When |
+|---|---|---|
+| `arenile:resize` | `{ height }` | The content height changes (the script applies it by itself) |
+| `arenile:booked` | `{ code }` | Booking completed: just the code, never personal data |
+| `arenile:navigate` | `{ url }` | The page must open at full window (for example Stripe payment). With `preventDefault()` you handle the navigation yourself |
+
+```html
+<script>
+  document.addEventListener('arenile:booked', (e) => {
+    gtag('event', 'purchase', { transaction_id: e.detail.code });
+  });
+</script>
+```
+
+## Embedding security
+
+- The page lets itself be embedded **only** by the allowed websites (a `frame-ancestors` header built for your
+  establishment): nobody can put your booking page inside a website you did not choose.
+- Messages between the page and your website are accepted only from verified origins.
+- **No third-party cookies**: the booking in progress lives in the browser tab, so it works with Safari and browsers
+  that block cookies in embedded sites.
+- Stripe payment opens **at full window** (not inside the iframe): the most robust solution on every browser. Once
+  done, Stripe brings the customer back **to your website's page**: `embed.js` reopens the widget on the outcome
+  (code and QR), with no third-party cookies. Only pages of the allowed websites can be used as return pages.
+
+## Frequently asked questions
+
+**The widget does not show, I see an empty box or a refusal error.**
+The website's domain is not among the allowed websites, or you wrote the origin with a path
+(`https://www.mio-lido.it/book` instead of `https://www.mio-lido.it`), or the variant with or without `www` is
+missing.
+
+**Can I have the page on my own domain, like `prenota.mio-lido.it`?**
+Yes: it is the installation's domain (`ARENILE_BASE_URL`). With several establishments in one installation each has
+its own `/b/<address>`.
+
+**Which language does the page open in?**
+The one in the `lang` or `data-lang` parameter, otherwise the browser's if it is among the enabled languages,
+otherwise the establishment's default language. The customer can switch it from the selector.

@@ -1,0 +1,72 @@
+---
+title: Season passes and releases
+description: Season passes by zone and row, day releases with resale of the spot, revocation and credits for the pass holder.
+sidebar:
+  order: 25
+---
+
+import { Steps, Aside, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Season passes**. **Who:** cashiers, managers and owners; releases also beach staff.
+
+A **season pass** reserves a spot to a customer for the whole season. When the holder is not coming, they can
+**release** the day: the spot goes back on sale and, if it is resold, the holder accrues a credit.
+
+<Screenshot name="admin-passes" alt="The season's passes grouped by zone and row, with releases, credit and balance" />
+
+## List
+
+The season's passes are grouped by zone and row, with **Spot**, **Subscriber**, **Period**, **Status**, **Releases**,
+**Credit** and **Balance**.
+
+## New season pass
+
+<Steps>
+
+1. **New season pass**.
+2. Choose the **Subscriber**, the **Season**, the **Pack** and the **Time slot**.
+3. Choose the **Spot** among those free **for the whole season**.
+4. Optional: **From** / **To** (empty = season opening and closing) and **Internal notes**.
+5. Check the **List price** and the deposit due, then **Create season pass**.
+
+</Steps>
+
+The price comes from the price list with the **Season** formula (usually a
+[fixed-duration price](/en/gestore/prezzi/#fixed-duration-prices)). For an agreed price use an agreement or a
+dedicated price rule. Payments and cancellation are handled from the linked booking (**Open the booking**).
+
+## Releasing days
+
+<Steps>
+
+1. Open the pass: the release calendar shows the days **Released**, **Resold** and those you are **Selecting**.
+2. Tap the days to release and choose the **Part of the day to release**.
+3. Optional: a **Note**.
+4. **Release N days**: the spot is immediately bookable at the desk and online.
+
+</Steps>
+
+A single day can also be released from the [map of the day](/en/gestore/mappa-del-giorno/) with **Release day**; the
+spot appears as **Season pass holder away today**.
+
+If the [policy](/en/gestore/policy/) allows it (**Customer can release season days**), the holder releases days by
+themselves from the manage area with the magic link.
+
+### Revoking a release
+
+**Revoke** (in the **Released days** list) gives the spot back to the holder. It is not possible if the day has
+already been resold.
+
+### Credit for resold days
+
+With **Credit for released days** enabled in the policy, every released **and resold** day earns the holder a credit
+equal to the chosen percentage: you see it in **Credit accrued** and on the customer record. The credit never goes
+below zero.
+
+## Coming next
+
+| Feature | Status |
+|---|---|
+| Proposing renewals in bulk for the new season, with first refusal on the same spot | <Badge text="Coming (M5)" variant="caution" /> |
+| Using credit as a payment method on the public page | <Badge text="Coming (M5)" variant="caution" /> |

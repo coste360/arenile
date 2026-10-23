@@ -1,0 +1,50 @@
+---
+title: Today
+description: The dashboard of the day - occupancy, arrivals, check-ins, pass holders expected, takings, open balances and lines to assign, in real time.
+sidebar:
+  order: 20
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Today** (also the panel's home page). **Who:** every role; actions depend on permissions.
+
+The morning page: the live status of the beach and the list of things to do. It refreshes by itself when a colleague
+checks someone in or a customer books online.
+
+<Screenshot name="admin-today" alt="Today page with key figures, spots-by-status chart, map of the day and to-do lists" />
+
+## Key figures of the day
+
+| Figure | What it shows |
+|---|---|
+| **Occupancy** | Percentage of occupied spots (e.g. "92 of 124 spots occupied") |
+| **Arrivals** | Bookings starting today, with the number of departures |
+| **Pending check-ins** | Arrivals not yet checked in, with how many are already present |
+| **Pass holders expected** | Pass holders occupying their spot today |
+| **Released spots** | Pass days put back on sale today |
+| **Takings today** | Total collected, with the **Open balances** |
+
+The **Spots by status** chart uses the same colours as the map.
+
+## Map of the day
+
+A compact version of the [operational map](/en/gestore/mappa-del-giorno/) for today: tap a spot to open its sheet.
+The **Map**, **Planning** and **Cash desk** shortcuts lead to the full pages.
+
+## To do
+
+Three lists, each with its counter:
+
+- **Check-in**: who arrives today and is not checked in yet. The button next to the name records the arrival with one
+  tap.
+- **Balances**: today's bookings with a balance to collect. Open the booking or go to the cash desk.
+- **To assign**: lines of "Zone" mode zones without a spot yet. Open them and use **Assign** (see
+  [Zones](/en/gestore/zone/#automatic-assignment-zone-mode)).
+
+<Aside type="tip" title="The morning round">
+  Before opening: empty **To assign**, check the **Pass holders expected** and the released spots, open the
+  [cash desk](/en/gestore/cassa/). During the day the **Check-in** list empties by itself as staff record arrivals,
+  even from their phone.
+</Aside>

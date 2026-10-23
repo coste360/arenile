@@ -1,0 +1,81 @@
+---
+title: What's new
+description: What changes in each version of Arenile, milestone by milestone, with upgrade notes.
+sidebar:
+  order: 20
+---
+
+import { Aside, Badge } from '@astrojs/starlight/components';
+
+Arenile follows semantic versioning; the full list of changes, item by item, is in the repository's
+`CHANGELOG.md`. This page tells the news from the point of view of whoever uses the program.
+
+<Aside type="note">
+  No version has been released yet: the milestones below are complete on the development branch. Upgrade notes
+  apply from the first release onwards.
+</Aside>
+
+## M4 — Public page and online payments <Badge text="Public MVP" variant="success" />
+
+- **Public booking page** at `/b/<address>`, built for smartphones, in the three modes (chosen spot on the map,
+  zone, quantity), mixed too, in four steps: When, Where, What, Details and payment.
+- **`embed.js` widget** (under 3 KB) and iframe to embed it in any website, with the establishment's **theme**
+  (colours, font, corner radius, logo, texts) and allowed websites.
+- **Online payments with Stripe Checkout** using the establishment's encrypted keys; confirmation only from the
+  signed webhook, event de-duplication, automatic **reconciliation** every 15 minutes, **refunds** through Stripe.
+- **Transactional emails** from your SMTP server: confirmation with QR code and `.ics` calendar file,
+  cancellation, refund, manager notifications; delivery log and test email.
+- **Customer manage area** via magic link: details and QR, balance payment, changes and cancellation within the
+  rules, day releases for pass holders, request for a new link.
+- **Versioned terms**: each booking stores the accepted version.
+- **Automatic assignment** of the spot for zones in "Zone" mode.
+- No double selling between desk and online, verified by concurrency tests under parallel load.
+- This **documentation**, in Italian and English, with always-current screenshots and interactive components.
+
+**Upgrade notes:** new database migration (applied automatically at startup); new optional variable
+`ARENILE_MAIL_DIR`. For online payments configure Stripe and the webhook (see
+[Online payments with Stripe](/en/gestore/pagamenti-online/)).
+
+## Map kit
+
+- The 107 original Coste360 illustrations replace dots and rectangles in the editor, the operational map and the
+  booking mini-map.
+- Palette with search and categories, illustration and flag colour in the properties, modular walkways that join
+  up.
+- Spot status is a ring around the drawing plus a symbol per status: readable without colours.
+
+**Upgrade notes:** on SQLite the migration rebuilds the spots table (a few seconds); take a backup before
+upgrading.
+
+## M3 — Bookings from the panel and cash desk
+
+- **Today** page, real-time operational **Map**, **Planning** calendar with drag and drop and keyboard.
+- **Bookings** with price preview, changes, moves, cancellations with refund or credit per the accepted terms,
+  check-in.
+- **Customers** with GDPR export and anonymisation, **season passes** with day release and resale.
+- **Cash desk** with opening, movements, closing with count and Z report; **daily takings** in CSV and JSON.
+
+## M2 — Prices and policies
+
+- Price rules, fixed-duration prices, promo codes, agreements.
+- Booking policies: lead time, duration, payment, cancellation, approval.
+- Simulator, price matrix, coverage check, season copy.
+
+## M1 — Inventory and map
+
+- Multiple establishments, seasons, rate periods, closures, users and roles.
+- Map editor with row generator, zones, spots, decorations, pools; catalogue.
+- Guided setup with four templates and a quick price list; demo data.
+
+## M0 — Foundations
+
+- Single binary, Docker image, SQLite or PostgreSQL, automatic migrations, CLI.
+- Sign-in with optional two-step verification, roles, activity log, events.
+
+## Coming next
+
+| Milestone | Content |
+|---|---|
+| M5 | Season pass renewals, waiting list, credits as a payment method, full reports, panel usable offline, configurable outgoing webhooks, API keys |
+| M6 | Desktop edition for Windows, macOS and Linux, with a local network mode |
+| M7 | Mobile app for staff |

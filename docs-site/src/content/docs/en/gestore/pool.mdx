@@ -1,0 +1,44 @@
+---
+title: Pools
+description: Quantity inventory without position - free sunbeds, cabins, parking spaces - with capacity by period.
+sidebar:
+  order: 7
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Pools**. **Who:** owners and managers.
+
+A **pool** is a quantity inventory with no position on the map: "Free sunbeds: 200", "Cabins: 10", "Parking: 30".
+Each booking that uses that component reduces the availability of the day and slot; when it reaches zero, nothing
+more is sold. As with spots, the guarantee comes from the database: even with desk and online at the same time the
+pool never exceeds its capacity.
+
+<Screenshot name="admin-pools" alt="List of pools with component, zone and capacity" />
+
+## Creating a pool
+
+<Steps>
+
+1. Press **New pool**.
+2. Choose the **Component** the pool counts (for example `sunbed`, `cabin`, `parking`).
+3. Optional: the **Quantity zone** it belongs to.
+4. Enter the **Capacity**.
+5. Optional: **Capacity by period** (**Add change**) for a different capacity on some dates, for example extra
+   sunbeds in August.
+
+</Steps>
+
+Then, in the [Catalogue](/en/gestore/catalogo/), mark the component as **Stock tracked** and link it to the pool:
+from then on every pack or extra containing it uses the pool.
+
+## System-managed pools
+
+Zones in **Zone** mode have an implicit pool, equal to the active spots, which the system creates and updates by
+itself. In the list it appears as **Managed by the system**: it is edited from the zone, not here.
+
+<Aside type="tip">
+  A pool does not have to be beach equipment: parking spaces, pool entries or rentals (kayak, SUP) work the same way,
+  as extras with a tracked component.
+</Aside>

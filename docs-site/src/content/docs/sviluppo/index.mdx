@@ -1,0 +1,36 @@
+---
+title: Sviluppo ed estensioni
+description: Come è fatto Arenile dentro - architettura, mappa del repository, invarianti, punti di estensione, driver di pagamento, sviluppo con agenti AI, contributi e licenza.
+sidebar:
+  order: 0
+  label: Panoramica
+---
+
+import { CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+
+Arenile è distribuito con codice sorgente disponibile (BSL 1.1): puoi leggerlo, modificarlo, estenderlo e
+contribuire. Questa sezione è per chi scrive codice: sviluppatori, integratori, autori di driver.
+
+```text
+Go (monobinario)   chi · oapi-codegen · Bun · SQLite (modernc, senza CGO) | PostgreSQL (pgx) · goose · slog
+Frontend           React · TypeScript strict · Vite · TanStack Router/Query · shadcn/ui · Tailwind · i18next
+Contratto          api/openapi.yaml (OpenAPI 3.1) → server Go e client TypeScript generati
+Test               Go table-driven e di proprietà (rapid) · integrazione SQLite+PostgreSQL · -race · Vitest · Playwright
+```
+
+<CardGrid>
+  <LinkCard title="Architettura" href="/sviluppo/architettura/" description="Il monobinario, i flussi principali, outbox, disponibilità, prezzi." />
+  <LinkCard title="Mappa del repository" href="/sviluppo/repository/" description="Dove sta cosa, regole di dipendenza, codice generato." />
+  <LinkCard title="Invarianti" href="/sviluppo/invarianti/" description="Le proprietà che devono valere sempre, con i test che le verificano." />
+  <LinkCard title="Estensioni (pkg/ext)" href="/sviluppo/estensioni/" description="Le uniche API Go stabili: pagamenti, fiscale, eventi, notifiche e altro." />
+  <LinkCard title="Driver di pagamento" href="/sviluppo/driver-di-pagamento/" description="Scrivere un nuovo PaymentProvider con webhook firmati e test." />
+  <LinkCard title="Sviluppo con agenti AI" href="/sviluppo/agenti-ai/" description="AGENTS.md, regole, skill e subagent per lavorare con un agente." />
+  <LinkCard title="Contribuire" href="/sviluppo/contribuire/" description="Ambiente, make check, convenzioni, pull request e CLA." />
+  <LinkCard title="Licenza" href="/sviluppo/licenza/" description="BSL 1.1, cosa è consentito, conversione in AGPL-3.0, marchio." />
+</CardGrid>
+
+<Aside type="note" title="Fonti autorevoli">
+  La specifica funzionale (in italiano) è in `docs/spec/`, una sezione per file, ed è autorevole; le decisioni
+  architetturali sono negli ADR di `docs/adr/`; le invarianti in `docs/invariants.md`. Questa documentazione le
+  riassume e rimanda a loro.
+</Aside>

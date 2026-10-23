@@ -1,0 +1,58 @@
+---
+title: ETag and If-Match
+description: Optimistic concurrency on configuration, maps and bookings with ETag, If-Match and 412 version_conflict, plus the 304 responses of the public API.
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Two people edit the same resource at the same time: whoever saves second must not unknowingly wipe out the first
+person's work. Arenile uses **optimistic concurrency**: every versioned resource has a version number, exposed as an
+`ETag`.
+
+<Steps>
+
+1. Read the resource: the response has the `ETag: "3"` header (and the `version` field).
+
+   ```bash
+   curl -i -b cookies.txt https://prenota.mio-lido.it/api/admin/v1/establishments/$ES/online-settings
+   # ETag: "3"
+   ```
+
+2. Update sending the version you read in `If-Match`:
+
+   ```bash
+   curl -X PUT -b cookies.txt -H "X-CSRF-Token: $CSRF" \
+     -H 'If-Match: "3"' -H 'Content-Type: application/json' \
+     -d @settings.json \
+     https://prenota.mio-lido.it/api/admin/v1/establishments/$ES/online-settings
+   ```
+
+3. If meanwhile someone saved version 4, the response is `412` `version_conflict` with `current_version: 4`: read
+   again, re-apply your changes and retry.
+
+</Steps>
+
+## Where it is used
+
+| Resource | `If-Match` |
+|---|---|
+| Establishment, public page, payment and email settings | optional but recommended |
+| Configuration (seasons, zones, pools, catalogue, rules, policies…) | optional but recommended |
+| **Maps** (`PUT /maps/{id}`) | **required**: without it, `428` `precondition_required` |
+| Booking changes | optional; the panel always uses it |
+
+Accepted forms: `"3"`, the weak form `W/"3"` (produced by proxies that compress responses) and `*` (any version: a
+deliberate overwrite).
+
+<Aside type="note" title="In the panel">
+  This mechanism is what shows "Another user changed this data" or the map editor's conflict dialog, with the
+  difference between the two versions.
+</Aside>
+
+## ETag and 304 in the public API
+
+The establishment's public profile (`GET /api/public/v1/{slug}`) has an `ETag` computed on its content: sending
+`If-None-Match` with the last value received, the response is `304 Not Modified` with no body. The booking page uses
+it to load faster.

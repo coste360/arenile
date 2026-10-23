@@ -1,0 +1,83 @@
+---
+title: Upgrades
+description: Upgrading Arenile without surprises, with a backup first, pinned versions and automatic forward-compatible migrations.
+sidebar:
+  order: 12
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Arenile follows **semantic versioning** (`MAJOR.MINOR.PATCH`). Database migrations are **always forward
+compatible** and applied automatically at startup: upgrading means downloading the new version and restarting.
+
+## Recommended procedure
+
+<Steps>
+
+1. **Read the release notes** on the [What's new](/en/installazione/novita/) page (and in the repository's
+   `CHANGELOG.md`), especially before a minor or major upgrade.
+
+2. **Take a backup**:
+
+   ```bash
+   cd /opt/arenile
+   docker compose exec arenile /arenile backup --out /data/backup/pre-update-$(date +%F).db
+   ```
+
+3. **Upgrade and restart**:
+
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
+
+4. **Verify**:
+
+   ```bash
+   docker compose exec arenile /arenile version
+   curl -fsS https://prenota.mio-lido.it/readyz
+   ```
+
+</Steps>
+
+<Tabs>
+  <TabItem label="Pinned version (recommended)">
+    In production pin an exact version in `.env` and change it yourself when you decide to upgrade:
+
+    ```ini title=".env"
+    ARENILE_VERSION=0.4.2
+    ```
+  </TabItem>
+  <TabItem label="Always the latest">
+    With `ARENILE_VERSION=latest` (the default) every `docker compose pull` brings the latest published version.
+    Handy on a trial instance, discouraged in high season.
+  </TabItem>
+  <TabItem label="From source">
+    ```bash
+    git fetch --tags && git checkout v0.4.2
+    make build
+    sudo systemctl stop arenile
+    sudo install bin/arenile /usr/local/bin/arenile
+    sudo systemctl start arenile
+    ```
+  </TabItem>
+</Tabs>
+
+## In high season
+
+- Upgrade at a quiet time (evening or early morning), never while the cash desk is open.
+- Prefer **patch** releases (fixes) and postpone minor releases to the end of the season, unless they fix security
+  issues.
+- During the restart (a few seconds) the public page does not respond: customers halfway through a booking find
+  their hold again until it expires.
+
+## Going back
+
+Migrations only go forward: an older version cannot read a newer schema. To go back, **restore the backup** taken
+before the upgrade and start the previous version (see
+[Backup and restore](/en/installazione/backup-e-ripristino/)).
+
+<Aside type="tip">
+  `arenile migrate status` shows applied and pending migrations; with `ARENILE_AUTO_MIGRATE=false` you can apply
+  them by hand with `arenile migrate up` before starting the server.
+</Aside>

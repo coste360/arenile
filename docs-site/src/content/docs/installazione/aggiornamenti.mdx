@@ -1,0 +1,84 @@
+---
+title: Aggiornamenti
+description: Aggiornare Arenile senza sorprese, con backup preventivo, versioni fissate e migrazioni automatiche compatibili in avanti.
+sidebar:
+  order: 12
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Arenile segue il **versionamento semantico** (`MAGGIORE.MINORE.PATCH`). Le migrazioni del database sono
+**sempre compatibili in avanti** e vengono applicate in automatico all'avvio: aggiornare significa scaricare la
+nuova versione e riavviare.
+
+## Procedura consigliata
+
+<Steps>
+
+1. **Leggi le note di versione** nella pagina [Novità](/installazione/novita/) (e nel `CHANGELOG.md` del
+   repository), soprattutto prima di un aggiornamento di versione minore o maggiore.
+
+2. **Fai un backup**:
+
+   ```bash
+   cd /opt/arenile
+   docker compose exec arenile /arenile backup --out /data/backup/pre-update-$(date +%F).db
+   ```
+
+3. **Aggiorna e riavvia**:
+
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
+
+4. **Verifica**:
+
+   ```bash
+   docker compose exec arenile /arenile version
+   curl -fsS https://prenota.mio-lido.it/readyz
+   ```
+
+</Steps>
+
+<Tabs>
+  <TabItem label="Versione fissata (consigliato)">
+    In produzione fissa una versione precisa in `.env` e cambiala tu quando decidi di aggiornare:
+
+    ```ini title=".env"
+    ARENILE_VERSION=0.4.2
+    ```
+  </TabItem>
+  <TabItem label="Sempre l'ultima">
+    Con `ARENILE_VERSION=latest` (predefinito) ogni `docker compose pull` porta l'ultima versione pubblicata.
+    Comodo su un'istanza di prova, sconsigliato in alta stagione.
+  </TabItem>
+  <TabItem label="Dai sorgenti">
+    ```bash
+    git fetch --tags && git checkout v0.4.2
+    make build
+    sudo systemctl stop arenile
+    sudo install bin/arenile /usr/local/bin/arenile
+    sudo systemctl start arenile
+    ```
+  </TabItem>
+</Tabs>
+
+## In alta stagione
+
+- Aggiorna in un momento di basso traffico (sera o mattina presto), mai durante l'apertura della cassa.
+- Preferisci le versioni di **patch** (correzioni) e rimanda le minori a fine stagione, salvo correzioni di
+  sicurezza.
+- Durante il riavvio (pochi secondi) la pagina pubblica non risponde: i clienti a metà prenotazione ritrovano
+  il blocco del posto finché non scade.
+
+## Tornare indietro
+
+Le migrazioni vanno solo in avanti: una versione precedente non sa leggere uno schema più nuovo. Per tornare
+indietro **ripristina il backup** fatto prima dell'aggiornamento e avvia la versione precedente (vedi
+[Backup e ripristino](/installazione/backup-e-ripristino/)).
+
+<Aside type="tip">
+  `arenile migrate status` mostra le migrazioni applicate e quelle in attesa; con
+  `ARENILE_AUTO_MIGRATE=false` puoi applicarle a mano con `arenile migrate up` prima di avviare il server.
+</Aside>

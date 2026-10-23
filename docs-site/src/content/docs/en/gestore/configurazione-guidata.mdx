@@ -1,0 +1,83 @@
+---
+title: Guided setup
+description: Six skippable steps to configure an establishment from scratch - details, template, map rows, quick price list, public page and payments.
+sidebar:
+  order: 1
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Guided setup**. **Who:** owners and managers.
+
+The guided setup takes a new establishment from empty to ready to sell. It opens by itself after an
+establishment is created and can be reopened at any time. A bar at the top shows the progress ("N of 6 steps
+completed or skipped"); on the left the list of steps with their state **to do**, **completed** or **skipped**.
+
+<Screenshot name="admin-setup-wizard" alt="Guided setup with the list of the six steps and the current step" />
+
+## The six steps
+
+<Steps>
+
+1. **Details and languages.** Check name, languages and contacts: they appear on the public page and in emails to
+   customers. The same fields are in [Establishment](/en/gestore/stabilimento/).
+
+2. **Template.** Pick the template closest to your establishment and press **Use this template**. Each card shows
+   the layout, zones, packs and periods that will be created.
+
+   <Tabs>
+     <TabItem label="Classic lido with rows">
+       Umbrellas in numbered rows, priced by row and period. Zones **Front row**, **Second row**, **Back rows** and
+       **Gazebos**; packs **Basic** (1 umbrella and 2 sunbeds), **Comfort** (1 umbrella, 1 sunbed, 1 deckchair) and
+       **Gazebo** (subject to approval); extras extra sunbed, changing cabin, beach towel, parking; policies for
+       online, desk and gazebos. The most common case.
+     </TabItem>
+     <TabItem label="Equipped beach by quantity">
+       No map: customers choose how many umbrellas and sunbeds, availability is a counter (pools of 80 umbrellas
+       and 200 sunbeds, editable).
+     </TabItem>
+     <TabItem label="Lido with pool">
+       Rows on the beach plus a pool area with sunbeds, in zone mode with automatic assignment.
+     </TabItem>
+     <TabItem label="Empty">
+       Nothing prefilled: you configure everything by hand from the menu items.
+     </TabItem>
+   </Tabs>
+
+3. **Map rows.** Set **Rows** and **Spots per row** (the total updates as you type) and the dates of the **First
+   season** (**Year**, **Opening**, **Closing**). **Create season and map** generates everything in one operation
+   and shows the summary: spots, zones, packs, periods. If the establishment already has a season or a map, the
+   step tells you and you can continue or go to the editor.
+
+4. **Quick price list.** A **Category** × period grid with daily prices including VAT (for example `25.00`).
+   Leave the cells you do not need empty and press **Generate price rules**: the base rules are created (replacing
+   those generated before). Half days and long formulas are configured later in [Prices](/en/gestore/prezzi/).
+
+5. **Public page.** Turn on online bookings, choose the colours and copy the code to paste into your website.
+   Everything is fine-tuned in [Public page and widget](/en/gestore/pagina-pubblica/).
+
+6. **Payments.** Choose the **Payment method**: **Manual payment** (collected at the desk; online bookings are
+   paid on site) or **Stripe (online payment)**, completed in
+   [Online payments with Stripe](/en/gestore/pagamenti-online/).
+
+</Steps>
+
+**Skip this step** moves on without saving; **Back** returns to the previous step. **Finish setup** shows the
+summary, the skipped steps and the shortcuts **Edit the map**, **Review prices**, **Establishment settings** and
+**Reopen the guided setup**.
+
+<Aside type="tip" title="Goal: under 15 minutes">
+  With the "Classic lido with rows" template, 8 rows of 15 spots and the quick price list, a complete establishment
+  is configured in under a quarter of an hour. Then fine-tune at leisure.
+</Aside>
+
+## Frequently asked questions
+
+**Can I run the guided setup again on an establishment already configured?**
+Yes, but the steps that create data (template, map rows) recognise that a season or a map already exists and do
+not duplicate them. The quick price list instead replaces the rules it generated before.
+
+**Where do the categories of the quick price list come from?**
+From the price categories of the zones (and any overrides on single spots). If none exist, the step tells you:
+create zones with a category in [Zones](/en/gestore/zone/).

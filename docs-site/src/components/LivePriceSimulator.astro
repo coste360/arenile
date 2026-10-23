@@ -1,0 +1,61 @@
+---
+/**
+ * <LivePriceSimulator /> — price simulator on the demo price list. Every
+ * figure is the real pricing engine's breakdown (POST /pricing/simulate)
+ * captured by make docs-screenshots into src/data/demo-pricing.json; the
+ * docs only choose the scenario and render it with web/shared components.
+ *
+ * Props (optional initial selection, catalogue codes): pack, period, duration
+ * (half_day | day | three_days | week).
+ */
+import PriceSimulatorIsland from './islands/PriceSimulatorIsland';
+import { docsLocale } from './islands/i18n';
+
+interface Props {
+  pack?: string;
+  period?: string;
+  duration?: string;
+}
+
+const t = Astro.locals.t;
+const locale = docsLocale(Astro.currentLocale ?? Astro.locals.starlightRoute?.lang);
+const labels = {
+  title: t('arenile.sim.title'),
+  live: t('arenile.live.badge'),
+  pack: t('arenile.sim.pack'),
+  zone: t('arenile.sim.zone'),
+  period: t('arenile.sim.period'),
+  date: t('arenile.sim.date'),
+  duration: t('arenile.sim.duration'),
+  durations: {
+    half_day: t('arenile.sim.duration.half_day'),
+    day: t('arenile.sim.duration.day'),
+    three_days: t('arenile.sim.duration.three_days'),
+    week: t('arenile.sim.duration.week'),
+  },
+  total: t('arenile.sim.total'),
+  deposit: t('arenile.sim.deposit'),
+  vat: t('arenile.sim.vat'),
+  days: t('arenile.sim.days'),
+  base: t('arenile.sim.base'),
+  discounts: t('arenile.sim.discounts'),
+  rounding: t('arenile.sim.rounding'),
+  notSellable: t('arenile.sim.notSellable'),
+  stages: {
+    base: t('arenile.sim.stage.base'),
+    modifier: t('arenile.sim.stage.modifier'),
+    discount: t('arenile.sim.stage.discount'),
+  },
+  source: t('arenile.sim.source', { version: '{{version}}', interpolation: { escapeValue: false } }),
+};
+---
+
+<div class="not-content arenile-island arenile-live">
+  <PriceSimulatorIsland client:visible locale={locale} labels={labels} {...Astro.props} />
+</div>
+
+<style>
+  .arenile-live {
+    margin-block: 1.5rem;
+  }
+</style>

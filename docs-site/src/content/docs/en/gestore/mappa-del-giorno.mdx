@@ -1,0 +1,98 @@
+---
+title: Map of the day
+description: The operational view of the beach for any date and slot - statuses and symbols, legend, search, spot sheet, check-in, moves, releases and payments.
+sidebar:
+  order: 21
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot, LiveMap, StatusBadges } from '~/components';
+
+**Where:** Operations → **Map**. **Who:** every role views; check-ins and releases also beach staff; bookings, moves
+and payments cashiers, managers and owners.
+
+The operational map is the beach of one day, spot by spot, with the status of each. It is shared in real time
+between the desk, the beach and online bookings.
+
+<Screenshot name="admin-map" alt="Operational map of the day with coloured spot statuses and the legend" />
+
+## Choosing day and slot
+
+The bar at the top is always visible: **Previous day**, **Next day**, **Today**, the **Date** picker, the **Slot**
+(**Full day**, **Morning**, **Afternoon**) and, if you have more than one, the **Map**. The **Map** / **List** switch
+shows the same spots as a list by row, handy on a phone or with a screen reader.
+
+On closure days or off season **Establishment closed** appears.
+
+## Statuses and legend
+
+Every spot has a **coloured ring** around the drawing and, for booked statuses, a **symbol** in the corner: the map can
+be read without telling colours apart, in light and dark theme. The legend is always above the map.
+
+<StatusBadges />
+
+| Status | Meaning | Symbol |
+|---|---|---|
+| **Free** | Not occupied | none (faint halo) |
+| **Booked online** | Booking confirmed from the public page | globe |
+| **Booked at the desk** | Booking confirmed from the panel | desk |
+| **Season pass** | Spot of a season pass holder | star |
+| **Season pass holder away today** | The holder released the day: the spot is on sale | outgoing arrow |
+| **Pending** | Online checkout or approval in progress: spot held | clock |
+| **Balance due** | Booking with an open balance | euro |
+| **Checked in** | Check-in recorded | tick |
+| **Blocked** | Manual block (with reason) | cross |
+| **Renewal reserved** | Reserved for the season pass renewal | renewal |
+| **Unavailable** | Spot inactive or closed | — |
+
+Additional indicators show **Extras**, **Note** and **VIP** customers (customer tag).
+
+<LiveMap />
+
+## Searching
+
+The **Search customer, code or spot** field highlights the matching spots on the map ("3 spots found"): useful when a
+customer at the desk only gives their surname.
+
+## The spot sheet
+
+<Screenshot name="admin-map-spot" alt="Operational map with the sheet of an occupied spot open" />
+
+Tap a spot to open its sheet: **Booking** or **Season pass**, **Code**, **Period**, **Slot**, **Packs**, **Status**,
+**Total**, **Paid** and **Balance**. If it is pending, it shows how long the hold lasts; if it is blocked, the reason.
+Actions depend on the status and your role:
+
+| Action | When |
+|---|---|
+| **Check in** | Today's booking not yet checked in |
+| **New booking** | Free spot: opens the booking sheet already filled in |
+| **Release day** | Absent pass holder: the spot becomes bookable; if it is resold, the holder gets the credit set in the policy |
+| **Revoke release** | Cancels a release not yet resold |
+| **Move** | Moves the booking to another spot |
+| **Collect** | Records a payment on the balance |
+| **Open details** | Opens the full [booking](/en/gestore/prenotazioni/) |
+
+### Moving a booking
+
+<Steps>
+
+1. In the sheet press **Move**: the map asks for the destination spot.
+2. Tap a free spot.
+3. Read the preview: Arenile checks availability and price (*The price does not change*, *Difference to collect*,
+   *Difference to refund*) and lists any conflicts day by day.
+4. **Move**. The move applies from the day shown for the rest of the stay.
+
+</Steps>
+
+<Aside type="note" title="No double selling, ever">
+  If an online customer takes the same spot at the same instant, only one of the two operations succeeds and the
+  other gets a clear message with the conflicting dates. The guarantee comes from the database, not from who clicks
+  faster.
+</Aside>
+
+## On the phone
+
+<Screenshot name="admin-map-mobile" alt="Operational map on a smartphone, used by beach staff" />
+
+Beach staff can do their round with a phone: map with pinch-zoom and pan, **Fit to view**, spot sheet, one-tap
+check-in. When labels get too small, a notice suggests zooming in or switching to the list.

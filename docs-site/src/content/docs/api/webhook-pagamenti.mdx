@@ -1,0 +1,85 @@
+---
+title: Webhook dei pagamenti
+description: L'endpoint dei webhook dei provider di pagamento - firma obbligatoria, deduplica, aggiornamento atomico, eventi Stripe gestiti e riconciliazione.
+sidebar:
+  order: 6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { ApiOperation } from '~/components';
+
+<ApiOperation id="receivePaymentWebhook" />
+
+È l'unico punto da cui un pagamento online **conferma** una prenotazione (insieme alla riconciliazione, che usa
+lo stesso percorso interno). Sta fuori da `/api/`: niente sessione, niente CSRF, niente limiti per IP condivisi
+con l'API pubblica. Per Stripe: `/webhooks/payments/stripe/<id-dello-stabilimento>`; il pannello mostra l'URL
+esatto in **Configurazione → Pagamenti online**.
+
+## Cosa succede a ogni chiamata
+
+<Steps>
+
+1. Il corpo viene letto **grezzo** (fino a 256 KB): la firma si verifica sui byte esatti ricevuti.
+2. Arenile carica le credenziali **dello stabilimento dell'URL**, le decifra e passa la richiesta al driver del
+   provider, che verifica la firma. Firma assente o errata: `400 webhook_signature_invalid`.
+3. In **un'unica transazione**:
+   - registra l'evento nella tabella di deduplica (unica per provider + id evento): **un duplicato risponde `200`
+     senza effetti**;
+   - aggiorna il pagamento del provider;
+   - se riuscito, registra l'incasso, aggiorna il pagato e **conferma la prenotazione** attraverso il servizio
+     prenotazioni (blocco → occupazione stabile, registro attività, evento `booking.confirmed`); per le zone con
+     assegnazione automatica assegna anche la postazione;
+   - se fallito, segna il tentativo come fallito ed emette `payment.failed`: la prenotazione resta in attesa di
+     pagamento finché il blocco è valido e il cliente può riprovare;
+   - se rimborsato, registra il rimborso ed emette `payment.refunded`.
+4. Risponde `200` con un riepilogo (`WebhookAck`). Gli eventi autentici ma non gestiti rispondono `200` e
+   vengono ignorati.
+
+</Steps>
+
+## Stripe
+
+La firma è nell'header `Stripe-Signature` (`t=…,v1=…`): HMAC-SHA256 di `"<t>.<corpo>"` con il segreto del webhook
+(`whsec_…`), confronto a tempo costante, **tolleranza di 5 minuti** sull'orologio; più valori `v1` sono accettati
+(rotazione del segreto).
+
+| Evento Stripe | Effetto in Arenile |
+|---|---|
+| `checkout.session.completed` | Pagamento riuscito → conferma |
+| `payment_intent.succeeded` | Pagamento riuscito → conferma |
+| `payment_intent.payment_failed` | Pagamento fallito (motivo: solo il codice d'errore, mai il messaggio) |
+| `charge.refunded` | Rimborso (importo rimborsato con quell'evento) |
+| altri | Ignorati (`200`) |
+
+Le sessioni Checkout create da Arenile portano nei metadati `establishment_id`, `booking_id` e `booking_code`, e
+scadono dopo 30 minuti. Il driver Stripe è scritto con la libreria standard di Go (nessun SDK) e una versione
+dell'API Stripe fissata.
+
+## Riconciliazione
+
+Un job ogni **15 minuti** chiede al provider l'esito dei pagamenti in sospeso da più di **10 minuti** e lo applica
+con lo stesso codice del webhook, usando un identificativo sintetico (`reconcile:<riferimento>:<stato>`): se il
+webhook vero arriva dopo, viene comunque deduplicato.
+
+<ApiOperation ids={['getReconciliationReport', 'runReconciliation']} />
+
+Il report è disponibile anche via API (`GET /api/admin/v1/establishments/{id}/payments/reconciliation`, con
+`from`, `to` e `issues_only`) e può essere eseguito a richiesta. I problemi segnalati: `pending` da troppo tempo,
+esito diverso, incasso senza registrazione, importo diverso, provider non raggiungibile.
+
+<Aside type="note" title="Garanzie">
+  - Una prenotazione non viene **mai** confermata dal ritorno del browser né da `GET /bookings/{id}`.
+  - Lo stesso evento del provider non viene **mai** elaborato due volte.
+  - Pagamento, prenotazione e occupazione delle risorse cambiano **insieme o per niente**.
+  - Credenziali, firme e corpi dei webhook non finiscono **mai** nei log.
+</Aside>
+
+## Provare in locale
+
+Con la Stripe CLI puoi inoltrare i webhook di test alla tua istanza di sviluppo:
+
+```bash
+stripe listen --forward-to localhost:8080/webhooks/payments/stripe/<id-dello-stabilimento>
+```
+
+La CLI stampa un segreto `whsec_…` da salvare come segreto del webhook in modalità test.

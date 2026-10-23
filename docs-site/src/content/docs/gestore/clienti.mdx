@@ -1,0 +1,73 @@
+---
+title: Clienti e GDPR
+description: Anagrafica clienti con ricerca, duplicati, tag, consenso marketing, storico, crediti, esportazione dei dati e anonimizzazione.
+sidebar:
+  order: 24
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Clienti**. **Chi:** cassieri, gestori e proprietari modificano; tutti consultano.
+
+<Screenshot name="admin-customers" alt="Elenco clienti con ricerca per nome, telefono, email e tag" />
+
+## Cercare
+
+**Cerca** per nome, telefono o email (senza preoccuparti degli accenti) e filtra per **Tag**. Gli anonimizzati
+sono nascosti: **Mostra anonimizzati** per vederli. La colonna **Marketing** dice se il cliente ha dato il
+consenso.
+
+## Nuovo cliente
+
+**Nuovo cliente** chiede i dati minimi: **Cognome** e un recapito (**Telefono** o **Email**). Poi, facoltativi:
+
+| Campo | Note |
+|---|---|
+| **Nome**, **Lingua** | La lingua delle email al cliente. |
+| **Tag** | Separati da virgola, es. `vip, famiglia, storico` (fino a 20, 30 caratteri ciascuno). Il tag `vip` mostra l'indicatore VIP sulla mappa; i tag si usano anche nelle regole di prezzo (**Etichette cliente**). |
+| **Note interne** | Mai mostrate al cliente. Non scrivere dati sanitari. |
+| **Consenso marketing** | Facoltativo e separato: registra data, fonte e versione del testo. |
+
+Arenile non crea doppioni: se email o telefono appartengono già a un cliente, te lo propone (*Forse è già
+registrato* → **Usa questo**).
+
+## La scheda cliente
+
+<Screenshot name="admin-customer-detail" alt="Scheda cliente con profilo, statistiche, prenotazioni, abbonamenti, crediti e azioni GDPR" />
+
+- **Profilo** con i dati e il consenso ("Consenso dato il… (fonte)").
+- Statistiche: **Prenotazioni**, **Speso in totale**, **Saldo da incassare**, **Credito disponibile**.
+- **Prenotazioni recenti**, **Abbonamenti** (con le mezze giornate rilasciate), **Crediti** con i movimenti
+  (fonte: Cancellazione, Rilascio abbonamento, Maltempo, Manuale, Utilizzo) ed eventuale scadenza.
+- **Nuova prenotazione** per questo cliente.
+
+I clienti che prenotano online vengono creati o ritrovati (per email o telefono) quando inseriscono i loro dati
+al passo "Chi e pagamento"; il consenso marketing dato online ha fonte "online".
+
+## Diritti GDPR
+
+### Esportazione
+
+**Esporta dati (GDPR)** scarica un file JSON con tutti i dati del cliente: risposta pronta a una richiesta di
+accesso o di portabilità.
+
+### Anonimizzazione
+
+<Steps>
+
+1. Nella scheda premi **Anonimizza**.
+2. Leggi l'avviso: nome, contatti, note e consensi vengono sostituiti **in modo definitivo**; prenotazioni e
+   pagamenti restano per gli obblighi contabili, senza dati personali.
+3. Per confermare scrivi il cognome del cliente.
+4. **Anonimizza definitivamente**.
+
+</Steps>
+
+<Aside type="danger" title="Operazione irreversibile">
+  Non c'è modo di tornare indietro, nemmeno per l'amministratore del server. Esporta prima i dati se il cliente
+  li ha chiesti.
+</Aside>
+
+Vengono cancellati anche motivi di cancellazione e note di pagamenti e crediti. Per il quadro completo (ruoli,
+informativa, tempi di risposta) vedi [Privacy e GDPR](/installazione/privacy/).

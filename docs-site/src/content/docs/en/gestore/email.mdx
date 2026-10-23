@@ -1,0 +1,111 @@
+---
+title: Email and notifications
+description: Sender, customer and manager notifications, confirmation email with QR code and calendar file, manage link, test email and delivery log.
+sidebar:
+  order: 13
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Email and notifications**. **Who:** owners and managers.
+
+Arenile sends transactional emails from **your** mail server (SMTP): no imposed service, no extra cost. Emails go out
+automatically from booking events, queued and retried, in the customer's language.
+
+<Screenshot name="admin-email-settings" alt="Email and notifications: sender, customer and manager notifications, delivery log" />
+
+## The mail server
+
+The transport is configured on the server by whoever installed Arenile and is shown read-only:
+
+| Transport | When | What happens |
+|---|---|---|
+| **SMTP** | `ARENILE_SMTP_URL` set | Emails are actually sent |
+| **File** | no SMTP, `ARENILE_MAIL_DIR` set | Each email is saved as an `.eml` file (development and trials) |
+| **Log** | neither | Emails are not sent: the log keeps only the template and the masked recipient |
+
+The sender is `ARENILE_MAIL_FROM` (see [Configuration](/en/installazione/configurazione/#email)). For good
+deliverability set up **SPF, DKIM and DMARC** on the sender's domain.
+
+## Establishment settings
+
+| Setting | Example |
+|---|---|
+| Sender name | "Lido Esempio": shown as display name |
+| Reply-to address | `info@mio-lido.it`: where customer replies arrive |
+| Manager email | where to receive manager notifications |
+
+## Notifications
+
+<Tabs>
+  <TabItem label="To the customer">
+    | Notification | When |
+    |---|---|
+    | **Confirmation** | Booking confirmed (after payment, approval or desk confirmation). Contains code, summary, inline **QR code**, **`.ics`** calendar file and the **manage link** |
+    | **Balance reminder** | *Coming soon*: the switch is visible but disabled, the email is not sent yet |
+    | **Day-before reminder** | *Coming soon*: the switch is visible but disabled |
+    | **Cancellation** | Booking cancelled or rejected |
+    | **Refund** | Refund made |
+  </TabItem>
+  <TabItem label="To the manager">
+    | Notification | When |
+    |---|---|
+    | **New online booking** | Every booking confirmed from the public page |
+    | **Approval request** | A booking awaits your approval (for example a gazebo) |
+    | **Payment failed** | An online payment did not go through |
+    | **Delivery error** | An email was not delivered after all retries |
+  </TabItem>
+</Tabs>
+
+Each notification can be switched on or off individually.
+
+## Test email
+
+Send a test email to an address of your choice to check server, sender and spam filters. The email is queued and
+appears in the log straight away with its outcome.
+
+## Delivery log
+
+The log shows each message with template, linked booking, status (**queued**, **sending**, **sent**, **failed**,
+**cancelled**) and number of attempts. Recipients are **masked** and email contents are not stored.
+
+An email that fails is retried with growing back-off, up to 8 times; then it is marked failed and, if enabled, the
+"Delivery error" notification goes to the manager. The same email is never sent twice for the same event.
+
+## The manage link (magic link)
+
+Every confirmation email contains a **personal link** the customer uses to open the **Your booking** area: details
+and QR, balance payment, changes or cancellation within the rules, and for pass holders, day releases (see
+[The customer journey](/en/gestore/percorso-del-cliente/)).
+
+- The link is a 256-bit random code, stored only as a fingerprint: whoever has the database cannot rebuild it.
+- It is valid until the end of the booking plus 30 days.
+- If the customer loses it, from the public page they can **Request a new link** with email and booking code.
+
+From the [booking detail](/en/gestore/prenotazioni/) staff can:
+
+- **resend the confirmation email** (with a new manage link);
+- **regenerate the link** (revoking the previous ones); the new link is shown **only once** so it can be shared from
+  the desk, and can be emailed to the customer.
+
+## Templates
+
+Email texts are Markdown templates, ready in Italian, English, German and French, with variables such as
+`{{booking.code}}`, `{{customer.first_name}}` and `{{manage_url}}`. The email is composed at send time with the
+booking's current data, as HTML and plain text, with the public page's colours and logo.
+
+<Aside type="note">
+  Editing templates from the panel, per establishment, is planned but not available yet: the default templates are
+  used for now.
+</Aside>
+
+## Frequently asked questions
+
+**Emails end up in spam.**
+Set up SPF, DKIM and DMARC for the `ARENILE_MAIL_FROM` domain and use a sender on your own domain, not a free
+address.
+
+**The customer says they did not receive the confirmation.**
+Look up the booking in the delivery log: if it is **sent**, check spam and the address with them; if it is **failed**,
+fix the customer's email and use **resend the confirmation** from the booking detail.

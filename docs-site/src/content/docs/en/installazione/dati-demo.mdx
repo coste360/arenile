@@ -1,0 +1,74 @@
+---
+title: Demo data
+description: Load the Lido Demo, a complete establishment with map, price list, customers, season passes, bookings and payments, to try Arenile risk-free.
+sidebar:
+  order: 6
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import { LiveMap } from '~/components';
+
+The `arenile seed demo` command creates the **Lido Demo**: a complete, realistic establishment to explore every
+feature, train staff or try a configuration before applying it to your beach. The screenshots and interactive
+examples in this documentation are generated from exactly this data.
+
+<Aside type="caution">
+  Load the demo data on a trial instance, not in production: it creates fictitious customers, bookings and
+  payments that would end up in your daily takings.
+</Aside>
+
+## How to load it
+
+<Tabs>
+  <TabItem label="Docker">
+    ```bash
+    docker compose exec arenile /arenile seed demo
+    ```
+  </TabItem>
+  <TabItem label="Binary">
+    ```bash
+    ./bin/arenile seed demo
+    ```
+  </TabItem>
+  <TabItem label="Development">
+    ```bash
+    make seed
+    ```
+  </TabItem>
+</Tabs>
+
+The command prints the address of the public page (`/b/lido-demo`) and of the panel, and creates the user
+**demo@lido-demo.example** (Gestore Demo, owner). The password is the one in `ARENILE_ADMIN_PASSWORD` if set,
+otherwise it is generated and **shown only once**.
+
+The command is **idempotent**: running it again duplicates nothing.
+
+## What it contains
+
+| Area | Content |
+|---|---|
+| Establishment | **Lido Demo**, public address `lido-demo`, VAT 22% |
+| Season | Current (or next) season from 1 May to 30 September, active; low (May and from 16 September), mid (June and 1–15 September), high (July) and peak (August) periods |
+| Map | "Classic lido with rows" template: 8 rows of 15 umbrellas (A–H, row A by the sea) plus a row of 4 gazebos, drawn with the Coste360 map kit |
+| Zones | Front row, Second row, Back rows, Gazebos (all chosen-spot) |
+| Catalogue | Umbrella, sunbed, deckchair, cabin (pool of 10), parking space (pool of 30) components; **Basic** (1 umbrella and 2 sunbeds), **Comfort** (1 umbrella, 1 sunbed, 1 deckchair) and **Gazebo** (subject to approval) packs; extra sunbed, changing cabin, beach towel and parking extras |
+| Price list | Daily price by row and period (e.g. front row from €25 in low season to €45 at Ferragosto), half day at 0.6, fixed prices for August weeks and season passes, "high season weekend +10%" |
+| Discounts | Promo code **BENVENUTO10** (10% in May and June), **Hotel Mare** agreement |
+| Policies | "Online: full payment", "Desk: payment on arrival", "Gazebo: manager approval", "August online: Saturday-to-Saturday weeks" |
+| Operations | 40 customers, 25 season passes (some with released days), about 70 bookings in the 30 days around today, payments and cash sessions |
+
+## The demo map, live
+
+This is the Lido Demo map drawn with the same component as the panel: you can pan it, zoom it and tap the spots.
+
+<LiveMap />
+
+## Starting over
+
+With SQLite the quickest way is to delete the trial instance's data volume and run the command again:
+
+```bash
+docker compose down -v      # deletes the volume: all instance data is lost
+docker compose up -d
+docker compose exec arenile /arenile seed demo
+```

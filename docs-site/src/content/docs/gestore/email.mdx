@@ -1,0 +1,115 @@
+---
+title: Email e notifiche
+description: Mittente, notifiche ai clienti e al gestore, email di conferma con QR e calendario, link di gestione, email di prova e registro degli invii.
+sidebar:
+  order: 13
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Email e notifiche**. **Chi:** proprietari e gestori.
+
+Arenile invia le email transazionali dal **tuo** server di posta (SMTP): nessun servizio imposto, nessun costo
+in più. Le email partono in automatico dagli eventi delle prenotazioni, in coda e con tentativi ripetuti, nella
+lingua del cliente.
+
+<Screenshot name="admin-email-settings" alt="Email e notifiche: mittente, notifiche al cliente e al gestore, registro degli invii" />
+
+## Il server di posta
+
+Il trasporto è configurato sul server da chi ha installato Arenile ed è mostrato in sola lettura:
+
+| Trasporto | Quando | Cosa succede |
+|---|---|---|
+| **SMTP** | `ARENILE_SMTP_URL` impostata | Le email partono davvero |
+| **File** | nessun SMTP, `ARENILE_MAIL_DIR` impostata | Ogni email è salvata come file `.eml` (sviluppo e prove) |
+| **Log** | nessuno dei due | Le email non partono: nel log restano solo il modello e il destinatario mascherato |
+
+Il mittente è `ARENILE_MAIL_FROM` (vedi [Configurazione](/installazione/configurazione/#email)). Per una buona
+consegna configura **SPF, DKIM e DMARC** sul dominio del mittente.
+
+## Impostazioni dello stabilimento
+
+| Impostazione | Esempio |
+|---|---|
+| Nome del mittente | "Lido Esempio": compare come nome visualizzato |
+| Indirizzo di risposta | `info@mio-lido.it`: dove arrivano le risposte dei clienti |
+| Email del gestore | dove ricevere le notifiche per il gestore |
+
+## Notifiche
+
+<Tabs>
+  <TabItem label="Al cliente">
+    | Notifica | Quando |
+    |---|---|
+    | **Conferma** | Prenotazione confermata (dopo il pagamento, l'approvazione o la conferma in cassa). Contiene codice, riepilogo, **QR** in linea, file **`.ics`** per il calendario e il **link di gestione** |
+    | **Promemoria del saldo** | *In arrivo*: l'interruttore è visibile ma disattivato, l'email non viene ancora inviata |
+    | **Promemoria del giorno prima** | *In arrivo*: l'interruttore è visibile ma disattivato |
+    | **Cancellazione** | Prenotazione cancellata o rifiutata |
+    | **Rimborso** | Rimborso eseguito |
+  </TabItem>
+  <TabItem label="Al gestore">
+    | Notifica | Quando |
+    |---|---|
+    | **Nuova prenotazione online** | Ogni prenotazione confermata dalla pagina pubblica |
+    | **Richiesta di approvazione** | Una prenotazione attende la tua approvazione (ad esempio un gazebo) |
+    | **Pagamento fallito** | Un pagamento online non è andato a buon fine |
+    | **Errore di invio** | Un'email non è stata consegnata dopo tutti i tentativi |
+  </TabItem>
+</Tabs>
+
+Ogni notifica si attiva o disattiva singolarmente.
+
+## Email di prova
+
+Invia un'email di prova a un indirizzo a scelta per verificare server, mittente e filtri antispam. L'email
+viene accodata e compare subito nel registro con il suo esito.
+
+## Registro degli invii
+
+Il registro mostra ogni messaggio con modello, prenotazione collegata, stato (**in coda**, **in invio**,
+**inviato**, **fallito**, **annullato**) e numero di tentativi. I destinatari sono **mascherati** e il contenuto
+delle email non viene conservato.
+
+Un'email che non parte viene ritentata con attesa crescente, fino a 8 volte; poi risulta fallita e, se attiva,
+parte la notifica "Errore di invio" al gestore. La stessa email non viene mai inviata due volte per lo stesso
+evento.
+
+## Il link di gestione (link magico)
+
+Ogni email di conferma contiene un **link personale** con cui il cliente apre l'area
+**La tua prenotazione**: vede dettagli e QR, paga il saldo, modifica o cancella entro le regole, e se è un
+abbonato rilascia i giorni (vedi [Il percorso del cliente](/gestore/percorso-del-cliente/)).
+
+- Il link è un codice casuale lungo 256 bit, salvato solo come impronta: chi ha il database non può ricostruirlo.
+- Vale fino alla fine della prenotazione più 30 giorni.
+- Se il cliente lo perde, dalla pagina pubblica può **Richiedi un nuovo link** con email e codice prenotazione.
+
+Dal [dettaglio della prenotazione](/gestore/prenotazioni/) il personale può:
+
+- **reinviare l'email di conferma** (con un nuovo link di gestione);
+- **rigenerare il link** (revoca i precedenti); il nuovo link viene mostrato **una sola volta** per poterlo
+  condividere dal banco, e può essere inviato al cliente via email.
+
+## Modelli
+
+I testi delle email sono modelli in Markdown, già pronti in italiano, inglese, tedesco e francese, con variabili
+come `{{booking.code}}`, `{{customer.first_name}}` e `{{manage_url}}`. L'email viene composta al momento
+dell'invio con i dati aggiornati della prenotazione, in versione HTML e solo testo, con i colori e il logo della
+pagina pubblica.
+
+<Aside type="note">
+  La modifica dei modelli dal pannello, per stabilimento, è prevista ma non ancora disponibile: per ora si usano
+  i modelli predefiniti.
+</Aside>
+
+## Domande frequenti
+
+**Le email finiscono nello spam.**
+Configura SPF, DKIM e DMARC per il dominio di `ARENILE_MAIL_FROM` e usa un mittente del tuo dominio, non un
+indirizzo gratuito.
+
+**Il cliente dice di non aver ricevuto la conferma.**
+Cerca la prenotazione nel registro degli invii: se è **inviata**, controlla con lui spam e indirizzo; se è
+**fallita**, correggi l'email del cliente e usa **reinvia la conferma** dal dettaglio della prenotazione.

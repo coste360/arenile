@@ -1,0 +1,189 @@
+---
+title: Prezzi
+description: Il listino come regole - prezzi base, modificatori, sconti, prezzi a durata fissa, codici promozionali, convenzioni, simulatore, matrice, verifica di copertura e copia di stagione.
+sidebar:
+  order: 9
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+import { LivePriceSimulator } from '~/components';
+
+**Dove:** Configurazione → **Prezzi**. **Chi:** proprietari e gestori.
+
+In Arenile il listino non è una tabella fissa ma un insieme di **regole**: "in alta stagione la prima fila costa
+38 €", "nel weekend +10%", "7 giorni al prezzo di 6". Il **motore dei prezzi** le combina giorno per giorno e
+produce sempre lo stesso risultato per gli stessi dati: in cassa, online, nel simulatore e nella matrice.
+
+La barra in alto porta agli strumenti: **Listino**, **Simulatore**, **Matrice**, **Copertura**, **Policy**. Il
+selettore **Stagione** sceglie il listino su cui lavori.
+
+## Provalo subito
+
+Questo è il simulatore vero, sui dati del Lido Demo: scegli pack, zona e date e guarda le regole applicate
+giorno per giorno.
+
+<LivePriceSimulator />
+
+## Come si calcola un prezzo
+
+```text
+per ogni riga (pack su una postazione, zona o quantità):
+  1. durata fissa?  settimana, quindicina, mese, stagione con un prezzo fisso → quel prezzo
+  2. base           per ogni giorno vince UNA regola "Base" (priorità, poi la più specifica, poi la più recente)
+                    mezza giornata: regola per la fascia, altrimenti giornata × fattore mezza giornata
+  3. modificatori   supplementi e riduzioni del giorno
+  4. extra          stesso procedimento, × quantità × giorni o fasce
+sulla prenotazione:
+  5. sconti         convenzione, poi codice promozionale, poi sconti automatici
+  6. arrotondamento solo sul totale finale (nessuno, all'euro, ai 50 centesimi)
+  7. acconto        dalla policy
+```
+
+<Aside type="caution" title="Nessun prezzo, nessuna vendita">
+  Se in un giorno nessuna regola "Base" si applica a un pack, quel pack **non è vendibile** quel giorno
+  (*Manca un prezzo per le date richieste*). È voluto: meglio non vendere che vendere a zero. La
+  [verifica di copertura](#verifica-di-copertura) trova questi buchi prima dei clienti.
+</Aside>
+
+Tutti gli importi sono **IVA inclusa** e calcolati in centesimi interi, con arrotondamento al centesimo
+(*half-even*): nessun errore da virgola mobile. Ogni prenotazione conserva il dettaglio completo del calcolo:
+se cambi il listino, le prenotazioni già fatte non cambiano.
+
+## Listino
+
+<Screenshot name="admin-pricing" alt="Listino della stagione con le regole divise per fase: Base, Modificatore, Sconto" />
+
+Il listino ha tre schede: **Regole**, **Prezzi a durata fissa**, **Codici e convenzioni**.
+
+### Regole
+
+Le regole sono raggruppate per **fase**:
+
+| Fase | A cosa serve | Azioni ammesse |
+|---|---|---|
+| **Base** | il prezzo giornaliero di partenza | **Prezzo giornaliero** |
+| **Modificatore** | supplementi e riduzioni sul prezzo base | **Aggiungi importo** (anche negativo, es. `-2,00`), **Moltiplica** (es. `1,2` = +20%), **Sconto percentuale**, **Sconto fisso** |
+| **Sconto** | sconti finali (codici, convenzioni, offerte) | **Sconto percentuale**, **Sconto fisso** (per prenotazione, per riga o al giorno), **Giorni gratuiti** ("7 giorni al prezzo di 6") |
+
+<Steps>
+
+1. Premi **Nuova regola**.
+2. **Generale**: **Nome**, **Fase**, **Si applica a** (**Pack**, **Extra**, **Tutti i pack**, **Tutti gli
+   extra**) e i **Destinatari** (nessuna selezione = tutti).
+3. **Azione** e importo, percentuale o fattore. Per lo sconto fisso scegli se è **per prenotazione**, **per
+   riga** o **al giorno**.
+4. **Condizioni** (tutte facoltative: la regola vale quando sono vere **tutte** quelle indicate):
+   **Periodi**, **Giorni della settimana**, **Fasce**, **Canali**, **Formule**, **Zone**, **Categorie di
+   prezzo**, **Festivi** (**Indifferente**, **Solo festivi**, **Esclusi i festivi**), **Intervalli di date**,
+   **Giorni minimi** e **Giorni massimi**.
+5. **Avanzate**, se servono: **Attributi postazione** (es. `accessible`), **Etichette cliente** (es.
+   `storico`), **Convenzioni**, **Anticipo minimo/massimo (giorni)**, **Occupazione minima/massima (%)**.
+6. **Opzioni**: **Priorità**, **Cumulabile**, **Attiva**.
+7. Controlla il riepilogo **In breve**, scritto in linguaggio naturale, e salva.
+
+</Steps>
+
+Esempio di riepilogo: *Base per Base: 38,00 € al giorno, quando periodi: Alta stagione e categorie: Prima fila.*
+
+**Chi vince quando più regole si applicano?**
+
+- Nella fase **Base** vince **una sola** regola per giorno: la priorità più alta; a parità, la più specifica
+  (più condizioni); a parità, la più recente.
+- Nelle fasi **Modificatore** e **Sconto**, le regole **Cumulabili** si sommano in ordine di priorità; tra le
+  regole **non cumulabili** si applica solo quella più favorevole al cliente.
+
+<Aside type="tip" title="Occupazione e prezzi dinamici">
+  Le condizioni di occupazione valutano la zona nel singolo giorno. Sono disattivate di default: usale solo se
+  vuoi prezzi dinamici, e provale sempre nel simulatore.
+</Aside>
+
+### Prezzi a durata fissa
+
+Un prezzo "a pacchetto" per **Settimana**, **Quindicina**, **Mese** o **Stagione**, per pack, categoria di
+prezzo e (facoltativo) periodo: "settimana di agosto in prima fila: 270 €", "abbonamento stagionale prima fila:
+2.100 €". Quando la formula della prenotazione corrisponde, sostituisce la somma dei giorni.
+
+La scheda è una griglia **Pack** × **Categoria** con un pulsante per aggiungere il prezzo mancante; **Ogni
+periodo** indica un prezzo valido in tutta la stagione.
+
+### Codici promozionali
+
+Il cliente inserisce il codice nella pagina pubblica (o il personale in cassa); maiuscole e minuscole sono
+equivalenti.
+
+| Campo | Significato |
+|---|---|
+| **Codice** | 2–40 caratteri: lettere, numeri, `-` e `_`. Ad esempio `BENVENUTO10`. |
+| **Descrizione** | Per te e per il personale. |
+| **Azione** e **Condizioni** | Lo sconto e quando vale, come per le regole. |
+| **Validità** | **Valido dal**, **Valido fino al**. |
+| **Utilizzi massimi**, **Utilizzi per cliente** | Limiti facoltativi. |
+| **Cumulabile**, **Attiva** | Come per le regole. |
+
+### Convenzioni
+
+Sconti per partner (hotel, associazioni) o gruppi di clienti. Una convenzione con **Codice** si usa come un
+codice promozionale; senza codice si applica **solo dal pannello**, scegliendola nella prenotazione. Campi:
+**Nome**, **Partner**, **Note**, azione, condizioni, validità.
+
+## Simulatore prezzi
+
+<Screenshot name="admin-price-simulator" alt="Simulatore prezzi con il dettaglio giorno per giorno delle regole applicate" />
+
+Il simulatore usa lo stesso motore della cassa e della pagina pubblica, con in più il dettaglio passo per
+passo. Indica pack, zona, date, fascia, formula, canale, eventuali extra, codice promozionale, convenzione e
+una **Data di oggi (simulata)** (per provare l'anticipo), poi **Calcola**.
+
+Il risultato mostra:
+
+- **Totale**, **Da pagare alla prenotazione** (dall'acconto della policy) e **Arrotondamento**;
+- per ogni riga, ogni giorno con **Base**, **Regole applicate** e **Totale giorno**, oppure il prezzo fisso
+  usato;
+- il grafico **Totale per giorno** e il **Riepilogo IVA** per aliquota;
+- eventuali violazioni della policy (*La policy non permette questa prenotazione*), con il motivo.
+
+## Matrice di listino
+
+<Screenshot name="admin-price-matrix" alt="Matrice di listino con i prezzi per pack, categoria e periodo" />
+
+Una tabella **pack × categoria × periodo** con il prezzo giornaliero calcolato dal motore per un giorno feriale
+rappresentativo di ogni periodo (passa il mouse su una cella per vedere la data). Le celle **senza prezzo**
+sono evidenziate. **Esporta CSV** per condividerla o stamparla. La matrice coincide sempre con il simulatore:
+sono lo stesso calcolo.
+
+## Verifica di copertura
+
+<Screenshot name="admin-price-coverage" alt="Verifica di copertura con il calendario della stagione e gli intervalli senza prezzo" />
+
+Elenca i giorni della stagione in cui un pack attivo **non ha prezzo** per una categoria, raggruppati in
+intervalli. Il **Calendario della stagione** colora i giorni secondo quante combinazioni mancano; toccando un
+giorno filtri gli intervalli che lo comprendono. **Crea regola** apre una nuova regola già compilata per
+colmare il buco. Quando tutto è coperto: *Listino completo*.
+
+## Copia di stagione
+
+Dal listino, **Copia stagione** copia il listino su un altro anno:
+
+<Steps>
+
+1. Scegli l'**Anno di destinazione**.
+2. Scegli cosa copiare: **Periodi tariffari**, **Regole di prezzo**, **Prezzi a durata fissa**, **Policy di
+   prenotazione**.
+3. **Copia stagione**. Le date si spostano mantenendo il giorno della settimana dove ha senso; la stagione di
+   destinazione nasce in **Bozza**.
+4. Leggi la sezione **Da controllare** (ad esempio date spostate) e apri il nuovo listino.
+
+</Steps>
+
+## Ricette
+
+| Voglio… | Come |
+|---|---|
+| Prima fila più cara | Zona con categoria `row1` e regole Base con condizione **Categorie di prezzo** = `row1` |
+| Weekend di luglio +10% | Modificatore **Moltiplica** `1,1`, **Periodi** = Alta stagione, **Giorni della settimana** = sab, dom |
+| Mezza giornata al 60% | **Fattore mezza giornata** `0,6` in [Stabilimento](/gestore/stabilimento/), oppure regole Base con **Fasce** = Mattina/Pomeriggio |
+| 7 giorni al prezzo di 6 | Sconto **Giorni gratuiti**, ogni 7 giorni 1 gratuito |
+| Prezzo diverso online | Condizione **Canali** = Online |
+| Last minute | Sconto con **Anticipo massimo (giorni)** = 1 |
+| Sconto per i clienti storici | Sconto con **Etichette cliente** = `storico` (etichetta impostata sulla scheda cliente) |

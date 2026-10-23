@@ -1,0 +1,55 @@
+---
+title: Corrispettivi
+description: Riepilogo giornaliero o mensile degli incassi per aliquota IVA e metodo di pagamento, in CSV o JSON per il commercialista, e cosa Arenile non fa sul piano fiscale.
+sidebar:
+  order: 27
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Cassa** → **Corrispettivi**. **Chi:** ruoli con accesso a report ed esportazioni
+(proprietari, gestori, sola lettura).
+
+<Screenshot name="admin-corrispettivi" alt="Corrispettivi del giorno per aliquota IVA e per metodo di pagamento" />
+
+## Generare il riepilogo
+
+<Steps>
+
+1. Scegli il **Periodo**: **Giorno** (con la **Data**) o **Mese** (con **Mese** e **Anno**).
+2. Leggi il **Totale corrispettivi**, poi le tabelle **Per aliquota IVA** (**Aliquota**, **Imponibile**,
+   **Imposta**, **Totale**) e **Per metodo di pagamento** (**Operazioni**, **Totale**).
+3. **Scarica CSV** (pronto per Excel in italiano: separatore `;`, virgola decimale, intestazioni in italiano) o
+   **Scarica JSON**.
+
+</Steps>
+
+Gli importi sono **IVA inclusa**, scorporati per aliquota dal dettaglio del prezzo salvato con ogni
+prenotazione; i rimborsi sono in negativo. Il totale dei corrispettivi coincide sempre con gli incassi del
+periodo.
+
+## Cosa fa e cosa non fa Arenile
+
+<Aside type="caution">
+  **La conformità fiscale della configurazione resta responsabilità del gestore e del suo consulente.** Arenile è
+  uno strumento gestionale: non fornisce consulenza fiscale.
+</Aside>
+
+| Domanda | Risposta |
+|---|---|
+| Arenile è un registratore telematico? | **No.** Non memorizza né trasmette i corrispettivi all'Agenzia delle Entrate. |
+| Emette il documento commerciale? | **No**, oggi: si emette con il tuo registratore telematico o con la procedura che usi già. |
+| Le ricevute e i riepiloghi hanno valore fiscale? | **No**, sono documenti non fiscali. |
+| Aiuta con i corrispettivi? | **Sì**: il riepilogo per aliquota e metodo, da consegnare al commercialista. |
+| Le aliquote IVA sono predefinite? | **No**: le imposti tu, per stabilimento, pack ed extra. |
+
+Il modulo fiscale è costruito con un'interfaccia a driver: il driver predefinito non emette documenti (usi il
+tuo registratore), e i driver per le famiglie di registratori telematici potranno arrivare come contributi
+(vedi [Estensioni](/sviluppo/estensioni/)).
+
+## Pagamenti online
+
+Con Stripe gli incassi online arrivano sul conto Stripe dello stabilimento e compaiono nei corrispettivi con il
+metodo corrispondente. Il trattamento fiscale e contabile di acconti, saldi e rimborsi online va concordato con
+il commercialista.

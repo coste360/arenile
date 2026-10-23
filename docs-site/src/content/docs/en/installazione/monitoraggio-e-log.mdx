@@ -1,0 +1,69 @@
+---
+title: Monitoring and logs
+description: Health endpoints, JSON logs without personal data, request IDs, background jobs and the signals to watch during the season.
+sidebar:
+  order: 15
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Health endpoints
+
+| Endpoint | Responds | Use |
+|---|---|---|
+| `GET /healthz` | `200` if the process is alive | *liveness*: restart the container if it does not answer |
+| `GET /readyz` | `200` if the database is reachable and migrations are up to date, otherwise `503` | *readiness*: send traffic only when ready; external monitoring |
+
+The Docker image is *distroless* and does not contain `curl`: the healthcheck must be configured in the
+orchestrator, in the reverse proxy or in an external monitoring service (Uptime Kuma, Healthchecks, your
+platform's monitor).
+
+```bash
+curl -fsS https://prenota.mio-lido.it/readyz
+```
+
+## Logs
+
+Arenile writes **structured JSON logs** (`log/slog`) to standard output: with Docker read them with
+`docker compose logs -f arenile`; the official compose file rotates them (5 files of 10 MB).
+
+- Level with `ARENILE_LOG_LEVEL` (`debug`, `info`, `warn`, `error`). Use `debug` only for as long as it takes to
+  understand a problem.
+- Every request has a **request ID**, returned in the `X-Request-ID` header and in the `request_id` field of API
+  errors: quoting it finds the matching log line immediately.
+- **Never personal data or secrets in clear**: emails and phone numbers are masked; tokens, keys, signatures and
+  webhook bodies are never logged.
+
+<Aside type="tip">
+  Before attaching logs to a public report, still check that they contain no information about your establishment
+  you would rather not share.
+</Aside>
+
+## Background jobs
+
+The binary runs its periodic jobs by itself, with no cron or external queues. If a job runs late no sale is
+blocked: expired holds, for example, are ignored and cleaned up at conflict time too.
+
+| Job | What it does |
+|---|---|
+| Expired hold release | Every 30 seconds frees spots held by unfinished checkouts and moves the booking to `Expired` |
+| Completion | Closes bookings at the end of the stay |
+| Event delivery | Distributes outbox events to real time, notifications and extensions (at least once) |
+| Notifications | Sends queued emails, with retries and growing back-off up to 8 times |
+| Payment reconciliation | Every 15 minutes asks Stripe for the outcome of payments pending for more than 10 minutes |
+| Cleanup | Expired sessions and idempotency keys older than 24 hours |
+
+## What to watch
+
+| Signal | Where | What to do |
+|---|---|---|
+| `/readyz` failing | external monitor | Database, full disk, migrations: check the startup logs |
+| Undelivered emails | **Configuration → Email and notifications**, delivery log | SMTP, SPF/DKIM, wrong addresses |
+| Payment issues | reconciliation report ([Online payments](/en/gestore/pagamenti-online/#reconciliation)) | Webhook not configured or wrong secret |
+| Stripe webhook errors | Stripe dashboard, webhooks section | Webhook URL or secret |
+| Disk space | operating system | Local backups to rotate, Docker logs |
+
+<Aside type="note">
+  The Prometheus `/metrics` endpoint is foreseen by the specification (disabled by default and token protected) but
+  cannot be enabled yet in the official binary.
+</Aside>

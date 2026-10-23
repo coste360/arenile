@@ -1,0 +1,113 @@
+---
+title: Policies
+description: Booking rules - lead time, duration, payment and deposit, tiered cancellation, changes, bad weather, approval and season passes.
+sidebar:
+  order: 10
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Policies** (also a tab of the Prices bar). **Who:** owners and managers.
+
+**Policies** say **when** and **how** people can book: how far ahead, for how many days, how much is paid upfront,
+what happens if the customer cancels. Price rules make the price; policies make the conditions.
+
+<Screenshot name="admin-policies" alt="The season's booking policies with scope and priority" />
+
+## Default policy and season policies
+
+- The **Default policy** applies to every booking unless a season policy overrides it.
+- **Season policies** apply to the selected season and override the default **where the scope matches**. With
+  several applicable policies the **highest priority** wins.
+- Fields left on **As default** inherit from the default policy (or, if missing, from the **System value**).
+
+Every booking stores the conditions applied at booking time: if you change the policies later, cancellations and
+refunds of that booking still follow the conditions the customer accepted.
+
+## Creating a policy
+
+<Steps>
+
+1. In the **Season policies** tab press **New policy** (or start from a **Quick example**).
+2. **General**: **Name**, **Priority**, **Active**.
+3. **Scope**: **Channels**, **Zones**, **Packs**, **Periods**. Empty dimensions = all.
+4. Fill in only the sections you want to change compared with the default (see below).
+5. Save.
+
+</Steps>
+
+## The sections
+
+<Tabs>
+  <TabItem label="Lead time">
+    | Field | Meaning |
+    |---|---|
+    | **Minimum lead time (days)** | For example 1 = no booking for today. |
+    | **Cutoff time** | After this time the lead time counts from tomorrow (`HH:MM` format). |
+    | **Maximum lead time (days)** | How far into the future people can book. |
+    | **Same-day booking** | Allowed or not. |
+    | **Same day until** | Latest time to book for today. |
+  </TabItem>
+  <TabItem label="Duration">
+    | Field | Meaning |
+    |---|---|
+    | **Allowed formulas** | Half day, Day, Multi-day, Week, Fortnight, Month, Season. No selection = as default. |
+    | **Minimum days** / **Maximum days** | Allowed length of stay. |
+    | **Required start weekday** | For example Saturday, for Saturday-to-Saturday weeks. |
+  </TabItem>
+  <TabItem label="Payment">
+    | Field | Meaning |
+    |---|---|
+    | **Online payment** | **Full at booking**, **Deposit** or **On site**. |
+    | **Deposit type** | **Percentage** or **Fixed amount**, with **Deposit (%)** or **Deposit (€)**. |
+    | **Balance due** | **On arrival** or **Days before** (with **Days before arrival**). |
+
+    With **On site** an online booking is confirmed without payment and the balance is collected at the desk.
+  </TabItem>
+  <TabItem label="Cancellation and changes">
+    **Define refund tiers**: each tier applies **up to N days before** arrival, with **Refund (%)** and **As**
+    (**Refund** in money or **Credit** to the customer). The engine reads them from the furthest to the closest;
+    **Sort by days** puts them in order. No tiers = cancellations are not refunded.
+
+    | Example | Up to days before | Refund | As |
+    |---|---|---|---|
+    | Tier 1 | 14 | 100% | Refund |
+    | Tier 2 | 3 | 50% | Credit |
+    | Tier 3 | 0 | 0% | — |
+
+    **Changes up to days before** and **Change fee (€)** apply to changes made by the customer in the manage area.
+    **Bad weather**: **No protection**, **Refund** or **Credit** for cancellations due to bad weather.
+  </TabItem>
+  <TabItem label="Other">
+    | Field | Meaning |
+    |---|---|
+    | **Requires approval** | The booking stays **Awaiting approval** (spot held) until the manager approves or rejects it. |
+    | **Maximum spots per booking** | Limit per booking. |
+    | **Spot change during the stay** | Lets automatic assignment split a stay over several spots. |
+    | **Customer can release season days** | Pass holders release days from the manage area. |
+    | **Credit for released days** | If a released day is resold, the pass holder accrues a **Credit (%)** of its value. |
+  </TabItem>
+</Tabs>
+
+## Quick examples
+
+**Quick examples** fill in the scope and rules of typical cases; you can then change anything.
+
+| Example | What it sets |
+|---|---|
+| **August online: Saturday-to-Saturday weeks** | Scope Online channel and August periods; Week formula, starting on Saturday |
+| **Gazebos need approval** | Scope Gazebo pack; requires approval |
+| **Online: full payment** | Scope Online channel; full payment at booking |
+| **Desk: no constraints** | Scope Desk channel; no advance payment |
+
+## What the customer sees
+
+The applied conditions (deposit, balance, cancellation) are shown before confirming, both in the panel preview
+(**Terms applied**) and on the public page. If a request breaks the policy, the customer gets the reason (for example
+*Minimum lead time not met*, *Start weekday not allowed*).
+
+<Aside type="note" title="The panel can override">
+  At the desk staff can still confirm a booking outside the policy with **Book anyway**: the action stays in the
+  activity log.
+</Aside>

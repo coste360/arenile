@@ -1,0 +1,154 @@
+---
+title: Pagamenti online con Stripe
+description: Collega il tuo account Stripe passo per passo - chiavi, webhook firmato, modalità test e live, verifica, riconciliazione e rimborsi.
+sidebar:
+  order: 12
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Pagamenti online**. **Chi:** solo i **proprietari** (le credenziali di pagamento
+sono riservate al titolare).
+
+Con Stripe i clienti pagano online con carta e wallet (Apple Pay, Google Pay e gli altri metodi che attivi su
+Stripe) e l'incasso arriva **direttamente sul conto Stripe dello stabilimento**. Arenile non trattiene nulla:
+paghi solo le commissioni di Stripe.
+
+<Screenshot name="admin-payment-settings" alt="Pagamenti online: provider Stripe, modalità, chiavi e URL del webhook" />
+
+## Come funziona (in breve)
+
+<Steps>
+
+1. Il cliente completa i passi e preme **Paga**: la postazione resta bloccata per lui mentre paga (fino a 30
+   minuti).
+2. Si apre **Stripe Checkout** a tutta finestra, anche se la pagina era incorporata nel tuo sito.
+3. Stripe incassa e avvisa Arenile con un **webhook firmato**.
+4. Arenile verifica la firma, registra il pagamento e **conferma la prenotazione**, tutto in un'unica
+   operazione. Il cliente torna alla pagina, che mostra la conferma, e riceve l'email.
+
+</Steps>
+
+<Aside type="caution" title="La conferma arriva solo da Stripe">
+  Una prenotazione non viene mai confermata perché il browser del cliente "torna" dalla pagina di pagamento: solo
+  il webhook firmato di Stripe (o la riconciliazione, che interroga Stripe) può confermarla. Per questo **il
+  webhook va configurato**: senza, i pagamenti arrivano a Stripe ma le prenotazioni restano in attesa finché la
+  riconciliazione non le recupera.
+</Aside>
+
+## Configurazione passo per passo
+
+<Steps>
+
+1. **Crea o apri l'account Stripe** dello stabilimento su [stripe.com](https://stripe.com) e completa i dati
+   dell'attività. Puoi iniziare in **modalità test** senza aver completato la verifica.
+
+2. **Copia le chiavi API.** Nella dashboard di Stripe apri **Sviluppatori → Chiavi API** (con l'interruttore
+   "Modalità test" acceso per le chiavi di prova):
+   - la **chiave pubblicabile** (`pk_test_…` o `pk_live_…`);
+   - la **chiave segreta** (`sk_test_…` o `sk_live_…`).
+
+3. **In Arenile** apri **Configurazione → Pagamenti online**, scegli il provider **Stripe Checkout**, la
+   modalità **Modalità di prova** e incolla le due chiavi. Salva.
+
+4. **Copia l'URL del webhook** mostrato nella pagina. Ha questa forma:
+
+   ```text
+   https://prenota.mio-lido.it/webhooks/payments/stripe/<id-dello-stabilimento>
+   ```
+
+5. **Crea il webhook su Stripe.** In **Sviluppatori → Webhook → Aggiungi endpoint**: incolla l'URL e seleziona
+   questi eventi:
+
+   | Evento | A cosa serve |
+   |---|---|
+   | `checkout.session.completed` | Pagamento completato con Checkout: conferma la prenotazione |
+   | `payment_intent.succeeded` | Pagamento riuscito (anche con il modulo incorporato) |
+   | `payment_intent.payment_failed` | Pagamento non riuscito: il cliente può riprovare finché il blocco è valido |
+   | `charge.refunded` | Rimborso eseguito su Stripe: registrato in Arenile |
+
+6. **Copia il segreto di firma** del webhook (`whsec_…`, "Signing secret") e incollalo in Arenile come
+   segreto del webhook. Salva.
+
+7. **Verifica.** Premi **Verifica credenziali**: Arenile chiede a Stripe i dati dell'account e
+   mostra il nome dell'attività se le chiavi sono giuste.
+
+8. **Prova una prenotazione** dalla pagina pubblica, possibilmente dal telefono, con la carta di test
+   `4242 4242 4242 4242` (qualsiasi data futura e CVC). Controlla che arrivi la conferma e che la prenotazione
+   risulti **Confermata** e incassata nel pannello.
+
+9. **Passa in produzione.** Ripeti i passi 2–6 con l'interruttore "Modalità test" spento (chiavi `live` e un
+   nuovo webhook live, con il suo segreto) e scegli **Pagamenti reali** in Arenile.
+
+</Steps>
+
+<Aside type="note" title="Le chiavi sono al sicuro">
+  Le chiavi segrete vengono cifrate prima di essere salvate e **non vengono mai mostrate di nuovo**: il pannello
+  indica solo che sono configurate e le ultime quattro cifre. Per cambiarle incolla il nuovo valore; lasciando
+  il campo intatto la chiave salvata resta quella. Le credenziali di test e quelle live sono salvate
+  separatamente. Non finiscono mai nei log né nel registro attività.
+</Aside>
+
+## Modalità di pagamento
+
+<CardGrid>
+  <Card title="Stripe Checkout (predefinita)" icon="approve-check">
+    La pagina di pagamento ospitata da Stripe, a tutta finestra. È la soluzione più robusta dentro gli iframe e
+    su ogni browser, con tutti i metodi che attivi su Stripe.
+  </Card>
+  <Card title="Modulo incorporato (in arrivo)" icon="laptop">
+    Il Payment Element di Stripe dentro la pagina di prenotazione, senza cambiare pagina. Nel pannello
+    l'opzione **Pagamento incorporato nella pagina** è visibile ma non ancora attivabile: oggi il pagamento si
+    apre sempre sulla pagina sicura di Stripe Checkout.
+  </Card>
+</CardGrid>
+
+Quanto si paga online (tutto, un acconto o niente) lo decide la [policy](/gestore/policy/) con ambito canale
+Online. Se la policy online prevede il pagamento all'arrivo, la prenotazione online si conferma senza pagamento e
+si salda in cassa.
+
+## Pagamento manuale
+
+Se scegli il provider **Nessun pagamento online** (o non configuri Stripe) non c'è pagamento online: le prenotazioni online si
+confermano (o vanno in approvazione) e il saldo si incassa alla [cassa](/gestore/cassa/) in contanti, POS o
+bonifico.
+
+## Riconciliazione
+
+Internet non è perfetta: un webhook può perdersi. Per questo Arenile, **ogni 15 minuti**, chiede a Stripe
+l'esito dei pagamenti in sospeso da più di 10 minuti e applica il risultato con la stessa procedura del webhook.
+Un webhook arrivato in ritardo non viene mai applicato due volte.
+
+Il **report di riconciliazione** confronta i pagamenti presso Stripe con il registro di Arenile e segnala:
+
+| Problema | Significato |
+|---|---|
+| In sospeso da più di 10 minuti | Il pagamento non ha ancora un esito: di solito un webhook mancante |
+| Esito diverso | Stripe dice "riuscito" o "fallito" e Arenile no |
+| Incasso senza registrazione | Stripe ha incassato ma il registro non ha la riga corrispondente |
+| Importo diverso | Gli importi non coincidono |
+| Provider non raggiungibile | Stripe non ha risposto o il driver non consente la verifica |
+
+Puoi anche avviare la riconciliazione a mano dallo stesso report.
+
+## Rimborsi
+
+Dal [dettaglio della prenotazione](/gestore/prenotazioni/#rimborsi), un rimborso su un pagamento fatto con
+Stripe si può eseguire **tramite Stripe**: il denaro torna sulla carta del cliente. Il rimborso resta **In
+corso** finché Stripe non lo conferma (webhook `charge.refunded` o riconciliazione), poi diventa **Riuscito**.
+Anche un rimborso fatto direttamente dalla dashboard di Stripe viene registrato in Arenile. Il rimborso non può
+mai superare quanto incassato.
+
+La cancellazione di una prenotazione calcola il rimborso dalle condizioni accettate dal cliente; puoi rimborsare
+in denaro o come credito al cliente.
+
+## Risoluzione dei problemi
+
+| Sintomo | Cosa controllare |
+|---|---|
+| La verifica delle credenziali fallisce | Chiave segreta della modalità sbagliata (test o live) o chiave revocata |
+| Pagamento riuscito su Stripe ma prenotazione in attesa | Webhook non creato, URL sbagliato (dominio, id dello stabilimento) o segreto di firma errato. La dashboard di Stripe mostra gli errori di consegna; la riconciliazione recupera entro 15 minuti |
+| Stripe segnala errori `400` sul webhook | Segreto di firma errato o di un'altra modalità (test vs live) |
+| Il cliente vede "Il servizio di pagamento non risponde" | Stripe temporaneamente non raggiungibile: la pagina invita a riprovare tra poco |
+| Il blocco è scaduto durante il pagamento | Il cliente ha impiegato più di 30 minuti: se il pagamento arriva comunque, controlla il report di riconciliazione e gestisci la prenotazione dal pannello |

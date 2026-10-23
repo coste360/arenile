@@ -1,0 +1,95 @@
+---
+title: Authentication
+description: Cookie session, double-submit CSRF token, two-step verification, API keys and permissions by role.
+sidebar:
+  order: 1
+---
+
+import { Steps, Aside, Badge } from '@astrojs/starlight/components';
+
+## Panel session
+
+<Steps>
+
+1. `POST /api/admin/v1/auth/login` with email, password and, if two-step verification is enabled, the code:
+
+   ```bash
+   curl -i https://prenota.mio-lido.it/api/admin/v1/auth/login \
+     -H 'Content-Type: application/json' \
+     -c cookies.txt \
+     -d '{"email":"owner@mio-lido.it","password":"…","totp_code":"123456"}'
+   ```
+
+   On success the server sets two cookies:
+   - `arenile_session`: `HttpOnly`, `Secure`, `SameSite=Lax`, rotated at every sign-in;
+   - `arenile_csrf`: readable by the client, for the CSRF token.
+
+   If the TOTP code is missing the response is `401` with `type` `totp_required`; a wrong code gives `invalid_totp`.
+
+2. Requests that **read** send only the session cookie.
+
+3. Requests that **change** data (`POST`, `PUT`, `PATCH`, `DELETE`) must also send the `X-CSRF-Token` header with the
+   same value as the `arenile_csrf` cookie (double submit). Otherwise: `403` `csrf_failed`.
+
+   ```bash
+   CSRF=$(grep arenile_csrf cookies.txt | awk '{print $7}')
+   curl https://prenota.mio-lido.it/api/admin/v1/auth/logout -X POST \
+     -b cookies.txt -H "X-CSRF-Token: $CSRF"
+   ```
+
+4. `GET /api/admin/v1/auth/me` returns the user, their establishments, roles and permissions.
+
+</Steps>
+
+The session expires after a period of inactivity (7 days by default) and is renewed with use.
+
+### Sign-in limits
+
+30 attempts per 15 minutes per IP and 8 failed attempts per 15 minutes per account; beyond that, `429` `rate_limited`
+with `retry_after` in seconds.
+
+### Two-step verification
+
+`POST /api/admin/v1/auth/totp/enroll` returns the secret and the `otpauth://` URL to show as a QR code;
+`POST /api/admin/v1/auth/totp/confirm` with a valid code enables it. With `ARENILE_REQUIRE_TOTP_FOR_OWNERS=true` an
+owner without TOTP gets `totp_enrolment_required`.
+
+## API keys <Badge text="Coming (M5)" variant="caution" />
+
+The contract foresees API keys for server-to-server integrations, bound to an establishment and with scopes equal to
+the permissions:
+
+```http
+Authorization: Bearer ar_live_<prefix>_<secret>
+```
+
+With an API key no cookies or CSRF are needed. Creating and revoking keys from the panel arrives with milestone M5.
+
+## Permissions
+
+Each operation requires a permission, checked in the domain service (not just in the handler). The values are stable
+and will also be the scopes of API keys.
+
+| Permission | Meaning | Roles |
+|---|---|---|
+| `establishment.configure` | Configuration, prices, policies, public page, email | owner, manager |
+| `users.manage` | Users, roles, API keys | owner |
+| `payments.configure` | Payment providers and credentials | owner |
+| `bookings.write` | Create and edit bookings | owner, manager, cashier |
+| `cash.operate` | Payments and cash desk | owner, manager, cashier |
+| `refunds.issue` | Refunds | owner, manager |
+| `operations.run` | Check-in, releases, blocks | owner, manager, cashier, beach_staff |
+| `bookings.read` | Map and bookings | everyone |
+| `reports.read` | Reports and exports | owner, manager, viewer |
+
+Without the permission: `403` `forbidden`. A resource of another establishment answers `404`, without revealing that
+it exists.
+
+## Public API
+
+The public API has no sign-in. A booking's personal data can be read only with:
+
+- the **checkout session token** (`X-Arenile-Checkout` header), during the booking;
+- the **magic link token** (in the `/manage/{token}` path), afterwards.
+
+See [Public API and checkout](/en/api/api-pubblica/).

@@ -1,0 +1,195 @@
+---
+title: Eventi e webhook in uscita
+description: Gli eventi di dominio di Arenile, il formato versionato, l'outbox transazionale, la consegna almeno una volta, la firma Arenile-Signature e il flusso in tempo reale.
+sidebar:
+  order: 7
+---
+
+import { Aside, Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+Ogni cambiamento rilevante (una prenotazione confermata, un pagamento, una modifica del listino) produce un
+**evento di dominio**. Gli eventi alimentano il tempo reale del pannello, le email, le estensioni e i webhook in
+uscita verso i tuoi sistemi.
+
+## Outbox: niente eventi fantasma
+
+L'evento viene scritto nella tabella `outbox_events` **nella stessa transazione** della modifica che lo genera.
+Quindi:
+
+- l'evento esiste **se e solo se** la modifica è stata confermata: nessun evento per un'operazione annullata,
+  nessuna modifica senza evento;
+- un job lo distribuisce poi ai consumatori, con consegna **almeno una volta**: i consumatori devono essere
+  idempotenti sull'`id` dell'evento.
+
+## Formato
+
+```json
+{
+  "id": "evt_01JB7K3Q9X…",
+  "type": "booking.confirmed",
+  "establishment_id": "0192f…",
+  "occurred_at": "2027-07-01T09:12:44Z",
+  "data": { "...": "..." },
+  "version": 1
+}
+```
+
+`version` è la versione del payload di quel tipo: un cambiamento incompatibile crea una nuova versione. I payload
+contengono identificativi, date, importi e stati; **mai** dati personali in chiaro o segreti.
+
+## Tipi di evento
+
+| Area | Eventi |
+|---|---|
+| Prenotazioni | `booking.created`, `booking.held`, `booking.confirmed`, `booking.modified`, `booking.cancelled`, `booking.checked_in`, `booking.no_show`, `booking.completed`, `booking.approval_requested`, `booking.rejected`, `booking.expired` |
+| Disponibilità | `allocation.released`, `allocation.assigned`, `hold.created`, `hold.released`, `hold.converted`, `spot_block.created`, `spot_block.deleted` |
+| Abbonamenti | `season.day_released`, `season.day_release_revoked`, `season.renewal_offered` |
+| Pagamenti | `payment.pending`, `payment.succeeded`, `payment.failed`, `payment.refunded`, `payment.refund_scheduled` (rimborso automatico avviato: pagamento tardivo o doppio) |
+| Clienti | `customer.created`, `customer.updated`, `customer.anonymized` |
+| Cassa e fiscale | `cash_session.opened`, `cash_session.closed`, `cash_movement.recorded`, `fiscal_document.recorded` |
+| Configurazione | `config.pricing_changed`, `config.map_changed`, `config.online_changed` |
+| Notifiche | `message.failed` |
+
+### Eventi di configurazione
+
+`config.pricing_changed`, `config.map_changed` e `config.online_changed` condividono il payload versione 1: chi
+li riceve li tratta come "ricarica la configurazione dello stabilimento".
+
+```json
+{
+  "type": "config.pricing_changed",
+  "version": 1,
+  "data": {
+    "entity": "price_rule",
+    "entity_id": "01J…",
+    "change": "updated",
+    "season_id": "01J…",
+    "version": 3
+  }
+}
+```
+
+- `entity`: per i prezzi `price_rule`, `fixed_price`, `promo_code`, `agreement`, `booking_policy`, `season_copy`,
+  `season`, `rate_period`, `establishment_settings`, `pack`, `extra`, `setup`; per la mappa `map`, `zone`, `pool`,
+  `setup`; per la pagina pubblica `online_settings`, `terms_version`, `payment_settings`, `email_settings` (mai i
+  valori segreti).
+- `change`: `created`, `updated`, `deleted`, `archived`, `copied`, `saved`, `rows_generated`, `applied`.
+- La configurazione guidata scrive un solo evento per tipo, con `reason` (`setup_template`, `quick_pricelist`),
+  `template`, `map_ids`, `zone_ids` e `counts`.
+
+## Webhook in uscita <Badge text="Configurazione in arrivo (M5)" variant="caution" />
+
+Il motore di consegna dei webhook in uscita è già nel core; la configurazione degli endpoint dal pannello (con
+filtro sugli eventi, log delle consegne e reinvio) arriva con la milestone M5. Ecco come funziona la consegna:
+
+| Aspetto | Comportamento |
+|---|---|
+| Richiesta | `POST` JSON con l'evento come corpo, `User-Agent: Arenile-Webhooks/1` |
+| Header | `Arenile-Signature`, `Arenile-Event-Id`, `Arenile-Event-Type` |
+| Tentativi | Backoff esponenziale fino a 24 ore |
+| Disattivazione | Dopo 20 consegne fallite consecutive l'endpoint viene disattivato, con voce nel registro attività |
+| Più istanze | Ogni tentativo è "rivendicato": due istanze sullo stesso database non inviano due volte |
+
+### Verificare la firma
+
+```http
+Arenile-Signature: t=1782896564,v1=5f2b8c…
+```
+
+`v1` è l'HMAC-SHA256, in esadecimale, di `"<t>.<corpo grezzo>"` con il segreto dell'endpoint (`whsec_…`). Il
+timestamp fa parte del messaggio firmato: rifiuta le richieste con un `t` troppo lontano dall'ora attuale
+(5 minuti è un buon valore). Durante una rotazione del segreto possono esserci più valori `v1`: basta che uno
+corrisponda.
+
+<Tabs>
+  <TabItem label="Node.js">
+    ```js
+    import crypto from 'node:crypto';
+
+    export function verify(secret, header, rawBody, toleranceSec = 300) {
+      const parts = Object.groupBy(header.split(','), (p) => p.split('=')[0]);
+      const t = parts.t?.[0]?.slice(2);
+      const sigs = (parts.v1 ?? []).map((p) => p.slice(3));
+      if (!t || Math.abs(Date.now() / 1000 - Number(t)) > toleranceSec) return false;
+      const want = crypto.createHmac('sha256', secret).update(`${t}.${rawBody}`).digest('hex');
+      return sigs.some((s) => s.length === want.length &&
+        crypto.timingSafeEqual(Buffer.from(s), Buffer.from(want)));
+    }
+    ```
+  </TabItem>
+  <TabItem label="Go">
+    ```go
+    func Verify(secret, header string, body []byte, now time.Time) bool {
+        var ts string
+        var sigs []string
+        for _, p := range strings.Split(header, ",") {
+            k, v, _ := strings.Cut(strings.TrimSpace(p), "=")
+            switch k {
+            case "t":
+                ts = v
+            case "v1":
+                sigs = append(sigs, v)
+            }
+        }
+        sec, err := strconv.ParseInt(ts, 10, 64)
+        if err != nil || now.Sub(time.Unix(sec, 0)).Abs() > 5*time.Minute {
+            return false
+        }
+        m := hmac.New(sha256.New, []byte(secret))
+        m.Write([]byte(ts + "."))
+        m.Write(body)
+        want := hex.EncodeToString(m.Sum(nil))
+        for _, s := range sigs {
+            if hmac.Equal([]byte(s), []byte(want)) {
+                return true
+            }
+        }
+        return false
+    }
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    import hashlib, hmac, time
+
+    def verify(secret: str, header: str, raw_body: bytes, tolerance: int = 300) -> bool:
+        items = [p.strip().split("=", 1) for p in header.split(",") if "=" in p]
+        ts = next((v for k, v in items if k == "t"), None)
+        sigs = [v for k, v in items if k == "v1"]
+        if ts is None or abs(time.time() - int(ts)) > tolerance:
+            return False
+        want = hmac.new(secret.encode(), f"{ts}.".encode() + raw_body, hashlib.sha256).hexdigest()
+        return any(hmac.compare_digest(s, want) for s in sigs)
+    ```
+  </TabItem>
+</Tabs>
+
+## Tempo reale nel pannello (SSE)
+
+`GET /api/admin/v1/stream` è un flusso **Server-Sent Events** autenticato con la sessione. Il nome dell'evento SSE
+è un *topic* e il contenuto è leggero, senza dati personali:
+
+| Topic | Generato da |
+|---|---|
+| `booking.changed` | prenotazioni e pagamenti |
+| `allocation.changed` | occupazioni, rilasci, blocchi |
+| `hold.changed` | blocchi temporanei |
+| `cash.changed` | cassa e documenti fiscali |
+| `customer.changed` | clienti |
+| `config.changed` | configurazione |
+
+```text
+event: allocation.changed
+id: 01JB7K…
+data: {"type":"booking.confirmed","booking_id":"…","spot_ids":["…"],"dates":["2027-08-14"]}
+```
+
+Il client invalida i dati interessati e li ricarica. Dopo una disconnessione, il browser si riconnette con
+`Last-Event-ID` e riceve gli eventi persi (se non sono più in memoria, il pannello ricarica i dati). Per più
+istanze in parallelo serve un'estensione `EventBus` (ad esempio PostgreSQL `LISTEN/NOTIFY`).
+
+## Consumatori interni
+
+Le estensioni Go ricevono ogni evento tramite l'interfaccia `ext.EventSink` (vedi
+[Estensioni](/sviluppo/estensioni/)). Anche le email transazionali sono un consumatore interno: ogni email ha una
+chiave di deduplica per evento, così la consegna "almeno una volta" non manda mai due email.

@@ -1,0 +1,80 @@
+---
+title: Seasons and periods
+description: Opening seasons, non-overlapping rate periods (low, mid, high, peak), local holidays and season copy.
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Seasons and periods**. **Who:** owners and managers.
+
+- The **season** is the opening period of a year (for example from 1 May to 30 September).
+- **Rate periods** split the season into price bands: low, mid, high season, peak (Ferragosto) or free codes. Price
+  rules use them as a condition.
+- **Local holidays** add to the Italian national holidays already included.
+
+<Screenshot name="admin-seasons" alt="Seasons with the coloured timeline of the rate periods" />
+
+## Creating a season
+
+<Steps>
+
+1. Press **New season**.
+2. Enter **Year**, **Opens on**, **Closes on**.
+3. Choose the **Status**: **Draft** (in preparation), **Active** (on sale) or **Closed**.
+4. Save.
+
+</Steps>
+
+The public page limits its calendar to the active season. Off season the map of the day shows "Establishment
+closed". There is one season per year.
+
+## Rate periods
+
+Each day of the season belongs to **at most one period**: Arenile rejects a range that overlaps another period or
+that falls outside the season's dates.
+
+<Steps>
+
+1. In the season press **New period**, or use the **Typical periods** (**Low season**, **Mid season**, **High
+   season**, **Peak**) to start from a ready-made code.
+2. **Code**: `low`, `mid`, `high`, `peak` or a free code (for example `ferragosto`).
+3. **Colour**: the colour of the period in the timeline and in the public calendar (if you enable highlighting
+   periods).
+4. **Date ranges**: one or more **From**/**To** ranges (**Add range**). A period can have separate ranges, for
+   example "mid" in June and in the first half of September.
+
+</Steps>
+
+The **Period view** switches between **Timeline** and **Calendar**. If some days of the season are not covered by
+any period, a notice counts them: rules tied to periods will not apply to those days.
+
+<Aside type="caution">
+  Deleting a period means the rules that use it no longer apply on those days: check the
+  [coverage check](/en/gestore/prezzi/#coverage-check) afterwards.
+</Aside>
+
+## Local holidays
+
+Days treated as holidays by price rules with the "Holidays" condition, in addition to the national holidays already
+included in the program.
+
+- **Specific dates**: one precise day (**Add date**), for example an event.
+- **Yearly holidays**: `MM-DD` format (**Add yearly holiday**), for example `08-16` for the patron saint.
+
+## Copying the season to the next year
+
+Copying the price list (periods, rules, fixed prices, policies) is done from
+[Prices → Copy season](/en/gestore/prezzi/#season-copy): dates shift keeping the weekday where it makes sense and the
+target season is created as a draft.
+
+## Frequently asked questions
+
+**Can I have two seasons in the same year?**
+One season per year. For a winter reopening use periods and [closures](/en/gestore/chiusure/).
+
+**Must Ferragosto be a period of its own?**
+It is not required: you can make one `peak` period for all of August and a rule with a specific date range for
+14–16 August. Choose whichever is clearest for you.

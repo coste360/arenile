@@ -186,6 +186,20 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
+  docs:
+    # Documentation of this release: screenshots regenerated on the real binary,
+    # site built as an artifact (Pages deploy only if vars.DOCS_PAGES is "true").
+    # Documentation only: no binaries are uploaded here.
+    name: Documentation site
+    uses: ./.github/workflows/docs.yml
+    with:
+      version: ${{ github.ref_name }}
+      screenshots: true
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
   release:
     name: GitHub release (notes and API contract, no binaries)
     needs: [image, portal-bundle]

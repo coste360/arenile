@@ -1,0 +1,150 @@
+---
+title: Online payments with Stripe
+description: Connect your Stripe account step by step - keys, signed webhook, test and live mode, verification, reconciliation and refunds.
+sidebar:
+  order: 12
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Online payments**. **Who:** **owners** only (payment credentials are reserved to the
+owner).
+
+With Stripe customers pay online by card and wallet (Apple Pay, Google Pay and the other methods you enable on
+Stripe) and the money goes **straight to the establishment's Stripe account**. Arenile takes nothing: you pay only
+Stripe's fees.
+
+<Screenshot name="admin-payment-settings" alt="Online payments: Stripe provider, mode, keys and webhook URL" />
+
+## How it works (in short)
+
+<Steps>
+
+1. The customer completes the steps and presses **Pay**: the spot stays held for them while they pay (up to 30
+   minutes).
+2. **Stripe Checkout** opens at full window, even if the page was embedded in your website.
+3. Stripe collects the money and notifies Arenile with a **signed webhook**.
+4. Arenile verifies the signature, records the payment and **confirms the booking**, all in a single operation. The
+   customer returns to the page, which shows the confirmation, and receives the email.
+
+</Steps>
+
+<Aside type="caution" title="Confirmation only comes from Stripe">
+  A booking is never confirmed because the customer's browser "comes back" from the payment page: only Stripe's
+  signed webhook (or reconciliation, which queries Stripe) can confirm it. That is why **the webhook must be
+  configured**: without it payments reach Stripe but bookings stay pending until reconciliation recovers them.
+</Aside>
+
+## Step-by-step setup
+
+<Steps>
+
+1. **Create or open the establishment's Stripe account** at [stripe.com](https://stripe.com) and complete the
+   business details. You can start in **test mode** before verification is complete.
+
+2. **Copy the API keys.** In the Stripe dashboard open **Developers → API keys** (with the "Test mode" switch on
+   for test keys):
+   - the **publishable key** (`pk_test_…` or `pk_live_…`);
+   - the **secret key** (`sk_test_…` or `sk_live_…`).
+
+3. **In Arenile** open **Configuration → Online payments**, choose the **Stripe Checkout** provider, **Test mode**
+   and paste the two keys. Save.
+
+4. **Copy the webhook URL** shown on the page. It looks like this:
+
+   ```text
+   https://prenota.mio-lido.it/webhooks/payments/stripe/<establishment-id>
+   ```
+
+5. **Create the webhook on Stripe.** In **Developers → Webhooks → Add endpoint**: paste the URL and select these
+   events:
+
+   | Event | Purpose |
+   |---|---|
+   | `checkout.session.completed` | Payment completed with Checkout: confirms the booking |
+   | `payment_intent.succeeded` | Payment succeeded (also with the embedded form) |
+   | `payment_intent.payment_failed` | Payment failed: the customer can retry while the hold is valid |
+   | `charge.refunded` | Refund made on Stripe: recorded in Arenile |
+
+6. **Copy the webhook signing secret** (`whsec_…`, "Signing secret") and paste it into Arenile as the webhook
+   secret. Save.
+
+7. **Verify.** Press **Check credentials**: Arenile asks Stripe for the account details and shows the
+   business name if the keys are right.
+
+8. **Try a booking** from the public page, ideally from your phone, with the test card `4242 4242 4242 4242` (any
+   future date and CVC). Check that the confirmation arrives and that the booking is **Confirmed** and paid in the
+   panel.
+
+9. **Go live.** Repeat steps 2–6 with the "Test mode" switch off (`live` keys and a new live webhook with its own
+   secret) and choose **Live payments** in Arenile.
+
+</Steps>
+
+<Aside type="note" title="Your keys are safe">
+  Secret keys are encrypted before being saved and **are never shown again**: the panel only says they are configured
+  and shows the last four characters. To change them paste the new value; leaving the field untouched keeps the saved
+  key. Test and live credentials are saved separately. They never end up in logs or in the activity log.
+</Aside>
+
+## Payment modes
+
+<CardGrid>
+  <Card title="Stripe Checkout (default)" icon="approve-check">
+    The payment page hosted by Stripe, at full window. The most robust solution inside iframes and on every browser,
+    with all the methods you enable on Stripe.
+  </Card>
+  <Card title="Embedded form (coming soon)" icon="laptop">
+    Stripe's Payment Element inside the booking page, without changing page. In the panel the **Payment embedded
+    in the page** option is visible but cannot be turned on yet: today payment always opens on Stripe Checkout's
+    secure page.
+  </Card>
+</CardGrid>
+
+How much is paid online (everything, a deposit or nothing) is decided by the [policy](/en/gestore/policy/) scoped to
+the Online channel. When the online policy has payment on arrival, the online booking is confirmed without payment and paid at the desk.
+
+## Manual payment
+
+If you choose the **No online payment** provider (or do not configure Stripe) there is no online payment: online bookings are
+confirmed (or go to approval) and the balance is collected at the [cash desk](/en/gestore/cassa/) in cash, card or
+bank transfer.
+
+## Reconciliation
+
+The internet is not perfect: a webhook can get lost. That is why Arenile, **every 15 minutes**, asks Stripe for the
+outcome of payments pending for more than 10 minutes and applies the result with the same procedure as the webhook. A
+webhook arriving late is never applied twice.
+
+The **reconciliation report** compares the payments at Stripe with Arenile's ledger and flags:
+
+| Issue | Meaning |
+|---|---|
+| Pending for more than 10 minutes | The payment has no outcome yet: usually a missing webhook |
+| Different outcome | Stripe says "succeeded" or "failed" and Arenile does not |
+| Payment without ledger entry | Stripe collected but the ledger has no matching row |
+| Different amount | The amounts do not match |
+| Provider unreachable | Stripe did not answer or the driver cannot check |
+
+You can also run reconciliation by hand from the same report.
+
+## Refunds
+
+From the [booking detail](/en/gestore/prenotazioni/#refunds), a refund on a payment made with Stripe can be made
+**through Stripe**: the money goes back to the customer's card. The refund stays **Pending** until Stripe confirms it
+(`charge.refunded` webhook or reconciliation), then becomes **Succeeded**. A refund made directly from the Stripe
+dashboard is also recorded in Arenile. A refund can never exceed what was paid.
+
+Cancelling a booking computes the refund from the terms the customer accepted; you can refund in money or as credit
+to the customer.
+
+## Troubleshooting
+
+| Symptom | What to check |
+|---|---|
+| The credentials check fails | Secret key of the wrong mode (test or live) or revoked key |
+| Payment succeeded on Stripe but booking still pending | Webhook not created, wrong URL (domain, establishment id) or wrong signing secret. The Stripe dashboard shows delivery errors; reconciliation recovers within 15 minutes |
+| Stripe reports `400` errors on the webhook | Wrong signing secret or one from the other mode (test vs live) |
+| The customer sees "The payment service is not responding" | Stripe temporarily unreachable: the page invites them to retry shortly |
+| The hold expired during payment | The customer took more than 30 minutes: if the payment arrives anyway, check the reconciliation report and handle the booking from the panel |

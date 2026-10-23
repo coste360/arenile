@@ -1,0 +1,86 @@
+---
+title: Payment drivers
+description: How to write a new payment driver for Arenile - the PaymentProvider interface, signed webhooks, idempotency, optional capabilities, registration and network-free tests.
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+A payment driver connects Arenile to a payment network (Stripe, Satispay, a virtual POS…). The core includes `manual`
+(no online payment, balance at the desk) and `stripe`. Each establishment chooses the active provider and saves its
+own encrypted credentials.
+
+## The interface
+
+```go
+type PaymentProvider interface {
+    Code() string                       // stable identifier, e.g. "stripe"
+    Capabilities() PaymentCapabilities  // Online, Refunds, PartialRefunds, Wallets, EmbeddedMode
+    CreatePayment(ctx context.Context, req CreatePaymentRequest) (*CreatePaymentResult, error)
+    ParseWebhook(ctx context.Context, r *http.Request, creds Credentials) (*PaymentEvent, error)
+    Refund(ctx context.Context, req RefundRequest) (*RefundResult, error)
+}
+```
+
+| Method | Contract |
+|---|---|
+| `CreatePayment` | Receives amount in cents, currency, description, email, return and cancel URLs, preferred mode, **`IdempotencyKey`** (`<booking_id>:<attempt>`, to forward to the provider), metadata and the establishment's **decrypted credentials**. Returns `ProviderRef`, `Mode` (`redirect`, `embedded`, `none`), `RedirectURL` or `ClientSecret`, expiry. |
+| `ParseWebhook` | Verifies the **signature** with the credentials of the establishment in the URL and normalises the event into a `PaymentEvent` (`payment.succeeded`, `payment.failed`, `payment.refunded`, `payment.pending`) with the **provider event id** for de-duplication. Missing or wrong signature → `ext.ErrInvalidSignature`; authentic but irrelevant event → `ext.ErrIgnoredEvent`. |
+| `Refund` | Full or partial refund, idempotent; `ext.ErrNotSupported` if the provider cannot refund. |
+
+## Optional capabilities
+
+The gateway recognises a few extra capabilities, declared with `pkg/ext` types only: an external driver implements
+them without importing internal packages (*structural typing*).
+
+| Interface | Method | Purpose |
+|---|---|---|
+| `PaymentStatusChecker` | `PaymentStatus(ctx, providerRef, creds) (*ext.PaymentEvent, error)` | **Reconciliation**: queries a payment by reference. Without it, the driver appears as "provider unreachable" in the report. |
+| `CredentialsVerifier` | `VerifyCredentials(ctx, creds) (accountLabel string, err error)` | The credentials check button in the panel. |
+| `PaymentCanceller` | `CancelPayment(ctx, providerRef, creds) error` | Closes a payment replaced by a new attempt, so the customer cannot pay twice. |
+
+## Procedure
+
+<Steps>
+
+1. Read the specification (sections 13, 18, 22), the payment invariants (INV-19, INV-22, INV-23, INV-24) and the
+   `manual` and `stripe` drivers (`internal/domain/payment/stripe`).
+2. Create the package: in the core under `internal/domain/payment/<code>`, or in your own module importing only
+   `pkg/ext`. **Do not change** the `pkg/ext` interfaces.
+3. Implement the five methods. Put `establishment_id`, `booking_id` and `booking_code` in the provider metadata: they
+   tie the event back to the booking.
+4. Make the provider API's base URL configurable and the clock injectable: tests run against an `httptest.Server` and
+   check the signature tolerance with a fake clock.
+5. Register the driver: in the `internal/app` registry for a core driver, or with
+   `app.WithExtensions(ext.Extensions{PaymentProviders: …})` in your own `main` (see [Extensions](/en/sviluppo/estensioni/)).
+6. Write the tests (no network): `CreatePayment` against the fake server; signed webhooks that are valid, badly
+   signed, stale, duplicated and of unknown type; refunds according to the capabilities; integration: a webhook
+   confirms the booking **exactly once**, in one transaction, and a duplicate delivery has no effect.
+7. Document the credential fields, the webhook URL and the events to enable, add a `CHANGELOG.md` entry and run
+   `make check-full`.
+
+</Steps>
+
+In Claude Code the `/new-payment-driver` skill guides exactly this procedure.
+
+## Non-negotiable rules
+
+- **Confirmation comes only from `ParseWebhook`** (or reconciliation), never from the browser's return URL.
+- **A duplicate event never counts the paid amount twice**: de-duplication uses the event id you return.
+- **No secrets in logs** or error messages: no keys, signatures, raw bodies, emails or tokens. For failures return only
+  a short code (`FailureReason`), never the provider's message.
+- Network errors, `5xx` and `429` from the provider must be reported as temporary: the customer sees "try again
+  shortly" (`503 payment_provider_unavailable`).
+
+## How the Stripe driver does it
+
+The core Stripe driver is a good example: no SDK (just `net/http` with form requests and a pinned `Stripe-Version`),
+a **Checkout Session** in redirect mode expiring after 30 minutes or a PaymentIntent for the embedded form, HMAC
+verification of `Stripe-Signature` with a 5-minute tolerance and multiple `v1` values, idempotent refunds with
+`POST /v1/refunds`, `PaymentStatus` for reconciliation and `VerifyCredentials` with `GET /v1/account`.
+
+<Aside type="tip">
+  Before starting a driver open an issue with the "New driver" template: agreeing on the scope avoids work that could
+  not be accepted.
+</Aside>

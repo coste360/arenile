@@ -1,0 +1,71 @@
+---
+title: Customers and GDPR
+description: Customer records with search, duplicates, tags, marketing consent, history, credits, data export and anonymisation.
+sidebar:
+  order: 24
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Customers**. **Who:** cashiers, managers and owners edit; everyone views.
+
+<Screenshot name="admin-customers" alt="Customer list with search by name, phone, email and tag" />
+
+## Searching
+
+**Search** by name, phone or email (no need to worry about accents) and filter by **Tag**. Anonymised customers are
+hidden: **Show anonymised** to see them. The **Marketing** column says whether the customer gave consent.
+
+## New customer
+
+**New customer** asks for the minimal data: **Last name** and a contact (**Phone** or **Email**). Then, optional:
+
+| Field | Notes |
+|---|---|
+| **First name**, **Language** | The language of emails to the customer. |
+| **Tags** | Comma separated, e.g. `vip, family, regular` (up to 20, 30 characters each). The `vip` tag shows the VIP indicator on the map; tags are also used in price rules (**Customer tags**). |
+| **Internal notes** | Never shown to the customer. Do not write health data. |
+| **Marketing consent** | Optional and separate: date, source and text version are recorded. |
+
+Arenile avoids duplicates: if the email or phone already belongs to a customer, it suggests them (*Possibly already
+registered* → **Use this one**).
+
+## The customer record
+
+<Screenshot name="admin-customer-detail" alt="Customer record with profile, statistics, bookings, season passes, credits and GDPR actions" />
+
+- **Profile** with the data and the consent ("Consent given on… (source)").
+- Statistics: **Bookings**, **Total spent**, **Balance due**, **Available credit**.
+- **Recent bookings**, **Season passes** (with the released half-days), **Credits** with their movements (source:
+  Cancellation, Season pass release, Bad weather, Manual, Redemption) and any expiry.
+- **New booking** for this customer.
+
+Customers booking online are created or found again (by email or phone) when they enter their details at the
+"Details and payment" step; marketing consent given online has source "online".
+
+## GDPR rights
+
+### Export
+
+**Export data (GDPR)** downloads a JSON file with all the customer's data: a ready answer to an access or portability
+request.
+
+### Anonymisation
+
+<Steps>
+
+1. In the record press **Anonymise**.
+2. Read the warning: name, contacts, notes and consents are replaced **for good**; bookings and payments stay for
+   accounting, without personal data.
+3. To confirm, type the customer's last name.
+4. **Anonymise permanently**.
+
+</Steps>
+
+<Aside type="danger" title="This cannot be undone">
+  There is no way back, not even for the server administrator. Export the data first if the customer requested it.
+</Aside>
+
+Cancellation reasons and notes on payments and credits are deleted too. For the full picture (roles, privacy notice,
+response times) see [Privacy and GDPR](/en/installazione/privacy/).

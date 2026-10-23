@@ -1,0 +1,154 @@
+---
+title: Bookings
+description: List and filters, new booking with price preview, confirmation, approval, check-in, date changes, moves, payments, refunds and cancellation.
+sidebar:
+  order: 23
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot, StatusBadges } from '~/components';
+
+**Where:** Operations → **Bookings**. **Who:** everyone views; cashiers, managers and owners create and edit; refunds
+belong to managers and owners.
+
+## List and filters
+
+<Screenshot name="admin-bookings" alt="Booking list with filters for period, status, channel and spot" />
+
+Filter by **Search** (code, customer or phone), **Period**, **Status**, **Channel** (Desk, Online, API), **Spot**,
+**Type** (bookings and/or season passes) and **Only with balance due**. The columns show **Code**, **Customer**,
+**Period**, **Spots**, **Status**, **Channel**, **Total** and **Balance**. **Clear filters** starts over.
+
+## Booking statuses
+
+<StatusBadges />
+
+```text
+          ┌──────────── Expired (hold expired)
+          │
+Draft ─▶ Held ─▶ Pending payment ─▶ Confirmed ─▶ Checked in ─▶ Completed
+                     │                  │
+                     │                  ├──▶ Cancelled (with refund or credit)
+                     │                  └──▶ No-show
+                     └──▶ Awaiting approval ─▶ Confirmed | Rejected
+```
+
+| Status | Meaning |
+|---|---|
+| **Held** | Resources held temporarily (online checkout or booking in progress) |
+| **Pending payment** | Online payment started; hold extended until the outcome (max 30 minutes) |
+| **Awaiting approval** | Resources held pending your decision |
+| **Confirmed** | Resources occupied for good |
+| **Checked in** | Check-in recorded |
+| **Completed** | Closed automatically at the end of the stay |
+| **Cancelled**, **No-show**, **Expired**, **Rejected** | Final statuses: resources are released |
+
+Every status change goes through a single point of the program and writes, in the same operation, the **activity
+log** and the matching event: the booking's **History** is always complete.
+
+## New booking
+
+<Screenshot name="admin-booking-new" alt="New booking sheet with mini-map, customer and price preview" />
+
+<Steps>
+
+1. Press **New booking** (from the list, the map, the planning or the customer record).
+2. **When**: **Period**, **Time slot** (Full day, Morning, Afternoon) and **Formula**.
+3. **What and where**: choose the **Pack** and then **Spots on the map** (tap the free spots on the mini-map; the
+   price is *per spot*) or **Zone or quantity**. Add **Extras**.
+4. **Customer**: **Find customer** by name, phone or email, or **New customer** (last name and at least one contact).
+   If a customer with the same email or phone exists, Arenile suggests them (*Possibly already registered*).
+5. Check the **Price preview** (breakdown, discounts, VAT, deposit) and the **Terms applied** (payment, balance,
+   cancellation).
+6. **Payment and notes**: **Take payment now** with amount and method, or leave the balance due (at the desk or on
+   arrival). Add **Internal notes**.
+7. **Create booking**.
+
+</Steps>
+
+If the request does not comply with the [policies](/en/gestore/policy/), the preview explains why. You can still go
+ahead with **Book anyway (overrides the booking rules, recorded in the activity log)**.
+
+<Aside type="tip">
+  If taking the payment fails (for example the cash desk is closed and the method is cash), the booking is still
+  created and the message tells you: record the payment from the detail after opening the cash desk.
+</Aside>
+
+## The booking detail
+
+<Screenshot name="admin-booking-detail" alt="Booking detail with lines, allocations, payments, notes and history" />
+
+At the top: **Total**, **Paid**, **Balance due**, **Deposit due** and, if held, how long the hold lasts. Below:
+
+- **Lines**: pack, spot (or **To assign**), extras, total; **Move** or **Assign** actions.
+- **Allocations**: the occupied half-days, by date, slot and resource (spot or pool unit).
+- **Payments**: payments and refunds with method and outcome.
+- **Notes**: **Internal** or **For the customer**.
+- **History**: who did what and when (**Operator**, **Customer**, **System**, **API integration**).
+
+### Status actions
+
+| Action | When | Effect |
+|---|---|---|
+| **Confirm** | Held booking | Manual confirmation: the spots stay booked |
+| **Approve** / **Reject** | Awaiting approval | Confirmed, or spots released and customer notified |
+| **Check in** | Only on the days of the stay | The customer is marked as present |
+| **No-show** | From the first day of the stay | The spots of future days are released |
+| **Change dates** | Confirmed | New dates with a new price |
+| **Cancel booking** | Confirmed | Spots released, refund per the terms |
+
+### Changing dates
+
+**Change dates** re-prices the booking with the new dates and re-allocates the spots in the same operation. The
+**Effect of the change** shows **Current total**, **New total** and the difference **To collect** or **To refund**, or
+the unavailable dates. If the terms limit changes, you can override with **Override the modification limits
+(recorded)**.
+
+### Moving a line
+
+**Move** on a line: choose the **New spot** among the free ones, **From** (empty = the whole stay), **Check** and
+**Move**. The price is recalculated if the category changes.
+
+### Payments
+
+**Record payment**: the proposed amount is the balance; choose the **Method** (Cash, Card, Bank transfer, Wallet,
+Customer credit, Other). Cash payments require an open [cash session](/en/gestore/cassa/). A held booking paid at the
+desk up to the required deposit is confirmed in the same operation.
+
+### Refunds
+
+**Refund** records a refund, never more than what was paid: **Amount**, **Form** (money or credit to the customer),
+**Reason**. For a payment made online with Stripe you can refund **through Stripe**: the money goes back to the
+customer's card and the refund stays **Pending** until Stripe confirms it (see
+[Online payments](/en/gestore/pagamenti-online/#refunds)).
+
+### Cancelling
+
+<Steps>
+
+1. **Cancel booking**: the spots are released.
+2. The **Refund preview** shows **Paid**, the **Percentage from terms** and the amount **Per terms**, computed on the
+   terms accepted at booking time.
+3. Choose the **Settlement**: **As per terms**, **Refund another amount**, **Credit to the customer** or **No refund**.
+4. If it is due to bad weather, tick **Cancelled for bad weather**: the policy's weather protection applies.
+5. Enter the **Reason** and confirm.
+
+</Steps>
+
+### Email and manage link
+
+From the detail you can **resend the confirmation email** and **regenerate the customer's manage link** (see
+[Email and notifications](/en/gestore/email/#the-manage-link-magic-link)).
+
+## Online bookings
+
+Bookings from the public page have the **Online** channel and appear in the panel as soon as they are created (held,
+with the hold countdown). While the customer fills in the form, the booking is tied to an internal placeholder
+customer, which never appears in lists: at the details step it is linked to the real customer (existing by email or
+phone, or new).
+
+<Aside type="caution">
+  Do not confirm by hand an online booking "pending payment" because the customer on the phone says they paid: wait
+  for Stripe's confirmation (it arrives by itself, or through reconciliation) or record the payment yourself at the
+  desk if the customer pays there.
+</Aside>

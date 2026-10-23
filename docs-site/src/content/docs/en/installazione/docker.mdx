@@ -1,0 +1,186 @@
+---
+title: Install with Docker
+description: Install Arenile on a VPS, mini PC or Raspberry Pi with Docker Compose, with SQLite or PostgreSQL, in a few minutes.
+sidebar:
+  order: 3
+---
+
+import { Steps, Tabs, TabItem, Aside, FileTree, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Docker is the recommended way to run Arenile in production. The official image `ghcr.io/coste360/arenile` is
+**public and free**, multi-architecture (`amd64` and `arm64`) and based on *distroless*: it contains only the
+binary, with no shell or unnecessary packages.
+
+## Before you start
+
+| Requirement | Guidance |
+|---|---|
+| Server | Linux `amd64` or `arm64` with Docker and Docker Compose |
+| Resources | 1 vCPU and 512 MB of RAM are enough for one beach; 1 GB of disk plus room for backups |
+| Domain | A subdomain, for example `prenota.mio-lido.it`, pointing to the server's IP (`A`/`AAAA` record) |
+| Email (optional) | SMTP credentials for confirmations and manage links to customers |
+| Online payments (optional) | A Stripe account in the establishment's name |
+
+<Aside type="tip" title="Just want to take a look?">
+  From a cloned repository, `docker compose up --build` (or `make up`) starts a trial instance in a minute on
+  `http://localhost:8080`, built from source and in development mode. Do not use it in production: it is meant for
+  trying things out. To fill it with data see [Demo data](/en/installazione/dati-demo/).
+</Aside>
+
+## Standard installation (SQLite)
+
+<Steps>
+
+1. **Prepare the server.** On Ubuntu or Debian install Docker with the official script and open only the ports you
+   need:
+
+   ```bash
+   curl -fsSL https://get.docker.com | sh
+   sudo ufw allow OpenSSH
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   sudo ufw enable
+   ```
+
+2. **Create the installation folder** and download the official compose file and the example variables:
+
+   ```bash
+   sudo mkdir -p /opt/arenile && cd /opt/arenile
+   curl -fsSLO https://raw.githubusercontent.com/coste360/arenile/main/deploy/docker-compose.yml
+   curl -fsSL -o .env https://raw.githubusercontent.com/coste360/arenile/main/.env.example
+   chmod 600 .env
+   ```
+
+   <FileTree>
+   - /opt/arenile/
+     - docker-compose.yml the `arenile` service with the data volume
+     - .env the configuration (never share it)
+   </FileTree>
+
+3. **Generate the encryption key** and put it in `.env`:
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+   Then edit `.env` with at least these lines:
+
+   ```ini title=".env"
+   ARENILE_BASE_URL=https://prenota.mio-lido.it
+   ARENILE_SECRET_KEY=the-key-generated-in-the-previous-step
+   # First owner user, created on first start only if the database is empty
+   ARENILE_BOOTSTRAP_OWNER_EMAIL=owner@mio-lido.it
+   ARENILE_BOOTSTRAP_OWNER_NAME=Mario Rossi
+   ARENILE_BOOTSTRAP_OWNER_ORG=Lido Esempio
+   ARENILE_ADMIN_PASSWORD=choose-a-long-password
+   # Email (optional but recommended)
+   ARENILE_SMTP_URL=smtp://user:password@smtp.my-provider.com:587
+   ARENILE_MAIL_FROM=Lido Esempio <bookings@mio-lido.it>
+   ```
+
+   <Aside type="danger" title="Keep ARENILE_SECRET_KEY safe">
+     The key encrypts the Stripe keys, webhook secrets and two-step verification codes. Without it this data
+     cannot be recovered. Store it somewhere safe, **separate from the backups** but always available to the
+     restore procedure.
+   </Aside>
+
+4. **Start** and check the logs:
+
+   ```bash
+   docker compose up -d
+   docker compose logs -f arenile
+   ```
+
+   Database migrations are applied automatically at startup (`ARENILE_AUTO_MIGRATE=true`). The SQLite database,
+   uploaded files and backups live in the `arenile-data` volume.
+
+5. **Set up HTTPS.** Put Arenile behind a reverse proxy (Caddy, Nginx, Traefik) or let the binary obtain the
+   certificates: every option is in [Reverse proxy and HTTPS](/en/installazione/reverse-proxy-https/).
+
+6. **Sign in** at `https://prenota.mio-lido.it/admin/` with the email and password from step 3. After the first
+   sign-in you can remove `ARENILE_ADMIN_PASSWORD` from `.env`. Continue with the
+   [first start](/en/installazione/primo-avvio/).
+
+</Steps>
+
+<Aside type="note" title="Before the first release">
+  If the image is not yet published on the registry, the official compose file builds it from source (`build`
+  section): in that case clone the repository and run
+  `docker compose -f deploy/docker-compose.yml --env-file .env up -d` from its root.
+</Aside>
+
+## Creating the first user by hand
+
+If you prefer not to use the `ARENILE_BOOTSTRAP_OWNER_*` variables, create the owner with the container running.
+The image has no shell, but `exec` runs the binary directly:
+
+```bash
+docker compose exec -e ARENILE_ADMIN_PASSWORD='choose-a-long-password' arenile \
+  /arenile admin create --email owner@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
+```
+
+The password must be at least 10 characters long.
+
+## Variants
+
+<Tabs>
+  <TabItem label="PostgreSQL">
+    The repository includes `deploy/docker-compose.postgres.yml`, with a PostgreSQL service already configured and
+    `DATABASE_URL` set automatically. Add the database password to `.env`, generated with URL-safe characters only:
+
+    ```bash
+    echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" >> .env
+    docker compose -f docker-compose.postgres.yml --env-file .env up -d
+    ```
+
+    When PostgreSQL is worth it and how to back it up: [SQLite or PostgreSQL](/en/installazione/database/).
+  </TabItem>
+  <TabItem label="Raspberry Pi and mini PC">
+    The `arm64` image runs on Raspberry Pi 4 or 5 (at least 2 GB of RAM) and on mini PCs.
+
+    - Install a **64-bit** system (Raspberry Pi OS Lite 64-bit or Ubuntu Server arm64).
+    - Use a **USB SSD** instead of the microSD card for the data: faster and far more reliable.
+    - Protect the power supply with a small UPS.
+    - For online booking the device must be reachable from the internet: consider a tunnel (for example
+      Cloudflare Tunnel or Tailscale Funnel) instead of opening ports on the router.
+  </TabItem>
+  <TabItem label="Coolify">
+    1. Create a *Docker Compose* resource with the template in `deploy/coolify/` (`arenile.yml` or `arenile-postgres.yml`).
+    2. Set `ARENILE_BASE_URL`, `ARENILE_SECRET_KEY` and the first-owner variables (Coolify's terminal does not work:
+       the image has no shell).
+    3. Bind the domain to the service on port `8080`: Coolify handles the certificate.
+    4. Configure the healthcheck on `GET /healthz` and set `ARENILE_TRUSTED_PROXIES` to the proxy network.
+  </TabItem>
+  <TabItem label="CapRover">
+    1. Create an app with *persistent data* and map `/data` to a volume (template in `deploy/caprover/`).
+    2. Image `ghcr.io/coste360/arenile:latest`, container port `8080`.
+    3. Set the environment variables as above, enable HTTPS and "Force HTTPS".
+    4. Create the first owner with the `ARENILE_BOOTSTRAP_OWNER_*` variables and set `ARENILE_TRUSTED_PROXIES`.
+  </TabItem>
+</Tabs>
+
+## What the official compose file does for security
+
+`deploy/docker-compose.yml` is already hardened: read-only file system (`read_only: true`, with `/tmp` in memory),
+no privilege escalation (`no-new-privileges`), all Linux capabilities dropped (`cap_drop: ALL`), non-root user and
+Docker log rotation (5 files of 10 MB).
+
+<Aside type="caution">
+  If you run a reverse proxy on the same server, do not expose port `8080` to the internet: publish it on
+  `127.0.0.1` only (for example `ARENILE_PUBLISH_PORT=127.0.0.1:8080`, or edit the `ports` line).
+</Aside>
+
+## Troubleshooting
+
+| Symptom | What to check |
+|---|---|
+| The container keeps restarting | `docker compose logs arenile`: usually `ARENILE_SECRET_KEY` or `ARENILE_BASE_URL` is missing, or the key is not 32 bytes of base64 |
+| `/readyz` returns an error | Database unreachable or migrations out of date: check `DATABASE_URL` and `arenile migrate status` |
+| The widget does not show on the website | Add the website's domain to the websites allowed to embed ([Public page](/en/gestore/pagina-pubblica/)) |
+| Emails do not arrive | Check `ARENILE_SMTP_URL`, `ARENILE_MAIL_FROM`, the SPF/DKIM records and the delivery log ([Email](/en/gestore/email/)) |
+| All IPs in the logs are the same | Set `ARENILE_TRUSTED_PROXIES` to the reverse proxy's network |
+
+<CardGrid>
+  <LinkCard title="First start" href="/en/installazione/primo-avvio/" description="Six-step guided setup." />
+  <LinkCard title="All variables" href="/en/installazione/configurazione/" description="Complete configuration reference." />
+</CardGrid>

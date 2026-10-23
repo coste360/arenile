@@ -1,0 +1,84 @@
+---
+title: Payment webhooks
+description: The payment provider webhook endpoint - mandatory signature, de-duplication, atomic update, handled Stripe events and reconciliation.
+sidebar:
+  order: 6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { ApiOperation } from '~/components';
+
+<ApiOperation id="receivePaymentWebhook" />
+
+It is the only place from which an online payment **confirms** a booking (together with reconciliation, which uses the
+same internal path). It lives outside `/api/`: no session, no CSRF, no per-IP limits shared with the public API. For
+Stripe: `/webhooks/payments/stripe/<establishment-id>`; the panel shows the exact URL in **Configuration → Online
+payments**.
+
+## What happens on each call
+
+<Steps>
+
+1. The body is read **raw** (up to 256 KB): the signature is verified on the exact bytes received.
+2. Arenile loads the credentials **of the establishment in the URL**, decrypts them and hands the request to the
+   provider's driver, which verifies the signature. Missing or wrong signature: `400 webhook_signature_invalid`.
+3. In **a single transaction**:
+   - it records the event in the de-duplication table (unique per provider + event id): **a duplicate answers `200`
+     with no effect**;
+   - it updates the provider payment;
+   - on success, it records the payment, updates the paid amount and **confirms the booking** through the booking
+     service (hold → stable occupation, activity log, `booking.confirmed` event); for zones with automatic assignment
+     it also assigns the spot;
+   - on failure, it marks the attempt as failed and emits `payment.failed`: the booking stays pending payment while
+     the hold is valid and the customer can retry;
+   - on refund, it records the refund and emits `payment.refunded`.
+4. It answers `200` with a summary (`WebhookAck`). Authentic but unhandled events answer `200` and are ignored.
+
+</Steps>
+
+## Stripe
+
+The signature is in the `Stripe-Signature` header (`t=…,v1=…`): HMAC-SHA256 of `"<t>.<body>"` with the webhook secret
+(`whsec_…`), constant-time comparison, **5-minute tolerance** on the clock; several `v1` values are accepted (secret
+rotation).
+
+| Stripe event | Effect in Arenile |
+|---|---|
+| `checkout.session.completed` | Payment succeeded → confirmation |
+| `payment_intent.succeeded` | Payment succeeded → confirmation |
+| `payment_intent.payment_failed` | Payment failed (reason: error code only, never the message) |
+| `charge.refunded` | Refund (amount refunded with that event) |
+| others | Ignored (`200`) |
+
+Checkout Sessions created by Arenile carry `establishment_id`, `booking_id` and `booking_code` in their metadata and
+expire after 30 minutes. The Stripe driver is written with Go's standard library (no SDK) and a pinned Stripe API
+version.
+
+## Reconciliation
+
+A job every **15 minutes** asks the provider for the outcome of payments pending for more than **10 minutes** and
+applies it with the same code as the webhook, using a synthetic identifier (`reconcile:<reference>:<status>`): if the
+real webhook arrives later, it is still de-duplicated.
+
+<ApiOperation ids={['getReconciliationReport', 'runReconciliation']} />
+
+The report is also available through the API (`GET /api/admin/v1/establishments/{id}/payments/reconciliation`, with
+`from`, `to` and `issues_only`) and can be run on demand. Flagged issues: `pending` for too long, different outcome,
+payment without ledger entry, different amount, provider unreachable.
+
+<Aside type="note" title="Guarantees">
+  - A booking is **never** confirmed by the browser returning nor by `GET /bookings/{id}`.
+  - The same provider event is **never** processed twice.
+  - Payment, booking and resource occupation change **together or not at all**.
+  - Credentials, signatures and webhook bodies **never** end up in the logs.
+</Aside>
+
+## Trying it locally
+
+With the Stripe CLI you can forward test webhooks to your development instance:
+
+```bash
+stripe listen --forward-to localhost:8080/webhooks/payments/stripe/<establishment-id>
+```
+
+The CLI prints a `whsec_…` secret to save as the webhook secret in test mode.

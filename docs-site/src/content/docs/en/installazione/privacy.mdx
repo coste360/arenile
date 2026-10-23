@@ -1,0 +1,126 @@
+---
+title: Privacy and GDPR
+description: Controller and processor roles, data processed by Arenile, tools for data subject rights and a privacy notice template to adapt.
+sidebar:
+  order: 17
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+This page helps operators use Arenile in compliance with Regulation (EU) 2016/679 (GDPR) and the Italian personal
+data protection code.
+
+<Aside type="caution">
+  It is **informational** and is not legal advice. The privacy notice template must be adapted to your business
+  and, where possible, checked with a privacy consultant or your DPO. Compliance of the processing remains the
+  controller's responsibility.
+</Aside>
+
+## Who does what
+
+| Party | GDPR role | Notes |
+|---|---|---|
+| **Establishment operator** | **Controller** | Decides purposes and means, answers to data subjects. |
+| **Whoever hosts the service** (VPS provider, IT person who runs the server for the operator) | **Processor** (art. 28) | A data processing agreement (DPA) is needed. |
+| **Stripe** (if you enable online payments) | Per Stripe's terms | Check the data processing agreement in your Stripe account. |
+| **SMTP provider** (if you send emails) | Processor | Check the provider's DPA. |
+| **Coste360 SRL** | No role in a self-managed installation | Develops the software but **neither receives nor processes** the data of your installations. No telemetry by default. |
+
+## What data Arenile processes
+
+| Category | Data | Purpose | Legal basis (indicative) |
+|---|---|---|---|
+| Online booking | First name, last name, email, phone (optional if you decide so) | Manage the booking, send confirmation and manage link | Performance of a contract |
+| Desk customers and season pass holders | As above, plus internal notes and history | Managing the relationship and the passes | Performance of a contract |
+| Payments | Amounts, method, transaction references (card data stays with Stripe) | Collection, refunds, accounting | Contract and legal obligation |
+| Marketing | Separate and optional consent, with date, source and text version | Offers and news | Consent |
+| Panel users | Email, role, sign-ins, activity log | Security and traceability | Legitimate interest |
+| Technical data | IP for request limits, logs without emails and phone numbers in clear | Service security | Legitimate interest |
+
+Arenile **does not require** special categories of data (art. 9). Avoid writing health information in notes; if
+needed for accessibility, keep it to the minimum (for example "accessible spot").
+
+## How Arenile helps
+
+- **Minimisation**: first name, last name and email are enough to book online; the phone can be required or not.
+  No customer account.
+- **Versioned terms and privacy notice**: each published version is immutable and each booking stores the accepted
+  version and the moment of acceptance.
+- **Separate marketing consent**, optional, never preselected, with date, source and text version.
+- **Export** of a customer's data as JSON from their record (right of access and portability).
+- **Anonymisation** on request: name, contacts, notes and consents replaced for good, while bookings and payments
+  stay for accounting obligations (art. 17.3).
+- **Protected recipients**: the addresses of sent emails are stored encrypted and masked in the log.
+- **No third-party cookies** in the widget and no tracking by default.
+
+<Aside type="note">
+  Automatic anonymisation of customers without bookings for N years (default 5) is foreseen by the specification
+  but not available yet: until then anonymise by hand from the customer record.
+</Aside>
+
+## What you must do
+
+<Steps>
+
+1. **Publish the privacy notice** and the conditions on the public page (**Configuration → Public page**,
+   conditions section) and bump the version at every change.
+2. **Appoint the processors** (hosting, SMTP, any support provider) with an art. 28 agreement.
+3. **Keep the record of processing activities** (art. 30) if required: it is good practice anyway.
+4. **Assign panel roles** on a least-privilege basis (beach staff, cashier, read only).
+5. **Protect the backups**: they contain personal data.
+6. **Handle data subject requests** within one month with export and anonymisation (see
+   [Customers and GDPR](/en/gestore/clienti/)).
+7. **Breaches**: consider notifying the supervisory authority within 72 hours (art. 33).
+8. If you add analytics or advertising pixels to your website, handle cookie consent on the website: they are
+   outside Arenile.
+
+</Steps>
+
+## Privacy notice template
+
+Use this outline as a basis for the notice under arts. 13 and 14 GDPR. Replace the parts in square brackets.
+
+```markdown
+# Privacy notice — [Establishment name]
+
+## 1. Controller
+[Company name], [address], VAT no. [...], email [...], certified email [...].
+[DPO, if any: name and contacts.]
+
+## 2. Data processed
+First name, last name, email and/or phone; booking data (dates, spot,
+services); payment data (amounts, outcome, transaction references: card data
+is processed directly by [Stripe]); marketing consent, if given.
+
+## 3. Purposes and legal bases
+a) managing the booking and the service — performance of a contract;
+b) tax and accounting obligations — legal obligation;
+c) service communications (confirmations, reminders) — performance of a contract;
+d) offers and newsletters — consent, optional and revocable;
+e) security of the booking system — legitimate interest.
+
+## 4. Whether providing data is mandatory
+Data for purposes a)–c) is needed to book; consent for purpose d) is optional
+and refusing it has no consequence on the booking.
+
+## 5. Recipients
+Hosting provider [name], email provider [name], payment provider [Stripe],
+accountant, authorities where required by law. Processors are appointed under
+art. 28 GDPR.
+
+## 6. Transfers outside the EU
+[State whether any, and the safeguards adopted.]
+
+## 7. Retention
+Booking data: for the duration of the relationship and then for [N] years;
+accounting documents: for the period required by law; marketing data: until
+consent is withdrawn or for [N] months from the last contact.
+
+## 8. Data subject rights
+Access, rectification, erasure, restriction, portability, objection,
+withdrawal of consent at any time, by writing to [email]. Right to lodge a
+complaint with the supervisory authority.
+
+## 9. Version
+Version [x], updated on [date].
+```

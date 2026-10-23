@@ -1,0 +1,79 @@
+---
+title: Sicurezza
+description: Come Arenile protegge dati e pagamenti, e cosa deve fare chi lo installa. Segreti cifrati, ruoli, verifica in due passaggi, limiti e buone pratiche.
+sidebar:
+  order: 16
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+## Cosa fa Arenile
+
+<CardGrid>
+  <Card title="Segreti cifrati a riposo" icon="padlock">
+    Chiavi Stripe, segreti dei webhook e codici TOTP sono cifrati con AES-256-GCM con la chiave
+    `ARENILE_SECRET_KEY`, legati allo stabilimento che li usa. Le chiavi segrete non vengono **mai** mostrate di
+    nuovo dal pannello né restituite dalle API: solo "configurata" e le ultime quattro cifre.
+  </Card>
+  <Card title="Password e sessioni" icon="approve-check">
+    Password con Argon2id (almeno 10 caratteri), sessione con cookie `HttpOnly`, `Secure` e `SameSite=Lax`
+    rinnovata al login, protezione CSRF con token double-submit su ogni modifica dal pannello.
+  </Card>
+  <Card title="Verifica in due passaggi" icon="phone">
+    TOTP con qualsiasi app di autenticazione. Con `ARENILE_REQUIRE_TOTP_FOR_OWNERS=true` diventa obbligatoria
+    per i proprietari.
+  </Card>
+  <Card title="Ruoli e isolamento" icon="setting">
+    Cinque ruoli con permessi minimi, verificati nel cuore del programma e non solo nelle schermate. Ogni dato
+    operativo è legato allo stabilimento: test automatici tentano accessi incrociati tra stabilimenti.
+  </Card>
+</CardGrid>
+
+### Limiti contro gli abusi
+
+| Dove | Limite |
+|---|---|
+| Accesso al pannello | 30 tentativi ogni 15 minuti per IP, 8 tentativi falliti ogni 15 minuti per account |
+| API pubblica, letture | 60 richieste al minuto per IP |
+| API pubblica, creazioni | 10 al minuto per IP |
+| Richiesta di un nuovo link di gestione | limitata per IP e per prenotazione; risponde sempre allo stesso modo, così non rivela se una prenotazione esiste |
+
+### Pagina pubblica e pagamenti
+
+- Il widget si può incorporare **solo** nei siti autorizzati dallo stabilimento (`frame-ancestors`), senza cookie
+  di terze parti: la sessione di prenotazione vive nella scheda del browser.
+- La conferma di una prenotazione online arriva **solo** dal webhook firmato del provider (o dalla
+  riconciliazione che interroga il provider), mai dal ritorno del browser.
+- I webhook dei pagamenti sono verificati con la firma, con tolleranza di 5 minuti, e ogni evento è elaborato
+  una sola volta.
+- I link di gestione inviati ai clienti sono token casuali a 256 bit salvati solo come hash, con scadenza (fine
+  della prenotazione più 30 giorni) e revocabili.
+
+### Log e dati personali
+
+Nessuna email, telefono, token o segreto in chiaro nei log. Il registro attività (audit) è in sola
+aggiunta: non si modifica né si cancella.
+
+## Cosa devi fare tu
+
+- [ ] **HTTPS** sempre (vedi [Reverse proxy e HTTPS](/installazione/reverse-proxy-https/)).
+- [ ] `ARENILE_SECRET_KEY` generata a caso, conservata in modo sicuro, separata dai backup.
+- [ ] `.env` con permessi `600`, mai nel controllo di versione.
+- [ ] `ARENILE_TRUSTED_PROXIES` impostata solo con le reti dei tuoi proxy.
+- [ ] Verifica in due passaggi per i proprietari (`ARENILE_REQUIRE_TOTP_FOR_OWNERS=true`).
+- [ ] Un utente per persona, con il ruolo minimo necessario (vedi [Team e ruoli](/gestore/team-e-ruoli/));
+      disattiva subito gli utenti di chi non lavora più al lido.
+- [ ] Server aggiornato (aggiornamenti di sicurezza automatici del sistema operativo), accesso SSH solo con
+      chiave, porta `8080` non esposta su internet se usi un proxy.
+- [ ] Backup cifrati e fuori sede, ripristino provato.
+- [ ] Arenile aggiornato alle versioni di patch.
+
+## Segnalare una vulnerabilità
+
+Non aprire una issue pubblica: segui le istruzioni di `SECURITY.md` nel repository per una segnalazione
+privata.
+
+<Aside type="note">
+  Nel processo di sviluppo le dipendenze sono controllate in CI (`govulncheck`, `npm audit`) e l'immagine Docker
+  è basata su *distroless*, senza shell né pacchetti superflui, ed eseguita come utente non root.
+</Aside>

@@ -1,0 +1,78 @@
+---
+title: Guida del gestore
+description: Come usare Arenile ogni giorno, funzione per funzione - configurazione, spiaggia, prenotazioni, cassa e vendita online.
+sidebar:
+  order: 0
+  label: Panoramica
+---
+
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+Questa guida descrive ogni funzione del pannello del gestore con procedure passo per passo, screenshot del
+**Lido Demo** e consigli dal campo. Gli screenshot si rigenerano a ogni versione, quindi corrispondono sempre al
+programma che stai usando.
+
+<Screenshot name="admin-today" alt="La pagina Oggi del pannello: indicatori del giorno, mappa e lista delle cose da fare" />
+
+## Come è fatto il pannello
+
+- **Barra laterale**: in alto il selettore dello **Stabilimento** (con **+ Nuovo stabilimento**), poi il gruppo
+  **Operatività** e il gruppo **Configurazione**. Sul telefono si apre con il pulsante del menu.
+- **Comandi rapidi**: premi <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>⌘</kbd>+<kbd>K</kbd> su Mac) per cercare una
+  pagina e raggiungerla senza mouse.
+- **Menu utente** in basso: tema **Chiaro**, **Scuro** o **Sistema**, ed **Esci**.
+- **Tempo reale**: mappa, oggi, calendario e cassa si aggiornano da soli quando un collega o un cliente online
+  prenota, paga o fa il check-in. Nessun bisogno di ricaricare.
+- **Lingue**: il pannello è disponibile in italiano, inglese, tedesco e francese.
+
+## Prima stagione: configurazione
+
+Da fare una volta (la configurazione guidata ne fa gran parte in pochi minuti), poi da rifinire.
+
+<CardGrid>
+  <LinkCard title="Configurazione guidata" href="/gestore/configurazione-guidata/" description="Sei passi dal vuoto a un lido pronto a vendere." />
+  <LinkCard title="Stabilimento" href="/gestore/stabilimento/" description="Dati, lingue, indirizzo pubblico, IVA e arrotondamenti." />
+  <LinkCard title="Stagioni e periodi" href="/gestore/stagioni-e-periodi/" description="Apertura, bassa, media, alta stagione e picco, festività locali." />
+  <LinkCard title="Chiusure" href="/gestore/chiusure/" description="Maltempo, eventi e lavori: giorni o mezze giornate non prenotabili." />
+  <LinkCard title="Mappe ed editor" href="/gestore/mappe-ed-editor/" description="Disegna la spiaggia con il kit grafico, il generatore di file e le passerelle." />
+  <LinkCard title="Zone" href="/gestore/zone/" description="Posto scelto, zona o quantità, e quote online." />
+  <LinkCard title="Pool" href="/gestore/pool/" description="Attrezzature a quantità senza posizione: lettini, cabine, parcheggio." />
+  <LinkCard title="Catalogo" href="/gestore/catalogo/" description="Componenti, pack ed extra: cosa vendi." />
+  <LinkCard title="Prezzi" href="/gestore/prezzi/" description="Regole, simulatore, matrice, copertura, copia di stagione, promo e convenzioni." />
+  <LinkCard title="Policy" href="/gestore/policy/" description="Anticipo, durata, acconti, cancellazioni e approvazioni." />
+</CardGrid>
+
+## Vendere online
+
+<CardGrid>
+  <LinkCard title="Pagina pubblica e widget" href="/gestore/pagina-pubblica/" description="Attivazione, tema, siti autorizzati, condizioni, codice da incorporare." />
+  <LinkCard title="Pagamenti online con Stripe" href="/gestore/pagamenti-online/" description="Chiavi, webhook, modalità test, riconciliazione e rimborsi." />
+  <LinkCard title="Email e notifiche" href="/gestore/email/" description="Mittente, notifiche a clienti e gestore, prova e registro invii." />
+  <LinkCard title="Il percorso del cliente" href="/gestore/percorso-del-cliente/" description="Cosa vede chi prenota: passi, pagamento, conferma, area di gestione." />
+</CardGrid>
+
+## Ogni giorno: operatività
+
+<CardGrid>
+  <LinkCard title="Oggi" href="/gestore/oggi/" description="Il cruscotto della giornata: arrivi, saldi, cose da fare." />
+  <LinkCard title="Mappa del giorno" href="/gestore/mappa-del-giorno/" description="Stati, legenda, scheda della postazione, spostamenti, rilasci." />
+  <LinkCard title="Calendario" href="/gestore/calendario/" description="Planning postazioni × giorni per i soggiorni lunghi." />
+  <LinkCard title="Prenotazioni" href="/gestore/prenotazioni/" description="Nuova, modifica, spostamento, cancellazione con rimborso, check-in." />
+  <LinkCard title="Clienti e GDPR" href="/gestore/clienti/" description="Anagrafica, storico, crediti, esportazione e anonimizzazione." />
+  <LinkCard title="Abbonamenti e rilasci" href="/gestore/abbonamenti/" description="Stagionali, giorni rilasciati, rivendita e crediti." />
+  <LinkCard title="Cassa e chiusura" href="/gestore/cassa/" description="Apertura, incassi, movimenti, chiusura con conteggio e Z." />
+  <LinkCard title="Corrispettivi" href="/gestore/corrispettivi/" description="Riepilogo per aliquota e metodo per il commercialista." />
+</CardGrid>
+
+## Persone e parole
+
+<CardGrid>
+  <LinkCard title="Team e ruoli" href="/gestore/team-e-ruoli/" description="Utenti, ruoli e la matrice completa dei permessi." />
+  <LinkCard title="Glossario" href="/gestore/glossario/" description="Tutti i termini di Arenile in una pagina." />
+</CardGrid>
+
+<Aside type="tip" title="Prova senza paura">
+  Carica il [Lido Demo](/installazione/dati-demo/) su un'istanza di prova: ogni procedura di questa guida si può
+  ripetere lì, con gli stessi dati degli screenshot.
+</Aside>

@@ -1,0 +1,43 @@
+---
+title: Idempotency
+description: The Idempotency-Key header on POSTs that create resources or payments - how it works, how long it lasts and how to handle edge cases.
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Networks drop, customers tap twice, clients retry. For `POST`s that create resources or start payments Arenile accepts
+the **`Idempotency-Key`** header: the same request sent several times with the same key produces **a single effect**.
+
+```bash
+curl https://prenota.mio-lido.it/api/public/v1/lido-demo/bookings \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: 6f1c2b8e-0d5a-4c1e-9f7a-2b3c4d5e6f70' \
+  -d @selection.json
+```
+
+## Rules
+
+| Case | Response |
+|---|---|
+| First request with that key | Executed normally; the response is stored |
+| Same key, **same request** (method, path, query and body) | The stored response, with the `Idempotent-Replayed: true` header |
+| Same key, **different request** | `422` `idempotency_key_reused` |
+| Same key while the first is still running | `409` `idempotency_in_progress`: retry shortly |
+| The first request failed with a `5xx` error | No stored response: you can retry with the same key |
+
+- The key must be **8 to 128 characters** long: use a client-generated UUID for each logical operation.
+- Keys are bound to the user or session that used them and last **24 hours**.
+- `4xx` responses are stored like successful ones: fix the request and use a **new** key.
+
+<Aside type="tip" title="One key per operation, not per attempt">
+  Generate the key when the user decides to perform the operation (for example on the "Confirm" tap) and reuse it for
+  every attempt of that same operation. A new key for each attempt defeats the protection.
+</Aside>
+
+## Idempotency towards payment providers
+
+Arenile's calls to Stripe are idempotent too: every payment attempt of a booking uses the key
+`<booking_id>:<attempt>`, so a restart in the middle of an operation does not create two payment sessions. And
+incoming webhooks are de-duplicated by event identifier (see [Payment webhooks](/en/api/webhook-pagamenti/)).

@@ -1,0 +1,53 @@
+---
+title: Glossary
+description: Every Arenile term on one page, with the Italian term used in the specification.
+sidebar:
+  order: 40
+---
+
+| Term | Italian | Meaning |
+|---|---|---|
+| **Agreement** | Convenzione | Discount for a partner or a group of customers, from the panel or with a code. |
+| **Allocation** | Allocazione | The occupation of a resource (spot or pool unit) for a date and a slot. It is what prevents double selling. |
+| **Assignment mode** | Modalità di assegnazione | How a zone is sold: **Chosen spot**, **Zone**, **Quantity**. |
+| **Automatic assignment** | Assegnazione automatica | Automatic choice of the spot for lines of "Zone" mode zones, on confirmation. |
+| **Booking line** | Riga di prenotazione | A booked pack with its spot, zone or quantity. |
+| **Cash session** | Sessione di cassa | The period between opening and closing the cash desk. |
+| **Catalogue** | Catalogo | Components, packs and extras. |
+| **Channel** | Canale | Where a booking comes from: **Desk**, **Online**, **API**. |
+| **Check-in** | Check-in | Recording the customer's arrival: the booking becomes **Checked in**. |
+| **Closure** | Chiusura | Extraordinary closure of a day or half-day. |
+| **Component** | Componente | Physical item used by a pack: umbrella, sunbed, deckchair, cabin. |
+| **Conditions (terms)** | Condizioni | The text the customer accepts when booking online, published in immutable versions. |
+| **Coverage** | Copertura | Check that every active pack has a price on every day for every category. |
+| **Credit** | Credito | Balance in the customer's favour (from cancellation, bad weather, resold release, manual). |
+| **Daily takings** | Corrispettivi | Summary of takings by VAT rate and method, for the accountant. |
+| **Deposit** | Acconto | The part of the total paid at booking, decided by the [policy](/en/gestore/policy/). |
+| **Element** | Elemento | Non-bookable map object: walkway, shower, bar, flag… |
+| **Establishment** | Stabilimento | A beach, with time zone, seasons, maps, catalogue, price lists, policies and public page. |
+| **Extra** | Extra | Optional addition to a pack or to the booking: extra sunbed, cabin, parking. |
+| **Formula** | Formula | Duration type: half day, day, multi-day, week, fortnight, month, season. |
+| **Hold** | Blocco temporaneo (hold) | Temporary occupation of a resource while the customer completes the online booking; it expires by itself. |
+| **Magic link** | Link magico | The personal link in the confirmation email that opens the manage area. |
+| **Manage area** | Area di gestione | The "Your booking" page the customer opens from the magic link. |
+| **Manual block** | Blocco manuale | Spot made unbookable by staff, with a reason. |
+| **Map** | Mappa | Drawing of an area of the establishment (beach, pool). |
+| **Map kit** | Kit grafico | The Coste360 illustrations used to draw spots and map elements. |
+| **Online quota** | Quota online | Limit on how much of a zone is sold online (and via API) per date and slot. |
+| **Pack** | Pack | Sellable product made of components (e.g. 1 umbrella + 2 sunbeds). |
+| **Policy** | Policy | Booking rules: lead time, duration, payment, cancellation, approval. |
+| **Pool** | Pool | Quantity inventory without position: free sunbeds, cabins, parking spaces. |
+| **Price category** | Categoria di prezzo | Key (e.g. `row1`) used by price rules; set on the zone or, as an override, on the spot. |
+| **Price rule** | Regola di prezzo | A line of the price list: stage, targets, conditions, action, priority. |
+| **Rate period** | Periodo tariffario | Date range with a code (low, mid, high, peak) used by price rules. |
+| **Reconciliation** | Riconciliazione | Periodic check of pending payments with Stripe, to recover lost webhooks. |
+| **Release** | Rilascio | A day on which a pass holder frees their spot, which goes back on sale. |
+| **Row generator** | Generatore di file | Editor tool that creates N rows of M numbered spots. |
+| **Season** | Stagione | The opening period of a year. |
+| **Season pass** | Abbonamento stagionale | Booking with the season formula that reserves a spot to a customer for the whole season. See [Season passes](/en/gestore/abbonamenti/). |
+| **Simulator** | Simulatore | Tool that computes a price showing every rule applied. |
+| **Slot** | Fascia | Smallest unit of time: **Morning** (AM) and **Afternoon** (PM). A full day occupies both. |
+| **Spot** | Postazione | Bookable item with a position on the map: umbrella, gazebo, tent, palm, sunbed… |
+| **Webhook** | Webhook | Signed message an external service (Stripe) sends to Arenile, or that Arenile sends to an integration. |
+| **Z report** | Chiusura Z | Printable summary of a closed cash session. |
+| **Zone** | Zona | Group of spots or equipment sold in the same way (Front row, Gazebos, Pool). |

@@ -1,0 +1,159 @@
+---
+title: Prenotazioni
+description: Elenco e filtri, nuova prenotazione con anteprima del prezzo, conferma, approvazione, check-in, modifica delle date, spostamento, incassi, rimborsi e cancellazione.
+sidebar:
+  order: 23
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+import { StatusBadges } from '~/components';
+
+**Dove:** Operatività → **Prenotazioni**. **Chi:** tutti vedono; cassieri, gestori e proprietari creano e
+modificano; i rimborsi sono di gestori e proprietari.
+
+## Elenco e filtri
+
+<Screenshot name="admin-bookings" alt="Elenco delle prenotazioni con filtri per periodo, stato, canale e postazione" />
+
+Filtra per **Cerca** (codice, cliente o telefono), **Periodo**, **Stato**, **Canale** (Cassa, Online, API),
+**Postazione**, **Tipo** (prenotazioni e/o abbonamenti) e **Solo con saldo da incassare**. Le colonne mostrano
+**Codice**, **Cliente**, **Periodo**, **Postazioni**, **Stato**, **Canale**, **Totale** e **Saldo**. **Azzera
+filtri** riparte da capo.
+
+## Gli stati di una prenotazione
+
+<StatusBadges />
+
+```text
+          ┌──────────── Scaduta (blocco scaduto)
+          │
+Bozza ─▶ In attesa ─▶ In attesa di pagamento ─▶ Confermata ─▶ Presente ─▶ Conclusa
+                          │                         │
+                          │                         ├──▶ Cancellata (con rimborso o credito)
+                          │                         └──▶ Non presentato
+                          └──▶ Da approvare ─▶ Confermata | Rifiutata
+```
+
+| Stato | Significato |
+|---|---|
+| **In attesa** | Risorse bloccate temporaneamente (checkout online o prenotazione in corso) |
+| **In attesa di pagamento** | Pagamento online avviato; blocco esteso fino all'esito (max 30 minuti) |
+| **Da approvare** | Risorse bloccate in attesa della tua decisione |
+| **Confermata** | Risorse occupate stabilmente |
+| **Presente** | Check-in registrato |
+| **Conclusa** | Chiusa automaticamente a fine soggiorno |
+| **Cancellata**, **Non presentato**, **Scaduta**, **Rifiutata** | Stati finali: le risorse sono liberate |
+
+Ogni cambio di stato passa da un unico punto del programma e scrive, nella stessa operazione, il **registro
+attività** e l'evento corrispondente: lo **Storico** della prenotazione è sempre completo.
+
+## Nuova prenotazione
+
+<Screenshot name="admin-booking-new" alt="Foglio Nuova prenotazione con mini mappa, cliente e anteprima del prezzo" />
+
+<Steps>
+
+1. Premi **Nuova prenotazione** (dall'elenco, dalla mappa, dal calendario o dalla scheda cliente).
+2. **Quando**: **Periodo**, **Fascia** (Giornata intera, Mattina, Pomeriggio) e **Formula**.
+3. **Cosa e dove**: scegli il **Pack** e poi **Postazioni sulla mappa** (tocca le postazioni libere sulla mini
+   mappa; il prezzo è *per postazione*) oppure **Zona o quantità**. Aggiungi gli **Extra**.
+4. **Cliente**: **Cerca cliente** per nome, telefono o email, oppure **Nuovo cliente** (cognome e almeno un
+   recapito). Se esiste già un cliente con la stessa email o telefono, Arenile lo propone (*Forse è già
+   registrato*).
+5. Controlla l'**Anteprima prezzo** (dettaglio, sconti, IVA, acconto) e le **Condizioni applicate**
+   (pagamento, saldo, cancellazione).
+6. **Pagamento e note**: **Incassa ora** con importo e metodo, oppure lascia il saldo da incassare (alla cassa
+   o all'arrivo). Aggiungi **Note interne**.
+7. **Crea prenotazione**.
+
+</Steps>
+
+Se la richiesta non rispetta le [policy](/gestore/policy/), l'anteprima spiega perché. Puoi comunque procedere
+con **Conferma comunque (ignora le regole di prenotazione, registrato nel registro attività)**.
+
+<Aside type="tip">
+  Se l'incasso non va a buon fine (ad esempio la cassa è chiusa e il metodo è contanti), la prenotazione viene
+  creata lo stesso e il messaggio ti avvisa: registra l'incasso dal dettaglio dopo aver aperto la cassa.
+</Aside>
+
+## Il dettaglio della prenotazione
+
+<Screenshot name="admin-booking-detail" alt="Dettaglio di una prenotazione con righe, allocazioni, pagamenti, note e storico" />
+
+In alto: **Totale**, **Incassato**, **Saldo da incassare**, **Acconto richiesto** e, se in attesa, fino a quando
+dura il blocco. Sotto:
+
+- **Righe**: pack, postazione (o **Da assegnare**), extra, totale; azioni **Sposta** o **Assegna**.
+- **Allocazioni**: le mezze giornate occupate, per data, fascia e risorsa (postazione o unità di pool).
+- **Pagamenti**: incassi e rimborsi con metodo ed esito.
+- **Note**: **Interna** o **Per il cliente**.
+- **Storico**: chi ha fatto cosa e quando (**Operatore**, **Cliente**, **Sistema**, **Integrazione API**).
+
+### Azioni di stato
+
+| Azione | Quando | Effetto |
+|---|---|---|
+| **Conferma** | Prenotazione in attesa | Conferma manuale: le postazioni restano occupate stabilmente |
+| **Approva** / **Rifiuta** | Da approvare | Confermata, oppure postazioni liberate e cliente avvisato |
+| **Check-in** | Solo nei giorni del soggiorno | Il cliente risulta presente |
+| **Non presentato** | Dal primo giorno del soggiorno | Le postazioni dei giorni futuri vengono liberate |
+| **Modifica date** | Confermata | Nuove date con ricalcolo del prezzo |
+| **Cancella prenotazione** | Confermata | Postazioni liberate, rimborso secondo le condizioni |
+
+### Modificare le date
+
+**Modifica date** ricalcola il prezzo con le nuove date e rialloca le postazioni nella stessa operazione.
+L'**Effetto della modifica** mostra **Totale attuale**, **Nuovo totale** e la differenza **Da incassare** o **Da
+rimborsare**, oppure le date non disponibili. Se le condizioni limitano le modifiche, puoi forzare con **Ignora i
+limiti di modifica delle condizioni (registrato)**.
+
+### Spostare una riga
+
+**Sposta** su una riga: scegli la **Nuova postazione** tra quelle libere, **Dal giorno** (vuoto = tutto il
+soggiorno), **Verifica** e **Sposta**. Il prezzo viene ricalcolato se cambia la categoria.
+
+### Incassi
+
+**Registra incasso**: l'importo proposto è il saldo; scegli il **Metodo** (Contanti, Carta, Bonifico, Wallet,
+Credito cliente, Altro). Gli incassi in contanti richiedono una [sessione di cassa](/gestore/cassa/) aperta.
+Una prenotazione in attesa pagata in cassa fino all'acconto richiesto viene confermata nella stessa operazione.
+
+### Rimborsi
+
+**Rimborso** registra un rimborso, mai superiore all'incassato: **Importo**, **Forma** (denaro o credito al
+cliente), **Motivo**. Per un pagamento fatto online con Stripe puoi rimborsare **tramite Stripe**: il denaro
+torna sulla carta del cliente e il rimborso resta **In corso** finché Stripe non lo conferma (vedi
+[Pagamenti online](/gestore/pagamenti-online/#rimborsi)).
+
+### Cancellare
+
+<Steps>
+
+1. **Cancella prenotazione**: le postazioni vengono liberate.
+2. L'**Anteprima del rimborso** mostra **Incassato**, la **Percentuale da condizioni** e l'importo **Da
+   condizioni**, calcolati sulle condizioni accettate al momento della prenotazione.
+3. Scegli il **Rimborso**: **Come da condizioni**, **Rimborso di un importo diverso**, **Credito al cliente** o
+   **Nessun rimborso**.
+4. Se è per maltempo, spunta **Cancellazione per maltempo**: si applica la tutela meteo della policy.
+5. Indica il **Motivo** e conferma.
+
+</Steps>
+
+### Email e link di gestione
+
+Dal dettaglio puoi **reinviare l'email di conferma** e **rigenerare il link di gestione** del cliente (vedi
+[Email e notifiche](/gestore/email/#il-link-di-gestione-link-magico)).
+
+## Prenotazioni online
+
+Le prenotazioni dalla pagina pubblica hanno canale **Online** e compaiono nel pannello appena create (in attesa,
+con il conto alla rovescia del blocco). Mentre il cliente compila, la prenotazione è legata a un cliente
+provvisorio interno, che non compare mai negli elenchi: al passo dei dati viene collegata al cliente vero
+(esistente per email o telefono, oppure nuovo).
+
+<Aside type="caution">
+  Non confermare a mano una prenotazione online "in attesa di pagamento" perché il cliente al telefono dice di
+  aver pagato: aspetta la conferma di Stripe (arriva da sola, o con la riconciliazione) oppure registra tu
+  l'incasso in cassa se il cliente paga lì.
+</Aside>

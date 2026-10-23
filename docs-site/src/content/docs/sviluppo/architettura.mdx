@@ -1,0 +1,142 @@
+---
+title: Architettura
+description: Il monobinario Go con le due SPA, i servizi di dominio, l'outbox, il motore di disponibilità basato su vincoli del database, il motore dei prezzi puro e il flusso di prenotazione pubblica.
+sidebar:
+  order: 1
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+## Vista d'insieme
+
+Un solo binario Go (`arenile`) contiene API REST, flusso SSE, job runner, outbox e le due applicazioni React
+incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, PostgreSQL opzionale (ADR 0002).
+
+```text
+           browser gestore                          browser cliente / sito ospite (iframe, embed.js)
+                 │ /admin/  /api/admin/v1/*                  │ /b/{slug}  /api/public/v1/{slug}/*
+                 ▼                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ binario arenile                                                                     │
+│  middleware: log, recover, request ID, sessione/chiavi, CSRF, rate limit,           │
+│              idempotenza, header di sicurezza (frame-ancestors per stabilimento)    │
+│                                                                                     │
+│  internal/http/admin   internal/http/public   internal/http/webhooks   http/sse      │
+│  (handler sottili sulle interfacce generate da api/openapi.yaml)                    │
+│                │                  │                    │                    ▲        │
+│                ▼                  ▼                    ▼                    │        │
+│  internal/domain/*: inventory · pricing · policy · booking · checkout · payment ·   │
+│  gateway · stripe · cash · fiscal · notify · online · customer · pass · mapping ... │
+│                │                                                            │        │
+│                ▼                                                            │        │
+│  internal/store (Bun, unico posto con SQL) ──► outbox_events ──► internal/jobs ─┘     │
+└────────────────┼────────────────────────────────────────────────────────────────────┘
+                 ▼
+     SQLite (WAL, /data/arenile.db)  |  PostgreSQL (DATABASE_URL)
+```
+
+## Principi
+
+<CardGrid>
+  <Card title="Un binario, un'immagine, un volume" icon="rocket">
+    Nessun servizio esterno obbligatorio: niente Redis, code o object storage. Email e pagamenti sono opzionali.
+  </Card>
+  <Card title="Configurazione come dati" icon="setting">
+    Ogni differenza tra stabilimenti è espressa da risorse, pack, regole e policy, mai da condizioni nel codice.
+  </Card>
+  <Card title="API-first" icon="seti:json">
+    Pannello e pagina pubblica usano solo le API documentate; il contratto OpenAPI genera server e client.
+  </Card>
+  <Card title="Correttezza prima di tutto" icon="approve-check">
+    Una doppia prenotazione è un difetto bloccante: la disponibilità è garantita dai vincoli del database.
+  </Card>
+</CardGrid>
+
+## Disponibilità: vincoli del database
+
+- **Postazioni**: una riga in `spot_allocations` per `(spot_id, date, slot)`. Il vincolo
+  `unique(spot_id, date, slot)` rende **impossibile** la doppia occupazione, anche con 100 richieste parallele,
+  su SQLite e PostgreSQL. `kind` ∈ `hold`, `booking`, `block`, `season`; giorno intero = `AM` + `PM`.
+- **Pool**: contatori `pool_usage(used, held)` aggiornati con
+  `UPDATE … WHERE used + held + :qty <= capacità_effettiva`; meno righe aggiornate del previsto ⇒ rollback.
+- **Hold**: con scadenza; un job li rilascia ogni 30 secondi, ma gli hold scaduti vengono comunque rimossi al
+  momento del conflitto, quindi un job in ritardo non blocca mai una vendita.
+- **Quote online**: `disponibili_online = min(liberi, quota − venduti_online)` per data e fascia; valgono per i
+  canali `online` e `api`, non per `desk`.
+- **Implementazione** (`internal/domain/inventory`): *functional core, imperative shell*. `plan.go` calcola in
+  modo puro le righe da inserire e le domande ai pool; `allocate.go` le applica nella transazione del chiamante
+  con `INSERT … ON CONFLICT DO NOTHING` e restituisce tutte le mezze giornate in conflitto come `ConflictError`.
+
+## Prezzi: una funzione pura
+
+`pricing.Quote(input, catalogo, regole) → PriceBreakdown` non accede a database, orologio o casualità (ADR 0004):
+regole, catalogo e data di riferimento arrivano come input. Aritmetica intera in centesimi con arrotondamento
+half-even. L'output è salvato come `price_snapshot` con `engine_version`: ricalcolare con la stessa versione dà lo
+stesso totale. La matrice di listino e il simulatore sono lo stesso calcolo.
+
+## Prenotazioni: un'unica macchina a stati
+
+Ogni cambio di stato è un metodo di `internal/domain/booking`, che scrive **audit log ed evento outbox nella
+stessa transazione** della modifica. I canali pubblici usano metodi dedicati (`booking/online.go`) con un
+`audit.Actor` (cliente o sistema) al posto di un utente autenticato.
+
+## Il flusso della prenotazione pubblica
+
+```text
+ Cliente (iframe)              API pubblica                 Dominio / DB                        Stripe
+ 1 date e fasce   ── GET  availability ─► inventory (sola lettura, quote online)
+ 2 pack e posto   ── POST quote ────────► pricing.Quote (puro) + policy        (nessuna scrittura)
+ 3 conferma       ── POST bookings ─────► checkout.Create ─ una transazione:
+                                          booking held + hold sulle risorse + checkout_sessions(hash)
+                  ◄── booking_id, checkout_token, hold_expires_at
+ 4 dati, consensi ── PATCH bookings/{id} ► booking.AttachCustomer (versione condizioni = corrente)
+ 5 paga           ── POST …/pay ────────► booking.StartPayment (pending_payment, hold ≤ 30 min)
+                                          gateway.Start: payment_intents + CreatePayment ───────► Checkout Session
+                  ◄── redirect (target top)                                                         │
+ 6                                        POST /webhooks/payments/stripe/{establishment}  ◄─────────┘
+                                          ParseWebhook (firma) ─ una transazione:
+                                          webhook_events (dedup) · payments · paid_amount ·
+                                          booking confirmed · hold → booking · auto-assegnazione ·
+                                          audit + outbox booking.confirmed
+ 7 polling        ── GET bookings/{id} ─► stato (non conferma mai)
+                                          notify (sink dell'outbox) → email con link magico, QR, .ics
+```
+
+<Aside type="caution" title="Regola d'oro">
+  La conferma avviene **solo** dal webhook firmato (o dalla riconciliazione, o dal driver `manual` in cassa), mai
+  dal ritorno del browser né da una `GET` (INV-19).
+</Aside>
+
+## Eventi e outbox
+
+```text
+BEGIN
+  modifica (bookings, allocazioni, …)
+  INSERT audit_log
+  INSERT outbox_events (type, payload v1)
+COMMIT ──► job dispatcher ──► ext.EventSink (estensioni, notify) · webhook in uscita · broker SSE
+```
+
+L'evento esiste se e solo se la modifica è confermata; la consegna è almeno una volta. Il bus SSE è avvolto da un
+`ReplayBus` che, alla riconnessione con `Last-Event-ID`, rimanda gli eventi persi.
+
+## Composizione
+
+`internal/app` è la *composition root*: costruisce store, servizi, router e job runner. Ogni consumatore dichiara
+la **porta** che gli serve (*ports & adapters*) e `internal/app/m3.go` e `m4.go` verificano a tempo di
+compilazione che le implementazioni le soddisfino. I driver di pagamento stanno in un **registry** (*strategy*):
+`manual` e `stripe` nel core, altri dalle estensioni.
+
+## Pagina pubblica: budget
+
+| Risorsa | Budget |
+|---|---|
+| JavaScript del primo schermo | < 150 KB gzip |
+| CSS | < 25 KB |
+| `embed.js` | < 3 KB |
+| LCP su 4G | < 2,5 s |
+| Larghezza minima | 320 px |
+
+I passi successivi a "Quando" e la mappa sono caricati in modo pigro; `npm run budget` verifica i limiti in CI.
+
+Per i dettagli: `docs/architecture.md` nel repository.

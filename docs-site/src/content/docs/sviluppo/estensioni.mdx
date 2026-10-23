@@ -1,0 +1,133 @@
+---
+title: Estensioni (pkg/ext)
+description: I punti di estensione Go stabili di Arenile - pagamenti, driver fiscali, consumatori di eventi, bus in tempo reale, dati della concessione, domini personalizzati, SSO, notifiche, anti-bot, rotte e plugin del pannello.
+sidebar:
+  order: 4
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Le interfacce del pacchetto `pkg/ext` sono le **uniche API Go stabili** per chi estende il core: cambiarle è un
+cambiamento incompatibile. Tutto ciò che sta in `internal/` può cambiare senza preavviso. `pkg/ext` non importa
+nulla di `internal/`, quindi un'estensione dipende solo da tipi pubblici.
+
+## Il registro delle estensioni
+
+```go
+type Extensions struct {
+    PaymentProviders []PaymentProvider      // aggiunti a "manual" e "stripe"; stesso Code = sostituisce
+    FiscalDrivers    []FiscalDriver         // aggiunti a "none"
+    EventSinks       []EventSink            // ricevono ogni evento dopo l'outbox (almeno una volta)
+    ConcessionData   ConcessionDataProvider // perimetro, immagini, scadenze della concessione
+    TenantResolver   TenantResolver         // stabilimento da host/header (domini personalizzati)
+    AuthProviders    []AuthProvider         // accesso esterno, es. OIDC
+    Notifiers        []Notifier             // canali oltre l'email: SMS, WhatsApp
+    BotProtection    BotProtection          // challenge invisibile sulle creazioni pubbliche
+    EventBus         EventBus               // bus in tempo reale, es. PostgreSQL LISTEN/NOTIFY
+    HTTPRoutes       func(r chi.Router)     // rotte aggiuntive (non su /api/admin/v1, /api/public/v1, /admin, /b)
+    AdminUIPlugins   []UIPluginManifest     // voci di menu e pagine nel pannello
+}
+```
+
+Il binario ufficiale usa le sole implementazioni del core. Per aggiungere le tue, compila un tuo `main` che le
+registra:
+
+```go title="cmd/mio-arenile/main.go"
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/coste360/arenile/internal/app"
+    "github.com/coste360/arenile/internal/config"
+    "github.com/coste360/arenile/pkg/ext"
+
+    "example.com/arenile-satispay"
+)
+
+func main() {
+    cfg, err := config.FromEnv()
+    if err != nil {
+        log.Fatal(err)
+    }
+    a, err := app.New(cfg, app.WithExtensions(ext.Extensions{
+        PaymentProviders: []ext.PaymentProvider{satispay.New()},
+    }))
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer a.Close()
+    if err := a.Run(context.Background()); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+<Aside type="caution" title="Oggi: un main nel repository">
+  `internal/app` può essere importato solo da codice dello stesso modulo Go: per ora il tuo `main` vive in una
+  copia del repository (ad esempio `cmd/mio-arenile`), mentre le implementazioni possono stare in moduli tuoi che
+  importano solo `pkg/ext`. Un costruttore pubblico dell'applicazione, per importare il core da un altro modulo,
+  arriverà con un ADR dedicato. Ricorda i limiti della [licenza](/sviluppo/licenza/) se distribuisci il risultato.
+</Aside>
+
+## Le interfacce
+
+<CardGrid>
+  <Card title="PaymentProvider" icon="approve-check">
+    Driver di pagamento: `Code`, `Capabilities`, `CreatePayment`, `ParseWebhook`, `Refund`. Vedi
+    [Driver di pagamento](/sviluppo/driver-di-pagamento/).
+  </Card>
+  <Card title="FiscalDriver" icon="document">
+    Emissione dei documenti commerciali: `Code`, `Issue`, `Void`, `Status`. Le righe derivano dallo snapshot del
+    prezzo (importi lordi, aliquote in punti base: 2200 = 22%).
+  </Card>
+  <Card title="EventSink" icon="random">
+    `Name`, `Handle(ctx, Event)`: riceve ogni evento di dominio dopo l'outbox. Deve essere idempotente sull'`id`.
+  </Card>
+  <Card title="EventBus" icon="analytics">
+    `Publish`, `Subscribe`: sostituisce il bus in memoria del tempo reale, per più istanze in parallelo.
+  </Card>
+  <Card title="Notifier" icon="email">
+    `Channel`, `Send`: nuovi canali di notifica accanto all'email.
+  </Card>
+  <Card title="AuthProvider" icon="padlock">
+    `Code`, `DisplayName`, `BeginLogin`, `CompleteLogin`: accesso con un identity provider esterno.
+  </Card>
+  <Card title="TenantResolver" icon="laptop">
+    `ResolveSlug(r)`: risolve lo stabilimento della pagina pubblica dal dominio (es. `prenota.lido-a.it`).
+  </Card>
+  <Card title="ConcessionDataProvider" icon="puzzle">
+    `Lookup(ctx, ref)`: dati della concessione demaniale da fonti esterne.
+  </Card>
+  <Card title="BotProtection" icon="warning">
+    `ClientConfig`, `Verify`: challenge invisibile senza servizi imposti.
+  </Card>
+  <Card title="UIPluginManifest" icon="setting">
+    Voci di menu (etichette per lingua, italiano obbligatorio) e un URL di pagina caricata in un'area dedicata del
+    pannello.
+  </Card>
+</CardGrid>
+
+## Eventi: formato dell'envelope
+
+```go
+type Event struct {
+    ID              string          `json:"id"`               // "evt_<uuidv7>"
+    Type            string          `json:"type"`             // es. "booking.confirmed"
+    EstablishmentID string          `json:"establishment_id"`
+    OccurredAt      time.Time       `json:"occurred_at"`
+    Data            json.RawMessage `json:"data"`             // payload versionato
+    Version         int             `json:"version"`
+}
+```
+
+L'elenco dei tipi è in [Eventi e webhook in uscita](/api/eventi-e-webhook/).
+
+## Regole per chi scrive un'estensione
+
+- Importi `int64` in centesimi, mai `float`.
+- Nessun dato personale, token o segreto nei log.
+- Le credenziali arrivano già decifrate nella chiamata: non salvarle altrove.
+- Un `EventSink` lento non blocca il core, ma deve gestire da sé i propri tentativi e l'idempotenza.
+- Le nuove dipendenze devono avere una licenza compatibile con BSL 1.1 e AGPL-3.0 (MIT, BSD, Apache-2.0, ISC).

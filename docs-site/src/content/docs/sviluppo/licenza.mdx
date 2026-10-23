@@ -1,0 +1,57 @@
+---
+title: Licenza
+description: Arenile è distribuito con codice sorgente disponibile sotto Business Source License 1.1 - cosa è consentito, cosa richiede una licenza commerciale, la conversione in AGPL-3.0 e il marchio.
+sidebar:
+  order: 8
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+Arenile è distribuito con codice sorgente disponibile (*source available*) sotto la **Business Source License
+1.1** (BSL 1.1, identificativo SPDX `BUSL-1.1`), con licenziante **Coste360 SRL**.
+
+<CardGrid>
+  <Card title="Consentito, gratis" icon="approve-check">
+    Usare Arenile in produzione per gestire gli stabilimenti balneari, i lidi, i beach club e le piscine che
+    possiedi o gestisci direttamente, compresa la pagina di prenotazione e il widget per i tuoi clienti. Leggere,
+    modificare, provare il codice e contribuire.
+  </Card>
+  <Card title="Serve una licenza commerciale" icon="warning">
+    Offrire Arenile, o una sua versione modificata, a terzi a pagamento o con altro vantaggio commerciale:
+    hosting, servizio gestito o SaaS, installazione, configurazione, personalizzazione, manutenzione, assistenza,
+    rivendita, o includerlo in un prodotto concorrente. Scrivi a info@coste360.it.
+  </Card>
+</CardGrid>
+
+## Conversione in AGPL-3.0
+
+Ogni versione di Arenile passa automaticamente alla licenza **GNU AGPL-3.0 o successiva** tre anni dopo il suo
+primo rilascio pubblico (la *Change Date* della BSL). Il codice di oggi sarà quindi disponibile con licenza AGPL
+tra tre anni, versione per versione.
+
+## Perché questa scelta
+
+Lo scopo è che Arenile resti **gratuito per i gestori** e che nessuno possa prenderlo e rivenderlo come servizio a
+pagamento agli stessi stabilimenti a cui è dato gratis. La BSL protegge questo uso, lascia il codice leggibile e
+modificabile e aperto ai contributi. Le alternative valutate e le ragioni sono nell'ADR 0007 del repository.
+
+L'hosting gestito **Arenile Pro** è un prodotto commerciale separato di Coste360, futuro: il core resta completo e
+gratuito per chi gestisce da sé i propri stabilimenti, e nessuna funzione necessaria alla gestione di un lido è
+riservata al prodotto commerciale.
+
+## Contributi
+
+I contributi richiedono la firma del CLA (vedi [Contribuire](/sviluppo/contribuire/#cla)). Le nuove dipendenze
+devono avere una licenza compatibile sia con la BSL 1.1 sia con la AGPL-3.0 (ad esempio MIT, BSD, Apache-2.0,
+ISC).
+
+## Marchio
+
+Il nome **Arenile** e il logo sono marchi di Coste360 SRL: i fork, anche delle versioni convertite in AGPL-3.0,
+devono usare un nome e un logo diversi. I dettagli sono in `TRADEMARK.md`. Le illustrazioni del kit della mappa
+sono opere originali di Coste360 (provenienza in `assets/beach-map-kit`).
+
+<Aside type="caution">
+  Il testo vincolante è il file `LICENSE` del repository; questa pagina è una sintesi e non lo sostituisce. Il testo
+  della licenza e della clausola d'uso è in corso di validazione legale prima della pubblicazione del repository.
+</Aside>

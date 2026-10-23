@@ -1,0 +1,78 @@
+---
+title: Manager guide
+description: How to use Arenile every day, feature by feature - configuration, beach, bookings, cash desk and online sales.
+sidebar:
+  order: 0
+  label: Overview
+---
+
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+This guide describes every feature of the manager panel with step-by-step procedures, screenshots of the **Lido
+Demo** and tips from the field. Screenshots are regenerated at every release, so they always match the program you
+are using.
+
+<Screenshot name="admin-today" alt="The Today page of the panel: key figures of the day, map and to-do lists" />
+
+## How the panel is organised
+
+- **Sidebar**: at the top the **Establishment** switcher (with **+ New establishment**), then the **Operations**
+  group and the **Configuration** group. On a phone it opens with the menu button.
+- **Command palette**: press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>⌘</kbd>+<kbd>K</kbd> on Mac) to search for a page
+  and jump to it without the mouse.
+- **User menu** at the bottom: **Light**, **Dark** or **System** theme, and **Sign out**.
+- **Real time**: map, today, planning and cash desk refresh by themselves when a colleague or an online customer
+  books, pays or checks in. No need to reload.
+- **Languages**: the panel is available in Italian, English, German and French.
+
+## First season: configuration
+
+Done once (the guided setup does most of it in a few minutes), then fine-tuned.
+
+<CardGrid>
+  <LinkCard title="Guided setup" href="/en/gestore/configurazione-guidata/" description="Six steps from empty to a beach ready to sell." />
+  <LinkCard title="Establishment" href="/en/gestore/stabilimento/" description="Details, languages, public address, VAT and rounding." />
+  <LinkCard title="Seasons and periods" href="/en/gestore/stagioni-e-periodi/" description="Opening, low, mid, high season and peak, local holidays." />
+  <LinkCard title="Closures" href="/en/gestore/chiusure/" description="Bad weather, events and works: days or half-days not bookable." />
+  <LinkCard title="Maps and editor" href="/en/gestore/mappe-ed-editor/" description="Draw the beach with the map kit, the row generator and walkways." />
+  <LinkCard title="Zones" href="/en/gestore/zone/" description="Chosen spot, zone or quantity, and online quotas." />
+  <LinkCard title="Pools" href="/en/gestore/pool/" description="Quantity equipment without position: sunbeds, cabins, parking." />
+  <LinkCard title="Catalogue" href="/en/gestore/catalogo/" description="Components, packs and extras: what you sell." />
+  <LinkCard title="Prices" href="/en/gestore/prezzi/" description="Rules, simulator, matrix, coverage, season copy, promo codes and agreements." />
+  <LinkCard title="Policies" href="/en/gestore/policy/" description="Lead time, duration, deposits, cancellations and approvals." />
+</CardGrid>
+
+## Selling online
+
+<CardGrid>
+  <LinkCard title="Public page and widget" href="/en/gestore/pagina-pubblica/" description="Activation, theme, allowed websites, terms, embed code." />
+  <LinkCard title="Online payments with Stripe" href="/en/gestore/pagamenti-online/" description="Keys, webhook, test mode, reconciliation and refunds." />
+  <LinkCard title="Email and notifications" href="/en/gestore/email/" description="Sender, customer and manager notifications, test and delivery log." />
+  <LinkCard title="The customer journey" href="/en/gestore/percorso-del-cliente/" description="What the customer sees: steps, payment, confirmation, manage area." />
+</CardGrid>
+
+## Every day: operations
+
+<CardGrid>
+  <LinkCard title="Today" href="/en/gestore/oggi/" description="The dashboard of the day: arrivals, balances, things to do." />
+  <LinkCard title="Map of the day" href="/en/gestore/mappa-del-giorno/" description="Statuses, legend, spot sheet, moves, releases." />
+  <LinkCard title="Planning" href="/en/gestore/calendario/" description="Spots × days planning for long stays." />
+  <LinkCard title="Bookings" href="/en/gestore/prenotazioni/" description="New, change, move, cancel with refund, check-in." />
+  <LinkCard title="Customers and GDPR" href="/en/gestore/clienti/" description="Records, history, credits, export and anonymisation." />
+  <LinkCard title="Season passes and releases" href="/en/gestore/abbonamenti/" description="Season passes, released days, resale and credits." />
+  <LinkCard title="Cash desk and closing" href="/en/gestore/cassa/" description="Opening, takings, movements, closing with count and Z report." />
+  <LinkCard title="Daily takings" href="/en/gestore/corrispettivi/" description="Summary by VAT rate and method for the accountant." />
+</CardGrid>
+
+## People and words
+
+<CardGrid>
+  <LinkCard title="Team and roles" href="/en/gestore/team-e-ruoli/" description="Users, roles and the full permission matrix." />
+  <LinkCard title="Glossary" href="/en/gestore/glossario/" description="Every Arenile term on one page." />
+</CardGrid>
+
+<Aside type="tip" title="Try without fear">
+  Load the [Lido Demo](/en/installazione/dati-demo/) on a trial instance: every procedure in this guide can be
+  repeated there, with the same data as the screenshots.
+</Aside>

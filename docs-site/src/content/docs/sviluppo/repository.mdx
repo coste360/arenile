@@ -1,0 +1,89 @@
+---
+title: Mappa del repository
+description: Dove sta cosa nel repository di Arenile, le regole di dipendenza tra pacchetti e i file generati da non modificare mai a mano.
+sidebar:
+  order: 2
+---
+
+import { FileTree, Aside } from '@astrojs/starlight/components';
+
+<FileTree>
+- cmd/
+  - arenile/ entrypoint e CLI (serve, migrate, admin create, seed demo, backup, restore, version)
+- internal/
+  - app/ composition root e registry delle estensioni
+  - config/ variabili d'ambiente
+  - domain/ logica di business, un pacchetto per area (niente HTTP, niente SQL)
+    - inventory/ allocazioni, hold, pool, quote, assegnazione automatica
+    - pricing/ motore dei prezzi puro
+    - policy/ motore delle policy puro
+    - booking/ macchina a stati delle prenotazioni
+    - checkout/ flusso pubblico e area di gestione
+    - payment/ pagamenti, registro, driver
+      - gateway/ pagamenti online, webhook, riconciliazione
+      - stripe/ driver Stripe
+    - notify/ email, link magici, QR, .ics
+    - online/ impostazioni della pagina pubblica, condizioni, credenziali
+    - …
+  - store/ accesso al database (Bun): l'unico posto con SQL
+  - http/
+    - admin/ handler di /api/admin/v1
+    - public/ handler di /api/public/v1
+    - webhooks/ webhook dei pagamenti
+    - middleware/
+    - sse/
+    - api/ codice generato (api.gen.go)
+    - static/ SPA incorporate
+  - jobs/ job runner in-process
+  - migrations/
+    - sqlite/
+    - postgres/
+  - clock/ orologio iniettabile
+  - money/ importi in centesimi
+  - calendar/ date e fasce
+- pkg/
+  - ext/ interfacce pubbliche per le estensioni (API Go stabile)
+- api/
+  - openapi.yaml il contratto, fonte di verità
+- web/ workspace npm
+  - admin/ pannello del gestore
+  - booking/ pagina pubblica ed embed.js
+  - shared/ client API, UI shadcn, mappa con il kit
+- assets/
+  - beach-map-kit/ illustrazioni originali della mappa (ADR 0012)
+- docs/ specifica, ADR, architettura, invarianti, glossario
+- docs-site/ questo sito (Astro Starlight)
+- e2e/ test Playwright
+- deploy/ Dockerfile, compose, Coolify, CapRover
+- .claude/ regole, skill e subagent per gli agenti
+- AGENTS.md
+- Makefile unica interfaccia per build, test e verifiche
+</FileTree>
+
+## Regole di dipendenza
+
+- `internal/domain/*` non importa `net/http`, `internal/http/*` né driver SQL: partecipa alle transazioni con
+  `bun.IDB`.
+- `internal/http/*` non contiene SQL né logica di business: decodifica, chiama il servizio, codifica.
+- `internal/domain/pricing` non importa `store`, `clock` né usa `time.Now`.
+- `pkg/ext` non importa nulla di `internal/`.
+- Ogni query operativa filtra per `establishment_id`, preso dal contesto autenticato (`EstablishmentScope`), mai
+  dal corpo della richiesta.
+
+## Codice generato
+
+<Aside type="danger" title="Mai a mano">
+  Questi file si rigenerano con `make gen`; `make check` fallisce se differiscono da quanto versionato.
+</Aside>
+
+| Generato | Da |
+|---|---|
+| `internal/http/api/*.gen.go` | `api/openapi.yaml` (oapi-codegen) |
+| `web/shared/api/generated/**` | `api/openapi.yaml` (openapi-typescript) |
+| `web/shared/src/map/kit/generated/**`, `internal/domain/mapping/kitassets_gen.go` | `assets/beach-map-kit` (`web/scripts/gen-map-kit.mjs`) |
+
+## Migrazioni
+
+Una coppia di file per ogni versione dello schema, con lo stesso numero, in `internal/migrations/sqlite/` e
+`internal/migrations/postgres/` (goose). Una migrazione già su `main` non si modifica mai: si aggiunge la
+successiva.

@@ -1,0 +1,119 @@
+---
+/**
+ * <ApiOperation id="createPublicBooking" /> — one line of the API contract
+ * (method, path, summary, authentication) linking to its generated reference
+ * page. Read from api/openapi.yaml at build time: unknown ids fail the build,
+ * so the guide can never cite an operation that does not exist.
+ *
+ * Several ids: <ApiOperation ids={['getPublicCalendar', 'getPublicMap']} />.
+ */
+import { apiOperation } from '../lib/openapi';
+
+interface Props {
+  id?: string;
+  ids?: string[];
+}
+
+const { id, ids } = Astro.props;
+const list = (ids ?? (id ? [id] : [])).map(apiOperation);
+if (list.length === 0) throw new Error('<ApiOperation>: pass id or ids');
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const t = Astro.locals.t;
+---
+
+<ul class="not-content api-ops">
+  {
+    list.map((op) => (
+      <li>
+        <a href={`${base}${op.href}`} class:list={['api-op', { deprecated: op.deprecated }]}>
+          <span class={`method m-${op.method}`}>{op.method.toUpperCase()}</span>
+          <code class="path">{op.path}</code>
+          <span class="summary">{op.summary}</span>
+          <span class="auth">{op.public ? t('arenile.api.public') : t('arenile.api.session')}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .api-ops {
+    display: grid;
+    gap: 0.5rem;
+    margin-block: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .api-op {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.25rem 0.75rem;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--foreground);
+    text-decoration: none;
+    transition: border-color 120ms;
+  }
+  .api-op:hover,
+  .api-op:focus-visible {
+    border-color: var(--primary);
+  }
+  .deprecated .path {
+    text-decoration: line-through;
+  }
+  .method {
+    min-width: 4rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    text-align: center;
+    background: var(--muted);
+    color: var(--foreground);
+  }
+  .m-get {
+    background: color-mix(in oklab, var(--primary) 16%, transparent);
+    color: var(--primary-on-surface);
+  }
+  .m-post {
+    background: color-mix(in oklab, var(--success) 18%, transparent);
+  }
+  .m-put,
+  .m-patch {
+    background: color-mix(in oklab, var(--warning) 25%, transparent);
+  }
+  .m-delete {
+    background: color-mix(in oklab, var(--destructive) 15%, transparent);
+    color: var(--destructive);
+  }
+  .path {
+    overflow-wrap: anywhere;
+    font-size: var(--sl-text-sm);
+    background: none;
+    padding: 0;
+  }
+  .summary {
+    grid-column: 2 / 4;
+    color: var(--muted-foreground);
+    font-size: var(--sl-text-sm);
+  }
+  .auth {
+    grid-row: 1;
+    grid-column: 3;
+    color: var(--muted-foreground);
+    font-size: var(--sl-text-xs);
+    white-space: nowrap;
+  }
+  @media (max-width: 40rem) {
+    .auth {
+      display: none;
+    }
+    .summary {
+      grid-column: 1 / 4;
+    }
+  }
+</style>

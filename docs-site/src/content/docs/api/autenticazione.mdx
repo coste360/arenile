@@ -1,0 +1,97 @@
+---
+title: Autenticazione
+description: Sessione con cookie, token CSRF double-submit, verifica in due passaggi, chiavi API e permessi per ruolo.
+sidebar:
+  order: 1
+---
+
+import { Steps, Aside, Tabs, TabItem, Badge } from '@astrojs/starlight/components';
+
+## Sessione del pannello
+
+<Steps>
+
+1. `POST /api/admin/v1/auth/login` con email, password e, se la verifica in due passaggi è attiva, il codice:
+
+   ```bash
+   curl -i https://prenota.mio-lido.it/api/admin/v1/auth/login \
+     -H 'Content-Type: application/json' \
+     -c cookies.txt \
+     -d '{"email":"titolare@mio-lido.it","password":"…","totp_code":"123456"}'
+   ```
+
+   In caso di successo il server imposta due cookie:
+   - `arenile_session`: `HttpOnly`, `Secure`, `SameSite=Lax`, ruotato a ogni login;
+   - `arenile_csrf`: leggibile dal client, per il token CSRF.
+
+   Se manca il codice TOTP la risposta è `401` con `type` `totp_required`; un codice errato dà `invalid_totp`.
+
+2. Le richieste che **leggono** inviano solo il cookie di sessione.
+
+3. Le richieste che **modificano** (`POST`, `PUT`, `PATCH`, `DELETE`) devono inviare anche l'header
+   `X-CSRF-Token` con lo stesso valore del cookie `arenile_csrf` (double-submit). Altrimenti: `403`
+   `csrf_failed`.
+
+   ```bash
+   CSRF=$(grep arenile_csrf cookies.txt | awk '{print $7}')
+   curl https://prenota.mio-lido.it/api/admin/v1/auth/logout -X POST \
+     -b cookies.txt -H "X-CSRF-Token: $CSRF"
+   ```
+
+4. `GET /api/admin/v1/auth/me` restituisce l'utente, i suoi stabilimenti, i ruoli e i permessi.
+
+</Steps>
+
+La sessione scade dopo un periodo di inattività (7 giorni di default) e si rinnova con l'uso.
+
+### Limiti sui tentativi
+
+30 tentativi ogni 15 minuti per IP e 8 tentativi falliti ogni 15 minuti per account; oltre, `429`
+`rate_limited` con `retry_after` in secondi.
+
+### Verifica in due passaggi
+
+`POST /api/admin/v1/auth/totp/enroll` restituisce il segreto e l'URI `otpauth://` da mostrare come QR;
+`POST /api/admin/v1/auth/totp/confirm` con un codice valido la attiva. Con
+`ARENILE_REQUIRE_TOTP_FOR_OWNERS=true` un proprietario senza TOTP riceve `totp_enrolment_required`.
+
+## Chiavi API <Badge text="In arrivo (M5)" variant="caution" />
+
+Il contratto prevede chiavi API per le integrazioni server-to-server, legate a uno stabilimento e con scope pari
+ai permessi:
+
+```http
+Authorization: Bearer ar_live_<prefisso>_<segreto>
+```
+
+Con una chiave API non servono cookie né CSRF. La creazione e la revoca delle chiavi dal pannello arrivano con la
+milestone M5.
+
+## Permessi
+
+Ogni operazione richiede un permesso, verificato nel servizio di dominio (non solo nell'handler). I valori sono
+stabili e saranno anche gli scope delle chiavi API.
+
+| Permesso | Significato | Ruoli |
+|---|---|---|
+| `establishment.configure` | Configurazione, prezzi, policy, pagina pubblica, email | owner, manager |
+| `users.manage` | Utenti, ruoli, chiavi API | owner |
+| `payments.configure` | Provider di pagamento e credenziali | owner |
+| `bookings.write` | Creare e modificare prenotazioni | owner, manager, cashier |
+| `cash.operate` | Incassi e cassa | owner, manager, cashier |
+| `refunds.issue` | Rimborsi | owner, manager |
+| `operations.run` | Check-in, rilasci, blocchi | owner, manager, cashier, beach_staff |
+| `bookings.read` | Mappa e prenotazioni | tutti |
+| `reports.read` | Report ed esportazioni | owner, manager, viewer |
+
+Senza il permesso: `403` `forbidden`. Una risorsa di un altro stabilimento risponde `404`, senza rivelare che
+esiste.
+
+## API pubblica
+
+L'API pubblica non ha login. I dati personali di una prenotazione si leggono solo con:
+
+- il **token della sessione di checkout** (header `X-Arenile-Checkout`), durante la prenotazione;
+- il **token del link magico** (nel percorso `/manage/{token}`), dopo.
+
+Vedi [API pubblica e checkout](/api/api-pubblica/).

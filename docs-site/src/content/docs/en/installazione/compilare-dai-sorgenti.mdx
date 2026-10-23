@@ -1,0 +1,133 @@
+---
+title: Build from source
+description: How to get the Arenile binary from the code on GitHub, for development or Docker-free installations. Prebuilt binaries are not published on GitHub.
+sidebar:
+  order: 4
+---
+
+import { Steps, Aside, Tabs, TabItem, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="note" title="Why there are no binaries on GitHub">
+  On GitHub Coste360 publishes the **source code** and the instructions to build and run it, not prebuilt
+  binaries. For something ready to use there is the public, free **Docker image** (`ghcr.io/coste360/arenile`, see
+  [Install with Docker](/en/installazione/docker/)); **desktop packages** for Windows, macOS and Linux will be
+  downloadable from the Coste360 portal after signing in.
+</Aside>
+
+The build produces **a single executable file**, static (no system dependencies, no CGO), containing server,
+APIs, panel and public page.
+
+## Prerequisites
+
+| Tool | Version |
+|---|---|
+| Go | 1.27 or later |
+| Node.js and npm | Node 22 or later, npm 10 or later |
+| make | any recent version |
+| git | to clone the repository |
+
+Alternatively use the **devcontainer** included in the repository (VS Code, GitHub Codespaces): it has everything.
+
+## Build
+
+<Steps>
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/coste360/arenile.git
+   cd arenile
+   ```
+
+2. Install the dependencies (once):
+
+   ```bash
+   make setup
+   ```
+
+3. Build the two web applications and the binary:
+
+   ```bash
+   make build
+   ```
+
+   `make build` builds the panel and the public page, embeds them in the binary (`internal/http/static`) and
+   produces `bin/arenile`.
+
+4. Check:
+
+   ```bash
+   ./bin/arenile version
+   ```
+
+</Steps>
+
+### Building for another architecture
+
+The binary is pure Go: you can build it for a Raspberry Pi or an `arm64` server from any computer, after building
+the web applications with `make web-build`:
+
+```bash
+make web-build
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath \
+  -ldflags "-s -w -X main.version=dev" -o arenile-arm64 ./cmd/arenile
+```
+
+### Building the Docker image locally
+
+```bash
+make docker   # produces ghcr.io/coste360/arenile:dev
+```
+
+## Running the binary
+
+<Tabs>
+  <TabItem label="Local trial">
+    ```bash
+    ARENILE_DEV=true ARENILE_DATA_DIR=./data ./bin/arenile serve
+    ```
+
+    In development mode `ARENILE_BASE_URL` is optional and, if `ARENILE_SECRET_KEY` is missing, a key is
+    generated, saved in `./data/dev-secret.key` and shown once at startup. **Never in production.**
+  </TabItem>
+  <TabItem label="Production (systemd)">
+    ```ini title="/etc/systemd/system/arenile.service"
+    [Unit]
+    Description=Arenile
+    After=network-online.target
+
+    [Service]
+    User=arenile
+    EnvironmentFile=/etc/arenile/arenile.env
+    ExecStart=/usr/local/bin/arenile serve
+    Restart=on-failure
+    NoNewPrivileges=true
+    ProtectSystem=strict
+    ReadWritePaths=/var/lib/arenile
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+    In `/etc/arenile/arenile.env` set at least `ARENILE_BASE_URL`, `ARENILE_SECRET_KEY` and
+    `ARENILE_DATA_DIR=/var/lib/arenile` (permissions `600`). Every variable is in
+    [Configuration](/en/installazione/configurazione/).
+  </TabItem>
+</Tabs>
+
+## Binary commands
+
+```text
+arenile serve [--dev]                        start the server (automatic migrations with ARENILE_AUTO_MIGRATE=true)
+arenile migrate up|status                    apply or show the state of migrations
+arenile admin create --email E --name N --org O [--password P]
+                                             create an owner user (password from ARENILE_ADMIN_PASSWORD or prompted)
+arenile seed demo                            load the demo establishment
+arenile backup --out FILE                    consistent backup (SQLite)
+arenile restore --in FILE                    restore a backup (server stopped)
+arenile version                              show the version
+```
+
+Configuration is always read from the `ARENILE_*` and `DATABASE_URL` environment variables.
+
+<LinkCard title="Want to contribute code?" href="/en/sviluppo/contribuire/" description="Development environment, make check, conventions and CLA." />

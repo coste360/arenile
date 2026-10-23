@@ -1,0 +1,101 @@
+---
+title: What Arenile is
+description: The source-available (BSL 1.1) management system for beach establishments, by Coste360 SRL. What it does, who it is for and what the license allows.
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Aside, Badge, LinkCard } from '@astrojs/starlight/components';
+
+**Arenile** is the management system for beach establishments (*stabilimenti balneari*), lidos, equipped beaches
+and pools developed by [Coste360 SRL](https://coste360.it). It replaces notebooks, spreadsheets and closed
+software with a single program the operator installs on **their own** server: the data stays theirs and nobody
+takes a commission on bookings.
+
+## What it does
+
+<CardGrid>
+  <Card title="Beach map" icon="puzzle">
+    Editor with the Coste360 map kit (over a hundred illustrations: umbrellas, gazebos, walkways, services, sea
+    condition flag), row generator, operational view of the day with colours and symbols per status, updated in
+    real time on every workstation.
+  </Card>
+  <Card title="Bookings and cash desk" icon="list-format">
+    Bookings from the panel and online, planning calendar, customers, season passes with day releases, cash desk
+    with opening and closing, daily takings for the accountant.
+  </Card>
+  <Card title="Prices and rules" icon="setting">
+    Pricing engine configurable without code: rate periods, holidays, rows, fixed durations, promo codes,
+    agreements. Policies for lead time, deposit, cancellation and approval. Price simulator, matrix and coverage
+    check.
+  </Card>
+  <Card title="Public page and payments" icon="laptop">
+    A booking page for smartphones, embeddable in the establishment's website with one line of code, in your
+    colours. Online payments with **your** Stripe account, confirmation email with QR code and calendar file,
+    customer manage area via magic link.
+  </Card>
+</CardGrid>
+
+### Guarantees that are not up for debate
+
+- **No double selling.** Two customers can never take the same spot in the same half-day, not even when one books
+  online and the other at the desk at the same instant: a database constraint prevents it, not a check in the
+  program.
+- **Confirmation only comes from the payment.** An online booking becomes confirmed only when the payment provider
+  says so with a signed message, never because the customer's browser "says" it paid.
+- **Verifiable prices.** Every booking keeps the full price breakdown and the accepted terms: a refund can always
+  be reconstructed, even if the price list has changed since.
+- **Every change leaves a trace.** Every status change of a booking writes the activity log and the matching event
+  in the same operation.
+
+## Who it is for
+
+| Type of establishment | How Arenile handles it |
+|---|---|
+| Classic lido with numbered rows of umbrellas | **Chosen spot** mode: the customer picks the umbrella on the map |
+| Equipped beach without fixed places | **Quantity** mode: you sell a number of umbrellas and sunbeds |
+| Premium areas assigned by staff | **Zone** mode: the customer picks the zone, the spot is assigned later (even automatically) |
+| Lido with pool, beach club, gazebos and cabanas | Modes combine within the same establishment |
+| Several lidos of the same company | Several establishments in one installation, with isolated data |
+
+## License: source available (BSL 1.1)
+
+Arenile is released under the **Business Source License 1.1** (SPDX identifier `BUSL-1.1`): a *source available*
+model.
+
+<CardGrid>
+  <Card title="Free for establishments" icon="approve-check">
+    You can run Arenile in production, free of charge, for the establishments you own or operate directly,
+    including the booking page for your customers.
+  </Card>
+  <Card title="Readable and modifiable" icon="open-book">
+    You can read the code, modify it, test it and contribute to the project (under the CLA).
+  </Card>
+  <Card title="Not resellable as a service" icon="warning">
+    Offering Arenile to third parties for a fee (hosting, SaaS, installation, support, resale) requires a
+    commercial license from Coste360 SRL: write to info@coste360.it.
+  </Card>
+  <Card title="Becomes AGPL-3.0 after three years" icon="star">
+    Each version switches to the GNU AGPL-3.0-or-later license three years after its first public release.
+  </Card>
+</CardGrid>
+
+<Aside type="caution">
+  The binding text is the repository's `LICENSE` file; this page is only a summary. The reasons behind the choice
+  are explained on the [License](/en/sviluppo/licenza/) page.
+</Aside>
+
+## What is there today and what is coming
+
+| Area | Status |
+|---|---|
+| Establishments, seasons, closures, maps with the map kit, zones, pools, catalogue | <Badge text="Available" variant="success" /> |
+| Prices, policies, simulator, matrix, coverage, season copy | <Badge text="Available" variant="success" /> |
+| Today, map of the day, planning, bookings, customers, season passes, cash desk, daily takings | <Badge text="Available" variant="success" /> |
+| Public page, widget, Stripe, emails, magic link, QR and `.ics`, automatic assignment | <Badge text="Available (M4)" variant="success" /> |
+| Season pass renewals, waiting list, credits as a payment method | <Badge text="Coming (M5)" variant="caution" /> |
+| Full reports, panel usable offline, configurable outgoing webhooks, API keys | <Badge text="Coming (M5)" variant="caution" /> |
+| Desktop edition for Windows, macOS and Linux | <Badge text="Coming (M6)" variant="caution" /> |
+| Mobile app for staff | <Badge text="Coming (M7)" variant="caution" /> |
+
+<LinkCard title="Next: choose how to install" href="/en/installazione/scegli-come-installare/" description="Four ways to run Arenile, with the pros and limits of each." />

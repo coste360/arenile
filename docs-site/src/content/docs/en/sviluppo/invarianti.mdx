@@ -1,0 +1,105 @@
+---
+title: Invariants
+description: The domain properties that must always hold, whatever the sequence of operations - availability, prices, bookings, payments, security and events.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+**Invariants** are the properties that must hold **always**. Each has a stable number and the test that checks it; the
+full list, with status and test names, is in `docs/invariants.md`. A change touching availability, prices, bookings or
+payments must leave them all valid (in Claude Code the `invariants-guardian` subagent checks it).
+
+## Availability
+
+| # | Invariant |
+|---|---|
+| INV-01 | No double allocation of a spot, even with 100 parallel requests, on SQLite and PostgreSQL |
+| INV-02 | A pool never exceeds its effective capacity |
+| INV-03 | `pool_usage` matches the allocation detail |
+| INV-04 | A spot is occupied if and only if a valid allocation exists |
+| INV-05 | Expired holds never block sales |
+| INV-06 | `expires_at` only on holds |
+| INV-07 | A full day occupies both slots |
+| INV-08 | Capacity of "Zone" mode zones respected |
+| INV-09 | Online quota respected |
+| INV-10 | Season pass releases consistent |
+
+## Prices
+
+| # | Invariant |
+|---|---|
+| INV-11 | The pricing engine is deterministic and pure |
+| INV-12 | Reproducible snapshot |
+| INV-13 | Non-negative, consistent total |
+| INV-14 | Discounts never increase the price |
+| INV-15 | No price, no sale |
+| INV-16 | Exact VAT split |
+
+## Bookings
+
+| # | Invariant |
+|---|---|
+| INV-17 | Only allowed status transitions |
+| INV-18 | Audit and outbox in the same transaction |
+| INV-19 | Confirmation only from payment (webhook, reconciliation or manual driver), never from the browser |
+| INV-20 | Resources consistent with the status |
+| INV-21 | Snapshots immutable after confirmation |
+
+## Payments and cash desk
+
+| # | Invariant |
+|---|---|
+| INV-22 | `paid_amount` consistent with payments |
+| INV-23 | Webhooks processed exactly once |
+| INV-24 | Refunds within the amount paid |
+| INV-25 | Consistent cash closing |
+| INV-44 | Daily takings equal to collected payments |
+| INV-47 | Customer credit never negative |
+
+## Multi-establishment, security, privacy
+
+| # | Invariant |
+|---|---|
+| INV-26 | Per-establishment isolation |
+| INV-27 | Permissions checked in the domain |
+| INV-28 | Public API without customer data |
+| INV-29 | Secrets never in clear |
+| INV-30 | Append-only audit log |
+| INV-31 | Idempotent creations |
+
+## Events, primitives, configuration, operations
+
+| # | Invariant |
+|---|---|
+| INV-32 | Every outbox event is delivered at least once |
+| INV-33 | Integer money arithmetic with half-even rounding |
+| INV-34 | Canonical calendar dates |
+| INV-35 | Rate periods without overlaps |
+| INV-36 | Always at least one active owner |
+| INV-37 | Map save with optimistic versioning |
+| INV-38 | Implicit pool aligned with spots |
+| INV-39 | Configuration changes with atomic audit and event |
+| INV-40 | Matrix and simulator consistent |
+| INV-41 | A quantity zone never has spots |
+| INV-42 | No silent deletion in configuration |
+| INV-43 | Consistent simulated day |
+| INV-45 | SSE stream after commit and without personal data |
+| INV-46 | Consistent and idempotent demo data |
+| INV-48 | Map illustrations only from the kit, sanitised at build time |
+
+## How they are checked
+
+- **Unit**, table-driven, `TestXxx_Scenario`; **property-based** with `pgregory.net/rapid` for prices and
+  availability.
+- **Integration** with the `integration` build tag: in-memory SQLite always, PostgreSQL when
+  `ARENILE_TEST_POSTGRES_URL` is set (`make test-db` starts the container).
+- **Concurrency**: `TestConcurrency_*` tests with `-race` and at least 100 parallel attempts on the same resource
+  (`make test-race`), including desk versus online on the same spot.
+- **Acceptance**: `internal/acceptance` starts the real application with a fake clock, uses it only through the APIs
+  (hundreds of operations, concurrent bursts) and checks the invariants on the database, on both dialects.
+
+<Aside type="note">
+  A new invariant is appended with the next number, together with its test; numbers are never reused.
+</Aside>

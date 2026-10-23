@@ -1,0 +1,85 @@
+---
+title: Stabilimento
+description: Dati generali, contatti, lingue, indirizzo pubblico, fuso orario, impostazioni dei prezzi e IVA, più stabilimenti nella stessa installazione.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Stabilimento**. **Chi:** proprietari e gestori modificano; gli altri ruoli
+consultano.
+
+La pagina raccoglie i dati dello stabilimento in quattro schede: **Generale**, **Lingue**, **Pagina pubblica**
+e **Prezzi e IVA**. Le schede restano in memoria mentre passi dall'una all'altra: le modifiche non salvate non
+si perdono, e la pagina avvisa con **Modifiche non salvate**.
+
+<Screenshot name="admin-establishment" alt="Impostazioni dello stabilimento con le schede Generale, Lingue, Pagina pubblica e Prezzi e IVA" />
+
+## Generale
+
+| Campo | A cosa serve |
+|---|---|
+| **Nome** | Il nome mostrato su pagina pubblica, email e documenti. |
+| **Indirizzo pubblico** | La parte finale dell'URL della pagina di prenotazione, `/b/<indirizzo>`. Solo lettere minuscole, numeri e trattini. **Cambiarlo rompe i link già condivisi** (sito, social, QR stampati). |
+| **Fuso orario** | Il fuso dello stabilimento (di solito `Europe/Rome`). Le date di calendario, "oggi", gli orari limite delle policy e i giorni dei corrispettivi seguono questo fuso. |
+| **Email**, **Telefono** | Contatti mostrati ai clienti. |
+| **Indirizzo**, **Comune**, **Provincia**, **CAP**, **Paese (codice ISO)** | Indirizzo dello stabilimento (anche per i dati strutturati della pagina pubblica). |
+| **Riferimento concessione demaniale** | Facoltativo, per i tuoi documenti. |
+
+La valuta è l'euro e non è modificabile.
+
+## Lingue
+
+**Lingua predefinita** e **Lingue attive** (italiano, inglese, tedesco, francese). Le lingue attive sono
+proposte nella pagina pubblica e nelle email; i testi che non hai tradotto usano la lingua predefinita. Nei
+campi multilingua (nomi di pack, zone, extra) le lingue mancanti sono segnate **da tradurre**.
+
+## Pagina pubblica
+
+Attivazione delle **Prenotazioni online**, **Siti autorizzati all'incorporamento**, codice da incorporare e
+**Tema della pagina pubblica** con anteprima. Sono gli stessi dati della pagina
+[Pagina pubblica e widget](/gestore/pagina-pubblica/), dove trovi la spiegazione completa.
+
+## Prezzi e IVA
+
+Valori usati dal motore dei prezzi quando una regola non specifica altro.
+
+| Campo | Significato |
+|---|---|
+| **Fattore mezza giornata** | Prezzo di mezza giornata = giornata × fattore (ad esempio `0,6`). Maggiore di 0 e al massimo 1. Usato quando non esiste una regola specifica per la fascia mattina o pomeriggio. |
+| **Arrotondamento del totale** | **Nessuno**, **All'euro** o **Ai 50 centesimi**. Si applica solo al totale finale della prenotazione. |
+| **IVA predefinita** | Aliquota per i pack e gli extra senza aliquota propria. Verificala con il tuo commercialista: Arenile non contiene aliquote fisse. |
+
+<Aside type="note" title="Prezzi IVA inclusa">
+  Tutti i prezzi in Arenile sono IVA inclusa. Lo scorporo per aliquota è calcolato solo per documenti, cassa e
+  corrispettivi, al centesimo.
+</Aside>
+
+## Più stabilimenti
+
+Una sola installazione può gestire più stabilimenti della stessa organizzazione, ciascuno con mappa, listini,
+policy, pagina pubblica e utenti propri, con i dati isolati.
+
+<Steps>
+
+1. Apri il selettore **Stabilimento** in alto nella barra laterale.
+2. Scegli **+ Nuovo stabilimento** (solo i proprietari possono crearne).
+3. Scegli l'**Organizzazione**, inserisci i dati e premi **Crea stabilimento**: si apre la configurazione
+   guidata.
+
+</Steps>
+
+La pagina **Tutti gli stabilimenti** (voce in fondo alla barra laterale) elenca gli stabilimenti a cui hai
+accesso, con indirizzo pubblico, lingua predefinita e stato delle prenotazioni online, e il link per aprire la
+pagina pubblica di ciascuno.
+
+## Domande frequenti
+
+**Due persone modificano le impostazioni insieme: cosa succede?**
+Il salvataggio controlla la versione: se un collega ha salvato prima di te, Arenile non sovrascrive le sue
+modifiche e ti propone **Ricarica i dati aggiornati**.
+
+**Posso cambiare il fuso orario a stagione iniziata?**
+Puoi, ma "oggi" e gli orari limite cambiano di conseguenza: fallo solo se il fuso era sbagliato.

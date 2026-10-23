@@ -1,0 +1,157 @@
+name: Docs
+
+# Documentation site (docs-site/, Astro Starlight; spec 28, M4).
+#
+# - Pull requests and main: type check + static build (search index, API
+#   reference generated from api/openapi.yaml, internal link check) with the
+#   committed screenshots; the site is uploaded as an artifact.
+# - Releases (called by release.yml): screenshots and demo data are first
+#   regenerated with Playwright on the real binary seeded with `seed demo`,
+#   so the published docs always show the released version.
+# - GitHub Pages deploy only when the repository variable DOCS_PAGES is
+#   "true" (the repository is private for now). Optional variables:
+#   DOCS_SITE_URL (canonical origin), DOCS_BASE_PATH (e.g. /arenile/),
+#   DOCS_STRICT ("true": a missing screenshot fails the build).
+#
+# Only documentation is published here: no binaries, ever (they are
+# distributed through the Coste360 portal, see release.yml).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs-site/**"
+      - "api/openapi.yaml"
+      - "web/shared/**"
+      - "e2e/docs/**"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "docs-site/**"
+      - "api/openapi.yaml"
+      - "web/shared/**"
+      - "e2e/docs/**"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+    inputs:
+      screenshots:
+        description: Regenerate screenshots and demo data before building
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      version:
+        description: Release the docs describe (shown in the footer)
+        type: string
+        default: ""
+      screenshots:
+        description: Regenerate screenshots and demo data before building
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "22"
+  GOTOOLCHAIN: local
+  ASTRO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            docs-site/package-lock.json
+            e2e/package-lock.json
+
+      # The docs render the real components of web/shared: install web/ too.
+      - name: Install dependencies
+        run: |
+          npm --prefix web ci
+          npm --prefix docs-site ci
+
+      # Screenshots (releases, or on demand): Go for the binary, Playwright from e2e/.
+      - uses: actions/setup-go@v7
+        if: ${{ inputs.screenshots }}
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install Playwright (Chromium)
+        if: ${{ inputs.screenshots }}
+        run: |
+          npm --prefix e2e ci
+          npm --prefix e2e exec -- playwright install --with-deps chromium
+
+      - name: Capture screenshots (real binary, seed demo)
+        if: ${{ inputs.screenshots }}
+        env:
+          CI: "true"
+        run: make docs-screenshots
+
+      - name: Upload regenerated screenshots
+        if: ${{ inputs.screenshots }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-screenshots-${{ inputs.version || github.sha }}
+          path: |
+            docs-site/src/assets/screenshots
+            docs-site/src/data/*.json
+          retention-days: 30
+
+      - name: Type check
+        run: make docs-check
+
+      - name: Build site (search, API reference, link check)
+        env:
+          ARENILE_DOCS_VERSION: ${{ inputs.version }}
+          ARENILE_DOCS_SITE: ${{ vars.DOCS_SITE_URL }}
+          ARENILE_DOCS_BASE: ${{ vars.DOCS_BASE_PATH }}
+          ARENILE_DOCS_STRICT: ${{ (vars.DOCS_STRICT == 'true' || inputs.screenshots) && '1' || '' }}
+        run: make docs-build
+
+      - name: Upload site
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-site-${{ inputs.version || github.sha }}
+          path: docs-site/dist
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload Pages artifact
+        if: ${{ vars.DOCS_PAGES == 'true' && github.event_name != 'pull_request' }}
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs-site/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: >-
+      vars.DOCS_PAGES == 'true' && github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

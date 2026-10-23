@@ -1,0 +1,82 @@
+---
+title: Establishment
+description: General details, contacts, languages, public address, time zone, pricing and VAT settings, several establishments in one installation.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Establishment**. **Who:** owners and managers edit; other roles view.
+
+The page gathers the establishment's data in four tabs: **General**, **Languages**, **Public page** and **Prices
+and VAT**. Tabs stay in memory as you move between them: unsaved changes are not lost, and the page warns you with
+**Unsaved changes**.
+
+<Screenshot name="admin-establishment" alt="Establishment settings with the General, Languages, Public page and Prices and VAT tabs" />
+
+## General
+
+| Field | Purpose |
+|---|---|
+| **Name** | The name shown on the public page, emails and documents. |
+| **Public address** | The last part of the booking page URL, `/b/<address>`. Lowercase letters, digits and hyphens only. **Changing it breaks links already shared** (website, social media, printed QR codes). |
+| **Time zone** | The establishment's time zone (usually `Europe/Rome`). Calendar dates, "today", policy cutoff times and the days of the daily takings follow it. |
+| **Email**, **Phone** | Contacts shown to customers. |
+| **Address**, **Town**, **Province**, **Postcode**, **Country (ISO code)** | The establishment's address (also used for the public page's structured data). |
+| **Beach concession reference** | Optional, for your documents. |
+
+The currency is the euro and cannot be changed.
+
+## Languages
+
+**Default language** and **Enabled languages** (Italian, English, German, French). Enabled languages are offered on
+the public page and in emails; texts you have not translated fall back to the default language. In multilingual
+fields (names of packs, zones, extras) missing languages are marked **missing**.
+
+## Public page
+
+Activation of **Online bookings enabled**, **Websites allowed to embed**, embed code and **Public page theme** with
+preview. They are the same data as the [Public page and widget](/en/gestore/pagina-pubblica/) page, which explains
+them in full.
+
+## Prices and VAT
+
+Values used by the pricing engine when a rule does not say otherwise.
+
+| Field | Meaning |
+|---|---|
+| **Half-day factor** | Half-day price = day × factor (for example `0.6`). Greater than 0 and at most 1. Used when there is no specific rule for the morning or afternoon slot. |
+| **Total rounding** | **None**, **To the euro** or **To 50 cents**. Applies only to the final booking total. |
+| **Default VAT** | Rate for packs and extras without their own rate. Check it with your accountant: Arenile contains no hard-coded rates. |
+
+<Aside type="note" title="Prices include VAT">
+  All prices in Arenile include VAT. The split by rate is computed only for documents, cash desk and daily takings,
+  to the cent.
+</Aside>
+
+## Several establishments
+
+One installation can manage several establishments of the same organization, each with its own map, price lists,
+policies, public page and users, with isolated data.
+
+<Steps>
+
+1. Open the **Establishment** switcher at the top of the sidebar.
+2. Choose **+ New establishment** (only owners can create one).
+3. Choose the **Organization**, enter the details and press **Create establishment**: the guided setup opens.
+
+</Steps>
+
+The **All establishments** page (at the bottom of the sidebar) lists the establishments you can access, with public
+address, default language and online booking status, and the link to open each public page.
+
+## Frequently asked questions
+
+**Two people edit the settings at the same time: what happens?**
+Saving checks the version: if a colleague saved first, Arenile does not overwrite their changes and offers
+**Reload the latest data**.
+
+**Can I change the time zone once the season has started?**
+You can, but "today" and cutoff times change accordingly: do it only if the time zone was wrong.

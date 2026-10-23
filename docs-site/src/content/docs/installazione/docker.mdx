@@ -1,0 +1,187 @@
+---
+title: Installazione con Docker
+description: Installa Arenile su un VPS, un mini PC o un Raspberry Pi con Docker Compose, con SQLite o PostgreSQL, in pochi minuti.
+sidebar:
+  order: 3
+---
+
+import { Steps, Tabs, TabItem, Aside, FileTree, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Docker è il modo consigliato per far girare Arenile in produzione. L'immagine ufficiale
+`ghcr.io/coste360/arenile` è **pubblica e gratuita**, multi-architettura (`amd64` e `arm64`) e basata su
+*distroless*: contiene solo il binario, senza shell né pacchetti superflui.
+
+## Prima di iniziare
+
+| Requisito | Indicazione |
+|---|---|
+| Server | Linux `amd64` o `arm64` con Docker e Docker Compose |
+| Risorse | 1 vCPU e 512 MB di RAM bastano per un lido; 1 GB di disco più lo spazio per i backup |
+| Dominio | Un sottodominio, ad esempio `prenota.mio-lido.it`, che punti all'IP del server (record `A`/`AAAA`) |
+| Email (facoltativa) | Credenziali SMTP per conferme e link di gestione ai clienti |
+| Pagamenti online (facoltativi) | Un account Stripe intestato allo stabilimento |
+
+<Aside type="tip" title="Vuoi solo dare un'occhiata?">
+  Dal repository clonato, `docker compose up --build` (oppure `make up`) avvia in un minuto un'istanza di prova
+  su `http://localhost:8080`, compilata dai sorgenti e in modalità sviluppo. Non usarla in produzione: è pensata
+  per provare. Per riempirla di dati vedi [Dati demo](/installazione/dati-demo/).
+</Aside>
+
+## Installazione standard (SQLite)
+
+<Steps>
+
+1. **Prepara il server.** Su Ubuntu o Debian installa Docker con lo script ufficiale e apri solo le porte
+   necessarie:
+
+   ```bash
+   curl -fsSL https://get.docker.com | sh
+   sudo ufw allow OpenSSH
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   sudo ufw enable
+   ```
+
+2. **Crea la cartella dell'installazione** e scarica il compose ufficiale e il file di esempio delle variabili:
+
+   ```bash
+   sudo mkdir -p /opt/arenile && cd /opt/arenile
+   curl -fsSLO https://raw.githubusercontent.com/coste360/arenile/main/deploy/docker-compose.yml
+   curl -fsSL -o .env https://raw.githubusercontent.com/coste360/arenile/main/.env.example
+   chmod 600 .env
+   ```
+
+   <FileTree>
+   - /opt/arenile/
+     - docker-compose.yml il servizio `arenile` con il volume dei dati
+     - .env la configurazione (non condividerla mai)
+   </FileTree>
+
+3. **Genera la chiave di cifratura** e mettila in `.env`:
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+   Poi modifica `.env` almeno con queste righe:
+
+   ```ini title=".env"
+   ARENILE_BASE_URL=https://prenota.mio-lido.it
+   ARENILE_SECRET_KEY=la-chiave-generata-al-passo-precedente
+   # Primo utente owner, creato al primo avvio solo se il database è vuoto
+   ARENILE_BOOTSTRAP_OWNER_EMAIL=titolare@mio-lido.it
+   ARENILE_BOOTSTRAP_OWNER_NAME=Mario Rossi
+   ARENILE_BOOTSTRAP_OWNER_ORG=Lido Esempio
+   ARENILE_ADMIN_PASSWORD=scegli-una-password-lunga
+   # Email (facoltative ma consigliate)
+   ARENILE_SMTP_URL=smtp://utente:password@smtp.mio-provider.it:587
+   ARENILE_MAIL_FROM=Lido Esempio <prenotazioni@mio-lido.it>
+   ```
+
+   <Aside type="danger" title="Custodisci ARENILE_SECRET_KEY">
+     La chiave cifra le chiavi Stripe, i segreti dei webhook e i codici della verifica in due passaggi. Senza
+     di essa questi dati non sono recuperabili. Conservala in un luogo sicuro, **separato dai backup** ma
+     sempre a portata della procedura di ripristino.
+   </Aside>
+
+4. **Avvia** e controlla i log:
+
+   ```bash
+   docker compose up -d
+   docker compose logs -f arenile
+   ```
+
+   Le migrazioni del database sono applicate in automatico all'avvio (`ARENILE_AUTO_MIGRATE=true`). Il
+   database SQLite, i file caricati e i backup vivono nel volume `arenile-data`.
+
+5. **Configura HTTPS.** Metti Arenile dietro un reverse proxy (Caddy, Nginx, Traefik) oppure lascia che sia
+   il binario a ottenere i certificati: tutte le opzioni sono in [Reverse proxy e HTTPS](/installazione/reverse-proxy-https/).
+
+6. **Accedi** a `https://prenota.mio-lido.it/admin/` con l'email e la password del passo 3. Dopo il primo
+   accesso puoi togliere `ARENILE_ADMIN_PASSWORD` da `.env`. Prosegui con il
+   [primo avvio](/installazione/primo-avvio/).
+
+</Steps>
+
+<Aside type="note" title="Prima del primo rilascio">
+  Se l'immagine non è ancora pubblicata sul registry, il compose ufficiale la compila dai sorgenti (sezione
+  `build`): in quel caso clona il repository e lancia `docker compose -f deploy/docker-compose.yml --env-file .env up -d`
+  dalla radice.
+</Aside>
+
+## Creare il primo utente a mano
+
+Se non vuoi usare le variabili `ARENILE_BOOTSTRAP_OWNER_*`, crea l'owner con il container avviato.
+L'immagine non ha una shell, ma `exec` lancia direttamente il binario:
+
+```bash
+docker compose exec -e ARENILE_ADMIN_PASSWORD='scegli-una-password-lunga' arenile \
+  /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
+```
+
+La password deve avere almeno 10 caratteri.
+
+## Varianti
+
+<Tabs>
+  <TabItem label="PostgreSQL">
+    Il repository include `deploy/docker-compose.postgres.yml`, con un servizio PostgreSQL già configurato e
+    `DATABASE_URL` impostata in automatico. In `.env` aggiungi la password del database, generata con soli
+    caratteri sicuri per un URL:
+
+    ```bash
+    echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)" >> .env
+    docker compose -f docker-compose.postgres.yml --env-file .env up -d
+    ```
+
+    Quando conviene PostgreSQL e come fare i backup: [SQLite o PostgreSQL](/installazione/database/).
+  </TabItem>
+  <TabItem label="Raspberry Pi e mini PC">
+    L'immagine `arm64` gira su Raspberry Pi 4 o 5 (almeno 2 GB di RAM) e su mini PC.
+
+    - Installa un sistema **a 64 bit** (Raspberry Pi OS Lite 64 bit o Ubuntu Server arm64).
+    - Usa un **SSD USB** al posto della microSD per i dati: più veloce e molto più affidabile.
+    - Proteggi l'alimentazione con un piccolo gruppo di continuità.
+    - Per la prenotazione online il dispositivo deve essere raggiungibile da internet: valuta un tunnel
+      (ad esempio Cloudflare Tunnel o Tailscale Funnel) invece di aprire porte sul router.
+  </TabItem>
+  <TabItem label="Coolify">
+    1. Crea una risorsa *Docker Compose* con il template di `deploy/coolify/` (`arenile.yml` o `arenile-postgres.yml`).
+    2. Imposta `ARENILE_BASE_URL`, `ARENILE_SECRET_KEY` e le variabili del primo owner (il terminale di
+       Coolify non funziona: l'immagine non ha una shell).
+    3. Associa il dominio al servizio sulla porta `8080`: Coolify gestisce il certificato.
+    4. Configura l'healthcheck su `GET /healthz` e imposta `ARENILE_TRUSTED_PROXIES` con la rete del proxy.
+  </TabItem>
+  <TabItem label="CapRover">
+    1. Crea un'app con *persistent data* e mappa `/data` su un volume (template in `deploy/caprover/`).
+    2. Immagine `ghcr.io/coste360/arenile:latest`, porta del container `8080`.
+    3. Imposta le variabili d'ambiente come sopra, abilita HTTPS e "Force HTTPS".
+    4. Crea il primo owner con le variabili `ARENILE_BOOTSTRAP_OWNER_*` e imposta `ARENILE_TRUSTED_PROXIES`.
+  </TabItem>
+</Tabs>
+
+## Cosa fa il compose ufficiale per la sicurezza
+
+Il file `deploy/docker-compose.yml` è già irrobustito: file system in sola lettura (`read_only: true`, con
+`/tmp` in memoria), nessun privilegio aggiuntivo (`no-new-privileges`), tutte le capability Linux rimosse
+(`cap_drop: ALL`), utente non root e rotazione dei log Docker (5 file da 10 MB).
+
+<Aside type="caution">
+  Se usi un reverse proxy sullo stesso server, non esporre la porta `8080` su internet: pubblicala solo su
+  `127.0.0.1` (ad esempio `ARENILE_PUBLISH_PORT=127.0.0.1:8080`, oppure modifica la riga `ports`).
+</Aside>
+
+## Risoluzione dei problemi
+
+| Sintomo | Cosa controllare |
+|---|---|
+| Il container si riavvia in continuazione | `docker compose logs arenile`: di solito manca `ARENILE_SECRET_KEY` o `ARENILE_BASE_URL`, o la chiave non è base64 di 32 byte |
+| `/readyz` risponde con errore | Database non raggiungibile o migrazioni non allineate: controlla `DATABASE_URL` e `arenile migrate status` |
+| Il widget non compare nel sito | Aggiungi il dominio del sito ai siti autorizzati all'incorporamento ([Pagina pubblica](/gestore/pagina-pubblica/)) |
+| Le email non arrivano | Verifica `ARENILE_SMTP_URL`, `ARENILE_MAIL_FROM`, i record SPF/DKIM e il registro invii ([Email](/gestore/email/)) |
+| Gli IP nei log sono tutti uguali | Imposta `ARENILE_TRUSTED_PROXIES` con la rete del reverse proxy |
+
+<CardGrid>
+  <LinkCard title="Primo avvio" href="/installazione/primo-avvio/" description="Configurazione guidata in sei passi." />
+  <LinkCard title="Tutte le variabili" href="/installazione/configurazione/" description="Riferimento completo della configurazione." />
+</CardGrid>

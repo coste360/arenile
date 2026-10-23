@@ -1,0 +1,36 @@
+---
+title: Closures
+description: Extraordinary closure days or half-days for bad weather, events or works, with the calendar of the year.
+sidebar:
+  order: 4
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Closures**. **Who:** owners and managers; other roles see the highlighted days.
+
+Bad weather, events or works: during closure slots spots **cannot be booked**, neither at the desk nor online,
+and the map of the day shows the establishment as closed.
+
+<Screenshot name="admin-closures" alt="Calendar of the year with the closure days highlighted" />
+
+## Adding one or more closures
+
+<Steps>
+
+1. Choose the **Year** and click one or more days in the **Calendar**.
+2. Choose the **Slots**: **Whole day** or only **Morning** or **Afternoon**.
+3. Write the **Reason** (for example "weather alert"): it stays in the history.
+4. Press **Create N closures**.
+
+</Steps>
+
+Clicking a day that is already closed opens **Edit closure**; from there you can also delete it.
+
+<Aside type="caution" title="What about existing bookings?">
+  A closure prevents **new** bookings in those slots, but does not cancel existing ones. If you close a day already
+  sold because of bad weather, handle the bookings from the [map of the day](/en/gestore/mappa-del-giorno/) or the
+  [booking list](/en/gestore/prenotazioni/): cancellation offers the **Cancelled for bad weather** option, which
+  applies the weather protection set in the [policy](/en/gestore/policy/).
+</Aside>

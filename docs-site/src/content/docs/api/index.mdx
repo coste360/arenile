@@ -1,0 +1,54 @@
+---
+title: API e webhook
+description: Le API REST di Arenile - pannello e pagina pubblica - con convenzioni, autenticazione, errori, idempotenza, concorrenza, webhook ed eventi.
+sidebar:
+  order: 0
+  label: Panoramica
+---
+
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+
+Arenile è **API-first**: il pannello del gestore e la pagina di prenotazione usano esclusivamente le stesse API
+documentate qui. Tutto ciò che vedi nel pannello si può fare anche da un'integrazione.
+
+Il contratto è un solo file, `api/openapi.yaml` (**OpenAPI 3.1**), fonte di verità da cui sono generati il
+codice del server Go e il client TypeScript. Il [riferimento API](/api/riferimento/) di questo sito è generato dallo
+stesso file a ogni build: non può essere disallineato.
+
+## Le superfici
+
+| Superficie | Prefisso | Chi la usa | Autenticazione |
+|---|---|---|---|
+| API del pannello | `/api/admin/v1` | pannello, integrazioni | cookie di sessione (+ CSRF) o chiave API |
+| API pubblica | `/api/public/v1/{slug}` | pagina di prenotazione, widget | nessuna; token della sessione di checkout o del link magico |
+| Webhook dei pagamenti | `/webhooks/payments/{provider}/{establishment_id}` | Stripe e altri provider | firma del provider |
+| Tempo reale | `/api/admin/v1/stream` | pannello | sessione (Server-Sent Events) |
+| Operatività | `/healthz`, `/readyz` | monitoraggio | nessuna |
+
+## Convenzioni
+
+- **JSON** in richiesta e risposta, versione nel percorso (`v1`).
+- **Errori** `application/problem+json` (RFC 9457) con un `type` stabile: vedi [Errori](/api/errori/).
+- **Paginazione a cursore**: `?cursor=&limit=` (default 50, massimo 200); la risposta contiene `next_cursor`.
+- **`Idempotency-Key`** sui `POST` che creano risorse o pagamenti: vedi [Idempotenza](/api/idempotenza/).
+- **Concorrenza ottimistica** con `ETag` e `If-Match` su configurazione e mappe: vedi
+  [ETag e If-Match](/api/concorrenza/).
+- **Date di calendario** `YYYY-MM-DD` nel fuso dello stabilimento; **istanti** RFC 3339 in UTC.
+- **Importi** in **centesimi interi** (`2500` = 25,00 €), IVA inclusa.
+- Ogni dato operativo è legato allo stabilimento: `establishmentId` nel percorso, verificato contro i permessi
+  dell'utente.
+- Ogni risposta ha l'header `X-Request-ID`, ripetuto in `request_id` negli errori.
+
+<CardGrid>
+  <LinkCard title="Autenticazione" href="/api/autenticazione/" description="Sessione, CSRF, chiavi API, permessi." />
+  <LinkCard title="API pubblica e checkout" href="/api/api-pubblica/" description="Il flusso di prenotazione passo per passo." />
+  <LinkCard title="Webhook dei pagamenti" href="/api/webhook-pagamenti/" description="Firma, deduplica, conferma e riconciliazione." />
+  <LinkCard title="Eventi e webhook in uscita" href="/api/eventi-e-webhook/" description="Tipi di evento, formato, firma Arenile-Signature." />
+  <LinkCard title="Errori" href="/api/errori/" description="problem+json e l'elenco dei type." />
+  <LinkCard title="Riferimento API" href="/api/riferimento/" description="Ogni operazione, generata da openapi.yaml." />
+</CardGrid>
+
+<Aside type="tip" title="Il contratto in locale">
+  Con un'istanza avviata, il file `api/openapi.yaml` del repository descrive esattamente le API di quella
+  versione. Puoi generarne un client in qualsiasi linguaggio con gli strumenti OpenAPI standard.
+</Aside>

@@ -1,0 +1,116 @@
+---
+title: Contribuire
+description: Ambiente di sviluppo, comandi make, flusso di lavoro, regole tecniche, Conventional Commits, pull request e CLA per contribuire ad Arenile.
+sidebar:
+  order: 7
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Sono benvenuti codice, traduzioni, documentazione, driver di pagamento, fiscali e di notifica, e anche le
+segnalazioni dal campo di chi gestisce un lido. Prima di iniziare leggi il Codice di condotta.
+
+## Come aiutare
+
+- **Bug**: issue "Segnalazione bug" con versione, database (SQLite o PostgreSQL), passi per riprodurre e log
+  senza dati personali.
+- **Funzionalità**: issue "Richiesta di funzionalità", partendo dal problema concreto del lido.
+- **Nuovo driver** (pagamento, fiscale, notifiche): issue "Nuovo driver" per concordare l'interfaccia.
+- **Traduzioni**: l'italiano è la lingua sorgente; inglese, tedesco e francese le prime traduzioni.
+- **Vulnerabilità**: **mai** in una issue pubblica, segui `SECURITY.md`.
+
+## Ambiente di sviluppo
+
+Prerequisiti: Go 1.27+, Node.js 22+, npm 10+, Docker, `make`. Oppure il devcontainer incluso.
+
+```bash
+make setup   # una tantum: dipendenze Go e Node, golangci-lint, browser Playwright
+make seed    # dati dimostrativi (Lido Demo)
+make dev     # backend con ricarica + Vite per pannello e pagina pubblica
+```
+
+Il `Makefile` è l'unica interfaccia supportata:
+
+| Comando | Quando |
+|---|---|
+| `make gen` | Dopo ogni modifica a `api/openapi.yaml` o al kit della mappa |
+| `make check` | Dopo ogni modifica: codice generato aggiornato, lint, test (meno di 2 minuti) |
+| `make test` | Test unitari Go e Vitest (senza Docker né rete) |
+| `make test-db` | Integrazione su SQLite e PostgreSQL (container effimero) |
+| `make test-race` | Test di concorrenza `TestConcurrency_*` con `-race` |
+| `make e2e` | Test end-to-end Playwright |
+| `make check-full` | Prima della pull request: `check` + `test-db` + `test-race` + `e2e` |
+| `make docs-dev`, `make docs-build`, `make docs-screenshots` | Questo sito della documentazione |
+
+`make check-full` è **obbligatorio** per le modifiche a disponibilità, prezzi, pagamenti, migrazioni o flusso
+pubblico di prenotazione.
+
+## Flusso di lavoro
+
+<Steps>
+
+1. Cerca o apri una issue; per modifiche non banali attendi un riscontro dei maintainer.
+2. Leggi le sezioni della specifica (`docs/spec/`), gli ADR e le invarianti che riguardano il lavoro. Per
+   cambiare una decisione esistente serve un nuovo ADR.
+3. Fai un fork e crea un branch descrittivo (`feat/pricing-free-days`, `fix/hold-expiry`).
+4. Scrivi codice **e test**: una correzione di bug include un test che fallisce senza la correzione.
+5. Aggiorna la documentazione (questo sito, `docs/`) e il `CHANGELOG.md` (sezione `[Unreleased]`).
+6. `make check` (e `make check-full` quando richiesto), poi apri la pull request compilando il modello.
+
+</Steps>
+
+## Regole tecniche in sintesi
+
+<Tabs>
+  <TabItem label="API e migrazioni">
+    - Prima il contratto `api/openapi.yaml`, poi `make gen`, poi l'handler. Mai modificare i file generati.
+    - Errori `application/problem+json` con `type` stabile.
+    - Nuove migrazioni per **entrambi** i dialetti con lo stesso numero; mai modificare una migrazione su `main`.
+  </TabItem>
+  <TabItem label="Backend Go">
+    - Importi `int64` in centesimi, date `YYYY-MM-DD`, istanti UTC, orologio iniettato (mai `time.Now()` nel dominio).
+    - Motore prezzi puro; disponibilità garantita dai vincoli del database.
+    - Ogni cambio di stato della prenotazione da `internal/domain/booking`, con audit ed evento nella stessa transazione.
+    - Query sempre filtrate per `establishment_id`; errori avvolti con `%w`; log con `slog`, mai dati personali.
+    - Test table-driven `TestXxx_Scenario`; commenti e identificatori in inglese.
+  </TabItem>
+  <TabItem label="Frontend">
+    - TypeScript strict, client API generato.
+    - UI solo con shadcn/ui e Tailwind sui token del tema: niente CSS personalizzato né colori arbitrari
+      (lo verifica `npm run lint`).
+    - Testi tramite chiavi i18n, italiano come sorgente.
+    - Pagina pubblica sotto i 150 KB di JS gzip al primo caricamento; accessibilità WCAG AA.
+  </TabItem>
+  <TabItem label="Dipendenze">
+    Nessuna nuova dipendenza di runtime senza spiegarne il motivo nella pull request, con licenza compatibile con
+    BSL 1.1 e AGPL-3.0 (MIT, BSD, Apache-2.0, ISC).
+  </TabItem>
+</Tabs>
+
+## Commit e pull request
+
+[Conventional Commits](https://www.conventionalcommits.org/it/v1.0.0/): il changelog dei rilasci nasce dai
+messaggi.
+
+```text
+feat(pricing): supporta l'azione free_days
+fix(availability): rilascia l'hold scaduto prima del rinnovo
+docs(guida): aggiunge installazione su Raspberry Pi
+```
+
+Pull request piccole e mirate, descrizione secondo il modello (cosa cambia, come è stato testato, domande aperte),
+CI verde, merge con squash.
+
+## CLA
+
+I contributi richiedono la firma del **Contributor License Agreement**: alla prima pull request il bot CLA
+Assistant pubblica un commento con le istruzioni, e la firma vale per tutti i contributi successivi. Il CLA
+consente a Coste360 SRL di distribuire i contributi con la BSL 1.1, con licenze commerciali e con la AGPL-3.0 alla
+data di conversione; tu mantieni la titolarità del diritto d'autore.
+
+<Aside type="note">
+  Contribuire non concede diritti di rivendita: offrire Arenile come servizio a terzi richiede comunque una
+  licenza commerciale (vedi [Licenza](/sviluppo/licenza/)).
+</Aside>
+
+Domande generali: Discussions su GitHub. Questioni riservate: info@coste360.it.

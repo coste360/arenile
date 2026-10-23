@@ -1,0 +1,87 @@
+---
+title: Driver di pagamento
+description: Come scrivere un nuovo driver di pagamento per Arenile - interfaccia PaymentProvider, webhook firmati, idempotenza, capacità facoltative, registrazione e test senza rete.
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Un driver di pagamento collega Arenile a un circuito (Stripe, Satispay, un POS virtuale…). Il core include
+`manual` (nessun pagamento online, saldo in cassa) e `stripe`. Ogni stabilimento sceglie il provider attivo e
+salva le proprie credenziali, cifrate.
+
+## L'interfaccia
+
+```go
+type PaymentProvider interface {
+    Code() string                       // identificativo stabile, es. "stripe"
+    Capabilities() PaymentCapabilities  // Online, Refunds, PartialRefunds, Wallets, EmbeddedMode
+    CreatePayment(ctx context.Context, req CreatePaymentRequest) (*CreatePaymentResult, error)
+    ParseWebhook(ctx context.Context, r *http.Request, creds Credentials) (*PaymentEvent, error)
+    Refund(ctx context.Context, req RefundRequest) (*RefundResult, error)
+}
+```
+
+| Metodo | Contratto |
+|---|---|
+| `CreatePayment` | Riceve importo in centesimi, valuta, descrizione, email, URL di ritorno e di annullamento, modalità preferita, **`IdempotencyKey`** (`<booking_id>:<tentativo>`, da inoltrare al provider), metadati e **credenziali decifrate** dello stabilimento. Restituisce `ProviderRef`, `Mode` (`redirect`, `embedded`, `none`), `RedirectURL` o `ClientSecret`, scadenza. |
+| `ParseWebhook` | Verifica la **firma** con le credenziali dello stabilimento dell'URL e normalizza l'evento in `PaymentEvent` (`payment.succeeded`, `payment.failed`, `payment.refunded`, `payment.pending`) con l'**id evento del provider** per la deduplica. Firma assente o errata → `ext.ErrInvalidSignature`; evento autentico ma irrilevante → `ext.ErrIgnoredEvent`. |
+| `Refund` | Rimborso totale o parziale, idempotente; `ext.ErrNotSupported` se il provider non rimborsa. |
+
+## Capacità facoltative
+
+Il gateway riconosce alcune capacità in più, dichiarate con soli tipi di `pkg/ext`: un driver esterno le
+implementa senza importare pacchetti interni (*structural typing*).
+
+| Interfaccia | Metodo | A cosa serve |
+|---|---|---|
+| `PaymentStatusChecker` | `PaymentStatus(ctx, providerRef, creds) (*ext.PaymentEvent, error)` | **Riconciliazione**: interroga un pagamento per riferimento. Senza, il driver compare come "provider non raggiungibile" nel report. |
+| `CredentialsVerifier` | `VerifyCredentials(ctx, creds) (accountLabel string, err error)` | Il pulsante di verifica delle credenziali nel pannello. |
+| `PaymentCanceller` | `CancelPayment(ctx, providerRef, creds) error` | Chiude un pagamento sostituito da un nuovo tentativo, così il cliente non può pagare due volte. |
+
+## Procedura
+
+<Steps>
+
+1. Leggi la specifica (sezioni 13, 18, 22), le invarianti dei pagamenti (INV-19, INV-22, INV-23, INV-24) e i
+   driver `manual` e `stripe` (`internal/domain/payment/stripe`).
+2. Crea il pacchetto: nel core sotto `internal/domain/payment/<code>`, oppure in un tuo modulo che importa solo
+   `pkg/ext`. **Non modificare** le interfacce di `pkg/ext`.
+3. Implementa i cinque metodi. Metti `establishment_id`, `booking_id` e `booking_code` nei metadati del
+   provider: servono a ricondurre l'evento alla prenotazione.
+4. Rendi l'URL base dell'API del provider configurabile e l'orologio iniettabile: i test girano contro un
+   `httptest.Server` e verificano la tolleranza della firma con un orologio finto.
+5. Registra il driver: nel registry di `internal/app` per un driver del core, oppure con
+   `app.WithExtensions(ext.Extensions{PaymentProviders: …})` in un tuo `main` (vedi [Estensioni](/sviluppo/estensioni/)).
+6. Scrivi i test (senza rete): `CreatePayment` contro il server finto; webhook firmati validi, con firma errata,
+   scaduti, duplicati e di tipo sconosciuto; rimborsi secondo le capacità; integrazione: un webhook conferma la
+   prenotazione **una sola volta**, in una transazione, e una consegna duplicata non ha effetti.
+7. Documenta i campi delle credenziali, l'URL del webhook e gli eventi da abilitare, aggiungi una voce al
+   `CHANGELOG.md` e lancia `make check-full`.
+
+</Steps>
+
+In Claude Code la skill `/new-payment-driver` guida esattamente questa procedura.
+
+## Regole non negoziabili
+
+- **La conferma arriva solo da `ParseWebhook`** (o dalla riconciliazione), mai dall'URL di ritorno del browser.
+- **Un evento duplicato non conta mai due volte** il pagato: la deduplica usa l'id evento che restituisci.
+- **Nessun segreto nei log** né nei messaggi d'errore: niente chiavi, firme, corpi grezzi, email o token.
+  Per i fallimenti restituisci solo un codice breve (`FailureReason`), mai il messaggio del provider.
+- Errori di rete, `5xx` e `429` del provider vanno segnalati come temporanei: il cliente vede "riprova tra poco"
+  (`503 payment_provider_unavailable`).
+
+## Come lo fa il driver Stripe
+
+Il driver Stripe del core è un buon esempio: nessun SDK (solo `net/http` con richieste form e una
+`Stripe-Version` fissata), **Checkout Session** in redirect con scadenza a 30 minuti o PaymentIntent per il modulo
+incorporato, verifica HMAC di `Stripe-Signature` con tolleranza di 5 minuti e più valori `v1`, rimborsi con
+`POST /v1/refunds` idempotenti, `PaymentStatus` per la riconciliazione e `VerifyCredentials` con
+`GET /v1/account`.
+
+<Aside type="tip">
+  Prima di iniziare un driver apri una issue con il modello "Nuovo driver": concordare il perimetro evita lavoro
+  che non potrebbe essere accettato.
+</Aside>

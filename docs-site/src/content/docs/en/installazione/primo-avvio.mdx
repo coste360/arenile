@@ -1,0 +1,94 @@
+---
+title: First start and guided setup
+description: From the first sign-in to a beach ready to sell in under a quarter of an hour with the six-step guided setup.
+sidebar:
+  order: 5
+  label: First start
+---
+
+import { Steps, Aside, CardGrid, LinkCard, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+Arenile is installed and the first user exists. Now open the panel and take the establishment from "empty" to
+"ready to sell". The design goal is clear: **a lido with 8 rows of 15 spots is configured in under 15 minutes**
+starting from a template.
+
+## 1. Sign in to the panel
+
+Open `https://<your-domain>/admin/` and enter email and password.
+
+<Screenshot name="admin-login" alt="Sign-in page of the Arenile panel" />
+
+- If **two-step verification** is enabled for your user, after the password you are asked for the 6-digit
+  **Verification code** from your authenticator app.
+- After too many wrong attempts sign-in is blocked for a few minutes: it protects against password guessing.
+
+## 2. The first establishment
+
+The user created at installation belongs to an organization (the value of `--org` or
+`ARENILE_BOOTSTRAP_OWNER_ORG`). From the **Establishment** switcher at the top of the sidebar choose
+**+ New establishment** to create one: the guided setup opens right after creation.
+
+<Aside type="tip">
+  You can have several establishments in the same installation: each has its own map, price lists, policies,
+  public page and users. The **All establishments** page lists them with their public address and online booking
+  status.
+</Aside>
+
+## 3. The guided setup
+
+It is also in the menu under **Configuration → Guided setup**, reserved to owners and managers. There are six
+steps: **each one can be skipped** and everything can be changed later from the Configuration menu items.
+
+<Screenshot name="admin-setup-wizard" alt="Arenile guided setup with its six steps" />
+
+<Steps>
+
+1. **Details and languages.** Name, public address (the last part of the URL `/b/<address>`), contacts, time zone,
+   default language and enabled languages. They appear on the public page and in emails to customers.
+
+2. **Template.** Pick the template closest to your establishment. It creates season, zones, catalogue and rate
+   periods that you can change:
+
+   | Template | What it creates |
+   |---|---|
+   | **Classic lido with rows** | Umbrellas in numbered rows priced by row and period (front and second row priced separately), a row of gazebos subject to approval, cabins and parking. The most common case. |
+   | **Equipped beach by quantity** | No map: customers choose how many umbrellas and sunbeds, availability is a counter. |
+   | **Lido with pool** | Rows on the beach plus a pool area with sunbeds. |
+   | **Empty** | Nothing prefilled: you configure everything by hand. |
+
+3. **Map rows.** Set the number of **Rows** and **Spots per row** and the opening and closing dates of the **First
+   season**, then press **Create season and map**. The spots are created on the map with automatic numbering
+   (row A closest to the sea). Templates without a map create zones and quantity equipment instead.
+
+4. **Quick price list.** A table with the daily price per **category** (row) and **period** of the season (low,
+   mid, high, peak). Amounts include VAT; leave the cells you do not need empty. **Generate price rules** creates
+   the base rules automatically. Half days and long formulas are fine-tuned later in [Prices](/en/gestore/prezzi/).
+
+5. **Public page.** Turn on online bookings, choose the colours and copy the code to paste into your website.
+   Details in [Public page and widget](/en/gestore/pagina-pubblica/).
+
+6. **Payments.** Choose how you collect payments: **Manual payment** (collected at the desk: cash, card, bank
+   transfer; online bookings are paid on site) or **Stripe** for online payment, completed in
+   [Online payments with Stripe](/en/gestore/pagamenti-online/).
+
+</Steps>
+
+At the end press **Finish setup**: the summary lists the skipped steps and offers the shortcuts **Edit the map**,
+**Review prices** and **Establishment settings**. You can always use **Reopen the guided setup**.
+
+## 4. Check before opening to the public
+
+- [ ] The [coverage check](/en/gestore/prezzi/#coverage-check) reports no days without a price.
+- [ ] The [simulator](/en/gestore/prezzi/#price-simulator) gives the prices you expect for an August day and a June day.
+- [ ] The payment and cancellation [policies](/en/gestore/policy/) are the ones you want to communicate to customers.
+- [ ] You have published the [booking conditions](/en/gestore/pagina-pubblica/#terms-and-privacy-notice).
+- [ ] You sent a [test email](/en/gestore/email/) and received it.
+- [ ] With Stripe in test mode you completed a trial booking from your phone.
+- [ ] You created the staff [users](/en/gestore/team-e-ruoli/) with the right role.
+- [ ] You have scheduled the [backups](/en/installazione/backup-e-ripristino/).
+
+<CardGrid>
+  <LinkCard title="Manager guide" href="/en/gestore/" description="Every feature of the panel, step by step." />
+  <LinkCard title="Try with the demo data" href="/en/installazione/dati-demo/" description="A fully populated establishment to practise on." />
+</CardGrid>

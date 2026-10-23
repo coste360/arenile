@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lido Demo — sito del lido (pagina ospite della documentazione)</title>
+    <!--
+      Host page of the documentation screenshots (e2e/docs): a plain
+      establishment website that embeds the booking widget with the two
+      lines of spec 12.2. System fonts only, no network requests.
+    -->
+    <style>
+      :root { color-scheme: light dark; --bg: #fffdf8; --fg: #1f2a33; --muted: #5d6b76; --band: #0e6ba8; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #151b22; --fg: #e8eef3; --muted: #9aa8b4; --band: #0b4f7c; } }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      header { background: var(--band); color: #fff; }
+      .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.25rem; }
+      nav { display: flex; align-items: center; justify-content: space-between; height: 3.5rem; }
+      nav strong { font-size: 1.125rem; letter-spacing: 0.02em; }
+      nav span { display: flex; gap: 1.25rem; font-size: 0.9375rem; opacity: 0.9; }
+      .hero { padding: 2rem 0 1.25rem; }
+      .hero h1 { margin: 0 0 0.25rem; font-size: clamp(1.5rem, 4vw, 2.25rem); }
+      .hero p { margin: 0; color: var(--muted); }
+      main { padding-bottom: 3rem; }
+      @media (max-width: 40rem) { nav span { display: none; } .hero { padding: 1.25rem 0 0.75rem; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <nav><strong>Lido Demo</strong><span><a>Il lido</a><a>Ristorante</a><a>Contatti</a></span></nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <section class="hero">
+        <h1>Prenota il tuo ombrellone</h1>
+        <p>Scegli il giorno e il posto: la conferma arriva subito via email.</p>
+      </section>
+      <div data-arenile="lido-demo" data-lang="it"></div>
+    </main>
+    <script src="/embed.js" async></script>
+  </body>
+</html>

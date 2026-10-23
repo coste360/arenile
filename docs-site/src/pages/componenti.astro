@@ -1,0 +1,80 @@
+---
+/**
+ * Showcase of the documentation components (/componenti/): what the content
+ * authors can use in .mdx pages, rendered live, plus the list of screenshot
+ * names from screenshots.manifest.json. Also the visual check of the docs
+ * theme integration (shadcn islands inside Starlight, light and dark).
+ */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { ApiOperation, LiveMap, LivePriceSimulator, Screenshot, StatusBadges } from '~/components';
+import { SCREENSHOTS } from '~/lib/screenshots';
+
+const headings = [
+  ['screenshot', 'Screenshot'],
+  ['live-map', 'LiveMap'],
+  ['simulatore', 'LivePriceSimulator'],
+  ['stati', 'StatusBadges'],
+  ['api', 'ApiOperation'],
+  ['nomi', 'Nomi degli screenshot'],
+].map(([slug, text]) => ({ depth: 2, slug, text }));
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Componenti della documentazione',
+    description: 'Componenti reali di Arenile utilizzabili nelle pagine della documentazione.',
+    tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 2 },
+    pagefind: false,
+  }}
+  headings={headings}
+>
+  <p>
+    Pagina di servizio per chi scrive la documentazione. I componenti vivono in
+    <code>docs-site/src/components</code> e si importano nelle pagine <code>.mdx</code> con
+    <code>import &#123; Screenshot, LiveMap &#125; from '~/components';</code>. Quelli interattivi
+    riusano il codice reale di <code>web/shared</code>, senza copie.
+  </p>
+
+  <h2 id="screenshot">Screenshot</h2>
+  <p>
+    <code>&lt;Screenshot name="admin-map" alt="…" caption="…" /&gt;</code>: mostra la variante chiara o
+    scura secondo il tema scelto, si ingrandisce con un clic. I nomi sono in
+    <code>screenshots.manifest.json</code>.
+  </p>
+  <Screenshot name="admin-map" alt="Mappa operativa del Lido Demo con le postazioni colorate per stato" caption="Mappa operativa del 10 maggio sui dati dimostrativi." />
+  <Screenshot name="public-when-mobile" alt="Primo passo della prenotazione online su smartphone" caption="Le acquisizioni da smartphone hanno la cornice del telefono." />
+
+  <h2 id="live-map">LiveMap</h2>
+  <p><code>&lt;LiveMap /&gt;</code>: la mappa vera (BeachMap con il kit Coste360) sulla spiaggia dimostrativa.</p>
+  <LiveMap />
+
+  <h2 id="simulatore">LivePriceSimulator</h2>
+  <p><code>&lt;LivePriceSimulator pack="comfort" period="high" duration="week" /&gt;</code></p>
+  <LivePriceSimulator />
+
+  <h2 id="stati">StatusBadges</h2>
+  <p><code>&lt;StatusBadges /&gt;</code> oppure con descrizioni:</p>
+  <StatusBadges />
+  <StatusBadges
+    statuses={['free', 'hold', 'to_collect']}
+    descriptions={{
+      free: 'Prenotabile in cassa e online.',
+      hold: 'Bloccata da un pagamento online in corso: si libera alla scadenza.',
+      to_collect: 'Occupata con un saldo ancora da incassare.',
+    }}
+  />
+
+  <h2 id="api">ApiOperation</h2>
+  <p><code>&lt;ApiOperation ids=&#123;['getPublicCalendar', 'createPublicBooking']&#125; /&gt;</code></p>
+  <ApiOperation ids={['getPublicCalendar', 'createPublicBooking', 'receivePaymentWebhook']} />
+
+  <h2 id="nomi">Nomi degli screenshot</h2>
+  <table>
+    <thead><tr><th>Nome</th><th>Vista</th><th>Descrizione</th></tr></thead>
+    <tbody>
+      {SCREENSHOTS.map((s) => (
+        <tr><td><code>{s.name}</code></td><td>{s.viewport}</td><td>{s.description}</td></tr>
+      ))}
+    </tbody>
+  </table>
+</StarlightPage>

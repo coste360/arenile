@@ -1,0 +1,85 @@
+---
+title: Configurazione guidata
+description: Sei passi saltabili per configurare uno stabilimento da zero - dati, modello, file sulla mappa, listino rapido, pagina pubblica e pagamenti.
+sidebar:
+  order: 1
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Configurazione guidata**. **Chi:** proprietari e gestori.
+
+La configurazione guidata porta un nuovo stabilimento da vuoto a pronto a vendere. Si apre da sola dopo la
+creazione di uno stabilimento e si può riaprire in qualsiasi momento. In cima una barra mostra l'avanzamento
+("N passi su 6 completati o saltati"); a sinistra l'elenco dei passi con lo stato **da fare**, **completato** o
+**saltato**.
+
+<Screenshot name="admin-setup-wizard" alt="Configurazione guidata con l'elenco dei sei passi e il passo corrente" />
+
+## I sei passi
+
+<Steps>
+
+1. **Dati e lingue.** Controlla nome, lingue e contatti: compaiono sulla pagina pubblica e nelle email ai
+   clienti. Gli stessi campi sono in [Stabilimento](/gestore/stabilimento/).
+
+2. **Modello.** Scegli il modello più vicino al tuo stabilimento e premi **Usa questo modello**. Ogni scheda
+   mostra disposizione, zone, pack e periodi che verranno creati.
+
+   <Tabs>
+     <TabItem label="Lido classico a file">
+       Ombrelloni in file numerate, prezzo per fila e periodo. Zone **Prima fila**, **Seconda fila**, **File
+       successive** e **Gazebo**; pack **Base** (1 ombrellone e 2 lettini), **Comfort** (1 ombrellone, 1 lettino,
+       1 sdraio) e **Gazebo** (su approvazione); extra lettino aggiuntivo, cabina, telo mare, parcheggio; policy
+       per online, cassa e gazebo. Il caso più comune.
+     </TabItem>
+     <TabItem label="Spiaggia attrezzata a quantità">
+       Nessuna mappa: il cliente sceglie quanti ombrelloni e lettini, la disponibilità è un contatore (pool di 80
+       ombrelloni e 200 lettini, modificabili).
+     </TabItem>
+     <TabItem label="Lido con piscina">
+       File in spiaggia più un'area piscina con lettini, in modalità zona con assegnazione automatica.
+     </TabItem>
+     <TabItem label="Vuoto">
+       Nessun dato precompilato: configuri tutto a mano dalle voci del menu.
+     </TabItem>
+   </Tabs>
+
+3. **File sulla mappa.** Indica **File** e **Posti per fila** (il totale si aggiorna mentre scrivi) e le date
+   della **Prima stagione** (**Anno**, **Apertura**, **Chiusura**). **Crea stagione e mappa** genera tutto in
+   un'unica operazione e mostra il riepilogo: postazioni, zone, pack, periodi. Se lo stabilimento ha già una
+   stagione o una mappa, il passo te lo dice e puoi proseguire o andare all'editor.
+
+4. **Listino rapido.** Una griglia **Categoria** × periodo con i prezzi giornalieri IVA inclusa (ad esempio
+   `25,00`). Lascia vuote le celle che non ti servono e premi **Genera le regole di prezzo**: vengono create le
+   regole base (e sostituite quelle generate in precedenza). Mezza giornata e formule lunghe si configurano poi
+   in [Prezzi](/gestore/prezzi/).
+
+5. **Pagina pubblica.** Attiva le prenotazioni online, scegli i colori e copia il codice da incollare sul tuo
+   sito. Tutto si rifinisce in [Pagina pubblica e widget](/gestore/pagina-pubblica/).
+
+6. **Pagamenti.** Scegli il **Metodo di pagamento**: **Pagamento manuale** (incassi in cassa; le prenotazioni
+   online restano da saldare in loco) oppure **Stripe (pagamento online)**, da completare in
+   [Pagamenti online con Stripe](/gestore/pagamenti-online/).
+
+</Steps>
+
+Con **Salta questo passo** vai avanti senza salvare; con **Indietro** torni al passo precedente. **Concludi la
+configurazione** mostra il riepilogo, i passi saltati e le scorciatoie **Modifica la mappa**, **Rivedi i
+prezzi**, **Impostazioni dello stabilimento** e **Riapri la configurazione guidata**.
+
+<Aside type="tip" title="Obiettivo: meno di 15 minuti">
+  Con il modello "Lido classico a file", 8 file da 15 posti e il listino rapido, uno stabilimento completo si
+  configura in meno di un quarto d'ora. Poi rifinisci con calma.
+</Aside>
+
+## Domande frequenti
+
+**Posso rifare la configurazione guidata su uno stabilimento già configurato?**
+Sì, ma i passi che creano dati (modello, file sulla mappa) riconoscono che esistono già una stagione o una
+mappa e non le duplicano. Il listino rapido invece sostituisce le regole che aveva generato in precedenza.
+
+**Le categorie del listino rapido da dove vengono?**
+Dalle categorie di prezzo delle zone (e da eventuali eccezioni sulle singole postazioni). Se mancano, il passo
+te lo segnala: crea le zone con una categoria in [Zone](/gestore/zone/).

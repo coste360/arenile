@@ -1,0 +1,89 @@
+---
+title: Catalogo
+description: Componenti, pack ed extra - cosa vendi, come è composto, su quali canali e con quale IVA.
+sidebar:
+  order: 8
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Catalogo**. **Chi:** proprietari e gestori.
+
+Il catalogo descrive **cosa vendi**, su tre livelli:
+
+```text
+Componenti (attrezzature fisiche)  →  Pack (prodotti vendibili)  +  Extra (aggiunte)
+ombrellone, lettino, sdraio            Base = 1 ombrellone + 2 lettini   lettino aggiuntivo, cabina, telo
+```
+
+<Screenshot name="admin-catalog" alt="Catalogo con le schede Componenti, Pack ed Extra" />
+
+<Tabs>
+  <TabItem label="Componenti">
+    Le attrezzature fisiche: ombrellone, lettino, sdraio, cabina, posto auto. Il **Codice** (ad esempio
+    `umbrella`, `sunbed`, `deckchair`) sceglie anche l'icona.
+
+    | Campo | Significato |
+    |---|---|
+    | **Codice**, **Nome** | Identificativo e nome nelle lingue attive. |
+    | **Tracciato a magazzino** | Se attivo, le prenotazioni consumano la disponibilità del **Pool** scelto. Lascialo spento per le attrezzature che stanno già sulla postazione (l'ombrellone di una fila). |
+    | **Pool** | Il pool consumato, se tracciato. |
+  </TabItem>
+  <TabItem label="Pack">
+    I prodotti che il cliente compra, composti da componenti.
+
+    | Campo | Significato |
+    |---|---|
+    | **Codice**, **Nome**, **Descrizione** | Mostrati in cassa e online, nelle lingue attive. |
+    | **Composizione** | I componenti e le quantità, ad esempio 1 ombrellone + 2 lettini. Serve almeno un componente. |
+    | **Formule consentite** | Mezza giornata, Giornata, Più giorni, Settimana, Quindicina, Mese, Stagione. Nessuna selezione = tutte. |
+    | **Canali di vendita** | Cassa, Online, API. Nessuna selezione = tutti. |
+    | **Tipi di postazione compatibili** | Ad esempio solo Gazebo per il pack Gazebo. Nessuna selezione = tutti. |
+    | **Zone consentite** | Limita il pack ad alcune zone. |
+    | **Massimo per prenotazione** | Quante unità del pack in una prenotazione. |
+    | **URL immagine** | Facoltativa, per la pagina pubblica. |
+    | **IVA (%)** | Vuota = IVA predefinita dello stabilimento. |
+    | **Richiede approvazione** | La prenotazione resta **Da approvare** finché il gestore non decide. |
+    | **Attivo** | Un pack non attivo non è vendibile. |
+  </TabItem>
+  <TabItem label="Extra">
+    Aggiunte opzionali a un pack o alla prenotazione.
+
+    | Campo | Significato |
+    |---|---|
+    | **Si aggiunge a** | **Postazione** (per ogni riga, ad esempio un lettino in più accanto all'ombrellone) o **Prenotazione** (una volta, ad esempio il parcheggio). |
+    | **Unità di prezzo** | **Per prenotazione**, **Al giorno**, **Per fascia**. |
+    | **Componente consumato** | Facoltativo: il componente tracciato che l'extra consuma (es. `sunbed` dal pool dei lettini). |
+    | **Quantità massima** | Per riga o per prenotazione. |
+    | **Pack compatibili** | Limita l'extra ad alcuni pack. Nessuna selezione = tutti. |
+    | **IVA (%)**, **Canali di vendita**, **Attivo** | Come per i pack. |
+  </TabItem>
+</Tabs>
+
+## Il prezzo non sta nel catalogo
+
+Pack ed extra non hanno un prezzo nel catalogo: i prezzi li calcola il motore dalle
+[regole di prezzo](/gestore/prezzi/), per giorno, periodo, fila, durata e canale. Un pack attivo senza regole
+di prezzo **non è vendibile** in quei giorni: la [verifica di copertura](/gestore/prezzi/#verifica-di-copertura)
+te lo segnala.
+
+<Aside type="note" title="Eliminare o archiviare">
+  Un componente, pack o extra già usato da prenotazioni o regole non viene cancellato in silenzio: viene
+  archiviato (non più vendibile) e lo storico resta leggibile.
+</Aside>
+
+## Esempio: il Lido Demo
+
+| Pack | Composizione | Note |
+|---|---|---|
+| **Base** | 1 ombrellone, 2 lettini | sulle postazioni di tipo ombrellone, max 4 per prenotazione |
+| **Comfort** | 1 ombrellone, 1 lettino, 1 sdraio | sulle postazioni di tipo ombrellone |
+| **Gazebo** | 2 lettini, 2 sdraio | solo sui gazebo, **richiede approvazione**, max 1 |
+
+| Extra | Si aggiunge a | Unità | Consuma |
+|---|---|---|---|
+| Lettino aggiuntivo | Postazione | Al giorno | lettino (max 2) |
+| Cabina | Prenotazione | Al giorno | cabina, pool da 10 |
+| Telo mare | Postazione | Per prenotazione | — |
+| Parcheggio | Prenotazione | Al giorno | posto auto, pool da 30 |

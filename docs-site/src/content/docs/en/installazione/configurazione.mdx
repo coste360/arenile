@@ -1,0 +1,129 @@
+---
+title: Configuration
+description: Complete reference of Arenile's environment variables, with defaults, validation and examples.
+sidebar:
+  order: 10
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+All server configuration is done with **environment variables**: it works the same with Docker, systemd,
+Kubernetes or any platform. Establishment settings (prices, map, public page, Stripe keys, notifications) are
+**not** here: they are managed from the panel and live in the database.
+
+At startup Arenile validates every variable and, if something is wrong, stops with a message naming the variable
+and the expected format: better not to start than to start misconfigured.
+
+## Essential variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_BASE_URL` | — | Public URL, for example `https://prenota.mio-lido.it`. **Required in production.** Used in email links, in the widget code, in payment return URLs and in the webhook URL. Must be an absolute `http(s)` URL. |
+| `ARENILE_SECRET_KEY` | — | Encryption key for secrets (Stripe keys, webhook secrets, TOTP): 32 bytes in base64, generated with `openssl rand -base64 32`. **Required.** Accepts several comma-separated keys for rotation. |
+| `ARENILE_DATA_DIR` | `/data` | Data folder: SQLite database (`arenile.db`), uploaded files, automatic certificates. |
+| `DATABASE_URL` | empty | Empty = SQLite. With `postgres://` or `postgresql://` it uses PostgreSQL. Special characters in the password must be encoded (`@` becomes `%40`). |
+| `ARENILE_ADDR` | `:8080` | Listen address and port of the HTTP server. |
+
+## Database and startup
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_AUTO_MIGRATE` | `true` | Applies database migrations when `serve` starts. With `false`, run `arenile migrate up` before starting. |
+| `ARENILE_DEV` | `false` | Development mode (like `arenile serve --dev`): `ARENILE_BASE_URL` optional, secret key generated and saved in `ARENILE_DATA_DIR/dev-secret.key`, non-`Secure` cookies over `http`. **Never in production.** |
+
+## Email
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_SMTP_URL` | empty | SMTP server, for example `smtp://user:password@smtp.example.com:587` (STARTTLS) or `smtps://...:465` (implicit TLS). |
+| `ARENILE_MAIL_FROM` | `noreply@<host of ARENILE_BASE_URL>` | Sender, for example `Lido Esempio <bookings@mio-lido.it>`. Must be a valid address. |
+| `ARENILE_MAIL_DIR` | empty | Without SMTP: folder where every email is written as an `.eml` file (development and end-to-end tests). Empty and no SMTP: emails are only noted in the log, with the recipient masked. |
+| `ARENILE_STRIPE_API_URL` | empty | Tests only: address of a Stripe API double (stripe-mock or the fake Stripe of the end-to-end tests). Empty = `https://api.stripe.com`. Do not set it in production. |
+
+## Bookings
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_HOLD_TTL` | `10m` | How long a spot is held while the customer completes an online booking (Go duration format: `10m`, `15m`, `1h`). During payment the hold is extended up to a maximum of 30 minutes. |
+| `ARENILE_PUBLIC_READS_PER_MINUTE` | `60` | Reads per minute per IP address on the public API (spec 17.2). Raise it when many customers book from the same network (hotel or beach Wi-Fi) and Arenile is not behind a proxy listed in `ARENILE_TRUSTED_PROXIES`. |
+| `ARENILE_PUBLIC_CREATIONS_PER_MINUTE` | `10` | Bookings started (and new-link requests) per minute per IP address. The later steps of the same booking count as reads. |
+
+## Network and security
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_TLS_AUTOCERT_DOMAINS` | empty | Comma-separated domains for automatic TLS certificates (Let's Encrypt). Arenile listens directly on 80 and 443. Leave empty if you use a reverse proxy. |
+| `ARENILE_TRUSTED_PROXIES` | empty | Comma-separated CIDRs of trusted reverse proxies (e.g. `127.0.0.1/32,172.18.0.0/16`), from which the real client IP is read. Required behind a proxy, otherwise per-IP limits hit everyone at once. |
+| `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | Makes two-step verification mandatory for owner users. |
+
+## Logs and telemetry
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error`. Logs are JSON and never contain emails, phone numbers, tokens or secrets in clear. |
+| `ARENILE_TELEMETRY` | `false` | No telemetry by default: Arenile does not contact external services. |
+
+## First user
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_BOOTSTRAP_OWNER_EMAIL` | empty | Email of the first owner, created when `serve` starts **only if the database has no users**. |
+| `ARENILE_BOOTSTRAP_OWNER_NAME` | empty | Name of the first owner. |
+| `ARENILE_BOOTSTRAP_OWNER_ORG` | empty | Organization name. |
+| `ARENILE_ADMIN_PASSWORD` | empty | Password of the first owner (at least 10 characters), or for `arenile admin create` and `arenile seed demo` without an interactive prompt. |
+
+The three `ARENILE_BOOTSTRAP_OWNER_*` variables must be set together with `ARENILE_ADMIN_PASSWORD`; on later
+restarts they are ignored and after the first sign-in you can remove the password.
+
+## Docker Compose only
+
+These variables are read by the files in `deploy/`, not by the binary:
+
+| Variable | Default | Description |
+|---|---|---|
+| `ARENILE_VERSION` | `latest` | Tag of the `ghcr.io/coste360/arenile` image (pin an exact version in production). |
+| `ARENILE_PUBLISH_PORT` | `8080` | Port published on the host (e.g. `127.0.0.1:8080` to expose it to the reverse proxy only). |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | `arenile`, —, `arenile` | Credentials of the PostgreSQL service in `docker-compose.postgres.yml`. The password goes into `DATABASE_URL` unencoded: use URL-safe characters only (`openssl rand -hex 24`). |
+
+## Complete examples
+
+<Tabs>
+  <TabItem label="Minimal production">
+    ```ini title=".env"
+    ARENILE_BASE_URL=https://prenota.mio-lido.it
+    ARENILE_SECRET_KEY=Zm9vYmFyLi4uMzItYnl0ZS1rZXktaW4tYmFzZTY0Lg==
+    ARENILE_SMTP_URL=smtp://bookings%40mio-lido.it:password@smtp.my-provider.com:587
+    ARENILE_MAIL_FROM=Lido Esempio <bookings@mio-lido.it>
+    ARENILE_TRUSTED_PROXIES=127.0.0.1/32
+    ```
+  </TabItem>
+  <TabItem label="PostgreSQL">
+    ```ini title=".env"
+    ARENILE_BASE_URL=https://prenota.mio-lido.it
+    ARENILE_SECRET_KEY=...
+    DATABASE_URL=postgres://arenile:password@db:5432/arenile?sslmode=disable
+    ```
+  </TabItem>
+  <TabItem label="Local development">
+    ```ini title=".env"
+    ARENILE_DEV=true
+    ARENILE_DATA_DIR=./data
+    ARENILE_MAIL_DIR=./data/mail
+    ARENILE_LOG_LEVEL=debug
+    ```
+  </TabItem>
+</Tabs>
+
+## Rotating the secret key
+
+`ARENILE_SECRET_KEY` accepts several comma-separated keys: the **first** encrypts new secrets, all of them are
+tried to decrypt existing ones. To rotate:
+
+1. generate a new key and put it **first**: `ARENILE_SECRET_KEY=new,old`;
+2. restart and save the secrets again from the panel (for example the Stripe keys);
+3. when every secret has been rewritten, remove the old key.
+
+<Aside type="danger">
+  Never remove a key while secrets encrypted with it still exist: they would become unreadable and would have to
+  be re-entered by hand.
+</Aside>

@@ -1,0 +1,131 @@
+---
+title: Extensions (pkg/ext)
+description: Arenile's stable Go extension points - payments, fiscal drivers, event consumers, real-time bus, concession data, custom domains, SSO, notifications, anti-bot, routes and panel plugins.
+sidebar:
+  order: 4
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+The interfaces of the `pkg/ext` package are the **only stable Go APIs** for those who extend the core: changing them is
+a breaking change. Everything in `internal/` can change without notice. `pkg/ext` imports nothing from `internal/`,
+so an extension depends on public types only.
+
+## The extension registry
+
+```go
+type Extensions struct {
+    PaymentProviders []PaymentProvider      // added to "manual" and "stripe"; same Code = replaces
+    FiscalDrivers    []FiscalDriver         // added to "none"
+    EventSinks       []EventSink            // receive every event after the outbox (at least once)
+    ConcessionData   ConcessionDataProvider // perimeter, imagery, expiry of the concession
+    TenantResolver   TenantResolver         // establishment from host/header (custom domains)
+    AuthProviders    []AuthProvider         // external sign-in, e.g. OIDC
+    Notifiers        []Notifier             // channels beyond email: SMS, WhatsApp
+    BotProtection    BotProtection          // invisible challenge on public creations
+    EventBus         EventBus               // real-time bus, e.g. PostgreSQL LISTEN/NOTIFY
+    HTTPRoutes       func(r chi.Router)     // extra routes (not on /api/admin/v1, /api/public/v1, /admin, /b)
+    AdminUIPlugins   []UIPluginManifest     // menu entries and pages in the panel
+}
+```
+
+The official binary uses only the core implementations. To add yours, build your own `main` that registers them:
+
+```go title="cmd/my-arenile/main.go"
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/coste360/arenile/internal/app"
+    "github.com/coste360/arenile/internal/config"
+    "github.com/coste360/arenile/pkg/ext"
+
+    "example.com/arenile-satispay"
+)
+
+func main() {
+    cfg, err := config.FromEnv()
+    if err != nil {
+        log.Fatal(err)
+    }
+    a, err := app.New(cfg, app.WithExtensions(ext.Extensions{
+        PaymentProviders: []ext.PaymentProvider{satispay.New()},
+    }))
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer a.Close()
+    if err := a.Run(context.Background()); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+<Aside type="caution" title="Today: a main inside the repository">
+  `internal/app` can be imported only by code in the same Go module: for now your `main` lives in a copy of the
+  repository (for example `cmd/my-arenile`), while the implementations can live in your own modules importing only
+  `pkg/ext`. A public application constructor, to import the core from another module, will come with a dedicated ADR.
+  Mind the [license](/en/sviluppo/licenza/) limits if you distribute the result.
+</Aside>
+
+## The interfaces
+
+<CardGrid>
+  <Card title="PaymentProvider" icon="approve-check">
+    Payment driver: `Code`, `Capabilities`, `CreatePayment`, `ParseWebhook`, `Refund`. See
+    [Payment drivers](/en/sviluppo/driver-di-pagamento/).
+  </Card>
+  <Card title="FiscalDriver" icon="document">
+    Issuing commercial documents: `Code`, `Issue`, `Void`, `Status`. Lines come from the price snapshot (gross amounts,
+    rates in basis points: 2200 = 22%).
+  </Card>
+  <Card title="EventSink" icon="random">
+    `Name`, `Handle(ctx, Event)`: receives every domain event after the outbox. Must be idempotent on the `id`.
+  </Card>
+  <Card title="EventBus" icon="analytics">
+    `Publish`, `Subscribe`: replaces the in-memory real-time bus, for several instances in parallel.
+  </Card>
+  <Card title="Notifier" icon="email">
+    `Channel`, `Send`: new notification channels alongside email.
+  </Card>
+  <Card title="AuthProvider" icon="padlock">
+    `Code`, `DisplayName`, `BeginLogin`, `CompleteLogin`: sign-in with an external identity provider.
+  </Card>
+  <Card title="TenantResolver" icon="laptop">
+    `ResolveSlug(r)`: resolves the public page's establishment from the domain (e.g. `prenota.lido-a.it`).
+  </Card>
+  <Card title="ConcessionDataProvider" icon="puzzle">
+    `Lookup(ctx, ref)`: state-owned beach concession data from external sources.
+  </Card>
+  <Card title="BotProtection" icon="warning">
+    `ClientConfig`, `Verify`: invisible challenge with no imposed service.
+  </Card>
+  <Card title="UIPluginManifest" icon="setting">
+    Menu entries (labels per language, Italian required) and a page URL loaded in a dedicated area of the panel.
+  </Card>
+</CardGrid>
+
+## Events: the envelope
+
+```go
+type Event struct {
+    ID              string          `json:"id"`               // "evt_<uuidv7>"
+    Type            string          `json:"type"`             // e.g. "booking.confirmed"
+    EstablishmentID string          `json:"establishment_id"`
+    OccurredAt      time.Time       `json:"occurred_at"`
+    Data            json.RawMessage `json:"data"`             // versioned payload
+    Version         int             `json:"version"`
+}
+```
+
+The list of types is in [Events and outgoing webhooks](/en/api/eventi-e-webhook/).
+
+## Rules for extension authors
+
+- `int64` amounts in cents, never `float`.
+- No personal data, tokens or secrets in logs.
+- Credentials arrive already decrypted in the call: do not store them elsewhere.
+- A slow `EventSink` does not block the core, but it must handle its own retries and idempotency.
+- New dependencies must have a license compatible with BSL 1.1 and AGPL-3.0 (MIT, BSD, Apache-2.0, ISC).

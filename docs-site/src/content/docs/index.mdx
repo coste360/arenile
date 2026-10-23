@@ -1,9 +1,9 @@
 ---
 title: Arenile
-description: Il gestionale per stabilimenti balneari con codice sorgente disponibile (BSL 1.1), di Coste360 SRL.
+description: Il gestionale per stabilimenti balneari con codice sorgente disponibile (BSL 1.1), di Coste360 SRL. Documentazione per gestori, tecnici e sviluppatori.
 template: splash
 hero:
-  tagline: Mappa degli ombrelloni, prenotazioni, prezzi, pagamenti online e cassa in un solo programma.
+  tagline: Mappa degli ombrelloni, prenotazioni online senza commissioni, prezzi, pagamenti con Stripe e cassa in un solo programma, sul tuo server.
   actions:
     - text: Inizia dalla guida del gestore
       link: /gestore/
@@ -13,19 +13,55 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
+import { Screenshot, LiveMap, StatusBadges } from '~/components';
+
+<Screenshot name="admin-map" alt="La mappa operativa di Arenile con gli stati delle postazioni del Lido Demo" />
+
+## Per chi è questa documentazione
 
 <CardGrid>
-  <Card title="Guida del gestore" icon="open-book">
-    Ogni funzione del pannello, passo per passo, con screenshot sempre aggiornati.
+  <Card title="Gestori e personale" icon="open-book">
+    Ogni funzione del pannello passo per passo: configurazione, mappa del giorno, prenotazioni, cassa, pagina
+    pubblica e pagamenti. Con screenshot sempre aggiornati, in tema chiaro e scuro.
+    [Guida del gestore](/gestore/)
   </Card>
-  <Card title="Installazione e operatività" icon="setting">
-    Docker, server, backup, aggiornamenti e configurazione.
+  <Card title="Chi installa e mantiene" icon="setting">
+    Docker, compilazione dai sorgenti, configurazione, HTTPS, backup, aggiornamenti, sicurezza e privacy.
+    [Installazione e operatività](/installazione/)
   </Card>
-  <Card title="API e webhook" icon="seti:json">
-    Riferimento completo generato dal contratto OpenAPI, eventi e webhook.
+  <Card title="Integratori" icon="seti:json">
+    API REST pubblica e del pannello, idempotenza, errori, webhook dei pagamenti ed eventi. Riferimento generato
+    dal contratto OpenAPI. [API e webhook](/api/)
   </Card>
-  <Card title="Sviluppo ed estensioni" icon="puzzle">
-    Architettura, punti di estensione, driver di pagamento e contributi.
+  <Card title="Sviluppatori" icon="puzzle">
+    Architettura, invarianti, estensioni Go, driver di pagamento, sviluppo con agenti AI e contributi.
+    [Sviluppo ed estensioni](/sviluppo/)
   </Card>
 </CardGrid>
+
+## La spiaggia, dal vivo
+
+Questa è la mappa del Lido Demo disegnata con lo stesso componente del pannello e il kit grafico Coste360:
+spostala, ingrandiscila, tocca le postazioni.
+
+<LiveMap />
+
+Ogni stato ha un colore **e** un simbolo, così la mappa si legge anche senza distinguere i colori:
+
+<StatusBadges />
+
+## Da zero a online in quattro passi
+
+<CardGrid>
+  <LinkCard title="1. Scegli come installare" href="/installazione/scegli-come-installare/" description="VPS con Docker, server in sede, desktop (in arrivo) o hosting gestito." />
+  <LinkCard title="2. Installa con Docker" href="/installazione/docker/" description="Un compose, una chiave segreta, un comando." />
+  <LinkCard title="3. Configurazione guidata" href="/gestore/configurazione-guidata/" description="Mappa, listino e pagina pubblica in meno di 15 minuti." />
+  <LinkCard title="4. Attiva Stripe e il widget" href="/gestore/pagamenti-online/" description="Pagamenti online sul tuo conto e prenotazioni dal tuo sito." />
+</CardGrid>
+
+<Aside type="note" title="Codice sorgente disponibile">
+  Arenile è distribuito con licenza BSL 1.1: gratuito per gli stabilimenti che lo usano per sé, codice leggibile
+  e modificabile, ogni versione convertita in AGPL-3.0 dopo tre anni. Su GitHub trovi sorgenti e istruzioni;
+  l'immagine Docker è pubblica e gratuita. [Dettagli sulla licenza](/sviluppo/licenza/).
+</Aside>

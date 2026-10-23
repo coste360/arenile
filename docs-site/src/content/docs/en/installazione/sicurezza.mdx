@@ -1,0 +1,76 @@
+---
+title: Security
+description: How Arenile protects data and payments, and what whoever installs it must do. Encrypted secrets, roles, two-step verification, rate limits and good practice.
+sidebar:
+  order: 16
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+## What Arenile does
+
+<CardGrid>
+  <Card title="Secrets encrypted at rest" icon="padlock">
+    Stripe keys, webhook secrets and TOTP codes are encrypted with AES-256-GCM using `ARENILE_SECRET_KEY`, bound to
+    the establishment that uses them. Secret keys are **never** shown again by the panel nor returned by the APIs:
+    only "configured" and the last four characters.
+  </Card>
+  <Card title="Passwords and sessions" icon="approve-check">
+    Argon2id passwords (at least 10 characters), session cookie `HttpOnly`, `Secure` and `SameSite=Lax` renewed at
+    sign-in, CSRF protection with a double-submit token on every change made from the panel.
+  </Card>
+  <Card title="Two-step verification" icon="phone">
+    TOTP with any authenticator app. With `ARENILE_REQUIRE_TOTP_FOR_OWNERS=true` it becomes mandatory for owners.
+  </Card>
+  <Card title="Roles and isolation" icon="setting">
+    Five least-privilege roles, checked in the core of the program and not just in the screens. Every operational
+    record belongs to an establishment: automated tests attempt cross-establishment access.
+  </Card>
+</CardGrid>
+
+### Abuse limits
+
+| Where | Limit |
+|---|---|
+| Panel sign-in | 30 attempts per 15 minutes per IP, 8 failed attempts per 15 minutes per account |
+| Public API, reads | 60 requests per minute per IP |
+| Public API, creations | 10 per minute per IP |
+| Request for a new manage link | limited per IP and per booking; always answers the same way, so it never reveals whether a booking exists |
+
+### Public page and payments
+
+- The widget can be embedded **only** in the websites allowed by the establishment (`frame-ancestors`), with no
+  third-party cookies: the booking session lives in the browser tab.
+- An online booking is confirmed **only** by the provider's signed webhook (or by reconciliation, which queries the
+  provider), never by the browser returning.
+- Payment webhooks are verified by signature, with a 5-minute tolerance, and each event is processed exactly once.
+- The manage links sent to customers are 256-bit random tokens stored only as a hash, with an expiry (end of the
+  booking plus 30 days), and revocable.
+
+### Logs and personal data
+
+No email, phone number, token or secret in clear in the logs. The activity log (audit) is append-only: it is never
+edited or deleted.
+
+## What you must do
+
+- [ ] **HTTPS** always (see [Reverse proxy and HTTPS](/en/installazione/reverse-proxy-https/)).
+- [ ] `ARENILE_SECRET_KEY` randomly generated, stored safely, separate from the backups.
+- [ ] `.env` with permissions `600`, never in version control.
+- [ ] `ARENILE_TRUSTED_PROXIES` set only to your proxies' networks.
+- [ ] Two-step verification for owners (`ARENILE_REQUIRE_TOTP_FOR_OWNERS=true`).
+- [ ] One user per person, with the minimum role needed (see [Team and roles](/en/gestore/team-e-ruoli/));
+      deactivate at once the users of people who no longer work at the beach.
+- [ ] Server kept up to date (automatic OS security updates), SSH by key only, port `8080` not exposed to the
+      internet when using a proxy.
+- [ ] Encrypted, off-site backups and a tested restore.
+- [ ] Arenile kept up to date with patch releases.
+
+## Reporting a vulnerability
+
+Do not open a public issue: follow the instructions in the repository's `SECURITY.md` for a private report.
+
+<Aside type="note">
+  In the development process dependencies are checked in CI (`govulncheck`, `npm audit`) and the Docker image is
+  based on *distroless*, with no shell or unnecessary packages, and runs as a non-root user.
+</Aside>

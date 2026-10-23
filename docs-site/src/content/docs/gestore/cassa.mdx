@@ -1,0 +1,70 @@
+---
+title: Cassa e chiusura
+description: Apertura con fondo cassa, incassi per metodo, incasso rapido, movimenti, chiusura con conteggio e differenza, riepilogo Z stampabile e storico.
+sidebar:
+  order: 26
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Cassa**. **Chi:** cassieri, gestori e proprietari operano; gli altri ruoli con accesso
+ai report consultano lo storico in sola lettura.
+
+La cassa di Arenile registra cosa entra ed esce durante la giornata, per metodo, e alla chiusura confronta il
+conteggio con l'atteso. Serve al controllo di gestione e alla riconciliazione con registratore telematico, POS e
+Stripe; **non sostituisce gli adempimenti fiscali** (vedi [Corrispettivi](/gestore/corrispettivi/)).
+
+<Screenshot name="admin-cash" alt="Cassa con la sessione aperta, totali per metodo, incassi e movimenti" />
+
+## Aprire la cassa
+
+<Steps>
+
+1. Conta i contanti nel cassetto.
+2. Indica il **Fondo cassa** e premi **Apri sessione**.
+
+</Steps>
+
+C'è una sola sessione aperta per cassa (**Cassa principale**). Senza una sessione aperta non si registrano
+incassi in contanti (*La cassa è chiusa: aprila per registrare incassi in contanti*).
+
+## Durante la giornata
+
+Il riquadro della sessione mostra **Fondo cassa**, **Totale incassi**, **Versamenti − prelievi**, **Contanti
+attesi in cassa** (fondo + incassi in contanti + versamenti − prelievi) e gli **Incassi per metodo**.
+
+- **Incassa**: cerca la prenotazione per codice o cliente; l'importo proposto è il **Saldo dovuto**. Scegli il
+  metodo e **Registra incasso**.
+- **Movimento**: **Versamento** o **Prelievo** di contanti, sempre con una **Causale** (cambio monete,
+  versamento in banca…).
+- Gli incassi registrati altrove (dettaglio della prenotazione, scheda della postazione) con la sessione aperta
+  finiscono nella stessa sessione. Le **Vendite libere** senza prenotazione compaiono come tali.
+
+Le schede **Incassi** e **Movimenti** elencano tutto ciò che è successo nella sessione.
+
+<Aside type="note" title="E i pagamenti online?">
+  Gli incassi con Stripe arrivano sul conto Stripe e sono registrati sulla prenotazione con metodo online: non
+  passano dal cassetto e non alterano i contanti attesi.
+</Aside>
+
+## Chiudere la cassa
+
+<Steps>
+
+1. **Chiudi cassa**.
+2. Per ogni metodo, Arenile mostra l'**Atteso**: inserisci il **Contato**.
+3. La **Differenza** si calcola da sola: **In pari**, **Eccedenza** o **Ammanco**. Scrivi una nota se serve
+   (ad esempio il motivo della differenza).
+4. **Chiudi sessione**.
+
+</Steps>
+
+Dopo la chiusura **Stampa chiusura Z** produce il riepilogo stampabile: cassa, apertura e chiusura, fondo,
+versamenti, prelievi, incassi per metodo, note e numero di operazioni. Durante la giornata **Stampa riepilogo**
+stampa la situazione corrente.
+
+## Storico sessioni
+
+Lo **Storico sessioni** elenca le sessioni con apertura, chiusura e stato. **Dettaglio sessione** riapre il
+riepilogo di chiusura, gli incassi e i movimenti di una sessione passata.

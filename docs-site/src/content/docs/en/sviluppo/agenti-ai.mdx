@@ -1,0 +1,82 @@
+---
+title: Development with AI agents
+description: How the Arenile repository is prepared for coding agents - AGENTS.md, CLAUDE.md, path-scoped rules, skills, subagents, hooks and ready-made tasks.
+sidebar:
+  order: 6
+---
+
+import { FileTree, Aside } from '@astrojs/starlight/components';
+
+The Arenile repository is designed to be worked on by **coding agents** too (Claude Code or compatible tools): the same
+rules apply to people and agents, and automated checks enforce them for both.
+
+<FileTree>
+- AGENTS.md shared instructions, the single source for every agent
+- CLAUDE.md imports AGENTS.md and adds Claude Code notes
+- .claude/
+  - rules/ rules that load when touching certain paths
+    - api-contract.md
+    - availability.md
+    - frontend.md
+    - go-backend.md
+    - migrations.md
+    - pricing.md
+  - skills/ recurring procedures
+    - new-endpoint/
+    - new-migration/
+    - new-price-rule-test/
+    - new-payment-driver/
+    - new-domain-event/
+    - pre-pr-check/
+  - agents/ subagents
+    - reviewer.md
+    - invariants-guardian.md
+    - test-writer.md
+  - settings.json shared permissions and hooks
+- scripts/agents/ hook scripts (formatting, generated-file protection)
+- .devcontainer/ reproducible environment
+</FileTree>
+
+## What AGENTS.md contains
+
+- **Commands**: always through `make` (`make check` after every change, `make check-full` before a pull request,
+  `make gen` after every contract change).
+- **Repository map** and generated files not to touch.
+- **Non-negotiable rules**: amounts in cents, calendar dates, injected clock, availability guaranteed by the database,
+  every booking status change with audit and event in the same transaction, confirmation only from the webhook or the
+  manual driver, per-establishment isolation, API-first, migrations for both dialects, texts through i18n keys with
+  Italian as the source, UI with shadcn/ui only, no personal data in logs, compatible dependency licenses.
+- **Definition of done**: `make check` green (and `make check-full` for availability, prices, payments, migrations and
+  the public flow), tests for new behaviour, invariants still valid, documentation updated.
+
+## Skills and subagents
+
+| Tool | When |
+|---|---|
+| `/new-endpoint` | New API operation end to end: contract, generated code, handler, service, tests |
+| `/new-migration` | New SQLite and PostgreSQL migration pair with models and integration tests |
+| `/new-price-rule-test` | From a pricing scenario described in words to table-driven and property tests |
+| `/new-payment-driver` | New payment driver with signed webhooks and tests |
+| `/new-domain-event` | New versioned event type written to the outbox |
+| `/pre-pr-check` | Final verification and draft of the pull request description |
+| `reviewer` | Review before declaring a task done |
+| `invariants-guardian` | Invariant check for changes to availability, prices, bookings, payments |
+| `test-writer` | Extends table-driven tests when many cases are needed |
+
+## Hooks
+
+- After every edit a hook **formats** the file (gofumpt, goimports, Prettier).
+- A hook **blocks** edits to generated files and to migrations already on `main`: change the source
+  (`api/openapi.yaml` then `make gen`) or add a new migration.
+
+## Agent tasks
+
+The "Agent task" issue template defines goal, scope, acceptance criteria and verification command: small, verifiable
+tasks, suitable for newcomers too.
+
+<Aside type="caution" title="The responsibility stays yours">
+  Whoever opens the pull request remains responsible for code produced with an agent: it must be read, understood and
+  verified like hand-written code.
+</Aside>
+
+Personal preferences go in `CLAUDE.local.md` (ignored by git), never in shared files.

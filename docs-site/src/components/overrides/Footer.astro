@@ -1,0 +1,22 @@
+---
+// Starlight footer plus the product line: maintainer, licence (source
+// available, BSL 1.1, never "open source") and the release the docs describe.
+import Default from '@astrojs/starlight/components/Footer.astro';
+
+const version = import.meta.env.ARENILE_DOCS_VERSION || process.env.ARENILE_DOCS_VERSION || '';
+---
+
+<Default />
+<p class="arenile-footer">
+  {Astro.locals.t('arenile.footer.product')}
+  {version && <span> · {Astro.locals.t('arenile.footer.version', { version })}</span>}
+</p>
+
+<style>
+  .arenile-footer {
+    margin-top: 1.5rem;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+    text-align: center;
+  }
+</style>

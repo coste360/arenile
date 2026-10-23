@@ -1,0 +1,133 @@
+---
+title: Compilare dai sorgenti
+description: Come ottenere il binario di Arenile dal codice su GitHub, per sviluppo o per installazioni senza Docker. I binari pronti non sono pubblicati su GitHub.
+sidebar:
+  order: 4
+---
+
+import { Steps, Aside, Tabs, TabItem, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="note" title="Perché non trovi i binari su GitHub">
+  Su GitHub Coste360 pubblica il **codice sorgente** e le istruzioni per compilarlo ed eseguirlo, non binari
+  pronti. Per chi vuole qualcosa di pronto all'uso c'è l'**immagine Docker** pubblica e gratuita
+  (`ghcr.io/coste360/arenile`, vedi [Installazione con Docker](/installazione/docker/)); i **pacchetti desktop**
+  per Windows, macOS e Linux saranno scaricabili dal portale Coste360 previo accesso.
+</Aside>
+
+Il risultato della compilazione è **un solo file eseguibile**, statico (nessuna dipendenza di sistema, niente
+CGO), che contiene server, API, pannello e pagina pubblica.
+
+## Prerequisiti
+
+| Strumento | Versione |
+|---|---|
+| Go | 1.27 o successiva |
+| Node.js e npm | Node 22 o successivo, npm 10 o successivo |
+| make | qualsiasi versione recente |
+| git | per clonare il repository |
+
+In alternativa usa il **devcontainer** incluso nel repository (VS Code, GitHub Codespaces): ha già tutto.
+
+## Compilare
+
+<Steps>
+
+1. Clona il repository:
+
+   ```bash
+   git clone https://github.com/coste360/arenile.git
+   cd arenile
+   ```
+
+2. Installa le dipendenze (una volta sola):
+
+   ```bash
+   make setup
+   ```
+
+3. Compila le due applicazioni web e il binario:
+
+   ```bash
+   make build
+   ```
+
+   `make build` compila il pannello e la pagina pubblica, li copia dentro il binario (`internal/http/static`)
+   e produce `bin/arenile`.
+
+4. Verifica:
+
+   ```bash
+   ./bin/arenile version
+   ```
+
+</Steps>
+
+### Compilare per un'altra architettura
+
+Il binario è puro Go: puoi compilarlo per un Raspberry Pi o un server `arm64` da qualsiasi computer, dopo aver
+compilato le applicazioni web con `make web-build`:
+
+```bash
+make web-build
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath \
+  -ldflags "-s -w -X main.version=dev" -o arenile-arm64 ./cmd/arenile
+```
+
+### Costruire l'immagine Docker in locale
+
+```bash
+make docker   # produce ghcr.io/coste360/arenile:dev
+```
+
+## Eseguire il binario
+
+<Tabs>
+  <TabItem label="Prova in locale">
+    ```bash
+    ARENILE_DEV=true ARENILE_DATA_DIR=./data ./bin/arenile serve
+    ```
+
+    In modalità sviluppo `ARENILE_BASE_URL` è facoltativa e, se manca `ARENILE_SECRET_KEY`, una chiave viene
+    generata, salvata in `./data/dev-secret.key` e mostrata una volta all'avvio. **Mai in produzione.**
+  </TabItem>
+  <TabItem label="Produzione (systemd)">
+    ```ini title="/etc/systemd/system/arenile.service"
+    [Unit]
+    Description=Arenile
+    After=network-online.target
+
+    [Service]
+    User=arenile
+    EnvironmentFile=/etc/arenile/arenile.env
+    ExecStart=/usr/local/bin/arenile serve
+    Restart=on-failure
+    NoNewPrivileges=true
+    ProtectSystem=strict
+    ReadWritePaths=/var/lib/arenile
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+    Nel file `/etc/arenile/arenile.env` imposta almeno `ARENILE_BASE_URL`, `ARENILE_SECRET_KEY` e
+    `ARENILE_DATA_DIR=/var/lib/arenile` (permessi `600`). Tutte le variabili sono in
+    [Configurazione](/installazione/configurazione/).
+  </TabItem>
+</Tabs>
+
+## Comandi del binario
+
+```text
+arenile serve [--dev]                        avvia il server (migrazioni automatiche con ARENILE_AUTO_MIGRATE=true)
+arenile migrate up|status                    applica o mostra lo stato delle migrazioni
+arenile admin create --email E --name N --org O [--password P]
+                                             crea un utente owner (password da ARENILE_ADMIN_PASSWORD o richiesta)
+arenile seed demo                            carica lo stabilimento dimostrativo
+arenile backup --out FILE                    backup consistente (SQLite)
+arenile restore --in FILE                    ripristina un backup (server fermo)
+arenile version                              mostra la versione
+```
+
+La configurazione si legge sempre dalle variabili d'ambiente `ARENILE_*` e `DATABASE_URL`.
+
+<LinkCard title="Vuoi contribuire al codice?" href="/sviluppo/contribuire/" description="Ambiente di sviluppo, make check, convenzioni e CLA." />

@@ -1,0 +1,180 @@
+---
+title: Prices
+description: The price list as rules - base prices, modifiers, discounts, fixed-duration prices, promo codes, agreements, simulator, matrix, coverage check and season copy.
+sidebar:
+  order: 9
+---
+
+import { Steps, Aside, Tabs, TabItem, Card, CardGrid } from '@astrojs/starlight/components';
+import { Screenshot, LivePriceSimulator } from '~/components';
+
+**Where:** Configuration → **Prices**. **Who:** owners and managers.
+
+In Arenile the price list is not a fixed table but a set of **rules**: "in high season the front row costs €38",
+"weekends +10%", "7 days for the price of 6". The **pricing engine** combines them day by day and always produces the
+same result for the same data: at the desk, online, in the simulator and in the matrix.
+
+The bar at the top leads to the tools: **Price list**, **Simulator**, **Matrix**, **Coverage**, **Policies**. The
+**Season** selector picks the price list you are working on.
+
+## Try it now
+
+This is the real simulator, on the Lido Demo data: choose pack, zone and dates and see the rules applied day by day.
+
+<LivePriceSimulator />
+
+## How a price is computed
+
+```text
+for each line (a pack on a spot, zone or quantity):
+  1. fixed duration?  week, fortnight, month, season with a fixed price → that price
+  2. base             each day ONE "Base" rule wins (priority, then the most specific, then the most recent)
+                      half day: rule for the slot, otherwise day × half-day factor
+  3. modifiers        surcharges and reductions of the day
+  4. extras           same procedure, × quantity × days or slots
+on the booking:
+  5. discounts        agreement, then promo code, then automatic discounts
+  6. rounding         final total only (none, to the euro, to 50 cents)
+  7. deposit          from the policy
+```
+
+<Aside type="caution" title="No price, no sale">
+  If on a day no "Base" rule applies to a pack, that pack **cannot be sold** that day (*A price is missing for the
+  requested dates*). This is deliberate: better not to sell than to sell at zero. The
+  [coverage check](#coverage-check) finds these gaps before customers do.
+</Aside>
+
+All amounts **include VAT** and are computed in integer cents, rounded to the cent (*half-even*): no floating-point
+errors. Every booking keeps the full breakdown: if you change the price list, bookings already made do not change.
+
+## Price list
+
+<Screenshot name="admin-pricing" alt="The season's price list with rules grouped by stage: Base, Modifier, Discount" />
+
+The price list has three tabs: **Rules**, **Fixed-duration prices**, **Codes and agreements**.
+
+### Rules
+
+Rules are grouped by **stage**:
+
+| Stage | Purpose | Allowed actions |
+|---|---|---|
+| **Base** | the starting daily price | **Daily price** |
+| **Modifier** | surcharges and reductions on the base price | **Add amount** (negative too, e.g. `-2.00`), **Multiply** (e.g. `1.2` = +20%), **Percentage off**, **Amount off** |
+| **Discount** | final discounts (codes, agreements, offers) | **Percentage off**, **Amount off** (per booking, per line or per day), **Free days** ("7 days for the price of 6") |
+
+<Steps>
+
+1. Press **New rule**.
+2. **General**: **Name**, **Stage**, **Applies to** (**Packs**, **Extras**, **All packs**, **All extras**) and the
+   **Targets** (no selection = all).
+3. **Action** and amount, percentage or factor. For amount off choose whether it is **per booking**, **per line** or
+   **per day**.
+4. **Conditions** (all optional: the rule applies when **every** condition set is true): **Rate periods**,
+   **Weekdays**, **Slots**, **Channels**, **Formulas**, **Zones**, **Price categories**, **Holidays** (**Any day**,
+   **Holidays only**, **Except holidays**), **Date ranges**, **Minimum days** and **Maximum days**.
+5. **Advanced**, if needed: **Spot attributes** (e.g. `accessible`), **Customer tags** (e.g. `regular`),
+   **Agreements**, **Minimum/Maximum lead time (days)**, **Minimum/Maximum occupancy (%)**.
+6. **Options**: **Priority**, **Stackable**, **Active**.
+7. Check the **Summary**, written in plain language, and save.
+
+</Steps>
+
+Example summary: *Base for Basic: €38.00 per day, when periods: High season and categories: Front row.*
+
+**Who wins when several rules apply?**
+
+- In the **Base** stage **a single** rule wins per day: the highest priority; on a tie, the most specific (more
+  conditions); on a tie, the most recent.
+- In the **Modifier** and **Discount** stages, **Stackable** rules add up in priority order; among **non-stackable**
+  rules only the one most favourable to the customer applies.
+
+<Aside type="tip" title="Occupancy and dynamic pricing">
+  Occupancy conditions evaluate the zone on the single day. They are off by default: use them only if you want dynamic
+  pricing, and always try them in the simulator.
+</Aside>
+
+### Fixed-duration prices
+
+A "package" price for a **Week**, **Fortnight**, **Month** or **Season**, by pack, price category and (optionally)
+period: "August week in the front row: €270", "front row season pass: €2,100". When the booking's formula matches,
+it replaces the sum of the days.
+
+The tab is a **Pack** × **Category** grid with a button to add the missing price; **Any period** means a price valid
+throughout the season.
+
+### Promo codes
+
+The customer types the code on the public page (or staff at the desk); upper and lower case are equivalent.
+
+| Field | Meaning |
+|---|---|
+| **Code** | 2–40 characters: letters, digits, `-` and `_`. For example `BENVENUTO10`. |
+| **Description** | For you and your staff. |
+| **Action** and **Conditions** | The discount and when it applies, as for rules. |
+| **Validity** | **Valid from**, **Valid until**. |
+| **Maximum uses**, **Uses per customer** | Optional limits. |
+| **Stackable**, **Active** | As for rules. |
+
+### Agreements
+
+Discounts for partners (hotels, associations) or groups of customers. An agreement with a **Code** works like a promo
+code; without a code it is applied **from the panel only**, by choosing it in the booking. Fields: **Name**,
+**Partner**, **Notes**, action, conditions, validity.
+
+## Price simulator
+
+<Screenshot name="admin-price-simulator" alt="Price simulator with the day-by-day breakdown of the applied rules" />
+
+The simulator uses the same engine as the desk and the public page, plus the step-by-step breakdown. Enter pack, zone,
+dates, slot, formula, channel, any extras, promo code, agreement and a **Today (simulated)** date (to test lead time),
+then **Calculate**.
+
+The result shows:
+
+- **Total**, **Due at booking** (from the policy's deposit) and **Rounding**;
+- for each line, each day with **Base**, **Applied rules** and **Day total**, or the fixed price used;
+- the **Total per day** chart and the **VAT summary** by rate;
+- any policy violations (*The policy does not allow this booking*), with the reason.
+
+## Price matrix
+
+<Screenshot name="admin-price-matrix" alt="Price matrix with prices by pack, category and period" />
+
+A **pack × category × period** table with the daily price computed by the engine for a representative weekday of
+each period (hover over a cell to see the date). Cells with **no price** are highlighted. **Export CSV** to share or
+print it. The matrix always matches the simulator: they are the same computation.
+
+## Coverage check
+
+<Screenshot name="admin-price-coverage" alt="Coverage check with the season calendar and the ranges without a price" />
+
+Lists the days of the season on which an active pack **has no price** for a category, grouped into ranges. The
+**Season calendar** colours days by how many combinations are missing; clicking a day filters the ranges that include
+it. **Create rule** opens a new rule already filled in to close the gap. When everything is covered: *Complete price
+list*.
+
+## Season copy
+
+From the price list, **Copy season** copies the price list to another year:
+
+<Steps>
+
+1. Choose the **Target year**.
+2. Choose what to copy: **Rate periods**, **Price rules**, **Fixed-duration prices**, **Booking policies**.
+3. **Copy season**. Dates shift keeping the weekday where it makes sense; the target season is created as a **Draft**.
+4. Read the **To check** section (for example shifted dates) and open the new price list.
+
+</Steps>
+
+## Recipes
+
+| I want… | How |
+|---|---|
+| A pricier front row | Zone with category `row1` and Base rules with the **Price categories** = `row1` condition |
+| July weekends +10% | **Multiply** modifier `1.1`, **Rate periods** = High season, **Weekdays** = Sat, Sun |
+| Half day at 60% | **Half-day factor** `0.6` in [Establishment](/en/gestore/stabilimento/), or Base rules with **Slots** = Morning/Afternoon |
+| 7 days for the price of 6 | **Free days** discount, 1 free every 7 days |
+| A different price online | **Channels** = Online condition |
+| Last minute | Discount with **Maximum lead time (days)** = 1 |
+| A discount for regulars | Discount with **Customer tags** = `regular` (tag set on the customer record) |

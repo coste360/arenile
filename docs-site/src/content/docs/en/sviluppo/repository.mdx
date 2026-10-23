@@ -1,0 +1,88 @@
+---
+title: Repository map
+description: What lives where in the Arenile repository, the dependency rules between packages and the generated files never to be edited by hand.
+sidebar:
+  order: 2
+---
+
+import { FileTree, Aside } from '@astrojs/starlight/components';
+
+<FileTree>
+- cmd/
+  - arenile/ entrypoint and CLI (serve, migrate, admin create, seed demo, backup, restore, version)
+- internal/
+  - app/ composition root and extension registry
+  - config/ environment variables
+  - domain/ business logic, one package per area (no HTTP, no SQL)
+    - inventory/ allocations, holds, pools, quotas, automatic assignment
+    - pricing/ pure pricing engine
+    - policy/ pure policy engine
+    - booking/ booking state machine
+    - checkout/ public flow and manage area
+    - payment/ payments, ledger, drivers
+      - gateway/ online payments, webhooks, reconciliation
+      - stripe/ Stripe driver
+    - notify/ emails, magic links, QR, .ics
+    - online/ public page settings, terms, credentials
+    - …
+  - store/ database access (Bun): the only place with SQL
+  - http/
+    - admin/ /api/admin/v1 handlers
+    - public/ /api/public/v1 handlers
+    - webhooks/ payment webhooks
+    - middleware/
+    - sse/
+    - api/ generated code (api.gen.go)
+    - static/ embedded SPAs
+  - jobs/ in-process job runner
+  - migrations/
+    - sqlite/
+    - postgres/
+  - clock/ injectable clock
+  - money/ amounts in cents
+  - calendar/ dates and slots
+- pkg/
+  - ext/ public extension interfaces (stable Go API)
+- api/
+  - openapi.yaml the contract, source of truth
+- web/ npm workspace
+  - admin/ manager panel
+  - booking/ public page and embed.js
+  - shared/ API client, shadcn UI, map with the kit
+- assets/
+  - beach-map-kit/ original map illustrations (ADR 0012)
+- docs/ specification, ADRs, architecture, invariants, glossary
+- docs-site/ this site (Astro Starlight)
+- e2e/ Playwright tests
+- deploy/ Dockerfile, compose, Coolify, CapRover
+- .claude/ rules, skills and subagents for agents
+- AGENTS.md
+- Makefile the only interface for build, tests and checks
+</FileTree>
+
+## Dependency rules
+
+- `internal/domain/*` does not import `net/http`, `internal/http/*` or SQL drivers: it takes part in transactions with
+  `bun.IDB`.
+- `internal/http/*` contains no SQL or business logic: decode, call the service, encode.
+- `internal/domain/pricing` does not import `store` or `clock`, nor use `time.Now`.
+- `pkg/ext` imports nothing from `internal/`.
+- Every operational query filters by `establishment_id`, taken from the authenticated context
+  (`EstablishmentScope`), never from the request body.
+
+## Generated code
+
+<Aside type="danger" title="Never by hand">
+  These files are regenerated with `make gen`; `make check` fails if they differ from what is committed.
+</Aside>
+
+| Generated | From |
+|---|---|
+| `internal/http/api/*.gen.go` | `api/openapi.yaml` (oapi-codegen) |
+| `web/shared/api/generated/**` | `api/openapi.yaml` (openapi-typescript) |
+| `web/shared/src/map/kit/generated/**`, `internal/domain/mapping/kitassets_gen.go` | `assets/beach-map-kit` (`web/scripts/gen-map-kit.mjs`) |
+
+## Migrations
+
+One pair of files per schema version, with the same number, in `internal/migrations/sqlite/` and
+`internal/migrations/postgres/` (goose). A migration already on `main` is never modified: you add the next one.

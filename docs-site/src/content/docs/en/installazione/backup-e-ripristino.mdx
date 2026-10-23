@@ -1,0 +1,118 @@
+---
+title: Backup and restore
+description: Consistent database copies with one command, the 3-2-1 rule, verified restores and moving from one server to another.
+sidebar:
+  order: 11
+---
+
+import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Backups are the responsibility of whoever runs the installation. They are also how you **move Arenile** from one
+server to another or from one option to another (for example from an on-site server to a VPS): the SQLite backup
+file is the same in every edition.
+
+<Aside type="caution" title="The backup contains personal data">
+  Customer names, emails and phone numbers, bookings and takings. Keep it encrypted with restricted access, and
+  mention it in the privacy notice (see [Privacy and GDPR](/en/installazione/privacy/)).
+</Aside>
+
+## What to back up
+
+| What | Where | Why |
+|---|---|---|
+| The database | backup file produced by `arenile backup` (SQLite) or `pg_dump` (PostgreSQL) | All data: configuration, bookings, customers, takings |
+| `ARENILE_SECRET_KEY` | your password manager or a safe | Without it saved Stripe keys, secrets and TOTP cannot be decrypted |
+| The `.env` file or configuration | a safe copy | To recreate the same server |
+
+## Backup with SQLite
+
+`arenile backup` produces a **consistent copy even while the server is running** (it uses SQLite's
+`VACUUM INTO`): nothing needs to be stopped. The destination file must not exist yet and is created with
+permissions `600`.
+
+<Tabs>
+  <TabItem label="Docker">
+    ```bash
+    docker compose exec arenile /arenile backup --out /data/backup/arenile-$(date +%F).db
+    docker compose cp arenile:/data/backup/arenile-$(date +%F).db ./
+    ```
+  </TabItem>
+  <TabItem label="Binary">
+    ```bash
+    arenile backup --out /var/backups/arenile/arenile-$(date +%F).db
+    ```
+  </TabItem>
+</Tabs>
+
+### Automating it
+
+A nightly backup with `cron` on the host, copied off the server (here with `rclone`, but any tool works) and with
+copies older than 30 days pruned:
+
+```bash title="/etc/cron.d/arenile-backup"
+30 3 * * * root cd /opt/arenile && \
+  docker compose exec -T arenile /arenile backup --out /data/backup/arenile-$(date +\%F).db && \
+  docker compose cp arenile:/data/backup/arenile-$(date +\%F).db /var/backups/arenile/ && \
+  rclone copy /var/backups/arenile remote:arenile-backup && \
+  find /var/backups/arenile -name 'arenile-*.db' -mtime +30 -delete
+```
+
+<Aside type="note">
+  A daily automatic backup built into the binary, with configurable retention, is planned for a later milestone.
+  Until then use `cron` or your platform's scheduler.
+</Aside>
+
+## Backup with PostgreSQL
+
+The built-in command works only with SQLite: with PostgreSQL use the database's standard tools.
+
+```bash
+docker compose -f docker-compose.postgres.yml exec postgres \
+  pg_dump -U arenile -Fc arenile > arenile-$(date +%F).dump
+```
+
+## Restore
+
+<Steps>
+
+1. **Stop the server.** Restores must be done with the server stopped:
+
+   ```bash
+   docker compose stop arenile
+   ```
+
+2. **Run the restore** with a temporary container that mounts the backup file and uses the same volume:
+
+   ```bash
+   docker compose run --rm --entrypoint /arenile \
+     -v "$PWD/arenile-2027-08-15.db:/restore.db:ro" arenile restore --in /restore.db
+   ```
+
+   The command checks that the file is an intact Arenile SQLite database (integrity check), renames the current
+   database to `arenile.db.pre-restore-<date>` (it is never deleted) and copies the backup in its place.
+
+3. **Restart** the server: any missing migrations are applied at startup.
+
+   ```bash
+   docker compose up -d
+   ```
+
+</Steps>
+
+With PostgreSQL: `pg_restore --clean --dbname="$DATABASE_URL" arenile.dump`.
+
+## Golden rules
+
+- **3-2-1**: three copies, on two different media, one off site.
+- **Test the restore** on a trial instance before the season starts: a backup that was never restored is not a
+  backup.
+- **Back up before every upgrade** (see [Upgrades](/en/installazione/aggiornamenti/)).
+- Keep `ARENILE_SECRET_KEY` with the restore procedure, but **not in the same place** as the backup file.
+
+## Moving Arenile to another server
+
+1. Install Arenile on the new server with the **same** `ARENILE_SECRET_KEY`.
+2. Back up the old server and restore on the new one.
+3. Update the DNS, and `ARENILE_BASE_URL` if the domain changes.
+4. If the domain changes, also update the webhook URL in the Stripe dashboard and the widget code on the website
+   (see [Online payments](/en/gestore/pagamenti-online/)).

@@ -1,0 +1,99 @@
+---
+title: Primo avvio e configurazione guidata
+description: Dal primo accesso a un lido pronto a vendere in meno di un quarto d'ora con la configurazione guidata in sei passi.
+sidebar:
+  order: 5
+  label: Primo avvio
+---
+
+import { Steps, Aside, CardGrid, LinkCard, Badge } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+Arenile è installato e il primo utente esiste. Ora apri il pannello e porta lo stabilimento da "vuoto" a
+"pronto a vendere". L'obiettivo di progetto è chiaro: **un lido di 8 file da 15 posti si configura in meno di
+15 minuti** partendo da un modello.
+
+## 1. Accedi al pannello
+
+Apri `https://<tuo-dominio>/admin/` e inserisci email e password.
+
+<Screenshot name="admin-login" alt="Pagina di accesso al pannello di Arenile" />
+
+- Se per il tuo utente è attiva la **verifica in due passaggi**, dopo la password ti viene chiesto il
+  **Codice di verifica** a 6 cifre dell'app di autenticazione.
+- Dopo troppi tentativi sbagliati l'accesso si blocca per qualche minuto: è una protezione contro chi prova a
+  indovinare le password.
+
+## 2. Il primo stabilimento
+
+L'utente creato all'installazione appartiene a un'organizzazione (il valore di `--org` o
+`ARENILE_BOOTSTRAP_OWNER_ORG`). Dal selettore **Stabilimento** in alto nella barra laterale scegli
+**+ Nuovo stabilimento** per crearne uno: dopo la creazione si apre direttamente la configurazione guidata.
+
+<Aside type="tip">
+  Puoi avere più stabilimenti nella stessa installazione: ognuno ha mappa, listini, policy, pagina pubblica e
+  utenti propri. La pagina **Tutti gli stabilimenti** li elenca con l'indirizzo pubblico e lo stato delle
+  prenotazioni online.
+</Aside>
+
+## 3. La configurazione guidata
+
+Si trova anche nel menu **Configurazione → Configurazione guidata**. È riservata a proprietari e gestori.
+Sono sei passi: **ognuno si può saltare** e tutto si può modificare in seguito dalle voci del menu
+Configurazione.
+
+<Screenshot name="admin-setup-wizard" alt="Configurazione guidata di Arenile con i sei passi" />
+
+<Steps>
+
+1. **Dati e lingue.** Nome, indirizzo pubblico (la parte finale dell'URL `/b/<indirizzo>`), contatti, fuso
+   orario, lingua predefinita e lingue attive. Compaiono sulla pagina pubblica e nelle email ai clienti.
+
+2. **Modello.** Scegli il modello più vicino al tuo stabilimento. Crea stagione, zone, catalogo e periodi
+   tariffari che potrai modificare:
+
+   | Modello | Cosa crea |
+   |---|---|
+   | **Lido classico a file** | Ombrelloni in file numerate con prezzo per fila e periodo (prima e seconda fila con prezzo proprio), una fila di gazebo su approvazione, cabine e parcheggio. Il caso più comune. |
+   | **Spiaggia attrezzata a quantità** | Nessuna mappa: il cliente sceglie quanti ombrelloni e lettini, la disponibilità è un contatore. |
+   | **Lido con piscina** | File in spiaggia più un'area piscina con lettini a quantità. |
+   | **Vuoto** | Nessun dato precompilato: configuri tutto a mano. |
+
+3. **File sulla mappa.** Indica quante **File** e quanti **Posti per fila** e le date di apertura e chiusura
+   della **Prima stagione**, poi premi **Crea stagione e mappa**. Le postazioni nascono sulla mappa con
+   numerazione automatica (fila A la più vicina al mare). Per i modelli senza mappa vengono create zone e
+   attrezzature a quantità.
+
+4. **Listino rapido.** Una tabella con il prezzo giornaliero per **categoria** (fila) e **periodo** della
+   stagione (bassa, media, alta, picco). Importi IVA inclusa; lascia vuote le celle che non ti servono.
+   **Genera le regole di prezzo** crea le regole base in automatico. Mezza giornata e formule lunghe si
+   rifiniscono poi in [Prezzi](/gestore/prezzi/).
+
+5. **Pagina pubblica.** Attiva le prenotazioni online, scegli i colori e copia il codice da incollare sul tuo
+   sito. Dettagli in [Pagina pubblica e widget](/gestore/pagina-pubblica/).
+
+6. **Pagamenti.** Scegli come incassare: **Pagamento manuale** (incassi in cassa: contanti, POS, bonifico; le
+   prenotazioni online restano da saldare in loco) oppure **Stripe** per il pagamento online, da completare
+   in [Pagamenti online con Stripe](/gestore/pagamenti-online/).
+
+</Steps>
+
+Alla fine premi **Concludi la configurazione**: il riepilogo indica i passi saltati e offre le scorciatoie
+**Modifica la mappa**, **Rivedi i prezzi** e **Impostazioni dello stabilimento**. Puoi sempre usare
+**Riapri la configurazione guidata**.
+
+## 4. Controlla prima di aprire al pubblico
+
+- [ ] La [verifica di copertura](/gestore/prezzi/#verifica-di-copertura) non segnala giorni senza prezzo.
+- [ ] Il [simulatore](/gestore/prezzi/#simulatore-prezzi) dà i prezzi che ti aspetti per un giorno di agosto e uno di giugno.
+- [ ] Le [policy](/gestore/policy/) di pagamento e cancellazione sono quelle che vuoi comunicare ai clienti.
+- [ ] Hai pubblicato le [condizioni di prenotazione](/gestore/pagina-pubblica/#condizioni-e-informativa).
+- [ ] Hai inviato un'[email di prova](/gestore/email/) e l'hai ricevuta.
+- [ ] Con Stripe in modalità test hai completato una prenotazione di prova dal telefono.
+- [ ] Hai creato gli [utenti](/gestore/team-e-ruoli/) del personale con il ruolo giusto.
+- [ ] Hai pianificato i [backup](/installazione/backup-e-ripristino/).
+
+<CardGrid>
+  <LinkCard title="Guida del gestore" href="/gestore/" description="Ogni funzione del pannello, passo per passo." />
+  <LinkCard title="Prova con i dati demo" href="/installazione/dati-demo/" description="Uno stabilimento già pieno per fare pratica." />
+</CardGrid>

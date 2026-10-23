@@ -1,0 +1,103 @@
+---
+title: Mappa del giorno
+description: La vista operativa della spiaggia per qualsiasi data e fascia - stati e simboli, legenda, ricerca, scheda della postazione, check-in, spostamenti, rilasci e incassi.
+sidebar:
+  order: 21
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+import { LiveMap } from '~/components';
+import { StatusBadges } from '~/components';
+
+**Dove:** Operatività → **Mappa**. **Chi:** tutti i ruoli vedono; check-in e rilasci anche il personale di
+spiaggia; prenotazioni, spostamenti e incassi cassieri, gestori e proprietari.
+
+La mappa operativa è la spiaggia di un giorno, postazione per postazione, con lo stato di ciascuna. È condivisa
+in tempo reale tra cassa, spiaggia e prenotazioni online.
+
+<Screenshot name="admin-map" alt="Mappa operativa del giorno con gli stati colorati delle postazioni e la legenda" />
+
+## Scegliere giorno e fascia
+
+La barra in alto è sempre visibile: **Giorno precedente**, **Giorno successivo**, **Oggi**, il selettore della
+**Data**, la **Fascia** (**Giorno intero**, **Mattina**, **Pomeriggio**) e, se ne hai più d'una, la **Mappa**.
+L'interruttore **Mappa** / **Elenco** mostra le stesse postazioni come elenco per fila, comodo sul telefono o
+con un lettore di schermo.
+
+Nei giorni di chiusura o fuori stagione compare **Stabilimento chiuso**.
+
+## Stati e legenda
+
+Ogni postazione ha un **anello colorato** intorno al disegno e, per gli stati prenotati, un **simbolo**
+nell'angolo: la mappa si legge anche senza distinguere i colori, in tema chiaro e scuro. La legenda è sempre
+sopra la mappa.
+
+<StatusBadges />
+
+| Stato | Significato | Simbolo |
+|---|---|---|
+| **Libero** | Nessuna occupazione | nessuno (alone appena accennato) |
+| **Prenotato online** | Prenotazione confermata dalla pagina pubblica | globo |
+| **Prenotato in cassa** | Prenotazione confermata dal pannello | banco |
+| **Abbonato** | Postazione di un abbonato stagionale | stella |
+| **Abbonato assente oggi** | L'abbonato ha rilasciato il giorno: la postazione è in vendita | freccia in uscita |
+| **In attesa** | Checkout online o approvazione in corso: posto bloccato | orologio |
+| **Da incassare** | Prenotazione con saldo ancora aperto | euro |
+| **Presente** | Check-in registrato | spunta |
+| **Bloccato** | Blocco manuale (con motivo) | croce |
+| **Prelazione rinnovo** | Riservata per il rinnovo dell'abbonamento | rinnovo |
+| **Non disponibile** | Postazione non attiva o chiusa | — |
+
+Indicatori aggiuntivi segnalano **Extra**, **Nota** e cliente **VIP** (tag del cliente).
+
+<LiveMap />
+
+## Cercare
+
+Il campo **Cerca cliente, codice o postazione** evidenzia sulla mappa le postazioni corrispondenti ("3
+postazioni trovate"): utile quando un cliente al banco dice solo il cognome.
+
+## La scheda della postazione
+
+<Screenshot name="admin-map-spot" alt="Mappa operativa con la scheda di una postazione occupata aperta" />
+
+Tocca una postazione per aprire la scheda: **Prenotazione** o **Abbonamento**, **Codice**, **Periodo**,
+**Fascia**, **Pacchetti**, **Stato**, **Totale**, **Pagato** e **Saldo**. Se è in attesa, mostra fino a quando
+dura il blocco; se è bloccata, il motivo. Le azioni dipendono dallo stato e dal tuo ruolo:
+
+| Azione | Quando |
+|---|---|
+| **Check-in** | Prenotazione di oggi non ancora registrata |
+| **Nuova prenotazione** | Postazione libera: apre il foglio di prenotazione già compilato |
+| **Rilascia giorno** | Abbonato assente: la postazione diventa prenotabile; se viene rivenduta, l'abbonato riceve il credito previsto dalla policy |
+| **Revoca rilascio** | Annulla un rilascio non ancora rivenduto |
+| **Sposta** | Sposta la prenotazione su un'altra postazione |
+| **Incassa** | Registra un incasso sul saldo |
+| **Apri dettaglio** | Apre la [prenotazione](/gestore/prenotazioni/) completa |
+
+### Spostare una prenotazione
+
+<Steps>
+
+1. Nella scheda premi **Sposta**: la mappa chiede la postazione di destinazione.
+2. Tocca una postazione libera.
+3. Leggi l'anteprima: Arenile verifica disponibilità e prezzo (*Il prezzo non cambia*, *Differenza da
+   incassare*, *Differenza da rimborsare*) ed elenca eventuali conflitti giorno per giorno.
+4. **Sposta**. Lo spostamento vale dal giorno visualizzato per il resto del soggiorno.
+
+</Steps>
+
+<Aside type="note" title="Nessuna doppia vendita, mai">
+  Se un cliente online prende la stessa postazione nello stesso istante, una sola delle due operazioni va a buon
+  fine e l'altra riceve un messaggio chiaro con le date in conflitto. La garanzia è del database, non della
+  velocità di chi clicca.
+</Aside>
+
+## Sul telefono
+
+<Screenshot name="admin-map-mobile" alt="Mappa operativa su smartphone, usata dal personale di spiaggia" />
+
+Il personale di spiaggia può fare il giro con il telefono: mappa con zoom e trascinamento, **Adatta alla vista**,
+scheda della postazione, check-in con un tocco. Quando le etichette sono troppo piccole, un avviso suggerisce di
+ingrandire o passare all'elenco.

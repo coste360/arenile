@@ -1,0 +1,95 @@
+---
+title: Errori problem+json
+description: Il formato degli errori (RFC 9457), i campi aggiuntivi e l'elenco completo dei type stabili su cui basare il codice del client.
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Ogni errore dell'API è un documento `application/problem+json` (RFC 9457):
+
+```json
+{
+  "type": "spot_unavailable",
+  "title": "Postazione non disponibile",
+  "status": 409,
+  "detail": "La postazione A12 non è disponibile per le date scelte.",
+  "request_id": "01JB7K…",
+  "conflicts": [
+    { "spot_id": "0192f…", "date": "2027-08-14", "slot": "AM", "reason": "spot_unavailable" }
+  ]
+}
+```
+
+<Aside type="caution" title="Basati sul type, mai sul testo">
+  `type` è uno **slug stabile**: il codice del client deve decidere solo in base a lui. `title` e `detail` sono
+  testi per le persone e possono cambiare.
+</Aside>
+
+## Campi aggiuntivi
+
+| Campo | Presente con | Contenuto |
+|---|---|---|
+| `request_id` | sempre | Lo stesso valore dell'header `X-Request-ID`: citalo nelle segnalazioni |
+| `errors` | `validation_failed` | Errori per campo (`field`, `message`) |
+| `retry_after` | `rate_limited` | Secondi da attendere (anche nell'header `Retry-After`) |
+| `current_version` | `version_conflict` | Versione corrente della risorsa |
+| `conflicts` | `spot_unavailable`, `pool_exhausted`, `quota_exceeded` | Le mezze giornate non disponibili |
+| `violations` | `policy_violation` | I vincoli della policy violati |
+| `spot_ids` | `spot_has_future_allocations` | Postazioni con prenotazioni future |
+| `current_status` | `invalid_transition` | Stato attuale della prenotazione |
+| `existing_customer_id` | `conflict` sulla creazione di un cliente | Il cliente già presente con la stessa email o telefono |
+| `period` | `booking_outside_period` | Date del soggiorno e data odierna dello stabilimento |
+
+## Elenco dei type
+
+### Generali
+
+| `type` | HTTP | Quando |
+|---|---|---|
+| `bad_request` | 400 | Richiesta malformata |
+| `validation_failed` | 400 | Campi non validi (vedi `errors`) |
+| `unauthorized` | 401 | Sessione assente o scaduta |
+| `invalid_credentials` | 401 | Email o password errate |
+| `totp_required` | 401 | Serve il codice di verifica in due passaggi |
+| `invalid_totp` | 401 | Codice di verifica errato |
+| `totp_enrolment_required` | 403 | Il proprietario deve attivare la 2FA |
+| `totp_already_enabled` | 409 | 2FA già attiva |
+| `forbidden` | 403 | Permesso mancante |
+| `csrf_failed` | 403 | `X-CSRF-Token` assente o diverso dal cookie |
+| `not_found` | 404 | Risorsa inesistente (o di un altro stabilimento) |
+| `conflict` | 409 | Conflitto con dati esistenti (es. codice già usato) |
+| `method_not_allowed` | 405 | Metodo non supportato |
+| `unsupported_media_type` | 415 | Serve `application/json` |
+| `rate_limited` | 429 | Troppe richieste |
+| `idempotency_key_reused` | 422 | Stessa `Idempotency-Key` con richiesta diversa |
+| `idempotency_in_progress` | 409 | Richiesta con la stessa chiave ancora in corso |
+| `version_conflict` | 412 | `If-Match` non corrisponde alla versione corrente |
+| `precondition_required` | 428 | `If-Match` obbligatorio e assente |
+| `not_implemented` | 501 | Funzione non ancora disponibile |
+| `internal_error` | 500 | Errore inatteso (vedi i log con il `request_id`) |
+
+### Disponibilità, prezzi, prenotazioni
+
+| `type` | HTTP | Quando |
+|---|---|---|
+| `spot_unavailable` | 409 | Postazione già occupata in una o più mezze giornate |
+| `pool_exhausted` | 409 | Quantità esaurita |
+| `quota_exceeded` | 409 | Quota online esaurita |
+| `hold_expired` | 410 | Il blocco temporaneo è scaduto |
+| `no_price` | 422 | Nessun prezzo per le date o il pack |
+| `policy_violation` | 422 | La richiesta non rispetta la policy (vedi `violations`) |
+| `invalid_transition` | 409 | Operazione non ammessa nello stato attuale |
+| `booking_outside_period` | 422 | Check-in o no-show fuori dai giorni del soggiorno |
+| `spot_has_future_allocations` | 409 | Postazione con prenotazioni future: si può solo disattivare |
+| `cash_session_closed` | 409 | Serve una sessione di cassa aperta |
+| `cash_session_already_open` | 409 | C'è già una sessione aperta |
+
+### Pagina pubblica e pagamenti
+
+| `type` | HTTP | Quando |
+|---|---|---|
+| `checkout_not_found` | 404 | Token di checkout errato, di un'altra prenotazione o di un altro stabilimento (senza distinzioni) |
+| `payment_provider_unavailable` | 503 | Il provider di pagamento non risponde (con `Retry-After`) |
+| `webhook_signature_invalid` | 400 | Firma del webhook assente o errata |

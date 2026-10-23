@@ -1,0 +1,129 @@
+---
+title: Configurazione
+description: Riferimento completo delle variabili d'ambiente di Arenile, con valori predefiniti, validazione ed esempi.
+sidebar:
+  order: 10
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Tutta la configurazione del server avviene con **variabili d'ambiente**: funziona allo stesso modo con Docker,
+systemd, Kubernetes o qualsiasi piattaforma. Le impostazioni dello stabilimento (prezzi, mappa, pagina
+pubblica, chiavi Stripe, notifiche) **non** stanno qui: si gestiscono dal pannello e vivono nel database.
+
+All'avvio Arenile valida ogni variabile e, se qualcosa non va, si ferma con un messaggio che indica la
+variabile e il formato atteso: meglio non partire che partire configurato male.
+
+## Variabili essenziali
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_BASE_URL` | — | URL pubblico, ad esempio `https://prenota.mio-lido.it`. **Obbligatoria in produzione.** Usata nei link delle email, nel codice del widget, nei ritorni dal pagamento e nell'URL del webhook. Deve essere un URL `http(s)` assoluto. |
+| `ARENILE_SECRET_KEY` | — | Chiave di cifratura dei segreti (chiavi Stripe, segreti dei webhook, TOTP): 32 byte in base64, generata con `openssl rand -base64 32`. **Obbligatoria.** Accetta più chiavi separate da virgola per la rotazione. |
+| `ARENILE_DATA_DIR` | `/data` | Cartella dei dati: database SQLite (`arenile.db`), file caricati, certificati automatici. |
+| `DATABASE_URL` | vuoto | Vuota = SQLite. Con `postgres://` o `postgresql://` usa PostgreSQL. I caratteri speciali della password vanno codificati (`@` diventa `%40`). |
+| `ARENILE_ADDR` | `:8080` | Indirizzo e porta di ascolto del server HTTP. |
+
+## Database e avvio
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_AUTO_MIGRATE` | `true` | Applica le migrazioni del database all'avvio di `serve`. Con `false` usa `arenile migrate up` prima di avviare. |
+| `ARENILE_DEV` | `false` | Modalità sviluppo (come `arenile serve --dev`): `ARENILE_BASE_URL` facoltativa, chiave segreta generata e salvata in `ARENILE_DATA_DIR/dev-secret.key`, cookie non `Secure` su `http`. **Mai in produzione.** |
+
+## Email
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_SMTP_URL` | vuoto | Server SMTP, ad esempio `smtp://utente:password@smtp.example.com:587` (STARTTLS) oppure `smtps://...:465` (TLS implicito). |
+| `ARENILE_MAIL_FROM` | `noreply@<host di ARENILE_BASE_URL>` | Mittente, ad esempio `Lido Esempio <prenotazioni@mio-lido.it>`. Deve essere un indirizzo valido. |
+| `ARENILE_MAIL_DIR` | vuoto | Senza SMTP: cartella in cui scrivere ogni email come file `.eml` (sviluppo e test end-to-end). Vuota e senza SMTP: le email sono solo annotate nel log, con il destinatario mascherato. |
+| `ARENILE_STRIPE_API_URL` | vuoto | Solo per i test: indirizzo di un doppio dell'API Stripe (stripe-mock o il finto Stripe dei test end-to-end). Vuoto = `https://api.stripe.com`. Non impostarla in produzione. |
+
+## Prenotazioni
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_HOLD_TTL` | `10m` | Durata del blocco temporaneo della postazione mentre il cliente completa la prenotazione online (formato durata Go: `10m`, `15m`, `1h`). Durante il pagamento il blocco viene esteso fino a un massimo di 30 minuti. |
+| `ARENILE_PUBLIC_READS_PER_MINUTE` | `60` | Letture al minuto per indirizzo IP sull'API pubblica (spec 17.2). Alzalo se molti clienti prenotano dalla stessa rete (Wi-Fi dell'hotel o del lido) e Arenile non è dietro un proxy configurato in `ARENILE_TRUSTED_PROXIES`. |
+| `ARENILE_PUBLIC_CREATIONS_PER_MINUTE` | `10` | Prenotazioni avviate (e richieste di un nuovo link) al minuto per indirizzo IP. I passi successivi della stessa prenotazione contano come letture. |
+
+## Rete e sicurezza
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_TLS_AUTOCERT_DOMAINS` | vuoto | Domini separati da virgola per i certificati TLS automatici (Let's Encrypt). Arenile ascolta direttamente su 80 e 443. Lascia vuota se usi un reverse proxy. |
+| `ARENILE_TRUSTED_PROXIES` | vuoto | CIDR dei reverse proxy fidati, separati da virgola (es. `127.0.0.1/32,172.18.0.0/16`), da cui leggere l'IP reale del client. Necessaria dietro un proxy, altrimenti i limiti per IP colpiscono tutti insieme. |
+| `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | Rende obbligatoria la verifica in due passaggi per gli utenti proprietari. |
+
+## Log e telemetria
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_LOG_LEVEL` | `info` | `debug`, `info`, `warn` o `error`. I log sono JSON e non contengono mai email, telefoni, token o segreti in chiaro. |
+| `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default: Arenile non contatta servizi esterni. |
+
+## Primo utente
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_BOOTSTRAP_OWNER_EMAIL` | vuoto | Email del primo proprietario, creato all'avvio di `serve` **solo se il database non ha utenti**. |
+| `ARENILE_BOOTSTRAP_OWNER_NAME` | vuoto | Nome del primo proprietario. |
+| `ARENILE_BOOTSTRAP_OWNER_ORG` | vuoto | Nome dell'organizzazione. |
+| `ARENILE_ADMIN_PASSWORD` | vuoto | Password del primo proprietario (almeno 10 caratteri), oppure per `arenile admin create` e `arenile seed demo` senza richiesta interattiva. |
+
+Le tre variabili `ARENILE_BOOTSTRAP_OWNER_*` vanno impostate insieme ad `ARENILE_ADMIN_PASSWORD`; ai riavvii
+successivi vengono ignorate e dopo il primo accesso puoi togliere la password.
+
+## Solo per Docker Compose
+
+Queste variabili sono lette dai file di `deploy/`, non dal binario:
+
+| Variabile | Predefinito | Descrizione |
+|---|---|---|
+| `ARENILE_VERSION` | `latest` | Tag dell'immagine `ghcr.io/coste360/arenile` (fissa una versione precisa in produzione). |
+| `ARENILE_PUBLISH_PORT` | `8080` | Porta pubblicata sull'host (es. `127.0.0.1:8080` per esporla solo al reverse proxy). |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | `arenile`, —, `arenile` | Credenziali del servizio PostgreSQL di `docker-compose.postgres.yml`. La password finisce in `DATABASE_URL` senza codifica: usa solo caratteri sicuri (`openssl rand -hex 24`). |
+
+## Esempi completi
+
+<Tabs>
+  <TabItem label="Produzione minima">
+    ```ini title=".env"
+    ARENILE_BASE_URL=https://prenota.mio-lido.it
+    ARENILE_SECRET_KEY=Zm9vYmFyLi4uMzItYnl0ZS1rZXktaW4tYmFzZTY0Lg==
+    ARENILE_SMTP_URL=smtp://prenotazioni%40mio-lido.it:password@smtp.mio-provider.it:587
+    ARENILE_MAIL_FROM=Lido Esempio <prenotazioni@mio-lido.it>
+    ARENILE_TRUSTED_PROXIES=127.0.0.1/32
+    ```
+  </TabItem>
+  <TabItem label="PostgreSQL">
+    ```ini title=".env"
+    ARENILE_BASE_URL=https://prenota.mio-lido.it
+    ARENILE_SECRET_KEY=...
+    DATABASE_URL=postgres://arenile:password@db:5432/arenile?sslmode=disable
+    ```
+  </TabItem>
+  <TabItem label="Sviluppo locale">
+    ```ini title=".env"
+    ARENILE_DEV=true
+    ARENILE_DATA_DIR=./data
+    ARENILE_MAIL_DIR=./data/mail
+    ARENILE_LOG_LEVEL=debug
+    ```
+  </TabItem>
+</Tabs>
+
+## Rotazione della chiave segreta
+
+`ARENILE_SECRET_KEY` accetta più chiavi separate da virgola: la **prima** cifra i nuovi segreti, tutte
+vengono provate per decifrare quelli esistenti. Per ruotare:
+
+1. genera una nuova chiave e mettila **in testa**: `ARENILE_SECRET_KEY=nuova,vecchia`;
+2. riavvia e salva di nuovo i segreti dal pannello (ad esempio le chiavi Stripe);
+3. quando tutti i segreti sono stati riscritti, togli la vecchia chiave.
+
+<Aside type="danger">
+  Non togliere mai una chiave finché esistono segreti cifrati con essa: diventerebbero illeggibili e andrebbero
+  reinseriti a mano.
+</Aside>

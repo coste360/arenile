@@ -1,0 +1,117 @@
+---
+title: Policy
+description: Le regole di prenotazione - anticipo, durata, pagamento e acconto, cancellazione a scaglioni, modifiche, maltempo, approvazione e abbonamenti.
+sidebar:
+  order: 10
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Policy** (anche come scheda della barra dei Prezzi). **Chi:** proprietari e gestori.
+
+Le **policy** dicono **quando** e **come** si può prenotare: con quanto anticipo, per quanti giorni, quanto si
+paga subito, cosa succede se il cliente cancella. Il prezzo lo fanno le regole di prezzo; le policy fanno le
+condizioni.
+
+<Screenshot name="admin-policies" alt="Policy di prenotazione della stagione con ambito e priorità" />
+
+## Policy predefinita e policy di stagione
+
+- La **Policy predefinita** vale per ogni prenotazione quando nessuna policy di stagione la sostituisce.
+- Le **Policy della stagione** valgono per la stagione selezionata e sovrascrivono la predefinita **dove
+  l'ambito corrisponde**. Con più policy applicabili vince la **priorità più alta**.
+- I campi lasciati su **Come la predefinita** ereditano dalla policy predefinita (o, in mancanza, dal **Valore
+  di sistema**).
+
+Ogni prenotazione salva le condizioni applicate al momento della prenotazione: se cambi le policy dopo,
+cancellazioni e rimborsi di quella prenotazione seguono comunque le condizioni che il cliente ha accettato.
+
+## Creare una policy
+
+<Steps>
+
+1. Nella scheda **Policy della stagione** premi **Nuova policy** (oppure parti da un **Esempio rapido**).
+2. **Generale**: **Nome**, **Priorità**, **Attiva**.
+3. **Ambito**: **Canali**, **Zone**, **Pack**, **Periodi**. Dimensioni vuote = tutte.
+4. Compila solo le sezioni che vuoi cambiare rispetto alla predefinita (vedi sotto).
+5. Salva.
+
+</Steps>
+
+## Le sezioni
+
+<Tabs>
+  <TabItem label="Anticipo">
+    | Campo | Significato |
+    |---|---|
+    | **Anticipo minimo (giorni)** | Ad esempio 1 = non si prenota per oggi. |
+    | **Orario limite** | Dopo quest'ora l'anticipo conta da domani (formato `HH:MM`). |
+    | **Anticipo massimo (giorni)** | Quanto in là nel futuro si può prenotare. |
+    | **Prenotazione in giornata** | Consentita o no. |
+    | **In giornata fino alle** | Ultimo orario per prenotare per oggi. |
+  </TabItem>
+  <TabItem label="Durata">
+    | Campo | Significato |
+    |---|---|
+    | **Formule ammesse** | Mezza giornata, Giornata, Più giorni, Settimana, Quindicina, Mese, Stagione. Nessuna selezione = come la predefinita. |
+    | **Giorni minimi** / **Giorni massimi** | Durata ammessa del soggiorno. |
+    | **Giorno di inizio obbligato** | Ad esempio sabato, per le settimane sabato-sabato. |
+  </TabItem>
+  <TabItem label="Pagamento">
+    | Campo | Significato |
+    |---|---|
+    | **Pagamento online** | **Intero alla prenotazione**, **Acconto** o **In loco**. |
+    | **Tipo di acconto** | **Percentuale** o **Importo fisso**, con **Acconto (%)** o **Acconto (€)**. |
+    | **Saldo** | **All'arrivo** oppure **Giorni prima** (con **Giorni prima dell'arrivo**). |
+
+    Con **In loco** la prenotazione online si conferma senza pagamento e il saldo si incassa in cassa.
+  </TabItem>
+  <TabItem label="Cancellazione e modifiche">
+    **Definisci le fasce di rimborso**: ogni fascia vale **fino a N giorni prima** dell'arrivo, con
+    **Rimborso (%)** e **Come** (**Rimborso** in denaro o **Credito** al cliente). Il motore le legge dalla più
+    lontana alla più vicina; **Ordina per giorni** le mette in ordine. Nessuna fascia = le cancellazioni non
+    sono rimborsate.
+
+    | Esempio | Fino a giorni prima | Rimborso | Come |
+    |---|---|---|---|
+    | Fascia 1 | 14 | 100% | Rimborso |
+    | Fascia 2 | 3 | 50% | Credito |
+    | Fascia 3 | 0 | 0% | — |
+
+    **Modifiche fino a giorni prima** e **Costo modifica (€)** valgono per le modifiche fatte dal cliente
+    nell'area di gestione. **Maltempo**: **Nessuna tutela**, **Rimborso** o **Credito** per le cancellazioni
+    per maltempo.
+  </TabItem>
+  <TabItem label="Altro">
+    | Campo | Significato |
+    |---|---|
+    | **Richiede approvazione** | La prenotazione resta **Da approvare** (postazione bloccata) finché il gestore non la approva o rifiuta. |
+    | **Postazioni massime per prenotazione** | Limite per prenotazione. |
+    | **Cambio postazione durante il soggiorno** | Consente all'assegnazione automatica di spezzare un soggiorno su più postazioni. |
+    | **Il cliente può liberare giorni dell'abbonamento** | Gli abbonati rilasciano giorni dall'area di gestione. |
+    | **Credito per giorni liberati** | Se un giorno rilasciato viene rivenduto, l'abbonato matura un **Credito (%)** del valore. |
+  </TabItem>
+</Tabs>
+
+## Esempi rapidi
+
+Gli **Esempi rapidi** compilano ambito e regole di casi tipici; puoi poi modificare tutto.
+
+| Esempio | Cosa imposta |
+|---|---|
+| **Agosto online: settimane sabato-sabato** | Ambito canale Online e periodi di agosto; formula Settimana, inizio il sabato |
+| **Gazebo con approvazione** | Ambito pack Gazebo; richiede approvazione |
+| **Online: pagamento totale** | Ambito canale Online; pagamento intero alla prenotazione |
+| **Cassa: nessun vincolo** | Ambito canale Cassa; nessun pagamento anticipato |
+
+## Cosa vede il cliente
+
+Le condizioni applicate (acconto, saldo, cancellazione) sono mostrate prima di confermare, sia nell'anteprima
+del pannello (**Condizioni applicate**) sia nella pagina pubblica. Se una richiesta non rispetta la policy, il
+cliente riceve il motivo (ad esempio *Anticipo minimo non rispettato*, *Giorno di inizio non consentito*).
+
+<Aside type="note" title="Il pannello può forzare">
+  In cassa il personale può confermare comunque una prenotazione fuori policy con **Conferma comunque**:
+  l'operazione resta nel registro attività.
+</Aside>
