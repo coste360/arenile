@@ -21,16 +21,19 @@ Completamento della stagione**.
   cancellazione con rimborso tramite Stripe o credito, rilascio dei giorni per gli abbonati, nuovo link via
   email). Tema dello stabilimento con contrasto WCAG AA, chiaro/scuro, italiano, inglese, tedesco e francese.
 - **Widget `embed.js`** (1,1 KB gzip): iframe con altezza automatica, eventi `arenile:resize`,
-  `arenile:booked` (solo codice) e `arenile:navigate`; `frame-ancestors` per stabilimento; dopo il pagamento
-  Stripe riporta il cliente sulla pagina del sito ospitante (`return_to` sull'API `pay`, solo origini
-  autorizzate) e il widget riapre l'esito senza cookie di terze parti.
+  `arenile:booked` (solo codice) e `arenile:navigate` (annullabile con `preventDefault()`: il sito gestisce
+  l'apertura del pagamento); `frame-ancestors` per stabilimento; dopo il pagamento Stripe riporta il cliente
+  sulla pagina del sito ospitante (`return_to` sull'API `pay`, solo origini autorizzate) e il widget riapre
+  l'esito senza cookie di terze parti. Con un `<iframe>` semplice, senza `embed.js`, il ritorno da Stripe non
+  può riaprire il widget: l'iframe semplice va bene per gli stabilimenti che incassano in cassa.
 - **Pagamenti online** ([ADR 0014](docs/adr/0014-pagamenti-online-m4.md)): driver Stripe Checkout con l'SDK
   ufficiale, webhook firmato come unico percorso di conferma online, deduplica, eventi fuori ordine,
   pagamenti tardivi o doppi rimborsati automaticamente (nuovo evento `payment.refund_scheduled`), rimborsi
   tramite Stripe dal pannello e dall'area di gestione, riconciliazione ogni 15 minuti con report.
 - **Notifiche** (spec 19): email di conferma (QR in linea, `.ics`, link magico, condizioni di cancellazione),
-  modifica, cancellazione, rifiuto, rimborso, richiesta ricevuta e notifiche al gestore, in it/en/de/fr con
-  modelli Markdown sostituibili per stabilimento; consegna con claim esclusivo, backoff fino a 6 ore e dead
+  modifica, cancellazione, rifiuto, rimborso, richiesta ricevuta e notifiche al gestore (nuova prenotazione,
+  richiesta di approvazione, pagamento fallito, errore di invio), in it/en/de/fr con supporto interno a modelli
+  Markdown per stabilimento (modifica dal pannello in arrivo); consegna con claim esclusivo, backoff fino a 6 ore e dead
   letter con evento `message.failed`; trasporti SMTP (TLS obbligatorio con credenziali), file `.eml` e log;
   destinatari cifrati e mascherati, nessun pixel di tracciamento. Mailpit nel `compose.yaml` di sviluppo.
 - **Pannello**: pagine Pagina pubblica (flusso, tema con anteprima dal vivo telefono/computer chiaro/scuro,
@@ -56,6 +59,19 @@ Completamento della stagione**.
 - Dati dimostrativi: condizioni d'esempio (`demo-2027`) e prenotazione online aperta fino a 366 giorni prima,
   così la demo si prenota anche fuori stagione.
 
+#### Limiti noti di M4
+
+- Pagamento online dentro un `<iframe>` semplice (senza `embed.js`): dopo Stripe il cliente torna alla pagina
+  pubblica a tutta finestra e non vede l'esito nel widget.
+- I pagamenti tardivi sono sempre rimborsati (la riconferma automatica quando la postazione è ancora libera non
+  è collegata).
+- La penale di modifica prevista dalla policy è mostrata ma non addebitata.
+- Nessuna cache di 10 secondi della disponibilità pubblica.
+- Notifiche al gestore per chiusura di cassa con differenza ed errore di consegna dei webhook: non ancora
+  implementate (spec 19); promemoria del saldo e del giorno prima: in arrivo.
+- Modifica dei modelli email dal pannello: in arrivo (esiste solo il supporto interno).
+- Nessuna prova con un account Stripe di produzione.
+
 ### Changed
 
 - I file testuali delle SPA incorporate sono serviti compressi gzip (`Vary: Accept-Encoding`).
@@ -68,6 +84,24 @@ Completamento della stagione**.
 ### Fixed
 
 - `seed demo` non fa più partire, al primo `serve`, le email di conferma delle prenotazioni dimostrative.
+- Revisione di sicurezza M4: la pagina pubblica non collega più una prenotazione a un cliente esistente con la
+  stessa email o telefono (chi conosceva un recapito ne leggeva nome, email e telefono dalla sessione e
+  prenotava a suo nome con i suoi prezzi); il token del link magico non viene più inviato a Stripe come URL di
+  ritorno del saldo; i token del checkout scadono 24 ore dopo la fine della sessione; l'idempotenza delle
+  chiamate pubbliche tiene conto del token; `no-referrer` e `no-store` sull'area di gestione; nomi dello
+  stabilimento e valori `.ics` senza caratteri di controllo; schema dei link verificato nei modelli email;
+  webhook con firma errata limitati per IP; STARTTLS obbligatorio fuori da localhost (`?tls=none` per
+  rinunciare); tentativi di codice promozionale limitati per IP; `ARENILE_STRIPE_API_URL` accettata solo su
+  loopback o con `ARENILE_DEV=true`.
+- Pagamenti: un provider online attivo ma non utilizzabile non conferma più senza pagamento (INV-19); la
+  deduplica dei webhook è per stabilimento (un account Stripe condiviso tra due lidi confermava solo il primo);
+  crediti e rimborsi manuali contano i rimborsi in corso presso il provider (INV-24); l'importo chiesto a Stripe
+  è ricalcolato sotto il lock all'avvio del pagamento, un hold scaduto con denaro sopra viene rimborsato e un
+  webhook arrivato dopo la scadenza dell'hold ma prima del job scade la prenotazione e segue il percorso del
+  pagamento tardivo (INV-51).
+- Pagina pubblica: contrasto AA dei link e dei prezzi anche in modalità scura; nessuno scorrimento laterale al
+  passo 4 a 320 px; una giornata singola è mostrata con una sola data; `arenile:navigate` arriva al sito
+  ospitante prima della navigazione.
 
 - M4, contratto e scaffolding ([ADR 0013](docs/adr/0013-scelte-m4.md)): API pubblica completa in
   `api/openapi.yaml` (profilo con configurazione del flusso ed `ETag`, calendario, mappa pubblica,

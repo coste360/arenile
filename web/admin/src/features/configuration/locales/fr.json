@@ -87,7 +87,7 @@
   "embed": {
     "publicUrl": "Page publique :",
     "script": "Code recommandé (script, gère la hauteur)",
-    "iframe": "Sinon : iframe",
+    "iframe": "Sinon : iframe (seulement sans paiement en ligne : après Stripe le client ne revient pas dans le widget)",
     "copy": "Copier",
     "copied": "Copié",
     "hint": "Collez le code dans votre site ; son domaine doit figurer parmi les sites autorisés.",

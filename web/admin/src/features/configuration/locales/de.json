@@ -87,7 +87,7 @@
   "embed": {
     "publicUrl": "Öffentliche Seite:",
     "script": "Empfohlener Code (Skript, passt die Höhe an)",
-    "iframe": "Alternativ: iframe",
+    "iframe": "Alternativ: iframe (nur ohne Online-Zahlung: nach Stripe kehrt der Kunde nicht ins Widget zurück)",
     "copy": "Kopieren",
     "copied": "Kopiert",
     "hint": "Fügen Sie den Code in Ihre Website ein; die Domain muss zu den berechtigten Websites gehören.",

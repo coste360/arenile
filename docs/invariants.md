@@ -127,9 +127,11 @@ transazione: se la transazione fallisce non resta nessuna delle tre scritture.
 Verificata da: `TestBookingService_AuditAndOutboxAtomic` (modifica rifiutata prima di ogni scrittura), `TestBookingService_TransitionRollsBackWhole` (cancellazione il cui rimborso fallisce dopo la scrittura dello stato: stato, allocazioni, `paid_amount`, audit e outbox invariati) (`internal/domain/booking`, tag `integration`), `TestPaymentService_AtomicRollback` (`internal/domain/payment`), `TestOutbox_SameTransactionSemantics` (primitiva). Stato: implemented.
 
 **INV-19 — Conferma solo dal pagamento.**
-Una prenotazione online passa a `confirmed` solo da un webhook verificato del provider o dal driver
-`manual`; nessun endpoint pubblico chiamato dal browser può confermarla.
-Verificata da: `TestPaymentService_ConfirmsOnDeposit` e `TestBookingRealServices_DeskDay` (conferma dal driver `manual` nella transazione del pagamento), `TestCheckoutFlow_OnlinePaymentNeverConfirmsFromBrowser` (`internal/domain/checkout`: ritorno dal provider e polling non confermano), `TestPaymentWebhook_ConfirmsBooking`, `TestPaymentWebhook_SignatureAndTarget` (`internal/domain/payment/gateway`: solo un webhook con firma valida conferma), tag `integration`. Verifica di sistema: `TestAcceptance_SimulatedDay` (fase online: lo stato pubblico resta non confermato fino al webhook firmato), `e2e/tests/m4-acceptance.spec.ts` (browser reale, iframe su un'altra origine) e `scripts/acceptance/m4-real-binary.sh` (binario reale, webhook contraffatto rifiutato). Stato: implemented.
+Una prenotazione online passa a `confirmed` solo da un webhook verificato del provider, dalla riconciliazione
+(esito letto dall'API del provider e applicato dallo stesso percorso del webhook) o dal driver `manual`;
+nessun endpoint pubblico chiamato dal browser può confermarla. Un provider online attivo ma non utilizzabile
+(credenziali mancanti) non è il driver `manual`: il pagamento fallisce e la prenotazione resta `held`.
+Verificata da: `TestPaymentService_ConfirmsOnDeposit` e `TestBookingRealServices_DeskDay` (conferma dal driver `manual` nella transazione del pagamento), `TestCheckoutFlow_OnlinePaymentNeverConfirmsFromBrowser` (`internal/domain/checkout`: ritorno dal provider e polling non confermano), `TestCheckoutFlow_BrokenOnlineProviderNeverConfirms` (Stripe attivo senza credenziali: nessuna conferma senza pagamento), `TestPaymentWebhook_ConfirmsBooking`, `TestPaymentWebhook_SignatureAndTarget` (`internal/domain/payment/gateway`: solo un webhook con firma valida conferma), `TestReconcile_FixesMissedWebhook` (riconciliazione), tag `integration`. Verifica di sistema: `TestAcceptance_SimulatedDay` (fase online: lo stato pubblico resta non confermato fino al webhook firmato), `e2e/tests/m4-acceptance.spec.ts` (browser reale, iframe su un'altra origine) e `scripts/acceptance/m4-real-binary.sh` (binario reale, webhook contraffatto rifiutato). Stato: implemented.
 
 **INV-20 — Risorse coerenti con lo stato.**
 Prenotazioni `draft`, `expired`, `cancelled`, `rejected` non hanno allocazioni; `held`, `pending_payment`,
@@ -152,13 +154,17 @@ Verificata da: `TestPayments_PaidAmountMatchesLedger` (`internal/domain/payment`
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-23 — Webhook elaborati una sola volta.**
-Lo stesso evento del provider (stesso ID) produce effetti una sola volta, anche se consegnato più volte
-o in parallelo.
-Verificata da: `TestPaymentWebhook_Deduplicated`, `TestPaymentWebhook_OutOfOrder`, `TestConcurrency_WebhookDuplicate` (100 consegne parallele: un pagamento, una conferma) (`internal/domain/payment/gateway`, tag `integration`); verifica di sistema nella fase online di `TestAcceptance_SimulatedDay` (ogni webhook dei pagati è riconsegnato). Stato: implemented.
+Lo stesso evento del provider (stesso ID) produce effetti una sola volta per stabilimento, anche se consegnato
+più volte o in parallelo (chiave unica `establishment_id, provider, event_id`: un account Stripe condiviso da due
+stabilimenti consegna lo stesso evento a due endpoint, e l'evento di un altro stabilimento viene ignorato senza
+essere registrato).
+Verificata da: `TestPaymentWebhook_Deduplicated`, `TestPaymentWebhook_OutOfOrder`, `TestPaymentWebhook_CrossTenant` (stesso evento a due stabilimenti), `TestConcurrency_WebhookDuplicate` (100 consegne parallele: un pagamento, una conferma) (`internal/domain/payment/gateway`, tag `integration`); verifica di sistema nella fase online di `TestAcceptance_SimulatedDay` (ogni webhook dei pagati è riconsegnato). Stato: implemented.
 
 **INV-24 — Rimborsi entro il pagato.**
 La somma dei rimborsi riusciti di una prenotazione non supera mai la somma dei pagamenti riusciti.
-Verificata da: `TestRefund_NeverExceedsPaid` (`internal/domain/payment`, 100 rimborsi paralleli, tag `integration`), `TestRefundViaProvider_CapsAndIdempotency` e `TestConcurrency_RefundViaProvider` (`internal/domain/payment/gateway`: il tetto conta anche i rimborsi in corso presso il provider). Stato: implemented.
+Il tetto conta anche i rimborsi in corso presso il provider (intent `created` o `pending`), sia per i rimborsi
+tramite provider sia per quelli manuali e i crediti (`payment.refundInTx`, anteprime di cancellazione).
+Verificata da: `TestRefund_NeverExceedsPaid` (`internal/domain/payment`, 100 rimborsi paralleli, tag `integration`), `TestRefundViaProvider_CapsAndIdempotency`, `TestRefund_CreditCancellationCountsRefundsInFlight` (credito con un rimborso automatico in corso) e `TestConcurrency_RefundViaProvider` (`internal/domain/payment/gateway`). Stato: implemented.
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-25 — Chiusura di cassa coerente.**
@@ -182,7 +188,7 @@ Verificata da: `TestCan_Matrix`, `TestPrincipal_CanCombinesGrants` (`internal/do
 **INV-28 — API pubblica senza dati dei clienti.**
 Le risposte di disponibilità, calendario, mappa e catalogo non contengono dati personali; i dati di una
 prenotazione si leggono solo con il token di sessione o il manage token.
-Verificata da: `TestPublicAPI_NoCustomerData`. Stato: planned (le API pubbliche di disponibilità e prenotazione arrivano con la pagina pubblica, M4). Nota: la vista operativa del pannello già non trasporta recapiti (la ricerca sulla mappa non cerca per telefono, ADR 0011 §5).
+Verificata da: `TestPublicAPI_NoCustomerData` (`internal/http/public`, tag `integration`: prenotazione dal banco e online con recapiti reali, poi profilo, calendario, mappa, disponibilità, catalogo e preventivo non contengono nome, email, telefono, id cliente né codice; la sessione legge solo il proprio cliente), `TestCheckoutFlow_NeverLinksExistingCustomer` (`internal/domain/checkout`: la pagina pubblica non collega mai una prenotazione a un cliente esistente per email o telefono, quindi non ne rivela i dati). Stato: implemented. Nota: la vista operativa del pannello non trasporta recapiti (la ricerca sulla mappa non cerca per telefono, ADR 0011 §5).
 
 **INV-29 — Segreti mai in chiaro.**
 Credenziali dei provider, segreti dei webhook e TOTP sono salvati cifrati (AES-GCM); email, telefoni e
@@ -338,8 +344,12 @@ Verificata da: `TestCheckoutZone_AutoAssignAtConfirmation`, `TestConcurrency_Zon
 **INV-51 — Pagamento tardivo rimborsato per intero.**
 Un pagamento che il provider conferma dopo la scadenza dell'hold viene registrato e rimborsato per intero
 automaticamente (evento `payment.refund_scheduled`): la prenotazione resta `expired`, la postazione libera e
-`paid_amount` torna a zero (ADR 0014).
-Verificata da: `TestPaymentWebhook_LatePayment`, `TestPaymentWebhook_DoublePaymentRefundsExcess` (`internal/domain/payment/gateway`, tag `integration`); verifica di sistema: `onlineLatePayments` di `TestAcceptance_SimulatedDay`. Stato: implemented.
+`paid_amount` torna a zero (ADR 0014). Vale anche quando l'hold è scaduto ma il job non è ancora passato (il
+gateway scade la prenotazione nella transazione del webhook) e quando un hold scade con denaro sopra (pagamento
+sotto la soglia di conferma perché il totale è cambiato): il job di scadenza programma il rimborso nella stessa
+transazione e la riconciliazione lo invia. L'importo chiesto al provider è ricalcolato sotto il lock della
+prenotazione all'avvio del pagamento.
+Verificata da: `TestPaymentWebhook_LatePayment`, `TestPaymentWebhook_DoublePaymentRefundsExcess`, `TestPaymentWebhook_AfterHoldElapsedBeforeSweeper`, `TestPaymentWebhook_BelowThresholdThenExpiry`, `TestConcurrency_WebhookVsHoldExpiry` (100 prenotazioni: webhook e job di scadenza in parallelo, ognuna confermata con le risorse o scaduta e rimborsata) (`internal/domain/payment/gateway`, tag `integration`), `TestCheckoutFlow_PayUsesCurrentTotal` (`internal/domain/checkout`); verifica di sistema: `onlineLatePayments` di `TestAcceptance_SimulatedDay`. Stato: implemented.
 
 **INV-52 — Link magico e token del checkout mai in chiaro.**
 Il token del checkout (`X-Arenile-Checkout`) e il token del link magico sono di 256 bit, salvati solo come hash,

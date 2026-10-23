@@ -8,7 +8,7 @@ import { createServer } from 'node:http';
 const port = Number(process.env.E2E_HOST_PORT ?? 8092);
 const arenile = (process.env.ARENILE_URL ?? 'http://localhost:8090').replace(/\/$/, '');
 
-const page = `<!doctype html>
+const page = (intercept) => `<!doctype html>
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
@@ -31,7 +31,13 @@ const page = `<!doctype html>
     </main>
     <script>
       window.__booked = null;
+      window.__navigate = null;
       document.addEventListener('arenile:booked', function (e) { window.__booked = e.detail; });
+      ${
+        intercept
+          ? `document.addEventListener('arenile:navigate', function (e) { e.preventDefault(); window.__navigate = e.detail.url; });`
+          : ''
+      }
     </script>
     <script src="${arenile}/embed.js" async></script>
   </body>
@@ -44,7 +50,8 @@ const handler = (req, res) => {
     return;
   }
   if (url.pathname === '/' || url.pathname === '/lido.html') {
-    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(page);
+    // ?intercept=1: the site handles arenile:navigate itself (preventDefault).
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(page(url.searchParams.get('intercept') === '1'));
     return;
   }
   res.writeHead(404).end('not found');

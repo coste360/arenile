@@ -3,6 +3,8 @@ import {
   request as playwrightRequest,
   test,
   type APIRequestContext,
+  type FrameLocator,
+  type Page,
 } from "@playwright/test";
 import {
   DEMO_OWNER_EMAIL,
@@ -65,6 +67,64 @@ async function adminSession(baseURL: string): Promise<Admin> {
 
 test.describe.configure({ mode: "serial" });
 
+/**
+ * Steps 1-4 of the public flow inside the widget, up to the "Paga" button:
+ * a single day in June of the demo season, the first free spot, the Base
+ * pack, the customer's details and the accepted terms.
+ */
+async function bookUntilPay(page: Page, widget: FrameLocator): Promise<void> {
+  // The customer scrolls the lido's page to the widget (the calendar is a
+  // popover inside the iframe: it scrolls with the host page, not alone).
+  await widget.getByRole("button", { name: /Date del soggiorno/ }).waitFor();
+  await page
+    .locator("[data-arenile]")
+    .evaluate((el) => el.scrollIntoView({ block: "start" }));
+
+  // 1. Quando: a single day in June of the demo season.
+  await widget.getByRole("button", { name: /Date del soggiorno/ }).click();
+  const grid = widget.getByRole("grid").first();
+  await expect(grid).toBeVisible();
+  for (let i = 0; i < 6; i++) {
+    if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
+    await widget
+      .getByRole("button", { name: /mese successivo|Next/i })
+      .click();
+  }
+  await expect(grid).toHaveAttribute("aria-label", /giugno/);
+  await grid.getByRole("button", { name: /\b16 giugno/ }).click();
+  await widget
+    .getByRole("grid")
+    .first()
+    .getByRole("button", { name: /\b16 giugno/ })
+    .click();
+  await page.keyboard.press("Escape");
+  await widget.getByRole("button", { name: "Avanti" }).click();
+
+  // 2. Dove: the first free spot (list view, big tap targets).
+  await widget.getByRole("button", { name: "Mostra come elenco" }).click();
+  await widget
+    .getByRole("button", { name: / – Libero/ })
+    .first()
+    .click();
+  await widget.getByRole("button", { name: "Avanti" }).click();
+
+  // 3. Cosa: the Base pack.
+  await widget.getByRole("radio", { name: /^Base/ }).click();
+  await widget.getByRole("button", { name: "Continua" }).click();
+
+  // 4. Chi e pagamento: details and terms; the caller presses "Paga".
+  await widget
+    .getByRole("textbox", { name: "Nome", exact: true })
+    .fill("Giulia");
+  await widget.getByRole("textbox", { name: "Cognome" }).fill("Esposito");
+  await widget
+    .getByRole("textbox", { name: "Email" })
+    .fill("giulia.esposito@mailbox.test");
+  await widget
+    .getByRole("checkbox", { name: /accetto le condizioni di prenotazione/ })
+    .check();
+}
+
 test.describe("M4 acceptance: embedded booking on another origin", () => {
   let admin: Admin;
 
@@ -108,11 +168,24 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
     expect(csp).toContain(HOST);
     expect(csp).not.toContain(FOREIGN_HOST);
 
-    // The browser enforces it: on the foreign origin the iframe stays empty.
+    // The allowed origin loads the widget (so a block below is not a timing
+    // artefact)...
+    await page.goto(HOST);
+    await page
+      .frameLocator("[data-arenile] iframe")
+      .getByRole("button", { name: /Date del soggiorno/ })
+      .waitFor();
+
+    // ...and the browser refuses the frame on the foreign origin: the CSP
+    // violation is reported, the frame never renders the page.
+    const violations: string[] = [];
+    page.on("console", (msg) => {
+      if (/frame-ancestors|Refused to (frame|load|display)/i.test(msg.text())) violations.push(msg.text());
+    });
     await page.goto(FOREIGN_HOST);
     const iframe = page.locator("[data-arenile] iframe");
     await expect(iframe).toHaveCount(1);
-    await page.waitForTimeout(1500);
+    await expect.poll(() => violations.length, { timeout: 10_000 }).toBeGreaterThan(0);
     const child = page.frames().find((f) => f !== page.mainFrame());
     const text = child
       ? await child
@@ -121,6 +194,25 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
           .catch(() => "")
       : "";
     expect(text).not.toContain("Prenota il tuo posto in spiaggia");
+    expect(text).not.toContain("Date del soggiorno");
+  });
+
+  test("the host page can intercept arenile:navigate (preventDefault) before the payment", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    await page.goto(`${HOST}/?intercept=1`);
+    const widget = page.frameLocator("[data-arenile] iframe");
+    await bookUntilPay(page, widget);
+    await widget.getByRole("button", { name: /^Paga / }).click();
+    // The site handled the event: no navigation, the payment URL is in its hands.
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as unknown as { __navigate: string | null }).__navigate),
+      )
+      .toMatch(new RegExp(`127\\.0\\.0\\.1:${stripePort}/c/pay/`));
+    await page.waitForTimeout(500);
+    expect(new URL(page.url()).origin).toBe(HOST);
   });
 
   test("complete booking from a smartphone inside the iframe in under 2 minutes", async ({
@@ -130,57 +222,7 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
     const started = Date.now();
     await page.goto(HOST);
     const widget = page.frameLocator("[data-arenile] iframe");
-
-    // The customer scrolls the lido's page to the widget (the calendar is a
-    // popover inside the iframe: it scrolls with the host page, not alone).
-    await widget.getByRole("button", { name: /Date del soggiorno/ }).waitFor();
-    await page
-      .locator("[data-arenile]")
-      .evaluate((el) => el.scrollIntoView({ block: "start" }));
-
-    // 1. Quando: a single day in June of the demo season.
-    await widget.getByRole("button", { name: /Date del soggiorno/ }).click();
-    const grid = widget.getByRole("grid").first();
-    await expect(grid).toBeVisible();
-    for (let i = 0; i < 6; i++) {
-      if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
-      await widget
-        .getByRole("button", { name: /mese successivo|Next/i })
-        .click();
-    }
-    await expect(grid).toHaveAttribute("aria-label", /giugno/);
-    await grid.getByRole("button", { name: /\b16 giugno/ }).click();
-    await widget
-      .getByRole("grid")
-      .first()
-      .getByRole("button", { name: /\b16 giugno/ })
-      .click();
-    await page.keyboard.press("Escape");
-    await widget.getByRole("button", { name: "Avanti" }).click();
-
-    // 2. Dove: the first free spot (list view, big tap targets).
-    await widget.getByRole("button", { name: "Mostra come elenco" }).click();
-    await widget
-      .getByRole("button", { name: / – Libero/ })
-      .first()
-      .click();
-    await widget.getByRole("button", { name: "Avanti" }).click();
-
-    // 3. Cosa: the Base pack.
-    await widget.getByRole("radio", { name: /^Base/ }).click();
-    await widget.getByRole("button", { name: "Continua" }).click();
-
-    // 4. Chi e pagamento: details, then Stripe Checkout at top level.
-    await widget
-      .getByRole("textbox", { name: "Nome", exact: true })
-      .fill("Giulia");
-    await widget.getByRole("textbox", { name: "Cognome" }).fill("Esposito");
-    await widget
-      .getByRole("textbox", { name: "Email" })
-      .fill("giulia.esposito@mailbox.test");
-    await widget
-      .getByRole("checkbox", { name: /accetto le condizioni di prenotazione/ })
-      .check();
+    await bookUntilPay(page, widget);
     await widget.getByRole("button", { name: /^Paga / }).click();
 
     // The fake Stripe hosted page (top window), then back to the lido's site.

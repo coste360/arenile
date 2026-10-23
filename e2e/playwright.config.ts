@@ -49,6 +49,19 @@ export default defineConfig({
       use: { ...devices['Pixel 7'] },
       testMatch: /(booking|m4-acceptance)\.spec\.ts/,
     },
+    // iOS Safari is the main phone browser on Italian beaches (spec 13.2):
+    // cross-site iframes, partitioned storage and top navigation from a
+    // frame behave differently in WebKit. Needs `playwright install webkit`
+    // (CI does; locally set E2E_WEBKIT=1).
+    ...(process.env.CI || process.env.E2E_WEBKIT
+      ? [
+          {
+            name: 'mobile-safari',
+            use: { ...devices['iPhone 14'] },
+            testMatch: /(booking|m4-acceptance)\.spec\.ts/,
+          },
+        ]
+      : []),
   ],
   webServer: externalBaseURL
     ? undefined

@@ -35,10 +35,10 @@ and the expected format: better not to start than to start misconfigured.
 
 | Variable | Default | Description |
 |---|---|---|
-| `ARENILE_SMTP_URL` | empty | SMTP server, for example `smtp://user:password@smtp.example.com:587` (STARTTLS) or `smtps://...:465` (implicit TLS). |
+| `ARENILE_SMTP_URL` | empty | SMTP server, for example `smtp://user:password@smtp.example.com:587` (STARTTLS) or `smtps://...:465` (implicit TLS). Off `localhost` STARTTLS is mandatory (emails carry magic links and personal data): for a relay on a trusted network without TLS add `?tls=none`. |
 | `ARENILE_MAIL_FROM` | `noreply@<host of ARENILE_BASE_URL>` | Sender, for example `Lido Esempio <bookings@mio-lido.it>`. Must be a valid address. |
 | `ARENILE_MAIL_DIR` | empty | Without SMTP: folder where every email is written as an `.eml` file (development and end-to-end tests). Empty and no SMTP: emails are only noted in the log, with the recipient masked. |
-| `ARENILE_STRIPE_API_URL` | empty | Tests only: address of a Stripe API double (stripe-mock or the fake Stripe of the end-to-end tests). Empty = `https://api.stripe.com`. Do not set it in production. |
+| `ARENILE_STRIPE_API_URL` | empty | Tests only: address of a Stripe API double (stripe-mock or the fake Stripe of the end-to-end tests). Empty = `https://api.stripe.com`. The server accepts it only on a loopback host or with `ARENILE_DEV=true` (and only `https` off loopback) and warns in the log at startup: the establishments' secret keys would be sent to that address. |
 
 ## Bookings
 

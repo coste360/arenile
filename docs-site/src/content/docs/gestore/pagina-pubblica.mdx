@@ -139,7 +139,10 @@ accettato il cliente. Un modello di informativa è in [Privacy e GDPR](/installa
             title="Prenota il tuo posto"></iframe>
     ```
 
-    Con l'iframe l'altezza è fissa: preferisci lo script se puoi.
+    Con l'iframe l'altezza è fissa: preferisci lo script se puoi. **Con il pagamento online usa lo script**: dopo
+    Stripe il cliente torna sulla pagina del tuo sito solo grazie a `embed.js`; con un iframe semplice torna
+    sulla pagina pubblica di Arenile a tutta finestra e non vede l'esito nel widget. L'iframe semplice va bene se
+    incassi in cassa.
   </TabItem>
   <TabItem label="Link diretto">
     ```text
@@ -152,7 +155,14 @@ accettato il cliente. Un modello di informativa è in [Privacy e GDPR](/installa
   </TabItem>
 </Tabs>
 
-<Screenshot name="public-embed" alt="Il widget di prenotazione dentro la pagina del sito del lido" />
+<Tabs syncKey="device">
+  <TabItem label="Computer">
+    <Screenshot name="public-embed" alt="Il widget di prenotazione dentro la pagina del sito del lido" />
+  </TabItem>
+  <TabItem label="Telefono">
+    <Screenshot name="public-embed-mobile" alt="Il widget di prenotazione dentro il sito del lido, su smartphone" />
+  </TabItem>
+</Tabs>
 
 ### Dove incollarlo
 
@@ -172,7 +182,7 @@ Analytics o il pixel che usi già:
 |---|---|---|
 | `arenile:resize` | `{ height }` | L'altezza del contenuto cambia (lo script la applica da solo) |
 | `arenile:booked` | `{ code }` | Prenotazione completata: solo il codice, mai dati personali |
-| `arenile:navigate` | `{ url }` | La pagina deve aprirsi a tutta finestra (ad esempio il pagamento Stripe). Con `preventDefault()` gestisci tu la navigazione |
+| `arenile:navigate` | `{ url }` | Il widget chiede di aprire `url` a tutta finestra (il pagamento Stripe): `embed.js` lo fa subito dopo l'evento. Con `preventDefault()` gestisci tu la navigazione (ad esempio in una nuova scheda) |
 
 ```html
 <script>

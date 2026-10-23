@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/checkout/checkouttest"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
@@ -244,5 +245,81 @@ func TestPublicHTTP_FrameAncestorsAndLimits(t *testing.T) {
 			"lines": []map[string]any{{"pack_id": e.F.Base.ID, "spot_id": e.F.Spots[3].ID}},
 		}, nil)
 		expect(t, resp, body, 200, "")
+	})
+}
+
+// TestPublicAPI_NoCustomerData (INV-28): after a desk booking and an online
+// booking with real contact details, none of the public read endpoints
+// (profile, calendar, map, availability, catalog, quote) carries a name,
+// an email, a phone number or a customer id; the customer's own details
+// come back only through the session token (and the manage token).
+func TestPublicAPI_NoCustomerData(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		c := newServer(t, e, 100)
+
+		// A desk booking with full contact details on spot A1 (confirmed).
+		in := e.F.Input(e.F.Spots[0], "2027-07-10", "2027-07-10")
+		in.Customer.FirstName, in.Customer.LastName = "Giulia", "Barbieri"
+		in.Customer.Email, in.Customer.Phone = "giulia.barbieri@example.org", "+393330000021"
+		desk := e.F.MustCreate(in)
+		// An online booking confirmed through the public flow on spot A2.
+		s := e.Create(e.Seat(e.F.Spots[1], "2027-07-10"))
+		st, err := e.Svc.UpdateCustomer(e.Ctx, checkouttest.Slug, s.BookingID, s.Token, checkout.CustomerInput{
+			FirstName: "Luca", LastName: "Verdi", Email: "luca.verdi@example.org", Phone: "+39 340 1234567", Locale: "it",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := e.Svc.Pay(e.Ctx, checkouttest.Slug, s.BookingID, s.Token, checkout.PayInput{}); err != nil {
+			t.Fatal(err)
+		}
+		secrets := []string{
+			"Giulia", "Barbieri", "giulia.barbieri", "3330000021", desk.Customer.ID, desk.Booking.Code,
+			"Luca", "Verdi", "luca.verdi", "3401234567", st.Booking.Customer.ID, s.Token,
+		}
+		sel := map[string]any{
+			"starts_on": "2027-07-10", "ends_on": "2027-07-10", "slots": "FULL", "formula": "day",
+			"lines": []map[string]any{{"pack_id": e.F.Base.ID, "spot_id": e.F.Spots[2].ID}},
+		}
+		reads := []struct {
+			method, path string
+			body         any
+		}{
+			{http.MethodGet, "", nil},
+			{http.MethodGet, "/calendar?month=2027-07", nil},
+			{http.MethodGet, "/maps/" + e.F.Spots[0].MapID + "?from=2027-07-10&to=2027-07-10&slots=FULL", nil},
+			{http.MethodGet, "/availability?from=2027-07-10&to=2027-07-10&slots=FULL", nil},
+			{http.MethodGet, "/catalog?from=2027-07-10&to=2027-07-10&slots=FULL", nil},
+			{http.MethodPost, "/quote", sel},
+			{http.MethodPost, "/quote", map[string]any{
+				"starts_on": "2027-07-10", "ends_on": "2027-07-10", "slots": "FULL", "formula": "day",
+				"lines": []map[string]any{{"pack_id": e.F.Base.ID, "spot_id": e.F.Spots[0].ID}},
+			}},
+		}
+		for _, rd := range reads {
+			resp, _, raw := c.do(rd.method, rd.path, rd.body, nil)
+			if resp.StatusCode != 200 {
+				t.Fatalf("%s %s: %d %s", rd.method, rd.path, resp.StatusCode, raw)
+			}
+			body := strings.ToLower(string(raw))
+			for _, sec := range secrets {
+				if strings.Contains(body, strings.ToLower(sec)) {
+					t.Fatalf("%s %s leaks %q: %s", rd.method, rd.path, sec, raw)
+				}
+			}
+		}
+		// Only the session token reads the customer, and only its own.
+		_, body, raw := c.do(http.MethodGet, "/bookings/"+s.BookingID, nil, map[string]string{"X-Arenile-Checkout": s.Token})
+		if body["customer"].(map[string]any)["email"] != "luca.verdi@example.org" {
+			t.Fatalf("own details through the token: %s", raw)
+		}
+		if strings.Contains(strings.ToLower(string(raw)), "barbieri") {
+			t.Fatalf("other customer in the session: %s", raw)
+		}
+		resp, _, raw := c.do(http.MethodGet, "/bookings/"+desk.Booking.ID, nil, map[string]string{"X-Arenile-Checkout": s.Token})
+		if resp.StatusCode != 404 || strings.Contains(string(raw), "Barbieri") {
+			t.Fatalf("desk booking through another session: %d %s", resp.StatusCode, raw)
+		}
 	})
 }

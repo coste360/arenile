@@ -53,15 +53,72 @@ test("/b/lido-demo has no serious accessibility violations", async ({
   expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
 });
 
-test("/b/lido-demo works at 320px width", async ({ page, request }) => {
+test("/b/lido-demo has no serious accessibility violations in dark mode", async ({
+  page,
+  request,
+}) => {
+  const { name } = await demoEstablishment(request);
+  await page.goto(`/b/${DEMO_SLUG}?theme=dark`);
+  await expect(page.getByText(name).first()).toBeVisible();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  const serious = results.violations.filter(
+    (v) => v.impact === "serious" || v.impact === "critical",
+  );
+  expect(serious.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
+});
+
+test("/b/lido-demo works at 320px width through the four steps", async ({ page, request }) => {
   const { name } = await demoEstablishment(request);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto(`/b/${DEMO_SLUG}`);
   await expect(page.getByText(name).first()).toBeVisible();
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > window.innerWidth,
-  );
-  expect(overflow).toBe(false);
+  const noSidewaysScroll = async (step: string) => {
+    const widths = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      inner: window.innerWidth,
+    }));
+    expect(widths.scroll, `${step}: scrollWidth ${widths.scroll} > ${widths.inner}`).toBeLessThanOrEqual(
+      widths.inner,
+    );
+  };
+  await noSidewaysScroll("1 Quando");
+
+  // 1. Quando: a single day in June.
+  await page.getByRole("button", { name: /Date del soggiorno/ }).click();
+  const grid = page.getByRole("grid").first();
+  await expect(grid).toBeVisible();
+  for (let i = 0; i < 6; i++) {
+    if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
+    await page.getByRole("button", { name: /mese successivo|Next/i }).click();
+  }
+  await grid.getByRole("button", { name: /\b16 giugno/ }).click();
+  await page.getByRole("grid").first().getByRole("button", { name: /\b16 giugno/ }).click();
+  await page.keyboard.press("Escape");
+  await noSidewaysScroll("1 Quando (date chosen)");
+  await page.getByRole("button", { name: "Avanti" }).click();
+
+  // 2. Dove: list view, first free spot.
+  await page.getByRole("button", { name: "Mostra come elenco" }).click();
+  await noSidewaysScroll("2 Dove");
+  await page.getByRole("button", { name: / – Libero/ }).first().click();
+  await page.getByRole("button", { name: "Avanti" }).click();
+
+  // 3. Cosa.
+  await page.getByRole("radio", { name: /^Base/ }).click();
+  await noSidewaysScroll("3 Cosa");
+  await page.getByRole("button", { name: "Continua" }).click();
+
+  // 4. Chi e pagamento, with the terms opened (the version label and the
+  // long texts must wrap).
+  await expect(page.getByRole("textbox", { name: "Nome", exact: true })).toBeVisible();
+  await noSidewaysScroll("4 Chi");
+  await page.getByRole("button", { name: "Leggi le condizioni" }).click();
+  await noSidewaysScroll("4 Chi (terms open)");
+  // The summary shows one date for a single day.
+  await expect(page.getByText(/^16\/06\/\d{4}$/).first()).toBeVisible();
 });
 
 test("unknown slug shows not found", async ({ page }) => {

@@ -17,7 +17,14 @@ Nessun account, nessuna commissione.
 
 <Tabs>
   <TabItem label="1. Quando">
-    <Screenshot name="public-when-mobile" alt="Passo Quando su smartphone: calendario della stagione con il periodo selezionato" />
+    <Tabs syncKey="device">
+      <TabItem label="Telefono">
+        <Screenshot name="public-when-mobile" alt="Passo Quando su smartphone: calendario della stagione con il periodo selezionato" />
+      </TabItem>
+      <TabItem label="Computer">
+        <Screenshot name="public-when-desktop" alt="Passo Quando su computer: calendario della stagione con il riepilogo a fianco" />
+      </TabItem>
+    </Tabs>
 
     Il cliente sceglie il primo e l'ultimo giorno (per una sola giornata tocca due volte lo stesso giorno). Il
     calendario è limitato alla stagione e alle date prenotabili e mostra la **Disponibilità** giorno per giorno
@@ -25,7 +32,14 @@ Nessun account, nessuna commissione.
     tariffari**. Poi sceglie la **Formula** e la **Fascia** tra quelle che proponi online.
   </TabItem>
   <TabItem label="2. Dove">
-    <Screenshot name="public-where-mobile" alt="Passo Dove su smartphone: mappa con le postazioni libere e legenda dei prezzi" />
+    <Tabs syncKey="device">
+      <TabItem label="Telefono">
+        <Screenshot name="public-where-mobile" alt="Passo Dove su smartphone: mappa con le postazioni libere e legenda dei prezzi" />
+      </TabItem>
+      <TabItem label="Computer">
+        <Screenshot name="public-where-desktop" alt="Passo Dove su computer: mappa grande con le postazioni libere e la legenda dei prezzi" />
+      </TabItem>
+    </Tabs>
 
     La pagina si adatta alle tue zone:
     - **Mappa**, se almeno una zona online è a posto scelto: postazioni libere evidenziate, legenda dei prezzi per
@@ -36,14 +50,28 @@ Nessun account, nessuna commissione.
     Con zone di modalità diverse compaiono insieme.
   </TabItem>
   <TabItem label="3. Cosa">
-    <Screenshot name="public-what-mobile" alt="Passo Cosa su smartphone: pacchetti, extra e riepilogo del prezzo" />
+    <Tabs syncKey="device">
+      <TabItem label="Telefono">
+        <Screenshot name="public-what-mobile" alt="Passo Cosa su smartphone: pacchetti, extra e riepilogo del prezzo" />
+      </TabItem>
+      <TabItem label="Computer">
+        <Screenshot name="public-what-desktop" alt="Passo Cosa su computer: pacchetti ed extra con il riepilogo del prezzo a fianco" />
+      </TabItem>
+    </Tabs>
 
     Pacchetti compatibili con la scelta (con la composizione), extra con quantità, campo **Codice
     promozionale**. Il **Riepilogo** con **Totale**, **Da pagare ora** e **Saldo successivo** si aggiorna a ogni
     modifica.
   </TabItem>
   <TabItem label="4. Chi e pagamento">
-    <Screenshot name="public-who-mobile" alt="Passo Chi su smartphone: dati del cliente, consensi e tempo residuo del blocco" />
+    <Tabs syncKey="device">
+      <TabItem label="Telefono">
+        <Screenshot name="public-who-mobile" alt="Passo Chi su smartphone: dati del cliente, consensi e tempo residuo del blocco" />
+      </TabItem>
+      <TabItem label="Computer">
+        <Screenshot name="public-who-desktop" alt="Passo Chi su computer: dati del cliente, consensi e riepilogo a fianco" />
+      </TabItem>
+    </Tabs>
 
     **I tuoi dati**: **Nome**, **Cognome**, **Email** (lì arrivano conferma e link di gestione) e **Telefono**
     (facoltativo se non lo rendi obbligatorio). La spunta obbligatoria **Ho letto e accetto le condizioni di
@@ -87,7 +115,14 @@ esteso durante il pagamento fino a un massimo di 30 minuti. Se scade, il posto t
 | Rifiutata dal gestore | **Richiesta non accettata** |
 | Conferma lenta | *Riceverai un'email appena il pagamento è confermato* (la riconciliazione recupera i webhook persi) |
 
-<Screenshot name="public-confirmation-mobile" alt="Conferma della prenotazione su smartphone con codice, QR e pulsante per aggiungere al calendario" />
+<Tabs syncKey="device">
+  <TabItem label="Telefono">
+    <Screenshot name="public-confirmation-mobile" alt="Conferma della prenotazione su smartphone con codice, QR e pulsante per aggiungere al calendario" />
+  </TabItem>
+  <TabItem label="Computer">
+    <Screenshot name="public-confirmation-desktop" alt="Conferma della prenotazione su computer con codice, QR e pulsante per aggiungere al calendario" />
+  </TabItem>
+</Tabs>
 
 ## Gli stati che il cliente attraversa
 
@@ -103,7 +138,14 @@ esteso durante il pagamento fino a un massimo di 30 minuti. Se scade, il posto t
 
 ## L'area di gestione
 
-<Screenshot name="public-manage-mobile" alt="Area La tua prenotazione su smartphone con dettagli, QR e azioni" />
+<Tabs syncKey="device">
+  <TabItem label="Telefono">
+    <Screenshot name="public-manage-mobile" alt="Area La tua prenotazione su smartphone con dettagli, QR e azioni" />
+  </TabItem>
+  <TabItem label="Computer">
+    <Screenshot name="public-manage-desktop" alt="Area La tua prenotazione su computer con dettagli, QR e azioni" />
+  </TabItem>
+</Tabs>
 
 Dal link nell'email il cliente apre **La tua prenotazione** e può:
 

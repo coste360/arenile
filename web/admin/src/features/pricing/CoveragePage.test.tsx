@@ -67,7 +67,9 @@ describe('CoveragePage', () => {
       },
     });
 
-    expect((await screen.findAllByText('1 intervallo senza prezzo')).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByText('1 intervallo senza prezzo', {}, { timeout: 5000 })).length,
+    ).toBeGreaterThan(0);
     // Heatmap: shadcn Calendar day buttons named with the number of uncovered combinations.
     const gapDays = screen.getAllByRole('button', { name: /combinazione senza prezzo/ });
     expect(gapDays.map((d) => d.textContent)).toEqual(['5', '6']);

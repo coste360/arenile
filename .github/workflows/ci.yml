@@ -212,7 +212,7 @@ jobs:
       - name: Install Playwright Chromium
         if: steps.detect.outputs.present == 'true'
         working-directory: e2e
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: make e2e
         if: steps.detect.outputs.present == 'true'

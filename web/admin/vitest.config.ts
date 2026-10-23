@@ -9,5 +9,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['../shared/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // Whole-page tests (settings, coverage calendar) under a full parallel run.
+    testTimeout: 15_000,
   },
 });

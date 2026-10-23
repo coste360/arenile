@@ -8,8 +8,10 @@
 //
 // Assertions: performance >= 90, accessibility >= 95, best practices >= 95,
 // SEO >= 95 on the indexable page; the embed variant (?embed=1, noindex by
-// design) is held to the same bar except SEO. Scores are written to
-// e2e/lighthouse/results.json and printed; any miss exits 1.
+// design) is held to the same bar except SEO; on both, the median Largest
+// Contentful Paint stays under 2.5 s (spec 12.6: LCP < 2,5 s on 4G).
+// Scores are written to e2e/lighthouse/results.json and printed; any miss
+// exits 1.
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -25,6 +27,7 @@ const port = Number(process.env.LH_PORT ?? 8095);
 const external = process.env.LH_BASE_URL;
 const base = external ?? `http://localhost:${port}`;
 const RUNS = Number(process.env.LH_RUNS ?? 3); // median of N runs (performance is noisy)
+const LCP_BUDGET_MS = 2500; // spec 12.6
 
 const TARGETS = [
   { name: 'public page', path: '/b/lido-demo', min: { performance: 90, accessibility: 95, 'best-practices': 95, seo: 95 } },
@@ -99,21 +102,28 @@ try {
       scores[cat] = median(runs.map((r) => Math.round((r.categories[cat]?.score ?? 0) * 100)));
     }
     const last = runs.at(-1);
+    const lcpMs = median(runs.map((r) => r.audits['largest-contentful-paint']?.numericValue ?? Infinity));
     const metrics = {
       fcp: last.audits['first-contentful-paint']?.displayValue,
       lcp: last.audits['largest-contentful-paint']?.displayValue,
+      lcpMedianMs: Math.round(lcpMs),
       tbt: last.audits['total-blocking-time']?.displayValue,
       cls: last.audits['cumulative-layout-shift']?.displayValue,
     };
     const misses = Object.entries(t.min).filter(([cat, min]) => scores[cat] < min);
+    if (!(lcpMs < LCP_BUDGET_MS)) {
+      console.error(`  ${t.name} LCP: median ${Math.round(lcpMs)} ms >= ${LCP_BUDGET_MS} ms`);
+      misses.push(['lcp', LCP_BUDGET_MS]);
+    }
     for (const [cat] of misses) {
+      if (cat === 'lcp') continue;
       const failing = Object.values(last.audits)
         .filter((a) => a.score !== null && a.score < 1 && last.categories[cat].auditRefs.some((r) => r.id === a.id && r.weight > 0))
         .map((a) => `${a.id} (${a.score})`);
       console.error(`  ${t.name} ${cat}: ${scores[cat]} < ${t.min[cat]}; failing audits: ${failing.join(', ')}`);
     }
     failed ||= misses.length > 0;
-    results.targets.push({ name: t.name, path: t.path, scores, min: t.min, metrics });
+    results.targets.push({ name: t.name, path: t.path, scores, min: { ...t.min, lcpMs: LCP_BUDGET_MS }, metrics });
     console.log(
       `${misses.length ? 'FAIL' : 'ok  '} ${t.name.padEnd(16)} ${Object.entries(scores)
         .map(([k, v]) => `${k} ${v}`)
