@@ -37,8 +37,14 @@ type allocation struct {
 // what is left of its reference grant; any other debit (redemption,
 // adjustment, reversal) consumes the open lots FIFO by expiry date
 // (earliest expiry first, grants without expiry last, then oldest first),
-// skipping lots already expired on the day of the debit.
-func allocate(movements []store.CustomerCredit) allocation {
+// skipping lots already expired on the day of the debit. That day is the
+// business day of the establishment (loc, the same calendar ExpireDue and
+// the policy expiry use), never the UTC day: a debit near local midnight
+// replays on the day it happened.
+func allocate(movements []store.CustomerCredit, loc *time.Location) allocation {
+	if loc == nil {
+		loc = time.UTC
+	}
 	movements = chronological(movements)
 	var out allocation
 	byID := map[string]*grant{}
@@ -59,7 +65,7 @@ func allocate(movements []store.CustomerCredit) allocation {
 			byID[m.ID] = g
 			out.Grants = append(out.Grants, g)
 		case m.Amount < 0:
-			day := calendar.In(m.CreatedAt, time.UTC)
+			day := calendar.In(m.CreatedAt, loc)
 			debt := -m.Amount
 			for _, g := range fifoOrder(out.Grants) {
 				if debt == 0 {

@@ -355,3 +355,89 @@ func containsAny(s string, subs ...string) bool {
 	}
 	return false
 }
+
+
+// TestCreditLedger_ExpireAllSkipsConsumedGrants (INV-70): a grant fully
+// used before its expiry never gets an expiry row, so more than one batch
+// of such customers must not starve the real expiries that sort after
+// them; a customer whose expiry cannot be written (legacy drift between the
+// aggregate and the ledger) is skipped and reported, never blocks the rest.
+func TestCreditLedger_ExpireAllSkipsConsumedGrants(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		exp := calendar.MustParse("2027-07-01")
+		mk := func(name string) *store.Customer {
+			return &store.Customer{
+				ID: store.NewID(), EstablishmentID: e.est.ID, FirstName: name, LastName: "Scaduto", Locale: "it",
+				Tags: []string{}, Version: 1, CreatedAt: t0, UpdatedAt: t0,
+			}
+		}
+		const consumed = 1100 // > expireBatch
+		var customers []*store.Customer
+		var rows []store.CustomerCredit
+		var balances []store.CustomerCreditBalance
+		for i := range consumed {
+			c := mk(fmt.Sprintf("C%04d", i))
+			customers = append(customers, c)
+			g := store.CustomerCredit{ID: store.NewID(), EstablishmentID: e.est.ID, CustomerID: c.ID, Amount: 1000, Source: store.CreditSourceGoodwill, ExpiresOn: &exp, CreatedAt: t0.AddDate(0, -2, 0)}
+			r := store.CustomerCredit{ID: store.NewID(), EstablishmentID: e.est.ID, CustomerID: c.ID, Amount: -1000, Source: store.CreditSourceRedemption, CreatedAt: t0.AddDate(0, -1, 0)}
+			rows = append(rows, g, r)
+			balances = append(balances, store.CustomerCreditBalance{EstablishmentID: e.est.ID, CustomerID: c.ID, Balance: 0, UpdatedAt: t0})
+		}
+		// Drift: a balance of 100 with an expired grant of 500 left in the
+		// ledger (written before 00008): the expiry row cannot apply.
+		drift := mk("Drift")
+		customers = append(customers, drift)
+		rows = append(rows, store.CustomerCredit{ID: store.NewID(), EstablishmentID: e.est.ID, CustomerID: drift.ID, Amount: 500, Source: store.CreditSourceManual, ExpiresOn: &exp, CreatedAt: t0.AddDate(0, -2, 0)})
+		balances = append(balances, store.CustomerCreditBalance{EstablishmentID: e.est.ID, CustomerID: drift.ID, Balance: 100, UpdatedAt: t0})
+		// The real expiry, sorting last: 700 of 1000 left.
+		last := mk("Ultimo")
+		customers = append(customers, last)
+		rows = append(rows,
+			store.CustomerCredit{ID: store.NewID(), EstablishmentID: e.est.ID, CustomerID: last.ID, Amount: 1000, Source: store.CreditSourceGoodwill, ExpiresOn: &exp, CreatedAt: t0.AddDate(0, -2, 0)},
+			store.CustomerCredit{ID: store.NewID(), EstablishmentID: e.est.ID, CustomerID: last.ID, Amount: -300, Source: store.CreditSourceRedemption, CreatedAt: t0.AddDate(0, -1, 0)},
+		)
+		balances = append(balances, store.CustomerCreditBalance{EstablishmentID: e.est.ID, CustomerID: last.ID, Balance: 700, UpdatedAt: t0})
+		for _, batch := range [][]*store.Customer{customers[:600], customers[600:]} {
+			if _, err := db.NewInsert().Model(&batch).Exec(e.ctx); err != nil {
+				t.Fatal(err)
+			}
+		}
+		for i := 0; i < len(rows); i += 500 {
+			chunk := rows[i:min(i+500, len(rows))]
+			if _, err := db.NewInsert().Model(&chunk).Exec(e.ctx); err != nil {
+				t.Fatal(err)
+			}
+		}
+		for i := 0; i < len(balances); i += 500 {
+			chunk := balances[i:min(i+500, len(balances))]
+			if _, err := db.NewInsert().Model(&chunk).Exec(e.ctx); err != nil {
+				t.Fatal(err)
+			}
+		}
+		n, err := e.svc.ExpireAll(e.ctx)
+		if n != 1 || err == nil || !errors.Is(err, credit.ErrInsufficient) || !strings.Contains(err.Error(), "1 customers failed") {
+			t.Fatalf("expire all: touched %d, err %v", n, err)
+		}
+		var row store.CustomerCredit
+		if err := db.NewSelect().Model(&row).Where("cc.source = ?", store.CreditSourceExpiry).Where("cc.customer_id = ?", last.ID).Scan(e.ctx); err != nil || row.Amount != -700 {
+			t.Fatalf("expiry of the last customer: %+v %v", row, err)
+		}
+		if n := e.count(t, store.CreditSourceExpiry); n != 1 {
+			t.Fatalf("expiry rows %d", n)
+		}
+		// Only the drifted customer is reported again; nothing else changes.
+		if n, err := e.svc.ExpireAll(e.ctx); n != 0 || err == nil {
+			t.Fatalf("second run: touched %d, err %v", n, err)
+		}
+	})
+}
+
+func (e *env) count(t testing.TB, source string) int {
+	t.Helper()
+	n, err := e.db.NewSelect().TableExpr("customer_credits").Where("source = ?", source).Count(e.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return int(n)
+}

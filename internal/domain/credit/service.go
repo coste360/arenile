@@ -440,7 +440,11 @@ func (s *Service) CreditBalance(ctx context.Context, db bun.IDB, es store.Establ
 	if err != nil {
 		return 0, fmt.Errorf("credit: balance: %w", err)
 	}
-	return allocate(mv).available(today), nil
+	loc, err := s.location(ctx, db, es)
+	if err != nil {
+		return 0, err
+	}
+	return allocate(mv, loc).available(today), nil
 }
 
 // Summary returns balance, available amount and expiring credit of a
@@ -470,7 +474,11 @@ func (s *Service) summary(ctx context.Context, db bun.IDB, es store.Establishmen
 	if err != nil {
 		return nil, fmt.Errorf("credit: summary: %w", err)
 	}
-	a := allocate(mv)
+	loc, err := s.location(ctx, db, es)
+	if err != nil {
+		return nil, err
+	}
+	a := allocate(mv, loc)
 	if a.Balance != bal {
 		// Drift between the aggregate and the ledger means a write bypassed
 		// GrantCredit: report the ledger (the source of truth) and log it.
@@ -535,9 +543,13 @@ func (s *Service) expireDueLocked(ctx context.Context, tx bun.IDB, es store.Esta
 	if err != nil {
 		return 0, fmt.Errorf("credit: expire: %w", err)
 	}
+	loc, err := s.location(ctx, tx, es)
+	if err != nil {
+		return 0, err
+	}
 	var total money.Cents
 	now := s.now()
-	for _, g := range allocate(mv).dueExpiries(today) {
+	for _, g := range allocate(mv, loc).dueExpiries(today) {
 		ref := g.ID
 		row := &store.CustomerCredit{
 			CustomerID: customerID, Amount: -g.Remaining, Source: store.CreditSourceExpiry,
@@ -552,46 +564,67 @@ func (s *Service) expireDueLocked(ctx context.Context, tx bun.IDB, es store.Esta
 }
 
 // ExpireAll runs ExpireDue for every customer with expired credit (one
-// transaction per customer) and returns how many customers it touched.
+// transaction per customer, pages of expireBatch until no candidate is
+// left) and returns how many customers it touched. A customer whose expiry
+// fails (for instance legacy drift between the aggregate and the ledger)
+// is logged and skipped, never blocks the others; the errors are joined in
+// the result so the job reports the run as failed.
 func (s *Service) ExpireAll(ctx context.Context) (int, error) {
 	// The latest "today" on earth: candidates are a superset, each one is
 	// checked against the date of its establishment.
 	horizon := calendar.In(s.d.Clock.Now(), time.UTC).AddDays(1)
-	list, err := store.CustomersWithExpiredCredit(ctx, s.d.DB, horizon, expireBatch)
-	if err != nil {
-		return 0, fmt.Errorf("credit: expire all: %w", err)
-	}
 	touched := 0
+	var failures []error
 	scopes := map[string]store.EstablishmentScope{}
-	for _, c := range list {
-		if err := ctx.Err(); err != nil {
-			return touched, err
-		}
-		es, ok := scopes[c.EstablishmentID]
-		if !ok {
-			if es, err = store.SystemEstablishmentScope(ctx, s.d.DB, c.EstablishmentID); err != nil {
-				return touched, fmt.Errorf("credit: expire all: %w", err)
-			}
-			scopes[c.EstablishmentID] = es
-		}
-		var n money.Cents
-		err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
-			today, err := s.today(ctx, tx, es)
-			if err != nil {
-				return err
-			}
-			n, err = s.ExpireDue(ctx, tx, es, c.CustomerID, today)
-			return err
-		})
+	var after *store.CreditExpiryCandidate
+	for {
+		list, err := store.CustomersWithExpiredCredit(ctx, s.d.DB, horizon, after, expireBatch)
 		if err != nil {
-			return touched, err
+			return touched, fmt.Errorf("credit: expire all: %w", err)
 		}
-		if n > 0 {
-			touched++
+		if len(list) == 0 {
+			break
 		}
+		for _, c := range list {
+			if err := ctx.Err(); err != nil {
+				return touched, err
+			}
+			es, ok := scopes[c.EstablishmentID]
+			if !ok {
+				if es, err = store.SystemEstablishmentScope(ctx, s.d.DB, c.EstablishmentID); err != nil {
+					return touched, fmt.Errorf("credit: expire all: %w", err)
+				}
+				scopes[c.EstablishmentID] = es
+			}
+			var n money.Cents
+			err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
+				today, err := s.today(ctx, tx, es)
+				if err != nil {
+					return err
+				}
+				n, err = s.ExpireDue(ctx, tx, es, c.CustomerID, today)
+				return err
+			})
+			if err != nil {
+				s.d.Log.ErrorContext(ctx, "credit expiry failed", slog.String("customer_id", c.CustomerID), slog.String("error", err.Error()))
+				failures = append(failures, fmt.Errorf("customer %s: %w", c.CustomerID, err))
+				continue
+			}
+			if n > 0 {
+				touched++
+			}
+		}
+		if len(list) < expireBatch {
+			break
+		}
+		last := list[len(list)-1]
+		after = &last
 	}
 	if touched > 0 {
 		s.d.Log.InfoContext(ctx, "expired customer credit", slog.Int("customers", touched))
+	}
+	if len(failures) > 0 {
+		return touched, fmt.Errorf("credit: expire all: %d customers failed: %w", len(failures), errors.Join(failures...))
 	}
 	return touched, nil
 }
@@ -626,15 +659,25 @@ func (s *Service) customerExists(ctx context.Context, db bun.IDB, es store.Estab
 	return nil
 }
 
-// today is the current date in the establishment timezone.
-func (s *Service) today(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (calendar.Date, error) {
+// location is the timezone of the establishment (UTC when unknown): the
+// business day of every movement and expiry of the ledger.
+func (s *Service) location(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (*time.Location, error) {
 	est, err := store.GetEstablishment(ctx, db, es)
 	if err != nil {
-		return calendar.Date{}, fmt.Errorf("credit: establishment: %w", err)
+		return nil, fmt.Errorf("credit: establishment: %w", err)
 	}
 	loc, err := time.LoadLocation(est.Timezone)
 	if err != nil {
-		loc = time.UTC
+		return time.UTC, nil
+	}
+	return loc, nil
+}
+
+// today is the current date in the establishment timezone.
+func (s *Service) today(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (calendar.Date, error) {
+	loc, err := s.location(ctx, db, es)
+	if err != nil {
+		return calendar.Date{}, err
 	}
 	return calendar.In(s.d.Clock.Now(), loc), nil
 }

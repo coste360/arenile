@@ -117,7 +117,7 @@ func TestAllocate_Scenarios(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			today := calendar.MustParse(tt.today)
-			a := allocate(tt.ledger)
+			a := allocate(tt.ledger, time.UTC)
 			if a.Balance != tt.balance {
 				t.Fatalf("balance %d, want %d", a.Balance, tt.balance)
 			}
@@ -155,7 +155,7 @@ func TestAllocate_BalanceInvariant(t *testing.T) {
 		next := func() string { id++; return fmt.Sprintf("m%03d", id) }
 		day := 0
 		materialise := func(today calendar.Date) {
-			for _, g := range allocate(ledger).dueExpiries(today) {
+			for _, g := range allocate(ledger, time.UTC).dueExpiries(today) {
 				ledger = append(ledger, mv(next(), -g.Remaining, store.CreditSourceExpiry, day, nil, g.ID))
 			}
 		}
@@ -173,14 +173,14 @@ func TestAllocate_BalanceInvariant(t *testing.T) {
 				ledger = append(ledger, mv(next(), amount, store.CreditSourceGoodwill, day, exp, ""))
 			default:
 				materialise(today)
-				avail := allocate(ledger).available(today)
+				avail := allocate(ledger, time.UTC).available(today)
 				if avail == 0 {
 					continue
 				}
 				spend := money.Cents(rapid.Int64Range(1, int64(avail)).Draw(t, "spend"))
 				ledger = append(ledger, mv(next(), -spend, store.CreditSourceRedemption, day, nil, ""))
 			}
-			a := allocate(ledger)
+			a := allocate(ledger, time.UTC)
 			var sum, left money.Cents
 			for _, m := range ledger {
 				sum += m.Amount
@@ -202,10 +202,75 @@ func TestAllocate_BalanceInvariant(t *testing.T) {
 				t.Fatalf("available %d > balance %d", before, a.Balance)
 			}
 			materialise(today)
-			after := allocate(ledger)
+			after := allocate(ledger, time.UTC)
 			if len(after.dueExpiries(today)) != 0 || after.available(today) != before || after.Balance != before {
 				t.Fatalf("after expiry: due %d, available %d (was %d), balance %d",
 					len(after.dueExpiries(today)), after.available(today), before, after.Balance)
+			}
+		}
+	})
+}
+
+
+// TestAllocate_LocalDay: the day of a debit is the establishment's business
+// day, not the UTC day. A debit at 22:30 UTC on the expiry day of a lot is
+// already the next day in Rome: the lot is expired for it and stays
+// untouched (it will be materialised), while in UTC it would be consumed.
+func TestAllocate_LocalDay(t *testing.T) {
+	rome, err := time.LoadLocation("Europe/Rome")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ledger := []store.CustomerCredit{
+		mv("a", 3000, store.CreditSourceCancellation, 0, date("2027-07-10"), ""),
+		mv("b", 5000, store.CreditSourceGoodwill, 1, nil, ""),
+		{ID: "c", Amount: -2000, Source: store.CreditSourceRedemption, CreatedAt: time.Date(2027, 7, 10, 22, 30, 0, 0, time.UTC)},
+	}
+	utc := allocate(ledger, time.UTC)
+	if utc.Grants[0].Remaining != 1000 || utc.Grants[1].Remaining != 5000 {
+		t.Fatalf("UTC replay: %d / %d", utc.Grants[0].Remaining, utc.Grants[1].Remaining)
+	}
+	local := allocate(ledger, rome)
+	if local.Grants[0].Remaining != 3000 || local.Grants[1].Remaining != 3000 {
+		t.Fatalf("Rome replay: %d / %d", local.Grants[0].Remaining, local.Grants[1].Remaining)
+	}
+	if got := local.dueExpiries(calendar.MustParse("2027-07-11")); len(got) != 1 || got[0].Remaining != 3000 {
+		t.Fatalf("due expiries after the local day: %+v", got)
+	}
+}
+
+// TestAllocate_ExpiredLotNeverConsumed (rapid): whatever the timezone and
+// the instant of a debit, a lot expired on the debit's local day is never
+// consumed by it: its remaining amount is the same before and after.
+func TestAllocate_ExpiredLotNeverConsumed(t *testing.T) {
+	zones := []*time.Location{time.UTC}
+	for _, name := range []string{"Europe/Rome", "Pacific/Kiritimati", "Pacific/Pago_Pago", "America/Sao_Paulo"} {
+		if loc, err := time.LoadLocation(name); err == nil {
+			zones = append(zones, loc)
+		}
+	}
+	rapid.Check(t, func(t *rapid.T) {
+		loc := zones[rapid.IntRange(0, len(zones)-1).Draw(t, "zone")]
+		var ledger []store.CustomerCredit
+		n := rapid.IntRange(1, 8).Draw(t, "lots")
+		for i := range n {
+			d := calendar.In(base, time.UTC).AddDays(rapid.IntRange(-3, 3).Draw(t, "expiry"))
+			ledger = append(ledger, mv(fmt.Sprintf("g%d", i), money.Cents(rapid.Int64Range(1, 5000).Draw(t, "amount")), store.CreditSourceGoodwill, -10+i, &d, ""))
+		}
+		at := base.Add(time.Duration(rapid.Int64Range(-72*3600, 72*3600).Draw(t, "offset")) * time.Second)
+		day := calendar.In(at, loc)
+		before := allocate(ledger, loc)
+		expired := map[string]money.Cents{}
+		for _, g := range before.Grants {
+			if g.ExpiresOn != nil && g.ExpiresOn.Before(day) {
+				expired[g.ID] = g.Remaining
+			}
+		}
+		debit := store.CustomerCredit{ID: "debit", Amount: -money.Cents(rapid.Int64Range(1, 20000).Draw(t, "debit")), Source: store.CreditSourceRedemption, CreatedAt: at}
+		after := allocate(append(ledger, debit), loc)
+		for _, g := range after.Grants {
+			if want, ok := expired[g.ID]; ok && g.Remaining != want {
+				t.Fatalf("expired lot %s consumed in %s: %d -> %d", g.ID, loc, want, g.Remaining)
 			}
 		}
 	})

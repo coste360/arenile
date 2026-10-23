@@ -135,27 +135,40 @@ func PageCustomerCredits(ctx context.Context, db bun.IDB, es EstablishmentScope,
 }
 
 // CreditExpiryCandidate is a customer with a grant expired before a date
-// that has no expiry row yet.
+// that has no expiry row yet and a positive balance.
 type CreditExpiryCandidate struct {
 	EstablishmentID string `bun:"establishment_id"`
 	CustomerID      string `bun:"customer_id"`
 }
 
+// Key is the keyset cursor of the candidate (CustomersWithExpiredCredit).
+func (c CreditExpiryCandidate) Key() string { return c.EstablishmentID + ":" + c.CustomerID }
+
 // CustomersWithExpiredCredit lists (all establishments) the customers having
-// a positive movement with expires_on < before and no expiry row for it.
-// The establishment-local "today" is applied by the caller per customer;
-// before is the latest possible today (UTC+14), so the list is a superset.
-func CustomersWithExpiredCredit(ctx context.Context, db bun.IDB, before calendar.Date, limit int) ([]CreditExpiryCandidate, error) {
+// a positive movement with expires_on < before and no expiry row for it,
+// and a positive stored balance: a customer whose balance is zero has
+// nothing left to expire (every grant was consumed), so a fully used grant
+// does not come back on every run. Ordered by (establishment_id,
+// customer_id) and resumed after the given key (keyset), so a run walks
+// every candidate in pages of limit. The establishment-local "today" is
+// applied by the caller per customer; before is the latest possible today
+// (UTC+14), so the list is a superset.
+func CustomersWithExpiredCredit(ctx context.Context, db bun.IDB, before calendar.Date, after *CreditExpiryCandidate, limit int) ([]CreditExpiryCandidate, error) {
 	var out []CreditExpiryCandidate
-	err := db.NewSelect().TableExpr("customer_credits AS cc").
+	q := db.NewSelect().TableExpr("customer_credits AS cc").
 		ColumnExpr("DISTINCT cc.establishment_id, cc.customer_id").
+		Join("JOIN customer_credit_balances AS ccb ON ccb.establishment_id = cc.establishment_id AND ccb.customer_id = cc.customer_id").
+		Where("ccb.balance > 0").
 		Where("cc.amount > 0").
 		Where("cc.expires_on IS NOT NULL").
 		Where("cc.expires_on < ?", before).
 		Where("NOT EXISTS (SELECT 1 FROM customer_credits AS x WHERE x.reference_credit_id = cc.id AND x.source = ?)", CreditSourceExpiry).
 		OrderExpr("cc.establishment_id, cc.customer_id").
-		Limit(int64(limit)).
-		Scan(ctx, &out)
+		Limit(int64(limit))
+	if after != nil {
+		q = q.Where("(cc.establishment_id > ? OR (cc.establishment_id = ? AND cc.customer_id > ?))", after.EstablishmentID, after.EstablishmentID, after.CustomerID)
+	}
+	err := q.Scan(ctx, &out)
 	if err != nil && !isNoRows(err) {
 		return nil, fmt.Errorf("store: customers with expired credit: %w", err)
 	}
