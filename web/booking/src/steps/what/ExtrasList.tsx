@@ -1,6 +1,7 @@
 import type { Schemas } from '@arenile/shared/api';
+import { ExtraList, ExtraRow, useQuantityMaxText } from '@arenile/shared/ui/patterns/ExtraRow';
+import { QuantityStepper } from '@arenile/shared/ui/patterns/QuantityStepper';
 import { useTranslation } from 'react-i18next';
-import { NumberStepper } from '../../components/NumberStepper';
 import { useBookingEnv } from '../../flow/context';
 import { formatMoney, localize } from '../../flow/format';
 import { PUBLIC_NS } from '../../i18n';
@@ -18,42 +19,46 @@ const UNIT_KEY: Record<Schemas['PricingUnit'], string> = {
   per_slot: 'what.perSlot',
 };
 
-/** Extras with a quantity stepper and their indicative unit price (the quote is binding). */
+/**
+ * Extras with the shared quantity stepper, their indicative unit price (the
+ * quote is binding) and the catalog maximum, which the stepper cannot exceed.
+ */
 export function ExtrasList({ title, extras, value, onChange }: ExtrasListProps) {
   const { t, i18n } = useTranslation(PUBLIC_NS);
   const { establishment } = useBookingEnv();
+  const maxText = useQuantityMaxText();
   if (extras.length === 0) return null;
   const lang = i18n.language;
   return (
-    <fieldset className="space-y-2">
-      <legend className="mb-2 text-sm font-medium">{title}</legend>
-      <ul className="divide-y rounded-xl border bg-card">
-        {extras.map((extra) => {
-          const name = localize(extra.name, lang, establishment.default_locale);
-          return (
-            <li key={extra.id} className="flex flex-wrap items-center justify-between gap-3 p-3">
-              <div className="min-w-0">
-                <p className="font-medium">{name}</p>
-                {extra.unit_price !== undefined && (
-                  <p className="text-sm text-muted-foreground">
-                    {t(UNIT_KEY[extra.pricing_unit], {
-                      price: formatMoney(extra.unit_price, establishment.currency, lang),
-                    })}
-                  </p>
-                )}
-              </div>
-              <NumberStepper
-                value={value[extra.id] ?? 0}
-                max={Math.max(1, extra.max_quantity)}
-                onChange={(q) => onChange(extra.id, q)}
-                label={name}
-                decreaseLabel={t('where.decrease', { name })}
-                increaseLabel={t('where.increase', { name })}
-              />
-            </li>
-          );
-        })}
-      </ul>
-    </fieldset>
+    <ExtraList title={title}>
+      {extras.map((extra) => {
+        const name = localize(extra.name, lang, establishment.default_locale);
+        const max = Math.max(1, extra.max_quantity);
+        return (
+          <ExtraRow
+            key={extra.id}
+            name={name}
+            detail={
+              extra.unit_price !== undefined
+                ? t(UNIT_KEY[extra.pricing_unit], {
+                    price: formatMoney(extra.unit_price, establishment.currency, lang),
+                  })
+                : undefined
+            }
+            hint={maxText(max)}
+          >
+            <QuantityStepper
+              size="lg"
+              value={value[extra.id] ?? 0}
+              max={max}
+              onChange={(q) => onChange(extra.id, q)}
+              label={name}
+              decreaseLabel={t('where.decrease', { name })}
+              increaseLabel={t('where.increase', { name })}
+            />
+          </ExtraRow>
+        );
+      })}
+    </ExtraList>
   );
 }

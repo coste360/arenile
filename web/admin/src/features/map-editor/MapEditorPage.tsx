@@ -1,4 +1,4 @@
-import { ApiProblem } from '@arenile/shared/api';
+import { ApiProblem, mapProblemToForm } from '@arenile/shared/api';
 import type { AlignMode, KitAsset, Point } from '@arenile/shared/map';
 import {
   Alert,
@@ -326,7 +326,8 @@ function Editor(props: EditorProps) {
     } else if (err instanceof ApiProblem && err.fieldErrors.length > 0) {
       setSaveState({
         kind: 'error',
-        messages: err.fieldErrors.map((f) => (f.field ? `${f.field}: ${f.message}` : f.message)),
+        // Plain words, never the raw server paths.
+        messages: mapProblemToForm(err, undefined).unmatched,
       });
     } else if (err instanceof ApiProblem && err.detail) {
       setSaveState({ kind: 'error', messages: [err.detail] });

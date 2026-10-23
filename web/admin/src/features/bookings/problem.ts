@@ -128,6 +128,11 @@ export interface ProblemText {
 export interface DescribeOptions {
   /** Readable label of a spot / pool / zone id (falls back to a generic word). */
   resourceLabel?: (group: ConflictGroup) => string | undefined;
+  /**
+   * Field errors already in plain words (from `mapProblemToForm`), listed
+   * under a validation failure instead of the bare server messages.
+   */
+  fieldErrors?: readonly string[];
 }
 
 const MAX_DAYS_SHOWN = 6;
@@ -227,12 +232,21 @@ export function describeProblem(
       return { title: t('bookings:problem.cashSessionClosed'), details: [], reload: false };
     case 'booking_outside_period':
       return { title: t('bookings:problem.outsidePeriod'), details: [], reload: true };
-    case 'validation_failed':
+    case 'validation_failed': {
+      // Never the raw server paths (`lines[0].extras[0].quantity`): the
+      // caller's plain-words list, else the bare messages.
+      const details = options.fieldErrors
+        ? [...options.fieldErrors]
+        : problem.fieldErrors.map((f) => f.message);
       return {
-        title: t('common.errors.validation', { ns: 'translation' }),
-        details: problem.fieldErrors.map((f) => (f.field ? `${f.field}: ${f.message}` : f.message)),
+        title:
+          details.length > 0
+            ? t('bookings:problem.validation')
+            : (problem.detail ?? t('common.errors.validation', { ns: 'translation' })),
+        details,
         reload: false,
       };
+    }
     case 'conflict':
       return {
         title: problem.detail ?? t('common.errors.conflict', { ns: 'translation' }),

@@ -137,9 +137,28 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   await free.nth(Math.floor(Math.random() * (await free.count()))).click();
   await page.getByRole("button", { name: "Avanti" }).click();
 
-  // 3. Cosa.
+  // 3. Cosa: extras with the shared stepper, which stops at the catalog
+  // maximum (demo "Lettino aggiuntivo": max 2 per spot).
   await page.getByRole("radio", { name: /^Base/ }).click();
+  const sunbed = page.getByRole("spinbutton", { name: "Lettino aggiuntivo" });
+  const morebeds = page.getByRole("button", { name: "Aumenta Lettino aggiuntivo" });
+  await expect(sunbed).toHaveText("0");
+  await morebeds.click();
+  await morebeds.click();
+  await expect(sunbed).toHaveAttribute("aria-valuenow", "2");
+  await expect(morebeds).toBeDisabled();
+  await sunbed.focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(sunbed).toHaveAttribute("aria-valuenow", "1");
   await noSidewaysScroll("3 Cosa");
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(
+    axe.violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map((v) => `${v.id}: ${v.help}`),
+  ).toEqual([]);
   await page.getByRole("button", { name: "Continua" }).click();
 
   // 4. Chi e pagamento, with the terms opened (the version label and the

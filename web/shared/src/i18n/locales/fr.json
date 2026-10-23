@@ -256,6 +256,17 @@
     "commandDescription": "Rechercher une page ou une commande",
     "noResults": "Aucun résultat.",
     "optional": "facultatif",
+    "quantity": {
+      "decrease": "Diminuer {{name}}",
+      "increase": "Augmenter {{name}}",
+      "max": "max {{max}}"
+    },
+    "extra": {
+      "perSpot": "par emplacement",
+      "perBooking": "par réservation",
+      "perDay": "par jour",
+      "perSlot": "par créneau"
+    },
     "theme": {
       "label": "Thème",
       "toggle": "Changer de thème",

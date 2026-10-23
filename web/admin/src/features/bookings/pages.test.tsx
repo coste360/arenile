@@ -65,14 +65,46 @@ const PACK = {
   updated_at: '2026-01-01T00:00:00Z',
 };
 
-function inventoryRoutes(): Record<string, Handler> {
+const SUNBED = {
+  id: 'x-sunbed',
+  code: 'lettino-extra',
+  name: { it: 'Lettino aggiuntivo' },
+  description: {},
+  pricing_unit: 'per_day',
+  max_quantity: 2,
+  attach_to: 'line',
+  channels: ['desk'],
+  sort_order: 1,
+  active: true,
+  version: 1,
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+};
+
+function inventoryRoutes(extras: unknown[] = []): Record<string, Handler> {
   return {
     [`GET ${estPath('/maps')}`]: () => list([]),
     [`GET ${estPath('/zones')}`]: () => list([ZONE_Q]),
     [`GET ${estPath('/packs')}`]: () => list([PACK]),
-    [`GET ${estPath('/extras')}`]: () => list([]),
+    [`GET ${estPath('/extras')}`]: () => list(extras),
   };
 }
+
+const QUOTE = {
+  breakdown: {
+    engine_version: 1,
+    currency: 'EUR',
+    lines: [],
+    discounts: [],
+    rounding: 0,
+    total: 1000,
+    vat: [],
+  },
+  deposit_due: 0,
+  policy: { rules: {}, violations: [] },
+  available: true,
+  conflicts: [],
+};
 
 describe('BookingsPage', () => {
   it('lists bookings, filters by status and loads the next cursor page', async () => {
@@ -172,9 +204,11 @@ describe('BookingsPage', () => {
     await user.click(within(sheet).getByRole('tab', { name: 'Zona o quantità' }));
     await user.click(within(sheet).getByRole('combobox', { name: 'Zona' }));
     await user.click(await screen.findByRole('option', { name: 'Lettini liberi' }));
-    const qty = within(sheet).getByLabelText('Quantità');
-    await user.clear(qty);
-    await user.type(qty, '2');
+    expect(within(sheet).getByRole('spinbutton', { name: 'Quantità' })).toHaveAttribute(
+      'aria-valuenow',
+      '1',
+    );
+    await user.click(within(sheet).getByRole('button', { name: 'Aumenta Quantità' }));
 
     await user.click(within(sheet).getByRole('radio', { name: 'Nuovo cliente' }));
     await user.type(within(sheet).getByLabelText('Cognome'), 'Verdi');
@@ -202,6 +236,65 @@ describe('BookingsPage', () => {
     const [pay] = callsTo(fetchMock, 'POST', estPath('/bookings/new-b/payments'));
     expect(await bodyOf(pay!)).toEqual({ amount: 2400, method: 'card' });
     expect(await screen.findByText('Prenotazione AR-NEW creata.')).toBeInTheDocument();
+  });
+
+  it('keeps extras within the catalog maximum and highlights a server error on the extra', async () => {
+    const routes: Record<string, Handler> = {
+      ...baseRoutes('cashier'),
+      ...inventoryRoutes([SUNBED]),
+      [`GET ${estPath('/bookings')}`]: () => json(200, { items: [] }),
+      [`GET ${estPath('/customers')}`]: () => json(200, { items: [CUSTOMER] }),
+      [`POST ${estPath('/bookings/quote')}`]: () => json(200, QUOTE),
+      [`POST ${estPath('/bookings')}`]: () =>
+        json(422, {
+          type: 'validation_failed',
+          title: 'x',
+          status: 422,
+          errors: [{ field: 'lines[0].extras[0].quantity', message: 'Massimo 2.' }],
+        }),
+    };
+    const { fetchMock } = renderApp(`/e/${EST_ID}/prenotazioni`, routes);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Nuova prenotazione' }));
+    const sheet = await screen.findByRole('dialog', { name: 'Nuova prenotazione' });
+
+    // Always a visible value, the unit and the maximum next to the control.
+    const value = await within(sheet).findByRole('spinbutton', { name: 'Lettino aggiuntivo' });
+    expect(value).toHaveTextContent('0');
+    expect(within(sheet).getByText('per postazione · al giorno')).toBeInTheDocument();
+    expect(within(sheet).getByText('max 2')).toBeInTheDocument();
+    const plus = within(sheet).getByRole('button', { name: 'Aumenta Lettino aggiuntivo' });
+    await user.click(plus);
+    await user.click(plus);
+    expect(value).toHaveAttribute('aria-valuenow', '2');
+    expect(plus).toBeDisabled();
+    value.focus();
+    await user.keyboard('{ArrowUp}');
+    expect(value).toHaveAttribute('aria-valuenow', '2');
+
+    await user.click(within(sheet).getByRole('tab', { name: 'Zona o quantità' }));
+    await user.click(within(sheet).getByRole('combobox', { name: 'Zona' }));
+    await user.click(await screen.findByRole('option', { name: 'Lettini liberi' }));
+    await user.click(within(sheet).getByRole('combobox', { name: 'Cliente' }));
+    await user.type(await screen.findByPlaceholderText('Cerca cliente'), 'Ros');
+    await user.click(await screen.findByRole('option', { name: /Rossi Mario/ }));
+    await user.click(within(sheet).getByRole('button', { name: 'Crea prenotazione' }));
+
+    const [create] = await waitFor(() => {
+      const calls = callsTo(fetchMock, 'POST', estPath('/bookings'));
+      expect(calls).toHaveLength(1);
+      return calls;
+    });
+    expect(await bodyOf(create!)).toMatchObject({
+      lines: [{ zone_id: 'zq', extras: [{ extra_id: 'x-sunbed', quantity: 2 }] }],
+    });
+    // The extra is highlighted with the message under it; the alert says
+    // what to fix in plain words, never the server path.
+    expect(await within(sheet).findByText('Controlla questi dati e riprova:')).toBeInTheDocument();
+    expect(within(sheet).getByText('Lettino aggiuntivo: massimo 2')).toBeInTheDocument();
+    expect(within(sheet).getByText('Massimo 2.')).toBeInTheDocument();
+    expect(value).toHaveAttribute('aria-invalid', 'true');
+    expect(within(sheet).queryByText(/lines\[0\]/)).not.toBeInTheDocument();
   });
 
   it('shows the conflicting dates when the spot was taken meanwhile', async () => {

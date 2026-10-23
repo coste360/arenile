@@ -24,8 +24,10 @@ import {
   DataTable,
   DatePicker,
   EmptyState,
+  FieldRow,
   type Option,
   OptionSelect,
+  QuantityStepper,
   QueryState,
   SectionCard,
   StatCard,
@@ -40,7 +42,7 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useForm, type Control } from 'react-hook-form';
+import { useForm, useWatch, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import { useConfigContext } from '../configuration/api/useConfigContext';
@@ -96,6 +98,7 @@ export function PriceSimulatorPage() {
           extras={data.extras
             .filter((x) => x.active)
             .map((x) => ({ value: x.id, label: data.name(x.name) || x.code }))}
+          extraMax={Object.fromEntries(data.extras.map((x) => [x.id, x.max_quantity]))}
           locale={ctx.uiLocale}
           disabled={!ctx.canConfigure}
           names={{
@@ -193,6 +196,8 @@ function Simulator(p: {
   packs: Option[];
   zones: Option[];
   extras: Option[];
+  /** Catalog max_quantity of each extra: the stepper never exceeds it. */
+  extraMax: Readonly<Record<string, number>>;
   locale: string;
   disabled: boolean;
   names: CodeNames;
@@ -215,6 +220,7 @@ function Simulator(p: {
     }),
   });
   const { control } = form;
+  const extraId = useWatch({ control, name: 'extra_id' });
   const submit = form.handleSubmit(async (v) => {
     setAlert(null);
     try {
@@ -294,19 +300,25 @@ function Simulator(p: {
               </div>
               <Separator />
               {p.extras.length > 0 && (
-                <div className="grid grid-cols-[1fr_5rem] gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
                   <SelectRow
                     control={control}
                     name="extra_id"
                     label={t('fields.extra')}
                     options={[{ value: '', label: t('simulator.noExtra') }, ...p.extras]}
                   />
-                  <TextRow
-                    control={control}
-                    name="extra_qty"
-                    label={t('fields.quantity')}
-                    inputProps={{ inputMode: 'numeric' }}
-                  />
+                  <FieldRow control={control} name="extra_qty" label={t('fields.quantity')}>
+                    {(field) => (
+                      <QuantityStepper
+                        label={t('fields.quantity')}
+                        min={1}
+                        max={p.extraMax[extraId] ?? 1}
+                        disabled={!extraId}
+                        value={Number(field.value) || 1}
+                        onChange={(q) => field.onChange(String(q))}
+                      />
+                    )}
+                  </FieldRow>
                 </div>
               )}
               <div className="grid gap-3 sm:grid-cols-2">

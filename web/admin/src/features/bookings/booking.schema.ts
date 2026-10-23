@@ -13,6 +13,8 @@ export const M = {
   spots: 'bookings:validation.spots',
   zone: 'bookings:validation.zone',
   quantity: 'bookings:validation.quantity',
+  /** Interpolated with `{ max }` by the extras list. */
+  extraMax: 'bookings:validation.extraMax',
   customer: 'bookings:validation.customer',
   lastName: 'bookings:validation.lastName',
   contact: 'bookings:validation.contact',
@@ -59,30 +61,45 @@ export const newCustomerSchema = z
 
 export type NewCustomerValues = z.infer<typeof newCustomerSchema>;
 
-export const newBookingSchema = z
-  .object({
-    starts_on: isoDate,
-    ends_on: isoDate,
-    slots,
-    formula,
-    pack_id: z.string().min(1, M.pack),
-    /** spots: one line per selected spot; zone: a zone line (pending or quantity). */
-    target: z.enum(['spots', 'zone']),
-    spot_ids: z.array(z.string()),
-    zone_id: z.string(),
-    quantity: z.number().int().min(1, M.quantity).max(100, M.quantity),
-    extras: z.record(z.string(), z.number().int().min(0).max(100)),
-    customer_mode: z.enum(['existing', 'new']),
-    customer_id: z.string(),
-    /** Validated only when customer_mode = new (hidden fields never block the submit). */
-    customer: z.custom<NewCustomerValues>().optional(),
-    pay_now: z.boolean(),
-    payment_amount: z.number().int().nullable(),
-    payment_method: method,
-    notes_internal: z.string().max(2000),
-    force: z.boolean(),
-  })
-  .superRefine((v, ctx) => {
+const newBookingObject = z.object({
+  starts_on: isoDate,
+  ends_on: isoDate,
+  slots,
+  formula,
+  pack_id: z.string().min(1, M.pack),
+  /** spots: one line per selected spot; zone: a zone line (pending or quantity). */
+  target: z.enum(['spots', 'zone']),
+  spot_ids: z.array(z.string()),
+  zone_id: z.string(),
+  quantity: z.number().int().min(1, M.quantity).max(100, M.quantity),
+  extras: z.record(z.string(), z.number().int().min(0).max(100)),
+  customer_mode: z.enum(['existing', 'new']),
+  customer_id: z.string(),
+  /** Validated only when customer_mode = new (hidden fields never block the submit). */
+  customer: z.custom<NewCustomerValues>().optional(),
+  pay_now: z.boolean(),
+  payment_amount: z.number().int().nullable(),
+  payment_method: method,
+  notes_internal: z.string().max(2000),
+  force: z.boolean(),
+});
+
+/** Maximum quantity of each extra (catalog `max_quantity`), keyed by extra id. */
+export type ExtraLimits = Readonly<Record<string, number>>;
+
+/**
+ * Schema of the new booking sheet. `limits` mirrors the server rule
+ * (booking domain checkExtra: 1 ≤ quantity ≤ max_quantity per line or per
+ * booking), so an over-limit quantity is caught before the request.
+ */
+export function makeNewBookingSchema(limits: ExtraLimits = {}) {
+  return newBookingObject.superRefine((v, ctx) => {
+    for (const [id, q] of Object.entries(v.extras)) {
+      const max = limits[id];
+      if (max !== undefined && q > max) {
+        ctx.addIssue({ code: 'custom', message: M.extraMax, path: ['extras', id] });
+      }
+    }
     if (isCalendarDate(v.starts_on) && isCalendarDate(v.ends_on) && v.ends_on < v.starts_on) {
       ctx.addIssue({ code: 'custom', message: M.dateOrder, path: ['ends_on'] });
     }
@@ -113,8 +130,11 @@ export const newBookingSchema = z
       ctx.addIssue({ code: 'custom', message: M.amount, path: ['payment_amount'] });
     }
   });
+}
 
-export type NewBookingValues = z.infer<typeof newBookingSchema>;
+export const newBookingSchema = makeNewBookingSchema();
+
+export type NewBookingValues = z.infer<typeof newBookingObject>;
 
 export interface NewBookingDefaults {
   spotIds?: string[];
@@ -157,6 +177,8 @@ export interface LineContext {
   zoneOfSpot: (spotId: string) => string | undefined;
   /** Extras with attach_to = line: repeated on every line (quantity per spot). */
   lineExtraIds?: ReadonlySet<string>;
+  /** Extras offered for the chosen pack: quantities of the others are dropped. */
+  extraIds?: ReadonlySet<string>;
   holdId?: string;
 }
 
@@ -182,7 +204,7 @@ export function toSelection(
   }
   if (!v.pack_id) return null;
   const chosen = Object.entries(v.extras)
-    .filter(([, q]) => q > 0)
+    .filter(([id, q]) => q > 0 && (!ctx.extraIds || ctx.extraIds.has(id)))
     .map(([extra_id, quantity]) => ({ extra_id, quantity }));
   const lineExtras = chosen.filter((x) => ctx.lineExtraIds?.has(x.extra_id));
   const extras = chosen.filter((x) => !ctx.lineExtraIds?.has(x.extra_id));

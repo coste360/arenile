@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   cancelSchema,
   changeDatesSchema,
+  M,
+  makeNewBookingSchema,
   newBookingSchema,
   newBookingValues,
   normalizePhone,
@@ -277,5 +279,26 @@ describe('model helpers', () => {
       '2026-08-02',
     ]);
     expect(eachDate('2026-08-02', '2026-07-30')).toEqual([]);
+  });
+});
+
+describe('makeNewBookingSchema', () => {
+  it('mirrors the catalog max_quantity of each extra', () => {
+    const schema = makeNewBookingSchema({ 'x-line': 2 });
+    expect(schema.safeParse(values({ extras: { 'x-line': 2 } })).success).toBe(true);
+    const over = schema.safeParse(values({ extras: { 'x-line': 3 } }));
+    expect(over.success).toBe(false);
+    expect(over.error?.issues).toEqual([
+      expect.objectContaining({ path: ['extras', 'x-line'], message: M.extraMax }),
+    ]);
+  });
+
+  it('drops quantities of extras not offered for the pack', () => {
+    const body = toSelection(values({ extras: { 'x-line': 1, 'x-other': 2 } }), {
+      ...ctx,
+      extraIds: new Set(['x-line']),
+    });
+    expect(body?.extras).toBeUndefined();
+    expect(body?.lines[0]?.extras).toEqual([{ extra_id: 'x-line', quantity: 1 }]);
   });
 });

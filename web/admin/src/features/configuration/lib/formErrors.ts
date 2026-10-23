@@ -1,58 +1,35 @@
-import { ApiProblem } from '@arenile/shared/api';
-import type { FieldValues, Path, UseFormSetError } from 'react-hook-form';
+import {
+  ApiProblem,
+  mapProblemToForm,
+  normalizeFieldPath,
+  type MapProblemOptions,
+} from '@arenile/shared/api';
+import type { FieldValues, UseFormSetError } from 'react-hook-form';
 
 /** A non-field problem shown above the form. */
 export type FormAlertState =
   { kind: 'conflict' } | { kind: 'message'; key: string } | { kind: 'server'; messages: string[] };
 
-/**
- * Normalises a server field path to react-hook-form dotted notation:
- * "ranges[0].from", "ranges/0/from" and "/ranges/0/from" all become "ranges.0.from".
- */
-export function normalizeFieldPath(field: string): string {
-  return field
-    .replace(/\[(\d+)\]/g, '.$1')
-    .replace(/\//g, '.')
-    .replace(/^\.+/, '')
-    .replace(/\.{2,}/g, '.');
-}
+export { normalizeFieldPath };
 
-export interface ApplyFieldErrorsOptions {
+export interface ApplyFieldErrorsOptions extends MapProblemOptions {
   /** Top-level keys of the form values: only paths starting with one of them are set on fields. */
   formKeys: readonly string[];
-  /** Server path (or prefix) → form path, for fields named differently in the form. */
-  aliases?: Record<string, string>;
 }
 
 /**
  * Maps a problem+json `errors[]` onto react-hook-form fields (as `server`
- * errors, whose message is the server text, not an i18n key). Returns the
- * messages that matched no field so the caller can show them in an alert.
+ * errors, whose message is the server text, not an i18n key) through the
+ * shared `mapProblemToForm`. Returns, in plain words (never raw server
+ * paths), the messages that matched no field so the caller can show them in
+ * an alert.
  */
 export function applyFieldErrors<T extends FieldValues>(
   problem: ApiProblem,
   setError: UseFormSetError<T>,
   options: ApplyFieldErrorsOptions,
 ): string[] {
-  const unmatched: string[] = [];
-  let focused = false;
-  for (const fe of problem.fieldErrors) {
-    let path = normalizeFieldPath(fe.field);
-    for (const [from, to] of Object.entries(options.aliases ?? {})) {
-      if (path === from || path.startsWith(`${from}.`)) {
-        path = to + path.slice(from.length);
-        break;
-      }
-    }
-    const head = path.split('.')[0] ?? '';
-    if (head && options.formKeys.includes(head)) {
-      setError(path as Path<T>, { type: 'server', message: fe.message }, { shouldFocus: !focused });
-      focused = true;
-    } else {
-      unmatched.push(fe.field ? `${fe.field}: ${fe.message}` : fe.message);
-    }
-  }
-  return unmatched;
+  return mapProblemToForm(problem, setError, options).unmatched;
 }
 
 /** True for a stale If-Match (412 version_conflict). */

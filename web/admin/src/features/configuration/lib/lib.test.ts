@@ -45,7 +45,8 @@ describe('applyFieldErrors / problemToFormState', () => {
       { type: 'server', message: 'Fuori stagione' },
       { shouldFocus: false },
     );
-    expect(rest).toEqual(['unknown: Altro']);
+    // The unmatched one in plain words: never the raw server path.
+    expect(rest).toEqual(['Altro']);
   });
 
   it('maps problem types to alerts', () => {

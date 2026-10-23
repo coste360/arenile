@@ -1,5 +1,5 @@
+import { QuantityStepper } from '@arenile/shared/ui/patterns/QuantityStepper';
 import { useTranslation } from 'react-i18next';
-import { NumberStepper } from '../../components/NumberStepper';
 import { PUBLIC_NS } from '../../i18n';
 
 export interface QuantityPickerProps {
@@ -22,7 +22,8 @@ export function QuantityPicker({ name, max, value, onChange }: QuantityPickerPro
           {max > 0 ? t('where.available', { count: max }) : t('where.soldOut')}
         </p>
       </div>
-      <NumberStepper
+      <QuantityStepper
+        size="lg"
         value={value}
         max={Math.max(0, max)}
         onChange={onChange}

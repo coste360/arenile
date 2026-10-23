@@ -317,6 +317,17 @@ offline).
 
 ### Fixed
 
+- Pannello, **Nuova prenotazione**: gli extra usano il nuovo controllo condiviso `QuantityStepper` (− valore +,
+  sempre visibile e a larghezza fissa) dentro `ExtraList`/`ExtraRow` (nome su una riga, unità "per postazione /
+  per prenotazione · al giorno" sotto, "max N" accanto al controllo). Prima il campo numerico veniva schiacciato
+  dall'etichetta (valore invisibile, ad esempio per "Lettino aggiuntivo") e permetteva di superare il massimo
+  dell'extra; ora lo schema del modulo rispetta `max_quantity` come il server. Lo stesso controllo è usato nel
+  simulatore prezzi e nella pagina pubblica (extra e quantità di zona).
+- Errori di validazione del server: il nuovo `mapProblemToForm` (`@arenile/shared/api`) collega i percorsi del
+  problem+json (ad esempio `lines[0].extras[0].quantity`) ai campi del modulo, che vengono evidenziati con il
+  messaggio sotto, e il riquadro in alto elenca cosa correggere a parole ("Lettino aggiuntivo: massimo 2"); i
+  percorsi tecnici non vengono più mostrati (prenotazioni, configurazione, editor della mappa).
+
 - SQLite: le scritture concorrenti si mettono in coda nel processo (una coda FIFO per database, davanti a
   ogni transazione di scrittura e scrittura autocommit) invece di contendersi il lock di SQLite con
   `busy_timeout`: sotto un picco di scrittori (webhook, scadenza dei blocchi, cassa) un'attesa poteva

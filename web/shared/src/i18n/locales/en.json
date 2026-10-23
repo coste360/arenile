@@ -256,6 +256,17 @@
     "commandDescription": "Search for a page or a command",
     "noResults": "No results.",
     "optional": "optional",
+    "quantity": {
+      "decrease": "Decrease {{name}}",
+      "increase": "Increase {{name}}",
+      "max": "max {{max}}"
+    },
+    "extra": {
+      "perSpot": "per spot",
+      "perBooking": "per booking",
+      "perDay": "per day",
+      "perSlot": "per time slot"
+    },
     "theme": {
       "label": "Theme",
       "toggle": "Change theme",

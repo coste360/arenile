@@ -1,5 +1,6 @@
 import { Checkbox } from '@arenile/shared/ui/checkbox';
 import { Form } from '@arenile/shared/ui/form';
+import { mapProblemToForm } from '@arenile/shared/api';
 import { Input } from '@arenile/shared/ui/input';
 import { Label } from '@arenile/shared/ui/label';
 import { Switch } from '@arenile/shared/ui/switch';
@@ -8,13 +9,18 @@ import { Textarea } from '@arenile/shared/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import {
   DateRangePicker,
+  ExtraList,
+  ExtraRow,
   FieldRow,
   FormSection,
   FormSheet,
   MoneyInput,
   OptionSelect,
+  QuantityStepper,
   SheetForm,
   ResponsiveTabsList,
+  useExtraUnitText,
+  useQuantityMaxText,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
@@ -31,15 +37,17 @@ import { useDebounced } from '../customers/lib';
 import { OnlineOnlyNotice } from '../../offline/OnlineOnlyNotice';
 import { useBookingQuote, useCreateBooking, useRecordPayment } from './api';
 import {
-  newBookingSchema,
+  makeNewBookingSchema,
   newBookingValues,
   toBookingCreate,
   toInitialPayment,
   toSelection,
+  type ExtraLimits,
   type NewBookingDefaults,
   type NewBookingValues,
 } from './booking.schema';
 import { defaultFormula, FORMULAS, MANUAL_METHODS, SLOTS, todayIso, type Slots } from './model';
+import { resolveBookingField } from './formErrors';
 import { describeProblem, type ConflictGroup, type ProblemText } from './problem';
 import { ProblemAlert } from './ProblemAlert';
 import { QuotePreview } from './QuotePreview';
@@ -116,9 +124,21 @@ function NewBookingForm({
   const [customer, setCustomer] = useState<Customer | null>(defaults?.customer ?? null);
   const [failure, setFailure] = useState<ProblemText | null>(null);
   const keyRef = useRef<{ body: string; key: string } | null>(null);
+  const unitText = useExtraUnitText();
+  const maxText = useQuantityMaxText();
 
+  // The schema mirrors the catalog limits (max_quantity) loaded after mount.
+  const limits = useMemo<ExtraLimits>(
+    () => Object.fromEntries((extraList.data ?? []).map((x) => [x.id, x.max_quantity])),
+    [extraList.data],
+  );
+  const limitsRef = useRef(limits);
+  useEffect(() => {
+    limitsRef.current = limits;
+  }, [limits]);
   const form = useForm<NewBookingValues>({
-    resolver: zodResolver(newBookingSchema),
+    resolver: (data, context, options) =>
+      zodResolver(makeNewBookingSchema(limitsRef.current))(data, context, options),
     defaultValues: newBookingValues(todayIso(), defaults),
   });
   const values = useWatch({ control: form.control }) as NewBookingValues;
@@ -151,8 +171,11 @@ function NewBookingForm({
   const lineCtx = {
     zoneOfSpot: (id: string) => inventory.spotById.get(id)?.zone_id,
     lineExtraIds,
+    // Extras hidden by the chosen pack are never sent.
+    extraIds: new Set(extras.map((x) => x.id)),
     holdId: defaults?.holdId,
   };
+  const extraById = new Map((extraList.data ?? []).map((x) => [x.id, x]));
   const selection = toSelection(values, lineCtx);
   const quoteBody = useDebounced(selection ? JSON.stringify(selection) : null, 350);
   const quote = useBookingQuote(establishmentId, quoteBody ? JSON.parse(quoteBody) : null);
@@ -191,7 +214,27 @@ function NewBookingForm({
       bookingId = created.id;
       code = created.code;
     } catch (err) {
-      setFailure(describeProblem(err, t, { resourceLabel }));
+      // Server field errors go on the fields (extras by id, not by position)
+      // and the alert lists them in plain words, never as raw paths.
+      const mapped = mapProblemToForm(err, form.setError, {
+        resolve: (path, message) =>
+          resolveBookingField(path, message, {
+            body,
+            inlineCustomer: v.customer_mode === 'new',
+            extraName: (id) => {
+              const x = extraById.get(id);
+              return x ? name(x.name) || x.code : undefined;
+            },
+            extraMax: (id) => extraById.get(id)?.max_quantity,
+            t,
+          }),
+      });
+      setFailure(
+        describeProblem(err, t, {
+          resourceLabel,
+          fieldErrors: mapped.errors.map((e) => e.text),
+        }),
+      );
       return;
     }
     keyRef.current = null;
@@ -341,13 +384,12 @@ function NewBookingForm({
               {selectedZone?.assignment_mode === 'quantity' && (
                 <FieldRow control={form.control} name="quantity" label={t('fields.quantity')}>
                   {(field) => (
-                    <Input
-                      type="number"
-                      inputMode="numeric"
+                    <QuantityStepper
+                      label={t('fields.quantity')}
                       min={1}
                       max={100}
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                      onChange={field.onChange}
                     />
                   )}
                 </FieldRow>
@@ -355,45 +397,43 @@ function NewBookingForm({
             </TabsContent>
           </Tabs>
           {extras.length > 0 && (
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-medium">{t('fields.extras')}</legend>
-              <ul className="grid gap-2 sm:grid-cols-2">
-                {extras.map((x) => {
-                  const id = `extra-${x.id}`;
-                  return (
-                    <li
-                      key={x.id}
-                      className="flex items-center justify-between gap-2 rounded-md border px-3 py-2"
-                    >
-                      <Label htmlFor={id} className="font-normal">
-                        {name(x.name) || x.code}
-                        {x.attach_to === 'line' && (
-                          <span className="text-xs text-muted-foreground">
-                            {' '}
-                            · {t('new.perSpot')}
-                          </span>
-                        )}
-                      </Label>
-                      <Input
-                        id={id}
-                        type="number"
-                        inputMode="numeric"
-                        min={0}
-                        max={x.max_quantity ?? 100}
-                        className="w-20"
-                        value={values.extras[x.id] ?? 0}
-                        onChange={(e) =>
-                          form.setValue('extras', {
-                            ...form.getValues('extras'),
-                            [x.id]: Math.max(0, Number(e.target.value) || 0),
-                          })
-                        }
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
-            </fieldset>
+            <ExtraList title={t('fields.extras')}>
+              {extras.map((x) => {
+                const id = `extra-${x.id}`;
+                const label = name(x.name) || x.code;
+                const fieldError = errors.extras?.[x.id];
+                // Server errors are plain text already; client ones are i18n keys.
+                const error =
+                  fieldError?.message &&
+                  (fieldError.type === 'server'
+                    ? fieldError.message
+                    : t(fieldError.message, { max: x.max_quantity }));
+                return (
+                  <ExtraRow
+                    key={x.id}
+                    name={label}
+                    detail={unitText(x)}
+                    hint={maxText(x.max_quantity)}
+                    error={error || undefined}
+                    messageId={`${id}-message`}
+                  >
+                    <QuantityStepper
+                      id={id}
+                      label={label}
+                      min={0}
+                      max={x.max_quantity}
+                      value={values.extras?.[x.id] ?? 0}
+                      aria-invalid={!!error}
+                      aria-describedby={`${id}-message`}
+                      onChange={(q) => {
+                        form.clearErrors(`extras.${x.id}`);
+                        form.setValue('extras', { ...form.getValues('extras'), [x.id]: q });
+                      }}
+                    />
+                  </ExtraRow>
+                );
+              })}
+            </ExtraList>
           )}
         </FormSection>
 

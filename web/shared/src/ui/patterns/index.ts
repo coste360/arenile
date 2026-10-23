@@ -90,3 +90,12 @@ export {
   MadeByCoste360,
   type BrandLogoVariant,
 } from './Brand';
+export { clampQuantity, QuantityStepper, type QuantityStepperProps } from './QuantityStepper';
+export {
+  ExtraList,
+  ExtraRow,
+  useExtraUnitText,
+  useQuantityMaxText,
+  type ExtraListProps,
+  type ExtraRowProps,
+} from './ExtraRow';

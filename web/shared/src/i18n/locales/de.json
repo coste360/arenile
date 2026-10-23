@@ -256,6 +256,17 @@
     "commandDescription": "Seite oder Befehl suchen",
     "noResults": "Keine Ergebnisse.",
     "optional": "optional",
+    "quantity": {
+      "decrease": "{{name}} verringern",
+      "increase": "{{name}} erhöhen",
+      "max": "max. {{max}}"
+    },
+    "extra": {
+      "perSpot": "pro Platz",
+      "perBooking": "pro Buchung",
+      "perDay": "pro Tag",
+      "perSlot": "pro Zeitfenster"
+    },
     "theme": {
       "label": "Design",
       "toggle": "Design wechseln",

@@ -103,7 +103,20 @@ describe('describeProblem', () => {
       }),
       t,
     );
-    expect(v.details).toEqual(['amount: too big']);
+    // Never the raw server path.
+    expect(v.details).toEqual(['too big']);
+    expect(v.title).toMatch(/Controlla questi dati/);
+    const labelled = describeProblem(
+      new ApiProblem({
+        type: 'validation_failed',
+        status: 422,
+        title: 'x',
+        errors: [{ field: 'lines[0].extras[0].quantity', message: 'Massimo 2.' }],
+      }),
+      t,
+      { fieldErrors: ['Lettino aggiuntivo: massimo 2'] },
+    );
+    expect(labelled.details).toEqual(['Lettino aggiuntivo: massimo 2']);
   });
 
   it('falls back to the generic message for unknown errors', () => {

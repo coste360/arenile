@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { login } from "./helpers";
 
@@ -82,6 +83,27 @@ test("a booking created from the new booking sheet appears on the map", async ({
 
   await form.getByRole("combobox", { name: "Pack" }).click();
   await page.getByRole("option", { name: "Base", exact: true }).click();
+
+  // Extras use the shared stepper: the value is always visible and it never
+  // goes past the catalog maximum ("Lettino aggiuntivo": max 2 per spot).
+  const sunbed = form.getByRole("spinbutton", { name: "Lettino aggiuntivo" });
+  const moreBeds = form.getByRole("button", { name: "Aumenta Lettino aggiuntivo" });
+  await expect(sunbed).toHaveText("0");
+  await expect(form.getByText("max 2")).toBeVisible();
+  for (let i = 0; i < 3; i++) if (await moreBeds.isEnabled()) await moreBeds.click();
+  await expect(sunbed).toHaveAttribute("aria-valuenow", "2");
+  await expect(moreBeds).toBeDisabled();
+  await form.getByRole("button", { name: "Diminuisci Lettino aggiuntivo" }).click();
+  await expect(sunbed).toHaveAttribute("aria-valuenow", "1");
+  const axe = await new AxeBuilder({ page })
+    .include('[role="dialog"]')
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(
+    axe.violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map((v) => `${v.id}: ${v.help}`),
+  ).toEqual([]);
 
   await form.getByRole("radio", { name: "Nuovo cliente" }).click();
   await form.getByLabel("Cognome").fill("Playwright");
