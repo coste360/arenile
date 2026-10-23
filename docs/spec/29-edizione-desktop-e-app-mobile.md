@@ -2,6 +2,28 @@
 
 Due modi in più per usare Arenile, pensati per chi lavora soprattutto in cassa e per lo staff in spiaggia. Entrambi riusano il core senza duplicarlo.
 
+### 29.0 Modi di installazione
+
+Ogni lido ha **un solo server**, che contiene l'archivio. Le soluzioni si distinguono per dove gira quel server; i client si collegano tutti allo stesso modo.
+
+| Dove gira il server | Internet | Prenotazione online | Note |
+|---|---|---|---|
+| **Online**: VPS, hosting o Docker | necessaria | sì | La soluzione standard (sezione 24). |
+| **Desktop locale**: app desktop sul PC della cassa | non necessaria | no | Sezione 29.1, con modalità rete locale per gli altri dispositivi. |
+| **Server in sede**: mini PC, NAS o Raspberry Pi nel lido, con Docker | facoltativa | solo se esposto su internet (dominio o tunnel) | Stessa immagine dell'installazione online. |
+| **Hosting gestito da Coste360 (Arenile Pro)** | necessaria | sì | Offerta commerciale futura per chi non vuole gestire un server, riservata al licenziante dalla BSL (sezione 26). |
+
+**Client**, validi per ogni soluzione:
+- il browser (pannello web, nessuna installazione);
+- l'app desktop in modalità remota (29.1), con il ponte verso stampante e registratore telematico;
+- l'app mobile (29.2).
+
+**Esclusi:** i modelli ibridi con sincronizzazione tra due server, come desktop offline più VPS (vedi 29.1, *Limiti voluti*). Per passare da una soluzione all'altra si usano backup e `arenile restore`.
+
+**Arenile Pro.** L'hosting gestito è un prodotto separato, con un repository privato distinto (`coste360/arenile-pro`). Comprende il pannello di controllo per creare e aggiornare le istanze, i backup centralizzati, i domini e la fatturazione. Il pro **non è un fork**: importa il core come modulo Go e lo estende solo attraverso i punti di estensione pubblici (`pkg/ext` e un costruttore pubblico dell'applicazione, da introdurre con un ADR quando servirà). Il core di questo repository resta completo e gratuito per chi gestisce da sé i propri stabilimenti. Nessuna funzione necessaria alla gestione di un lido è riservata al pro.
+
+La documentazione (M4) presenta questa tabella nella pagina "Scegli come installare Arenile".
+
 ### 29.1 Edizione desktop (tutto in uno, senza server online)
 
 **Obiettivo:** un lido che oggi usa il quaderno scarica un file, fa doppio clic e gestisce prenotazioni, mappa, abbonati e cassa dal PC della cassa, senza internet, senza VPS e senza configurazione.
