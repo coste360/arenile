@@ -11,8 +11,14 @@ export {
   DataTablePagination,
   DataTableViewOptions,
   type ColumnDef,
+  type DataTableColumnMeta,
+  type DataTableLoadMore,
   type DataTableProps,
 } from './DataTable';
+export { BackLink, Page, PageToolbar, type PageProps, type PageToolbarProps } from './Page';
+export { SectionCard, type SectionCardProps } from './SectionCard';
+export { StatCard, type StatCardProps, type StatTone } from './StatCard';
+export { NavTab, NavTabs, type NavTabsProps } from './NavTabs';
 export { FieldRow, FormSection, type FieldRowProps, type FormSectionProps } from './FormSection';
 export { MoneyInput, PercentInput, type ScaledInputProps } from './MoneyInput';
 export {

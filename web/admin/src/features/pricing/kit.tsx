@@ -28,17 +28,18 @@ import {
 } from '@arenile/shared/ui';
 import {
   MoneyInput,
-  PageHeader,
+  NavTab,
+  NavTabs,
+  Page,
   PercentInput,
   type Option,
   type ScaledInputProps,
 } from '@arenile/shared/ui/patterns';
-import { Link } from '@tanstack/react-router';
+import { Link, useMatchRoute } from '@tanstack/react-router';
 import {
   AlertCircleIcon,
   CalculatorIcon,
   CalendarCheckIcon,
-  EyeIcon,
   ListOrderedIcon,
   ShieldCheckIcon,
   Table2Icon,
@@ -46,6 +47,7 @@ import {
 import { useId, type ComponentProps, type ReactNode } from 'react';
 import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { ReadOnlyNotice } from '../configuration/components/ConfigPage';
 import type { Season } from '../configuration/api/resources';
 import type { FormAlertState } from '../configuration/lib/formErrors';
 
@@ -78,17 +80,11 @@ export function PricingLayout({
 }) {
   const { t } = useTranslation('configuration');
   return (
-    <section aria-labelledby="page-title" className="mx-auto w-full max-w-6xl space-y-6">
-      <PageHeader title={title} description={description} actions={actions} />
+    <Page title={title} description={description} actions={actions}>
       <PricingNav establishmentId={establishmentId} seasonId={seasonId} />
-      {readOnly && (
-        <Alert role="note">
-          <EyeIcon aria-hidden="true" />
-          <AlertDescription>{t('readOnly')}</AlertDescription>
-        </Alert>
-      )}
+      {readOnly && <ReadOnlyNotice text={t('readOnly')} />}
       {children}
-    </section>
+    </Page>
   );
 }
 
@@ -117,19 +113,11 @@ export function PricingNav({
     },
     { to: '/e/$establishmentId/policies', label: t('nav.policies'), icon: ShieldCheckIcon },
   ] as const;
+  const matchRoute = useMatchRoute();
   return (
-    <nav
-      aria-label={t('nav.label')}
-      className="inline-flex max-w-full flex-wrap gap-1 rounded-lg bg-muted p-1"
-    >
+    <NavTabs label={t('nav.label')}>
       {links.map((l) => (
-        <Button
-          key={l.to}
-          asChild
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground data-[status=active]:bg-background data-[status=active]:text-foreground data-[status=active]:shadow-sm"
-        >
+        <NavTab key={l.to} active={!!matchRoute({ to: l.to, params: { establishmentId } })}>
           <Link
             to={l.to}
             params={{ establishmentId }}
@@ -139,9 +127,9 @@ export function PricingNav({
             <l.icon aria-hidden="true" />
             {l.label}
           </Link>
-        </Button>
+        </NavTab>
       ))}
-    </nav>
+    </NavTabs>
   );
 }
 
