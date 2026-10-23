@@ -85,7 +85,7 @@ type Deps struct {
 	Customers Customers
 	// Terms is optional (no terms check on the public join when nil).
 	Terms Terms
-	// BaseURL builds the waitlist links (<base>/b/<slug>/lista-attesa/<token>).
+	// BaseURL builds the waitlist links (<base>/b/<slug>/m/w/<token>, under /m/ for the no-referrer and no-store headers).
 	BaseURL string
 }
 

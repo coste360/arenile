@@ -247,7 +247,7 @@ func (s *Service) sendLink(ctx context.Context, tx bun.IDB, es store.Establishme
 
 // linkURL is the personal waitlist page of the public site.
 func (s *Service) linkURL(slug, token string) string {
-	return s.d.BaseURL + "/b/" + slug + "/lista-attesa/" + token
+	return s.d.BaseURL + "/b/" + slug + "/m/w/" + token
 }
 
 // closeOffer moves a pending offer to status (declined, expired, revoked),
