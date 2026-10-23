@@ -66,7 +66,7 @@ Use the semantic Tailwind classes, never raw palette colours (`slate-*`, hex):
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | background / foreground       | `bg-background text-foreground`                                                                                              | page                                                              |
 | card, popover                 | `bg-card text-card-foreground`                                                                                               | surfaces                                                          |
-| primary (deep sea blue)       | `bg-primary text-primary-foreground`                                                                                         | main actions, selection                                           |
+| primary (Coste360 navy)       | `bg-primary text-primary-foreground`                                                                                         | main actions, selection                                           |
 | primary-on-surface            | `text-primary-on-surface`                                                                                                    | links / brand text on surfaces (contrast-safe with custom themes) |
 | highlight (warm sand)         | `bg-highlight text-highlight-foreground`                                                                                     | badges, "presto", highlights                                      |
 | secondary, muted, accent      | `bg-muted text-muted-foreground`, `hover:bg-accent`                                                                          | secondary text, hover                                             |
@@ -77,6 +77,13 @@ Use the semantic Tailwind classes, never raw palette colours (`slate-*`, hex):
 | map surfaces                  | `fill-map-sand`, `fill-map-sea`, `fill-map-decoration`, `stroke-map-spot-stroke`                                             | map                                                               |
 | beach map kit                 | `fill-beach-sand-soft`, `fill-beach-water-soft`, `stroke-beach-water`, `beach-flag-green/yellow/red` (`--beach-*`, ADR 0012) | kit art, map backdrop, sea flag (see `shared/src/map/README.md`)  |
 | spot statuses                 | `STATUS_CLASSES[status].fill / .labelFill / .bg` from `@arenile/shared/map` (`--status-free`, `--status-booked-online`, …)   | map, legends, badges                                              |
+
+Colours aligned to the Coste360 design system (owner decision 2026-10-23, ADR 0018): primary
+navy `#0b2542`, ink `#0f172a` / `#475569`, surfaces `#ffffff` / `#f8fafc`, slate borders (inputs
+`#74849b`, 3:1), states `#b91c1c` (Coste360 `#dc2626` one step darker, for AA on its tint) / `#15803d` /
+`#f59e0b`, ring and links primary-lighter `#185482` (per-scheme `--ring-light` / `--ring-dark` on
+themed public pages); the sky accent `#38bdf8` is the dark-scheme primary (navy text) and is decorative only
+on light surfaces. Pairs are checked by `theme/brand.test.ts`.
 
 Radius: `--radius: 0.75rem` (`rounded-lg` = radius, `rounded-md`/`rounded-sm` smaller).
 Font: Inter Variable (`@fontsource-variable/inter`, `font-sans`). Dark mode: `.dark` on

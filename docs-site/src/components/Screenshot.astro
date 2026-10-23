@@ -157,17 +157,26 @@ const t = Astro.locals.t;
       0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
       0 12px 32px -12px color-mix(in oklab, var(--foreground) 18%, transparent);
   }
+  /* Phone: a bezel with padding, so the screen keeps its own rounded corners
+     and the capture's edges are never clipped by the outer radius. */
   .is-mobile .shot-frame {
-    border-width: 6px;
-    border-color: color-mix(in oklab, var(--foreground) 85%, var(--background));
-    border-radius: 2.25rem;
+    padding: 0.625rem;
+    border-width: 1px;
+    border-color: color-mix(in oklab, var(--foreground) 70%, var(--background));
+    border-radius: 2.5rem;
+    background: color-mix(in oklab, var(--foreground) 88%, var(--background));
+  }
+  .is-mobile:not(.frameless) .shot-img {
+    border-radius: 1.875rem;
   }
   .frameless .shot-frame {
     border-radius: var(--radius);
   }
   .is-mobile.frameless .shot-frame {
+    padding: 0;
     border-width: 1px;
     border-color: var(--border);
+    background: var(--card);
   }
   .shot-bar {
     display: flex;

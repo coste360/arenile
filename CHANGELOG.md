@@ -18,13 +18,17 @@ offline).
   codice, `NOTICE.md` e `TRADEMARK.md` aggiornati), testo dei logotipi in tracciati e PNG derivati con
   `scripts/brand/build-brand.mjs` (Titillium Web, OFL-1.1, usato solo per generare i tracciati: nessuna nuova
   dipendenza di runtime, nessun font caricato dalle app).
-- Pannello: tema shadcn sui colori del marchio (navy primario in chiaro, oceano per focus e link, ciano su
-  superfici blu notte in scuro, grafici e sidebar coerenti, contrasto AA verificato da un test), icona e
+- Pannello: tema shadcn con i colori allineati al design system Coste360 (decisione del titolare del
+  2026-10-23: navy `#0b2542` primario in chiaro, `#185482` per focus e link, azzurro `#38bdf8` primario in
+  scuro su superfici navy, ink e slate per testi e bordi, errore `#b91c1c`, bordi dei campi a 3:1, grafici e
+  sidebar coerenti,
+  contrasto AA verificato da un test; componenti, layout, raggi e font invariati), icona e
   scritta Arenile nella sidebar, logo orizzontale in accesso e primo avvio con "Un prodotto di" + logo
   Coste360, firma Coste360 discreta nel piè della sidebar, favicon SVG con PNG, icone PWA (192, 512,
   maschera), apple-touch-icon, `theme_color` navy e titoli delle schede "Pagina · Stabilimento · Arenile".
   Componenti condivisi `BrandLogo`, `MadeByCoste360`, `Coste360Signature`.
-- Pagina pubblica: colore predefinito oceano `#0D79AC` (il tema dello stabilimento resta prioritario),
+- Pagina pubblica: colore predefinito `#185482` (primary-lighter Coste360; il tema dello stabilimento resta prioritario;
+  anello di focus con variante chiara e scura),
   favicon e immagine social Arenile come default (nel browser sostituiti dal logo dello stabilimento, se c'è;
   i crawler dei social vedono il default), piè "powered by Arenile" con link a https://arenile.app.
 - Email: in fondo a ogni messaggio una firma discreta "Arenile — Coste360.it" con il marchio Arenile come

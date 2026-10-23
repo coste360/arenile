@@ -45,17 +45,18 @@
   --sl-color-bg-sidebar: var(--background);
 }
 
-/* Starlight's "note" blue (asides, badges) in the brand sea colours (ocean
-   #0D79AC, navy #092D62, cyan #16CDE1) instead of the default periwinkle. */
+/* Starlight's "note" blue (asides, badges) in the Coste360 design system
+   colours (primary #0B2542, primary-lighter #185482, sky accent #38BDF8)
+   instead of the default periwinkle. */
 :root {
-  --sl-color-blue-low: #0b2c47;
-  --sl-color-blue: #16cde1;
-  --sl-color-blue-high: #b8eef6;
+  --sl-color-blue-low: #0b2542;
+  --sl-color-blue: #38bdf8;
+  --sl-color-blue-high: #bae6fd;
 }
 :root[data-theme='light'] {
-  --sl-color-blue-low: #dcf0f9;
-  --sl-color-blue: #0d79ac;
-  --sl-color-blue-high: #092d62;
+  --sl-color-blue-low: #e7eef5;
+  --sl-color-blue: #185482;
+  --sl-color-blue-high: #0b2542;
 }
 
 @layer base {

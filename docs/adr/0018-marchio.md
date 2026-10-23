@@ -25,11 +25,24 @@ deve caricare font solo per un logo.
   nessuna app (pannello, pagina pubblica, documentazione).
 - Il logo Coste360 è il PNG originale fornito dall'azienda (`logo-{primary,white}.png`, 781x312), usato così
   com'è: non viene ridisegnato né vettorializzato. Il link è sempre https://www.coste360.it/.
-- Il tema shadcn predefinito (`web/shared/src/styles/globals.css`) usa il navy come primario chiaro,
-  l'oceano per focus e link, il ciano come primario scuro su superfici blu notte; ogni coppia testo/sfondo
-  è verificata AA da `web/shared/src/theme/brand.test.ts`. La pagina pubblica mantiene il tema dello
-  stabilimento (spec 12.5): cambia solo il default (`DEFAULT_PRIMARY` = oceano, leggibile in entrambi gli
-  schemi). `index.html` porta favicon e immagine social Arenile come default; nel browser `seo.ts` li
+- Il tema shadcn predefinito (`web/shared/src/styles/globals.css`) ha i **colori allineati al design
+  system Coste360** (decisione del titolare, 2026-10-23; fonte: `DESIGN.md` dell'app Coste360): primario
+  navy `#0b2542`, testo ink `#0f172a` / `#475569`, superfici `#ffffff` / `#f8fafc`, bordi slate, stati
+  `#15803d` / `#f59e0b` e, per l'errore, `#b91c1c` (un passo più scuro di `#dc2626`, che come testo sulla
+  propria tinta non arriva a 4,5:1); focus e link in primary-lighter `#185482` (l'azzurro `#38bdf8` non
+  raggiunge 3:1 sul bianco ed è solo decorativo); in scuro, derivato perché Coste360 non ne ha uno, primario
+  azzurro `#38bdf8` con testo navy su superfici navy. Componenti, layout, raggi e tipografia shadcn restano
+  invariati, così come i colori della mappa (`--status-*`, `--map-*`, `--beach-*`) e i file del logo. Le
+  coppie testo/sfondo dei token, i bordi dei campi (3:1) e l'anello di focus sono verificati da
+  `web/shared/src/theme/brand.test.ts`; i colori usati solo come grafica (avviso `#f59e0b`, alcune serie dei
+  grafici) restano sotto 3:1 sul bianco, come prima, e vanno sempre accompagnati da un testo. La pagina
+  pubblica mantiene il tema dello stabilimento (spec 12.5): cambia solo il default (`DEFAULT_PRIMARY` =
+  primary-lighter `#185482`, AA con il testo bianco); link e anello di focus hanno una variante chiara e una
+  scura (`--ring-light` / `--ring-dark`, come `--primary-on-surface`), perché un primario abbastanza scuro
+  per il testo bianco non arriva a 3:1 come anello sulle superfici scure. Il primo tema (navy `#092D62`,
+  oceano `#0D79AC`, ciano `#16CDE1` del brand kit) è sostituito; il brand kit resta la fonte del logo.
+  Questa ADR è emendata invece di essere sostituita perché la decisione è dello stesso giorno e non è
+  ancora rilasciata. `index.html` porta favicon e immagine social Arenile come default; nel browser `seo.ts` li
   sostituisce con il logo dello stabilimento quando c'è. I crawler dei social non eseguono JavaScript e
   vedono quindi sempre la scheda Arenile: una scheda per stabilimento richiederebbe di iniettare i meta lato
   server su `/b/{slug}` (non fatto). Sulla pagina pubblica c'è solo "powered by Arenile" (dicitura lasciata

@@ -64,7 +64,7 @@ export default defineConfig({
       // Keeps the 200+ API reference links out of the sidebar of the guide pages.
       routeMiddleware: './src/routeData.ts',
       head: [
-        { tag: 'meta', attrs: { name: 'theme-color', content: '#092D62' } },
+        { tag: 'meta', attrs: { name: 'theme-color', content: '#0B2542' } },
         { tag: 'meta', attrs: { property: 'og:site_name', content: 'Arenile' } },
         { tag: 'meta', attrs: { property: 'og:image', content: publicUrl('og.png') } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
