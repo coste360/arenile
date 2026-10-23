@@ -62,7 +62,7 @@ func TestM6_ContractRouting(t *testing.T) {
 		{"device api needs a token", http.MethodGet, "/api/device/v1/self", "", "", 401},
 		{"api keys are not device tokens", http.MethodGet, "/api/device/v1/self", "", "ar_live_abcdefgh_" + strings.Repeat("a", 52), 401},
 		{"unknown device token on admin", http.MethodGet, "/api/admin/v1/auth/me", "", devToken, 401},
-		{"pair is public (stub)", http.MethodPost, "/api/device/v1/pair", "", "", 501},
+		{"pair is public", http.MethodPost, "/api/device/v1/pair", "", "", 400},
 		{"desktop api hidden on server", http.MethodGet, "/api/desktop/v1/first-run", "192.168.1.5:4000", "", 404},
 	} {
 		if got := do(server, tc.method, tc.path, tc.remote, tc.bearer).Code; got != tc.want {
@@ -71,7 +71,12 @@ func TestM6_ContractRouting(t *testing.T) {
 	}
 
 	desktop := newApp(t, WithDesktop(fakeDesktop{}))
-	w = do(desktop, http.MethodGet, "/api/admin/v1/meta", "", "")
+	// LAN mode guard: peers outside the local network are refused on the
+	// desktop edition (httptest's default peer 192.0.2.1 is public).
+	if got := do(desktop, http.MethodGet, "/api/admin/v1/meta", "", "").Code; got != 403 {
+		t.Errorf("desktop from a public peer: %d, want 403", got)
+	}
+	w = do(desktop, http.MethodGet, "/api/admin/v1/meta", "192.168.1.5:4000", "")
 	_ = json.Unmarshal(w.Body.Bytes(), &m)
 	caps, _ := m["capabilities"].(map[string]any)
 	if w.Code != 200 || m["edition"] != "desktop" || caps["online_booking"] != false || caps["device_pairing"] != true {
@@ -80,8 +85,8 @@ func TestM6_ContractRouting(t *testing.T) {
 	if got := do(desktop, http.MethodGet, "/api/desktop/v1/first-run", "192.168.1.5:4000", "").Code; got != 403 {
 		t.Errorf("desktop api from the LAN: %d, want 403", got)
 	}
-	if got := do(desktop, http.MethodGet, "/api/desktop/v1/first-run", "127.0.0.1:4000", "").Code; got != 501 {
-		t.Errorf("desktop api from loopback (stub): %d, want 501", got)
+	if got := do(desktop, http.MethodGet, "/api/desktop/v1/first-run", "127.0.0.1:4000", "").Code; got != 200 {
+		t.Errorf("desktop first-run status from loopback: %d, want 200", got)
 	}
 	if got := do(desktop, http.MethodGet, "/api/desktop/v1/settings", "127.0.0.1:4000", "").Code; got != 401 {
 		t.Errorf("desktop settings without session: %d, want 401", got)

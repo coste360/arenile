@@ -14,12 +14,13 @@ package desktop
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 
 	"github.com/coste360/arenile/internal/desktop/control"
 	"github.com/coste360/arenile/internal/domain/auth"
-	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/problem"
 )
 
@@ -57,58 +58,40 @@ func (h *Handlers) enabled(w http.ResponseWriter, r *http.Request) bool {
 	return true
 }
 
-// GetFirstRunStatus implements GET /api/desktop/v1/first-run.
-func (h *Handlers) GetFirstRunStatus(w http.ResponseWriter, r *http.Request) {
+// owner checks that the request comes from a logged-in owner (the desktop
+// settings act on the whole installation).
+func (h *Handlers) owner(w http.ResponseWriter, r *http.Request) bool {
 	if !h.enabled(w, r) {
-		return
+		return false
 	}
-	problem.Write(w, r, problem.NotImplemented)
+	p, ok := auth.PrincipalFrom(r.Context())
+	if !ok {
+		problem.Write(w, r, problem.Unauthorized)
+		return false
+	}
+	if p.Kind != auth.PrincipalUser || !p.HasRole(auth.RoleOwner) {
+		problem.Write(w, r, problem.Forbidden)
+		return false
+	}
+	return true
 }
 
-// CompleteFirstRun implements POST /api/desktop/v1/first-run.
-func (h *Handlers) CompleteFirstRun(w http.ResponseWriter, r *http.Request) {
-	if !h.enabled(w, r) {
-		return
+// decode reads a JSON body into v, writing a problem on failure.
+func decode(w http.ResponseWriter, r *http.Request, v any) bool {
+	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+		var mbe *http.MaxBytesError
+		if errors.As(err, &mbe) {
+			problem.Write(w, r, problem.BadRequest, problem.Detail("Corpo della richiesta troppo grande."))
+			return false
+		}
+		problem.Write(w, r, problem.BadRequest, problem.Detail("JSON non valido o campi con formato errato."))
+		return false
 	}
-	problem.Write(w, r, problem.NotImplemented)
+	return true
 }
 
-// GetDesktopSettings implements GET /api/desktop/v1/settings.
-func (h *Handlers) GetDesktopSettings(w http.ResponseWriter, r *http.Request) {
-	if !h.enabled(w, r) {
-		return
-	}
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// UpdateDesktopSettings implements PUT /api/desktop/v1/settings.
-func (h *Handlers) UpdateDesktopSettings(w http.ResponseWriter, r *http.Request, params api.UpdateDesktopSettingsParams) {
-	if !h.enabled(w, r) {
-		return
-	}
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// ListDesktopBackups implements GET /api/desktop/v1/backups.
-func (h *Handlers) ListDesktopBackups(w http.ResponseWriter, r *http.Request) {
-	if !h.enabled(w, r) {
-		return
-	}
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// CreateDesktopBackup implements POST /api/desktop/v1/backups.
-func (h *Handlers) CreateDesktopBackup(w http.ResponseWriter, r *http.Request, params api.CreateDesktopBackupParams) {
-	if !h.enabled(w, r) {
-		return
-	}
-	problem.Write(w, r, problem.NotImplemented)
-}
-
-// RestoreDesktopBackup implements POST /api/desktop/v1/backups/{backupName}/restore.
-func (h *Handlers) RestoreDesktopBackup(w http.ResponseWriter, r *http.Request, backupName api.BackupName, params api.RestoreDesktopBackupParams) {
-	if !h.enabled(w, r) {
-		return
-	}
-	problem.Write(w, r, problem.NotImplemented)
+func writeJSON(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(v)
 }
