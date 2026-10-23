@@ -204,7 +204,11 @@ func TestPublicRateLimit_ReadsAndCreations(t *testing.T) {
 	h := RequestContext(nil)(PublicRateLimit(auth.NewRateLimiter(c, 60, time.Minute), auth.NewRateLimiter(c, 10, time.Minute))(
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(200) })))
 	do := func(method, ip string) *httptest.ResponseRecorder {
-		r := httptest.NewRequest(method, "/api/public/v1/lido", strings.NewReader("{}"))
+		path := "/api/public/v1/lido"
+		if method == http.MethodPost {
+			path += "/bookings"
+		}
+		r := httptest.NewRequest(method, path, strings.NewReader("{}"))
 		r.RemoteAddr = ip + ":1"
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
@@ -226,6 +230,29 @@ func TestPublicRateLimit_ReadsAndCreations(t *testing.T) {
 	}
 	if w := do(http.MethodPost, "1.1.1.1"); w.Code != 429 {
 		t.Fatal("11th creation must be limited")
+	}
+	// Steps of an existing booking (session token, magic link) count as
+	// reads: they still pass once the creations of the IP are exhausted.
+	for range 10 {
+		do(http.MethodPost, "4.4.4.4")
+	}
+	for i, step := range []struct{ method, path string }{
+		{http.MethodPatch, "/api/public/v1/lido/bookings/b1"},
+		{http.MethodPost, "/api/public/v1/lido/bookings/b1/pay"},
+		{http.MethodPost, "/api/public/v1/lido/manage/tok/cancel"},
+	} {
+		r := httptest.NewRequest(step.method, step.path, strings.NewReader("{}"))
+		r.RemoteAddr = "4.4.4.4:1"
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != 200 {
+			t.Fatalf("step %d limited (%d): steps of an existing booking are reads", i, w.Code)
+		}
+	}
+	links := httptest.NewRequest(http.MethodPost, "/api/public/v1/lido/manage-links", strings.NewReader("{}"))
+	links.RemoteAddr = "1.1.1.1:1"
+	if w := httptest.NewRecorder(); func() int { h.ServeHTTP(w, links); return w.Code }() != 429 {
+		t.Fatal("manage-links is a creation: limited after 10 creations")
 	}
 	quote := httptest.NewRequest(http.MethodPost, "/api/public/v1/lido/quote", strings.NewReader("{}"))
 	quote.RemoteAddr = "3.3.3.3:1"

@@ -3,11 +3,13 @@ package setup
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/uptrace/bun"
 
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/audit"
+	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/money"
@@ -112,6 +114,9 @@ func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoRe
 		if err != nil {
 			return err
 		}
+		if err := openDemoBookingWindow(ctx, tx, e, s.d.Clock.Now()); err != nil {
+			return err
+		}
 		extraRules, err := s.seedDemoExtras(ctx, tx, es, ar)
 		if err != nil {
 			return err
@@ -128,6 +133,32 @@ func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoRe
 		return nil, fmt.Errorf("setup: seed demo: %w", err)
 	}
 	return res, nil
+}
+
+// demoMaxLeadTimeDays lets the demo be booked online right after `seed
+// demo`, also off season: the seeded season can be the next one, beyond the
+// 120 days of the default policy.
+const demoMaxLeadTimeDays = 366
+
+// openDemoBookingWindow widens the maximum lead time of the default policy
+// of the demo establishment (settings document, version bumped).
+func openDemoBookingWindow(ctx context.Context, tx bun.Tx, e *store.Establishment, now time.Time) error {
+	settings, err := establishment.ParseSettings(e.Settings, e.Currency)
+	if err != nil {
+		return err
+	}
+	days := demoMaxLeadTimeDays
+	settings.DefaultPolicy.MaxLeadTimeDays = &days
+	raw, err := store.MarshalJSONValue(settings)
+	if err != nil {
+		return err
+	}
+	if _, err := tx.NewUpdate().Model((*store.Establishment)(nil)).
+		Set("settings = ?", raw).Set("version = version + 1").Set("updated_at = ?", now).
+		Where("id = ?", e.ID).Exec(ctx); err != nil {
+		return fmt.Errorf("demo booking window: %w", err)
+	}
+	return nil
 }
 
 // seedDemoExtras adds what the quick price list does not cover: extra

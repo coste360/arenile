@@ -36,6 +36,7 @@ var (
 	_ ext.PaymentProvider            = (*stripe.Driver)(nil)
 	_ gateway.PaymentStatusChecker   = (*stripe.Driver)(nil)
 	_ gateway.CredentialsVerifier    = (*stripe.Driver)(nil)
+	_ gateway.PaymentCanceller       = (*stripe.Driver)(nil)
 	_ notify.Settings                = (*online.Service)(nil)
 	_ online.Providers               = (*Registry)(nil)
 	_ ext.EventSink                  = (*notify.Service)(nil).Sink()

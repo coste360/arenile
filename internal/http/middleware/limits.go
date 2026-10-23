@@ -20,16 +20,20 @@ import (
 	"github.com/coste360/arenile/internal/store"
 )
 
-// PublicRateLimit limits public API calls per client IP: reads (GET/HEAD)
-// and creations (other methods) have separate budgets (spec 17.2). POST
-// .../quote writes nothing (debounced price summary, spec 12.3) and counts
-// as a read.
+// PublicRateLimit limits public API calls per client IP with the two budgets
+// of spec 17.2: creations are the requests that create something new from
+// nothing, POST .../bookings (a hold) and POST .../manage-links (an email);
+// every other call counts as a read, including the session-token or
+// magic-link steps of an existing booking (customer details, pay, modify,
+// cancel), so one checkout never spends more than one creation and
+// several customers behind the same Wi-Fi can still book. POST .../quote
+// writes nothing (debounced price summary, spec 12.3).
 func PublicRateLimit(reads, creations *auth.RateLimiter) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ip := reqctx.From(r.Context()).ClientIP
 			l := reads
-			if isUnsafe(r.Method) && !strings.HasSuffix(r.URL.Path, "/quote") {
+			if isPublicCreation(r) {
 				l = creations
 			}
 			if ok, retry := l.Allow(ip); !ok {
@@ -200,3 +204,12 @@ func (c *captureWriter) Write(b []byte) (int, error) {
 }
 
 func (c *captureWriter) Unwrap() http.ResponseWriter { return c.ResponseWriter }
+
+// isPublicCreation: POST of a new booking session or of a new manage link.
+func isPublicCreation(r *http.Request) bool {
+	if r.Method != http.MethodPost {
+		return false
+	}
+	p := strings.TrimRight(r.URL.Path, "/")
+	return strings.HasSuffix(p, "/bookings") || strings.HasSuffix(p, "/manage-links")
+}

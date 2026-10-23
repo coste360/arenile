@@ -2834,6 +2834,9 @@ type CheckoutNextAction string
 
 // CheckoutPayRequest defines model for CheckoutPayRequest.
 type CheckoutPayRequest struct {
+	// ReturnTo Solo dal widget incorporato: indirizzo della pagina ospitante, la cui origine deve essere tra gli `allowed_embed_origins` dello stabilimento (altrimenti 422 `validation_error`). Il provider riporta il cliente lì con `arenile_checkout=<booking_id>` (frammento rimosso) ed `embed.js` riapre il widget sulla pagina di esito, dove il token di sessione è ancora disponibile. Senza questo campo si torna su `/b/{slug}?checkout=<booking_id>`.
+	ReturnTo *string `json:"return_to,omitempty"`
+
 	// Settlement at_desk solo se la policy online consente il pagamento in cassa.
 	Settlement *CheckoutPayRequestSettlement `json:"settlement,omitempty"`
 }

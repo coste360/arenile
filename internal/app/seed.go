@@ -13,6 +13,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
+	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/setup"
@@ -65,7 +66,7 @@ func SeedDemo(ctx context.Context, db bun.IDB, c clock.Clock) (*SeedResult, erro
 		e.BookingEnabled = true
 		showPrices, hideHeader := true, true
 		e.Theme = store.Theme{
-			PrimaryColor: "#0E6BA8", AccentColor: "#F2B134", FontFamily: "Inter", Radius: "md",
+			PrimaryColor: "#0E6BA8", AccentColor: "#B45309", FontFamily: "Inter", Radius: "md",
 			ShowPricesOnMap: &showPrices, HideHeaderInEmbed: &hideHeader,
 			CustomTexts: map[string]map[string]string{
 				"it": {"intro": "Prenota il tuo ombrellone al Lido Demo."},
@@ -136,5 +137,48 @@ func (a *App) SeedDemoOperations(ctx context.Context, actorEmail string) (*setup
 	if err != nil {
 		return nil, fmt.Errorf("app: seed demo operations: %w", err)
 	}
-	return a.Setup.SeedDemoOperations(ctx, est.ID, a.DemoOperations(p))
+	res, err := a.Setup.SeedDemoOperations(ctx, est.ID, a.DemoOperations(p))
+	if err != nil {
+		return res, err
+	}
+	if err := a.seedDemoTerms(ctx, p, est.ID); err != nil {
+		return res, fmt.Errorf("app: seed demo terms: %w", err)
+	}
+	return res, nil
+}
+
+// demoTermsVersion is the label of the demo booking terms.
+const demoTermsVersion = "demo-2027"
+
+// seedDemoTerms publishes example booking terms, privacy notice and
+// marketing consent text for the public page of the demo (spec 12.3, 23),
+// when the demo has none yet. Idempotent.
+func (a *App) seedDemoTerms(ctx context.Context, p *auth.Principal, establishmentID string) error {
+	es, err := store.SystemEstablishmentScope(ctx, a.db, establishmentID)
+	if err != nil {
+		return err
+	}
+	if cur, err := a.Online.CurrentTerms(ctx, a.db, es); err != nil || cur != nil {
+		return err
+	}
+	_, err = a.Online.PublishTerms(ctx, p, establishmentID, online.TermsInput{
+		Version: demoTermsVersion, MakeCurrent: true,
+		Texts: map[string]store.TermsTexts{
+			"it": {
+				Terms: "Condizioni di prenotazione del Lido Demo (esempio): la prenotazione è confermata al pagamento o, " +
+					"se previsto, all'arrivo. Cancellazione gratuita fino a 14 giorni prima, credito del 50% fino a 3 giorni prima.",
+				Privacy: "Informativa privacy (esempio): Lido Demo tratta nome, email e telefono solo per gestire la " +
+					"prenotazione e gli obblighi di legge. Puoi chiedere accesso, rettifica o cancellazione a info@lido-demo.example.",
+				Marketing: "Voglio ricevere offerte e novità del Lido Demo via email (facoltativo, revocabile quando vuoi).",
+			},
+			"en": {
+				Terms: "Lido Demo booking terms (example): the booking is confirmed on payment or, where allowed, on arrival. " +
+					"Free cancellation up to 14 days before, 50% credit up to 3 days before.",
+				Privacy: "Privacy notice (example): Lido Demo processes name, email and phone only to manage the booking and " +
+					"legal obligations. Ask for access, correction or erasure at info@lido-demo.example.",
+				Marketing: "I want to receive Lido Demo offers and news by email (optional, can be withdrawn at any time).",
+			},
+		},
+	})
+	return err
 }

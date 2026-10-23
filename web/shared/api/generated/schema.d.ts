@@ -5101,6 +5101,11 @@ export interface components {
              * @enum {string}
              */
             settlement?: "online" | "at_desk";
+            /**
+             * Format: uri
+             * @description Solo dal widget incorporato: indirizzo della pagina ospitante, la cui origine deve essere tra gli `allowed_embed_origins` dello stabilimento (altrimenti 422 `validation_error`). Il provider riporta il cliente lì con `arenile_checkout=<booking_id>` (frammento rimosso) ed `embed.js` riapre il widget sulla pagina di esito, dove il token di sessione è ancora disponibile. Senza questo campo si torna su `/b/{slug}?checkout=<booking_id>`.
+             */
+            return_to?: string;
         };
         PayResult: {
             /**

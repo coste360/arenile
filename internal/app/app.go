@@ -4,6 +4,7 @@
 package app
 
 import (
+	"cmp"
 	"context"
 	"crypto/tls"
 	"errors"
@@ -62,6 +63,9 @@ type options struct {
 	clock   clock.Clock
 	version string
 	signals bool
+	// publicReads / publicCreations override the per-IP limits of the
+	// public API (0 = spec 17.2 defaults).
+	publicReads, publicCreations int
 }
 
 // Option configures New.
@@ -78,6 +82,13 @@ func WithClock(c clock.Clock) Option { return func(o *options) { o.clock = c } }
 
 // WithVersion sets the version reported by /healthz.
 func WithVersion(v string) Option { return func(o *options) { o.version = v } }
+
+// WithPublicRateLimits overrides the per-IP limits of the public API per
+// minute (spec 17.2 defaults: 60 reads, 10 creations). Load and acceptance
+// tests drive many customers from one address.
+func WithPublicRateLimits(reads, creations int) Option {
+	return func(o *options) { o.publicReads, o.publicCreations = reads, creations }
+}
 
 // WithoutSignalHandling disables SIGINT/SIGTERM handling in Run (tests,
 // embedding in another program).
@@ -221,7 +232,7 @@ func (a *App) wire() error {
 		Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
 	}))
 	a.wireConfiguration(aw)
-	a.registry = NewRegistry(c, x)
+	a.registry = newRegistry(c, x, a.cfg.StripeAPIURL)
 	a.wireOperations(aw)
 	a.wireOnline(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
@@ -267,6 +278,9 @@ func (a *App) wire() error {
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),
 		Extensions:     x,
+
+		PublicReadsPerMinute:     cmp.Or(a.opts.publicReads, a.cfg.PublicReadsPerMinute),
+		PublicCreationsPerMinute: cmp.Or(a.opts.publicCreations, a.cfg.PublicCreationsPerMinute),
 	})
 	return nil
 }
@@ -418,6 +432,10 @@ func (a *App) Run(ctx context.Context) error {
 	}
 	stopJobs()
 	a.runner.Wait()
+	if a.Checkout != nil {
+		// Background "send me a new link" requests (bounded by their own timeout).
+		a.Checkout.Wait()
+	}
 	return runErr
 }
 

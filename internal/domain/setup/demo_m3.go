@@ -161,6 +161,16 @@ func (s *Service) SeedDemoOperations(ctx context.Context, establishmentID string
 		return res, err
 	}
 	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
+		// The seeded operations are history, not news: their outbox events
+		// are marked dispatched so that the first `serve` does not email
+		// dozens of fictitious customers or replay them to sinks (they stay
+		// in the outbox table for inspection).
+		if _, err := tx.NewUpdate().Model((*store.OutboxEvent)(nil)).
+			Set("dispatched_at = ?", s.d.Clock.Now()).
+			Where("establishment_id = ?", w.es.ID()).Where("dispatched_at IS NULL").
+			Exec(ctx); err != nil {
+			return fmt.Errorf("mark demo events dispatched: %w", err)
+		}
 		return s.d.Audit.Record(ctx, tx, audit.Entry{
 			EstablishmentID: w.es.ID(), Actor: audit.SystemActor, Action: "seed.demo_operations",
 			EntityType: "establishment", EntityID: w.es.ID(),

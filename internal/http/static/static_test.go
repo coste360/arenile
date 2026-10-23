@@ -1,6 +1,9 @@
 package static
 
 import (
+	"bytes"
+	"compress/gzip"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -96,5 +99,58 @@ func TestHandler_PlaceholderWithoutBuild(t *testing.T) {
 	h.Admin(w, httptest.NewRequest(http.MethodGet, "/admin/.gitkeep", nil))
 	if strings.Contains(w.Body.String(), "gitkeep") {
 		t.Fatal("dotfiles must not be served")
+	}
+}
+
+func TestHandler_GzipText(t *testing.T) {
+	js := []byte(strings.Repeat("console.log('arenile');\n", 200))
+	booking := fstest.MapFS{
+		"index.html":       {Data: []byte("<html>" + strings.Repeat("<p>booking</p>", 200) + "</html>")},
+		"assets/main.js":   {Data: js},
+		"assets/font.woff": {Data: []byte(strings.Repeat("x", 4096))},
+		"assets/tiny.js":   {Data: []byte("t()")},
+	}
+	h := NewFromFS(fstest.MapFS{}, booking)
+	tests := []struct {
+		name, path, accept string
+		gzip               bool
+	}{
+		{"script with gzip", "/b/assets/main.js", "gzip, deflate, br", true},
+		{"index with gzip", "/b/lido-demo", "br;q=1, gzip;q=0.8", true},
+		{"gzip refused", "/b/assets/main.js", "gzip;q=0", false},
+		{"no Accept-Encoding", "/b/assets/main.js", "", false},
+		{"fonts are not recompressed", "/b/assets/font.woff", "gzip", false},
+		{"tiny files stay plain", "/b/assets/tiny.js", "gzip", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodGet, tt.path, nil)
+			if tt.accept != "" {
+				r.Header.Set("Accept-Encoding", tt.accept)
+			}
+			w := httptest.NewRecorder()
+			h.Booking(w, r)
+			if w.Code != 200 {
+				t.Fatalf("status %d", w.Code)
+			}
+			got := w.Header().Get("Content-Encoding") == "gzip"
+			if got != tt.gzip {
+				t.Fatalf("gzip %v, want %v", got, tt.gzip)
+			}
+			if !got {
+				return
+			}
+			zr, err := gzip.NewReader(w.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			plain, _ := io.ReadAll(zr)
+			if tt.path == "/b/assets/main.js" && !bytes.Equal(plain, js) {
+				t.Fatal("gzip body does not round-trip")
+			}
+			if w.Header().Get("Vary") != "Accept-Encoding" {
+				t.Fatalf("Vary %q", w.Header().Get("Vary"))
+			}
+		})
 	}
 }

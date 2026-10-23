@@ -35,13 +35,23 @@ const (
 	// ARENILE_SMTP_URL, emails are written as .eml files into this
 	// directory (local development, end-to-end tests) instead of only
 	// being logged.
-	EnvMailDir              = "ARENILE_MAIL_DIR"
-	EnvHoldTTL              = "ARENILE_HOLD_TTL"
-	EnvLogLevel             = "ARENILE_LOG_LEVEL"
-	EnvTrustedProxies       = "ARENILE_TRUSTED_PROXIES"
-	EnvRequireTOTPForOwners = "ARENILE_REQUIRE_TOTP_FOR_OWNERS"
-	EnvTelemetry            = "ARENILE_TELEMETRY"
-	EnvDev                  = "ARENILE_DEV"
+	EnvMailDir = "ARENILE_MAIL_DIR"
+	// EnvStripeAPIURL is an Arenile extension of spec 24.4 (M4): the base
+	// URL of the Stripe API, only for test doubles (stripe-mock, the fake
+	// used by the end-to-end tests). Empty = https://api.stripe.com.
+	EnvStripeAPIURL = "ARENILE_STRIPE_API_URL"
+	EnvHoldTTL      = "ARENILE_HOLD_TTL"
+	// EnvPublicReadsPerMinute and EnvPublicCreationsPerMinute are an
+	// Arenile extension of spec 24.4 (M4): the per-IP limits of the public
+	// API (spec 17.2 defaults 60 and 10), for lidos whose customers share
+	// one address (hotel or beach Wi-Fi) and for automated runs.
+	EnvPublicReadsPerMinute     = "ARENILE_PUBLIC_READS_PER_MINUTE"
+	EnvPublicCreationsPerMinute = "ARENILE_PUBLIC_CREATIONS_PER_MINUTE"
+	EnvLogLevel                 = "ARENILE_LOG_LEVEL"
+	EnvTrustedProxies           = "ARENILE_TRUSTED_PROXIES"
+	EnvRequireTOTPForOwners     = "ARENILE_REQUIRE_TOTP_FOR_OWNERS"
+	EnvTelemetry                = "ARENILE_TELEMETRY"
+	EnvDev                      = "ARENILE_DEV"
 
 	// First-owner bootstrap (ADR 0006): when all four are set and the
 	// database has no users, `serve` creates the owner once at startup.
@@ -61,22 +71,27 @@ var ErrInvalid = errors.New("config: invalid configuration")
 
 // Config is the fully parsed configuration.
 type Config struct {
-	Addr                 string
-	BaseURL              string
-	DataDir              string
-	DatabaseURL          string
-	SecretKeys           [][]byte
-	AutoMigrate          bool
-	TLSAutocertDomains   []string
-	SMTPURL              string
-	MailFrom             string
-	MailDir              string
-	HoldTTL              time.Duration
-	LogLevel             slog.Level
-	TrustedProxies       []netip.Prefix
-	RequireTOTPForOwners bool
-	Telemetry            bool
-	Dev                  bool
+	Addr               string
+	BaseURL            string
+	DataDir            string
+	DatabaseURL        string
+	SecretKeys         [][]byte
+	AutoMigrate        bool
+	TLSAutocertDomains []string
+	SMTPURL            string
+	MailFrom           string
+	MailDir            string
+	StripeAPIURL       string
+	HoldTTL            time.Duration
+	// PublicReadsPerMinute / PublicCreationsPerMinute: per-IP limits of the
+	// public API (spec 17.2).
+	PublicReadsPerMinute     int
+	PublicCreationsPerMinute int
+	LogLevel                 slog.Level
+	TrustedProxies           []netip.Prefix
+	RequireTOTPForOwners     bool
+	Telemetry                bool
+	Dev                      bool
 
 	// BootstrapOwner is the optional first owner created by `serve` when the
 	// database has no users. Zero value means disabled.
@@ -121,13 +136,14 @@ func Parse(lookup Lookup) (Config, error) {
 	}
 	var errs []error
 	cfg := Config{
-		Addr:        get(EnvAddr, ":8080"),
-		BaseURL:     strings.TrimRight(get(EnvBaseURL, ""), "/"),
-		DataDir:     get(EnvDataDir, "/data"),
-		DatabaseURL: get(EnvDatabaseURL, ""),
-		SMTPURL:     get(EnvSMTPURL, ""),
-		MailFrom:    get(EnvMailFrom, ""),
-		MailDir:     get(EnvMailDir, ""),
+		Addr:         get(EnvAddr, ":8080"),
+		BaseURL:      strings.TrimRight(get(EnvBaseURL, ""), "/"),
+		DataDir:      get(EnvDataDir, "/data"),
+		DatabaseURL:  get(EnvDatabaseURL, ""),
+		SMTPURL:      get(EnvSMTPURL, ""),
+		MailFrom:     get(EnvMailFrom, ""),
+		MailDir:      get(EnvMailDir, ""),
+		StripeAPIURL: strings.TrimRight(get(EnvStripeAPIURL, ""), "/"),
 	}
 
 	var err error
@@ -145,6 +161,21 @@ func Parse(lookup Lookup) (Config, error) {
 	}
 	if cfg.HoldTTL, err = time.ParseDuration(get(EnvHoldTTL, "10m")); err != nil || cfg.HoldTTL <= 0 {
 		errs = append(errs, fmt.Errorf("%s: must be a positive duration like 10m", EnvHoldTTL))
+	}
+	for _, l := range []struct {
+		env string
+		def string
+		dst *int
+	}{
+		{EnvPublicReadsPerMinute, "60", &cfg.PublicReadsPerMinute},
+		{EnvPublicCreationsPerMinute, "10", &cfg.PublicCreationsPerMinute},
+	} {
+		n, perr := strconv.Atoi(get(l.env, l.def))
+		if perr != nil || n < 1 || n > 1_000_000 {
+			errs = append(errs, fmt.Errorf("%s: must be a whole number of requests per minute between 1 and 1000000", l.env))
+			continue
+		}
+		*l.dst = n
 	}
 	if cfg.LogLevel, err = parseLevel(get(EnvLogLevel, "info")); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvLogLevel, err))
@@ -183,6 +214,12 @@ func Parse(lookup Lookup) (Config, error) {
 		u, uerr := url.Parse(cfg.SMTPURL)
 		if uerr != nil || (u.Scheme != "smtp" && u.Scheme != "smtps") || u.Host == "" {
 			errs = append(errs, fmt.Errorf("%s: must look like smtp://user:pass@host:587", EnvSMTPURL))
+		}
+	}
+	if cfg.StripeAPIURL != "" {
+		u, uerr := url.Parse(cfg.StripeAPIURL)
+		if uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+			errs = append(errs, fmt.Errorf("%s: must be an absolute http(s) URL", EnvStripeAPIURL))
 		}
 	}
 	if cfg.MailFrom != "" {

@@ -7,12 +7,14 @@ package static
 
 import (
 	"bytes"
+	"compress/gzip"
 	"embed"
 	"io/fs"
 	"mime"
 	"net/http"
 	"path"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -24,6 +26,11 @@ type Handler struct {
 	admin   fs.FS
 	booking fs.FS
 	modTime time.Time
+	// gz caches the gzip encoding of the embedded text files, computed once
+	// on first request (the files never change at runtime): the public page
+	// must stay under its weight budget on the wire (spec 12.6), with no
+	// build-time step and no dependency.
+	gz sync.Map // app + "/" + rel -> []byte
 }
 
 // New returns a Handler over the embedded files.
@@ -56,12 +63,12 @@ func (h *Handler) Admin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Booking(w http.ResponseWriter, r *http.Request) {
 	rest := strings.TrimPrefix(r.URL.Path, "/b/")
 	if rel := clean(rest); rel != "" && isFile(h.booking, rel) {
-		h.serveFile(w, r, h.booking, rel)
+		h.serveFile(w, r, h.booking, "booking", rel)
 		return
 	}
 	if i := strings.IndexByte(rest, '/'); i >= 0 {
 		if rel := clean(rest[i+1:]); rel != "" && isFile(h.booking, rel) {
-			h.serveFile(w, r, h.booking, rel)
+			h.serveFile(w, r, h.booking, "booking", rel)
 			return
 		}
 	}
@@ -83,12 +90,12 @@ func (h *Handler) EmbedJS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Cache-Control", "public, max-age=300")
-	h.serveContent(w, r, h.booking, "embed.js")
+	h.serveContent(w, r, h.booking, "booking", "embed.js")
 }
 
 func (h *Handler) serveSPA(w http.ResponseWriter, r *http.Request, fsys fs.FS, rel, app string) {
 	if rel = clean(rel); rel != "" && isFile(fsys, rel) {
-		h.serveFile(w, r, fsys, rel)
+		h.serveFile(w, r, fsys, app, rel)
 		return
 	}
 	// Missing asset files must 404 instead of returning HTML.
@@ -99,9 +106,9 @@ func (h *Handler) serveSPA(w http.ResponseWriter, r *http.Request, fsys fs.FS, r
 	h.serveIndex(w, r, fsys, app)
 }
 
-func (h *Handler) serveFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, rel string) {
+func (h *Handler) serveFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, app, rel string) {
 	if rel == "index.html" {
-		h.serveIndex(w, r, fsys, "")
+		h.serveIndex(w, r, fsys, app)
 		return
 	}
 	if strings.HasPrefix(rel, "assets/") {
@@ -109,7 +116,7 @@ func (h *Handler) serveFile(w http.ResponseWriter, r *http.Request, fsys fs.FS, 
 	} else {
 		w.Header().Set("Cache-Control", "public, max-age=3600")
 	}
-	h.serveContent(w, r, fsys, rel)
+	h.serveContent(w, r, fsys, app, rel)
 }
 
 func (h *Handler) serveIndex(w http.ResponseWriter, r *http.Request, fsys fs.FS, app string) {
@@ -120,10 +127,11 @@ func (h *Handler) serveIndex(w http.ResponseWriter, r *http.Request, fsys fs.FS,
 		_, _ = w.Write([]byte(placeholder(app)))
 		return
 	}
-	http.ServeContent(w, r, "index.html", h.modTime, bytes.NewReader(b))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	h.write(w, r, app, "index.html", b)
 }
 
-func (h *Handler) serveContent(w http.ResponseWriter, r *http.Request, fsys fs.FS, rel string) {
+func (h *Handler) serveContent(w http.ResponseWriter, r *http.Request, fsys fs.FS, app, rel string) {
 	b, err := fs.ReadFile(fsys, rel)
 	if err != nil {
 		http.NotFound(w, r)
@@ -132,7 +140,61 @@ func (h *Handler) serveContent(w http.ResponseWriter, r *http.Request, fsys fs.F
 	if ct := contentType(rel); ct != "" {
 		w.Header().Set("Content-Type", ct)
 	}
+	h.write(w, r, app, rel, b)
+}
+
+// minGzip is the smallest body worth compressing.
+const minGzip = 1024
+
+// write serves b, gzip-encoded when the client accepts it and the type is
+// text (scripts, styles, HTML, JSON, SVG, manifests); fonts and images are
+// already compressed.
+func (h *Handler) write(w http.ResponseWriter, r *http.Request, app, rel string, b []byte) {
+	ct := w.Header().Get("Content-Type")
+	if len(b) >= minGzip && compressible(ct) {
+		w.Header().Add("Vary", "Accept-Encoding")
+		if acceptsGzip(r) {
+			key := app + "/" + rel
+			v, ok := h.gz.Load(key)
+			if !ok {
+				v, _ = h.gz.LoadOrStore(key, gzipBytes(b))
+			}
+			if gz, ok := v.([]byte); ok {
+				w.Header().Set("Content-Encoding", "gzip")
+				b = gz
+			}
+		}
+	}
 	http.ServeContent(w, r, path.Base(rel), h.modTime, bytes.NewReader(b))
+}
+
+func compressible(ct string) bool {
+	ct, _, _ = strings.Cut(ct, ";")
+	switch strings.TrimSpace(ct) {
+	case "text/javascript", "application/javascript", "text/css", "text/html", "application/json",
+		"application/manifest+json", "image/svg+xml", "text/plain":
+		return true
+	}
+	return false
+}
+
+// acceptsGzip reports whether Accept-Encoding allows gzip (q > 0).
+func acceptsGzip(r *http.Request) bool {
+	for _, part := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+		name, params, _ := strings.Cut(strings.TrimSpace(part), ";")
+		if strings.EqualFold(strings.TrimSpace(name), "gzip") {
+			return strings.ReplaceAll(strings.TrimSpace(params), " ", "") != "q=0"
+		}
+	}
+	return false
+}
+
+func gzipBytes(b []byte) []byte {
+	var buf bytes.Buffer
+	zw, _ := gzip.NewWriterLevel(&buf, gzip.BestCompression)
+	_, _ = zw.Write(b)
+	_ = zw.Close()
+	return buf.Bytes()
 }
 
 // contentType returns the MIME type for rel, covering PWA files that the

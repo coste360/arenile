@@ -27,6 +27,12 @@ type Registry struct {
 // NewRegistry registers the built-ins, then the extensions (an extension
 // with the same code replaces the built-in).
 func NewRegistry(c clock.Clock, x ext.Extensions) *Registry {
+	return newRegistry(c, x, "")
+}
+
+// newRegistry is NewRegistry with the Stripe API base URL
+// (ARENILE_STRIPE_API_URL, test doubles only; empty = Stripe).
+func newRegistry(c clock.Clock, x ext.Extensions, stripeAPIURL string) *Registry {
 	r := &Registry{
 		payments:       map[string]ext.PaymentProvider{},
 		fiscal:         map[string]ext.FiscalDriver{},
@@ -40,7 +46,7 @@ func NewRegistry(c clock.Clock, x ext.Extensions) *Registry {
 	r.payments[builtin.ManualCode] = builtin.Manual{}
 	// Stripe is a core driver (spec 13.2); an extension with the same code
 	// replaces it. Credentials are per establishment (online.Service).
-	r.payments[stripe.Code] = stripe.New(stripe.Options{Clock: c})
+	r.payments[stripe.Code] = stripe.New(stripe.Options{Clock: c, BaseURL: stripeAPIURL})
 	r.fiscal[builtin.NoneCode] = builtin.NoneFiscal{Clock: c}
 	for _, p := range x.PaymentProviders {
 		if p != nil && p.Code() != "" {

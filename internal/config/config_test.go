@@ -58,6 +58,8 @@ func TestParse_AllValues(t *testing.T) {
 		EnvTrustedProxies:       "10.0.0.0/8, 192.168.1.1",
 		EnvRequireTOTPForOwners: "true",
 		EnvTelemetry:            "0",
+		EnvPublicReadsPerMinute: "300",
+		EnvStripeAPIURL:         "http://127.0.0.1:12111/",
 	}))
 	if err != nil {
 		t.Fatal(err)
@@ -77,6 +79,9 @@ func TestParse_AllValues(t *testing.T) {
 	if !cfg.RequireTOTPForOwners || !cfg.SecureCookies() {
 		t.Fatal("flags")
 	}
+	if cfg.PublicReadsPerMinute != 300 || cfg.PublicCreationsPerMinute != 10 || cfg.StripeAPIURL != "http://127.0.0.1:12111" {
+		t.Fatalf("public limits / stripe: %d %d %q", cfg.PublicReadsPerMinute, cfg.PublicCreationsPerMinute, cfg.StripeAPIURL)
+	}
 	if err := cfg.ValidateServe(); err != nil {
 		t.Fatal(err)
 	}
@@ -89,6 +94,9 @@ func TestParse_Invalid(t *testing.T) {
 	}{
 		{"bad bool", map[string]string{EnvAutoMigrate: "maybe"}},
 		{"bad ttl", map[string]string{EnvHoldTTL: "ten"}},
+		{"zero public reads", map[string]string{EnvPublicReadsPerMinute: "0"}},
+		{"bad public creations", map[string]string{EnvPublicCreationsPerMinute: "many"}},
+		{"stripe url not absolute", map[string]string{EnvStripeAPIURL: "localhost:12111"}},
 		{"negative ttl", map[string]string{EnvHoldTTL: "-1m"}},
 		{"bad level", map[string]string{EnvLogLevel: "verbose"}},
 		{"bad cidr", map[string]string{EnvTrustedProxies: "10.0.0.0/99"}},

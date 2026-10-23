@@ -84,18 +84,46 @@ func (h *Handlers) GetPublicEstablishment(w http.ResponseWriter, r *http.Request
 	_, _ = w.Write(append(body, '\n'))
 }
 
-// onlineConfig maps online.PublicEstablishment to api.PublicOnlineConfig.
-// Owner: online settings builder (zones, maps, formulas, slots, terms,
-// payment). Until implemented, Online.ResolvePublic answers
-// configerr.ErrNotImplemented and the profile omits `online`.
+// onlineConfig builds api.PublicOnlineConfig from the checkout profile
+// (zones visible online, maps, formulas, slots, current terms, payment).
+// configerr.ErrNotFound when online booking is off: the profile omits it.
 func (h *Handlers) onlineConfig(r *http.Request, slug string) (*api.PublicOnlineConfig, error) {
-	if h.Online == nil {
+	if h.Checkout == nil {
 		return nil, configerr.ErrNotImplemented
 	}
-	if _, err := h.Online.ResolvePublic(r.Context(), slug); err != nil {
+	p, err := h.Checkout.Profile(r.Context(), slug)
+	if err != nil {
 		return nil, err
 	}
-	return nil, configerr.ErrNotImplemented
+	pe := p.Establishment
+	out := &api.PublicOnlineConfig{
+		Formulas: formulas(p.Formulas), HoldMinutes: p.HoldMinutes, MinDate: p.MinDate, MaxDate: p.MaxDate,
+		PromoCodesEnabled: pe.Flow.PromoCodesEnabled, RequirePhone: pe.Flow.RequirePhone, ShowRatePeriods: pe.Flow.ShowRatePeriods,
+		ShowPricesOnMap: pe.Establishment.Theme.ShowPricesOnMap == nil || *pe.Establishment.Theme.ShowPricesOnMap,
+		Payment: api.PublicPaymentConfig{
+			Provider: pe.Provider, Online: pe.Online, Embedded: pe.Embedded, TestMode: pe.TestMode, PublishableKey: optStr(pe.PublishableKey),
+		},
+		Maps:  make([]api.PublicMapRef, len(p.Maps)),
+		Zones: make([]api.PublicZone, len(p.Zones)),
+		Slots: make([]api.Slots, len(p.Slots)),
+	}
+	for i, sl := range p.Slots {
+		out.Slots[i] = api.Slots(sl)
+	}
+	for i, m := range p.Maps {
+		out.Maps[i] = api.PublicMapRef{Id: m.ID, Name: text(m.Name)}
+	}
+	for i, z := range p.Zones {
+		out.Zones[i] = api.PublicZone{Id: z.ID, Code: z.Code, Name: text(z.Name), AssignmentMode: api.AssignmentMode(z.AssignmentMode), MapId: z.MapID, SortOrder: z.SortOrder}
+	}
+	if t := pe.Terms; t != nil {
+		texts := make(map[string]api.TermsTexts, len(t.Texts))
+		for l, tx := range t.Texts {
+			texts[l] = api.TermsTexts{Terms: tx.Terms, Privacy: optStr(tx.Privacy), Marketing: optStr(tx.Marketing)}
+		}
+		out.Terms = &api.PublicTerms{Version: t.Version, Texts: texts}
+	}
+	return out, nil
 }
 
 // etagMatches implements the weak comparison of If-None-Match (RFC 9110

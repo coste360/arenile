@@ -44,8 +44,12 @@ func noStore(w http.ResponseWriter) {
 	w.Header().Set("Referrer-Policy", "no-referrer")
 }
 
-// notImplemented answers 501 for the M4 operations still being built.
-func notImplemented(w http.ResponseWriter, r *http.Request) {
-	noStore(w)
-	problem.Write(w, r, problem.NotImplemented)
+// ready answers 501 when the checkout service is not wired (servers built
+// without the M4 services, e.g. focused tests).
+func (h *Handlers) ready(w http.ResponseWriter, r *http.Request) bool {
+	if h.Checkout == nil {
+		problem.Write(w, r, problem.NotImplemented)
+		return false
+	}
+	return true
 }
