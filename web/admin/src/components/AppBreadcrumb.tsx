@@ -9,7 +9,12 @@ import { useMatchRoute } from '@tanstack/react-router';
 import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentEstablishment } from '../establishment';
-import { CONFIG_NAV_ITEMS, ESTABLISHMENTS_NAV_ITEM, NAV_ITEMS } from '../nav';
+import {
+  BREADCRUMB_ONLY_ITEMS,
+  CONFIG_NAV_ITEMS,
+  ESTABLISHMENTS_NAV_ITEM,
+  NAV_ITEMS,
+} from '../nav';
 
 /** Where am I: group › (establishment ›) page, derived from the matched route. */
 export function AppBreadcrumb() {
@@ -30,8 +35,9 @@ export function AppBreadcrumb() {
   } else if (matchRoute({ to: '/establishments/new' })) {
     trail = [t('nav.configGroup'), t('admin.switcherNew')];
   } else {
-    // Longest path first so /pricing/simulator does not stop at /pricing.
-    const cfg = [...CONFIG_NAV_ITEMS]
+    // Longest path first so /pricing/simulator does not stop at /pricing and
+    // /config/devices/lan gets its own label instead of "Dispositivi".
+    const cfg = [...CONFIG_NAV_ITEMS, ...BREADCRUMB_ONLY_ITEMS]
       .sort((a, b) => b.to.length - a.to.length)
       .find((i) => matchRoute({ to: i.to, fuzzy: true } as never));
     if (cfg) {

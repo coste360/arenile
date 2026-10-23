@@ -146,6 +146,7 @@
       "payments": "Pagamenti online",
       "email": "Email e notifiche",
       "devices": "Dispositivi",
+      "devicesLan": "Rete locale",
       "desktop": "App desktop"
     },
     "operations": "Operatività",

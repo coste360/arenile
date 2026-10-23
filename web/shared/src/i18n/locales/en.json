@@ -146,6 +146,7 @@
       "payments": "Online payments",
       "email": "Email and notifications",
       "devices": "Devices",
+      "devicesLan": "Local network",
       "desktop": "Desktop app"
     },
     "operations": "Operations",

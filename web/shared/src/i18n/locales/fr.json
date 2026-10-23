@@ -146,6 +146,7 @@
       "payments": "Paiements en ligne",
       "email": "E-mails et notifications",
       "devices": "Appareils",
+      "devicesLan": "Réseau local",
       "desktop": "Application de bureau"
     },
     "operations": "Exploitation",

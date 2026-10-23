@@ -45,6 +45,10 @@ describe('LanInfoPage', () => {
       [`GET /api/admin/v1/establishments/${EST_ID}/devices`]: () => list([]),
     });
     expect(await screen.findByTestId('lan-host')).toHaveTextContent('192.168.1.20:8443');
+    // Own breadcrumb label, not the parent's "Dispositivi".
+    const crumbs = screen.getByRole('navigation', { name: 'Percorso' });
+    expect(within(crumbs).getByText('Rete locale')).toBeInTheDocument();
+    expect(within(crumbs).queryByText('Dispositivi')).not.toBeInTheDocument();
     expect(screen.getByText('https://192.168.1.20:8443/admin/')).toBeInTheDocument();
     expect(
       screen.getByRole('img', { name: "QR code dell'indirizzo https://192.168.1.20:8443/admin/" }),

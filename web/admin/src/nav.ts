@@ -198,3 +198,12 @@ export const CONFIG_NAV_ITEMS = [
 })[];
 
 export type ConfigNavPath = (typeof CONFIG_NAV_ITEMS)[number]['to'];
+
+/**
+ * Pages reached from a configuration page (not listed in the sidebar) that
+ * still need their own breadcrumb label: without an entry the breadcrumb
+ * would show the parent's label ("Dispositivi" on the LAN page).
+ */
+export const BREADCRUMB_ONLY_ITEMS = [
+  { to: '/e/$establishmentId/config/devices/lan', labelKey: 'nav.config.devicesLan' },
+] as const satisfies readonly { to: string; labelKey: string }[];

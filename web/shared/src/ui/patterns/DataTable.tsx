@@ -188,31 +188,30 @@ export function DataTable<TData, TValue = unknown>({
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }, (_, i) => (
-                <TableRow key={`skeleton-${i}`}>
-                  {Array.from({ length: visibleColumns }, (_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-4 w-full max-w-40" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : rows.length ? (
-              rows.map((row) => <DataRow key={row.id} row={row} onRowClick={onRowClick} />)
-            ) : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={visibleColumns} className="p-0">
-                  {empty ?? (
-                    <p className="py-10 text-center text-sm text-muted-foreground">
-                      {t('ui.table.empty')}
-                    </p>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
+            {loading
+              ? Array.from({ length: 5 }, (_, i) => (
+                  <TableRow key={`skeleton-${i}`}>
+                    {Array.from({ length: visibleColumns }, (_, j) => (
+                      <TableCell key={j}>
+                        <Skeleton className="h-4 w-full max-w-40" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              : rows.map((row) => <DataRow key={row.id} row={row} onRowClick={onRowClick} />)}
           </TableBody>
         </Table>
+        {/* The empty state sits outside the horizontally scrolling table, so
+            at phone width it is never clipped by the columns' min width. */}
+        {!loading && rows.length === 0 && (
+          <div className="border-t" data-slot="table-empty">
+            {empty ?? (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                {t('ui.table.empty')}
+              </p>
+            )}
+          </div>
+        )}
       </div>
       {paginated && table.getPageCount() > 1 && (
         <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
