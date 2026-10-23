@@ -1,7 +1,7 @@
-# documentation: https://github.com/coste360/arenile
+# documentation: https://docs.arenile.app
 # slogan: Gestionale gratuito per stabilimenti balneari (codice sorgente disponibile, BSL 1.1): prenotazioni online senza commissioni, mappa ombrelloni e cassa.
 # tags: stabilimento balneare,lido,prenotazioni,ombrelloni,booking,gestionale,spiaggia,postgresql
-# logo: https://raw.githubusercontent.com/coste360/arenile/main/docs/assets/logo.svg
+# logo: https://raw.githubusercontent.com/coste360/arenile/main/assets/brand/arenile/arenile-app-icon.svg
 # port: 8080
 #
 # Template Coolify (Docker Compose) — installazione con PostgreSQL.

@@ -106,12 +106,17 @@ func checkRendered(t *testing.T, tpl string, r Rendered) {
 	}
 	// No tracking: no remote images except the https logo, no pixels.
 	for _, m := range regexp.MustCompile(`<img[^>]+src="([^"]+)"`).FindAllStringSubmatch(r.HTML, -1) {
-		if m[1] != "https://lidodelfino.example/logo.png" && m[1] != "cid:"+QRContentID {
+		if m[1] != "https://lidodelfino.example/logo.png" && m[1] != "cid:"+QRContentID && m[1] != "cid:"+BrandMarkContentID {
 			t.Fatalf("unexpected image %q", m[1])
 		}
 	}
 	if strings.Contains(r.HTML, `width="1"`) || strings.Contains(r.HTML, "ZgotmplZ") {
 		t.Fatal("tracking pixel or unsafe template value")
+	}
+	// Product signature: inline mark and line in HTML, line and site in text.
+	if !strings.Contains(r.HTML, `src="cid:`+BrandMarkContentID+`"`) || !strings.Contains(r.HTML, ProductLine) ||
+		!strings.Contains(r.HTML, `href="`+ProductURL+`"`) || !strings.Contains(r.Text, ProductLine+" · "+ProductURL) {
+		t.Fatal("missing the Arenile — Coste360.it footer signature")
 	}
 	wantQR := tpl == TemplateBookingConfirmed || tpl == TemplateBookingModified
 	if got := strings.Contains(r.HTML, "cid:"+QRContentID); got != wantQR {
@@ -160,6 +165,22 @@ func firstDiff(a, b string) string {
 	return ""
 }
 
+// TestBrandMarkMatchesBrandKit keeps the embedded email mark identical to the
+// brand kit export (assets/brand/arenile/png/email-mark-64.png).
+func TestBrandMarkMatchesBrandKit(t *testing.T) {
+	kit, err := os.ReadFile(filepath.Join("..", "..", "..", "assets", "brand", "arenile", "png", "email-mark-64.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(kit, brandMarkPNG) {
+		t.Fatal("internal/domain/notify/brand/arenile-mark-64.png differs from the brand kit: copy it again")
+	}
+	a := BrandMarkAttachment()
+	if !a.Inline || a.ContentID != BrandMarkContentID || a.ContentType != contentTypePNG || len(a.Data) == 0 {
+		t.Fatalf("attachment %+v", a)
+	}
+}
+
 func TestRender_EscapesValuesAndRejectsUnsafeLinks(t *testing.T) {
 	cat, _ := catalogFor("it")
 	src, err := parseTemplate("---\nsubject: Ciao {{customer.first_name}}\n---\n# Ciao {{customer.first_name}}\n\n" +
@@ -176,7 +197,7 @@ func TestRender_EscapesValuesAndRejectsUnsafeLinks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, bad := range []string{"<script>", "javascript:", "<b>raw</b>", `"onmouseover`, "unknown_partial", "cid:"} {
+	for _, bad := range []string{"<script>", "javascript:", "<b>raw</b>", `"onmouseover`, "unknown_partial", "cid:" + QRContentID} {
 		if strings.Contains(r.HTML, bad) {
 			t.Errorf("HTML contains %q", bad)
 		}

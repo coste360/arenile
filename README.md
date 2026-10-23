@@ -1,5 +1,10 @@
 <div align="center">
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/arenile/outlined/arenile-logo-horizontal-dark.svg">
+  <img src="assets/brand/arenile/outlined/arenile-logo-horizontal.svg" alt="Arenile — Coste360.it" width="360">
+</picture>
+
 # Arenile
 
 **Il gestionale balneare gratuito per stabilimenti balneari e lidi, con codice sorgente disponibile.**
@@ -12,6 +17,8 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [![SQLite | PostgreSQL](https://img.shields.io/badge/DB-SQLite%20%7C%20PostgreSQL-003B57?logo=sqlite&logoColor=white)](#architettura)
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
 [![Stato: M0-M4 e M6 completate, M5 parte A integrata, nessun rilascio](https://img.shields.io/badge/stato-M0%E2%80%93M4%2C%20M6%2C%20M5A%2C%20non%20rilasciato-orange.svg)](#roadmap)
+
+[arenile.app](https://arenile.app) · [Documentazione](https://docs.arenile.app)
 
 [Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-a-codice-sorgente-disponibile) ·
 [Funzionalità](#funzionalità) ·
@@ -169,7 +176,7 @@ Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono comp
 ## Installazione in 5 minuti
 
 > [!TIP]
-> La **documentazione completa** (installazione, guida del gestore funzione per funzione, API e sviluppo, in italiano e inglese) è nel sito [docs.arenile.it](https://docs.arenile.it), generato da [`docs-site/`](docs-site/) (in locale: `make docs-dev`). Da lì parti con [Scegli come installare](https://docs.arenile.it/installazione/scegli-come-installare/).
+> La **documentazione completa** (installazione, guida del gestore funzione per funzione, API e sviluppo, in italiano e inglese) è nel sito [docs.arenile.app](https://docs.arenile.app), generato da [`docs-site/`](docs-site/) (in locale: `make docs-dev`). Da lì parti con [Scegli come installare](https://docs.arenile.app/installazione/scegli-come-installare/).
 
 **Dove si scarica.** Su GitHub trovi il codice sorgente e le istruzioni per compilarlo ed eseguirlo: i binari pronti **non** vengono pubblicati qui. L'immagine Docker `ghcr.io/coste360/arenile` è pubblica e gratuita (fino al primo rilascio potrebbe non essere ancora pubblicata: in quel caso il compose la compila dai sorgenti). I pacchetti pronti per Windows, macOS e Linux (edizione desktop, milestone M6) saranno scaricabili dal portale Coste360 previo accesso.
 
@@ -236,11 +243,11 @@ docker compose exec -e ARENILE_ADMIN_PASSWORD='scegli-una-password-lunga' arenil
   /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
 ```
 
-**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/` e segui la configurazione guidata in sei passi (dati, modello, file sulla mappa, listino rapido, pagina pubblica, pagamenti): la procedura completa è in [Primo avvio e configurazione guidata](https://docs.arenile.it/installazione/primo-avvio/).
+**4. Accedi al pannello** su `https://prenota.mio-lido.it/admin/` e segui la configurazione guidata in sei passi (dati, modello, file sulla mappa, listino rapido, pagina pubblica, pagamenti): la procedura completa è in [Primo avvio e configurazione guidata](https://docs.arenile.app/installazione/primo-avvio/).
 
 Per provare con dati dimostrativi: `docker compose exec arenile /arenile seed demo`.
 
-Per HTTPS puoi mettere Arenile dietro un reverse proxy (Caddy, Traefik, Nginx) oppure far gestire i certificati al binario con `ARENILE_TLS_AUTOCERT_DOMAINS`: in questo caso Arenile ascolta direttamente sulle porte 80 e 443, che vanno pubblicate nel compose (`"80:80"` e `"443:443"`, righe già presenti e commentate in `deploy/docker-compose.yml`). Guide dettagliate per Docker, VPS, Raspberry Pi, Coolify, CapRover, compilazione dai sorgenti, HTTPS, backup e aggiornamenti nella sezione [Installazione e operatività](https://docs.arenile.it/installazione/) della documentazione.
+Per HTTPS puoi mettere Arenile dietro un reverse proxy (Caddy, Traefik, Nginx) oppure far gestire i certificati al binario con `ARENILE_TLS_AUTOCERT_DOMAINS`: in questo caso Arenile ascolta direttamente sulle porte 80 e 443, che vanno pubblicate nel compose (`"80:80"` e `"443:443"`, righe già presenti e commentate in `deploy/docker-compose.yml`). Guide dettagliate per Docker, VPS, Raspberry Pi, Coolify, CapRover, compilazione dai sorgenti, HTTPS, backup e aggiornamenti nella sezione [Installazione e operatività](https://docs.arenile.app/installazione/) della documentazione.
 
 ### Comandi del binario
 
@@ -620,4 +627,4 @@ Se Arenile ti è utile, lascia una stella al repository e parlane con altri gest
 
 ## In English
 
-**Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. Milestones M0 (foundations), M1 (inventory, map editor, guided setup) and M2 (pricing and booking policies) are complete on the development branch (not yet published), with no release yet; the project is under active development by [Coste360 SRL](https://coste360.it); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release (the license text and use clause are still pending legal review). Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md).
+**Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. Milestones M0 (foundations), M1 (inventory, map editor, guided setup) and M2 (pricing and booking policies) are complete on the development branch (not yet published), with no release yet; the project is under active development by [Coste360 SRL](https://coste360.it); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release (the license text and use clause are still pending legal review). Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md). Website: [arenile.app](https://arenile.app); documentation: [docs.arenile.app](https://docs.arenile.app).

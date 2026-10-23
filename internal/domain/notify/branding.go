@@ -13,8 +13,10 @@ import (
 // colour with a text colour computed for WCAG AA contrast (spec 12.6), and
 // a link colour readable on the white body. Pure functions.
 
-// DefaultPrimaryColor is used when the theme has no valid primary colour.
-const DefaultPrimaryColor = "#0E6BA8"
+// DefaultPrimaryColor is used when the theme has no valid primary colour:
+// the Arenile ocean blue, the same default as the public page
+// (web/shared/src/theme DEFAULT_PRIMARY).
+const DefaultPrimaryColor = "#0D79AC"
 
 // Branding is the visual identity of one establishment in an email.
 type Branding struct {

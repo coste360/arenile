@@ -23,7 +23,10 @@ info:
     identifier: BUSL-1.1
   contact:
     name: Coste360 SRL
-    url: https://github.com/coste360/arenile
+    url: https://arenile.app
+externalDocs:
+  description: Documentazione di Arenile
+  url: https://docs.arenile.app
 servers:
   - url: /
     description: Stessa origine dell'istanza Arenile

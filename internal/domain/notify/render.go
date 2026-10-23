@@ -33,6 +33,29 @@ var layoutTmpl = template.Must(template.New("layout").Parse(layoutHTML))
 // QRContentID is the Content-ID of the inline QR image.
 const QRContentID = "qr@arenile"
 
+// Product signature in the footer of every email ("Arenile — Coste360.it"),
+// small and muted under the establishment footer: the establishment branding
+// stays primary. The mark is an inline image (cid:, like the QR), so it shows
+// without remote content and with no base URL configured.
+const (
+	ProductLine        = "Arenile — Coste360.it"
+	ProductURL         = "https://arenile.app"
+	BrandMarkContentID = "arenile-mark@arenile"
+	brandMarkFilename  = "arenile.png"
+)
+
+// brandMarkPNG is assets/brand/arenile/png/email-mark-64.png (the Arenile
+// app icon, outlined, 64 px for a 20 px slot on high-density screens);
+// TestBrandMarkMatchesBrandKit keeps the copy in sync.
+//
+//go:embed brand/arenile-mark-64.png
+var brandMarkPNG []byte
+
+// BrandMarkAttachment is the inline attachment the footer image refers to.
+func BrandMarkAttachment() Attachment {
+	return Attachment{Filename: brandMarkFilename, ContentType: contentTypePNG, ContentID: BrandMarkContentID, Inline: true, Data: brandMarkPNG}
+}
+
 // Row is a label/value line of the summary.
 type Row struct {
 	Label string
@@ -105,10 +128,13 @@ func Render(src templateSource, cat catalog, br Branding, c Content) (Rendered, 
 		Body                     template.HTML
 		Contacts                 []string
 		Footer                   string
+		ProductLine, ProductURL  string
+		MarkCID                  string
 	}{
 		Lang: cat.locale, Subject: subject, Preheader: headerSafe(substitute(src.Preheader, c.Vars)),
 		Brand: br, Body: template.HTML(strings.Join(htmlParts, "\n")), //nolint:gosec // G203: built from escaped blocks
 		Contacts: c.Contacts, Footer: footer,
+		ProductLine: ProductLine, ProductURL: ProductURL, MarkCID: BrandMarkContentID,
 	}
 	var buf bytes.Buffer
 	if err := layoutTmpl.Execute(&buf, data); err != nil {
@@ -119,7 +145,7 @@ func Render(src templateSource, cat catalog, br Branding, c Content) (Rendered, 
 	for _, l := range c.Contacts {
 		text += "\n" + l
 	}
-	text += "\n\n" + footer + "\n"
+	text += "\n\n" + footer + "\n\n" + ProductLine + " · " + ProductURL + "\n"
 	return Rendered{Subject: subject, Text: text, HTML: buf.String()}, nil
 }
 

@@ -118,6 +118,7 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		return Email{}, nil, fmt.Errorf("%w: render: %w", ErrPermanent, err)
 	}
 	email.Subject, email.Text, email.HTML = r.Subject, r.Text, r.HTML
+	email.Attach = append(email.Attach, BrandMarkAttachment())
 	return email, onFailure, nil
 }
 

@@ -180,8 +180,9 @@ func TestNotify_OutboxToDelivery(t *testing.T) {
 			e.From != `"Lido Delfino" <noreply@arenile.example>` || e.ReplyTo != "info@lidodelfino.example" {
 			t.Fatalf("email headers %+v", e)
 		}
-		if len(e.Attach) != 2 || !e.Attach[0].Inline || e.Attach[0].ContentID != notify.QRContentID ||
-			!strings.Contains(string(e.Attach[1].Data), "UID:"+b.ID+"@arenile.example") {
+		if len(e.Attach) != 3 || !e.Attach[0].Inline || e.Attach[0].ContentID != notify.QRContentID ||
+			!strings.Contains(string(e.Attach[1].Data), "UID:"+b.ID+"@arenile.example") ||
+			!e.Attach[2].Inline || e.Attach[2].ContentID != notify.BrandMarkContentID {
 			t.Fatalf("attachments %+v", e.Attach)
 		}
 		m = h.messages("")[0]
