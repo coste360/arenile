@@ -8,6 +8,8 @@ info:
 
     - `/api/admin/v1` — API del pannello del gestore (sessione via cookie o chiave API).
     - `/api/public/v1` — API pubblica della pagina di prenotazione.
+    - `/api/device/v1` — API dei dispositivi abbinati (token per dispositivo, spec 29.2).
+    - `/api/desktop/v1` — edizione desktop, solo da 127.0.0.1 (spec 29.1).
 
     Convenzioni (specifica, sezione 17.1):
     - errori in `application/problem+json` (RFC 9457) con `type` stabile (slug);
@@ -70,6 +72,16 @@ tags:
     description: Pagina pubblica, condizioni, provider di pagamento ed email (impostazioni del gestore)
   - name: webhooks
     description: Webhook in ingresso dei provider di pagamento
+  - name: meta
+    description: Versione, edizione e capacità dell'istanza (app mobile e desktop, spec 29.2)
+  - name: devices
+    description: Dispositivi abbinati (app mobile e desktop remota), codici di abbinamento e revoca
+  - name: device
+    description: API dei dispositivi abbinati con token per dispositivo (spec 29.2)
+  - name: fiscal-bridge
+    description: Ponte fiscale verso il FiscalDriver locale dell'app desktop in modalità remota (spec 29.1, 14.2)
+  - name: desktop
+    description: Edizione desktop, solo da 127.0.0.1 (primo avvio, impostazioni, backup e ripristino, spec 29.1)
 
 paths:
   /healthz:
@@ -6677,6 +6689,568 @@ paths:
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
 
+  # ---- M6/M7: meta, devices, device API, fiscal bridge, desktop --------------
+
+  /api/admin/v1/meta:
+    get:
+      operationId: getMeta
+      tags: [meta]
+      summary: Versione, edizione e capacità dell'istanza
+      description: >-
+        Spec 29.1 e 29.2. Non richiede autenticazione: l'app mobile e l'app desktop lo leggono prima
+        dell'abbinamento per verificare la compatibilità (versione minima) e la modalità dell'istanza. Non
+        contiene dati dello stabilimento né dati personali. Il pannello lo usa per rilevare l'edizione desktop
+        (pagina pubblica e pagamenti online disattivati).
+      security: []
+      responses:
+        "200":
+          description: Metadati dell'istanza
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meta"
+
+  /api/admin/v1/establishments/{establishmentId}/devices/pairing-codes:
+    post:
+      operationId: createDevicePairingCode
+      tags: [devices]
+      summary: Crea un codice di abbinamento monouso a breve scadenza (QR)
+      description: >-
+        Spec 29.2. Il codice (e il QR che lo contiene) si scambia una sola volta con un token per dispositivo
+        tramite `pairDevice`, entro `expires_at` (default 5 minuti). Il token avrà i permessi del ruolo
+        dell'utente (`user_id`, default l'utente corrente) limitati a questo stabilimento. Creare un codice
+        per un altro utente richiede `users.manage`. Nell'edizione desktop senza modalità rete locale
+        risponde `409 lan_mode_required` (nessun indirizzo raggiungibile dagli altri dispositivi). Il codice
+        è restituito solo in questa risposta e conservato come hash; per questo l'operazione non accetta
+        `Idempotency-Key`.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DevicePairingCodeRequest"
+      responses:
+        "201":
+          description: Codice creato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DevicePairingCode"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/admin/v1/establishments/{establishmentId}/devices:
+    get:
+      operationId: listDevices
+      tags: [devices]
+      summary: Dispositivi abbinati allo stabilimento
+      description: >-
+        Spec 29.2. Con `users.manage` elenca tutti i dispositivi dello stabilimento, altrimenti solo quelli
+        dell'utente corrente. I revocati sono esclusi salvo `include_revoked=true`. Ordine: ultimo utilizzo
+        decrescente.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: include_revoked
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Pagina di dispositivi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/admin/v1/establishments/{establishmentId}/devices/{deviceId}:
+    delete:
+      operationId: revokeDevice
+      tags: [devices]
+      summary: Revoca un dispositivo (il suo token smette subito di funzionare)
+      description: >-
+        Spec 29.2. Ogni utente può revocare i propri dispositivi; quelli degli altri richiedono
+        `users.manage`. Idempotente: revocare un dispositivo già revocato risponde 204. Se il dispositivo era il
+        ponte fiscale dello stabilimento, la registrazione del ponte viene disattivata nella stessa
+        transazione. Audit `device.revoked`.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/DeviceID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: Revocato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/admin/v1/establishments/{establishmentId}/fiscal-bridge:
+    get:
+      operationId: getFiscalBridgeStatus
+      tags: [fiscal-bridge]
+      summary: Stato del ponte fiscale dello stabilimento
+      description: >-
+        Spec 29.1. Dispositivo registrato come ponte, ultimo contatto (online se entro 60 secondi), stato del
+        registratore riportato dal dispositivo, documenti in coda e falliti. Permesso `reports.read` o
+        `cash.operate`.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Stato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FiscalBridgeStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/device/v1/pair:
+    post:
+      operationId: pairDevice
+      tags: [device]
+      summary: Scambia un codice di abbinamento con un token per dispositivo
+      description: >-
+        Spec 29.2. Non autenticato, limitato per IP (10 tentativi al minuto). Il codice è monouso: lo scambio
+        lo consuma con un UPDATE condizionale, quindi due richieste concorrenti con lo stesso codice producono
+        un solo token. Codice inesistente, scaduto o già usato rispondono tutti `400 pairing_code_invalid`
+        (nessun oracolo). Il token (`ar_dev_<prefix>_<secret>`) è restituito solo qui; il server conserva
+        lo SHA-256. Si usa poi come `Authorization: Bearer` sulle API admin (permessi del ruolo dell'utente
+        nello stabilimento del codice) e sulle API `/api/device/v1`. Nessun cookie, quindi nessun CSRF.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DevicePairRequest"
+      responses:
+        "201":
+          description: Dispositivo abbinato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DevicePairResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/device/v1/self:
+    get:
+      operationId: getCurrentDevice
+      tags: [device]
+      summary: Il dispositivo del token (verifica che il token sia ancora valido)
+      security:
+        - deviceAuth: []
+      responses:
+        "200":
+          description: Dispositivo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: unpairCurrentDevice
+      tags: [device]
+      summary: Scollega questo dispositivo (revoca il proprio token)
+      security:
+        - deviceAuth: []
+      responses:
+        "204":
+          description: Revocato
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/device/v1/fiscal-bridge:
+    put:
+      operationId: registerFiscalBridge
+      tags: [fiscal-bridge]
+      summary: Registra (o aggiorna) questo dispositivo come ponte fiscale dello stabilimento
+      description: >-
+        Spec 29.1 e 14.2. Chiamato dall'app desktop in modalità remota all'avvio e a ogni cambio di stato del
+        registratore. Un solo ponte attivo per stabilimento: la registrazione di un nuovo dispositivo
+        disattiva la precedente (audit `fiscal_bridge.registered`). Il dispositivo deve appartenere a un
+        utente con `cash.operate`. Per emettere i documenti tramite il ponte lo stabilimento usa il driver
+        fiscale `bridge` (`settings.fiscal.driver`).
+      security:
+        - deviceAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FiscalBridgeRegistration"
+      responses:
+        "200":
+          description: Registrato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FiscalBridgeStatus"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: unregisterFiscalBridge
+      tags: [fiscal-bridge]
+      summary: Annulla la registrazione di questo dispositivo come ponte fiscale
+      description: I lavori non ancora completati restano in coda per il prossimo ponte registrato.
+      security:
+        - deviceAuth: []
+      responses:
+        "204":
+          description: Registrazione annullata (idempotente)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/device/v1/fiscal-bridge/jobs:
+    get:
+      operationId: pollFiscalBridgeJobs
+      tags: [fiscal-bridge]
+      summary: Attende i lavori fiscali da eseguire sul FiscalDriver locale (long polling)
+      description: >-
+        Connessione in uscita dal dispositivo verso l'istanza: nessuna porta in ingresso sul PC della cassa.
+        La risposta arriva appena c'è almeno un lavoro, oppure dopo `wait` secondi con `jobs` vuoto. I lavori
+        restituiti sono assegnati in esclusiva a questo dispositivo fino a `lease_expires_at`: se il risultato
+        non arriva entro la scadenza tornano in coda (consegna almeno una volta; il driver locale deduplica
+        con `idempotency_key`). Ogni chiamata aggiorna l'ultimo contatto del ponte. Solo il dispositivo
+        registrato come ponte attivo riceve lavori; gli altri ricevono `409 conflict`.
+      security:
+        - deviceAuth: []
+      parameters:
+        - name: wait
+          in: query
+          required: false
+          description: Secondi di attesa massima (default 25).
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 25
+            default: 25
+        - name: max
+          in: query
+          required: false
+          description: Numero massimo di lavori (default 10).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        "200":
+          description: Lavori assegnati (eventualmente nessuno)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FiscalBridgeJobBatch"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/device/v1/fiscal-bridge/jobs/{jobId}/result:
+    post:
+      operationId: submitFiscalBridgeJobResult
+      tags: [fiscal-bridge]
+      summary: Esito di un lavoro fiscale eseguito sul FiscalDriver locale
+      description: >-
+        Idempotente: lo stesso esito inviato di nuovo risponde 204. Un esito per un lavoro non più assegnato a
+        questo dispositivo (lease scaduto e riassegnato) o già chiuso con un esito diverso risponde
+        `409 conflict`. Con `outcome=failed` e `retryable=true` il lavoro torna in coda con backoff fino a 5
+        tentativi; altrimenti il documento fiscale passa a `failed`.
+      security:
+        - deviceAuth: []
+      parameters:
+        - $ref: "#/components/parameters/FiscalBridgeJobID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FiscalBridgeJobResult"
+      responses:
+        "204":
+          description: Esito registrato
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/desktop/v1/first-run:
+    get:
+      operationId: getFirstRunStatus
+      tags: [desktop]
+      summary: Indica se serve la creazione guidata del primo utente owner
+      description: >-
+        Solo edizione desktop e solo da loopback (altrimenti `404 not_found` sull'edizione server e
+        `403 loopback_required` da un'altra macchina). Non autenticato.
+      security: []
+      responses:
+        "200":
+          description: Stato del primo avvio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FirstRunStatus"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: completeFirstRun
+      tags: [desktop]
+      summary: Crea l'utente owner, l'organizzazione e lo stabilimento al primo avvio
+      description: >-
+        Spec 29.1. Solo da loopback e solo finché non esistono utenti. Richiede il token monouso generato dal
+        launcher a ogni avvio e passato al browser nel frammento dell'URL (`/admin/first-run#token=...`, mai
+        in query string né nei log). In caso di successo esegue l'accesso (cookie di sessione e CSRF come
+        `login`) e il pannello prosegue con la configurazione guidata (sezione 15.2).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FirstRunRequest"
+      responses:
+        "201":
+          description: Owner creato e accesso effettuato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Me"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/desktop/v1/settings:
+    get:
+      operationId: getDesktopSettings
+      tags: [desktop]
+      summary: Impostazioni dell'app desktop (backup, aggiornamenti, rete locale)
+      description: Solo edizione desktop, da loopback, utente owner.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Impostazioni
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DesktopSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateDesktopSettings
+      tags: [desktop]
+      summary: Aggiorna le impostazioni dell'app desktop
+      description: >-
+        Solo edizione desktop, da loopback, utente owner. `backup_dir` deve essere una cartella esistente e
+        scrivibile (anche una chiavetta USB). Attivare `lan_enabled` avvia il listener TLS sulla rete locale
+        con il certificato autogenerato; disattivarlo lo chiude.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DesktopSettings"
+      responses:
+        "200":
+          description: Impostazioni aggiornate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DesktopSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/desktop/v1/backups:
+    get:
+      operationId: listDesktopBackups
+      tags: [desktop]
+      summary: Backup presenti nella cartella dei backup
+      description: Solo edizione desktop, da loopback, utente owner. Ordine dal più recente.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Backup
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DesktopBackupList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createDesktopBackup
+      tags: [desktop]
+      summary: Esegue subito un backup (come "Backup ora" del menu)
+      description: >-
+        Backup consistente del database SQLite (`VACUUM INTO`), lo stesso formato di `arenile backup`:
+        ripristinabile con `arenile restore` su una VPS (spec 29.1). Applica la retention configurata.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "201":
+          description: Backup creato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DesktopBackup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /api/desktop/v1/backups/{backupName}/restore:
+    post:
+      operationId: restoreDesktopBackup
+      tags: [desktop]
+      summary: Pianifica il ripristino di un backup (riavvio del server interno)
+      description: >-
+        Il database è in uso, quindi il ripristino avviene al riavvio: il launcher ferma il server, salva il
+        database corrente come `pre_restore`, copia il backup validato e riavvia. Il pannello mostra un
+        messaggio e si ricarica. Solo edizione desktop, da loopback, utente owner.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/BackupName"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "202":
+          description: Ripristino pianificato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DesktopRestoreScheduled"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
 components:
   securitySchemes:
     cookieAuth:
@@ -6688,9 +7262,43 @@ components:
       type: http
       scheme: bearer
       bearerFormat: "ar_live_<prefix>_<secret>"
-      description: Chiave API server-to-server legata a uno stabilimento.
+      description: >-
+        Chiave API server-to-server legata a uno stabilimento (`ar_live_...`), oppure token per dispositivo
+        (`ar_dev_...`, vedi `deviceAuth`) con i permessi del ruolo del suo utente.
+    deviceAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: "ar_dev_<prefix>_<secret>"
+      description: >-
+        Token per dispositivo ottenuto con `pairDevice` (app mobile, app desktop in modalità remota). Vale anche
+        come `bearerAuth` sulle API admin, con i permessi del ruolo dell'utente nello stabilimento del
+        dispositivo. Revocabile dal pannello (spec 29.2).
 
   parameters:
+    DeviceID:
+      name: deviceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    FiscalBridgeJobID:
+      name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    BackupName:
+      name: backupName
+      in: path
+      required: true
+      description: Nome del file di backup come restituito da `listDesktopBackups` (nessun percorso).
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$
     Cursor:
       name: cursor
       in: query
@@ -7112,6 +7720,11 @@ components:
         - checkout_not_found
         - payment_provider_unavailable
         - webhook_signature_invalid
+        - pairing_code_invalid
+        - lan_mode_required
+        - loopback_required
+        - setup_token_invalid
+        - setup_completed
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -7281,6 +7894,8 @@ components:
           $ref: "#/components/schemas/User"
         api_key:
           $ref: "#/components/schemas/ApiKeyInfo"
+        device:
+          $ref: "#/components/schemas/CurrentDeviceInfo"
         memberships:
           type: array
           items:
@@ -13985,3 +14600,578 @@ components:
         finished_at:
           type: string
           format: date-time
+    Meta:
+      type: object
+      description: >-
+        Metadati pubblici dell'istanza (spec 29.2). I client confrontano `version` con la propria versione
+        minima supportata e `min_client_versions` con la propria versione.
+      required: [product, version, api_version, edition, server_time, min_client_versions, capabilities, features]
+      properties:
+        product:
+          type: string
+          enum: [arenile]
+        version:
+          type: string
+          description: Versione del server (tag di release, `dev` in sviluppo).
+        api_version:
+          type: string
+          description: Versione del contratto (`info.version` di api/openapi.yaml).
+        edition:
+          $ref: "#/components/schemas/Edition"
+        desktop:
+          $ref: "#/components/schemas/DesktopRuntime"
+        server_time:
+          type: string
+          format: date-time
+          description: Ora del server (UTC), per segnalare orologi dei dispositivi molto sfasati.
+        min_client_versions:
+          $ref: "#/components/schemas/MinClientVersions"
+        capabilities:
+          $ref: "#/components/schemas/MetaCapabilities"
+        features:
+          type: array
+          description: >-
+            Slug stabili delle funzioni attive su questa istanza (es. `bookings`, `cash`, `season_passes`,
+            `public_page`, `online_payments`, `device_pairing`, `fiscal_bridge`, `desktop_backups`,
+            `lan_mode`). I client ignorano gli slug sconosciuti.
+          items:
+            type: string
+    Edition:
+      type: string
+      description: >-
+        `server`: binario o immagine Docker (VPS, server in sede). `desktop`: server interno dell'app desktop
+        sul PC della cassa (spec 29.1). La modalità remota dell'app desktop è un client: l'istanza a cui si
+        collega riporta la propria edizione.
+      enum: [server, desktop]
+    DesktopRuntime:
+      type: object
+      description: Presente solo con `edition=desktop`.
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          description: >-
+            `local`: server raggiungibile solo da 127.0.0.1. `lan`: anche dalla rete locale del lido, in TLS con
+            certificato autogenerato.
+          enum: [local, lan]
+        lan_url:
+          type: string
+          format: uri
+          description: Indirizzo sulla rete locale (solo `mode=lan`), es. `https://192.168.1.20:8443`.
+        lan_cert_fingerprint:
+          type: string
+          description: SHA-256 del certificato TLS autogenerato, esadecimale maiuscolo separato da `:` (solo `mode=lan`).
+        lan_qr_svg:
+          type: string
+          description: >-
+            QR code (SVG) dell'indirizzo del pannello sulla rete locale (`lan_url` + `/admin/`), da inquadrare con la
+            fotocamera di un telefono o tablet per aprirlo nel browser (solo `mode=lan`). Non contiene codici di
+            abbinamento: per l'app si usa il QR di Configurazione → Dispositivi.
+        lan_cert_renews_at:
+          type: string
+          format: date-time
+          description: >-
+            Istante in cui il certificato autogenerato verrà rigenerato (30 giorni prima della scadenza, solo
+            `mode=lan`): da quel momento cambia l'impronta, i dispositivi abbinati vanno riabbinati e i browser devono
+            riaccettare il certificato. Il pannello avvisa quando mancano meno di 60 giorni.
+    MinClientVersions:
+      type: object
+      description: Versioni minime dei client che questa istanza supporta (semver).
+      required: [mobile, desktop]
+      properties:
+        mobile:
+          type: string
+        desktop:
+          type: string
+    MetaCapabilities:
+      type: object
+      required:
+        - online_booking
+        - online_payments
+        - payment_providers
+        - fiscal_drivers
+        - device_pairing
+        - fiscal_bridge
+        - realtime
+        - push_notifications
+      properties:
+        online_booking:
+          type: boolean
+          description: Pagina pubblica e widget disponibili (falso nell'edizione desktop).
+        online_payments:
+          type: boolean
+          description: Pagamenti online disponibili (falso nell'edizione desktop, solo driver `manual`).
+        payment_providers:
+          type: array
+          items:
+            type: string
+        fiscal_drivers:
+          type: array
+          items:
+            type: string
+        device_pairing:
+          type: boolean
+          description: Abbinamento dei dispositivi possibile ora (falso nell'edizione desktop senza rete locale).
+        fiscal_bridge:
+          type: boolean
+          description: L'istanza accetta un ponte fiscale da un'app desktop in modalità remota.
+        realtime:
+          type: boolean
+          description: Flusso SSE `GET /api/admin/v1/stream` disponibile.
+        push_notifications:
+          type: boolean
+          description: Notifiche push tramite relay configurate (M7).
+
+    DevicePlatform:
+      type: string
+      enum: [ios, android, windows, macos, linux, other]
+    DeviceKind:
+      type: string
+      description: "`mobile`: app mobile (M7). `desktop`: app desktop in modalità remota (M6)."
+      enum: [mobile, desktop]
+    DevicePairingCodeRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Utente a cui legare il dispositivo (default l'utente corrente; un altro utente richiede `users.manage`).
+        kind:
+          $ref: "#/components/schemas/DeviceKind"
+        ttl_seconds:
+          type: integer
+          minimum: 60
+          maximum: 900
+          default: 300
+    DevicePairingCode:
+      type: object
+      required: [code, expires_at, establishment_id, user_id, qr_payload, qr_text]
+      properties:
+        code:
+          type: string
+          description: >-
+            Codice da digitare in alternativa al QR: 8 caratteri base32 Crockford in due gruppi (`ABCD-EFGH`),
+            confrontato senza distinguere maiuscole e trattini.
+        expires_at:
+          type: string
+          format: date-time
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        qr_payload:
+          $ref: "#/components/schemas/DevicePairingQRPayload"
+        qr_text:
+          type: string
+          description: >-
+            Testo da codificare nel QR: `arenile://pair?d=<qr_payload JSON in base64url>`. L'app lo decodifica;
+            un browser che scansiona il QR apre `qr_payload.url`.
+        qr_svg:
+          type: string
+          description: >-
+            QR di `qr_text` in SVG in linea (correzione M, zona di rispetto inclusa, sfondo bianco), da mostrare
+            nel pannello senza una seconda richiesta: il codice non è conservato in chiaro, quindi non esiste un
+            endpoint che possa ridisegnarlo.
+    DevicePairingQRPayload:
+      type: object
+      required: [v, url, code]
+      properties:
+        v:
+          type: integer
+          enum: [1]
+          description: Versione del formato.
+        url:
+          type: string
+          format: uri
+          description: Indirizzo dell'istanza (base URL; nell'edizione desktop l'indirizzo sulla rete locale).
+        code:
+          type: string
+        fingerprint:
+          type: string
+          description: >-
+            SHA-256 del certificato TLS (solo con certificato autogenerato, modalità rete locale). L'app accetta
+            il certificato solo se coincide (certificate pinning).
+        establishment_name:
+          type: string
+    DevicePairRequest:
+      type: object
+      required: [code, name, platform, kind]
+      properties:
+        code:
+          type: string
+          minLength: 8
+          maxLength: 16
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Nome mostrato nel pannello (es. "iPhone di Anna", "PC cassa").
+        platform:
+          $ref: "#/components/schemas/DevicePlatform"
+        kind:
+          $ref: "#/components/schemas/DeviceKind"
+        app_version:
+          type: string
+          maxLength: 32
+    DevicePairResult:
+      type: object
+      required: [token, device, establishment_id]
+      properties:
+        token:
+          type: string
+          description: Token per dispositivo, restituito solo ora. Conservarlo nel portachiavi sicuro del dispositivo.
+        device:
+          $ref: "#/components/schemas/Device"
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+    Device:
+      type: object
+      required: [id, establishment_id, user_id, user_name, role, name, platform, kind, created_at, current, fiscal_bridge]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        user_name:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        name:
+          type: string
+        platform:
+          $ref: "#/components/schemas/DevicePlatform"
+        kind:
+          $ref: "#/components/schemas/DeviceKind"
+        app_version:
+          type: string
+        token_prefix:
+          type: string
+          description: Parte visibile del token (`ar_dev_<prefix>`), per riconoscerlo.
+        created_at:
+          type: string
+          format: date-time
+        last_used_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+        current:
+          type: boolean
+          description: Vero se la richiesta è autenticata con il token di questo dispositivo.
+        fiscal_bridge:
+          type: boolean
+          description: Vero se il dispositivo è il ponte fiscale attivo dello stabilimento.
+    DeviceList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Device"
+        next_cursor:
+          type: string
+          description: Presente se esistono altri elementi.
+    CurrentDeviceInfo:
+      type: object
+      description: Dispositivo con cui è autenticata la richiesta (solo con token per dispositivo).
+      required: [id, name, establishment_id]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+
+    FiscalBridgeRegistration:
+      type: object
+      required: [driver]
+      properties:
+        driver:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Codice del FiscalDriver locale dell'app desktop (es. `none`, o il driver del registratore).
+        device_status:
+          $ref: "#/components/schemas/FiscalDeviceStatus"
+    FiscalDeviceStatus:
+      type: object
+      required: [online]
+      properties:
+        online:
+          type: boolean
+        message:
+          type: string
+          maxLength: 500
+        checked_at:
+          type: string
+          format: date-time
+    FiscalBridgeStatus:
+      type: object
+      required: [registered, online, pending_jobs, failed_jobs]
+      properties:
+        registered:
+          type: boolean
+        device_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        device_name:
+          type: string
+        driver:
+          type: string
+        online:
+          type: boolean
+          description: Ultimo contatto entro 60 secondi.
+        last_seen_at:
+          type: string
+          format: date-time
+        device_status:
+          $ref: "#/components/schemas/FiscalDeviceStatus"
+        pending_jobs:
+          type: integer
+        failed_jobs:
+          type: integer
+    FiscalBridgeJobKind:
+      type: string
+      description: "`issue`: emetti il documento. `void`: annulla il documento `ref`."
+      enum: [issue, void]
+    FiscalBridgeJob:
+      type: object
+      required: [id, kind, attempt, lease_expires_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        kind:
+          $ref: "#/components/schemas/FiscalBridgeJobKind"
+        attempt:
+          type: integer
+          minimum: 1
+        lease_expires_at:
+          type: string
+          format: date-time
+        document:
+          $ref: "#/components/schemas/FiscalBridgeDocument"
+        ref:
+          type: string
+          description: Riferimento del documento da annullare (solo `void`).
+    FiscalBridgeDocument:
+      type: object
+      description: Documento da emettere, specchio di `ext.FiscalDocumentRequest` (importi lordi in centesimi).
+      required: [establishment_id, currency, lines, payments, total, issued_at, idempotency_key]
+      properties:
+        establishment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_id:
+          type: string
+        payment_id:
+          type: string
+        currency:
+          type: string
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/FiscalBridgeLine"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/FiscalBridgePayment"
+        total:
+          type: integer
+          format: int64
+        issued_at:
+          type: string
+          format: date-time
+        idempotency_key:
+          type: string
+    FiscalBridgeLine:
+      type: object
+      required: [description, quantity, unit_gross, gross, vat_rate_bp]
+      properties:
+        description:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+        unit_gross:
+          type: integer
+          format: int64
+        gross:
+          type: integer
+          format: int64
+        vat_rate_bp:
+          type: integer
+          format: int64
+          description: Aliquota IVA in punti base (2200 = 22%).
+    FiscalBridgePayment:
+      type: object
+      required: [method, amount]
+      properties:
+        method:
+          type: string
+        amount:
+          type: integer
+          format: int64
+    FiscalBridgeJobBatch:
+      type: object
+      required: [jobs]
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/FiscalBridgeJob"
+    FiscalBridgeJobResult:
+      type: object
+      required: [outcome]
+      properties:
+        outcome:
+          type: string
+          enum: [succeeded, failed]
+        ref:
+          type: string
+          maxLength: 128
+        number:
+          type: string
+          maxLength: 64
+        issued_at:
+          type: string
+          format: date-time
+        raw:
+          type: object
+          additionalProperties: true
+          description: Risposta del driver locale, conservata per l'audit (max 16 KiB).
+        error:
+          type: string
+          maxLength: 1000
+        retryable:
+          type: boolean
+          description: "Errore temporaneo (registratore spento, carta finita): il lavoro torna in coda."
+
+    FirstRunStatus:
+      type: object
+      required: [required]
+      properties:
+        required:
+          type: boolean
+          description: Vero finché non esiste alcun utente.
+    FirstRunRequest:
+      type: object
+      required: [setup_token, email, name, password, organization_name]
+      properties:
+        setup_token:
+          type: string
+          minLength: 32
+          maxLength: 128
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        password:
+          type: string
+          minLength: 12
+          maxLength: 256
+        organization_name:
+          type: string
+          minLength: 1
+          maxLength: 120
+    DesktopSettings:
+      type: object
+      required: [backup_dir, backup_retention, backup_daily, backup_on_exit, update_check, autostart, lan_enabled]
+      properties:
+        backup_dir:
+          type: string
+          minLength: 1
+          maxLength: 1024
+          description: Cartella dei backup (default `<cartella dati>/backups`).
+        backup_retention:
+          type: integer
+          minimum: 1
+          maximum: 365
+          description: Numero di backup automatici conservati (i manuali non vengono eliminati).
+        backup_daily:
+          type: boolean
+        backup_on_exit:
+          type: boolean
+        update_check:
+          type: boolean
+          description: "Controllo della nuova versione (falso di default: nessuna chiamata di rete)."
+        autostart:
+          type: boolean
+          description: Avvio automatico all'accensione del PC.
+        lan_enabled:
+          type: boolean
+          description: Modalità rete locale (TLS con certificato autogenerato).
+        lan_port:
+          type: integer
+          minimum: 1024
+          maximum: 65535
+          description: Porta del listener sulla rete locale (default 8443).
+        keep_running_in_tray:
+          type: boolean
+          description: >-
+            Alla chiusura della finestra l'app resta attiva nella barra di sistema invece di chiudersi
+            (Windows; default falso). Su macOS la finestra si nasconde sempre e l'app resta nella barra dei
+            menu finché non si sceglie Esci. Se omesso nella richiesta resta il valore attuale.
+    DesktopBackupReason:
+      type: string
+      enum: [manual, daily, exit, pre_restore]
+    DesktopBackup:
+      type: object
+      required: [name, size_bytes, created_at, reason]
+      properties:
+        name:
+          type: string
+        size_bytes:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        reason:
+          $ref: "#/components/schemas/DesktopBackupReason"
+    DesktopBackupList:
+      type: object
+      required: [directory, items]
+      properties:
+        directory:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DesktopBackup"
+    DesktopRestoreScheduled:
+      type: object
+      required: [backup, restart_required]
+      properties:
+        backup:
+          $ref: "#/components/schemas/DesktopBackup"
+        restart_required:
+          type: boolean

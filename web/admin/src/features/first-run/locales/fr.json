@@ -1,0 +1,37 @@
+{
+  "title": "Bienvenue dans Arenile",
+  "description": "Créez l'utilisateur titulaire pour commencer : ensuite nous vous guidons dans la configuration de l'établissement.",
+  "fields": {
+    "organization": "Société ou établissement",
+    "organizationHint": "Le nom de vos reçus, par exemple « Lido Azzurro srl ».",
+    "name": "Prénom et nom",
+    "email": "E-mail",
+    "emailHint": "Vous l'utiliserez pour vous connecter. Arenile desktop n'envoie pas d'e-mails et ne se connecte pas à internet.",
+    "password": "Mot de passe",
+    "passwordHint": "Au moins 10 caractères. Conservez-le : il sert aussi sur les autres appareils de la plage.",
+    "passwordConfirm": "Répétez le mot de passe"
+  },
+  "submit": "Créer l'utilisateur et continuer",
+  "submitting": "Création…",
+  "privacy": "Vos données restent sur cet ordinateur, dans le dossier de données d'Arenile.",
+  "validation": {
+    "organizationRequired": "Saisissez le nom de la société ou de l'établissement.",
+    "nameRequired": "Saisissez votre nom.",
+    "emailInvalid": "Saisissez une adresse e-mail valide.",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 10 caractères.",
+    "passwordMismatch": "Les deux mots de passe ne correspondent pas.",
+    "tooLong": "Texte trop long."
+  },
+  "errors": {
+    "noToken": "Ouvrez cette page depuis le menu Arenile de la barre système (Ouvrir le panneau) : le lien contient un code de sécurité.",
+    "tokenInvalid": "Le lien de configuration n'est plus valable. Fermez cet onglet et choisissez « Ouvrir le panneau » dans le menu Arenile de la barre système.",
+    "completed": "La configuration initiale est déjà terminée : connectez-vous avec l'utilisateur créé.",
+    "network": "Arenile ne répond pas : vérifiez que l'application est ouverte et réessayez.",
+    "generic": "Impossible de créer l'utilisateur. Veuillez réessayer."
+  },
+  "done": {
+    "title": "Configuration initiale terminée",
+    "description": "L'utilisateur titulaire existe déjà.",
+    "login": "Aller à la connexion"
+  }
+}

@@ -161,13 +161,32 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
+  desktop:
+    # Desktop edition packages (spec 29.1), built on native runners and signed when the
+    # signing secrets exist (see docs/desktop-build.md). They only feed portal-bundle.
+    name: Desktop packages
+    uses: ./.github/workflows/desktop.yml
+    with:
+      version: ${{ github.ref_name }}
+    secrets: inherit
+
   portal-bundle:
     # Ready-made binaries are distributed through the Coste360 download portal (login required),
     # never as GitHub release assets: GitHub carries the source and the instructions only.
+    # The server bundle does not depend on the desktop packages: a notarization timeout, a
+    # choco outage or an apt failure must not block the server release. When the desktop job
+    # failed, the bundle ships without its packages and says so in the job summary; the
+    # desktop workflow can then be re-run by hand (workflow_dispatch with the same tag).
     name: Portal bundle
-    needs: binaries
+    needs: [binaries, desktop]
+    if: ${{ !cancelled() && needs.binaries.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      # Optional: the intake endpoint of the Coste360 portal. When both secrets exist the
+      # bundle is pushed there and the GitHub artifact is only a short-lived fallback.
+      PORTAL_UPLOAD_URL: ${{ secrets.PORTAL_UPLOAD_URL }}
+      PORTAL_UPLOAD_TOKEN: ${{ secrets.PORTAL_UPLOAD_TOKEN }}
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -175,15 +194,44 @@ jobs:
           path: dist
           merge-multiple: true
 
+      # Taken also when one desktop job failed (e.g. only Windows arm64): the packages
+      # that were built still reach the bundle, with the warning below.
+      - name: Desktop packages (Windows x64/arm64 installers, macOS dmg, Linux AppImage)
+        if: needs.desktop.result == 'success' || needs.desktop.result == 'failure'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: desktop-{windows-amd64,windows-arm64,macos,linux}
+          path: dist
+          merge-multiple: true
+
+      - name: Note missing desktop packages
+        if: needs.desktop.result != 'success'
+        run: |
+          echo "::warning::desktop packages missing or incomplete (desktop job: ${{ needs.desktop.result }}); check the bundle contents"
+          echo "Desktop packages missing or incomplete: desktop job ended with **${{ needs.desktop.result }}**. Re-run desktop.yml with version ${{ github.ref_name }}." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Checksums
         working-directory: dist
-        run: sha256sum * > checksums.txt
+        run: sha256sum -- * > checksums.txt
 
+      - name: Upload to the Coste360 portal
+        if: env.PORTAL_UPLOAD_URL != '' && env.PORTAL_UPLOAD_TOKEN != ''
+        working-directory: dist
+        run: |
+          for f in *; do
+            curl -fsS --retry 3 --retry-all-errors -H "Authorization: Bearer $PORTAL_UPLOAD_TOKEN" \
+              -F "version=${GITHUB_REF_NAME}" -F "file=@$f" "$PORTAL_UPLOAD_URL" >/dev/null
+            echo "uploaded $f"
+          done
+
+      # Short retention: the artifact is the hand-off to the portal (or a fallback when the
+      # portal upload is not configured), not a download channel.
       - uses: actions/upload-artifact@v7
         with:
           name: portal-bundle-${{ github.ref_name }}
           path: dist/*
-          retention-days: 30
+          retention-days: 7
           if-no-files-found: error
 
   docs:
@@ -203,6 +251,7 @@ jobs:
   release:
     name: GitHub release (notes and API contract, no binaries)
     needs: [image, portal-bundle]
+    if: ${{ !cancelled() && needs.image.result == 'success' && needs.portal-bundle.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

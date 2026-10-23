@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata of the AppImage (usr/share/metainfo). -->
+<component type="desktop-application">
+  <id>it.coste360.arenile</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>BUSL-1.1</project_license>
+  <name>Arenile</name>
+  <summary>Gestionale per stabilimenti balneari, senza server online</summary>
+  <summary xml:lang="en">Beach establishment management, no online server needed</summary>
+  <description>
+    <p>
+      Prenotazioni, mappa degli ombrelloni, abbonati e cassa dal PC del lido, anche senza
+      internet. Codice sorgente disponibile con licenza BSL 1.1.
+    </p>
+  </description>
+  <developer id="it.coste360">
+    <name>Coste360 SRL</name>
+  </developer>
+  <url type="homepage">https://coste360.it</url>
+  <url type="vcs-browser">https://github.com/coste360/arenile</url>
+  <launchable type="desktop-id">arenile.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+  <categories>
+    <category>Office</category>
+    <category>Finance</category>
+  </categories>
+</component>

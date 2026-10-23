@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
@@ -205,6 +206,45 @@ func TestCSRF_DoubleSubmit(t *testing.T) {
 				t.Fatalf("problem type: %s", w.Body.String())
 			}
 		})
+	}
+}
+
+// TestCookieSecure_FollowsTLS: with Secure cookies off in the configuration
+// (plain-HTTP development, desktop loopback), a request that arrived over
+// TLS (desktop LAN listener) still gets Secure cookies; a plain request
+// cannot fake it with X-Forwarded-Proto from an untrusted peer.
+func TestCookieSecure_FollowsTLS(t *testing.T) {
+	ok := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(204) })
+	h := RequestContext(nil)(CSRF(false, time.Hour)(ok))
+	for _, tt := range []struct {
+		name string
+		tls  bool
+		xfp  string
+		want bool
+	}{
+		{"plain", false, "", false},
+		{"tls", true, "", true},
+		{"forged forwarded-proto", false, "https", false},
+	} {
+		r := httptest.NewRequest(http.MethodGet, "/api/admin/v1/auth/me", nil)
+		if tt.tls {
+			r.TLS = &tls.ConnectionState{}
+		}
+		if tt.xfp != "" {
+			r.Header.Set("X-Forwarded-Proto", tt.xfp)
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		set := w.Header().Get("Set-Cookie")
+		if got := strings.Contains(set, "Secure"); got != tt.want || !strings.Contains(set, CSRFCookie+"=") {
+			t.Errorf("%s: %q", tt.name, set)
+		}
+		if got := CookieSecure(r.WithContext(reqctx.With(r.Context(), &reqctx.Info{HTTPS: tt.tls})), false); got != tt.want {
+			t.Errorf("%s: CookieSecure = %v", tt.name, got)
+		}
+	}
+	if !CookieSecure(httptest.NewRequest(http.MethodGet, "/", nil), true) {
+		t.Fatal("configured Secure must stay on over plain HTTP")
 	}
 }
 

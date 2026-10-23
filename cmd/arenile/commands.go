@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
-	"database/sql"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -384,18 +383,13 @@ func (c *cli) backup(ctx context.Context, args []string) error {
 		return err
 	}
 	defer db.Close()
-	if _, err := db.ExecContext(ctx, "VACUUM INTO ?", abs); err != nil {
-		return fmt.Errorf("backup: %w", err)
-	}
-	if err := os.Chmod(abs, 0o600); err != nil {
+	if err := store.BackupSQLiteDB(ctx, db, abs); err != nil {
 		return err
 	}
 	st, _ := os.Stat(abs)
 	fmt.Fprintf(c.stdout, "Backup completato: %s (%d byte)\n", abs, st.Size())
 	return nil
 }
-
-var sqliteHeader = []byte("SQLite format 3\x00")
 
 func (c *cli) restore(ctx context.Context, args []string) error {
 	fs := newFlagSet("restore", c.stderr)
@@ -432,69 +426,20 @@ func (c *cli) restore(ctx context.Context, args []string) error {
 	for _, suffix := range []string{"-wal", "-shm"} {
 		_ = os.Remove(dst + suffix)
 	}
-	if err := copyFile(*in, dst); err != nil {
+	if err := store.CopyFileAtomic(*in, dst); err != nil {
 		return err
 	}
 	fmt.Fprintf(c.stdout, "Ripristino completato in %s\n", dst)
 	return nil
 }
 
+// validateSQLiteBackup wraps store.ValidateSQLiteBackup with the CLI message.
 func validateSQLiteBackup(ctx context.Context, path string) error {
-	f, err := os.Open(path)
-	if err != nil {
+	if err := store.ValidateSQLiteBackup(ctx, path); err != nil {
+		if errors.Is(err, store.ErrInvalidBackup) {
+			return fmt.Errorf("il file %s non è un backup valido di Arenile: %w", path, err)
+		}
 		return err
-	}
-	head := make([]byte, len(sqliteHeader))
-	_, err = io.ReadFull(f, head)
-	_ = f.Close()
-	if err != nil || !bytes.Equal(head, sqliteHeader) {
-		return fmt.Errorf("%s non è un database SQLite", path)
-	}
-	abs, err := filepath.Abs(path)
-	if err != nil {
-		return err
-	}
-	sqldb, err := sql.Open("sqlite", "file:"+abs+"?mode=ro")
-	if err != nil {
-		return err
-	}
-	defer sqldb.Close()
-	var res string
-	if err := sqldb.QueryRowContext(ctx, "PRAGMA integrity_check").Scan(&res); err != nil {
-		return fmt.Errorf("verifica di integrità fallita: %w", err)
-	}
-	if res != "ok" {
-		return fmt.Errorf("verifica di integrità fallita: %s", res)
-	}
-	var n int
-	if err := sqldb.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name IN ('goose_db_version', 'establishments')").Scan(&n); err != nil || n != 2 {
-		return errors.New("il file non sembra un backup di Arenile")
 	}
 	return nil
-}
-
-func copyFile(src, dst string) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-	tmp := dst + ".tmp"
-	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(out, in); err != nil {
-		_ = out.Close()
-		_ = os.Remove(tmp)
-		return err
-	}
-	if err := out.Sync(); err != nil {
-		_ = out.Close()
-		return err
-	}
-	if err := out.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp, dst)
 }

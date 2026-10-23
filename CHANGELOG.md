@@ -12,6 +12,87 @@ Completamento della stagione**.
 
 ### Added
 
+- M6, launcher dell'app desktop in modalità locale (spec 29.1, `cmd/arenile-desktop`, `internal/desktop`): cartella
+  dati per sistema operativo, `ARENILE_SECRET_KEY` generata al primo avvio nel portachiavi del sistema
+  (`github.com/zalando/go-keyring`, MIT; fallback file 0600) e mai rigenerata per un archivio esistente (INV-60),
+  migrazioni e server su `127.0.0.1` con porta libera (riusata ai riavvii), browser aperto sul pannello, istanza unica
+  (il secondo avvio apre il pannello), icona nella barra di sistema con *Apri pannello*, *Backup ora*, *Apri cartella
+  dati*, *Avvio automatico all'accensione* (LaunchAgent, chiave Run, voce XDG), *Modalità rete locale*, *Ripristina
+  un backup…*, *Esci* (`fyne.io/systray`, Apache-2.0, solo con il tag `desktop`); backup giornaliero, alla chiusura e
+  manuale con retention e cartella a scelta, ripristino con riavvio del server; controllo aggiornamenti solo se
+  abilitato; log ruotati nella cartella dati. Primo avvio dal browser con token monouso e solo da loopback (INV-59),
+  pagina *Configurazione → App desktop* e, nell'edizione desktop, spiegazione del passaggio a un'istanza online al
+  posto di *Pagina pubblica* e *Pagamenti online*. `arenile backup|restore` e l'app desktop condividono ora lo stesso
+  codice (`store.BackupSQLite`, `store.ValidateSQLiteBackup`, `store.RestoreSQLiteFile`).
+- M6, modalità rete locale dell'app desktop (spec 29.1, `internal/desktop/lan`): certificato ECDSA P-256
+  autogenerato nella cartella dati (825 giorni, impronta SHA-256 stabile ai riavvii e ai cambi di IP), listener
+  HTTPS su tutte le interfacce che chiude prima del TLS le connessioni da fuori della rete locale, e middleware
+  `LocalPeersOnly` attivo nell'edizione desktop come seconda difesa (INV-57). Pagina *Configurazione → Dispositivi →
+  Rete locale* (scorciatoia `/admin/rete-locale` per la voce del menu "Mostra QR rete locale") con indirizzo,
+  impronta, istruzioni per accettare il certificato nel browser e abbinamento.
+- M6, modalità remota dell'app desktop (`internal/desktop/remote`): abbinamento a un'istanza con QR o codice
+  (controllo di `/meta` e della versione minima, https obbligatorio, impronta del certificato verificata), token per
+  dispositivo nel portachiavi, finestra dedicata con il webview di sistema (tag `desktop`, macOS e Windows) o il
+  browser predefinito (Linux e build headless), opzione kiosk, avvio automatico, proxy locale verificato per le
+  istanze con certificato autofirmato, scollegamento e gestione della revoca. Nuova dipendenza
+  `github.com/webview/webview_go` (MIT), compilata solo con il tag `desktop` e CGO su macOS e Windows: su Linux il
+  launcher resta senza CGO (nessuna dipendenza da WebKitGTK, AppImage statica).
+- M6, ponte fiscale (spec 29.1, 14.2, `internal/fiscalbridge`): coda dei lavori con lease, long polling risvegliato
+  all'accodamento, esiti idempotenti, ritentativi con attesa crescente per gli errori temporanei, rilascio dei lease
+  scaduti e dei dispositivi revocati; agente sul PC della cassa con registro dei driver locali (driver `noop`) ed
+  esiti memorizzati su file per non emettere due volte lo stesso documento (INV-58). Endpoint
+  `/api/device/v1/fiscal-bridge*` e `GET .../fiscal-bridge` per il pannello; audit `fiscal_bridge.registered`,
+  `fiscal_bridge.unregistered`, `fiscal_bridge_job.*`.
+
+- M6, pacchetti dell'app desktop e CI (`packaging/desktop`, `scripts/desktop`, `.github/workflows/desktop.yml`,
+  `docs/desktop-build.md`): `.app` e `.dmg` universali per macOS (firma Developer ID, notarizzazione e stapling se
+  ci sono i segreti), installer Inno Setup per Windows (per utente, senza amministratore; firma con PFX o Azure
+  Artifact Signing), AppImage per Linux costruita su `ubuntu-22.04`; pacchetti senza firma con suffisso
+  `-unsigned`. I pacchetti finiscono solo nell'artefatto `portal-bundle-<tag>` per il futuro portale Coste360,
+  mai come asset di una release GitHub. Target `make desktop-build` e `make desktop-package-{macos,windows,linux}`.
+- M6, il pannello dell'app desktop gira in una finestra propria, senza browser (spec 29.1 rivista, ADR 0015 punto
+  19, `internal/desktop/shell`): webview di sistema (WKWebView su macOS, WebView2 su Windows) con icona nel Dock o
+  nella barra delle applicazioni, titolo "Arenile", dimensione minima, posizione, dimensioni e zoom ricordati in
+  `window.json`, istanza unica (il secondo avvio porta in primo piano la finestra tramite un listener di attivazione
+  su loopback con token in `instance.json`). Su macOS menu dell'app (*Arenile*, *Modifica* con copia e incolla nei
+  campi, *Vista* con ricarica e ingrandimento, *Finestra*), chiusura della finestra = l'app resta nella barra dei menu
+  e nel Dock, *Esci* ⌘Q = backup di uscita e arresto della rete locale; download (`<a download>`, blob, allegati) nella
+  cartella Download con notifica, `window.print` con il pannello di stampa del sistema, link esterni nel browser. Su
+  Windows chiudere la finestra chiude l'app salvo la nuova impostazione `keep_running_in_tray` (*Alla chiusura della
+  finestra resta attivo nella barra di sistema*, `DesktopSettings`, falsa di default). Voce *Apri nel browser* nella
+  barra di sistema e nel menu *Vista*, flag `-browser`; Linux e Windows senza WebView2 restano sul browser. La finestra
+  della modalità remota usa lo stesso strato nativo (su macOS copia e incolla prima non funzionavano). `Arenile.app`
+  non è più `LSUIElement`.
+- M6, pacchetto Windows ARM64 nativo (`Arenile_<tag>_windows_arm64_setup.exe`) accanto a quello x64: job sul runner
+  GitHub `windows-11-arm` con CGO tramite llvm-mingw (versione e sha256 fissati), stessi passi di firma, artefatto
+  `desktop-windows-arm64` nel `portal-bundle-<tag>`; il bundle accoglie anche i pacchetti costruiti quando un solo job
+  desktop fallisce.
+- M6, `arenile-desktop -pair <QR|URL> [-pair-code] [-pair-fingerprint]`: abbina il PC a un'istanza in modalità
+  remota da riga di comando; la modalità remota è ora collegata al launcher.
+- M6, `/meta` riporta `desktop.lan_qr_svg` (solo in modalità rete locale): la pagina *Rete locale* mostra il QR
+  dell'indirizzo del pannello da inquadrare con la fotocamera di telefoni e tablet (spec 29.1).
+- Test: e2e del pannello nell'edizione desktop simulata (spiegazioni al posto di *Pagina pubblica* e *Pagamenti
+  online*, abbinamento in attesa della rete locale, pagina *Rete locale*) e collaudo M6 facoltativo contro l'app
+  desktop in esecuzione (`e2e/playwright.desktop.config.ts`: primo avvio, configurazione guidata, prima
+  prenotazione con i tempi).
+- M6/M7, dispositivi abbinati (spec 29.2): codici di abbinamento monouso di 8 caratteri (5 minuti, conservati
+  come hash) con QR in SVG generato dal server (`qr_svg`, nuovo campo opzionale di `DevicePairingCode`),
+  scambio con un token per dispositivo a 256 bit (hash, legato a utente e stabilimento, permessi del ruolo),
+  autenticazione `Authorization: Bearer ar_dev_…` accanto ai cookie (CSRF solo per i cookie), `last_used_at`
+  aggiornato al più una volta al minuto, revoca immediata, scadenza per inattività dopo 90 giorni, audit `device.pairing_code_created`,
+  `device.paired`, `device.revoked`; `Me.device` per le richieste con token. Pagina *Configurazione →
+  Dispositivi* con QR, codice, conto alla rovescia e revoca (INV-55, INV-56). Nuova dipendenza
+  `github.com/skip2/go-qrcode` (MIT), la stessa usata da M4 per il QR delle prenotazioni.
+- M6/M7 lato core, contratto e scaffolding ([ADR 0015](docs/adr/0015-scelte-m6.md)): `GET /api/admin/v1/meta`
+  pubblico (versione, edizione `server|desktop`, modalità desktop `local|lan`, versioni minime dei client,
+  capacità); dispositivi abbinati con codice monouso e QR (`devices/pairing-codes`), elenco e revoca, token per
+  dispositivo `ar_dev_...` come `Authorization: Bearer` sulle API admin e sulle nuove API `/api/device/v1`
+  (abbinamento, dispositivo corrente, ponte fiscale con long polling); API dell'edizione desktop
+  `/api/desktop/v1` solo da loopback (primo avvio, impostazioni, backup e ripristino); nuovi tipi di errore
+  `pairing_code_invalid`, `lan_mode_required`, `loopback_required`, `setup_token_invalid`, `setup_completed`.
+  Migrazione `00006_devices_fiscal_bridge` (SQLite e PostgreSQL). Driver fiscale `bridge`. Launcher
+  `cmd/arenile-desktop` (senza CGO di default, tray con il tag `desktop`) e `make build-desktop`. Pagine
+  *Dispositivi* e *App desktop* nel pannello. Le operazioni M6 rispondono `501` finché i builder non le completano.
 - **M4 — Pagina pubblica** ([ADR 0013](docs/adr/0013-scelte-m4.md)): prenotazione online in quattro passi
   (Quando, Dove, Cosa, Chi e pagamento) per zone a posto sulla mappa con il kit, a zona con assegnazione
   automatica alla conferma e a quantità, anche miste; calendario con giorni pieni e "ultimi posti", legenda dei

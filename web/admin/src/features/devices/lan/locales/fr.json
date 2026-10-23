@@ -1,0 +1,51 @@
+{
+  "title": "Réseau local",
+  "description": "Utilisez Arenile depuis d'autres PC, tablettes et téléphones connectés au Wi-Fi de la plage, sur les mêmes données que ce PC.",
+  "copied": "Copié dans le presse-papiers",
+  "pair": {
+    "open": "Associer un appareil"
+  },
+  "off": {
+    "title": "Le mode réseau local est désactivé",
+    "description": "Activez-le dans les réglages de l'application de bureau (ou depuis le menu de la barre système) : les autres appareils du Wi-Fi de la plage pourront ouvrir le panneau. Les connexions venant de l'extérieur du réseau local restent refusées.",
+    "action": "Ouvrir les réglages de l'application de bureau"
+  },
+  "server": {
+    "title": "Cette page concerne l'application de bureau",
+    "description": "Le mode réseau local n'existe que dans l'édition de bureau. Cette instance est déjà joignable à son adresse : utilisez la page Appareils pour connecter téléphones et PC.",
+    "action": "Aller à Appareils"
+  },
+  "address": {
+    "title": "Adresse du panneau",
+    "description": "Sur les autres appareils connectés au même Wi-Fi, ouvrez cette adresse dans le navigateur.",
+    "copy": "Copier l'adresse",
+    "qrAlt": "QR code de l'adresse {{address}}",
+    "qrHint": "Sur un téléphone ou une tablette, vous pouvez aussi scanner le QR code avec l'appareil photo."
+  },
+  "fingerprint": {
+    "title": "Empreinte du certificat",
+    "description": "La connexion est chiffrée avec un certificat créé par ce PC. Avant de l'accepter dans un navigateur, vérifiez que l'empreinte SHA-256 est identique à celle-ci.",
+    "copy": "Copier l'empreinte",
+    "aria": "Empreinte SHA-256 du certificat"
+  },
+  "renewal": {
+    "title": "Le certificat sera renouvelé le {{date}}",
+    "description": "À partir de ce jour, l'empreinte change : les applications appairées (téléphones, PC en mode distant) doivent être appairées à nouveau et les navigateurs demanderont d'accepter le nouveau certificat. Prévoyez-le un jour de fermeture et gardez cette page sous la main."
+  },
+  "browser": {
+    "title": "Premier accès depuis un navigateur",
+    "description": "Le navigateur affiche un avertissement la première fois, car le certificat n'est pas délivré par une autorité publique. C'est normal sur le réseau de la plage.",
+    "step1": "Connectez l'appareil au même Wi-Fi que ce PC.",
+    "step2": "Ouvrez {{address}} dans le navigateur.",
+    "step3": "À l'avertissement « Votre connexion n'est pas privée », ouvrez les détails du certificat.",
+    "step4": "Comparez l'empreinte SHA-256 avec celle affichée ci-dessus : chaque caractère doit correspondre.",
+    "step5": "Si elle correspond, choisissez « Paramètres avancés » puis « Continuer » (Safari : « Visiter ce site web »). Sinon, n'allez pas plus loin et prévenez le gérant.",
+    "hint": "Le certificat ne change pas aux redémarrages : l'avertissement ne revient que s'il est renouvelé. Réservez une adresse IP fixe pour ce PC dans le routeur afin que l'adresse du panneau reste la même."
+  },
+  "apps": {
+    "title": "Application mobile et application de bureau en mode distant",
+    "description": "Avec « Associer un appareil », le QR contient l'adresse, l'empreinte du certificat et un code à usage unique.",
+    "security": "Les applications vérifient elles-mêmes l'empreinte, elles n'affichent donc aucun avertissement : si quelqu'un se faisait passer pour ce PC, la connexion serait refusée.",
+    "guarantee": "Il n'y a toujours qu'un seul serveur : réservations et encaissements des autres appareils arrivent dans les mêmes données, avec les mêmes garanties contre les doubles réservations."
+  }
+}

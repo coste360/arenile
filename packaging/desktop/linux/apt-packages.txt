@@ -1,0 +1,10 @@
+# Debian/Ubuntu packages needed to build the Linux launcher (DESKTOP_TAGS=desktop)
+# on the runner; read by .github/workflows/desktop.yml. One per line, '#'
+# comments allowed. Empty = nothing beyond the Go toolchain.
+#
+# The Linux tray build is CGO-free: fyne.io/systray talks to the tray over D-Bus
+# in pure Go and the remote-mode webview (github.com/webview/webview_go, which
+# would link GTK 3 and WebKitGTK 4.0, absent on Ubuntu 24.04 / Debian 13 / Fedora)
+# is excluded on Linux (internal/desktop/remote/window_webview.go, build
+# constraint !linux). The AppImage is therefore a static binary with no runtime
+# library requirement. Add packages here only together with a CGO dependency.

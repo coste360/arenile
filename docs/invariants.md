@@ -369,3 +369,71 @@ messaggio è consegnato da un solo worker anche con più istanze; destinatari ma
 registro; i dati dimostrativi non generano email.
 Verificata da: `TestNotify_OutboxToDelivery`, `TestConcurrency_DeliverClaimsOnce` (`internal/domain/notify`, tag `integration`); verifica di sistema: `scripts/acceptance/m4-real-binary.sh` (nessuna email dopo `seed demo`). Stato: implemented.
 
+## Dispositivi abbinati e app desktop (spec 29 — M6)
+
+**INV-55 — Codice di abbinamento monouso.**
+Un codice di abbinamento (spec 29.2) si scambia al più una volta e solo prima di `expires_at`: lo scambio lo
+consuma con un UPDATE condizionale (`used_at IS NULL AND expires_at > now`) nella stessa transazione che crea il
+dispositivo e scrive l'audit `device.paired`; un codice inesistente, scaduto, già usato o di un utente che nel
+frattempo ha perso l'accesso risponde sempre `pairing_code_invalid`. Codici e token sono conservati solo come
+SHA-256 e non compaiono mai in log o audit.
+Verificata da: `TestConcurrency_PairingCodeSingleUse` (100 scambi paralleli dello stesso codice, un solo token),
+`TestDeviceService_CodeSingleUseAndExpiry`, `TestDeviceService_PairAndAuthenticate` (`internal/domain/device`, tag
+`integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-56 — Token per dispositivo limitato e revocabile subito.**
+Un token `ar_dev_…` autentica come l'utente del dispositivo con i permessi del suo ruolo ristretti allo
+stabilimento del dispositivo; non autentica più dalla richiesta successiva alla revoca (nessuna cache), se
+l'utente è disattivato o non ha più un ruolo nello stabilimento, né dopo 90 giorni senza uso
+(`device.IdleExpiry`, contati da `last_used_at` o dall'abbinamento). Un dispositivo o una chiave API non creano codici
+di abbinamento; con il token non serve il CSRF (niente cookie), con il cookie sì.
+Verificata da: `TestDeviceService_RevokeIsImmediate`, `TestDeviceService_PermissionsByRole`, `TestIdleExpired_Scenarios`,
+`TestDeviceService_PairAndAuthenticate` (scadenza per inattività),
+`TestDeviceService_CrossTenant` (`internal/domain/device`, tag `integration`), `TestAuthenticate_BearerAndCookie`,
+`TestAuthenticate_DeviceOnly` (`internal/http/middleware`), `TestHTTPIntegration_DevicePairing` (`internal/http`,
+tag `integration`). Stato: implemented.
+
+**INV-57 — Modalità rete locale solo dalla rete locale.**
+Nell'edizione desktop il server risponde solo a peer TCP di loopback, RFC 1918, link-local o IPv6 ULA (mai
+X-Forwarded-For): il listener della rete locale chiude le altre connessioni prima del TLS
+(`desktop.PrivateListener`) e il middleware `LocalPeersOnly` rifiuta con 403 ogni richiesta da un indirizzo pubblico
+o CGNAT, anche su un listener aperto senza filtro. Il certificato autogenerato ha un'impronta stabile ai riavvii e ai
+cambi di indirizzo. Il server resta uno solo: le garanzie di disponibilità non cambiano.
+Verificata da: `TestPeerFilter_Scenarios`, `TestPrivateListener_RejectsPublicPeersBeforeTLS`,
+`TestLocalPeersOnly_Middleware`, `TestMode_TLSListener`, `TestCertStore_GenerationAndStableFingerprint`
+(`internal/desktop/lan`), `TestM6_ContractRouting` (`internal/app`). Stato: implemented.
+
+**INV-58 — Ponte fiscale: ogni lavoro si chiude una volta sola.**
+Al più un ponte fiscale attivo per stabilimento (indice unico parziale). Un lavoro del ponte è accodato una volta per
+(stabilimento, tipo, chiave di idempotenza); poll concorrenti non condividono mai un lease; l'esito chiude il lavoro
+con un UPDATE condizionale una sola volta (audit `fiscal_bridge_job.*` una volta), un duplicato dello stesso esito
+risponde 204 e un esito diverso 409. L'app della cassa memorizza l'esito per chiave di idempotenza prima di inviarlo,
+quindi un lavoro riconsegnato (ack perso, lease scaduto, riavvio) non stampa un secondo documento. Dopo 5 consegne
+senza esito il lavoro fallisce.
+Verificata da: `TestConcurrency_FiscalBridgeAck` (100 invii paralleli dello stesso esito e 100 poll paralleli),
+`TestBridge_EndToEnd` (incasso → lavoro → esecuzione sul driver locale → documento emesso, con poll persi, ack persi e
+lease scaduto), `TestService_RegisterPollSubmit`, `TestService_RetriesAndLeases` (`internal/fiscalbridge`, tag
+`integration`, SQLite e PostgreSQL), `TestAgent_DeduplicatesRedeliveries` (`internal/fiscalbridge`). Stato: implemented.
+
+**INV-59 — Primo avvio dell'app desktop: solo dal PC della cassa, una volta.**
+L'utente owner dell'edizione desktop si crea solo con `POST /api/desktop/v1/first-run` da un peer TCP di loopback
+con `Host` di loopback (niente X-Forwarded-For, niente DNS rebinding) e con il token monouso a 256 bit che il
+launcher genera a ogni avvio finché non esistono utenti e passa al browser nel frammento dell'URL (mai in una
+richiesta, mai nei log). I dati sono validati prima di consumare il token; la creazione è condizionata a una tabella
+utenti vuota, quindi non nascono mai due owner; dopo il primo owner l'endpoint risponde `setup_completed`. Sul server
+l'API desktop non esiste (404).
+Verificata da: `TestFirstRun_LoopbackEnforcement`, `TestFirstRun_ServerEditionHidden`,
+`TestSmoke_DesktopLauncherHeadless`, `TestSetupToken_SingleUse` (`internal/desktop`), `TestValidateFirstRun_Scenarios`
+(`internal/http/desktop`). Stato: implemented.
+
+**INV-60 — Chiave segreta e archivio dell'app desktop non si biforcano mai.**
+`ARENILE_SECRET_KEY` dell'app desktop nasce al primo avvio e vive nel portachiavi del sistema (fallback: file 0600
+nella cartella dati); se l'archivio esiste ma nessun deposito ha la chiave il launcher si ferma invece di generarne
+una nuova (le colonne cifrate resterebbero illeggibili). Una cartella dati ha un solo launcher attivo (lock del
+sistema operativo, liberato dal kernel anche dopo un crash): il secondo avvio apre il pannello del primo. Il backup è
+lo stesso file di `arenile backup` (VACUUM INTO), ripristinabile con `arenile restore` su una VPS; il ripristino
+avviene a server fermo e salva prima l'archivio corrente come backup `pre_restore`; la retention elimina solo i
+backup automatici.
+Verificata da: `TestResolveSecretKey_NeverForksAnExistingDatabase`, `TestKeyringSecretStore_FallbackToFile`,
+`TestInstanceLock_SingleInstance`, `TestBackuper_BackupValidateRestore_SQLite`, `TestPruneCandidates_KeepsManualAndNewest`,
+`TestSmoke_DesktopLauncherHeadless` (`internal/desktop`). Stato: implemented.

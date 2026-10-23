@@ -1,0 +1,78 @@
+{
+  "title": "Appareils",
+  "description": "Connectez téléphones, tablettes et l'application de bureau avec un QR code : chaque appareil a son propre accès, révocable à tout moment.",
+  "actions": "Actions",
+  "current": "Cet appareil",
+  "neverUsed": "Jamais utilisé",
+  "showRevoked": "Afficher les révoqués",
+  "fields": {
+    "device": "Appareil",
+    "user": "Utilisateur",
+    "lastUsed": "Dernière utilisation",
+    "status": "État"
+  },
+  "status": {
+    "active": "Actif",
+    "revoked": "Révoqué",
+    "fiscalBridge": "Pont fiscal"
+  },
+  "platforms": {
+    "ios": "iPhone / iPad",
+    "android": "Android",
+    "windows": "Windows",
+    "macos": "macOS",
+    "linux": "Linux",
+    "other": "Autre"
+  },
+  "roles": {
+    "owner": "Propriétaire",
+    "manager": "Gérant",
+    "cashier": "Caissier",
+    "beach_staff": "Personnel de plage",
+    "viewer": "Lecture seule"
+  },
+  "empty": {
+    "title": "Aucun appareil associé",
+    "description": "Associez votre téléphone ou l'application de bureau avec le bouton « Associer un appareil ».",
+    "descriptionOwner": "Associez les téléphones du personnel ou l'application de bureau de la caisse avec le bouton « Associer un appareil »."
+  },
+  "lan": {
+    "title": "Activez le mode réseau local",
+    "description": "En mode local, l'application de bureau n'est pas joignable par les autres appareils. Activez le mode réseau local depuis le menu de l'application (icône de la barre système), puis revenez ici pour associer téléphones et autres PC."
+  },
+  "pair": {
+    "open": "Associer un appareil",
+    "title": "Associer un appareil",
+    "description": "Scannez le QR code avec l'application Arenile (téléphone ou application de bureau en mode distant). Le code est à usage unique et expire après 5 minutes.",
+    "user": "Appareil de",
+    "userSelf": "Moi-même",
+    "userHint": "L'appareil aura les permissions du rôle de cet utilisateur, dans cet établissement uniquement.",
+    "generate": "Générer le QR code",
+    "regenerate": "Générer un nouveau code",
+    "generating": "Génération du code en cours",
+    "qrAlt": "QR code d'association",
+    "qrUnavailable": "QR code indisponible : saisissez le code à la main.",
+    "codeLabel": "Code d'association",
+    "copy": "Copier le code",
+    "copied": "Code copié",
+    "address": "Adresse : {{url}}",
+    "expiresIn": "Expire dans",
+    "expiredTitle": "Code expiré",
+    "expiredDescription": "Par sécurité, le code est valable 5 minutes. Générez-en un nouveau.",
+    "step1": "Ouvrez l'application Arenile sur l'appareil.",
+    "step2": "Choisissez « Se connecter à une instance » et scannez le QR code.",
+    "step3": "Ou saisissez l'adresse et le code ci-dessus.",
+    "pairedTitle": "Appareil associé",
+    "pairedDescription": "{{name}} peut maintenant accéder à cet établissement.",
+    "pairedToast": "{{name}} associé",
+    "done": "Terminé"
+  },
+  "revoke": {
+    "action": "Révoquer",
+    "aria": "Révoquer {{name}}",
+    "title": "Révoquer {{name}} ?",
+    "message": "L'appareil perd immédiatement l'accès. Pour le réutiliser, il faudra l'associer avec un nouveau code.",
+    "messageBridge": "L'appareil perd immédiatement l'accès et cesse d'être le pont fiscal : les documents fiscaux restent en attente jusqu'à l'enregistrement d'un autre pont.",
+    "done": "{{name}} révoqué"
+  }
+}

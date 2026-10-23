@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Arenile
+Comment=Gestionale per stabilimenti balneari
+Exec="/home/anna/My \\"Apps\\"/\\$HOME/100%%/arenile"
+Icon=arenile
+Terminal=false
+X-GNOME-Autostart-enabled=true

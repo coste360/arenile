@@ -1,0 +1,5 @@
+#!/bin/sh
+# AppImage entry point: runs the launcher bundled in usr/bin. The data folder
+# is ~/.local/share/arenile (XDG), never inside the AppImage.
+HERE="$(dirname "$(readlink -f "$0")")"
+exec "$HERE/usr/bin/arenile-desktop" "$@"

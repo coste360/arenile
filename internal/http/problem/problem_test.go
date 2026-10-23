@@ -10,12 +10,14 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/desktop/control"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
@@ -33,6 +35,12 @@ func TestError_Mapping(t *testing.T) {
 		typ    string
 	}{
 		{"unauthenticated", auth.ErrUnauthenticated, 401, "unauthorized"},
+		{"pairing code", fmt.Errorf("x: %w", device.ErrPairingCodeInvalid), 400, "pairing_code_invalid"},
+		{"lan mode", device.ErrLANModeRequired, 409, "lan_mode_required"},
+		{"loopback", control.ErrLoopbackRequired, 403, "loopback_required"},
+		{"setup token", control.ErrSetupTokenInvalid, 403, "setup_token_invalid"},
+		{"setup completed", control.ErrSetupCompleted, 409, "setup_completed"},
+		{"backup not found", control.ErrBackupNotFound, 404, "not_found"},
 		{"credentials", auth.ErrInvalidCredentials, 401, "invalid_credentials"},
 		{"totp required", auth.ErrTOTPRequired, 401, "totp_required"},
 		{"forbidden wrapped", fmt.Errorf("x: %w", auth.ErrForbidden), 403, "forbidden"},

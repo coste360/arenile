@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Arenile
+Comment=Gestionale per stabilimenti balneari
+Exec="/home/anna/Arenile.AppImage" "-data-dir" "/media/anna/USB/arenile dati"
+Icon=arenile
+Terminal=false
+X-GNOME-Autostart-enabled=true

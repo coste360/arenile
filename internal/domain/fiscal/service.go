@@ -182,6 +182,13 @@ func sequenceNumber(d calendar.Date, seq int) string {
 	return fmt.Sprintf("%04d%02d%02d-%04d", d.Year(), int(d.Month()), d.Day(), seq)
 }
 
+// isDeferred reports whether a driver error means "accepted, outcome not
+// known yet" (capability interface implemented by fiscalbridge.DeferredError).
+func isDeferred(err error) bool {
+	var d interface{ Deferred() bool }
+	return errors.As(err, &d) && d.Deferred()
+}
+
 // applyOutcome stores the driver answer on doc: issued with the driver
 // number (or the internal sequence number when the driver has none), or
 // failed with the error text.
@@ -344,6 +351,11 @@ func (s *Service) IssuePending(ctx context.Context) error {
 			continue
 		}
 		res, ierr := drv.Issue(ctx, pl.Request)
+		if isDeferred(ierr) {
+			// Accepted by an asynchronous driver (fiscalbridge): the outcome
+			// arrives later, the document stays pending until then.
+			continue
+		}
 		applyOutcome(doc, sequenceNumber(doc.BusinessDate, pl.Sequence), res, ierr)
 		doc.UpdatedAt = s.d.Clock.Now().UTC()
 		es, err := store.SystemEstablishmentScope(ctx, s.d.DB, doc.EstablishmentID)

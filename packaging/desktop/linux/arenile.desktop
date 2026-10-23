@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Arenile
+GenericName=Gestionale per stabilimenti balneari
+GenericName[en]=Beach establishment management
+GenericName[de]=Verwaltung für Strandbäder
+GenericName[fr]=Gestion d'établissement balnéaire
+Comment=Prenotazioni, mappa degli ombrelloni, abbonati e cassa sul PC del lido
+Comment[en]=Bookings, umbrella map, season passes and cash desk on the beach PC
+Exec=arenile-desktop
+Icon=arenile
+Terminal=false
+Categories=Office;Finance;
+Keywords=lido;spiaggia;ombrelloni;prenotazioni;cassa;beach;
+StartupNotify=false
+X-AppImage-Name=Arenile

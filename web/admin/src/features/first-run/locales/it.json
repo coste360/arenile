@@ -1,0 +1,37 @@
+{
+  "title": "Benvenuto in Arenile",
+  "description": "Crea l'utente titolare per iniziare: poi ti guidiamo nella configurazione dello stabilimento.",
+  "fields": {
+    "organization": "Azienda o stabilimento",
+    "organizationHint": "Il nome con cui emetti le ricevute, ad esempio «Lido Azzurro srl».",
+    "name": "Nome e cognome",
+    "email": "Email",
+    "emailHint": "La userai per accedere. Arenile desktop non invia email e non si collega a internet.",
+    "password": "Password",
+    "passwordHint": "Almeno 10 caratteri. Conservala: serve anche per accedere dagli altri dispositivi del lido.",
+    "passwordConfirm": "Ripeti la password"
+  },
+  "submit": "Crea l'utente e continua",
+  "submitting": "Creazione in corso…",
+  "privacy": "I dati restano su questo computer, nella cartella dati di Arenile.",
+  "validation": {
+    "organizationRequired": "Inserisci il nome dell'azienda o dello stabilimento.",
+    "nameRequired": "Inserisci il tuo nome.",
+    "emailInvalid": "Inserisci un indirizzo email valido.",
+    "passwordTooShort": "La password deve avere almeno 10 caratteri.",
+    "passwordMismatch": "Le due password non coincidono.",
+    "tooLong": "Testo troppo lungo."
+  },
+  "errors": {
+    "noToken": "Apri questa pagina dal menu di Arenile nella barra di sistema (Apri pannello): il collegamento contiene un codice di sicurezza.",
+    "tokenInvalid": "Il collegamento di configurazione non è più valido. Chiudi questa scheda e scegli «Apri pannello» dal menu di Arenile nella barra di sistema.",
+    "completed": "La configurazione iniziale è già stata completata: accedi con l'utente creato.",
+    "network": "Arenile non risponde: controlla che l'app sia aperta e riprova.",
+    "generic": "Non è stato possibile creare l'utente. Riprova."
+  },
+  "done": {
+    "title": "Configurazione iniziale completata",
+    "description": "L'utente titolare esiste già.",
+    "login": "Vai all'accesso"
+  }
+}

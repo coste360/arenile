@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hardened-runtime entitlements of Arenile.app (Developer ID, not App Store,
+  not sandboxed: the launcher writes to ~/Library/Application Support/Arenile
+  and to a user-chosen backup folder, and listens on 127.0.0.1 / the LAN).
+
+  A Go binary needs no JIT, unsigned-memory or library-validation exceptions,
+  so the set is intentionally empty: every exception weakens notarization.
+  Add one only with a written reason (e.g. a webview that loads a non-Apple
+  framework would need com.apple.security.cs.disable-library-validation).
+-->
+<plist version="1.0">
+<dict>
+</dict>
+</plist>

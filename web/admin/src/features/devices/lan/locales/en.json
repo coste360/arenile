@@ -1,0 +1,51 @@
+{
+  "title": "Local network",
+  "description": "Use Arenile from other PCs, tablets and phones on the beach Wi-Fi, on the same archive as this PC.",
+  "copied": "Copied to the clipboard",
+  "pair": {
+    "open": "Pair a device"
+  },
+  "off": {
+    "title": "Local network mode is off",
+    "description": "Turn it on in the desktop app settings (or from the system tray menu): other devices on the beach Wi-Fi will be able to open the panel. Connections from outside the local network stay refused.",
+    "action": "Open the desktop app settings"
+  },
+  "server": {
+    "title": "This page is about the desktop app",
+    "description": "Local network mode exists only in the desktop edition. This instance is already reachable at its address: use the Devices page to connect phones and PCs.",
+    "action": "Go to Devices"
+  },
+  "address": {
+    "title": "Panel address",
+    "description": "On the other devices connected to the same Wi-Fi, open this address in the browser.",
+    "copy": "Copy address",
+    "qrAlt": "QR code of the address {{address}}",
+    "qrHint": "On a phone or tablet you can also scan the QR code with the camera."
+  },
+  "fingerprint": {
+    "title": "Certificate fingerprint",
+    "description": "The connection is encrypted with a certificate created by this PC. Before accepting it in a browser, check that the SHA-256 fingerprint is identical to this one.",
+    "copy": "Copy fingerprint",
+    "aria": "SHA-256 fingerprint of the certificate"
+  },
+  "renewal": {
+    "title": "The certificate will be renewed on {{date}}",
+    "description": "From that day the fingerprint changes: paired apps (phones, PCs in remote mode) must be paired again and browsers will ask to accept the new certificate. Plan it on a closing day and keep this page at hand."
+  },
+  "browser": {
+    "title": "First access from a browser",
+    "description": "The browser shows a warning the first time, because the certificate is not issued by a public authority. This is expected on the beach network.",
+    "step1": "Connect the device to the same Wi-Fi as this PC.",
+    "step2": "Open {{address}} in the browser.",
+    "step3": "At the \"Your connection is not private\" warning, open the certificate details.",
+    "step4": "Compare the SHA-256 fingerprint with the one shown above: every character must match.",
+    "step5": "If it matches, choose \"Advanced\" and then \"Proceed\" (Safari: \"Visit this website\"). If it does not, do not continue and tell the manager.",
+    "hint": "The certificate does not change on restart: the warning comes back only when the certificate is renewed. Reserve a fixed IP address for this PC in the router so that the panel address stays the same."
+  },
+  "apps": {
+    "title": "Mobile app and desktop app in remote mode",
+    "description": "With \"Pair a device\" the QR carries the address, the certificate fingerprint and a one-time code.",
+    "security": "The apps check the certificate fingerprint themselves, so they show no warning: if someone impersonated this PC, the connection would be refused.",
+    "guarantee": "There is still a single server: bookings and takings from other devices go into the same archive, with the same guarantees against double bookings."
+  }
+}

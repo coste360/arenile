@@ -53,6 +53,9 @@ const (
 	EnvRequireTOTPForOwners     = "ARENILE_REQUIRE_TOTP_FOR_OWNERS"
 	EnvTelemetry                = "ARENILE_TELEMETRY"
 	EnvDev                      = "ARENILE_DEV"
+	// EnvEdition is set by the desktop launcher (never by an operator):
+	// "desktop" is the loopback profile of the core, see Config.Desktop.
+	EnvEdition = "ARENILE_EDITION"
 
 	// First-owner bootstrap (ADR 0006): when all four are set and the
 	// database has no users, `serve` creates the owner once at startup.
@@ -61,6 +64,12 @@ const (
 	EnvBootstrapOwnerName  = "ARENILE_BOOTSTRAP_OWNER_NAME"
 	EnvBootstrapOwnerOrg   = "ARENILE_BOOTSTRAP_OWNER_ORG"
 	EnvAdminPassword       = "ARENILE_ADMIN_PASSWORD" //nolint:gosec // G101: environment variable name, not a credential
+)
+
+// Editions (EnvEdition).
+const (
+	EditionServer  = "server"
+	EditionDesktop = "desktop"
 )
 
 // DevKeyFile is the file, inside the data directory, where a generated
@@ -93,6 +102,11 @@ type Config struct {
 	RequireTOTPForOwners     bool
 	Telemetry                bool
 	Dev                      bool
+	// Edition is EditionServer (default) or EditionDesktop: the desktop
+	// launcher serves the panel on http://127.0.0.1 and needs no public
+	// base URL; cookies get Secure per request (TLS LAN listener). It is
+	// not a development switch: Dev stays off on shipped desktop installs.
+	Edition string
 
 	// BootstrapOwner is the optional first owner created by `serve` when the
 	// database has no users. Zero value means disabled.
@@ -150,6 +164,11 @@ func Parse(lookup Lookup) (Config, error) {
 	var err error
 	if cfg.Dev, err = parseBool(get(EnvDev, "false")); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvDev, err))
+	}
+	switch cfg.Edition = strings.ToLower(get(EnvEdition, EditionServer)); cfg.Edition {
+	case EditionServer, EditionDesktop:
+	default:
+		errs = append(errs, fmt.Errorf("%s: must be %q or %q", EnvEdition, EditionServer, EditionDesktop))
 	}
 	if cfg.AutoMigrate, err = parseBool(get(EnvAutoMigrate, "true")); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvAutoMigrate, err))
@@ -270,11 +289,16 @@ func Parse(lookup Lookup) (Config, error) {
 	return cfg, nil
 }
 
+// Desktop reports whether this process is the desktop edition (loopback
+// profile: internal/desktop.DesktopConfig).
+func (c Config) Desktop() bool { return c.Edition == EditionDesktop }
+
 // ValidateServe enforces the requirements that only apply to a running
-// server in production: a public base URL and a secret key.
+// server in production: a public base URL and a secret key. The desktop
+// edition always has a loopback base URL, so only Dev relaxes it here.
 func (c Config) ValidateServe() error {
 	var errs []error
-	if c.BaseURL == "" && !c.Dev {
+	if c.BaseURL == "" && !c.Dev && !c.Desktop() {
 		errs = append(errs, fmt.Errorf("%s is required in production (set %s=true for local development)", EnvBaseURL, EnvDev))
 	}
 	if len(c.SecretKeys) == 0 {
@@ -294,10 +318,12 @@ func (c Config) UsesPostgres() bool {
 // SQLitePath is the SQLite database file inside the data directory.
 func (c Config) SQLitePath() string { return filepath.Join(c.DataDir, "arenile.db") }
 
-// SecureCookies reports whether cookies must carry the Secure attribute.
-// It is false only in development with a non-https (or empty) base URL.
+// SecureCookies reports whether cookies must carry the Secure attribute by
+// default. It is false only in development or on the desktop edition with
+// a non-https (or empty) base URL; a request over TLS still gets Secure
+// cookies (middleware.CookieSecure).
 func (c Config) SecureCookies() bool {
-	if !c.Dev {
+	if !c.Dev && !c.Desktop() {
 		return true
 	}
 	return strings.HasPrefix(c.BaseURL, "https://")

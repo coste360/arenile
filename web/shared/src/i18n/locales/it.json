@@ -144,7 +144,10 @@
       "team": "Utenti",
       "online": "Pagina pubblica",
       "payments": "Pagamenti online",
-      "email": "Email e notifiche"
+      "email": "Email e notifiche",
+      "devices": "Dispositivi",
+      "devicesLan": "Rete locale",
+      "desktop": "App desktop"
     },
     "operations": "Operatività",
     "configGroup": "Configurazione",

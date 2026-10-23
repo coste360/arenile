@@ -1,0 +1,95 @@
+{
+  "settings": {
+    "title": "App desktop",
+    "description": "Backup automatici, ripristino, avvio all'accensione e modalità rete locale per gli altri dispositivi del lido.",
+    "save": "Salva impostazioni",
+    "saved": "Impostazioni salvate",
+    "saveFailed": "Impostazioni non salvate"
+  },
+  "backup": {
+    "title": "Backup",
+    "description": "Copie complete dell'archivio, ripristinabili qui o su un'istanza online con arenile restore.",
+    "dir": "Cartella dei backup",
+    "dirHint": "Percorso completo della cartella, anche su una chiavetta USB (ad esempio E:\\Backup Arenile o /Volumes/USB/Arenile).",
+    "retention": "Backup automatici da conservare",
+    "retentionHint": "I più vecchi vengono eliminati; i backup manuali restano sempre.",
+    "daily": "Backup automatico giornaliero",
+    "onExit": "Backup alla chiusura dell'app"
+  },
+  "system": {
+    "title": "Avvio e aggiornamenti",
+    "description": "Arenile non si collega a internet se non lo abiliti tu.",
+    "autostart": "Avvia Arenile all'accensione del computer",
+    "autostartHint": "Solo per l'utente del sistema operativo attuale.",
+    "keepRunningInTray": "Alla chiusura della finestra resta attivo nella barra di sistema",
+    "keepRunningInTrayHint": "Su Windows la finestra si nasconde e Arenile continua a servire il pannello (anche alla rete locale); per chiuderlo usa Esci dall'icona. Su macOS l'app resta sempre nella barra dei menu finché non scegli Esci.",
+    "updateCheck": "Controlla se esiste una nuova versione",
+    "updateCheckHint": "Una volta al giorno legge il numero dell'ultima versione dal sito Coste360, senza inviare dati del lido."
+  },
+  "lan": {
+    "title": "Modalità rete locale",
+    "description": "Gli altri computer, tablet e telefoni dello staff lavorano sullo stesso archivio tramite la Wi-Fi del lido, con connessione cifrata. Le connessioni da fuori rete sono rifiutate.",
+    "enabled": "Attiva la modalità rete locale",
+    "port": "Porta",
+    "portHint": "Predefinita 8443. Cambiala solo se è già usata da un altro programma.",
+    "activeTitle": "Raggiungibile dalla rete del lido",
+    "address": "Indirizzo: {{url}}",
+    "fingerprint": "Impronta del certificato: {{fingerprint}}"
+  },
+  "backups": {
+    "title": "Backup disponibili",
+    "directory": "Cartella: {{dir}}",
+    "now": "Backup ora",
+    "done": "Backup completato: {{name}}",
+    "date": "Data",
+    "reason": "Tipo",
+    "size": "Dimensione",
+    "actions": "Azioni",
+    "reasons": {
+      "manual": "Manuale",
+      "daily": "Giornaliero",
+      "exit": "Alla chiusura",
+      "pre_restore": "Prima del ripristino"
+    },
+    "empty": {
+      "title": "Nessun backup",
+      "description": "Il primo backup automatico viene creato qualche minuto dopo l'avvio. Puoi farne uno subito con «Backup ora»."
+    }
+  },
+  "restore": {
+    "action": "Ripristina",
+    "aria": "Ripristina il backup {{name}}",
+    "title": "Ripristinare questo backup?",
+    "message": "I dati torneranno com'erano il {{date}}. L'archivio attuale viene salvato prima come backup «Prima del ripristino», quindi l'operazione è reversibile. Arenile si riavvia per qualche secondo.",
+    "confirm": "Ripristina e riavvia",
+    "inProgressTitle": "Ripristino in corso",
+    "inProgress": "Arenile si sta riavviando con il backup scelto: la pagina si ricaricherà da sola."
+  },
+  "validation": {
+    "backupDir": "Indica la cartella dei backup.",
+    "retention": "Inserisci un numero da 1 a 365.",
+    "port": "Inserisci una porta da 1024 a 65535."
+  },
+  "online": {
+    "publicPage": {
+      "title": "Pagina pubblica",
+      "notice": "Pagina pubblica non disponibile",
+      "why": "L'app desktop funziona su questo computer senza internet: i clienti non possono raggiungerla, quindi pagina pubblica e widget di prenotazione non avrebbero senso."
+    },
+    "payments": {
+      "title": "Pagamenti online",
+      "notice": "Incassi solo dalla cassa",
+      "why": "Contanti, POS, bonifici e altri metodi si registrano dalla cassa e dalla prenotazione. I pagamenti con carta online richiedono un'istanza raggiungibile da internet."
+    },
+    "move": {
+      "title": "Passare a un'istanza online",
+      "description": "Il backup dell'app desktop è lo stesso archivio dell'edizione server: si sposta senza conversioni.",
+      "step1": "Fai un backup.",
+      "step1Link": "Apri i backup",
+      "step2": "Installa Arenile su una VPS, un hosting o un server con Docker (guida «Scegli come installare Arenile»).",
+      "step3": "Sul server, con Arenile fermo, ripristina il file di backup:",
+      "step4": "Avvia Arenile sul server e attiva da lì la pagina pubblica e i pagamenti online.",
+      "noSync": "L'app desktop e l'istanza online non si sincronizzano: dopo il passaggio lavora solo sull'istanza online (puoi collegare questa app in modalità remota)."
+    }
+  }
+}

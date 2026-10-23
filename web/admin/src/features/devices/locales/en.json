@@ -1,0 +1,78 @@
+{
+  "title": "Devices",
+  "description": "Connect phones, tablets and the desktop app with a QR code: each device has its own access that you can revoke at any time.",
+  "actions": "Actions",
+  "current": "This device",
+  "neverUsed": "Never used",
+  "showRevoked": "Show revoked",
+  "fields": {
+    "device": "Device",
+    "user": "User",
+    "lastUsed": "Last used",
+    "status": "Status"
+  },
+  "status": {
+    "active": "Active",
+    "revoked": "Revoked",
+    "fiscalBridge": "Fiscal bridge"
+  },
+  "platforms": {
+    "ios": "iPhone / iPad",
+    "android": "Android",
+    "windows": "Windows",
+    "macos": "macOS",
+    "linux": "Linux",
+    "other": "Other"
+  },
+  "roles": {
+    "owner": "Owner",
+    "manager": "Manager",
+    "cashier": "Cashier",
+    "beach_staff": "Beach staff",
+    "viewer": "Read only"
+  },
+  "empty": {
+    "title": "No paired devices",
+    "description": "Pair your phone or the desktop app with the “Pair a device” button.",
+    "descriptionOwner": "Pair the staff phones or the cash desk desktop app with the “Pair a device” button."
+  },
+  "lan": {
+    "title": "Turn on the local network mode",
+    "description": "In local mode the desktop app cannot be reached by other devices. Turn on the local network mode from the app menu (system tray icon), then come back here to pair phones and other PCs."
+  },
+  "pair": {
+    "open": "Pair a device",
+    "title": "Pair a device",
+    "description": "Scan the QR code with the Arenile app (phone, or desktop app in remote mode). The code works once and expires after 5 minutes.",
+    "user": "Device of",
+    "userSelf": "Myself",
+    "userHint": "The device gets the permissions of this user's role, in this establishment only.",
+    "generate": "Generate the QR code",
+    "regenerate": "Generate a new code",
+    "generating": "Generating the code",
+    "qrAlt": "Pairing QR code",
+    "qrUnavailable": "QR code not available: type the code by hand.",
+    "codeLabel": "Pairing code",
+    "copy": "Copy the code",
+    "copied": "Code copied",
+    "address": "Address: {{url}}",
+    "expiresIn": "Expires in",
+    "expiredTitle": "Code expired",
+    "expiredDescription": "For security the code is valid for 5 minutes. Generate a new one.",
+    "step1": "Open the Arenile app on the device.",
+    "step2": "Choose “Connect to an instance” and scan the QR code.",
+    "step3": "Or type the address and the code shown above.",
+    "pairedTitle": "Device paired",
+    "pairedDescription": "{{name}} can now access this establishment.",
+    "pairedToast": "{{name}} paired",
+    "done": "Done"
+  },
+  "revoke": {
+    "action": "Revoke",
+    "aria": "Revoke {{name}}",
+    "title": "Revoke {{name}}?",
+    "message": "The device loses access immediately. To use it again it must be paired with a new code.",
+    "messageBridge": "The device loses access immediately and stops acting as fiscal bridge: fiscal documents stay pending until you register another bridge.",
+    "done": "{{name}} revoked"
+  }
+}

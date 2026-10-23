@@ -89,6 +89,7 @@ Variante `docker-compose.postgres.yml` con servizio PostgreSQL e `DATABASE_URL`.
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | |
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (ADR 0006): `ARENILE_BASE_URL` facoltativo, chiave generata in `dev-secret.key`. Mai in produzione |
+| `ARENILE_EDITION` | `server` | `desktop`: profilo loopback dell'app desktop (sezione 29.1), impostato dal launcher e non dall'operatore. `ARENILE_BASE_URL` facoltativo, cookie senza `Secure` su `http://127.0.0.1` ma con `Secure` sulle richieste TLS della rete locale; nessun comportamento di sviluppo |
 | `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `_NAME`, `_ORG` | vuoto | Primo owner creato da `serve` solo se non esistono utenti (ADR 0006); richiedono `ARENILE_ADMIN_PASSWORD` |
 | `ARENILE_ADMIN_PASSWORD` | vuoto | Password per il primo owner o per `admin create` non interattivo |
 

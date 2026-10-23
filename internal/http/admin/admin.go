@@ -16,10 +16,12 @@ import (
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/customer"
+	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
@@ -29,6 +31,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/fiscalbridge"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/middleware"
 	"github.com/coste360/arenile/internal/http/problem"
@@ -48,7 +51,8 @@ import (
 // (Online: settings and terms; Notify: resend confirmation, magic link),
 // paymentsettings.go (Online), email.go (Online settings; Notify: test
 // email, message log), reconciliation.go (Gateway), and the via_provider
-// branch of payments.go (Gateway).
+// branch of payments.go (Gateway). M6/M7: meta.go (Meta), devices.go
+// (Devices) and fiscalbridge.go (FiscalBridge status).
 type Handlers struct {
 	Auth           *auth.Service
 	Establishments *establishment.Service
@@ -75,6 +79,12 @@ type Handlers struct {
 	Log     *slog.Logger
 	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
 	SecureCookies bool
+
+	// M6/M7: instance metadata, paired devices and fiscal bridge (own block:
+	// gofumpt alignment must not touch the lines above).
+	Meta         *meta.Service
+	Devices      *device.Service
+	FiscalBridge *fiscalbridge.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.
@@ -102,13 +112,15 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ttl := h.Auth.SessionTTL()
-	// Secure is configurable so that plain-HTTP local development works.
-	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure set from config (HTTPS base URL)
-		Name: middleware.SessionCookie, Value: res.Token, Path: "/", HttpOnly: true, Secure: h.SecureCookies,
+	// Secure is configurable so that plain-HTTP local development works; a
+	// request over TLS always gets Secure cookies (middleware.CookieSecure).
+	secure := middleware.CookieSecure(r, h.SecureCookies)
+	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure set from config (HTTPS base URL) or the TLS request
+		Name: middleware.SessionCookie, Value: res.Token, Path: "/", HttpOnly: true, Secure: secure,
 		SameSite: http.SameSiteLaxMode, MaxAge: int(ttl.Seconds()), Expires: res.ExpiresAt,
 	})
 	// Rotate the CSRF token together with the session.
-	middleware.SetCSRFCookie(w, middleware.NewCSRFToken(), h.SecureCookies, ttl)
+	middleware.SetCSRFCookie(w, middleware.NewCSRFToken(), secure, ttl)
 	writeJSON(w, http.StatusOK, MeFromPrincipal(res.Principal))
 }
 
@@ -121,7 +133,7 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request, _ api.LogoutPa
 		return
 	}
 	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure set from config (HTTPS base URL)
-		Name: middleware.SessionCookie, Value: "", Path: "/", HttpOnly: true, Secure: h.SecureCookies, SameSite: http.SameSiteLaxMode, MaxAge: -1})
+		Name: middleware.SessionCookie, Value: "", Path: "/", HttpOnly: true, Secure: middleware.CookieSecure(r, h.SecureCookies), SameSite: http.SameSiteLaxMode, MaxAge: -1})
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -229,6 +241,9 @@ func MeFromPrincipal(p *auth.Principal) api.Me {
 	}
 	me.PrincipalType = api.MePrincipalType("user")
 	me.User = &api.User{Id: p.UserID, Email: p.Email, Name: p.Name, Locale: p.Locale, TotpEnabled: p.TOTPEnabled, LastLoginAt: p.LastLoginAt}
+	if p.DeviceID != "" {
+		me.Device = &api.CurrentDeviceInfo{Id: p.DeviceID, Name: p.DeviceName, EstablishmentId: p.DeviceEstablishmentID}
+	}
 	for _, g := range p.Grants {
 		m := api.Membership{OrganizationId: g.OrganizationID, Role: api.Role(g.Role), Permissions: permissionsToAPI(auth.RolePermissions(g.Role))}
 		if g.EstablishmentID != "" {

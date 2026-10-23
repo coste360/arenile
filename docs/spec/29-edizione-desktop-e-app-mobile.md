@@ -29,14 +29,18 @@ La documentazione (M4) presenta questa tabella nella pagina "Scegli come install
 **Obiettivo:** un lido che oggi usa il quaderno scarica un file, fa doppio clic e gestisce prenotazioni, mappa, abbonati e cassa dal PC della cassa, senza internet, senza VPS e senza configurazione.
 
 **Cosa contiene**
-- Lo stesso binario del server (core, migrazioni, SQLite, pannello e pagina pubblica incorporati) più un piccolo *launcher* con icona nella barra di sistema.
-- Piattaforme: Windows (`.exe` con installer), macOS (`.app` in `.dmg`, Apple Silicon e Intel), Linux (AppImage).
+- Lo stesso binario del server (core, migrazioni, SQLite, pannello e pagina pubblica incorporati) più un piccolo *launcher* con una finestra propria e un'icona nella barra di sistema.
+- Piattaforme: Windows (`.exe` con installer, x64 e ARM64), macOS (`.app` in `.dmg`, Apple Silicon e Intel), Linux (AppImage).
 - Dati nella cartella utente del sistema operativo (`%APPDATA%\Arenile`, `~/Library/Application Support/Arenile`, `~/.local/share/arenile`), non accanto all'eseguibile.
 
 **Comportamento**
-- All'avvio il launcher esegue le migrazioni, avvia il server su `127.0.0.1` con una porta libera e apre il pannello nel browser predefinito.
-- Menu della barra di sistema: *Apri pannello*, *Backup ora*, *Apri cartella dati*, *Avvio automatico all'accensione*, *Esci*.
-- Primo avvio: creazione guidata dell'utente owner dal browser (nessun comando da terminale), poi configurazione guidata (sezione 15.2).
+- All'avvio il launcher esegue le migrazioni, avvia il server su `127.0.0.1` con una porta libera e apre il pannello **in una finestra propria dell'app** (il webview del sistema: WKWebView su macOS, WebView2 su Windows), senza passare dal browser. Il browser resta facoltativo: voce *Apri nel browser* nel menu, opzione `-browser` all'avvio. Su Linux, e su Windows senza il runtime WebView2, il pannello si apre nel browser predefinito.
+- La finestra ha icona nel Dock o nella barra delle applicazioni, titolo "Arenile", dimensione minima, posizione e dimensioni ricordate tra un avvio e l'altro. Un secondo avvio porta in primo piano la finestra già aperta invece di avviare una seconda copia.
+- Su macOS l'app ha il menu standard: *Arenile* (Informazioni, Impostazioni, Nascondi, Esci ⌘Q), *Modifica* (Annulla, Ripeti, Taglia, Copia, Incolla, Seleziona tutto), *Vista* (Ricarica ⌘R, ingrandimento, *Apri nel browser*), *Finestra* (Riduci, Zoom, Porta in primo piano).
+- Chiusura della finestra: su macOS la finestra si nasconde e l'app resta nella barra dei menu e nel Dock (si riapre da lì); *Esci* chiude l'app con il backup di uscita e l'arresto della rete locale. Su Windows chiudere la finestra chiude l'app, salvo l'impostazione *Alla chiusura della finestra resta attivo nella barra di sistema* (falsa di default; consigliata con la modalità rete locale attiva).
+- Download (CSV, corrispettivi, esportazioni) e stampa (riepilogo di chiusura della cassa) funzionano dentro la finestra: i file vanno nella cartella Download con una notifica; i collegamenti verso altri siti (documentazione, Stripe) si aprono nel browser predefinito.
+- Menu della barra di sistema: *Apri pannello*, *Apri nel browser*, *Backup ora*, *Apri cartella dati*, *Avvio automatico all'accensione*, *Esci*.
+- Primo avvio: creazione guidata dell'utente owner nella finestra dell'app (nessun comando da terminale), poi configurazione guidata (sezione 15.2).
 - `ARENILE_SECRET_KEY` generata al primo avvio e salvata nel portachiavi del sistema operativo (fallback: file nella cartella dati con permessi ristretti). `ARENILE_BASE_URL` non è richiesto.
 - Backup automatico giornaliero e alla chiusura, con retention configurabile, su una cartella a scelta (anche una chiavetta USB). Ripristino dal menu.
 - Aggiornamenti: controllo della nuova versione **solo se il gestore lo abilita** (nessuna chiamata di rete di default, coerente con `ARENILE_TELEMETRY=false`).

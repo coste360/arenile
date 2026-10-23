@@ -334,17 +334,7 @@ export function DataTable<TData, TValue = unknown>({
               ) : (
                 body(rows)
               )
-            ) : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={visibleColumns} className="p-0">
-                  {empty ?? (
-                    <p className="py-10 text-center text-sm text-muted-foreground">
-                      {t('ui.table.empty')}
-                    </p>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
+            ) : null}
           </TableBody>
           {hasFooter && !loading && !error && rows.length > 0 && (
             <TableFooter>
@@ -362,6 +352,17 @@ export function DataTable<TData, TValue = unknown>({
             </TableFooter>
           )}
         </Table>
+        {/* The empty state sits outside the horizontally scrolling table, so
+            at phone width it is never clipped by the columns' min width. */}
+        {!loading && !error && rows.length === 0 && (
+          <div className="border-t" data-slot="table-empty">
+            {empty ?? (
+              <p className="py-10 text-center text-sm text-muted-foreground">
+                {t('ui.table.empty')}
+              </p>
+            )}
+          </div>
+        )}
       </div>
       {paginated && table.getPageCount() > 1 && (
         <div className={cn(embedded && 'px-6 pb-4')}>

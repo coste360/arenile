@@ -19,6 +19,8 @@ VERSION               ?= $(shell git describe --tags --always --dirty 2>/dev/nul
 IMAGE                 ?= ghcr.io/coste360/arenile
 GOLANGCI_LINT_VERSION ?= v2.15.0
 POSTGRES_IMAGE        ?= postgres:17-alpine
+# Build tags of the desktop launcher: empty = headless, no CGO; "desktop" = tray (CGO, native runner).
+DESKTOP_TAGS          ?=
 # Go packages for test/test-db/lint; narrow it for focused runs: make test PKG=./internal/money/...
 PKG                   ?= ./...
 
@@ -350,6 +352,36 @@ build: web-build ## Compila il binario statico in bin/arenile
 	@mkdir -p "$(BIN_DIR)"
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/arenile ./cmd/arenile
 
+.PHONY: build-desktop
+build-desktop: web-build ## Launcher desktop in bin/arenile-desktop (DESKTOP_TAGS=desktop per la tray, richiede CGO)
+	@mkdir -p "$(BIN_DIR)"
+	@if [ -n "$(DESKTOP_TAGS)" ]; then \
+		CGO_ENABLED=1 go build -trimpath -tags "$(DESKTOP_TAGS)" -ldflags "$(LDFLAGS)" -o bin/arenile-desktop ./cmd/arenile-desktop; \
+	else \
+		CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/arenile-desktop ./cmd/arenile-desktop; \
+	fi
+
+# Desktop packages (spec 29.1, docs/desktop-build.md): output in dist/desktop (git-ignored).
+# Signing is enabled by the environment variables documented in the scripts; without them the
+# packages are labelled -unsigned. CI sets SKIP_WEB_BUILD=1 after embedding the web artifact.
+DESKTOP_ENV := VERSION="$(VERSION)" DESKTOP_TAGS="$(DESKTOP_TAGS)"
+
+.PHONY: desktop-build
+desktop-build: ## Launcher desktop per questo sistema in dist/desktop/bin (SPA incluse)
+	$(DESKTOP_ENV) scripts/desktop/build.sh
+
+.PHONY: desktop-package-macos
+desktop-package-macos: ## Arenile.app universale e .dmg in dist/desktop (solo su macOS)
+	$(DESKTOP_ENV) scripts/desktop/package-macos.sh
+
+.PHONY: desktop-package-windows
+desktop-package-windows: ## Installer Windows (Inno Setup) in dist/desktop (Git Bash su Windows)
+	$(DESKTOP_ENV) scripts/desktop/package-windows.sh all
+
+.PHONY: desktop-package-linux
+desktop-package-linux: ## AppImage Linux in dist/desktop (solo su Linux)
+	$(DESKTOP_ENV) scripts/desktop/package-linux.sh
+
 .PHONY: docker
 docker: ## Costruisce l'immagine Docker locale ghcr.io/coste360/arenile:dev
 	docker build -f deploy/Dockerfile --build-arg VERSION=$(VERSION) -t $(IMAGE):dev .
@@ -360,7 +392,7 @@ up: ## Avvia un'istanza locale vuota con docker compose (compose.yaml, build dai
 
 .PHONY: clean
 clean: ## Rimuove binario, build del frontend e file temporanei (conserva ./bin/golangci-lint)
-	rm -rf bin/arenile tmp dist coverage.out web/admin/dist web/booking/dist playwright-report test-results e2e/playwright-report e2e/test-results docs-site/dist docs-site/.astro
+	rm -rf bin/arenile bin/arenile-desktop tmp dist coverage.out web/admin/dist web/booking/dist playwright-report test-results e2e/playwright-report e2e/test-results docs-site/dist docs-site/.astro
 	@for app in admin booking; do \
 		if [ -d "$(STATIC_DIR)/$$app" ]; then find "$(STATIC_DIR)/$$app" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +; fi; \
 	done

@@ -1,0 +1,95 @@
+{
+  "settings": {
+    "title": "Desktop app",
+    "description": "Automatic backups, restore, start at login and local network mode for the other devices of the beach.",
+    "save": "Save settings",
+    "saved": "Settings saved",
+    "saveFailed": "Settings not saved"
+  },
+  "backup": {
+    "title": "Backup",
+    "description": "Full copies of the archive, restorable here or on an online instance with arenile restore.",
+    "dir": "Backup folder",
+    "dirHint": "Full path of the folder, also on a USB stick (for example E:\\Arenile Backup or /Volumes/USB/Arenile).",
+    "retention": "Automatic backups to keep",
+    "retentionHint": "The oldest are deleted; manual backups are always kept.",
+    "daily": "Daily automatic backup",
+    "onExit": "Backup when the app closes"
+  },
+  "system": {
+    "title": "Startup and updates",
+    "description": "Arenile does not connect to the internet unless you enable it.",
+    "autostart": "Start Arenile when the computer starts",
+    "autostartHint": "Only for the current operating system user.",
+    "keepRunningInTray": "Keep running in the system tray when the window is closed",
+    "keepRunningInTrayHint": "On Windows the window is hidden and Arenile keeps serving the panel (also to the local network); quit it from the tray icon. On macOS the app always stays in the menu bar until you choose Quit.",
+    "updateCheck": "Check for a new version",
+    "updateCheckHint": "Once a day it reads the latest version number from the Coste360 website, without sending any data of the beach."
+  },
+  "lan": {
+    "title": "Local network mode",
+    "description": "The other computers, tablets and phones of the staff work on the same archive over the beach Wi-Fi, with an encrypted connection. Connections from outside the network are refused.",
+    "enabled": "Enable local network mode",
+    "port": "Port",
+    "portHint": "Default 8443. Change it only if another program already uses it.",
+    "activeTitle": "Reachable from the beach network",
+    "address": "Address: {{url}}",
+    "fingerprint": "Certificate fingerprint: {{fingerprint}}"
+  },
+  "backups": {
+    "title": "Available backups",
+    "directory": "Folder: {{dir}}",
+    "now": "Back up now",
+    "done": "Backup completed: {{name}}",
+    "date": "Date",
+    "reason": "Type",
+    "size": "Size",
+    "actions": "Actions",
+    "reasons": {
+      "manual": "Manual",
+      "daily": "Daily",
+      "exit": "On exit",
+      "pre_restore": "Before restore"
+    },
+    "empty": {
+      "title": "No backups",
+      "description": "The first automatic backup is made a few minutes after start. You can make one right away with “Back up now”."
+    }
+  },
+  "restore": {
+    "action": "Restore",
+    "aria": "Restore backup {{name}}",
+    "title": "Restore this backup?",
+    "message": "Data will go back to how it was on {{date}}. The current archive is saved first as a “Before restore” backup, so the operation can be undone. Arenile restarts for a few seconds.",
+    "confirm": "Restore and restart",
+    "inProgressTitle": "Restore in progress",
+    "inProgress": "Arenile is restarting with the chosen backup: the page will reload by itself."
+  },
+  "validation": {
+    "backupDir": "Enter the backup folder.",
+    "retention": "Enter a number from 1 to 365.",
+    "port": "Enter a port from 1024 to 65535."
+  },
+  "online": {
+    "publicPage": {
+      "title": "Public page",
+      "notice": "No public page on desktop",
+      "why": "The desktop app runs on this computer without internet: customers cannot reach it, so the public page and the booking widget would make no sense."
+    },
+    "payments": {
+      "title": "Online payments",
+      "notice": "Payments at the cash desk only",
+      "why": "Cash, card terminal, bank transfer and other methods are recorded from the cash desk and the booking. Online card payments need an instance reachable from the internet."
+    },
+    "move": {
+      "title": "Moving to an online instance",
+      "description": "The desktop app backup is the same archive as the server edition: it moves without conversions.",
+      "step1": "Make a backup.",
+      "step1Link": "Open the backups",
+      "step2": "Install Arenile on a VPS, a hosting or a server with Docker (guide “Choose how to install Arenile”).",
+      "step3": "On the server, with Arenile stopped, restore the backup file:",
+      "step4": "Start Arenile on the server and enable the public page and online payments from there.",
+      "noSync": "The desktop app and the online instance do not synchronise: after the move, work only on the online instance (you can connect this app in remote mode)."
+    }
+  }
+}

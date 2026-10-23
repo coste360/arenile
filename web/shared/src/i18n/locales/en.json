@@ -144,7 +144,10 @@
       "team": "Users",
       "online": "Public page",
       "payments": "Online payments",
-      "email": "Email and notifications"
+      "email": "Email and notifications",
+      "devices": "Devices",
+      "devicesLan": "Local network",
+      "desktop": "Desktop app"
     },
     "operations": "Operations",
     "configGroup": "Configuration",

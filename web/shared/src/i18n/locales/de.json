@@ -144,7 +144,10 @@
       "team": "Benutzer",
       "online": "Öffentliche Seite",
       "payments": "Online-Zahlungen",
-      "email": "E-Mail und Benachrichtigungen"
+      "email": "E-Mail und Benachrichtigungen",
+      "devices": "Geräte",
+      "devicesLan": "Lokales Netzwerk",
+      "desktop": "Desktop-App"
     },
     "operations": "Betrieb",
     "configGroup": "Konfiguration",

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Info.plist template of Arenile.app; scripts/desktop/package-macos.sh
+  replaces the @PLACEHOLDERS@. A regular app (no LSUIElement): the panel runs
+  in the app window with a Dock icon and the application menu; the menu bar
+  icon stays too, and closing the window keeps the app running there.
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>it</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>it</string>
+		<string>en</string>
+		<string>de</string>
+		<string>fr</string>
+	</array>
+	<key>CFBundleDisplayName</key>
+	<string>Arenile</string>
+	<key>CFBundleName</key>
+	<string>Arenile</string>
+	<key>CFBundleExecutable</key>
+	<string>arenile-desktop</string>
+	<key>CFBundleIdentifier</key>
+	<string>@BUNDLE_ID@</string>
+	<key>CFBundleIconFile</key>
+	<string>arenile</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@SHORT_VERSION@</string>
+	<key>CFBundleVersion</key>
+	<string>@BUNDLE_VERSION@</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Arenile @VERSION@</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.business</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>@MIN_MACOS@</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Arenile usa la rete locale solo se attivi la modalità rete locale, per far lavorare gli altri dispositivi del lido sullo stesso archivio.</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>© Coste360 SRL. Codice sorgente disponibile, licenza BSL 1.1 (BUSL-1.1).</string>
+</dict>
+</plist>

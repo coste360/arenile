@@ -160,6 +160,8 @@ Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono comp
 | Offline | PWA del pannello con offline limitato | M5 | Pianificato |
 | Integrazioni | Webhook in uscita configurabili, chiavi API | M5 | Pianificato |
 | Lingue | Traduzioni inglese, tedesco, francese | M5 | Pianificato |
+| Desktop | App desktop per Windows, macOS e Linux: server sul PC della cassa, backup, modalità rete locale, modalità remota con ponte fiscale; dispositivi abbinati con QR e token revocabili | M6 | Completato (pacchetti firmati e collaudo su Windows da completare) |
+| App mobile | App per lo staff in spiaggia (repository separato) sui token per dispositivo del core | M7 | Pianificato |
 | Dopo l'MVP | Satispay, registratori telematici, WhatsApp/SMS, app staff, bar con addebito sulla postazione | — | Pianificato |
 
 ---
@@ -288,6 +290,7 @@ Tutta la configurazione avviene tramite variabili d'ambiente, compatibili con Do
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | Rende obbligatoria l'autenticazione a due fattori per i titolari |
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (equivale a `arenile serve --dev`); mai in produzione |
+| `ARENILE_EDITION` | `server` | `desktop` è il profilo loopback impostato dall'app desktop (non dall'operatore): base URL facoltativo, cookie `Secure` solo sulle richieste TLS |
 | `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `ARENILE_BOOTSTRAP_OWNER_NAME`, `ARENILE_BOOTSTRAP_OWNER_ORG` | vuoto | Primo utente owner creato all'avvio solo se il database non ha utenti (servono tutte e tre più `ARENILE_ADMIN_PASSWORD`) |
 | `ARENILE_ADMIN_PASSWORD` | vuoto | Password del primo owner, o per `arenile admin create` senza prompt |
 
@@ -468,6 +471,8 @@ Il dettaglio con i criteri di accettazione è nella sezione 28 della [specifica]
 - [x] **M3 — Prenotazioni dal pannello e cassa** *(completata: 28 test di concorrenza da almeno 100 tentativi paralleli e una giornata simulata da oltre 450 operazioni, su SQLite e PostgreSQL, senza incoerenze tra allocazioni, prenotazioni e incassi; manca ancora la prova sul campo in uno stabilimento reale)*: motore di disponibilità, vista operativa, planning, clienti, abbonamenti e rilasci, cassa, corrispettivi, SSE. *Accettazione:* test di concorrenza superati, giornata simulata da 300 operazioni senza incoerenze.
 - [x] **M4 — Pagina pubblica e pagamenti online (MVP pubblico)** *(completata nel ramo di sviluppo: prenotazione da smartphone dentro un iframe su un'altra origine, pagata con un doppio di Stripe che firma il webhook, in circa 5 secondi nel test Playwright; nessuna doppia vendita tra cassa e online con 120 tentativi paralleli su una postazione e sui pool delle zone, su SQLite e PostgreSQL; prima schermata 135 KB gzip di JavaScript su 150, Lighthouse mobile 97/100/100/100; manca la prova con un account Stripe reale e in uno stabilimento)*: booking online, `embed.js`, tema, Stripe, link magico, email, QR e `.ics`, documentazione completa. *Accettazione:* prenotazione completa da smartphone in un iframe su dominio esterno in meno di 2 minuti.
 - [ ] **M5 — Completamento della stagione**: rinnovi, lista d'attesa, crediti, report, PWA offline, webhook, chiavi API, traduzioni.
+- [ ] **M6 — Edizione desktop** *(implementata nel ramo `m6-desktop`, in attesa dell'integrazione dopo M4; collaudo su Mac ripetibile con Playwright, mancano firme e prova su Windows)*: app desktop con server locale, backup e ripristino, modalità rete locale, modalità remota con ponte fiscale, dispositivi abbinati. I pacchetti desktop **non sono pubblicati su GitHub**: saranno scaricabili, previo accesso, dal portale Coste360; GitHub contiene i sorgenti e le istruzioni di build ([docs/desktop-build.md](docs/desktop-build.md)). L'immagine Docker resta pubblica su GHCR.
+- [ ] **M7 — App mobile**: app per lo staff in spiaggia (repository separato) che usa l'abbinamento con QR e i token per dispositivo già presenti nel core.
 - **Dopo l'MVP**: Satispay e altri provider, driver per registratori telematici, WhatsApp e SMS, app per lo staff in spiaggia, bar e ristorante con addebito sulla postazione.
 
 ---

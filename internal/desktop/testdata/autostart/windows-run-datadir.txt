@@ -1,0 +1,1 @@
+"C:\Program Files\Arenile\arenile-desktop.exe" "-data-dir" "D:\Arenile dati"
