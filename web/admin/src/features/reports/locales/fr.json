@@ -51,7 +51,11 @@
     "unitsHint": "{{occupied}} créneaux occupés sur {{capacity}}",
     "openBalanceHint": "Réservations avec solde : {{n}}",
     "new": "Nouveau",
-    "vs": "{{year}} : {{value}}"
+    "vs": "{{year}} : {{value}}",
+    "basis": {
+      "stay": "Par premier jour de séjour",
+      "cash": "Par date d’encaissement"
+    }
   },
   "metric": {
     "occupancy_bp": "Occupation",

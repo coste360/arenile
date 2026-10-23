@@ -6697,7 +6697,12 @@ paths:
       tags: [reports]
       summary: Indicatori principali del periodo (occupazione, ricavi, prenotazioni, saldi aperti)
       description: >-
-        KPI del periodo per le schede del cruscotto dei report. Permesso reports.read.
+        KPI del periodo per le schede del cruscotto dei report. Due sole basi di data, così le schede di uno
+        stesso periodo non si contraddicono: base **soggiorno** per occupazione (giorno di soggiorno) e, per primo
+        giorno di soggiorno (`starts_on`), prenotazioni, valore medio, prenotato, abbonamenti, cancellazioni e
+        no-show; base **incasso** (`business_date` del pagamento, rimborsi negativi) per l'incassato. I report di
+        dettaglio prenotazioni (data di vendita) e ricavi `basis=booked` (data di conferma) mantengono le loro
+        basi. Permesso reports.read.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -7063,12 +7068,14 @@ paths:
       summary: Confronto con l'anno precedente sullo stesso intervallo di calendario
       description: >-
         Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e
-        mese; il 29 febbraio diventa 28 febbraio) o di `compare_year`. Per ogni metrica: valore
-        corrente, precedente, differenza assoluta e relativa in punti base (assente se il precedente è 0).
-        La serie allinea i due anni per giorno/settimana/mese di calendario. Con `align=weekday` il periodo
-        di confronto ha la stessa durata ma inizia nel giorno della settimana uguale più vicino alla data
-        di calendario corrispondente (es. sabato con sabato: 364 giorni prima per l'anno precedente).
-        Permesso reports.read.
+        mese; il 29 febbraio diventa 28 febbraio) o di `compare_year` (che deve precedere l'anno di from).
+        Per ogni metrica: valore corrente, precedente, differenza assoluta e relativa in punti base (assente
+        se il precedente è 0); stesse basi di data del riepilogo (soggiorno e incasso). La serie sovrappone
+        l'anno precedente a quello corrente per giorno di calendario (un 29 febbraio precedente si somma al
+        28 febbraio; un 29 febbraio corrente non ha riscontro), quindi un valore non finisce mai nel mese
+        sbagliato. Con `align=weekday` il periodo di confronto ha la stessa durata ma inizia nel giorno
+        della settimana uguale più vicino alla data di calendario corrispondente (es. sabato con sabato:
+        364 giorni prima per l'anno precedente) e la serie allinea giorno per giorno. Permesso reports.read.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -7079,7 +7086,7 @@ paths:
         - name: compare_year
           in: query
           required: false
-          description: "Anno di confronto (default: anno di from − 1)."
+          description: "Anno di confronto (default: anno di from − 1); deve precedere l'anno di from."
           schema:
             type: integer
             minimum: 2000
@@ -15026,19 +15033,26 @@ components:
           type: integer
           format: int64
         revenue_collected:
-          $ref: "#/components/schemas/Money"
+          allOf: [{ $ref: "#/components/schemas/Money" }]
+          description: Pagamenti riusciti per `business_date` nel periodo, rimborsi negativi (base incasso).
         revenue_booked:
-          $ref: "#/components/schemas/Money"
+          allOf: [{ $ref: "#/components/schemas/Money" }]
+          description: Totale delle prenotazioni in stato prenotato con primo giorno di soggiorno nel periodo.
         bookings:
           type: integer
+          description: Prenotazioni vendute con primo giorno di soggiorno nel periodo (cancellate e no-show incluse).
         average_booking_value:
-          $ref: "#/components/schemas/Money"
+          allOf: [{ $ref: "#/components/schemas/Money" }]
+          description: Valore medio delle `bookings` (divisione intera).
         cancellations:
           type: integer
+          description: Prenotazioni cancellate con primo giorno di soggiorno nel periodo.
         no_shows:
           type: integer
+          description: No-show con primo giorno di soggiorno nel periodo.
         season_passes_sold:
           type: integer
+          description: Abbonamenti in stato prenotato con primo giorno di soggiorno nel periodo.
         open_balance_total:
           $ref: "#/components/schemas/Money"
         open_balance_bookings:

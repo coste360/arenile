@@ -51,7 +51,11 @@
     "unitsHint": "{{occupied}} slots occupied out of {{capacity}}",
     "openBalanceHint": "Bookings with a balance: {{n}}",
     "new": "New",
-    "vs": "{{year}}: {{value}}"
+    "vs": "{{year}}: {{value}}",
+    "basis": {
+      "stay": "By first day of stay",
+      "cash": "By payment date"
+    }
   },
   "metric": {
     "occupancy_bp": "Occupancy",

@@ -12,6 +12,7 @@ Questa guida è pensata per chi gestisce un lido, una spiaggia attrezzata o uno 
 | [Installazione](installazione.md) | Docker, VPS, Raspberry Pi (arm64), Coolify e CapRover, HTTPS, backup e ripristino, aggiornamento |
 | [Privacy e GDPR](privacy-gdpr.md) | Ruoli titolare/responsabile, dati raccolti, consensi, diritti degli interessati, modello di informativa |
 | [Nota fiscale](fiscale.md) | Cosa fa e cosa non fa Arenile su corrispettivi, documento commerciale e registratore telematico |
+| [Report](report.md) | Periodo, basi di data del riepilogo e dei report di dettaglio, confronto anni, riconciliazione con i corrispettivi |
 | [Integrazioni](integrazioni.md) | Chiavi API per i gestionali esterni, webhook in uscita, verifica della firma, sicurezza della rete |
 | [Verifica della firma dei webhook](webhook-verifica-firma.md) | Formato di `Arenile-Signature`, controlli da fare, esempi in Node.js, Python, Go e PHP, vettore di prova |
 | [Pannello offline](pannello-offline.md) | Installare il pannello come app, cosa si può fare senza connessione, dati salvati sul dispositivo |

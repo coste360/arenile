@@ -1,6 +1,8 @@
 package report
 
 import (
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -519,11 +521,24 @@ func TestBuildFactsAndSummary_UsesReportDefinitions(t *testing.T) {
 		releases: []store.ReportRelease{{Date: d("2027-07-01"), ResoldLineID: ptr("l")}, {Date: d("2027-07-02")}},
 	})
 	s := buildSummary(sf, &OpenBalances{TotalBalance: 700, Rows: []OpenBalanceRow{{}}}, conf)
-	if s.CapacityUnits != 44 || s.OccupiedUnits != 15 || s.RevenueCollected != 4000 || s.RevenueBooked != 4000 {
+	// Stay basis: the no-show (a booked status) counts in booked revenue; the
+	// bookings count includes the cancelled one (same denominator as the
+	// cancellations report), all by starts_on, however early they were sold.
+	if s.CapacityUnits != 44 || s.OccupiedUnits != 15 || s.RevenueCollected != 4000 || s.RevenueBooked != 4999 {
 		t.Fatalf("summary money/occupancy = %+v", s)
 	}
-	if s.Bookings != 2 || s.AverageBookingValue != 3000 || s.Cancellations != 1 || s.NoShows != 1 || s.SeasonPassesSold != 1 {
+	if s.Bookings != 3 || s.AverageBookingValue != 2333 || s.Cancellations != 1 || s.NoShows != 1 || s.SeasonPassesSold != 1 {
 		t.Fatalf("summary counts = %+v", s)
+	}
+	if sf.days[0].bookings != 1 || sf.days[1].bookings != 2 || sf.days[0].cancellations != 1 {
+		t.Fatalf("per day = %+v", sf.days)
+	}
+	// A booking sold and confirmed in the period but staying outside it is not counted.
+	out := buildFacts(factsInput{period: p, loc: rome, bookings: []store.ReportBooking{
+		{Status: "confirmed", CreatedAt: conf, ConfirmedAt: &conf, StartsOn: d("2027-08-01"), TotalAmount: 100},
+	}})
+	if a := out.all(); a.bookings != 0 || a.booked != 0 {
+		t.Fatalf("stay outside the period counted: %+v", a)
 	}
 	if s.OpenBalanceTotal != 700 || s.OpenBalanceBookings != 1 || !s.GeneratedAt.Equal(conf) {
 		t.Fatalf("summary balances = %+v", s)
@@ -587,11 +602,83 @@ func TestBuildComparison_MetricsAndSeries(t *testing.T) {
 		t.Fatalf("echo = %s %s", c.Align, c.Granularity)
 	}
 	// Previous span one day longer (current non-leap, previous leap): the
-	// extra day lands in the last bucket.
+	// previous 29 February folds into the current 28 February, never into March.
 	cur2 := spanOf(per("2029-02-27", "2029-03-01"), func(int) dayFacts { return dayFacts{collected: 1} })
 	prev2 := spanOf(per("2028-02-27", "2028-03-01"), func(int) dayFacts { return dayFacts{collected: 1} })
 	c2 := buildComparison(cur2, prev2, GranularityDay, AlignCalendar)
-	if len(c2.Series) != 3 || c2.Series[2].PreviousRevenue != 2 {
+	if len(c2.Series) != 3 || c2.Series[0].PreviousRevenue != 1 || c2.Series[1].PreviousRevenue != 2 || c2.Series[2].PreviousRevenue != 1 {
 		t.Fatalf("leap series = %+v", c2.Series)
+	}
+	if c2.Series[2].PreviousFrom.String() != "2028-03-01" {
+		t.Fatalf("previous_from of 1 March = %s", c2.Series[2].PreviousFrom)
+	}
+}
+
+func TestAlignPrevious_CalendarDays(t *testing.T) {
+	rev := func(amounts map[string]money.Cents) func(p Period) func(i int) dayFacts {
+		return func(p Period) func(i int) dayFacts {
+			return func(i int) dayFacts { return dayFacts{collected: amounts[p.From.AddDays(i).String()]} }
+		}
+	}
+	tests := []struct {
+		name        string
+		cur, prev   string // from..to
+		prevAmounts map[string]money.Cents
+		granularity Granularity
+		align       Align
+		want        []money.Cents // previous revenue per series point
+	}{
+		{
+			name: "previous has 29 February in the middle: folds into 28 February, 1 March stays 1 March",
+			cur:  "2027-02-28..2027-03-01", prev: "2028-02-28..2028-03-01",
+			prevAmounts: map[string]money.Cents{"2028-02-28": 1, "2028-02-29": 10, "2028-03-01": 100},
+			granularity: GranularityDay, align: AlignCalendar, want: []money.Cents{11, 100},
+		},
+		{
+			name: "current has 29 February: it faces nothing",
+			cur:  "2028-02-28..2028-03-01", prev: "2027-02-28..2027-03-01",
+			prevAmounts: map[string]money.Cents{"2027-02-28": 1, "2027-03-01": 100},
+			granularity: GranularityDay, align: AlignCalendar, want: []money.Cents{1, 0, 100},
+		},
+		{
+			name: "monthly buckets keep the previous 1 March in March",
+			cur:  "2028-02-01..2028-03-31", prev: "2027-02-01..2027-03-31",
+			prevAmounts: map[string]money.Cents{"2027-02-28": 1, "2027-03-01": 100, "2027-03-31": 1000},
+			granularity: GranularityMonth, align: AlignCalendar, want: []money.Cents{1, 1100},
+		},
+		{
+			name: "two years back across New Year",
+			cur:  "2028-12-31..2029-01-01", prev: "2026-12-31..2027-01-01",
+			prevAmounts: map[string]money.Cents{"2026-12-31": 1, "2027-01-01": 10},
+			granularity: GranularityDay, align: AlignCalendar, want: []money.Cents{1, 10},
+		},
+		{
+			name: "weekday alignment faces day j with day j",
+			cur:  "2027-02-27..2027-03-01", prev: "2026-02-28..2026-03-02",
+			prevAmounts: map[string]money.Cents{"2026-02-28": 1, "2026-03-01": 10, "2026-03-02": 100},
+			granularity: GranularityDay, align: AlignWeekday, want: []money.Cents{1, 10, 100},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cf, ct, _ := strings.Cut(tt.cur, "..")
+			pf, pt, _ := strings.Cut(tt.prev, "..")
+			curP, prevP := per(cf, ct), per(pf, pt)
+			cur := spanOf(curP, func(int) dayFacts { return dayFacts{} })
+			prev := spanOf(prevP, rev(tt.prevAmounts)(prevP))
+			c := buildComparison(cur, prev, tt.granularity, tt.align)
+			var got []money.Cents
+			var sum money.Cents
+			for _, pt := range c.Series {
+				got = append(got, pt.PreviousRevenue)
+				sum += pt.PreviousRevenue
+			}
+			if !slices.Equal(got, tt.want) {
+				t.Fatalf("previous series = %v, want %v", got, tt.want)
+			}
+			if sum != prev.all().collected {
+				t.Fatalf("series %d does not add up to the metric %d", sum, prev.all().collected)
+			}
+		})
 	}
 }

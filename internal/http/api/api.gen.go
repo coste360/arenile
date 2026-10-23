@@ -6324,13 +6324,19 @@ type ReportPeriod struct {
 
 // ReportSummary defines model for ReportSummary.
 type ReportSummary struct {
-	// AverageBookingValue Importo in centesimi di euro (IVA inclusa).
-	AverageBookingValue Money     `json:"average_booking_value"`
-	Bookings            int       `json:"bookings"`
-	Cancellations       int       `json:"cancellations"`
-	CapacityUnits       int64     `json:"capacity_units"`
-	GeneratedAt         time.Time `json:"generated_at"`
-	NoShows             int       `json:"no_shows"`
+	// AverageBookingValue Valore medio delle `bookings` (divisione intera).
+	AverageBookingValue Money `json:"average_booking_value"`
+
+	// Bookings Prenotazioni vendute con primo giorno di soggiorno nel periodo (cancellate e no-show incluse).
+	Bookings int `json:"bookings"`
+
+	// Cancellations Prenotazioni cancellate con primo giorno di soggiorno nel periodo.
+	Cancellations int       `json:"cancellations"`
+	CapacityUnits int64     `json:"capacity_units"`
+	GeneratedAt   time.Time `json:"generated_at"`
+
+	// NoShows No-show con primo giorno di soggiorno nel periodo.
+	NoShows int `json:"no_shows"`
 
 	// OccupancyBp Rapporto in punti base (10000 = 100%). Intero, mai float.
 	OccupancyBp         RatioBP `json:"occupancy_bp"`
@@ -6341,12 +6347,14 @@ type ReportSummary struct {
 	OpenBalanceTotal Money        `json:"open_balance_total"`
 	Period           ReportPeriod `json:"period"`
 
-	// RevenueBooked Importo in centesimi di euro (IVA inclusa).
+	// RevenueBooked Totale delle prenotazioni in stato prenotato con primo giorno di soggiorno nel periodo.
 	RevenueBooked Money `json:"revenue_booked"`
 
-	// RevenueCollected Importo in centesimi di euro (IVA inclusa).
+	// RevenueCollected Pagamenti riusciti per `business_date` nel periodo, rimborsi negativi (base incasso).
 	RevenueCollected Money `json:"revenue_collected"`
-	SeasonPassesSold int   `json:"season_passes_sold"`
+
+	// SeasonPassesSold Abbonamenti in stato prenotato con primo giorno di soggiorno nel periodo.
+	SeasonPassesSold int `json:"season_passes_sold"`
 }
 
 // RevenueBasis defines model for RevenueBasis.
@@ -8798,7 +8806,7 @@ type GetYearComparisonReportParams struct {
 	// To Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from).
 	To ReportTo `form:"to" json:"to"`
 
-	// CompareYear Anno di confronto (default: anno di from − 1).
+	// CompareYear Anno di confronto (default: anno di from − 1); deve precedere l'anno di from.
 	CompareYear *int `form:"compare_year,omitempty" json:"compare_year,omitempty"`
 
 	// Granularity Granularità della serie (default week).

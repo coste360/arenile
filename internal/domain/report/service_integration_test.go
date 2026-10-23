@@ -454,12 +454,18 @@ func (l *lido) generate(seed uint64, from, to string, passPct int) {
 	l.flush()
 }
 
-// expected is the oracle summary of a period.
+// expected is the oracle of a period: the summary figures (stay basis for
+// bookings, booked revenue and passes) and the bases of the detailed
+// reports (bookings by sale date, booked revenue by confirmation date).
 type expected struct {
 	capacity, occupied, released, resold int64
 	collected, booked, value, open       money.Cents
 	bookings, cancelled, noShows, passes int
 	openN                                int
+	// Detailed reports.
+	soldBookings      int
+	soldValue         money.Cents
+	bookedByConfirmed money.Cents
 }
 
 func (l *lido) expect(p report.Period) expected {
@@ -497,16 +503,21 @@ func (l *lido) expect(p report.Period) expected {
 		case "booking":
 			booked := slices.Contains(store.ReportBookedStatuses, f.status)
 			if f.booked != nil && booked && p.Contains(*f.booked) {
-				e.booked += f.amount
-				if f.isPass {
-					e.passes++
-				}
+				e.bookedByConfirmed += f.amount
 			}
 			if p.Contains(f.sale) {
-				e.bookings++
-				e.value += f.amount
+				e.soldBookings++
+				e.soldValue += f.amount
 			}
 			if in {
+				e.bookings++
+				e.value += f.amount
+				if booked {
+					e.booked += f.amount
+					if f.isPass {
+						e.passes++
+					}
+				}
 				switch f.status {
 				case "cancelled":
 					e.cancelled++
@@ -561,8 +572,17 @@ func TestReportService_ReconcilesWithLedger(t *testing.T) {
 		if sum.RevenueCollected != want.collected || sum.RevenueBooked != want.booked || sum.Bookings != want.bookings {
 			t.Fatalf("summary money %+v, want %+v", sum, want)
 		}
-		if sum.Cancellations != want.cancelled || sum.NoShows != want.noShows || sum.SeasonPassesSold != 0 {
+		if sum.Cancellations != want.cancelled || sum.NoShows != want.noShows || sum.SeasonPassesSold != want.passes || sum.AverageBookingValue != want.value/money.Cents(want.bookings) {
 			t.Fatalf("summary counts %+v, want %+v", sum, want)
+		}
+		// Stay basis: the bookings of the period and the cancellations share the
+		// denominator, and the sale-date count of the bookings report differs
+		// (the fixture sells before the stay).
+		if want.soldBookings == want.bookings {
+			t.Fatalf("fixture must separate sale and stay dates: %d", want.bookings)
+		}
+		if _, err := svc.Comparison(ctx, p, l.est.ID, report.ComparisonQuery{Period: period, CompareYear: period.From.Year()}); !errors.Is(err, configerr.ErrValidation) {
+			t.Fatalf("compare_year equal to the period year must be refused: %v", err)
 		}
 		if sum.OpenBalanceTotal != want.open || sum.OpenBalanceBookings != want.openN {
 			t.Fatalf("open balances %d (%d), want %d (%d)", sum.OpenBalanceTotal, sum.OpenBalanceBookings, want.open, want.openN)
@@ -619,8 +639,8 @@ func TestReportService_ReconcilesWithLedger(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if booked.Totals.Gross != want.booked || packs.Totals.Gross+extras.Totals.Gross != want.booked || len(extras.Rows) != 1 || extras.Rows[0].Key != "BAR" {
-			t.Fatalf("booked %d, packs %d + extras %d, want %d", booked.Totals.Gross, packs.Totals.Gross, extras.Totals.Gross, want.booked)
+		if booked.Totals.Gross != want.bookedByConfirmed || packs.Totals.Gross+extras.Totals.Gross != want.bookedByConfirmed || len(extras.Rows) != 1 || extras.Rows[0].Key != "BAR" {
+			t.Fatalf("booked %d, packs %d + extras %d, want %d", booked.Totals.Gross, packs.Totals.Gross, extras.Totals.Gross, want.bookedByConfirmed)
 		}
 		if _, err := svc.Revenue(ctx, p, l.est.ID, report.RevenueQuery{Period: period, GroupBy: report.RevenueByPack}); !errors.Is(err, configerr.ErrValidation) {
 			t.Fatalf("pack on collected: %v", err)
@@ -654,8 +674,8 @@ func TestReportService_ReconcilesWithLedger(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if bk.Totals.Bookings != want.bookings || bk.Totals.Value != want.value {
-			t.Fatalf("bookings %d/%d, want %d/%d", bk.Totals.Bookings, bk.Totals.Value, want.bookings, want.value)
+		if bk.Totals.Bookings != want.soldBookings || bk.Totals.Value != want.soldValue {
+			t.Fatalf("bookings %d/%d, want %d/%d", bk.Totals.Bookings, bk.Totals.Value, want.soldBookings, want.soldValue)
 		}
 		cn, err := svc.Cancellations(ctx, p, l.est.ID, period, report.CancellationsByChannel)
 		if err != nil {

@@ -87,17 +87,30 @@
 //     address or notes in this package (spec 23).
 //   - Open balances: bookings in a booked status starting in the period
 //     with total_amount > paid_amount.
+//   - Summary and year comparison (buildFacts): two date bases only, so the
+//     cards of a period never contradict each other. Stay basis for
+//     occupancy (stay day) and, by the first day of the stay (starts_on),
+//     for bookings, average value, booked revenue (booked statuses), season
+//     passes, cancellations and no-shows: the season report describes the
+//     season that was sold, however early it was booked. Cash basis
+//     (payment business_date, refunds negative) for collected revenue. The
+//     detailed bookings report (sale date) and booked revenue report
+//     (confirmation date) keep their own, labelled bases; the panel prints
+//     the basis under each card.
 //   - Year comparison: ComparisonSpan with align "calendar" (default, the
 //     same day and month of the previous year or of compare_year,
-//     PreviousSpan; 29 February maps to 28 February) or "weekday" (same
-//     length, starting on the same weekday nearest to the calendar start:
-//     364 days back for the previous year, WeekdaySpan). Both spans are
-//     measured with the summary definitions; the series aligns day i of the
-//     current span with day i of the previous one and adds an extra
-//     previous day (leap years) to the last bucket, so the series always
-//     sums to the metrics. delta_bp is absent when the previous value is 0.
+//     PreviousSpan; 29 February maps to 28 February; compare_year must be
+//     earlier than the year of from) or "weekday" (same length, starting
+//     on the same weekday nearest to the calendar start: 364 days back for
+//     the previous year, WeekdaySpan). Both spans are measured with the
+//     summary definitions; the series lays the previous span over the
+//     current one by calendar day (alignPrevious: a previous 29 February
+//     folds into 28 February, a current 29 February faces nothing) or, with
+//     "weekday", by index, so the series always sums to the metrics.
+//     delta_bp is absent when the previous value is 0.
 //   - Test bookings (spec 15.4) do not exist yet; once they do, every
-//     query here must exclude them.
+//     query here must exclude them (guard:
+//     TestReportQueries_TestBookingsFlagNotYetFiltered in internal/store).
 //
 // # Periods
 //

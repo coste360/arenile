@@ -376,6 +376,8 @@ func (s *Service) Comparison(ctx context.Context, p *auth.Principal, establishme
 	}
 	if q.CompareYear != 0 && (q.CompareYear < 2000 || q.CompareYear > 2999) {
 		ve.Add("compare_year", "Anno non valido.")
+	} else if q.CompareYear != 0 && q.CompareYear >= q.Period.From.Year() {
+		ve.Add("compare_year", "Deve precedere l'anno di from.")
 	}
 	if err := ve.OrNil(); err != nil {
 		return nil, err

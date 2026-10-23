@@ -54,6 +54,7 @@ func TestPreviousSpan_Scenarios(t *testing.T) {
 		{"explicit year", "2027-06-01", "2027-06-30", 2024, "2024-06-01", "2024-06-30"},
 		{"leap day to non leap", "2028-02-29", "2028-03-01", 0, "2027-02-28", "2027-03-01"},
 		{"across new year", "2027-12-20", "2028-01-10", 0, "2026-12-20", "2027-01-10"},
+		{"comparison year has the leap day in the middle", "2027-02-28", "2027-03-01", 2024, "2024-02-28", "2024-03-01"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

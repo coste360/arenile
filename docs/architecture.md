@@ -253,8 +253,10 @@ go build ./cmd/arenile ──► binario unico ──► immagine distroless (de
 
 - **Report** (`internal/domain/report`, ADR 0014): solo lettura, mai scritture né eventi. Le query stanno in
   `internal/store/report.go` e restituiscono righe grezze filtrate per `establishment_id`; aggregazione, scorporo IVA
-  (stesse celle dei corrispettivi, INV-51) e confronto anno su anno sono funzioni pure testate a tabella. Il CSV è
-  generato dalle stesse righe del JSON (`format=csv` o `Accept: text/csv`).
+  (stesse celle dei corrispettivi, INV-51) e confronto anno su anno sono funzioni pure testate a tabella. Riepilogo e
+  confronto usano due sole basi di data (soggiorno e incasso, `report.buildFacts`; guida in
+  [`docs/guida/report.md`](guida/report.md)); il confronto sovrappone gli anni per giorno di calendario
+  (`alignPrevious`). Il CSV è generato dalle stesse righe del JSON (`format=csv` o `Accept: text/csv`).
 - **Chiavi API** (`internal/domain/apikey`): autenticate dal middleware come le sessioni (`auth.AuthenticateAPIKey`),
   con un rate limit per chiave (`middleware.APIKeyRateLimit`); le prenotazioni e gli hold creati con una chiave hanno
   sempre canale `api` (`auth.ChannelFor`, INV-52).

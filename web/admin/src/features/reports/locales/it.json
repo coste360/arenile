@@ -51,7 +51,11 @@
     "unitsHint": "{{occupied}} fasce occupate su {{capacity}}",
     "openBalanceHint": "Prenotazioni con saldo: {{n}}",
     "new": "Nuovo",
-    "vs": "{{year}}: {{value}}"
+    "vs": "{{year}}: {{value}}",
+    "basis": {
+      "stay": "Per primo giorno di soggiorno",
+      "cash": "Per data di incasso"
+    }
   },
   "metric": {
     "occupancy_bp": "Occupazione",

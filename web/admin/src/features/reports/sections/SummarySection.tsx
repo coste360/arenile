@@ -49,17 +49,23 @@ export interface SectionProps {
   active: boolean;
 }
 
+/** Date basis of a card (report.buildFacts): printed under the value. */
+type Basis = 'stay' | 'cash';
+
 interface Kpi {
   key: ComparisonMetricKey | 'open_balance';
   icon: ReactNode;
   value: (s: ReportSummary) => string;
   hint?: (s: ReportSummary) => string;
+  basis?: Basis;
 }
 
 /**
  * "Riepilogo": KPI cards of the period and, with the comparison switch on,
  * year-over-year deltas (server-computed ComparisonMetric) plus the
- * revenue series of both years as a chart and a table.
+ * revenue series of both years as a chart and a table. Every card prints
+ * its date basis (stay or cash, see report.buildFacts), so figures sitting
+ * side by side are never read as if they shared one.
  */
 export function SummarySection({
   ctx,
@@ -91,36 +97,43 @@ export function SummarySection({
     },
     {
       key: 'revenue_collected',
+      basis: 'cash',
       icon: <BanknoteIcon aria-hidden="true" />,
       value: (s) => money(s.revenue_collected),
     },
     {
       key: 'revenue_booked',
+      basis: 'stay',
       icon: <ReceiptTextIcon aria-hidden="true" />,
       value: (s) => money(s.revenue_booked),
     },
     {
       key: 'bookings',
+      basis: 'stay',
       icon: <CalendarCheckIcon aria-hidden="true" />,
       value: (s) => formatCount(s.bookings),
     },
     {
       key: 'average_booking_value',
+      basis: 'stay',
       icon: <WalletIcon aria-hidden="true" />,
       value: (s) => money(s.average_booking_value),
     },
     {
       key: 'cancellations',
+      basis: 'stay',
       icon: <CalendarXIcon aria-hidden="true" />,
       value: (s) => formatCount(s.cancellations),
     },
     {
       key: 'no_shows',
+      basis: 'stay',
       icon: <UserXIcon aria-hidden="true" />,
       value: (s) => formatCount(s.no_shows),
     },
     {
       key: 'season_passes_sold',
+      basis: 'stay',
       icon: <TicketIcon aria-hidden="true" />,
       value: (s) => formatCount(s.season_passes_sold),
     },
@@ -168,7 +181,9 @@ export function SummarySection({
               title={t(`metric.${k.key}`)}
               value={k.value(summary.data)}
               icon={k.icon}
-              hint={k.hint?.(summary.data)}
+              hint={[k.hint?.(summary.data), k.basis && t(`summary.basis.${k.basis}`)]
+                .filter(Boolean)
+                .join(' · ')}
               delta={deltaOf(k.key)}
             />
           ))}

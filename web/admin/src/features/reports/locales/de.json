@@ -51,7 +51,11 @@
     "unitsHint": "{{occupied}} von {{capacity}} Zeitfenstern belegt",
     "openBalanceHint": "Buchungen mit Saldo: {{n}}",
     "new": "Neu",
-    "vs": "{{year}}: {{value}}"
+    "vs": "{{year}}: {{value}}",
+    "basis": {
+      "stay": "Nach erstem Aufenthaltstag",
+      "cash": "Nach Zahlungsdatum"
+    }
   },
   "metric": {
     "occupancy_bp": "Auslastung",

@@ -2287,7 +2287,7 @@ export interface paths {
         };
         /**
          * Indicatori principali del periodo (occupazione, ricavi, prenotazioni, saldi aperti)
-         * @description KPI del periodo per le schede del cruscotto dei report. Permesso reports.read.
+         * @description KPI del periodo per le schede del cruscotto dei report. Due sole basi di data, così le schede di uno stesso periodo non si contraddicono: base **soggiorno** per occupazione (giorno di soggiorno) e, per primo giorno di soggiorno (`starts_on`), prenotazioni, valore medio, prenotato, abbonamenti, cancellazioni e no-show; base **incasso** (`business_date` del pagamento, rimborsi negativi) per l'incassato. I report di dettaglio prenotazioni (data di vendita) e ricavi `basis=booked` (data di conferma) mantengono le loro basi. Permesso reports.read.
          */
         get: operations["getReportSummary"];
         put?: never;
@@ -2447,7 +2447,7 @@ export interface paths {
         };
         /**
          * Confronto con l'anno precedente sullo stesso intervallo di calendario
-         * @description Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e mese; il 29 febbraio diventa 28 febbraio) o di `compare_year`. Per ogni metrica: valore corrente, precedente, differenza assoluta e relativa in punti base (assente se il precedente è 0). La serie allinea i due anni per giorno/settimana/mese di calendario. Con `align=weekday` il periodo di confronto ha la stessa durata ma inizia nel giorno della settimana uguale più vicino alla data di calendario corrispondente (es. sabato con sabato: 364 giorni prima per l'anno precedente). Permesso reports.read.
+         * @description Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e mese; il 29 febbraio diventa 28 febbraio) o di `compare_year` (che deve precedere l'anno di from). Per ogni metrica: valore corrente, precedente, differenza assoluta e relativa in punti base (assente se il precedente è 0); stesse basi di data del riepilogo (soggiorno e incasso). La serie sovrappone l'anno precedente a quello corrente per giorno di calendario (un 29 febbraio precedente si somma al 28 febbraio; un 29 febbraio corrente non ha riscontro), quindi un valore non finisce mai nel mese sbagliato. Con `align=weekday` il periodo di confronto ha la stessa durata ma inizia nel giorno della settimana uguale più vicino alla data di calendario corrispondente (es. sabato con sabato: 364 giorni prima per l'anno precedente) e la serie allinea giorno per giorno. Permesso reports.read.
          */
         get: operations["getYearComparisonReport"];
         put?: never;
@@ -5833,12 +5833,19 @@ export interface components {
             occupied_units: number;
             /** Format: int64 */
             capacity_units: number;
+            /** @description Pagamenti riusciti per `business_date` nel periodo, rimborsi negativi (base incasso). */
             revenue_collected: components["schemas"]["Money"];
+            /** @description Totale delle prenotazioni in stato prenotato con primo giorno di soggiorno nel periodo. */
             revenue_booked: components["schemas"]["Money"];
+            /** @description Prenotazioni vendute con primo giorno di soggiorno nel periodo (cancellate e no-show incluse). */
             bookings: number;
+            /** @description Valore medio delle `bookings` (divisione intera). */
             average_booking_value: components["schemas"]["Money"];
+            /** @description Prenotazioni cancellate con primo giorno di soggiorno nel periodo. */
             cancellations: number;
+            /** @description No-show con primo giorno di soggiorno nel periodo. */
             no_shows: number;
+            /** @description Abbonamenti in stato prenotato con primo giorno di soggiorno nel periodo. */
             season_passes_sold: number;
             open_balance_total: components["schemas"]["Money"];
             open_balance_bookings: number;
@@ -13262,7 +13269,7 @@ export interface operations {
                 from: components["parameters"]["ReportFrom"];
                 /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
                 to: components["parameters"]["ReportTo"];
-                /** @description Anno di confronto (default: anno di from − 1). */
+                /** @description Anno di confronto (default: anno di from − 1); deve precedere l'anno di from. */
                 compare_year?: number;
                 /** @description Granularità della serie (default week). */
                 granularity?: components["schemas"]["ComparisonGranularity"];

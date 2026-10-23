@@ -1,6 +1,7 @@
 package report
 
 import (
+	"slices"
 	"time"
 
 	"github.com/coste360/arenile/internal/calendar"
@@ -56,11 +57,20 @@ type factsInput struct {
 	loc       *time.Location
 }
 
-// buildFacts computes the per-day facts with the definitions of the
-// detailed reports: occupancy by day, collected revenue by business date
-// (refunds negative), booked revenue and season passes by confirmation
-// date, bookings by sale date, cancellations and no-shows by first day,
-// releases by release date.
+// buildFacts computes the per-day facts of the summary and of the year
+// comparison. Two date bases only, so that the cards of one period never
+// contradict each other:
+//
+//   - stay: occupancy by stay day; bookings, their value, booked revenue,
+//     season passes, cancellations and no-shows by the first day of the
+//     stay (starts_on). A season report then describes the season that was
+//     sold, however early the customers booked, and a cancellation always
+//     belongs to the same period as the booking it cancels.
+//   - cash: collected revenue by payment business date (refunds negative).
+//
+// Releases are by release date. The detailed reports keep their own,
+// labelled bases (bookings by sale date, booked revenue by confirmation
+// date) for lead-time and sales analyses.
 func buildFacts(in factsInput) *spanFacts {
 	p := in.period
 	sf := &spanFacts{period: p, days: make([]dayFacts, p.Days())}
@@ -94,25 +104,23 @@ func buildFacts(in factsInput) *spanFacts {
 	}
 	for i := range in.bookings {
 		b := &in.bookings[i]
-		if d, ok := bookedOn(b, p, in.loc); ok {
-			f := day(d.String())
+		f := day(b.StartsOn.String())
+		if f == nil {
+			continue
+		}
+		f.bookings++
+		f.bookingsValue += b.TotalAmount
+		if slices.Contains(store.ReportBookedStatuses, b.Status) {
 			f.booked += b.TotalAmount
 			if b.IsSeasonPass {
 				f.passes++
 			}
 		}
-		if d, ok := soldOn(b, p, in.loc); ok {
-			f := day(d.String())
-			f.bookings++
-			f.bookingsValue += b.TotalAmount
-		}
-		if f := day(b.StartsOn.String()); f != nil {
-			switch b.Status {
-			case statusCancelled:
-				f.cancellations++
-			case statusNoShow:
-				f.noShows++
-			}
+		switch b.Status {
+		case statusCancelled:
+			f.cancellations++
+		case statusNoShow:
+			f.noShows++
 		}
 	}
 	for _, rl := range in.releases {
@@ -164,13 +172,46 @@ func metric(key, unit string, cur, prev int64) ComparisonMetric {
 	return ComparisonMetric{Metric: key, Unit: unit, Current: cur, Previous: prev, Delta: cur - prev, DeltaBP: DeltaBP(cur, prev)}
 }
 
+// alignPrevious lays the previous span over the days of the current one
+// (index = days from cur.period.From). With AlignWeekday the spans have the
+// same length and day j faces day j. With AlignCalendar every previous day
+// faces the same day and month of the current year (ShiftToYear), so a
+// monthly or daily series never puts a previous value in the wrong month:
+// a previous 29 February folds into the current 28 February and a current
+// 29 February faces nothing. Every previous day lands exactly once, so the
+// aligned series still adds up to the previous metrics.
+func alignPrevious(cur, prev *spanFacts, align Align) *spanFacts {
+	out := &spanFacts{period: cur.period, days: make([]dayFacts, len(cur.days))}
+	if align == AlignWeekday {
+		for j := range min(len(prev.days), len(out.days)) {
+			out.days[j].add(&prev.days[j])
+		}
+		return out
+	}
+	offset := cur.period.From.Year() - prev.period.From.Year()
+	for j := range prev.days {
+		pd := prev.period.From.AddDays(j)
+		i := cur.period.From.DaysUntil(ShiftToYear(pd, pd.Year()+offset))
+		if i >= 0 && i < len(out.days) {
+			out.days[i].add(&prev.days[j])
+		}
+	}
+	return out
+}
+
 // buildComparison compares the facts of the current and previous spans.
-// The series buckets the current span by granularity; previous day j is
-// aligned with current day j (the two spans start on the aligned days), and
-// when the previous span is one day longer (29 February) its extra day is
-// added to the last bucket, so the series always adds up to the metrics.
+// The series buckets the current span by granularity and reads the previous
+// values through alignPrevious, so the series always adds up to the metrics.
 func buildComparison(cur, prev *spanFacts, granularity Granularity, align Align) *Comparison {
 	c, p := cur.all(), prev.all()
+	aligned := alignPrevious(cur, prev, align)
+	offset := cur.period.From.Year() - prev.period.From.Year()
+	previousFrom := func(d calendar.Date, start int) calendar.Date {
+		if align == AlignWeekday {
+			return prev.period.From.AddDays(min(start, len(prev.days)-1))
+		}
+		return ShiftToYear(d, d.Year()-offset)
+	}
 	out := &Comparison{
 		Current: cur.period, Previous: prev.period, Granularity: granularity, Align: align,
 		Metrics: []ComparisonMetric{
@@ -195,15 +236,10 @@ func buildComparison(cur, prev *spanFacts, granularity Granularity, align Align)
 		for end < n && bucketKey(cur.period.From.AddDays(end), granularity) == bucketKey(d, granularity) {
 			end++
 		}
-		prevEnd := end
-		if end == n {
-			prevEnd = len(prev.days) // the extra previous day, if any
-		}
-		ct, pt := cur.total(start, end), prev.total(start, prevEnd)
+		ct, pt := cur.total(start, end), aligned.total(start, end)
 		key, label := bucketKey(d, granularity), bucketLabel(d, granularity)
-		pf := prev.period.From.AddDays(min(start, len(prev.days)-1))
 		out.Series = append(out.Series, ComparisonPoint{
-			Key: key, Label: label, CurrentFrom: d, PreviousFrom: pf,
+			Key: key, Label: label, CurrentFrom: d, PreviousFrom: previousFrom(d, start),
 			CurrentRevenue: ct.collected, PreviousRevenue: pt.collected,
 			CurrentOccupancyBP: Ratio(ct.occupied, ct.capacity), PreviousOccupancyBP: Ratio(pt.occupied, pt.capacity),
 			CurrentBookings: ct.bookings, PreviousBookings: pt.bookings,
