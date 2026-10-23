@@ -274,8 +274,9 @@ everywhere it applies. Page-level `className` is for layout only (grid, gap, wid
   Totals: column `footer` (rendered as the table footer row).
 - Paging: client lists paginate (`pageSize`, default 20); cursor lists use `loadMore` and have no
   client-side sorting or search (they would only cover the loaded rows): filters go to the server.
-- Empty: `empty={<EmptyState bordered={false} …/>}` inside the table; loading: `loading` (skeleton
-  rows); error: `error={<QueryState …/>}`, shown in the table body so the toolbar stays usable.
+- Empty: `empty={<EmptyState bordered={false} …/>}`, drawn under the header row outside the
+  horizontal scroll (never clipped at phone width); loading: `loading` (skeleton rows); error:
+  `error={<QueryState …/>}`, shown in the table body so the toolbar stays usable.
 - Mobile: the table scrolls horizontally inside its container; the toolbar wraps (search full width).
 - Editable cells (an input per row, e.g. the cash count) keep a plain shadcn `Table`: inline
   `cell` functions of columns rebuilt on every render remount and lose focus. Use the same

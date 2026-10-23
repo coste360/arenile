@@ -9,8 +9,9 @@ import {
   TicketIcon,
   UserXIcon,
   WalletIcon,
+  type LucideIcon,
 } from 'lucide-react';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   reportCsvUrl,
@@ -54,7 +55,7 @@ type Basis = 'stay' | 'cash';
 
 interface Kpi {
   key: ComparisonMetricKey | 'open_balance';
-  icon: ReactNode;
+  icon: LucideIcon;
   value: (s: ReportSummary) => string;
   hint?: (s: ReportSummary) => string;
   basis?: Basis;
@@ -87,7 +88,7 @@ export function SummarySection({
   const kpis: Kpi[] = [
     {
       key: 'occupancy_bp',
-      icon: <PercentIcon aria-hidden="true" />,
+      icon: PercentIcon,
       value: (s) => formatRatioBP(s.occupancy_bp),
       hint: (s) =>
         t('summary.unitsHint', {
@@ -98,48 +99,48 @@ export function SummarySection({
     {
       key: 'revenue_collected',
       basis: 'cash',
-      icon: <BanknoteIcon aria-hidden="true" />,
+      icon: BanknoteIcon,
       value: (s) => money(s.revenue_collected),
     },
     {
       key: 'revenue_booked',
       basis: 'stay',
-      icon: <ReceiptTextIcon aria-hidden="true" />,
+      icon: ReceiptTextIcon,
       value: (s) => money(s.revenue_booked),
     },
     {
       key: 'bookings',
       basis: 'stay',
-      icon: <CalendarCheckIcon aria-hidden="true" />,
+      icon: CalendarCheckIcon,
       value: (s) => formatCount(s.bookings),
     },
     {
       key: 'average_booking_value',
       basis: 'stay',
-      icon: <WalletIcon aria-hidden="true" />,
+      icon: WalletIcon,
       value: (s) => money(s.average_booking_value),
     },
     {
       key: 'cancellations',
       basis: 'stay',
-      icon: <CalendarXIcon aria-hidden="true" />,
+      icon: CalendarXIcon,
       value: (s) => formatCount(s.cancellations),
     },
     {
       key: 'no_shows',
       basis: 'stay',
-      icon: <UserXIcon aria-hidden="true" />,
+      icon: UserXIcon,
       value: (s) => formatCount(s.no_shows),
     },
     {
       key: 'season_passes_sold',
       basis: 'stay',
-      icon: <TicketIcon aria-hidden="true" />,
+      icon: TicketIcon,
       value: (s) => formatCount(s.season_passes_sold),
     },
     {
       key: 'open_balance',
-      icon: <WalletIcon aria-hidden="true" />,
+      icon: WalletIcon,
       value: (s) => money(s.open_balance_total),
       hint: (s) => t('summary.openBalanceHint', { n: formatCount(s.open_balance_bookings) }),
     },
@@ -171,14 +172,11 @@ export function SummarySection({
       ) : !summary.data ? (
         <QueryState isLoading error={null} rows={4} />
       ) : (
-        <section
-          aria-label={t('summary.kpis')}
-          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
-        >
+        <section aria-label={t('summary.kpis')} className="grid grid-cols-2 gap-4 lg:grid-cols-3">
           {kpis.map((k) => (
             <StatCard
               key={k.key}
-              title={t(`metric.${k.key}`)}
+              label={t(`metric.${k.key}`)}
               value={k.value(summary.data)}
               icon={k.icon}
               hint={[k.hint?.(summary.data), k.basis && t(`summary.basis.${k.basis}`)]

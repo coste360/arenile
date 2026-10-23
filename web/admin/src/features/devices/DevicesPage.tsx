@@ -8,7 +8,7 @@ import {
   DataTable,
   DataTableColumnHeader,
   EmptyState,
-  PageHeader,
+  Page,
   QueryState,
   StatusBadge,
 } from '@arenile/shared/ui/patterns';
@@ -168,15 +168,20 @@ export function DevicesPage() {
   );
 
   return (
-    <section aria-labelledby="page-title" className="mx-auto max-w-6xl space-y-6">
-      <PageHeader title={t('title')} description={t('description')} actions={pairButton} />
-      {block === 'lan_mode_required' && (
-        <Alert role="note">
-          <WifiOffIcon aria-hidden="true" />
-          <AlertTitle>{t('lan.title')}</AlertTitle>
-          <AlertDescription>{t('lan.description')}</AlertDescription>
-        </Alert>
-      )}
+    <Page
+      title={t('title')}
+      description={t('description')}
+      actions={pairButton}
+      notice={
+        block === 'lan_mode_required' && (
+          <Alert role="note">
+            <WifiOffIcon aria-hidden="true" />
+            <AlertTitle>{t('lan.title')}</AlertTitle>
+            <AlertDescription>{t('lan.description')}</AlertDescription>
+          </Alert>
+        )
+      }
+    >
       {devices.error ? (
         <QueryState
           isLoading={false}
@@ -238,6 +243,6 @@ export function DevicesPage() {
           toast.success(t('revoke.done', { name }));
         }}
       />
-    </section>
+    </Page>
   );
 }

@@ -3,9 +3,9 @@ import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
 import { Input } from '@arenile/shared/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
-import { QueryState } from '@arenile/shared/ui/patterns';
+import { QueryState, ResponsiveTabsList } from '@arenile/shared/ui/patterns';
 import { Spinner } from '@arenile/shared/ui/spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { Textarea } from '@arenile/shared/ui/textarea';
 import { Link } from '@tanstack/react-router';
 import {
@@ -180,14 +180,12 @@ function OnlineSettingsForm({
 
   return (
     <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="gap-6">
-      <TabsList aria-label={t('settings.tabsLabel')} className="h-auto flex-wrap">
-        {TABS.map(({ id, icon: Icon }) => (
-          <TabsTrigger key={id} value={id}>
-            <Icon aria-hidden="true" />
-            {t(`settings.tabs.${id}`)}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+      <ResponsiveTabsList
+        label={t('settings.tabsLabel')}
+        value={tab}
+        onValueChange={(v) => setTab(v as Tab)}
+        options={TABS.map(({ id, icon }) => ({ value: id, icon, label: t(`settings.tabs.${id}`) }))}
+      />
 
       <form noValidate onSubmit={submit} className="space-y-6" aria-label={t('settings.title')}>
         <FormAlert state={alert} onReload={() => void reload()} />

@@ -1,15 +1,7 @@
 import { useMe } from '@arenile/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arenile/shared/ui/card';
-import { PageHeader, QueryState } from '@arenile/shared/ui/patterns';
+import { Page, QueryState, SectionCard } from '@arenile/shared/ui/patterns';
 import { formatInstantDate } from '@arenile/shared/lib/dates';
 import { Link } from '@tanstack/react-router';
 import {
@@ -47,26 +39,23 @@ export function LanInfoPage() {
   const fingerprint = meta.data?.desktop?.lan_cert_fingerprint ?? '';
   const qrSvg = meta.data?.desktop?.lan_qr_svg;
   const renewsAt = meta.data?.desktop?.lan_cert_renews_at;
-  const header = <PageHeader title={t('title')} description={t('description')} />;
 
   if (meta.isPending || meta.error) {
     return (
-      <section aria-labelledby="page-title" className="mx-auto max-w-3xl space-y-6">
-        {header}
+      <Page title={t('title')} description={t('description')}>
         <QueryState
           isLoading={meta.isPending}
           error={meta.error}
           onRetry={() => void meta.refetch()}
         />
-      </section>
+      </Page>
     );
   }
 
   if (mode !== 'lan' || !lanUrl) {
     const desktop = mode === 'local';
     return (
-      <section aria-labelledby="page-title" className="mx-auto max-w-3xl space-y-6">
-        {header}
+      <Page title={t('title')} description={t('description')}>
         <Alert role="note">
           <WifiOffIcon aria-hidden="true" />
           <AlertTitle>{desktop ? t('off.title') : t('server.title')}</AlertTitle>
@@ -85,7 +74,7 @@ export function LanInfoPage() {
             </Button>
           </AlertDescription>
         </Alert>
-      </section>
+      </Page>
     );
   }
 
@@ -128,38 +117,32 @@ function LanDetails({ establishmentId, lanUrl, fingerprint, qrSvg, renewsAt }: L
   const address = panelAddress(lanUrl);
   const lines = fingerprintLines(fingerprint);
   return (
-    <section aria-labelledby="page-title" className="mx-auto max-w-3xl space-y-6">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
+    <Page
+      title={t('title')}
+      description={t('description')}
+      actions={
+        <Button onClick={() => setPairOpen(true)}>
+          <QrCodeIcon aria-hidden="true" />
+          {t('pair.open')}
+        </Button>
+      }
+    >
+      <SectionCard
+        icon={WifiIcon}
+        title={t('address.title')}
+        description={t('address.description')}
         actions={
-          <Button onClick={() => setPairOpen(true)}>
-            <QrCodeIcon aria-hidden="true" />
-            {t('pair.open')}
+          <Button
+            variant="outline"
+            onClick={() => void copy(address)}
+            aria-label={t('address.copy')}
+          >
+            <CopyIcon aria-hidden="true" />
+            <span className="hidden sm:inline">{t('address.copy')}</span>
           </Button>
         }
-      />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <WifiIcon aria-hidden="true" className="size-4" />
-            {t('address.title')}
-          </CardTitle>
-          <CardDescription>{t('address.description')}</CardDescription>
-          <CardAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void copy(address)}
-              aria-label={t('address.copy')}
-            >
-              <CopyIcon aria-hidden="true" />
-              <span className="hidden sm:inline">{t('address.copy')}</span>
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           {qrSvg && (
             <img
               src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(qrSvg)}`}
@@ -174,41 +157,35 @@ function LanDetails({ establishmentId, lanUrl, fingerprint, qrSvg, renewsAt }: L
             <p className="font-mono text-sm break-all text-muted-foreground">{address}</p>
             {qrSvg && <p className="text-sm text-muted-foreground">{t('address.qrHint')}</p>}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShieldCheckIcon aria-hidden="true" className="size-4" />
-            {t('fingerprint.title')}
-          </CardTitle>
-          <CardDescription>{t('fingerprint.description')}</CardDescription>
-          <CardAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void copy(fingerprint)}
-              aria-label={t('fingerprint.copy')}
-            >
-              <CopyIcon aria-hidden="true" />
-              <span className="hidden sm:inline">{t('fingerprint.copy')}</span>
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent>
-          <div
-            role="group"
-            className="rounded-md bg-muted p-3 font-mono text-sm break-all"
-            aria-label={t('fingerprint.aria')}
+      <SectionCard
+        icon={ShieldCheckIcon}
+        title={t('fingerprint.title')}
+        description={t('fingerprint.description')}
+        actions={
+          <Button
+            variant="outline"
+            onClick={() => void copy(fingerprint)}
+            aria-label={t('fingerprint.copy')}
           >
-            {lines.map((line, i) => (
-              // Lines can repeat (same bytes): the position is the identity.
-              <div key={`${i}-${line}`}>{line}</div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            <CopyIcon aria-hidden="true" />
+            <span className="hidden sm:inline">{t('fingerprint.copy')}</span>
+          </Button>
+        }
+      >
+        <div
+          role="group"
+          className="rounded-md bg-muted p-3 font-mono text-sm break-all"
+          aria-label={t('fingerprint.aria')}
+        >
+          {lines.map((line, i) => (
+            // Lines can repeat (same bytes): the position is the identity.
+            <div key={`${i}-${line}`}>{line}</div>
+          ))}
+        </div>
+      </SectionCard>
 
       {certRenewalSoon(renewsAt) && (
         <Alert role="note" data-testid="lan-cert-renewal">
@@ -218,39 +195,27 @@ function LanDetails({ establishmentId, lanUrl, fingerprint, qrSvg, renewsAt }: L
         </Alert>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GlobeLockIcon aria-hidden="true" className="size-4" />
-            {t('browser.title')}
-          </CardTitle>
-          <CardDescription>{t('browser.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ol className="list-decimal space-y-2 pl-5 text-sm">
-            <li>{t('browser.step1')}</li>
-            <li>{t('browser.step2', { address })}</li>
-            <li>{t('browser.step3')}</li>
-            <li>{t('browser.step4')}</li>
-            <li>{t('browser.step5')}</li>
-          </ol>
-          <p className="mt-4 text-sm text-muted-foreground">{t('browser.hint')}</p>
-        </CardContent>
-      </Card>
+      <SectionCard
+        icon={GlobeLockIcon}
+        title={t('browser.title')}
+        description={t('browser.description')}
+      >
+        <ol className="list-decimal space-y-2 pl-5 text-sm">
+          <li>{t('browser.step1')}</li>
+          <li>{t('browser.step2', { address })}</li>
+          <li>{t('browser.step3')}</li>
+          <li>{t('browser.step4')}</li>
+          <li>{t('browser.step5')}</li>
+        </ol>
+        <p className="mt-4 text-sm text-muted-foreground">{t('browser.hint')}</p>
+      </SectionCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <QrCodeIcon aria-hidden="true" className="size-4" />
-            {t('apps.title')}
-          </CardTitle>
-          <CardDescription>{t('apps.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
+      <SectionCard icon={QrCodeIcon} title={t('apps.title')} description={t('apps.description')}>
+        <div className="space-y-3 text-sm">
           <p>{t('apps.security')}</p>
           <p className="text-muted-foreground">{t('apps.guarantee')}</p>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
       <PairDeviceDialog
         open={pairOpen}
@@ -260,6 +225,6 @@ function LanDetails({ establishmentId, lanUrl, fingerprint, qrSvg, renewsAt }: L
         canManageUsers={false}
         knownDevices={devices.data ?? []}
       />
-    </section>
+    </Page>
   );
 }

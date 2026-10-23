@@ -10,7 +10,8 @@ import {
   EmptyState,
   FieldRow,
   FormSection,
-  PageHeader,
+  Page,
+  SectionCard,
   QueryState,
   StatusBadge,
   type StatusTone,
@@ -95,8 +96,7 @@ export function DesktopSettingsPage() {
   const settings = useDesktopSettings();
 
   return (
-    <section aria-labelledby="page-title" className="mx-auto max-w-5xl space-y-6">
-      <PageHeader title={t('settings.title')} description={t('settings.description')} />
+    <Page title={t('settings.title')} description={t('settings.description')}>
       {settings.data ? (
         <SettingsForm initial={settings.data} />
       ) : (
@@ -107,7 +107,7 @@ export function DesktopSettingsPage() {
         />
       )}
       <BackupsSection />
-    </section>
+    </Page>
   );
 }
 
@@ -132,9 +132,9 @@ function SettingsForm({ initial }: { initial: DesktopSettings }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} noValidate aria-label={t('settings.title')}>
+      <form onSubmit={onSubmit} noValidate aria-label={t('settings.title')} className="space-y-6">
         {update.error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive">
             <AlertTitle>{t('settings.saveFailed')}</AlertTitle>
             <AlertDescription>{problemText(update.error)}</AlertDescription>
           </Alert>
@@ -293,7 +293,7 @@ function BackupsSection() {
     },
     {
       accessorKey: 'size_bytes',
-      meta: { label: t('backups.size') },
+      meta: { label: t('backups.size'), align: 'right' },
       header: t('backups.size'),
       cell: ({ row }) => (
         <span className="whitespace-nowrap tabular-nums">
@@ -323,62 +323,72 @@ function BackupsSection() {
   ];
 
   return (
-    <section aria-labelledby="desktop-backups" className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <h2 id="desktop-backups" className="text-base font-semibold">
-            {t('backups.title')}
-          </h2>
-          {backups.data && (
-            <p className="text-sm break-all text-muted-foreground">
+    <section aria-labelledby="desktop-backups">
+      <SectionCard
+        titleId="desktop-backups"
+        title={t('backups.title')}
+        description={
+          backups.data && (
+            <span className="break-all">
               {t('backups.directory', { dir: backups.data.directory })}
-            </p>
+            </span>
+          )
+        }
+        actions={
+          <Button
+            variant="outline"
+            disabled={create.isPending || restarted}
+            onClick={() =>
+              create.mutate(undefined, {
+                onSuccess: (b) => toast.success(t('backups.done', { name: b.name })),
+                onError: (err) => toast.error(problemText(err)),
+              })
+            }
+          >
+            {create.isPending ? <Spinner /> : <DatabaseBackupIcon aria-hidden="true" />}
+            {t('backups.now')}
+          </Button>
+        }
+        flush
+      >
+        <div className="space-y-4">
+          {restarted && (
+            <div className="px-6">
+              <Alert role="status">
+                <HistoryIcon aria-hidden="true" />
+                <AlertTitle>{t('restore.inProgressTitle')}</AlertTitle>
+                <AlertDescription>{t('restore.inProgress')}</AlertDescription>
+              </Alert>
+            </div>
           )}
+          <DataTable
+            embedded
+            columnToggle={false}
+            error={
+              backups.error ? (
+                <QueryState
+                  isLoading={false}
+                  error={backups.error}
+                  onRetry={() => void backups.refetch()}
+                />
+              ) : undefined
+            }
+            caption={t('backups.title')}
+            columns={columns}
+            data={backups.data?.items ?? []}
+            loading={backups.isPending}
+            getRowId={(b) => b.name}
+            empty={
+              <EmptyState
+                icon={ArchiveIcon}
+                title={t('backups.empty.title')}
+                description={t('backups.empty.description')}
+                bordered={false}
+              />
+            }
+          />
         </div>
-        <Button
-          variant="outline"
-          disabled={create.isPending || restarted}
-          onClick={() =>
-            create.mutate(undefined, {
-              onSuccess: (b) => toast.success(t('backups.done', { name: b.name })),
-              onError: (err) => toast.error(problemText(err)),
-            })
-          }
-        >
-          {create.isPending ? <Spinner /> : <DatabaseBackupIcon aria-hidden="true" />}
-          {t('backups.now')}
-        </Button>
-      </div>
-      {restarted && (
-        <Alert role="status">
-          <HistoryIcon aria-hidden="true" />
-          <AlertTitle>{t('restore.inProgressTitle')}</AlertTitle>
-          <AlertDescription>{t('restore.inProgress')}</AlertDescription>
-        </Alert>
-      )}
-      {backups.error ? (
-        <QueryState
-          isLoading={false}
-          error={backups.error}
-          onRetry={() => void backups.refetch()}
-        />
-      ) : (
-        <DataTable
-          caption={t('backups.title')}
-          columns={columns}
-          data={backups.data?.items ?? []}
-          loading={backups.isPending}
-          getRowId={(b) => b.name}
-          empty={
-            <EmptyState
-              icon={ArchiveIcon}
-              title={t('backups.empty.title')}
-              description={t('backups.empty.description')}
-              bordered={false}
-            />
-          }
-        />
-      )}
+      </SectionCard>
       <ConfirmDialog
         open={restoring !== null}
         onOpenChange={(open) => {

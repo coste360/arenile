@@ -1,20 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
-import { CardFooter } from '@arenile/shared/ui/card';
 import { FieldLegend, FieldSet } from '@arenile/shared/ui/field';
 import { Input } from '@arenile/shared/ui/input';
-import { EmptyState, QueryState, StatusBadge, type StatusTone } from '@arenile/shared/ui/patterns';
+import {
+  DataTable,
+  EmptyState,
+  QueryState,
+  StatusBadge,
+  type ColumnDef,
+  type StatusTone,
+} from '@arenile/shared/ui/patterns';
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
 import { Spinner } from '@arenile/shared/ui/spinner';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@arenile/shared/ui/table';
 import { BellIcon, InboxIcon, MailIcon, SendIcon, ServerIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -55,6 +53,8 @@ const STATUS_TONE: Record<MessageStatus, StatusTone> = {
 };
 /** Reminders not sent yet (their templates exist; the scheduler comes later). */
 const UPCOMING_CUSTOMER = new Set<string>(['balance_reminder', 'day_before_reminder']);
+type Message = NonNullable<ReturnType<typeof useMessages>['data']>['items'][number];
+
 const STATUSES: MessageStatus[] = ['queued', 'sending', 'sent', 'failed', 'cancelled'];
 
 function TransportCard({ settings }: { settings: EmailSettings }) {
@@ -139,86 +139,119 @@ function MessageLog({ establishmentId }: { establishmentId: string }) {
   const [status, setStatus] = useState<MessageStatus | ''>('');
   const query = useMessages(establishmentId, status || undefined);
   const items = query.data?.items ?? [];
+  const columns: ColumnDef<Message>[] = [
+    {
+      id: 'date',
+      header: t('email.log.date'),
+      meta: { label: t('email.log.date') },
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {fmt.dateTime(row.original.sent_at ?? row.original.created_at)}
+        </span>
+      ),
+    },
+    {
+      id: 'template',
+      header: t('email.log.template'),
+      meta: { label: t('email.log.template') },
+      cell: ({ row }) => (
+        <>
+          {t(`email.templates.${row.original.template}`, { defaultValue: row.original.template })}
+          <span className="ml-1 text-xs text-muted-foreground uppercase">
+            {row.original.locale}
+          </span>
+        </>
+      ),
+    },
+    {
+      id: 'recipient',
+      header: t('email.log.recipient'),
+      meta: { label: t('email.log.recipient') },
+      cell: ({ row }) => <span className="font-mono text-xs">{row.original.recipient_masked}</span>,
+    },
+    {
+      id: 'booking',
+      header: t('email.log.booking'),
+      meta: { label: t('email.log.booking') },
+      cell: ({ row }) => (
+        <span className="font-mono text-xs">{row.original.booking_code ?? '—'}</span>
+      ),
+    },
+    {
+      id: 'status',
+      header: t('email.log.status'),
+      meta: { label: t('email.log.status') },
+      cell: ({ row }) => {
+        const m = row.original;
+        return (
+          <>
+            <StatusBadge tone={STATUS_TONE[m.status]}>{t(`email.status.${m.status}`)}</StatusBadge>
+            {m.status === 'failed' && m.last_error && (
+              <p
+                className="mt-1 max-w-64 truncate text-xs text-muted-foreground"
+                title={m.last_error}
+              >
+                {t('email.log.attempts', { count: m.attempts })} · {m.last_error}
+              </p>
+            )}
+          </>
+        );
+      },
+    },
+  ];
   return (
     <SectionCard
       id="mail-log"
       icon={InboxIcon}
       title={t('email.log.title')}
       description={t('email.log.description')}
-      actions={
-        <div className="flex items-center gap-2">
-          <label htmlFor={id} className="sr-only">
-            {t('email.log.filter')}
-          </label>
-          <NativeSelect
-            id={id}
-            size="sm"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as MessageStatus | '')}
-          >
-            <NativeSelectOption value="">{t('email.log.all')}</NativeSelectOption>
-            {STATUSES.map((s) => (
-              <NativeSelectOption key={s} value={s}>
-                {t(`email.status.${s}`)}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </div>
-      }
+      flush
     >
-      {!query.data ? (
-        <QueryState
-          isLoading={query.isPending}
-          error={query.error}
-          onRetry={() => void query.refetch()}
-        />
-      ) : items.length === 0 ? (
-        <EmptyState
-          icon={InboxIcon}
-          title={t('email.log.empty')}
-          description={t('email.log.emptyHint')}
-        />
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('email.log.date')}</TableHead>
-              <TableHead>{t('email.log.template')}</TableHead>
-              <TableHead>{t('email.log.recipient')}</TableHead>
-              <TableHead>{t('email.log.booking')}</TableHead>
-              <TableHead>{t('email.log.status')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell className="whitespace-nowrap tabular-nums">
-                  {fmt.dateTime(m.sent_at ?? m.created_at)}
-                </TableCell>
-                <TableCell>
-                  {t(`email.templates.${m.template}`, { defaultValue: m.template })}
-                  <span className="ml-1 text-xs text-muted-foreground uppercase">{m.locale}</span>
-                </TableCell>
-                <TableCell className="font-mono text-xs">{m.recipient_masked}</TableCell>
-                <TableCell className="font-mono text-xs">{m.booking_code ?? '—'}</TableCell>
-                <TableCell>
-                  <StatusBadge tone={STATUS_TONE[m.status]}>
-                    {t(`email.status.${m.status}`)}
-                  </StatusBadge>
-                  {m.status === 'failed' && m.last_error && (
-                    <p
-                      className="mt-1 max-w-64 truncate text-xs text-muted-foreground"
-                      title={m.last_error}
-                    >
-                      {t('email.log.attempts', { count: m.attempts })} · {m.last_error}
-                    </p>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <DataTable
+        embedded
+        caption={t('email.log.title')}
+        columns={columns}
+        data={items}
+        getRowId={(m) => m.id}
+        columnToggle={false}
+        loading={query.isPending}
+        error={
+          query.error ? (
+            <QueryState
+              isLoading={false}
+              error={query.error}
+              onRetry={() => void query.refetch()}
+            />
+          ) : undefined
+        }
+        filters={
+          <div className="flex items-center gap-2">
+            <label htmlFor={id} className="sr-only">
+              {t('email.log.filter')}
+            </label>
+            <NativeSelect
+              id={id}
+              value={status}
+              onChange={(e) => setStatus(e.target.value as MessageStatus | '')}
+            >
+              <NativeSelectOption value="">{t('email.log.all')}</NativeSelectOption>
+              {STATUSES.map((s) => (
+                <NativeSelectOption key={s} value={s}>
+                  {t(`email.status.${s}`)}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </div>
+        }
+        empty={
+          <EmptyState
+            bordered={false}
+            icon={InboxIcon}
+            title={t('email.log.empty')}
+            description={t('email.log.emptyHint')}
+          />
+        }
+      />
     </SectionCard>
   );
 }
@@ -271,7 +304,7 @@ function EmailForm({
         description={t('email.settings.description')}
         footer={
           readOnly ? undefined : (
-            <CardFooter className="justify-end gap-3 border-t">
+            <>
               {form.formState.isDirty && (
                 <span className="mr-auto text-sm text-muted-foreground">{t('unsaved')}</span>
               )}
@@ -279,7 +312,7 @@ function EmailForm({
                 {update.isPending && <Spinner />}
                 {tg('common.actions.save')}
               </Button>
-            </CardFooter>
+            </>
           )
         }
       >

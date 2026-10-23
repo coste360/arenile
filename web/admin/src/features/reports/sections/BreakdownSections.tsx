@@ -401,10 +401,10 @@ export function SeasonPassesSection({ ctx, period, active }: SectionProps) {
     >
       {q.data && (
         <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard title={t('passes.sold')} value={formatCount(q.data.passes_sold)} />
-            <StatCard title={t('passes.value')} value={ctx.money(q.data.passes_value)} />
-            <StatCard title={t('passes.renewals')} value={formatCount(q.data.renewals)} />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+            <StatCard label={t('passes.sold')} value={formatCount(q.data.passes_sold)} />
+            <StatCard label={t('passes.value')} value={ctx.money(q.data.passes_value)} />
+            <StatCard label={t('passes.renewals')} value={formatCount(q.data.renewals)} />
           </div>
           {q.data.rows.length > 0 && (
             <ReportChart

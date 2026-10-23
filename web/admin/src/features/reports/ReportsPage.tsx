@@ -1,6 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
-import { PageHeader, QueryState } from '@arenile/shared/ui/patterns';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Page, QueryState, ResponsiveTabsList } from '@arenile/shared/ui/patterns';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { AlertCircleIcon, LockIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -59,8 +59,7 @@ export function ReportsPage() {
 
   if (ctx.loading) return <QueryState isLoading error={null} rows={4} />;
   return (
-    <section aria-labelledby="page-title" className="min-w-0 space-y-6">
-      <PageHeader title={t('title')} description={t('page.description')} />
+    <Page title={t('title')} description={t('page.description')}>
       {ctx.canRead ? (
         <ReportsBody ctx={ctx} />
       ) : (
@@ -70,7 +69,7 @@ export function ReportsPage() {
           <AlertDescription>{t('forbidden.description')}</AlertDescription>
         </Alert>
       )}
-    </section>
+    </Page>
   );
 }
 
@@ -122,13 +121,12 @@ function ReportsBody({ ctx }: { ctx: ReportsContext }) {
         // Panels stay mounted (hidden) so each keeps its grouping; queries
         // run only for the visible tab.
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="gap-6">
-          <TabsList aria-label={t('tabs.label')} wrap>
-            {TABS.map((id) => (
-              <TabsTrigger key={id} value={id}>
-                {t(`tabs.${id}`)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <ResponsiveTabsList
+            label={t('tabs.label')}
+            value={tab}
+            onValueChange={(v) => setTab(v as Tab)}
+            options={TABS.map((id) => ({ value: id, label: t(`tabs.${id}`) }))}
+          />
           <TabsContent value="summary" forceMount hidden={tab !== 'summary'}>
             <SummarySection
               ctx={ctx}

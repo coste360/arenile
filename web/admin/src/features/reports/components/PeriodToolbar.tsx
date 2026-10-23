@@ -1,9 +1,8 @@
 import { formatIsoDate } from '@arenile/shared/lib/dates';
 import { Label } from '@arenile/shared/ui/label';
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
-import { DateRangePicker } from '@arenile/shared/ui/patterns';
+import { DateRangePicker, PageToolbar, SegmentedControl } from '@arenile/shared/ui/patterns';
 import { Switch } from '@arenile/shared/ui/switch';
-import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import { useTranslation } from 'react-i18next';
 import type { PeriodMode, PeriodSelection, SeasonLike } from '../lib/period';
 
@@ -44,27 +43,23 @@ export function PeriodToolbar({
     else onChange({ mode, from: `${today.slice(0, 7)}-01`, to: today });
   };
   return (
-    <div className="flex flex-wrap items-end gap-4">
-      <div className="space-y-2">
-        <span id="report-mode-label" className="block text-sm leading-none font-medium">
-          {t('period.label')}
-        </span>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          aria-labelledby="report-mode-label"
-          value={selection.mode}
-          onValueChange={(v) => v && setMode(v as PeriodMode)}
-        >
-          <ToggleGroupItem value="season">{t('period.season')}</ToggleGroupItem>
-          <ToggleGroupItem value="month">{t('period.month')}</ToggleGroupItem>
-          <ToggleGroupItem value="custom">{t('period.custom')}</ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+    <PageToolbar className="gap-x-4 gap-y-2">
+      <SegmentedControl
+        label={t('period.label')}
+        value={selection.mode}
+        onValueChange={(v) => setMode(v as PeriodMode)}
+        options={[
+          { value: 'season', label: t('period.season') },
+          { value: 'month', label: t('period.month') },
+          { value: 'custom', label: t('period.custom') },
+        ]}
+      />
 
       {selection.mode === 'season' && (
-        <div className="space-y-2">
-          <Label htmlFor="report-season">{t('period.seasonLabel')}</Label>
+        <div className="flex min-w-0 items-center gap-2">
+          <Label htmlFor="report-season" className="text-muted-foreground">
+            {t('period.seasonLabel')}
+          </Label>
           <NativeSelect
             id="report-season"
             value={selection.seasonId}
@@ -96,8 +91,10 @@ export function PeriodToolbar({
       )}
 
       {selection.mode === 'custom' && (
-        <div className="space-y-2">
-          <Label htmlFor="report-range">{t('period.range')}</Label>
+        <div className="flex min-w-0 items-center gap-2">
+          <Label htmlFor="report-range" className="text-muted-foreground">
+            {t('period.range')}
+          </Label>
           <DateRangePicker
             id="report-range"
             value={{ from: selection.from, to: selection.to }}
@@ -112,7 +109,7 @@ export function PeriodToolbar({
           {compareYear ? t('period.compareWith', { year: compareYear }) : t('period.compare')}
         </Label>
       </div>
-    </div>
+    </PageToolbar>
   );
 }
 
@@ -131,9 +128,11 @@ function MonthPicker({
   const years = Array.from({ length: 6 }, (_, i) => thisYear - 4 + i);
   const monthName = new Intl.DateTimeFormat(i18n.language, { month: 'long', timeZone: 'UTC' });
   return (
-    <div className="flex items-end gap-2">
-      <div className="space-y-2">
-        <Label htmlFor="report-month">{t('period.monthLabel')}</Label>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
+        <Label htmlFor="report-month" className="text-muted-foreground">
+          {t('period.monthLabel')}
+        </Label>
         <NativeSelect
           id="report-month"
           value={mm}
@@ -149,8 +148,10 @@ function MonthPicker({
           })}
         </NativeSelect>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="report-year">{t('period.year')}</Label>
+      <div className="flex items-center gap-2">
+        <Label htmlFor="report-year" className="text-muted-foreground">
+          {t('period.year')}
+        </Label>
         <NativeSelect
           id="report-year"
           value={year}

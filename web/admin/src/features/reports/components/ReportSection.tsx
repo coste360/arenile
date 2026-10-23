@@ -1,16 +1,8 @@
 import type { ApiProblem } from '@arenile/shared/api';
 import { Button } from '@arenile/shared/ui/button';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@arenile/shared/ui/card';
 import { Label } from '@arenile/shared/ui/label';
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
-import { QueryState } from '@arenile/shared/ui/patterns';
+import { QueryState, SectionCard } from '@arenile/shared/ui/patterns';
 import { DownloadIcon } from 'lucide-react';
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,26 +33,25 @@ export function ReportSection({
 }: ReportSectionProps) {
   const { t } = useTranslation('reports');
   return (
-    <Card className="min-w-0 gap-4">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-        {csv && (
-          <CardAction>
-            <Button variant="outline" size="sm" asChild>
-              <a
-                href={csv.href}
-                download={csv.fileName}
-                aria-label={t('csv.aria', { report: title })}
-              >
-                <DownloadIcon aria-hidden="true" />
-                {t('csv.label')}
-              </a>
-            </Button>
-          </CardAction>
-        )}
-      </CardHeader>
-      <CardContent className="min-w-0 space-y-4">
+    <SectionCard
+      title={title}
+      description={description}
+      actions={
+        csv && (
+          <Button variant="outline" asChild>
+            <a
+              href={csv.href}
+              download={csv.fileName}
+              aria-label={t('csv.aria', { report: title })}
+            >
+              <DownloadIcon aria-hidden="true" />
+              {t('csv.label')}
+            </a>
+          </Button>
+        )
+      }
+    >
+      <div className="min-w-0 space-y-4">
         {controls && <div className="flex flex-wrap items-end gap-4">{controls}</div>}
         {query.error ? (
           <QueryState isLoading={false} error={query.error} onRetry={() => void query.refetch()} />
@@ -69,8 +60,8 @@ export function ReportSection({
         ) : (
           children
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </SectionCard>
   );
 }
 

@@ -3,11 +3,9 @@ import { useMe } from '@arenile/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
-import { CardFooter } from '@arenile/shared/ui/card';
 import { Input } from '@arenile/shared/ui/input';
-import { QueryState, StatusBadge } from '@arenile/shared/ui/patterns';
+import { QueryState, SegmentedControl, StatusBadge } from '@arenile/shared/ui/patterns';
 import { Spinner } from '@arenile/shared/ui/spinner';
-import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import {
   BanknoteIcon,
   CircleCheckIcon,
@@ -250,7 +248,7 @@ function PaymentForm({
           description={t('payments.provider.description')}
           footer={
             readOnly ? undefined : (
-              <CardFooter className="justify-end gap-3 border-t">
+              <>
                 {form.formState.isDirty && (
                   <span className="mr-auto text-sm text-muted-foreground">{t('unsaved')}</span>
                 )}
@@ -258,7 +256,7 @@ function PaymentForm({
                   {update.isPending && <Spinner />}
                   {tg('common.actions.save')}
                 </Button>
-              </CardFooter>
+              </>
             )
           }
         >
@@ -277,30 +275,33 @@ function PaymentForm({
                 }))}
               />
               <div className="space-y-2">
-                <p id="pay-mode-label" className="text-sm font-medium">
+                <p aria-hidden="true" className="text-sm font-medium">
                   {t('payments.mode')}
                 </p>
                 <Controller
                   control={form.control}
                   name="mode"
                   render={({ field }) => (
-                    <ToggleGroup
-                      type="single"
-                      variant="outline"
+                    <SegmentedControl
+                      collapseOnNarrow
+                      label={t('payments.mode')}
                       value={field.value}
-                      onValueChange={(v) => v && field.onChange(v)}
-                      aria-labelledby="pay-mode-label"
-                      disabled={readOnly}
-                    >
-                      <ToggleGroupItem value="test">
-                        <FlaskConicalIcon aria-hidden="true" />
-                        {t('payments.modes.test')}
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="live">
-                        <BanknoteIcon aria-hidden="true" />
-                        {t('payments.modes.live')}
-                      </ToggleGroupItem>
-                    </ToggleGroup>
+                      onValueChange={field.onChange}
+                      options={[
+                        {
+                          value: 'test',
+                          icon: FlaskConicalIcon,
+                          label: t('payments.modes.test'),
+                          disabled: readOnly,
+                        },
+                        {
+                          value: 'live',
+                          icon: BanknoteIcon,
+                          label: t('payments.modes.live'),
+                          disabled: readOnly,
+                        },
+                      ]}
+                    />
                   )}
                 />
               </div>

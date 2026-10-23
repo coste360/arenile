@@ -1,16 +1,21 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@arenile/shared/ui/card';
+import { SectionCard as SharedSectionCard } from '@arenile/shared/ui/patterns';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-/** Card with an icon, an accessible region name and an optional footer (save row). */
+/**
+ * A settings section of the online pages: the shared SectionCard (icon,
+ * title, description, actions, footer bar) inside a named region, so screen
+ * readers and tests can reach each section by its title.
+ */
 export function SectionCard({
   id,
-  icon: Icon,
+  icon,
   title,
   description,
   actions,
   children,
   footer,
+  flush,
 }: {
   id: string;
   icon: LucideIcon;
@@ -18,22 +23,24 @@ export function SectionCard({
   description?: string;
   actions?: ReactNode;
   children: ReactNode;
+  /** Footer bar content (buttons right-aligned by the shared card). */
   footer?: ReactNode;
+  /** Content touches the card edges (a DataTable embedded). */
+  flush?: boolean;
 }) {
   return (
-    <Card aria-labelledby={`${id}-title`} role="region">
-      <CardHeader className="flex flex-row items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-on-surface">
-          <Icon aria-hidden="true" className="size-4" />
-        </span>
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <CardTitle id={`${id}-title`}>{title}</CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </div>
-        {actions}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-      {footer}
-    </Card>
+    <section aria-labelledby={`${id}-title`}>
+      <SharedSectionCard
+        titleId={`${id}-title`}
+        icon={icon}
+        title={title}
+        description={description}
+        actions={actions}
+        footer={footer}
+        flush={flush}
+      >
+        {children}
+      </SharedSectionCard>
+    </section>
   );
 }
