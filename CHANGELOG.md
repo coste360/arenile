@@ -6,8 +6,19 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi e policy** (completate, non rilasciate);
-**M3 — Prenotazioni dal pannello e cassa** in corso.
+Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa**, **M2 — Prezzi e policy** e **M3 — Prenotazioni dal
+pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubblica e pagamenti online**.
+
+### Fixed
+
+- `calendar.Date` implementa il `Binder` di oapi-codegen: le date nei parametri di query (`from`, `to`, `date`)
+  non rispondono più 400 né vengono ignorate.
+- L'anteprima di una prenotazione (`POST /bookings/quote`) verifica la disponibilità anche senza una prenotazione
+  esistente, invece di rispondere 400 `owner`.
+- Un hold chiuso dal job di scadenza risulta `expired`, non `released`.
+- Pannello: i selettori di data non escono dalla loro colonna (filtro "Periodo", barra del giorno della mappa), i
+  menu a tendina vuoti mostrano il segnaposto, nomi dei pack e degli extra al posto dei codici, "Cassa principale"
+  al posto del codice `main`, calendario planning esteso alla larghezza disponibile con la data iniziale nell'URL.
 
 ### Changed
 
@@ -16,13 +27,44 @@ Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa** e **M2 — Prezzi
 
 ### Added
 
+- M3 — motore di disponibilità (`internal/domain/inventory`): allocazioni di postazioni con `INSERT … ON CONFLICT DO
+  NOTHING` sul vincolo unico `(spot, date, slot)` e conflitti per ogni mezza giornata rifiutata, pool con `UPDATE`
+  condizionale e `capacity_overrides`, quota online, hold del pannello con scadenza e job di pulizia ogni 30 s,
+  blocchi di postazioni, assegnazione automatica delle righe di zona, disponibilità, vista operativa del giorno e
+  planning (massimo 62 giorni) con un numero fisso di query.
+- M3 — prenotazioni dal pannello (`internal/domain/booking`): creazione con cliente esistente o nuovo, anteprima del
+  prezzo e delle policy (forzatura registrata nell'audit), codici `LD-2027-000123`, modifica con `If-Match` e
+  anteprima, spostamento di una riga, conferma, approvazione, rifiuto, check-in, no-show, note, cancellazione con
+  rimborso o credito secondo la policy salvata; ogni cambio di stato passa dalla macchina a stati e scrive audit ed
+  evento nella stessa transazione; job di scadenza degli hold e di completamento.
+- M3 — clienti (ricerca senza accenti su nome, email, telefono e tag; duplicati 409; esportazione e
+  anonimizzazione GDPR che conservano la contabilità), abbonamenti stagionali con rilascio dei giorni, revoca e
+  rivendita con credito dall'istantanea della policy.
+- M3 — pagamenti manuali con driver `manual`, `Idempotency-Key`, scorporo IVA dall'istantanea del prezzo, rimborsi
+  entro il pagato, vendite di cassa; conferma della prenotazione `held` nella transazione del pagamento quando
+  l'acconto è raggiunto; cassa con una sola sessione aperta per registratore, movimenti, chiusura con conteggio,
+  differenza e riepilogo Z; documenti fiscali numerati per giorno e corrispettivi giornalieri o mensili in JSON e
+  CSV (BOM, `;`, virgola decimale, intestazioni in italiano).
+- M3 — flusso SSE con ripresa da `Last-Event-ID` (`sse.ReplayBus`, sempre attivo), keep-alive e disconnessione dei
+  client in ritardo; `seed demo` aggiunge 40 clienti fittizi, 25 abbonamenti, circa 70 prenotazioni, rilasci con
+  rivendite, incassi e due sessioni di cassa attraverso i casi d'uso di M3.
+- M3 — pannello: pagina Oggi (occupazione, arrivi, check-in, incassi, saldi, righe da assegnare), mappa operativa con
+  stati, ricerca, scheda della postazione e spostamento con anteprima, calendario planning in SVG con trascinamento
+  e tastiera, elenco e dettaglio prenotazioni, foglio "Nuova prenotazione" con mini mappa e anteprima del prezzo,
+  clienti, abbonamenti con calendario dei rilasci, cassa e corrispettivi; italiano, inglese, tedesco e francese.
+- M3 — test di accettazione `internal/acceptance`: giornata simulata da 476 operazioni via API (100 prenotazioni
+  parallele sulla stessa postazione, 50 hold paralleli sullo stesso pool, 10 ripetizioni dello stesso pagamento)
+  con verifica sul database di allocazioni, pool, prenotazioni, incassi, cassa, corrispettivi, audit, outbox e
+  flusso SSE, su SQLite e PostgreSQL; 28 test `TestConcurrency_*`; test Playwright della mappa operativa, del foglio
+  "Nuova prenotazione" e della chiusura di cassa.
+
 - M3 — contratto API (clienti, prenotazioni con anteprima e azioni di stato, hold, disponibilità, vista operativa del
   giorno, planning, blocchi, abbonamenti e rilasci, pagamenti manuali e rimborsi, vendite di cassa, sessioni di cassa,
   corrispettivi JSON/CSV) con nuovi tipi di errore `pool_exhausted`, `quota_exceeded`, `invalid_transition`,
   `cash_session_closed`, `cash_session_already_open` e `conflicts`; migrazione 00003 per SQLite e PostgreSQL (ADR
   0010); flusso SSE con nomi di evento per topic (`booking.changed`, `allocation.changed`, `hold.changed`,
   `cash.changed`); pannello con le sezioni Oggi, Mappa, Prenotazioni, Calendario, Clienti, Abbonamenti e Cassa per
-  stabilimento. Le operazioni rispondono `501 not_implemented` finché non vengono implementate.
+  stabilimento.
 
 - Pannello e pagina di prenotazione con UI kit shadcn/ui (ADR 0009): barra laterale con selettore dello stabilimento e menu utente, breadcrumb, palette comandi (Ctrl/⌘+K), tema chiaro/scuro/sistema, toast; tabelle con ordinamento e filtro, pannelli laterali di modifica, calendari e selettori di date gg/MM/aaaa in italiano al posto di `<input type="date">`, importi con `MoneyInput`; editor della mappa con barra degli strumenti a icone, zoom fino al 400%, legenda e pannello proprietà; stagioni con linea temporale e calendario, chiusure su calendario, simulatore con grafico e dettaglio per giorno; pagina pubblica mobile-first con passo "Quando" e selettore del periodo.
 - Controllo `web/scripts/css-guard.mjs` in `npm run lint`: rifiuta fogli di stile diversi dal tema (anche in `public/` e `.html`), CSS-in-JS, `style={…}` e stili programmatici fuori dalle esenzioni elencate (geometria della mappa, variabili del tema, iframe dell'embed), valori arbitrari di Tailwind che aggirano il tema (colori, `text-[10px]`, proprietà) e i vecchi token `--ar-*`.

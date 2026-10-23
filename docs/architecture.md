@@ -76,7 +76,7 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/domain/event` | Tipi di evento, scrittura nell'outbox, dispatcher verso sink, webhook in uscita e SSE | |
 | `internal/domain/auth` | Utenti, membership, ruoli e permessi (spec 16), sessioni, TOTP, chiavi API | `x/crypto` |
 | `internal/store` | Repository Bun; **unico posto con SQL**; ogni query operativa filtra per `establishment_id` | `bun` |
-| `internal/jobs` | Job runner in-process: rilascio hold scaduti (30 s), dispatch outbox, riconciliazione pagamenti (15 min), webhook in uscita con backoff, backup | `clock` |
+| `internal/jobs` | Job runner in-process: job di base (dispatch outbox, webhook in uscita con backoff, pulizia sessioni e chiavi di idempotenza) più i job dei servizi registrati dalla composizione (rilascio hold scaduti ogni 30 s, scadenza e completamento prenotazioni, emissione documenti fiscali); riconciliazione pagamenti e backup in M4/M5 | `clock` |
 | `internal/migrations/sqlite`, `internal/migrations/postgres` | Migrazioni goose per dialetto, stessa numerazione | — |
 | `internal/clock` | `Clock` iniettabile (`System`, `Fake`) | — |
 | `internal/money` | `Cents` (`int64`), arrotondamento half-even, scorporo IVA | — |
@@ -165,6 +165,11 @@ draft ─▶ held ─▶ pending_payment ─▶ confirmed ─▶ checked_in ─�
 - La consegna è almeno una volta: i consumatori sono idempotenti sull'`id` dell'evento.
 - Per più istanze in parallelo, `ext.EventBus` permette di usare `LISTEN/NOTIFY` di PostgreSQL al
   posto del broker in memoria.
+- Il bus è sempre avvolto in `sse.ReplayBus` (decorator, `internal/http/sse`): tiene in memoria gli
+  ultimi eventi per stabilimento, così un pannello che si riconnette con `Last-Event-ID` riceve una sola
+  volta quelli persi; se l'id non è più nella cronologia (o la ripresa arriva su un'altra istanza) il
+  client ricarica i dati. Il nome dell'evento SSE è il topic (`booking.changed`, `allocation.changed`,
+  `hold.changed`, `cash.changed`) e `data` contiene solo id, date e postazioni (INV-45).
 
 ## 5. Motore di disponibilità (spec 7, ADR 0003)
 
@@ -179,6 +184,25 @@ draft ─▶ held ─▶ pending_payment ─▶ confirmed ─▶ checked_in ─�
 - **Quote online:** `disponibili_online = min(liberi_totali, quota - venduti_online)` per data e fascia.
 - **Abbonati:** allocazioni `season`; i rilasci le rimuovono per le date indicate (`season_releases`).
 - La violazione del vincolo è tradotta in `ErrSpotUnavailable` con le date in conflitto.
+- **Implementazione (M3, `internal/domain/inventory`):** core funzionale e guscio imperativo. `plan.go`
+  è puro (righe da inserire, domande ai pool, quote) a partire da un'istantanea letta una volta;
+  `allocate.go` la applica nella transazione del chiamante (`bun.IDB`): `INSERT … ON CONFLICT DO
+  NOTHING` sulle postazioni (se entrano meno righe del previsto le righe in conflitto vengono rilette e
+  restituite tutte come `ConflictError`, senza interrompere la transazione PostgreSQL), `UPDATE`
+  condizionale sui pool con una riga in `pool_allocations` per ogni variazione. Gli hold scaduti sulle
+  risorse toccate vengono eliminati prima dell'inserimento (INV-05), così il job di pulizia può arrivare
+  tardi. `Check` esegue lo stesso piano in sola lettura per anteprime e dry run, anche senza un
+  proprietario (anteprima di una prenotazione non ancora creata).
+- **Composizione (M3):** `internal/app/m3.go` è l'unico punto che conosce tutti i servizi operativi.
+  Ogni consumatore dichiara la porta che gli serve (ports & adapters); gli adattatori senza stato
+  `booking.Ledger` e `pass.Resale` spezzano i cicli pagamento ↔ prenotazione e prenotazione ↔
+  abbonamento, e `payment.SetConfirmer(bookings)` chiude il giro: una prenotazione `held` pagata alla
+  cassa viene confermata nella transazione del pagamento (driver `manual`, INV-19). I servizi
+  contribuiscono i propri job (`inventory.sweep_expired_holds`, `bookings.expire_holds`,
+  `bookings.complete`, `fiscal.issue_pending`).
+- **Verifica di sistema:** `internal/acceptance` avvia l'applicazione reale con `clock.Fake`, la usa
+  solo attraverso l'API (oltre 450 operazioni, raffiche concorrenti) e controlla le invarianti sul
+  database, su SQLite e PostgreSQL.
 
 ## 6. Motore dei prezzi (spec 8, ADR 0004)
 

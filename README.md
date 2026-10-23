@@ -11,7 +11,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fcoste360%2Farenile-2496ED?logo=docker&logoColor=white)](https://github.com/coste360/arenile/pkgs/container/arenile)
 [![SQLite | PostgreSQL](https://img.shields.io/badge/DB-SQLite%20%7C%20PostgreSQL-003B57?logo=sqlite&logoColor=white)](#architettura)
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
-[![Stato: M1-M2 completate, M3 in arrivo](https://img.shields.io/badge/stato-M1%E2%80%93M2%20inventario%20e%20prezzi-orange.svg)](#roadmap)
+[![Stato: M0-M3 completate, M4 in arrivo](https://img.shields.io/badge/stato-M0%E2%80%93M3%20prenotazioni%20e%20cassa-orange.svg)](#roadmap)
 
 [Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-a-codice-sorgente-disponibile) ·
 [Funzionalità](#funzionalità) ·
@@ -27,7 +27,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 ---
 
 > [!IMPORTANT]
-> **Stato del progetto: fondamenta (M0), inventario e mappa (M1), prezzi e policy (M2) completati nel ramo di sviluppo (non ancora pubblicato); prossima milestone M3 (prenotazioni e cassa). Nessuna versione ancora rilasciata.**
+> **Stato del progetto: fondamenta (M0), inventario e mappa (M1), prezzi e policy (M2), prenotazioni dal pannello e cassa (M3) completati nel ramo di sviluppo (non ancora pubblicato); prossima milestone M4 (pagina di prenotazione online e pagamenti con Stripe). Nessuna versione ancora rilasciata.**
 > Arenile non è ancora pronto per la produzione. Le funzionalità descritte in questa pagina sono la roadmap della [specifica tecnica](docs/spec/README.md): la [tabella di stato](#stato-delle-funzionalità) indica con precisione cosa è disponibile, cosa è in sviluppo e cosa è pianificato. Se gestisci un lido e vuoi provarlo per la stagione, segui il repository (*Watch → Releases*) per essere avvisato al primo rilascio.
 
 **Arenile** è un **software gratuito per la gestione di stabilimenti balneari, con codice sorgente disponibile**, lidi, spiagge attrezzate e piscine. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
@@ -132,7 +132,7 @@ Panoramica delle aree funzionali previste dalla specifica. Lo stato di ciascuna 
 
 Legenda: **Disponibile** = rilasciato e utilizzabile · **Completato** = implementato e coperto da test nel ramo di sviluppo, non ancora pubblicato né rilasciato · **In sviluppo** = lavori in corso nella milestone indicata · **Pianificato** = previsto dalla specifica, non ancora iniziato.
 
-Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono completate le fondamenta (M0), l'inventario con l'editor della mappa e la configurazione guidata (M1) e la configurazione di prezzi e policy (M2): un gestore può creare uno stabilimento, configurare un lido di 8 file da 15 posti partendo da un modello, generare il listino e verificarne la copertura. Prenotazioni e cassa arrivano con M3.
+Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono completate le fondamenta (M0), l'inventario con l'editor della mappa e la configurazione guidata (M1), la configurazione di prezzi e policy (M2) e il **gestionale operativo del lido** (M3): dal pannello si prenotano ombrelloni e lettini sulla mappa operativa o sul calendario planning, si gestiscono clienti, abbonamenti stagionali e rilasci dei giorni, si incassa in contanti o con carta nella cassa con apertura e chiusura, e si esportano i corrispettivi per il commercialista. La mappa si aggiorna in tempo reale su tutte le postazioni di lavoro. La prenotazione online da parte dei clienti e i pagamenti con Stripe arrivano con M4.
 
 | Area | Funzionalità | Milestone | Stato |
 |---|---|:-:|---|
@@ -148,10 +148,10 @@ Ad oggi **nessuna versione è stata rilasciata**. Nel ramo di sviluppo sono comp
 | Mappa | Editor della mappa (annulla/ripeti, allineamento, rinumerazione, conflitti di versione), generatore di file, zone, postazioni, decorazioni, pool | M1 | Completato |
 | Catalogo | Componenti, pack, extra; configurazione guidata con 4 modelli e listino rapido | M1 | Completato |
 | Prezzi | Regole di prezzo, prezzi a durata fissa, codici promo, convenzioni, policy di prenotazione, simulatore, matrice di listino (esportazione CSV), verifica di copertura, copia di stagione | M2 | Completato |
-| Prenotazioni | Motore di disponibilità con allocazioni, hold, pool e quote | M3 | Pianificato |
-| Pannello | Vista operativa della mappa, calendario planning, clienti, abbonamenti e rilasci | M3 | Pianificato |
-| Cassa | Pagamenti manuali, cassa con apertura/chiusura, esportazione corrispettivi | M3 | Pianificato |
-| Tempo reale | Aggiornamento della mappa via SSE | M3 | Pianificato |
+| Prenotazioni | Motore di disponibilità con allocazioni, hold, pool e quote; prenotazioni dal pannello con anteprima del prezzo, modifiche, spostamenti, cancellazioni con rimborso o credito | M3 | Completato |
+| Pannello | Pagina "Oggi", vista operativa della mappa, calendario planning, clienti (ricerca, esportazione e anonimizzazione GDPR), abbonamenti e rilasci con rivendita | M3 | Completato |
+| Cassa | Pagamenti manuali, rimborsi, vendite di cassa, cassa con apertura/chiusura e riepilogo Z stampabile, esportazione corrispettivi CSV/JSON | M3 | Completato |
+| Tempo reale | Aggiornamento della mappa via SSE con ripresa dopo la riconnessione (`Last-Event-ID`) | M3 | Completato |
 | Pagina pubblica | Booking online (posto, zona, quantità), widget `embed.js`, tema | M4 | Pianificato |
 | Pagamenti | Driver Stripe (Checkout), webhook, riconciliazione, rimborsi | M4 | Pianificato |
 | Clienti | Link magico, email transazionali, QR, `.ics`, assegnazione automatica | M4 | Pianificato |
@@ -455,8 +455,8 @@ Il dettaglio con i criteri di accettazione è nella sezione 28 della [specifica]
 - [x] **M0 — Fondamenta**: repository, CI, Docker, OpenAPI iniziale, configurazione, migrazioni per SQLite e PostgreSQL, CLI, autenticazione e ruoli, audit log, outbox, job runner, supporto agli agenti AI. *Accettazione:* `docker compose up` avvia un'istanza vuota e `arenile admin create` permette il login.
 - [x] **M1 — Inventario e mappa** *(implementata; accettazione parziale: il percorso completo, dal nuovo stabilimento al listino, è verificato da un test end-to-end Playwright, mentre il tempo impiegato da un gestore reale non è ancora stato misurato)*: stagioni e periodi, editor della mappa con generatore di file, catalogo pack ed extra, configurazione guidata. *Accettazione:* un lido di 8 file da 15 posti configurato in meno di 15 minuti.
 - [x] **M2 — Prezzi e policy** *(completata: oltre 400 casi di test del motore prezzi)*: motore prezzi completo, prezzi a durata fissa, promo e convenzioni, simulatore e matrice di listino, policy. *Accettazione:* almeno 150 casi di test del motore prezzi.
-- [ ] **M3 — Prenotazioni dal pannello e cassa** *(prossima)*: motore di disponibilità, vista operativa, planning, clienti, abbonamenti e rilasci, cassa, corrispettivi, SSE. *Accettazione:* test di concorrenza superati, giornata simulata da 300 operazioni senza incoerenze.
-- [ ] **M4 — Pagina pubblica e pagamenti online (MVP pubblico)**: booking online, `embed.js`, tema, Stripe, link magico, email, QR e `.ics`. *Accettazione:* prenotazione completa da smartphone in un iframe su dominio esterno in meno di 2 minuti.
+- [x] **M3 — Prenotazioni dal pannello e cassa** *(completata: 28 test di concorrenza da almeno 100 tentativi paralleli e una giornata simulata da oltre 450 operazioni, su SQLite e PostgreSQL, senza incoerenze tra allocazioni, prenotazioni e incassi; manca ancora la prova sul campo in uno stabilimento reale)*: motore di disponibilità, vista operativa, planning, clienti, abbonamenti e rilasci, cassa, corrispettivi, SSE. *Accettazione:* test di concorrenza superati, giornata simulata da 300 operazioni senza incoerenze.
+- [ ] **M4 — Pagina pubblica e pagamenti online (MVP pubblico)** *(prossima)*: booking online, `embed.js`, tema, Stripe, link magico, email, QR e `.ics`. *Accettazione:* prenotazione completa da smartphone in un iframe su dominio esterno in meno di 2 minuti.
 - [ ] **M5 — Completamento della stagione**: rinnovi, lista d'attesa, crediti, report, PWA offline, webhook, chiavi API, traduzioni.
 - **Dopo l'MVP**: Satispay e altri provider, driver per registratori telematici, WhatsApp e SMS, app per lo staff in spiaggia, bar e ristorante con addebito sulla postazione.
 

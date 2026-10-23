@@ -25,52 +25,58 @@ concorrenza `TestConcurrency_*` con `make test-race`, cioè `go test -race -tags
 Per ogni `(spot_id, date, slot)` esiste al più una riga in `spot_allocations`, anche con 100 richieste
 parallele sulla stessa postazione, su SQLite e PostgreSQL. È garantita dal vincolo
 `unique(spot_id, date, slot)`, non da controlli applicativi.
-Verificata da: `TestConcurrency_SpotHold_NoDoubleAllocation` (`internal/domain/availability`, tag `integration`). Stato: planned.
+Verificata da: `TestConcurrency_SpotAllocation`, `TestConcurrency_SpotHold_NoDoubleAllocation`, `TestConcurrency_HoldConversion` (`internal/domain/inventory`), `TestConcurrency_CreateSameSpot`, `TestConcurrency_CreateSameSpot_RealInventory` (`internal/domain/booking`), `TestConcurrency_SeasonReleaseSameDay` (`internal/domain/pass`), tutti con tag `integration` e almeno 100 tentativi paralleli. Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-02 — Il pool non supera la capacità effettiva.**
 Per ogni `(pool_id, date, slot)`: `0 <= used`, `0 <= held` e `used + held <= capacità effettiva`
 (capacità del pool corretta da `capacity_overrides`).
-Verificata da: `TestConcurrency_PoolConsume_NeverExceedsCapacity`, `TestPoolConsume_CapacityOverride`. Stato: planned.
+Verificata da: `TestConcurrency_PoolConsume_NeverExceedsCapacity`, `TestConcurrency_PoolUsage`, `TestPoolConsume_CapacityOverride` (`internal/domain/inventory`, tag `integration`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-03 — `pool_usage` coincide con il dettaglio.**
 Per ogni `(pool_id, date, slot)`: `used` = somma delle `quantity` di `pool_allocations` con `kind=booking`,
 `held` = somma di quelle `kind=hold` non scadute (a meno di hold scaduti non ancora ripuliti).
-Verificata da: `TestPoolUsage_MatchesAllocations` (property test `rapid`, tag `integration`). Stato: planned.
+Verificata da: `TestPoolUsage_MatchesAllocations` (`internal/domain/inventory`, property test `rapid`, tag `integration`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-04 — Una postazione è occupata se e solo se esiste un'allocazione valida.**
 La disponibilità calcolata per `(spot, date, slot)` è `unavailable` se e solo se esiste una riga in
 `spot_allocations` con `kind` ∈ {`booking`, `block`, `season`} oppure `kind = hold` con `expires_at > now`.
-Verificata da: `TestAvailabilityQuery_ReflectsAllocations`. Stato: planned.
+Verificata da: `TestAvailabilityQuery_ReflectsAllocations`, `TestOperationsDay_StatesAndTotals` (`internal/domain/inventory`, tag `integration`). Stato: implemented.
 
 **INV-05 — Gli hold scaduti non bloccano mai le vendite.**
 Un hold con `expires_at <= now` viene ignorato e ripulito al momento del conflitto, anche se il job di
 rilascio non è ancora passato.
-Verificata da: `TestSpotHold_ExpiredHoldIsReclaimed` (con `clock.Fake`). Stato: planned.
+Verificata da: `TestSpotHold_ExpiredHoldIsReclaimed` (con `clock.Fake`), `TestConcurrency_HoldSweeper`, `TestHolds_LifecycleAndSweeper` (`internal/domain/inventory`, tag `integration`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-06 — `expires_at` solo sugli hold.**
 `spot_allocations.expires_at` e `pool_allocations.expires_at` sono non nulli se e solo se `kind = hold`;
 `bookings.hold_expires_at` è valorizzato solo negli stati `held`, `pending_payment`, `awaiting_approval`.
-Verificata da: `TestBookingConfirm_ClearsHoldExpiry`. Stato: planned.
+Verificata da: `TestBookingConfirm_ClearsHoldExpiry` (`internal/domain/booking`), `TestInventory_ConfirmExtendRelease` (`internal/domain/inventory`), tag `integration`. Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-07 — Giorno intero occupa entrambe le fasce.**
 Una riga con `slots = FULL` ha allocazioni sia `AM` sia `PM` per ogni data dell'intervallo
 (`starts_on`..`ends_on` inclusivi), escluse le date di chiusura.
-Verificata da: `TestSpotHold_FullDayAllocatesBothSlots`. Stato: planned.
+Verificata da: `TestSpotHold_FullDayAllocatesBothSlots` (`internal/domain/inventory`, tag `integration`). Stato: implemented.
 
 **INV-08 — Capacità delle zone `zone`.**
 Per ogni zona in modalità `zone`, data e fascia, le righe assegnate più quelle `pending` non superano il
 numero di postazioni attive della zona.
-Verificata da: `TestAutoAssign_NeverExceedsZoneCapacity` (property test `rapid`). Stato: implemented (parte pura; il vincolo DB è planned).
+Verificata da: `TestAutoAssign_NeverExceedsZoneCapacity` (property test `rapid`), `TestAutoAssign_PendingLines` (`internal/domain/inventory`) e `TestBookingAutoAssign_PendingZoneLines` (`internal/domain/booking`), tag `integration`. Stato: partial (le righe `pending` consumano il pool implicito della zona con l'`UPDATE` condizionale; un blocco su una postazione di una zona `zone` non riduce ancora quel pool, quindi una riga pending può restare senza posto assegnabile).
 
 **INV-09 — Quota online rispettata.**
 Per le zone con `online_quota`, le vendite del canale `online` per data e fascia non superano la quota;
 il canale `desk` la ignora.
-Verificata da: `TestAvailability_OnlineQuota`, `TestConcurrency_OnlineQuota`. Stato: partial (`TestAvailability_OnlineQuota` implementato; test di concorrenza planned).
+Verificata da: `TestAvailability_OnlineQuota` (`internal/domain/availability`), `TestInventory_OnlineQuota`, `TestConcurrency_OnlineQuota` (`internal/domain/inventory`, tag `integration`). Stato: implemented. Nota: il motore applica la quota a ogni canale diverso da `desk` (quindi anche `api`), come la funzione pura `availability`; l'ADR 0010 §4 indica invece che anche `api` la ignora: decisione aperta da allineare.
 
 **INV-10 — Rilasci degli abbonati coerenti.**
 Per ogni `season_release` non revocata, non esiste un'allocazione `season` della stessa riga per quella
 data e fascia; `resold_booking_line_id` è valorizzato solo se esiste un'allocazione `booking` di quella riga.
-Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations`. Stato: planned.
+Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations` (`internal/domain/inventory` e `internal/domain/pass`), `TestConcurrency_SeasonReleaseSameDay`, `TestPassFlow_RealServices` (`internal/domain/pass`), tag `integration`. Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 ## Prezzi (spec 8)
 
@@ -107,35 +113,37 @@ Verificata da: `TestVATSplit_SumsToGross`, `TestVATSplit_Table` (`internal/money
 **INV-17 — Solo transizioni di stato ammesse.**
 Lo stato di una prenotazione cambia solo lungo gli archi della spec 10.2; ogni altra transizione
 restituisce un errore tipizzato e non modifica nulla.
-Verificata da: `TestBookingTransitions_OnlyAllowed` (tabella completa stati × azioni). Stato: partial (tabella implementata; verifica nel servizio planned).
+Verificata da: `TestBookingTransitions_OnlyAllowed` (tabella completa stati × azioni), `TestBookingTransitions_ServiceActions` (ogni azione del servizio contro la macchina a stati, 409 `invalid_transition` senza scritture). Stato: implemented.
 
 **INV-18 — Audit e outbox nella stessa transazione.**
 Ogni transizione di stato scrive una riga in `audit_log` e un evento in `outbox_events` nella stessa
 transazione: se la transazione fallisce non resta nessuna delle tre scritture.
-Verificata da: `TestBookingService_AuditAndOutboxAtomic` (tag `integration`). Stato: planned (la primitiva è già verificata da `TestOutbox_SameTransactionSemantics`; manca il servizio prenotazioni, M2).
+Verificata da: `TestBookingService_AuditAndOutboxAtomic` (`internal/domain/booking`, tag `integration`), `TestPaymentService_AtomicRollback` (`internal/domain/payment`), `TestOutbox_SameTransactionSemantics` (primitiva). Stato: implemented.
 
 **INV-19 — Conferma solo dal pagamento.**
 Una prenotazione online passa a `confirmed` solo da un webhook verificato del provider o dal driver
 `manual`; nessun endpoint pubblico chiamato dal browser può confermarla.
-Verificata da: `TestPublicBooking_ReturnURLDoesNotConfirm`, `TestPaymentWebhook_ConfirmsBooking`. Stato: planned.
+Verificata da: `TestPaymentService_ConfirmsOnDeposit` e `TestBookingRealServices_DeskDay` (conferma dal driver `manual` nella transazione del pagamento, tag `integration`); `TestPublicBooking_ReturnURLDoesNotConfirm` e `TestPaymentWebhook_ConfirmsBooking` arrivano con la pagina pubblica e Stripe (M4). Stato: partial.
 
 **INV-20 — Risorse coerenti con lo stato.**
 Prenotazioni `draft`, `expired`, `cancelled`, `rejected` non hanno allocazioni; `held`, `pending_payment`,
 `awaiting_approval` hanno solo allocazioni `hold`; `confirmed`, `checked_in` hanno solo allocazioni `booking`
 (o `season`).
-Verificata da: `TestBookingLifecycle_AllocationsMatchStatus` (property test `rapid`, tag `integration`). Stato: planned.
+Verificata da: `TestBookingHeld_ExpiresAndReleases`, `TestBookingCancel_RefundTiersAndCredit`, `TestBookingCreate_ConflictLeavesNoRows`, `TestBookingLifecycle_CheckInNoShowMoveNotes` (`internal/domain/booking`, tag `integration`) e il controllo sul database di `TestAcceptance_SimulatedDay`. Stato: partial (il property test `TestBookingLifecycle_AllocationsMatchStatus` resta planned).
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-21 — Snapshot immutabili dopo la conferma.**
 `price_snapshot` e `policy_snapshot` non cambiano dopo `confirmed`; una modifica genera un nuovo calcolo e
 una differenza da incassare o rimborsare.
-Verificata da: `TestBookingModify_KeepsOriginalSnapshot`. Stato: planned.
+Verificata da: `TestBookingModify_KeepsOriginalSnapshot` (`internal/domain/booking`, tag `integration`). Stato: implemented.
 
 ## Pagamenti e cassa (spec 13, 14)
 
 **INV-22 — `paid_amount` coerente con i pagamenti.**
 `bookings.paid_amount` = somma dei `payments` con `status = succeeded` e `direction = in` meno la somma di
 quelli con `direction = refund` e `status = succeeded`, per la stessa prenotazione.
-Verificata da: `TestPayments_PaidAmountMatchesLedger` (property test, tag `integration`). Stato: planned.
+Verificata da: `TestPayments_PaidAmountMatchesLedger` (`internal/domain/payment`, property test, tag `integration`), `TestConcurrency_PaymentsOnSameBooking`, `TestConcurrency_PaymentIdempotency`. Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-23 — Webhook elaborati una sola volta.**
 Lo stesso evento del provider (stesso ID) produce effetti una sola volta, anche se consegnato più volte
@@ -144,24 +152,26 @@ Verificata da: `TestPaymentWebhook_Deduplicated`, `TestConcurrency_PaymentWebhoo
 
 **INV-24 — Rimborsi entro il pagato.**
 La somma dei rimborsi riusciti di una prenotazione non supera mai la somma dei pagamenti riusciti.
-Verificata da: `TestRefund_NeverExceedsPaid`. Stato: planned.
+Verificata da: `TestRefund_NeverExceedsPaid` (`internal/domain/payment`, 100 rimborsi paralleli, tag `integration`). Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-25 — Chiusura di cassa coerente.**
 Per una sessione chiusa, `difference = counted_totals - expected_totals` (per metodo e in totale) e
 `expected_totals` = fondo cassa + incassi della sessione.
-Verificata da: `TestCashSession_CloseComputesDifference`. Stato: planned.
+Verificata da: `TestCashSession_CloseComputesDifference`, `TestConcurrency_CloseWhilePaying`, `TestConcurrency_OpenCashSession` (`internal/domain/cash`, tag `integration`), `TestSummarize_Scenarios`. Stato: implemented.
+Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 ## Multi-stabilimento, sicurezza, privacy (spec 16, 22, 23)
 
 **INV-26 — Isolamento per stabilimento.**
 Nessuna query operativa viene eseguita senza `establishment_id` preso dal contesto autenticato; un
 utente o una chiave API di uno stabilimento non legge né modifica dati di un altro.
-Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Stato: partial (coperti stabilimenti, utenti, chiavi API, stagioni, mappe, zone, pool, catalogo, listini e policy; le tabelle di M3 aggiungeranno il proprio caso).
+Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Per M3 `TestInventoryService_PermissionsAndTenancy`, `TestBookingService_CrossTenantAndPermissions`, `TestCustomerService_UpdateOptimisticAndPermissions`, `TestPassService_CreateListAndUpdate` (tag `integration`). Stato: implemented (ogni tabella operativa di M3 è letta e scritta solo con `EstablishmentScope`).
 
 **INV-27 — Permessi verificati nel dominio.**
 Ogni operazione di amministrazione verifica il permesso del ruolo (spec 16.1) nel servizio di dominio,
 indipendentemente dall'handler HTTP.
-Verificata da: `TestCan_Matrix`, `TestPrincipal_CanCombinesGrants` (`internal/domain/auth`, tabella ruoli × permessi). Per M1/M2 anche `TestPermissions_Spec16` (`internal/domain/pricingconfig`), `TestCatalogIntegration_Permissions`, `TestTeamService_Permissions`, `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestApply_Permissions` (tag `integration`). Stato: partial (controllo nel dominio per stabilimenti, stagioni, utenti, mappe, catalogo, listini, policy e configurazione guidata; va esteso alle operazioni di M3).
+Verificata da: `TestCan_Matrix`, `TestPrincipal_CanCombinesGrants` (`internal/domain/auth`, tabella ruoli × permessi). Per M1/M2 anche `TestPermissions_Spec16` (`internal/domain/pricingconfig`), `TestCatalogIntegration_Permissions`, `TestTeamService_Permissions`, `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestApply_Permissions` (tag `integration`). Per M3 `TestCashService_Permissions`, `TestPaymentService_DeskFlow`, `TestBookingService_CrossTenantAndPermissions`, `TestInventoryService_PermissionsAndTenancy` (tag `integration`: il cassiere prenota, incassa e gestisce la cassa, il viewer legge soltanto). Stato: implemented.
 
 **INV-28 — API pubblica senza dati dei clienti.**
 Le risposte di disponibilità, calendario, mappa e catalogo non contengono dati personali; i dati di una
@@ -239,3 +249,45 @@ Una zona referenziata da regole di prezzo, codici promozionali, convenzioni, pac
 creati a mano, non si elimina né da sola né con la sua mappa: la richiesta fallisce con 409 e l'errore
 elenca i riferimenti.
 Verificata da: `TestMappingIntegration_ReferencedZoneCannotBeDeleted`, `TestMappingIntegration_DeleteMapRefusesBoundPools` (`internal/domain/mapping`, tag `integration`). Stato: implemented.
+
+## Operatività del pannello e cassa (spec 14, 21, 28 — M3)
+
+**INV-43 — Giornata simulata coerente.**
+Dopo una giornata di almeno 300 operazioni miste dal pannello (prenotazioni, hold e conversioni, scadenze,
+modifiche e spostamenti, cancellazioni con rimborso, abbonamenti con rilasci e rivendite, incassi in contanti
+e con carta, vendite libere, movimenti, apertura e chiusura di cassa, raffiche concorrenti su una postazione,
+su un pool e sulla stessa `Idempotency-Key`) valgono insieme: nessuna postazione allocata due volte per
+`(date, slot)`; `pool_usage` uguale al dettaglio ed entro la capacità; ogni prenotazione confermata ha
+esattamente le allocazioni delle sue righe (meno i giorni rilasciati), le cancellate nessuna; `paid_amount` =
+pagamenti − rimborsi; i totali attesi di ogni sessione di cassa = fondo + incassi ± movimenti e la differenza
+di chiusura = contato − atteso; ogni prenotazione ha audit ed eventi, l'outbox è svuotato e senza dati personali.
+Verificata da: `TestAcceptance_SimulatedDay` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL;
+seme casuale ripetibile con `ARENILE_ACCEPTANCE_SEED`). Stato: implemented (476 operazioni
+con mutazione per esecuzione, in verde su SQLite e PostgreSQL anche con `-race`; un'operazione che risponde 501
+fa fallire il test).
+
+**INV-44 — Corrispettivi uguali agli incassi.**
+L'export dei corrispettivi di un periodo ha totale uguale alla somma dei pagamenti riusciti meno i rimborsi
+riusciti con `business_date` nel periodo (rimborsi come credito inclusi, metodo `credit`); per ogni riga e per
+ogni aliquota `taxable + tax = gross` e la somma delle righe è il totale.
+Verificata da: `TestAcceptance_SimulatedDay` (`checkCorrispettivi`). Stato: implemented
+(`calendar.Date` implementa il `Binder` di oapi-codegen, verificato da `TestDate_BindQueryParameter`).
+
+**INV-45 — Flusso SSE dopo il commit e senza dati personali.**
+Gli eventi arrivano al flusso `GET /api/admin/v1/stream` solo dal dispatcher dell'outbox (dopo il commit), solo
+allo stabilimento del messaggio e a chi può leggerlo; il nome SSE è il topic e `data` contiene solo id, tipo,
+date e postazioni; con `Last-Event-ID` il client riceve una sola volta gli eventi persi (se ancora nella
+cronologia), un client che resta indietro viene disconnesso invece di perdere aggiornamenti in silenzio.
+Verificata da: `TestServe_TopicsAndNoPersonalData`, `TestServe_ResumeFromLastEventID`,
+`TestServe_ResumeUnknownIDStartsLive`, `TestServe_DisconnectsLaggingClient`, `TestReplayBus_Since`,
+`TestConcurrency_ReplayBusPublishSince` (`internal/http/sse`), `TestHTTPIntegration_CrossTenant`
+(`internal/http`, tag `integration`) e il controllo del flusso in `TestAcceptance_SimulatedDay`. Stato: implemented
+(la composizione in `internal/app` avvolge sempre il bus in `sse.NewReplayBus`).
+
+**INV-46 — Dati dimostrativi coerenti e idempotenti.**
+`seed demo` crea clienti con contatti fittizi (`@example.com`, `+39000…`), abbonamenti, prenotazioni, rilasci,
+incassi e sessioni di cassa solo attraverso i casi d'uso di M3, quindi rispetta INV-43; una seconda esecuzione
+non cambia nulla. IVA dimostrativa 22% su stabilimento, pacchetti ed extra.
+Verificata da: `TestSeedDemoOperations_VolumesVATAndIdempotency`, `TestSeedDemoOperations_SkipsMissingUseCases`
+(`internal/domain/setup`, tag `integration`) e `TestAcceptance_DemoSeed` (`internal/acceptance`). Stato: implemented
+(`arenile seed demo` usa lo stesso adattatore `App.DemoOperations`; `TestCLI_Lifecycle` in `cmd/arenile` lo esegue).
