@@ -91,7 +91,7 @@ export function ThemeWarnings({ theme }: { theme: Theme }) {
   const warnings = themeWarnings(theme);
   if (warnings.length === 0) return null;
   return (
-    <Alert role="status" className="border-warning/50 bg-warning/10">
+    <Alert role="status" variant="warning">
       <TriangleAlertIcon aria-hidden="true" />
       <AlertDescription className="text-foreground">
         <ul className="space-y-1">

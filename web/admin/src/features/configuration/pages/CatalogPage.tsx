@@ -115,14 +115,9 @@ export function CatalogPage() {
   );
 }
 
-/** Hint + "Nuovo" button above each tab's table. */
-function TabToolbar({ hint, action }: { hint: string; action: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <p className="max-w-2xl text-sm text-muted-foreground">{hint}</p>
-      {action}
-    </div>
-  );
+/** Hint above each tab's table (the "Nuovo" button sits in the table toolbar). */
+function TabHint({ children }: { children: ReactNode }) {
+  return <p className="max-w-2xl text-sm text-muted-foreground">{children}</p>;
 }
 
 function NameCell({ name, code, icon }: { name: string; code: string; icon?: ReactNode }) {
@@ -219,12 +214,13 @@ function ComponentsTab({ ctx }: { ctx: ConfigContext }) {
   );
   return (
     <div className="space-y-4">
-      <TabToolbar hint={t('catalog.componentsHint')} action={add} />
+      <TabHint>{t('catalog.componentsHint')}</TabHint>
       {list.error ? (
         <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
       ) : (
         <DataTable
           caption={t('catalog.tabs.components')}
+          toolbar={add || undefined}
           columns={columns}
           data={list.data ?? []}
           loading={list.isPending}
@@ -367,7 +363,7 @@ function PacksTab({ ctx }: { ctx: ConfigContext }) {
             })}
           >
             {entries.map(([code, qty]) => (
-              <Badge key={code} variant="secondary" className="gap-1 tabular-nums">
+              <Badge key={code} variant="secondary">
                 {qty}×
                 <ComponentIcon code={code} className="size-3.5" />
               </Badge>
@@ -415,12 +411,13 @@ function PacksTab({ ctx }: { ctx: ConfigContext }) {
   );
   return (
     <div className="space-y-4">
-      <TabToolbar hint={t('catalog.packsHint')} action={add} />
+      <TabHint>{t('catalog.packsHint')}</TabHint>
       {list.error ? (
         <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
       ) : (
         <DataTable
           caption={t('catalog.tabs.packs')}
+          toolbar={add || undefined}
           columns={columns}
           data={items}
           loading={list.isPending}
@@ -767,12 +764,13 @@ function ExtrasTab({ ctx }: { ctx: ConfigContext }) {
   );
   return (
     <div className="space-y-4">
-      <TabToolbar hint={t('catalog.extrasHint')} action={add} />
+      <TabHint>{t('catalog.extrasHint')}</TabHint>
       {list.error ? (
         <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
       ) : (
         <DataTable
           caption={t('catalog.tabs.extras')}
+          toolbar={add || undefined}
           columns={columns}
           data={items}
           loading={list.isPending}

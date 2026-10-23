@@ -76,7 +76,7 @@ export function StepPricelist(props: StepProps) {
   if (!season || categories.length === 0 || periods.length === 0) {
     return (
       <div className="space-y-3">
-        <Alert role="status" className="border-warning/50 bg-warning/10">
+        <Alert role="status" variant="warning">
           <TriangleAlertIcon aria-hidden="true" />
           <AlertDescription className="text-foreground">
             {!season
@@ -146,7 +146,7 @@ function PricelistGrid({
   if (result) {
     return (
       <div className="space-y-4">
-        <Alert role="status" className="border-success/40 bg-success/10">
+        <Alert role="status" variant="success">
           <CircleCheckIcon aria-hidden="true" className="text-success" />
           <AlertDescription className="text-foreground">
             {t('pricelist.created', { count: result.rules.length, replaced: result.replaced })}

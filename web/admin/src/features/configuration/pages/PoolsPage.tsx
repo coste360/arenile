@@ -96,11 +96,8 @@ export function PoolsPage() {
     },
     {
       accessorKey: 'capacity',
-      meta: { label: t('pools.fields.capacity') },
-      header: () => <span className="block text-right">{t('pools.fields.capacity')}</span>,
-      cell: ({ row }) => (
-        <span className="block text-right tabular-nums">{row.original.capacity}</span>
-      ),
+      meta: { label: t('pools.fields.capacity'), align: 'right' },
+      header: t('pools.fields.capacity'),
     },
     {
       id: 'overrides',

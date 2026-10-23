@@ -2,15 +2,6 @@ import type { Establishment } from '@arenile/shared/api';
 import { readableTextColor } from '@arenile/shared/theme';
 import { Button } from '@arenile/shared/ui/button';
 import { Calendar, CalendarDayButton } from '@arenile/shared/ui/calendar';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@arenile/shared/ui/card';
 import { FieldDescription, FieldLegend, FieldSet } from '@arenile/shared/ui/field';
 import { Input } from '@arenile/shared/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
@@ -29,6 +20,7 @@ import {
   FormDialog,
   QueryState,
   RowActions,
+  SectionCard,
   StatusBadge,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -360,13 +352,9 @@ function RatePeriodsCard({
     },
     {
       id: 'days',
-      meta: { label: t('periods.days') },
-      header: () => <span className="block text-right">{t('periods.days')}</span>,
-      cell: ({ row }) => (
-        <span className="block text-right tabular-nums">
-          {row.original.ranges.reduce((n, r) => n + daysBetween(r.from, r.to) + 1, 0)}
-        </span>
-      ),
+      meta: { label: t('periods.days'), align: 'right' },
+      header: t('periods.days'),
+      cell: ({ row }) => row.original.ranges.reduce((n, r) => n + daysBetween(r.from, r.to) + 1, 0),
     },
     {
       id: 'actions',
@@ -388,53 +376,57 @@ function RatePeriodsCard({
   ];
 
   return (
-    <Card role="region" aria-labelledby="periods-title">
-      <CardHeader>
-        <CardTitle id="periods-title">{t('periods.title', { year: season.year })}</CardTitle>
-        <CardDescription>{t('periods.description')}</CardDescription>
-        {!readOnly && (
-          <CardAction>
-            <Button size="sm" onClick={editor.create}>
+    <section aria-labelledby="periods-title">
+      <SectionCard
+        flush
+        titleId="periods-title"
+        title={t('periods.title', { year: season.year })}
+        description={t('periods.description')}
+        actions={
+          !readOnly && (
+            <Button onClick={editor.create}>
               <PlusIcon aria-hidden="true" />
               {t('periods.add')}
             </Button>
-          </CardAction>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <QueryState
-          isLoading={list.isPending}
-          error={list.error}
-          onRetry={() => void list.refetch()}
-        />
-        {list.data && (
-          <Tabs defaultValue="timeline" className="gap-4">
-            <TabsList aria-label={t('periods.views')}>
-              <TabsTrigger value="timeline">
-                <ChartGanttIcon aria-hidden="true" />
-                {t('periods.viewTimeline')}
-              </TabsTrigger>
-              <TabsTrigger value="calendar">
-                <CalendarDaysIcon aria-hidden="true" />
-                {t('periods.viewCalendar')}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="timeline">
-              <PeriodTimeline season={season} periods={items} />
-            </TabsContent>
-            <TabsContent value="calendar">
-              <PeriodCalendar season={season} periods={items} name={name} />
-            </TabsContent>
-          </Tabs>
-        )}
-        {gaps > 0 && (
-          <p role="status" className="flex items-center gap-2 text-sm">
-            <TriangleAlertIcon aria-hidden="true" className="size-4 text-warning" />
-            {t('periods.uncovered', { count: gaps })}
-          </p>
-        )}
+          )
+        }
+      >
+        <div className="space-y-5 px-6 pb-6">
+          <QueryState
+            isLoading={list.isPending}
+            error={list.error}
+            onRetry={() => void list.refetch()}
+          />
+          {list.data && (
+            <Tabs defaultValue="timeline" className="gap-4">
+              <TabsList aria-label={t('periods.views')}>
+                <TabsTrigger value="timeline">
+                  <ChartGanttIcon aria-hidden="true" />
+                  {t('periods.viewTimeline')}
+                </TabsTrigger>
+                <TabsTrigger value="calendar">
+                  <CalendarDaysIcon aria-hidden="true" />
+                  {t('periods.viewCalendar')}
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="timeline">
+                <PeriodTimeline season={season} periods={items} />
+              </TabsContent>
+              <TabsContent value="calendar">
+                <PeriodCalendar season={season} periods={items} name={name} />
+              </TabsContent>
+            </Tabs>
+          )}
+          {gaps > 0 && (
+            <p role="status" className="flex items-center gap-2 text-sm">
+              <TriangleAlertIcon aria-hidden="true" className="size-4 text-warning" />
+              {t('periods.uncovered', { count: gaps })}
+            </p>
+          )}
+        </div>
         {list.data && (
           <DataTable
+            embedded
             caption={t('periods.title', { year: season.year })}
             columns={columns}
             data={items}
@@ -444,7 +436,7 @@ function RatePeriodsCard({
             empty={<EmptyState icon={ChartGanttIcon} title={t('periods.empty')} bordered={false} />}
           />
         )}
-      </CardContent>
+      </SectionCard>
       <FormDialog
         open={editor.open}
         onOpenChange={editor.setOpen}
@@ -463,7 +455,7 @@ function RatePeriodsCard({
           onCancel={editor.close}
         />
       </FormDialog>
-    </Card>
+    </section>
   );
 }
 
@@ -863,93 +855,93 @@ function LocalHolidaysCard({
   } = form;
   return (
     <form noValidate onSubmit={s.submit}>
-      <Card role="region" aria-labelledby="holidays-title">
-        <CardHeader>
-          <CardTitle id="holidays-title" className="flex items-center gap-2">
-            <SunIcon aria-hidden="true" className="size-4 text-muted-foreground" />
-            {t('holidays.title')}
-          </CardTitle>
-          <CardDescription>{t('holidays.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <FormAlert state={s.alert} onReload={s.reload} />
-          <div className="grid gap-8 sm:grid-cols-2">
-            <FieldSet className="gap-3">
-              <FieldLegend variant="label">{t('holidays.dates')}</FieldLegend>
-              {dates.fields.map((f, i) => (
-                <HolidayDate
-                  key={f.id}
-                  control={control}
-                  index={i}
-                  readOnly={readOnly}
-                  onRemove={() => dates.remove(i)}
-                />
-              ))}
-              {!readOnly && (
-                <div>
-                  <Button variant="outline" size="sm" onClick={() => dates.append({ value: '' })}>
-                    <PlusIcon aria-hidden="true" />
-                    {t('holidays.addDate')}
-                  </Button>
-                </div>
-              )}
-            </FieldSet>
-            <FieldSet className="gap-3">
-              <FieldLegend variant="label">{t('holidays.recurring')}</FieldLegend>
-              {recurring.fields.map((f, i) => {
-                const err = errorAt(errors, `recurring_local_holidays.${i}.value`);
-                return (
-                  <div key={f.id} className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        {...fieldAria(`hol-r${i}`, err)}
-                        aria-label={t('holidays.recurringAria', { index: i + 1 })}
-                        placeholder="MM-GG"
-                        maxLength={5}
-                        className="w-28 font-mono"
-                        disabled={readOnly}
-                        {...register(`recurring_local_holidays.${i}.value`)}
-                      />
-                      {!readOnly && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => recurring.remove(i)}
-                          aria-label={t('holidays.removeRecurringAria', { index: i + 1 })}
-                        >
-                          <XIcon aria-hidden="true" />
-                        </Button>
-                      )}
-                    </div>
-                    <FieldError id={`hol-r${i}`} error={err} />
+      <section aria-labelledby="holidays-title">
+        <SectionCard
+          titleId="holidays-title"
+          icon={SunIcon}
+          title={t('holidays.title')}
+          description={t('holidays.description')}
+          footer={
+            !readOnly && (
+              <Button type="submit" disabled={s.pending}>
+                {s.pending && <Spinner />}
+                {t('common.actions.save', { ns: 'translation' })}
+              </Button>
+            )
+          }
+        >
+          <div className="space-y-4">
+            <FormAlert state={s.alert} onReload={s.reload} />
+            <div className="grid gap-8 sm:grid-cols-2">
+              <FieldSet className="gap-3">
+                <FieldLegend variant="label">{t('holidays.dates')}</FieldLegend>
+                {dates.fields.map((f, i) => (
+                  <HolidayDate
+                    key={f.id}
+                    control={control}
+                    index={i}
+                    readOnly={readOnly}
+                    onRemove={() => dates.remove(i)}
+                  />
+                ))}
+                {!readOnly && (
+                  <div>
+                    <Button variant="outline" size="sm" onClick={() => dates.append({ value: '' })}>
+                      <PlusIcon aria-hidden="true" />
+                      {t('holidays.addDate')}
+                    </Button>
                   </div>
-                );
-              })}
-              {!readOnly && (
-                <div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => recurring.append({ value: '' })}
-                  >
-                    <PlusIcon aria-hidden="true" />
-                    {t('holidays.addRecurring')}
-                  </Button>
-                </div>
-              )}
-              <FieldDescription>{t('holidays.recurringHint')}</FieldDescription>
-            </FieldSet>
+                )}
+              </FieldSet>
+              <FieldSet className="gap-3">
+                <FieldLegend variant="label">{t('holidays.recurring')}</FieldLegend>
+                {recurring.fields.map((f, i) => {
+                  const err = errorAt(errors, `recurring_local_holidays.${i}.value`);
+                  return (
+                    <div key={f.id} className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          {...fieldAria(`hol-r${i}`, err)}
+                          aria-label={t('holidays.recurringAria', { index: i + 1 })}
+                          placeholder="MM-GG"
+                          maxLength={5}
+                          className="w-28 font-mono"
+                          disabled={readOnly}
+                          {...register(`recurring_local_holidays.${i}.value`)}
+                        />
+                        {!readOnly && (
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => recurring.remove(i)}
+                            aria-label={t('holidays.removeRecurringAria', { index: i + 1 })}
+                          >
+                            <XIcon aria-hidden="true" />
+                          </Button>
+                        )}
+                      </div>
+                      <FieldError id={`hol-r${i}`} error={err} />
+                    </div>
+                  );
+                })}
+                {!readOnly && (
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => recurring.append({ value: '' })}
+                    >
+                      <PlusIcon aria-hidden="true" />
+                      {t('holidays.addRecurring')}
+                    </Button>
+                  </div>
+                )}
+                <FieldDescription>{t('holidays.recurringHint')}</FieldDescription>
+              </FieldSet>
+            </div>
           </div>
-        </CardContent>
-        {!readOnly && (
-          <CardFooter className="justify-end border-t">
-            <Button type="submit" disabled={s.pending}>
-              {s.pending && <Spinner />}
-              {t('common.actions.save', { ns: 'translation' })}
-            </Button>
-          </CardFooter>
-        )}
-      </Card>
+        </SectionCard>
+      </section>
     </form>
   );
 }

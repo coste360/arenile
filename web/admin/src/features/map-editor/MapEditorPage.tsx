@@ -5,14 +5,13 @@ import {
   AlertDescription,
   AlertTitle,
   Badge,
-  Button,
   ButtonGroup,
   ScrollArea,
   Separator,
   Spinner,
   Skeleton,
 } from '@arenile/shared/ui';
-import { FormDialog, PageHeader, QueryState } from '@arenile/shared/ui/patterns';
+import { BackLink, FormDialog, PageHeader, QueryState } from '@arenile/shared/ui/patterns';
 import {
   ArrowLeftIcon,
   CheckIcon,
@@ -121,12 +120,12 @@ export function MapEditorPage() {
     <section aria-labelledby="page-title" className="space-y-4">
       <PageHeader
         eyebrow={
-          <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
+          <BackLink>
             <Link to="/e/$establishmentId/maps" params={{ establishmentId: ctx.establishmentId }}>
               <ArrowLeftIcon aria-hidden="true" />
               {t('editor.backToList')}
             </Link>
-          </Button>
+          </BackLink>
         }
         title={
           docQuery.data

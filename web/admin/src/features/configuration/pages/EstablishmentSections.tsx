@@ -1,18 +1,11 @@
 import type { Establishment } from '@arenile/shared/api';
 import { Button } from '@arenile/shared/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@arenile/shared/ui/card';
 import { FieldDescription, FieldSeparator } from '@arenile/shared/ui/field';
 import { Input } from '@arenile/shared/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
 import { Spinner } from '@arenile/shared/ui/spinner';
 import { Textarea } from '@arenile/shared/ui/textarea';
+import { SectionCard } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -75,10 +68,10 @@ export interface SectionProps {
   submitLabel?: string;
 }
 
-/** Card with an accessible region name; the save row goes in the footer. */
-function SectionCard({
+/** Shared SectionCard with an accessible region name; the save row goes in the footer. */
+function SettingsCard({
   id,
-  icon: Icon,
+  icon,
   title,
   description,
   children,
@@ -92,19 +85,17 @@ function SectionCard({
   footer?: ReactNode;
 }) {
   return (
-    <Card aria-labelledby={`${id}-title`} role="region">
-      <CardHeader className="flex flex-row items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-on-surface">
-          <Icon aria-hidden="true" className="size-4" />
-        </span>
-        <div className="space-y-1.5">
-          <CardTitle id={`${id}-title`}>{title}</CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </div>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-      {footer}
-    </Card>
+    <section aria-labelledby={`${id}-title`}>
+      <SectionCard
+        titleId={`${id}-title`}
+        icon={icon}
+        title={title}
+        description={description}
+        footer={footer}
+      >
+        {children}
+      </SectionCard>
+    </section>
   );
 }
 
@@ -122,7 +113,7 @@ function SaveRow({
   const { t } = useTranslation();
   if (readOnly) return null;
   return (
-    <CardFooter className="justify-end gap-3 border-t">
+    <>
       {dirty && (
         <span className="mr-auto text-sm text-muted-foreground">
           {t('unsaved', { ns: 'configuration' })}
@@ -132,7 +123,7 @@ function SaveRow({
         {pending && <Spinner />}
         {label ?? t('common.actions.save')}
       </Button>
-    </CardFooter>
+    </>
   );
 }
 
@@ -297,10 +288,12 @@ export function GeneralSection({
   }[part];
   return (
     <form noValidate onSubmit={s.submit}>
-      <SectionCard
+      <SettingsCard
         {...meta}
         footer={
-          <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+          !readOnly && (
+            <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+          )
         }
       >
         <div className="space-y-6">
@@ -313,7 +306,7 @@ export function GeneralSection({
           )}
           {part !== 'details' && languages}
         </div>
-      </SectionCard>
+      </SettingsCard>
     </form>
   );
 }
@@ -349,13 +342,20 @@ export function PublicPageSection({
   return (
     <div className="space-y-6">
       <form noValidate onSubmit={s.submit}>
-        <SectionCard
+        <SettingsCard
           id="public-page"
           icon={GlobeIcon}
           title={t('establishment.publicPage.title')}
           description={t('establishment.publicPage.description')}
           footer={
-            <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+            !readOnly && (
+              <SaveRow
+                readOnly={readOnly}
+                pending={s.pending}
+                dirty={isDirty}
+                label={submitLabel}
+              />
+            )
           }
         >
           <div className="space-y-5">
@@ -385,16 +385,16 @@ export function PublicPageSection({
               />
             </Field>
           </div>
-        </SectionCard>
+        </SettingsCard>
       </form>
-      <SectionCard
+      <SettingsCard
         id="embed"
         icon={CodeIcon}
         title={t('embed.title')}
         description={t('embed.description')}
       >
         <EmbedSnippet slug={establishment.slug} lang={establishment.default_locale} />
-      </SectionCard>
+      </SettingsCard>
     </div>
   );
 }
@@ -477,13 +477,15 @@ export function ThemeSection({
   );
   return (
     <form noValidate onSubmit={s.submit}>
-      <SectionCard
+      <SettingsCard
         id="theme"
         icon={PaletteIcon}
         title={t('theme.title')}
         description={t('theme.description')}
         footer={
-          <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+          !readOnly && (
+            <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} label={submitLabel} />
+          )
         }
       >
         <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
@@ -559,7 +561,7 @@ export function ThemeSection({
             intro={values.intro?.[establishment.default_locale]}
           />
         </div>
-      </SectionCard>
+      </SettingsCard>
     </form>
   );
 }
@@ -594,12 +596,12 @@ export function PricingSettingsSection({
   } = form;
   return (
     <form noValidate onSubmit={s.submit}>
-      <SectionCard
+      <SettingsCard
         id="pricing-settings"
         icon={ReceiptTextIcon}
         title={t('pricingSettings.title')}
         description={t('pricingSettings.description')}
-        footer={<SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} />}
+        footer={!readOnly && <SaveRow readOnly={readOnly} pending={s.pending} dirty={isDirty} />}
       >
         <div className="space-y-5">
           <FormAlert state={s.alert} onReload={s.reload} />
@@ -645,7 +647,7 @@ export function PricingSettingsSection({
             </Field>
           </div>
         </div>
-      </SectionCard>
+      </SettingsCard>
     </form>
   );
 }

@@ -122,7 +122,7 @@ function RowsForm({
   if (result) {
     return (
       <div className="space-y-4">
-        <Alert role="status" className="border-success/40 bg-success/10">
+        <Alert role="status" variant="success">
           <CircleCheckIcon aria-hidden="true" className="text-success" />
           <AlertTitle>{t('rows.applied')}</AlertTitle>
           <AlertDescription>
