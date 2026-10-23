@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { contrastRatio, parseHexColor, relativeLuminance, type Rgb } from './contrast';
-import { DARK_SURFACE, DEFAULT_PRIMARY, resolveTheme } from './theme';
+import { DARK_SURFACE, DEFAULT_PRIMARY, resolveTheme, themeToCssVars } from './theme';
 
 /**
- * WCAG AA of the default theme (styles/globals.css, Arenile brand kit, ADR 0018):
+ * WCAG AA of the default theme (styles/globals.css, Coste360 design system colours, ADR 0018):
  * every text/background token pair of both colour schemes reaches 4.5:1, and
  * the focus ring 3:1 against the page (WCAG 1.4.11).
  */
@@ -79,6 +79,13 @@ const TEXT_PAIRS: [string, string][] = [
   ['sidebar-foreground', 'sidebar'],
   ['sidebar-primary-foreground', 'sidebar-primary'],
   ['sidebar-accent-foreground', 'sidebar-accent'],
+  // Error and success messages (text-destructive, text-success) on the surfaces.
+  ['destructive', 'background'],
+  ['destructive', 'card'],
+  ['destructive', 'muted'],
+  ['destructive', 'accent'],
+  ['success', 'background'],
+  ['success', 'card'],
 ];
 
 describe.each([
@@ -101,6 +108,26 @@ describe.each([
     if (vars === light) expect(contrastRatio(mixed, bg)).toBeGreaterThanOrEqual(4.5);
   });
 
+  it('destructive text reaches AA on its 10% tint (danger badges, menu items)', () => {
+    for (const bg of ['background', 'card']) {
+      const fg = color(vars, 'destructive');
+      const base = color(vars, bg);
+      const tint = {
+        r: fg.r * 0.1 + base.r * 0.9,
+        g: fg.g * 0.1 + base.g * 0.9,
+        b: fg.b * 0.1 + base.b * 0.9,
+      };
+      // Light scheme: text-destructive on bg-destructive/10 (the dark scheme uses lighter text).
+      if (vars === light) expect(contrastRatio(fg, tint)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('input borders reach 3:1 against the page, the cards and the panels (WCAG 1.4.11)', () => {
+    for (const bg of ['background', 'card', 'muted', 'secondary', 'accent']) {
+      expect(contrastRatio(color(vars, 'input'), color(vars, bg))).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it('focus ring reaches 3:1 against the page and the cards', () => {
     for (const bg of ['background', 'card']) {
       expect(contrastRatio(color(vars, 'ring'), color(vars, bg))).toBeGreaterThanOrEqual(3);
@@ -109,10 +136,16 @@ describe.each([
 });
 
 describe('brand defaults', () => {
-  it('uses the kit colours for the primary', () => {
-    expect(light.primary).toBe('#092d62');
-    expect(light.ring).toBe('#0d79ac');
-    expect(dark.primary).toBe('#16cde1');
+  it('uses the Coste360 design system colours', () => {
+    expect(light.primary).toBe('#0b2542');
+    expect(color(light, 'ring')).toEqual(parseHexColor('#185482'));
+    expect(light.foreground).toBe('#0f172a');
+    expect(light['muted-foreground']).toBe('#475569');
+    expect(light.background).toBe('#f8fafc');
+    // Coste360 error one step darker (red-700) for AA on its tint.
+    expect(light.destructive).toBe('#b91c1c');
+    expect(dark.primary).toBe('#38bdf8');
+    expect(dark['primary-foreground']).toBe('#0b2542');
   });
 
   it('DARK_SURFACE is the lightest dark surface behind links', () => {
@@ -122,14 +155,14 @@ describe('brand defaults', () => {
     }
   });
 
-  it('the public page default primary is the brand ocean, AA with its foreground', () => {
-    expect(DEFAULT_PRIMARY).toBe('#0d79ac');
+  it('the public page default primary is Coste360 primary-lighter, AA with its foreground', () => {
+    expect(DEFAULT_PRIMARY).toBe('#185482');
     const t = resolveTheme(null);
     // Selected labels on a primary/10 tint (public page steps) stay AA.
     const tint = {
-      r: 0.15 * 13 + 0.85 * 255,
-      g: 0.15 * 121 + 0.85 * 255,
-      b: 0.15 * 172 + 0.85 * 255,
+      r: 0.15 * 24 + 0.85 * 255,
+      g: 0.15 * 84 + 0.85 * 255,
+      b: 0.15 * 130 + 0.85 * 255,
     };
     expect(contrastRatio(parseHexColor(t.primaryOnSurface) as Rgb, tint)).toBeGreaterThanOrEqual(
       4.5,
@@ -137,5 +170,15 @@ describe('brand defaults', () => {
     expect(
       contrastRatio(parseHexColor(t.primary) as Rgb, parseHexColor(t.primaryForeground) as Rgb),
     ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('the public page focus ring reaches 3:1 in both schemes with the default theme', () => {
+    const vars = themeToCssVars(null);
+    expect(vars).not.toHaveProperty('--ring');
+    const ring = (name: string) => parseHexColor(vars[name] as string) as Rgb;
+    for (const bg of ['background', 'card']) {
+      expect(contrastRatio(ring('--ring-light'), color(light, bg))).toBeGreaterThanOrEqual(3);
+      expect(contrastRatio(ring('--ring-dark'), color(dark, bg))).toBeGreaterThanOrEqual(3);
+    }
   });
 });

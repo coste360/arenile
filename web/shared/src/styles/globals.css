@@ -23,62 +23,73 @@
     'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   /*
-   * Arenile brand kit v1.0 (assets/brand/arenile, ADR 0018): navy #092D62,
-   * ocean #0D79AC, cyan #16CDE1, sand #FFF0D1, text #0B305F. Light scheme:
-   * navy primary, ocean focus ring and links; dark scheme: cyan primary on
-   * navy-tinted surfaces. Every text pair is checked for WCAG AA by
-   * shared/src/theme/brand.test.ts.
+   * Colours aligned to the Coste360 design system (owner decision 2026-10-23,
+   * ADR 0018; source: Coste360 DESIGN.md): primary navy #0b2542, primary-light
+   * #12365f, primary-lighter #185482, sky accent #38bdf8, ink #0f172a / #475569,
+   * surfaces #ffffff / #f8fafc, slate borders. Light scheme: navy primary,
+   * primary-lighter for links and the focus ring (the sky accent fails 3:1 on
+   * white, so it is decorative only); dark scheme (derived, Coste360 has none):
+   * sky primary with navy text on navy surfaces. Every text pair is checked for
+   * WCAG AA by shared/src/theme/brand.test.ts.
    */
-  /* Neutral base: cool zinc with a hint of the brand navy. */
-  --background: oklch(0.985 0.002 247);
-  --foreground: oklch(0.19 0.03 258);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.19 0.03 258);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.19 0.03 258);
+  /* Surfaces and ink (Coste360 surface-subtle, surface, ink). */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
 
-  /* Brand navy. */
-  --primary: #092d62;
+  /* Coste360 primary navy. */
+  --primary: #0b2542;
   --primary-foreground: #ffffff;
   /* Primary used as text/links on surfaces (contrast-adjusted for custom themes:
      applyTheme() writes the light and dark variants, mapped here and under .dark).
-     Default: the brand ocean, a step darker for AA on the muted surfaces. */
-  --primary-on-surface: var(--primary-on-surface-light, #0b6a99);
+     Default: Coste360 primary-lighter, AA on every light surface. */
+  --primary-on-surface: var(--primary-on-surface-light, #185482);
 
-  --secondary: oklch(0.96 0.006 247);
-  --secondary-foreground: oklch(0.25 0.03 255);
-  --muted: oklch(0.96 0.004 247);
-  --muted-foreground: oklch(0.52 0.015 250);
-  /* shadcn "accent" = hover/selected surfaces of menus and ghost buttons. */
-  --accent: oklch(0.95 0.02 235);
-  --accent-foreground: #092d62;
+  /* Slate-100 (Coste360 soft surfaces). */
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  /* Coste360 ink-muted. */
+  --muted-foreground: #475569;
+  /* shadcn "accent" = hover/selected surfaces of menus and ghost buttons:
+     primary-lighter at ~10% on white (Coste360 "primary soft"). */
+  --accent: #e7eef5;
+  --accent-foreground: #0b2542;
   /* Warm sand/amber brand accent (badges, highlights, "presto"). */
   --highlight: oklch(0.84 0.12 80);
   --highlight-foreground: oklch(0.28 0.05 60);
 
-  --destructive: oklch(0.55 0.2 27);
-  --success: oklch(0.55 0.13 155);
-  --warning: oklch(0.75 0.15 75);
-  --border: oklch(0.91 0.006 247);
-  --input: oklch(0.89 0.008 247);
-  /* Brand ocean. */
-  --ring: #0d79ac;
+  /* Coste360 state colours (error, success, warning). */
+  /* Coste360 error one step darker (red-700): #dc2626 misses 4.5:1 as text on
+     its own 10% tint (badges, destructive menu items) and on the accent. */
+  --destructive: #b91c1c;
+  --success: #15803d;
+  --warning: #f59e0b;
+  /* Dividers: Coste360 border-strong. Inputs: solid slate, 3:1 on the page,
+     the cards and the muted/accent surfaces (WCAG 1.4.11). */
+  --border: rgb(148 163 184 / 0.35);
+  --input: #74849b;
+  /* Coste360 primary-lighter: 8:1 on white. */
+  --ring: var(--ring-light, #185482);
 
-  /* Ocean, cyan (a step deeper than the brand cyan for white backgrounds), sand amber, coral, slate. */
-  --chart-1: #0d79ac;
-  --chart-2: #13b3c7;
-  --chart-3: oklch(0.8 0.12 80);
-  --chart-4: oklch(0.65 0.16 30);
-  --chart-5: oklch(0.55 0.03 255);
+  /* Navy/sky family plus amber and red for contrast between series. */
+  --chart-1: #185482;
+  --chart-2: #0ea5e9;
+  --chart-3: #f59e0b;
+  --chart-4: #dc2626;
+  --chart-5: #64748b;
 
-  --sidebar: oklch(0.975 0.006 240);
-  --sidebar-foreground: oklch(0.3 0.03 255);
-  --sidebar-primary: #092d62;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #0b2542;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: oklch(0.935 0.022 235);
-  --sidebar-accent-foreground: #092d62;
-  --sidebar-border: oklch(0.91 0.008 245);
-  --sidebar-ring: #0d79ac;
+  --sidebar-accent: #e7eef5;
+  --sidebar-accent-foreground: #0b2542;
+  --sidebar-border: rgb(148 163 184 / 0.35);
+  --sidebar-ring: #185482;
 
   /* Beach map (spec 11.1). Status colours always come with a text label. */
   --map-sand: #f8edd3;
@@ -143,49 +154,51 @@
 }
 
 .dark {
-  /* Navy-tinted surfaces. */
-  --background: oklch(0.17 0.025 255);
-  --foreground: oklch(0.97 0.003 250);
-  --card: oklch(0.205 0.03 255);
-  --card-foreground: oklch(0.97 0.003 250);
-  --popover: oklch(0.205 0.03 255);
-  --popover-foreground: oklch(0.97 0.003 250);
+  /* Navy surfaces derived from the Coste360 primary scale. */
+  --background: #07192d;
+  --foreground: #f8fafc;
+  --card: #0b2542;
+  --card-foreground: #f8fafc;
+  --popover: #0b2542;
+  --popover-foreground: #f8fafc;
 
-  /* Brand cyan with brand navy text. */
-  --primary: #16cde1;
-  --primary-foreground: #092d62;
-  --primary-on-surface: var(--primary-on-surface-dark, #16cde1);
+  /* Coste360 sky accent with primary navy text. */
+  --primary: #38bdf8;
+  --primary-foreground: #0b2542;
+  --primary-on-surface: var(--primary-on-surface-dark, #38bdf8);
 
-  --secondary: oklch(0.27 0.03 255);
-  --secondary-foreground: oklch(0.97 0.003 250);
-  --muted: oklch(0.25 0.025 255);
-  --muted-foreground: oklch(0.72 0.02 250);
-  --accent: oklch(0.28 0.04 245);
-  --accent-foreground: oklch(0.97 0.003 250);
+  /* Coste360 primary-light and a step between it and the cards. */
+  --secondary: #12365f;
+  --secondary-foreground: #f8fafc;
+  --muted: #102e50;
+  --muted-foreground: #a7b4c6;
+  --accent: #12365f;
+  --accent-foreground: #f8fafc;
   --highlight: oklch(0.78 0.13 78);
   --highlight-foreground: oklch(0.2 0.04 60);
 
-  --destructive: oklch(0.66 0.19 25);
-  --success: oklch(0.7 0.14 155);
-  --warning: oklch(0.8 0.14 80);
+  --destructive: #fc8888;
+  --success: #4ade80;
+  --warning: #fbbf24;
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: #1aa3c9;
+  /* Solid slate-blue: 3:1 on the cards, the page and the secondary/accent panels (WCAG 1.4.11). */
+  --input: #7590b0;
+  --ring: var(--ring-dark, #38bdf8);
 
-  --chart-1: #16cde1;
-  --chart-2: #4d9fd6;
-  --chart-3: oklch(0.8 0.12 80);
-  --chart-4: oklch(0.68 0.16 30);
-  --chart-5: oklch(0.65 0.03 255);
+  --chart-1: #38bdf8;
+  --chart-2: #4d8fc4;
+  --chart-3: #fbbf24;
+  --chart-4: #fc8888;
+  --chart-5: #94a3b8;
 
-  --sidebar: oklch(0.19 0.03 255);
-  --sidebar-foreground: oklch(0.9 0.008 250);
-  --sidebar-primary: #16cde1;
-  --sidebar-primary-foreground: #092d62;
-  --sidebar-accent: oklch(0.27 0.04 248);
-  --sidebar-accent-foreground: oklch(0.97 0.003 250);
+  --sidebar: #081e35;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #0b2542;
+  --sidebar-accent: #12365f;
+  --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: #1aa3c9;
+  --sidebar-ring: #38bdf8;
 
   --map-sand: #3a3428;
   --map-sea: #1d4f6e;
@@ -219,11 +232,13 @@
 
 /* Elements themed by applyTheme() outside <html> (the theme preview of the panel). */
 [data-themed] {
-  --primary-on-surface: var(--primary-on-surface-light, #0b6a99);
+  --primary-on-surface: var(--primary-on-surface-light, #185482);
+  --ring: var(--ring-light, #185482);
 }
 .dark [data-themed],
 [data-themed].dark {
-  --primary-on-surface: var(--primary-on-surface-dark, #16cde1);
+  --primary-on-surface: var(--primary-on-surface-dark, #38bdf8);
+  --ring: var(--ring-dark, #38bdf8);
 }
 
 @theme inline {

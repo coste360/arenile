@@ -33,8 +33,8 @@ export default defineConfig({
         orientation: 'any',
         categories: ['business', 'productivity'],
         background_color: '#ffffff',
-        // Brand navy (Arenile kit, ADR 0018).
-        theme_color: '#092d62',
+        // Coste360 primary navy (ADR 0018).
+        theme_color: '#0b2542',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

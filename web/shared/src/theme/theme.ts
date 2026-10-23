@@ -30,11 +30,11 @@ export interface ResolvedTheme {
   customTexts: Record<string, Record<string, string>>;
 }
 
-/** Brand ocean (Arenile kit): works as a button colour in both schemes. */
-export const DEFAULT_PRIMARY = '#0d79ac';
+/** Coste360 primary-lighter (ADR 0018): AA with white text; ring and links use per-scheme variants. */
+export const DEFAULT_PRIMARY = '#185482';
 export const DEFAULT_ACCENT = '#f2b134';
 /** Lightest surface of the dark scheme behind links (muted / accent tokens of globals.css). */
-export const DARK_SURFACE = '#182c3c';
+export const DARK_SURFACE = '#12365f';
 
 const FONT_STACKS: Record<string, string> = {
   Inter:
@@ -100,9 +100,11 @@ export function resolveTheme(theme: Theme | null | undefined): ResolvedTheme {
 /**
  * CSS custom properties of the shadcn theme (styles/globals.css) overridden by
  * the establishment theme on the public pages: primary, highlight (= theme
- * accent), radius and font. The on-surface colour comes in a light and a
- * dark variant: globals.css maps `--primary-on-surface` to the right one
- * under `.dark`, so an inline value never wins over the colour scheme.
+ * accent), radius and font. The on-surface colour and the focus ring come in
+ * a light and a dark variant: globals.css maps `--primary-on-surface` and
+ * `--ring` to the right one under `.dark`, so an inline value never wins over
+ * the colour scheme (a primary dark enough for white text cannot also reach
+ * 3:1 as a ring on the dark surfaces).
  */
 export function themeToCssVars(
   theme: Theme | ResolvedTheme | null | undefined,
@@ -113,7 +115,8 @@ export function themeToCssVars(
     '--primary-foreground': r.primaryForeground,
     '--primary-on-surface-light': r.primaryOnSurface,
     '--primary-on-surface-dark': r.primaryOnSurfaceDark,
-    '--ring': r.primary,
+    '--ring-light': r.primaryOnSurface,
+    '--ring-dark': r.primaryOnSurfaceDark,
     '--highlight': r.accent,
     '--highlight-foreground': r.accentForeground,
     '--radius': r.radius,
