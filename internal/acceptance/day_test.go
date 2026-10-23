@@ -44,8 +44,10 @@ func TestAcceptance_SimulatedDay(t *testing.T) {
 		d.run()
 		e.runJobs()
 
-		ops := d.c.mutations.Load()
-		t.Logf("operations: %d mutations accepted, %d refused by the server; business refusals: %v", ops, d.c.refused.Load(), d.refusals)
+		ops := d.c.mutations.Load() + d.on.pub.mutations.Load()
+		t.Logf("operations: %d mutations accepted (%d desk, %d public), %d refused by the server; business refusals: %v",
+			ops, d.c.mutations.Load(), d.on.pub.mutations.Load(), d.c.refused.Load()+d.on.pub.refused.Load(), d.refusals)
+		t.Log(d.onlineStats())
 		if ops < minOperations {
 			t.Fatalf("simulated day ran %d accepted operations, want >= %d", ops, minOperations)
 		}
@@ -80,6 +82,8 @@ type day struct {
 	poolBurstOK     int
 	poolBurstWant   int
 	idemPayments    int
+
+	on onlineState // M4: the public page sells the same beach (online_test.go)
 }
 
 type trackedBooking struct {
@@ -128,17 +132,24 @@ func (d *day) run() {
 	d.burstSameSpot(100)
 	d.burstPool(50)
 	d.burstIdempotentPayment(10)
+	d.enableOnline()
+	d.onlineVsDesk(120)
+	d.onlineCheckouts(36)
+	d.onlineZoneBurst(60)
+	d.onlineZoneQuota(40)
 	d.expireHolds()
 	d.rebookExpired(5)
 	d.modifyBookings(15)
 	d.moveBookings(5)
 	d.cancelBookings(20)
 	d.explicitRefunds(5)
+	d.onlineRefunds(4)
 	d.seasonPasses(5, 3)
 	d.counterSales(10)
 	d.cashMovements(4)
 	d.checkIns(10)
 	d.closeAndReopenCash()
+	d.onlineLatePayments()
 	d.readViews()
 }
 

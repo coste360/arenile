@@ -18,6 +18,7 @@ import (
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/config"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/payment/stripe/stripetest"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/store"
@@ -42,6 +43,9 @@ type env struct {
 	clock *clock.Fake
 	srv   *httptest.Server
 	loc   *time.Location
+	// stripe is the fake Stripe API (ARENILE_STRIPE_API_URL) of the online
+	// operations; its clock is the scenario clock.
+	stripe *stripetest.Server
 
 	estID  string
 	es     store.EstablishmentScope
@@ -53,6 +57,10 @@ type env struct {
 	cabinPool  *store.Pool
 	passSpots  []store.Spot // rows A and B
 	dailySpots []store.Spot // rows C..H
+
+	gazeboPack  store.Pack
+	gazeboZone  store.Zone   // turned into a zone-mode zone by the online phase
+	gazeboSpots []store.Spot // its spots
 }
 
 // eachDialect runs fn on SQLite (file, WAL) and, when configured,
@@ -107,6 +115,9 @@ func newEnv(t *testing.T, databaseURL string) *env {
 	t.Helper()
 	ctx := context.Background()
 	dir := t.TempDir()
+	c := clock.NewFake(dayStart)
+	fake := stripetest.New(t)
+	fake.Now = c.Now
 	cfg, err := config.Parse(func(k string) (string, bool) {
 		switch k {
 		case config.EnvDev:
@@ -119,14 +130,18 @@ func newEnv(t *testing.T, databaseURL string) *env {
 			return "error", true
 		case config.EnvDatabaseURL:
 			return databaseURL, databaseURL != ""
+		case config.EnvStripeAPIURL:
+			return fake.URL, true
 		}
 		return "", false
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	c := clock.NewFake(dayStart)
-	a, err := app.New(cfg, app.WithClock(c), app.WithoutSignalHandling(), app.WithLogger(slog.New(slog.DiscardHandler)))
+	// Many customers from one address: the per-IP public limits (spec 17.2)
+	// are raised; the per-establishment checkout limit still applies.
+	a, err := app.New(cfg, app.WithClock(c), app.WithoutSignalHandling(), app.WithLogger(slog.New(slog.DiscardHandler)),
+		app.WithPublicRateLimits(100000, 100000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +167,7 @@ func newEnv(t *testing.T, databaseURL string) *env {
 	if err != nil {
 		t.Fatal(err)
 	}
-	e := &env{t: t, app: a, db: a.DB(), clock: c, srv: srv, loc: loc, estID: seed.EstablishmentID}
+	e := &env{t: t, app: a, db: a.DB(), clock: c, srv: srv, loc: loc, estID: seed.EstablishmentID, stripe: fake}
 	e.loadWorld(ctx)
 	return e
 }
@@ -182,8 +197,11 @@ func (e *env) loadWorld(ctx context.Context) {
 		t.Fatal(err)
 	}
 	for _, p := range packs {
-		if p.Code == setup.PackBase {
+		switch p.Code {
+		case setup.PackBase:
 			e.basePack = p
+		case setup.PackGazebo:
+			e.gazeboPack = p
 		}
 	}
 	extras, err := store.ListAllExtras(ctx, e.db, es)
@@ -204,6 +222,9 @@ func (e *env) loadWorld(ctx context.Context) {
 			e.cabinPool = &pools[i]
 		}
 	}
+	if err := e.db.NewSelect().Model(&e.gazeboZone).Where("z.establishment_id = ?", e.estID).Where("z.code = ?", "gazebo").Scan(ctx); err != nil {
+		t.Fatalf("gazebo zone: %v", err)
+	}
 	maps, err := store.ListMaps(ctx, e.db, es, "", 100)
 	if err != nil {
 		t.Fatal(err)
@@ -214,6 +235,10 @@ func (e *env) loadWorld(ctx context.Context) {
 			t.Fatal(err)
 		}
 		for _, sp := range spots {
+			if sp.Active && sp.ZoneID == e.gazeboZone.ID {
+				e.gazeboSpots = append(e.gazeboSpots, sp)
+				continue
+			}
 			if !sp.Active || sp.Kind != "umbrella" {
 				continue
 			}
@@ -223,6 +248,9 @@ func (e *env) loadWorld(ctx context.Context) {
 				e.dailySpots = append(e.dailySpots, sp)
 			}
 		}
+	}
+	if e.gazeboPack.ID == "" || len(e.gazeboSpots) < 3 {
+		t.Fatalf("demo gazebos incomplete: pack %q spots %d", e.gazeboPack.ID, len(e.gazeboSpots))
 	}
 	if e.basePack.ID == "" || e.cabinExtra == nil || e.cabinPool == nil || len(e.passSpots) < 10 || len(e.dailySpots) < 60 {
 		t.Fatalf("demo world incomplete: pack %q cabin %v pool %v spots %d/%d", e.basePack.ID, e.cabinExtra != nil, e.cabinPool != nil, len(e.passSpots), len(e.dailySpots))
