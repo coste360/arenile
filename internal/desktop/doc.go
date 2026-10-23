@@ -43,7 +43,7 @@
 //   - autostart*.go, open.go, icon.go, logfile.go, updates.go, paths.go,
 //     settings.go, firstrun.go, lan.go: see each type.
 //
-// # Invariants (docs/invariants.md INV-50, INV-52, INV-53)
+// # Invariants (docs/invariants.md INV-51, INV-53, INV-54)
 //
 //   - The internal server listens on 127.0.0.1 only; the LAN listener is a
 //     separate TLS listener opened only when the operator enables it.

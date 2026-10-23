@@ -1,4 +1,4 @@
-# 0014 — Scelte di M6: edizione desktop, token per dispositivo, meta, ponte fiscale
+# 0015 — Scelte di M6: edizione desktop, token per dispositivo, meta, ponte fiscale
 
 - **Stato:** accettato
 - **Data:** 2026-10-23
@@ -81,20 +81,20 @@ Decisioni prese durante l'implementazione, a complemento dei punti sopra.
    `DESKTOP_TAGS=desktop`).
 10. **Chiave segreta nel portachiavi del sistema** (`github.com/zalando/go-keyring`, MIT; Keychain, Credential
     Manager, Secret Service) con account derivato dalla cartella dati e fallback su file 0600. Con un archivio
-    esistente e nessuna chiave l'avvio si ferma invece di generarne una nuova (INV-53).
+    esistente e nessuna chiave l'avvio si ferma invece di generarne una nuova (INV-54).
 11. **Rete locale: TLS autogenerato e doppio filtro sugli indirizzi.** Certificato ECDSA P-256 di 825 giorni
     nella cartella dati, impronta stabile ai riavvii e ai cambi di IP. Il listener chiude prima dell'handshake
     le connessioni da indirizzi non privati (RFC 1918, link-local, ULA, loopback; CGNAT 100.64/10 rifiutato) e il
-    middleware `LocalPeersOnly` ripete il controllo per richiesta (INV-50). Niente mDNS (nessuna dipendenza). Il
+    middleware `LocalPeersOnly` ripete il controllo per richiesta (INV-51). Niente mDNS (nessuna dipendenza). Il
     QR del pannello (`desktop.lan_qr_svg` in `/meta`) contiene solo l'indirizzo, per la fotocamera dei browser;
     l'impronta viaggia nel QR di abbinamento, dove l'app la usa per il pinning.
 12. **Token Bearer accanto ai cookie.** Il middleware sceglie la strategia dal prefisso; CSRF solo per i cookie;
     `last_used_at` scritto al massimo una volta al minuto; revoca efficace dalla richiesta successiva (nessuna
     cache). L'abbinamento crea dispositivo, consuma il codice e scrive l'audit nella stessa transazione
-    (INV-48, INV-49).
+    (INV-49, INV-50).
 13. **Ponte fiscale.** Coda `fiscal_bridge_jobs` con lease, long polling risvegliato da un notifier in processo,
     esiti idempotenti, ritentativi con attesa crescente, lease rilasciati alla scadenza o alla revoca del
-    dispositivo (INV-51). Lato cassa l'agente salva gli esiti su file per non stampare due volte un lavoro
+    dispositivo (INV-52). Lato cassa l'agente salva gli esiti su file per non stampare due volte un lavoro
     riconsegnato. Driver selezionato esplicitamente con `settings.fiscal.driver = "bridge"`.
 14. **Abbinamento della modalità remota anche da riga di comando**: `arenile-desktop -pair <QR|URL>
     [-pair-code ...] [-pair-fingerprint ...]` salva token e configurazione e passa la cartella dati in modalità

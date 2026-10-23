@@ -320,7 +320,7 @@ pagamenti non possono spendere due volte lo stesso credito (lo schema ha solo `C
 Verificata da: `TestConcurrency_CreditRedemption_NeverNegative` (`internal/domain/payment`, tag `integration`,
 100 tentativi, SQLite e PostgreSQL). Stato: implemented.
 
-**INV-48 — Codice di abbinamento monouso.**
+**INV-49 — Codice di abbinamento monouso.**
 Un codice di abbinamento (spec 29.2) si scambia al più una volta e solo prima di `expires_at`: lo scambio lo
 consuma con un UPDATE condizionale (`used_at IS NULL AND expires_at > now`) nella stessa transazione che crea il
 dispositivo e scrive l'audit `device.paired`; un codice inesistente, scaduto, già usato o di un utente che nel
@@ -330,7 +330,7 @@ Verificata da: `TestConcurrency_PairingCodeSingleUse` (100 scambi paralleli dell
 `TestDeviceService_CodeSingleUseAndExpiry`, `TestDeviceService_PairAndAuthenticate` (`internal/domain/device`, tag
 `integration`, SQLite e PostgreSQL). Stato: implemented.
 
-**INV-49 — Token per dispositivo limitato e revocabile subito.**
+**INV-50 — Token per dispositivo limitato e revocabile subito.**
 Un token `ar_dev_…` autentica come l'utente del dispositivo con i permessi del suo ruolo ristretti allo
 stabilimento del dispositivo; non autentica più dalla richiesta successiva alla revoca (nessuna cache), se
 l'utente è disattivato o non ha più un ruolo nello stabilimento. Un dispositivo o una chiave API non creano codici
@@ -340,7 +340,7 @@ Verificata da: `TestDeviceService_RevokeIsImmediate`, `TestDeviceService_Permiss
 `TestAuthenticate_DeviceOnly` (`internal/http/middleware`), `TestHTTPIntegration_DevicePairing` (`internal/http`,
 tag `integration`). Stato: implemented.
 
-**INV-50 — Modalità rete locale solo dalla rete locale.**
+**INV-51 — Modalità rete locale solo dalla rete locale.**
 Nell'edizione desktop il server risponde solo a peer TCP di loopback, RFC 1918, link-local o IPv6 ULA (mai
 X-Forwarded-For): il listener della rete locale chiude le altre connessioni prima del TLS
 (`desktop.PrivateListener`) e il middleware `LocalPeersOnly` rifiuta con 403 ogni richiesta da un indirizzo pubblico
@@ -350,7 +350,7 @@ Verificata da: `TestPeerFilter_Scenarios`, `TestPrivateListener_RejectsPublicPee
 `TestLocalPeersOnly_Middleware`, `TestMode_TLSListener`, `TestCertStore_GenerationAndStableFingerprint`
 (`internal/desktop/lan`), `TestM6_ContractRouting` (`internal/app`). Stato: implemented.
 
-**INV-51 — Ponte fiscale: ogni lavoro si chiude una volta sola.**
+**INV-52 — Ponte fiscale: ogni lavoro si chiude una volta sola.**
 Al più un ponte fiscale attivo per stabilimento (indice unico parziale). Un lavoro del ponte è accodato una volta per
 (stabilimento, tipo, chiave di idempotenza); poll concorrenti non condividono mai un lease; l'esito chiude il lavoro
 con un UPDATE condizionale una sola volta (audit `fiscal_bridge_job.*` una volta), un duplicato dello stesso esito
@@ -362,7 +362,7 @@ Verificata da: `TestConcurrency_FiscalBridgeAck` (100 invii paralleli dello stes
 lease scaduto), `TestService_RegisterPollSubmit`, `TestService_RetriesAndLeases` (`internal/fiscalbridge`, tag
 `integration`, SQLite e PostgreSQL), `TestAgent_DeduplicatesRedeliveries` (`internal/fiscalbridge`). Stato: implemented.
 
-**INV-52 — Primo avvio dell'app desktop: solo dal PC della cassa, una volta.**
+**INV-53 — Primo avvio dell'app desktop: solo dal PC della cassa, una volta.**
 L'utente owner dell'edizione desktop si crea solo con `POST /api/desktop/v1/first-run` da un peer TCP di loopback
 con `Host` di loopback (niente X-Forwarded-For, niente DNS rebinding) e con il token monouso a 256 bit che il
 launcher genera a ogni avvio finché non esistono utenti e passa al browser nel frammento dell'URL (mai in una
@@ -373,7 +373,7 @@ Verificata da: `TestFirstRun_LoopbackEnforcement`, `TestFirstRun_ServerEditionHi
 `TestSmoke_DesktopLauncherHeadless`, `TestSetupToken_SingleUse` (`internal/desktop`), `TestValidateFirstRun_Scenarios`
 (`internal/http/desktop`). Stato: implemented.
 
-**INV-53 — Chiave segreta e archivio dell'app desktop non si biforcano mai.**
+**INV-54 — Chiave segreta e archivio dell'app desktop non si biforcano mai.**
 `ARENILE_SECRET_KEY` dell'app desktop nasce al primo avvio e vive nel portachiavi del sistema (fallback: file 0600
 nella cartella dati); se l'archivio esiste ma nessun deposito ha la chiave il launcher si ferma invece di generarne
 una nuova (le colonne cifrate resterebbero illeggibili). Una cartella dati ha un solo launcher attivo (lock del

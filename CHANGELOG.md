@@ -13,20 +13,20 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 
 - M6, launcher dell'app desktop in modalità locale (spec 29.1, `cmd/arenile-desktop`, `internal/desktop`): cartella
   dati per sistema operativo, `ARENILE_SECRET_KEY` generata al primo avvio nel portachiavi del sistema
-  (`github.com/zalando/go-keyring`, MIT; fallback file 0600) e mai rigenerata per un archivio esistente (INV-53),
+  (`github.com/zalando/go-keyring`, MIT; fallback file 0600) e mai rigenerata per un archivio esistente (INV-54),
   migrazioni e server su `127.0.0.1` con porta libera (riusata ai riavvii), browser aperto sul pannello, istanza unica
   (il secondo avvio apre il pannello), icona nella barra di sistema con *Apri pannello*, *Backup ora*, *Apri cartella
   dati*, *Avvio automatico all'accensione* (LaunchAgent, chiave Run, voce XDG), *Modalità rete locale*, *Ripristina
   un backup…*, *Esci* (`fyne.io/systray`, Apache-2.0, solo con il tag `desktop`); backup giornaliero, alla chiusura e
   manuale con retention e cartella a scelta, ripristino con riavvio del server; controllo aggiornamenti solo se
-  abilitato; log ruotati nella cartella dati. Primo avvio dal browser con token monouso e solo da loopback (INV-52),
+  abilitato; log ruotati nella cartella dati. Primo avvio dal browser con token monouso e solo da loopback (INV-53),
   pagina *Configurazione → App desktop* e, nell'edizione desktop, spiegazione del passaggio a un'istanza online al
   posto di *Pagina pubblica* e *Pagamenti online*. `arenile backup|restore` e l'app desktop condividono ora lo stesso
   codice (`store.BackupSQLite`, `store.ValidateSQLiteBackup`, `store.RestoreSQLiteFile`).
 - M6, modalità rete locale dell'app desktop (spec 29.1, `internal/desktop/lan`): certificato ECDSA P-256
   autogenerato nella cartella dati (825 giorni, impronta SHA-256 stabile ai riavvii e ai cambi di IP), listener
   HTTPS su tutte le interfacce che chiude prima del TLS le connessioni da fuori della rete locale, e middleware
-  `LocalPeersOnly` attivo nell'edizione desktop come seconda difesa (INV-50). Pagina *Configurazione → Dispositivi →
+  `LocalPeersOnly` attivo nell'edizione desktop come seconda difesa (INV-51). Pagina *Configurazione → Dispositivi →
   Rete locale* (scorciatoia `/admin/rete-locale` per la voce del menu "Mostra QR rete locale") con indirizzo,
   impronta, istruzioni per accettare il certificato nel browser e abbinamento.
 - M6, modalità remota dell'app desktop (`internal/desktop/remote`): abbinamento a un'istanza con QR o codice
@@ -39,7 +39,7 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 - M6, ponte fiscale (spec 29.1, 14.2, `internal/fiscalbridge`): coda dei lavori con lease, long polling risvegliato
   all'accodamento, esiti idempotenti, ritentativi con attesa crescente per gli errori temporanei, rilascio dei lease
   scaduti e dei dispositivi revocati; agente sul PC della cassa con registro dei driver locali (driver `noop`) ed
-  esiti memorizzati su file per non emettere due volte lo stesso documento (INV-51). Endpoint
+  esiti memorizzati su file per non emettere due volte lo stesso documento (INV-52). Endpoint
   `/api/device/v1/fiscal-bridge*` e `GET .../fiscal-bridge` per il pannello; audit `fiscal_bridge.registered`,
   `fiscal_bridge.unregistered`, `fiscal_bridge_job.*`.
 
@@ -63,9 +63,9 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
   autenticazione `Authorization: Bearer ar_dev_…` accanto ai cookie (CSRF solo per i cookie), `last_used_at`
   aggiornato al più una volta al minuto, revoca immediata, audit `device.pairing_code_created`,
   `device.paired`, `device.revoked`; `Me.device` per le richieste con token. Pagina *Configurazione →
-  Dispositivi* con QR, codice, conto alla rovescia e revoca (INV-48, INV-49). Nuova dipendenza
+  Dispositivi* con QR, codice, conto alla rovescia e revoca (INV-49, INV-50). Nuova dipendenza
   `github.com/skip2/go-qrcode` (MIT), la stessa usata da M4 per il QR delle prenotazioni.
-- M6/M7 lato core, contratto e scaffolding ([ADR 0014](docs/adr/0014-scelte-m6.md)): `GET /api/admin/v1/meta`
+- M6/M7 lato core, contratto e scaffolding ([ADR 0015](docs/adr/0015-scelte-m6.md)): `GET /api/admin/v1/meta`
   pubblico (versione, edizione `server|desktop`, modalità desktop `local|lan`, versioni minime dei client,
   capacità); dispositivi abbinati con codice monouso e QR (`devices/pairing-codes`), elenco e revoca, token per
   dispositivo `ar_dev_...` come `Authorization: Bearer` sulle API admin e sulle nuove API `/api/device/v1`
