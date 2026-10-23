@@ -626,18 +626,26 @@ func (s *Service) refund(ctx context.Context, tx bun.IDB, p *auth.Principal, ip 
 	return s.refundInTx(ctx, tx, p, ip, es, b, info, req)
 }
 
-// refundInTx records a refund of the (locked) booking b. INV-24: the refunds
-// of a booking never exceed its payments, and the refunds of one payment
-// never exceed that payment. In M3 every refund is manual: the money is
-// handed back at the desk (or credited), so the row is recorded as
-// succeeded; online providers with refunds plug in here in M4.
+// refundInTx records a manual refund or a credit of the (locked) booking b:
+// the money is handed back at the desk (or credited), so the row is
+// recorded as succeeded. INV-24: the refunds of a booking never exceed its
+// payments, and the refunds of one payment never exceed that payment; both
+// caps count the provider refunds still in flight (refund intents created
+// or pending at the provider: an overpayment or late-payment refund the
+// gateway scheduled), so a credit and a provider refund never add up above
+// what was paid. The booking lock held by the caller serialises this path
+// with gateway.reserveRefund, which locks the booking after the intent.
 func (s *Service) refundInTx(ctx context.Context, tx bun.IDB, p *auth.Principal, ip string, es store.EstablishmentScope, b *store.Booking, info *estInfo, req RefundRequest) (*Result, error) {
 	totals, err := store.BookingPaymentTotals(ctx, tx, es, b.ID)
 	if err != nil {
 		return nil, fmt.Errorf("payment: %w", err)
 	}
-	if req.Amount > totals.Net() {
-		return nil, configerr.Invalid("amount", fmt.Sprintf("Il rimborso supera quanto pagato (massimo %s).", euro(max(totals.Net(), 0))))
+	inFlight, err := store.SumOpenRefundIntents(ctx, tx, es, "", b.ID)
+	if err != nil {
+		return nil, fmt.Errorf("payment: %w", err)
+	}
+	if left := totals.Net() - inFlight; req.Amount > left {
+		return nil, configerr.Invalid("amount", fmt.Sprintf("Il rimborso supera quanto pagato (massimo %s).", euro(max(left, 0))))
 	}
 	weights := rateWeights(b.CurrentPrice())
 	var refundOf *string
@@ -656,8 +664,17 @@ func (s *Service) refundInTx(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		if err != nil {
 			return nil, fmt.Errorf("payment: %w", err)
 		}
+		if pi, err := store.GetPaymentIntentByPaymentID(ctx, tx, es, orig.ID); err == nil {
+			open, err := store.SumOpenRefundIntents(ctx, tx, es, pi.ID, "")
+			if err != nil {
+				return nil, fmt.Errorf("payment: %w", err)
+			}
+			done += open
+		} else if !errors.Is(err, store.ErrNotFound) {
+			return nil, fmt.Errorf("payment: %w", err)
+		}
 		if done+req.Amount > orig.Amount {
-			return nil, configerr.Invalid("amount", fmt.Sprintf("Il rimborso supera il pagamento scelto (residuo %s).", euro(orig.Amount-done)))
+			return nil, configerr.Invalid("amount", fmt.Sprintf("Il rimborso supera il pagamento scelto (residuo %s).", euro(max(orig.Amount-done, 0))))
 		}
 		if len(orig.VATBreakdown) > 0 {
 			weights = orig.VATBreakdown

@@ -27,11 +27,14 @@ const (
 // RefundViaProvider executes a refund with the provider of the payment
 // (ADR 0014 "refunds"):
 //
-//  1. one transaction reserves the amount: the provider payment is locked,
-//     the cap is checked against the succeeded ledger refunds PLUS the
-//     refund intents still waiting for the provider (of the payment and of
-//     the booking: INV-24 holds even with refunds in flight), and a refund
-//     intent is inserted (status created, idempotency key);
+//  1. one transaction reserves the amount: the provider payment, then the
+//     booking are locked (the order of apply), the cap is checked against
+//     the succeeded ledger refunds PLUS the refund intents still waiting
+//     for the provider (of the payment and of the booking: INV-24 holds
+//     even with refunds in flight, also against the manual refunds and
+//     credits of payment.refundInTx, which count the same intents under
+//     the same booking lock), and a refund intent is inserted (status
+//     created, idempotency key);
 //  2. the provider is called outside any transaction with that key;
 //  3. the answer is recorded: succeeded -> ledger refund row at once
 //     (Stripe confirmed it), pending -> waits for charge.refunded or the
@@ -125,6 +128,12 @@ func (s *Service) reserveRefund(ctx context.Context, tx bun.IDB, es store.Establ
 	}
 	if pay.Status != store.IntentSucceeded || pay.BookingID == nil || (req.BookingID != "" && *pay.BookingID != req.BookingID) {
 		return nil, ErrNotOnlinePayment
+	}
+	// Lock order of the gateway (intent, then booking): the booking lock
+	// serialises the cap with manual refunds and credits, which run under
+	// the booking lock (payment.refundInTx) and count open intents.
+	if _, err := store.LockBooking(ctx, tx, es, *pay.BookingID); err != nil {
+		return nil, fmt.Errorf("gateway: %w", err)
 	}
 	pp, ok := s.d.Providers.PaymentProvider(pay.Provider)
 	if !ok {

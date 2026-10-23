@@ -16,6 +16,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/policy"
+	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -419,6 +420,17 @@ func (s *Service) ModifyAsCustomer(ctx context.Context, actor audit.Actor, es st
 	})
 }
 
+// refundablePaid is what a cancellation may give back: paid_amount minus
+// the refunds already sent to the provider and not yet confirmed (an
+// overpayment or late-payment refund in flight): INV-24 counts them.
+func refundablePaid(ctx context.Context, db bun.IDB, es store.EstablishmentScope, b *store.Booking) (money.Cents, error) {
+	inFlight, err := store.SumOpenRefundIntents(ctx, db, es, "", b.ID)
+	if err != nil {
+		return 0, fmt.Errorf("booking: refunds in flight: %w", err)
+	}
+	return b.PaidAmount - inFlight, nil
+}
+
 // CancelAsCustomer cancels (or previews, in.DryRun) from the manage area
 // with the refund or credit of the policy snapshot (the customer may only
 // choose credit instead of the policy outcome, never a larger refund).
@@ -445,7 +457,11 @@ func (s *Service) CancelAsCustomer(ctx context.Context, actor audit.Actor, es st
 		if days < 0 {
 			return &policy.ViolationError{Violations: []policy.Violation{{Code: CodeCancellationClosed}}}
 		}
-		res.Refund = ComputeRefund(snapshotRules(b), b.PaidAmount, days, CancelRequest{Settlement: settle})
+		paid, err := refundablePaid(ctx, db, es, b)
+		if err != nil {
+			return err
+		}
+		res.Refund = ComputeRefund(snapshotRules(b), paid, days, CancelRequest{Settlement: settle})
 		return nil
 	}
 	if in.DryRun {

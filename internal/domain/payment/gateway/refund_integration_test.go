@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/money"
@@ -332,6 +334,62 @@ func TestConcurrency_RefundViaProvider(t *testing.T) {
 		}
 		if atProvider != part*50 || e.ledgerOf(b.ID) != b.TotalAmount-part*50 {
 			t.Fatalf("provider %d ledger paid %d", atProvider, e.ledgerOf(b.ID))
+		}
+	})
+}
+
+// TestRefund_CreditCancellationCountsRefundsInFlight (INV-24): a double
+// payment leaves 2T paid with the automatic overpayment refund of T still
+// pending at the provider. A credit cancellation from the manage area
+// must give back at most T (paid minus the refund in flight), so that when
+// the provider confirms its refund the ledger still settles it and the
+// money leaving never exceeds the money captured.
+func TestRefund_CreditCancellationCountsRefundsInFlight(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		b := e.held(0, "2027-07-10")
+		total := b.TotalAmount
+		r1 := e.start(b)
+		cs1 := e.sessionOf(r1)
+		e.srv.Pay(cs1)
+		r2 := e.start(b)
+		e.srv.RefundStatus = "pending"
+		e.mustDeliver(e.srv.SessionEvent(e.evt(), "checkout.session.completed", cs1, e.f.Clock.Now()))
+		e.mustDeliver(e.paidEvent(e.sessionOf(r2)))
+		if paid := e.reload(b.ID).PaidAmount; paid != 2*total {
+			t.Fatalf("paid after the double payment: %d", paid)
+		}
+		if n := e.count("payment_intents", "kind = 'refund' AND status IN ('created', 'pending')"); n != 1 {
+			t.Fatalf("overpayment refunds in flight: %d", n)
+		}
+		// The customer cancels with a credit: computed on T, not 2T.
+		res, err := e.bookings.CancelAsCustomer(e.ctx, audit.SystemActor, e.es, b.ID, booking.CancelInput{Settlement: booking.SettleCredit})
+		if err != nil {
+			t.Fatalf("cancel: %v", err)
+		}
+		if res.Refund.PaidAmount != total || res.Refund.Amount > total {
+			t.Fatalf("refund preview must exclude the refund in flight: %+v", res.Refund)
+		}
+		// Stripe then confirms the overpayment refund: still within the paid.
+		var ri store.PaymentIntent
+		if err := db.NewSelect().Model(&ri).Where("kind = 'refund' AND booking_id = ?", b.ID).Scan(e.ctx); err != nil {
+			t.Fatal(err)
+		}
+		e.srv.SetRefundStatus(ri.ExternalID, "succeeded")
+		pay := e.intent(r2.IntentID)
+		piID := pay.ExternalID
+		if pay.ExternalRef != nil {
+			piID = *pay.ExternalRef
+		}
+		e.mustDeliver(e.srv.ChargeRefundedEvent(e.evt(), piID, e.f.Clock.Now()))
+		if got := e.intent(ri.ID); got.Status != store.IntentSucceeded {
+			t.Fatalf("overpayment refund after the webhook: %+v", got)
+		}
+		if paid := e.reload(b.ID).PaidAmount; paid < 0 || paid != 2*total-total-res.Refund.Amount {
+			t.Fatalf("paid at the end: %d (credit %d)", paid, res.Refund.Amount)
+		}
+		if out := e.ledgerOf(b.ID); out < 0 {
+			t.Fatalf("ledger net negative: %d", out)
 		}
 	})
 }

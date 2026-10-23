@@ -1015,7 +1015,11 @@ func (s *Service) Cancel(ctx context.Context, p *auth.Principal, establishmentID
 			return err
 		}
 		days := calendar.In(s.now(), loc).DaysUntil(b.StartsOn)
-		res.Refund = ComputeRefund(snapshotRules(b), b.PaidAmount, days, CancelRequest{Settlement: in.Settlement, Weather: in.Weather, Override: in.RefundAmount})
+		paid, err := refundablePaid(ctx, tx, es, b)
+		if err != nil {
+			return err
+		}
+		res.Refund = ComputeRefund(snapshotRules(b), paid, days, CancelRequest{Settlement: in.Settlement, Weather: in.Weather, Override: in.RefundAmount})
 		return nil
 	}
 	if in.DryRun {
