@@ -24,8 +24,28 @@ var ErrBadSignature = errors.New("event: invalid webhook signature")
 //
 // The timestamp is part of the signed payload to prevent replays.
 func Sign(secret string, body []byte, at time.Time) string {
+	return SignAll([]string{secret}, body, at)
+}
+
+// SignAll returns the header value with one v1 signature per secret, in the
+// given order: "t=<ts>,v1=<sig secret 1>,v1=<sig secret 2>". During the
+// grace period of a rotated secret the Deliverer signs with the current and
+// the previous secret, so receivers still configured with either one verify
+// the request (VerifySignature accepts any matching v1). Empty secrets are
+// skipped.
+func SignAll(secrets []string, body []byte, at time.Time) string {
 	ts := strconv.FormatInt(at.Unix(), 10)
-	return "t=" + ts + ",v1=" + mac(secret, ts, body)
+	var b strings.Builder
+	b.WriteString("t=")
+	b.WriteString(ts)
+	for _, s := range secrets {
+		if s == "" {
+			continue
+		}
+		b.WriteString(",v1=")
+		b.WriteString(mac(s, ts, body))
+	}
+	return b.String()
 }
 
 func mac(secret, ts string, body []byte) string {

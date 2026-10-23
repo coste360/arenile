@@ -15,30 +15,39 @@
 // (signed HTTP attempts, exponential Backoff up to 24 hours, automatic
 // disable after DeliveryOptions.DisableAfter consecutive failures with
 // audit "webhook.disabled"), Sign/VerifySignature and NewWebhookSecret.
-// This package never sends HTTP itself. Required extensions of event:
+// This package never sends HTTP itself. M5A extensions of event (done):
 //
-//   - Deliverer.send signs with every active secret: the current one and,
-//     while previous_secret_expires_at is in the future, the previous one
-//     ("t=<ts>,v1=<new>,v1=<old>"; VerifySignature already accepts several
-//     v1 values). Add SignAll(secrets []string, body, at) next to Sign.
-//   - Deliverer.AttemptNow(ctx, deliveryID) performs one attempt of a given
-//     delivery synchronously, without retry scheduling when the delivery is
-//     a test (used by SendTest); attempt() records last_delivery_at on the
-//     endpoint.
-//   - Deliverer.CreateEndpoint (M0) moves here as Service.Create (or is
-//     called by it); secrets stay key ring ciphertexts with AAD = endpoint
-//     id, the previous secret with AAD "<endpoint id>:previous".
-//   - Auto-disable notifies the owner (spec 18.2 "avviso al proprietario"):
-//     write an audit entry (exists) and, when notify supports it, an email
-//     to the owners; at minimum the panel shows status "disabled" with
-//     disabled_reason.
+//   - SignAll(secrets, body, at): the Deliverer signs with the current
+//     secret and, while previous_secret_expires_at is in the future, the
+//     previous one ("t=<ts>,v1=<new>,v1=<old>"; VerifySignature accepts any).
+//   - Deliverer.AttemptNow(ctx, deliveryID): one synchronous attempt of a
+//     pending delivery, claimed with the same lease as DeliverDue; every
+//     attempt records last_delivery_at on the endpoint. A TestEventType
+//     delivery is never retried and never counts towards the auto-disable.
+//   - EgressPolicy / NewEgressClient: SSRF protection of every delivery
+//     (resolve once, check every address, connect to the checked IP, no
+//     redirects, no environment proxy); private targets only with
+//     ARENILE_WEBHOOKS_ALLOW_PRIVATE. ValidateURL applies the same policy to
+//     IP literals at configuration time.
+//   - DeliveryOptions.MaxPayload (256 KiB): larger envelopes fail unsent.
+//   - Secrets stay key ring ciphertexts with AAD = endpoint id, the previous
+//     secret with AAD event.PreviousSecretAAD(id) = "<endpoint id>:previous".
+//   - Auto-disable writes the audit entry "webhook.disabled" and the panel
+//     shows status "disabled" with disabled_reason; an email to the owners
+//     is not sent yet (gap, notify has no such template).
+//
+// Retention: Service.Jobs returns "webhooks.retention" (hourly), which
+// deletes finished deliveries older than Deps.Retention (30 days), fails
+// test deliveries never attempted after an hour and drops unreferenced
+// webhook.test outbox rows.
 //
 // # Rules
 //
 //   - Permission auth.PermUsersManage (owner); a principal of Kind
 //     PrincipalAPIKey is always refused with auth.ErrForbidden.
 //   - URL: https only (http allowed only for localhost, 127.0.0.1 and ::1,
-//     for development), no userinfo, at most 2048 bytes. Event filters:
+//     for development), no userinfo, no fragment, at most 2048 bytes, IP
+//     literal allowed by the egress policy. Event filters (at least one):
 //     known types (EventTypes), "<group>.*" with a known group, or "*".
 //     Matching is store.WebhookEndpoint.Matches.
 //   - Status: active; paused (active = false, disabled_at nil); disabled
@@ -48,13 +57,15 @@
 //   - Test event: an outbox row of type TestEventType written with
 //     dispatched_at already set (so the Dispatcher ignores it and no other
 //     endpoint or sink receives it), one delivery row for this endpoint,
-//     one synchronous attempt, failed_at set on failure (no retries).
+//     one synchronous attempt, failed_at set on failure (no retries). It
+//     works on paused endpoints (test before activating).
 //     Payload: {"message": "Evento di prova da Arenile", "endpoint_id": ...}.
 //   - Redeliver: only failed or delivered deliveries of an active endpoint;
 //     clears delivered_at, failed_at, last_error, sets next_attempt_at =
-//     now and created_at stays (the 24h window restarts from now: store a
-//     reset of the age reference, e.g. by updating created_at, documented
-//     in the store function); attempts keep counting.
+//     now and created_at = now (created_at is the age reference of the 24h
+//     retry window, see store.RequeueWebhookDelivery); attempts keep
+//     counting. The log orders by id (UUIDv7), so a redelivery does not
+//     move in the list.
 //   - Delivery log: newest first (index webhook_deliveries_endpoint_created_idx),
 //     cursor pagination, optional status filter (pending: neither delivered
 //     nor failed; delivered; failed). The detail rebuilds the envelope from

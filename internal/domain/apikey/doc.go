@@ -16,10 +16,29 @@
 // Principal with Kind PrincipalAPIKey and Scopes. This package uses those
 // helpers and owns the management use cases. auth.Service.CreateAPIKey (M0,
 // used by tests) stays as is; Create here is the panel path (expiry,
-// scope restrictions, created_by_name). M5A change required in auth:
-// AuthenticateAPIKey must reject keys whose expires_at is in the past
-// (store.GetActiveAPIKeyByPrefix gains a "now" argument or the check is
-// done after loading) — covered by a test that fails without it.
+// scope restrictions, created_by_name). auth.AuthenticateAPIKey rejects
+// keys whose expires_at is reached (TestAPIKeyService_ExpiredKeyRejected).
+//
+// # Key format and storage
+//
+// "ar_live_<8 base32 chars prefix>_<52 base32 chars secret>": the secret is
+// 32 random bytes (256 bits). Only SHA-256 of the whole key is stored
+// (key_hash) and compared in constant time; the prefix is stored in clear for
+// lookup and display. A slow hash (argon2id) or a pepper from the key ring
+// would add nothing against a 256-bit random secret (no dictionary, no brute
+// force is possible) while costing CPU on every API request (a cheap DoS
+// lever on small self-hosted servers) and, for the pepper, binding every key
+// to the current ARENILE_SECRET_KEY; passwords, chosen by people, keep
+// argon2id.
+//
+// # Around the package
+//
+//   - Per-key request budget: internal/http/middleware.APIKeyRateLimit
+//     (default 300/min, fixed window per instance), 429 with Retry-After.
+//   - last_used_at is touched by AuthenticateAPIKey at most once a minute.
+//   - Bookings and holds created with a key are always channel "api"
+//     (auth.ChannelFor, called by booking and inventory): they consume and
+//     respect the online quota (ADR 0011 §1, INV-52).
 //
 // # Rules
 //

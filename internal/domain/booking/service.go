@@ -142,6 +142,7 @@ func (s *Service) CreateInTx(ctx context.Context, tx bun.IDB, p *auth.Principal,
 	if err := require(p, es, auth.PermBookingsWrite); err != nil {
 		return nil, err
 	}
+	in.Channel = auth.ChannelFor(p, in.Channel) // API keys always sell on "api" (ADR 0011)
 	if err := validateCreate(&in); err != nil {
 		return nil, err
 	}

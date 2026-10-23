@@ -108,6 +108,9 @@ type Deps struct {
 	// API limits (defaults 60 and 10, spec 17.2).
 	PublicReadsPerMinute     int
 	PublicCreationsPerMinute int
+	// APIKeyRequestsPerMinute overrides the per API key budget on the admin
+	// API (default middleware.DefaultAPIKeyRequestsPerMinute, M5A).
+	APIKeyRequestsPerMinute int
 }
 
 // Paths that do not require authentication under /api/admin/.
@@ -160,6 +163,7 @@ func New(d Deps) http.Handler {
 		middleware.OnPrefix("/api/", middleware.LimitBody(1<<20), middleware.RequireJSON),
 		middleware.OnPrefix("/api/admin/",
 			middleware.Authenticate(d.Auth, d.Log),
+			middleware.APIKeyRateLimit(auth.NewRateLimiter(d.Clock, apiKeyBudget(d.APIKeyRequestsPerMinute), time.Minute)),
 			middleware.RequireAuth([]string{loginPath}, authPathPrefix),
 			middleware.CSRF(d.SecureCookies, sessionTTL),
 		),
@@ -311,4 +315,12 @@ func bindErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 	problem.Write(w, r, problem.BadRequest, problem.Detail(err.Error()))
+}
+
+// apiKeyBudget applies the default per API key request budget.
+func apiKeyBudget(n int) int {
+	if n <= 0 {
+		return middleware.DefaultAPIKeyRequestsPerMinute
+	}
+	return n
 }

@@ -232,7 +232,10 @@ func (a *App) wire() error {
 	a.registry = NewRegistry(c, x)
 	a.wireOperations(aw)
 	a.wireOnline(aw)
-	a.wireSeason(aw)
+	deliverer := event.NewDeliverer(a.db, c, a.keys, nil, aw, a.log, event.DeliveryOptions{
+		Egress: event.EgressPolicy{AllowPrivate: a.cfg.WebhooksAllowPrivate},
+	})
+	a.wireSeason(aw, deliverer)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -242,7 +245,6 @@ func (a *App) wire() error {
 	a.Bus = sse.NewReplayBus(bus, 0)
 	sinks := append(slices.Clone(x.EventSinks), a.onlineSinks()...)
 	dispatcher := event.NewDispatcher(a.db, c, sinks, a.Bus, a.log)
-	deliverer := event.NewDeliverer(a.db, c, a.keys, nil, aw, a.log, event.DeliveryOptions{})
 
 	a.runner = jobs.NewRunner(a.log)
 	for _, j := range jobs.CoreJobs(jobs.CoreDeps{
@@ -258,7 +260,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range append(a.operationJobs(), a.onlineJobs()...) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.seasonJobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}

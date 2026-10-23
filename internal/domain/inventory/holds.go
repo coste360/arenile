@@ -140,6 +140,7 @@ func (s *Service) CreateHold(ctx context.Context, p *auth.Principal, establishme
 	if err != nil {
 		return nil, err
 	}
+	in.Channel = auth.ChannelFor(p, in.Channel) // API keys always hold on "api" (ADR 0011)
 	if err := validateHold(&in); err != nil {
 		return nil, err
 	}
