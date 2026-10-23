@@ -72,7 +72,11 @@ test.describe.configure({ mode: "serial" });
  * a single day in June of the demo season, the first free spot, the Base
  * pack, the customer's details and the accepted terms.
  */
-async function bookUntilPay(page: Page, widget: FrameLocator): Promise<void> {
+async function bookUntilPay(
+  page: Page,
+  widget: FrameLocator,
+  day = 16,
+): Promise<void> {
   // The customer scrolls the lido's page to the widget (the calendar is a
   // popover inside the iframe: it scrolls with the host page, not alone).
   await widget.getByRole("button", { name: /Date del soggiorno/ }).waitFor();
@@ -89,11 +93,12 @@ async function bookUntilPay(page: Page, widget: FrameLocator): Promise<void> {
     await widget.getByRole("button", { name: /mese successivo|Next/i }).click();
   }
   await expect(grid).toHaveAttribute("aria-label", /giugno/);
-  await grid.getByRole("button", { name: /\b16 giugno/ }).click();
+  const dayName = new RegExp(`\\b${day} giugno`);
+  await grid.getByRole("button", { name: dayName }).click();
   await widget
     .getByRole("grid")
     .first()
-    .getByRole("button", { name: /\b16 giugno/ })
+    .getByRole("button", { name: dayName })
     .click();
   await page.keyboard.press("Escape");
   await widget.getByRole("button", { name: "Avanti" }).click();
@@ -204,7 +209,8 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
     test.setTimeout(150_000);
     await page.goto(`${HOST}/?intercept=1`);
     const widget = page.frameLocator("[data-arenile] iframe");
-    await bookUntilPay(page, widget);
+    // Another day than the booking above (serial): same free spots.
+    await bookUntilPay(page, widget, 17);
     await widget.getByRole("button", { name: /^Paga / }).click();
     // The site handled the event: no navigation, the payment URL is in its hands.
     await expect

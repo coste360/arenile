@@ -1,4 +1,5 @@
 import { formatIsoDate } from '@arenile/shared/lib/dates';
+import { formatStay } from '../../flow/format';
 import { Button } from '@arenile/shared/ui/button';
 import { CalendarIcon, XIcon } from 'lucide-react';
 import { Suspense, lazy, useId, useRef, useState } from 'react';
@@ -43,8 +44,11 @@ export function AvailabilityRangePicker({
   const [loaded, setLoaded] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contentId = useId();
+  // One date for a single day; "from – …" while the second tap is pending.
   const label = value
-    ? `${formatIsoDate(value.from)} – ${value.to ? formatIsoDate(value.to) : '…'}`
+    ? value.to
+      ? formatStay(value.from, value.to)
+      : `${formatIsoDate(value.from)} – …`
     : t('ui.date.rangePlaceholder');
   return (
     <div className="flex min-w-0 items-center gap-1">
@@ -61,11 +65,11 @@ export function AvailabilityRangePicker({
           setLoaded(true);
           setOpen((o) => !o);
         }}
-        className="h-11 w-full min-w-0 justify-start gap-2 bg-transparent px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-80 dark:bg-input/30"
+        className="h-11 min-w-0 flex-1 shrink justify-start gap-2 bg-transparent px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-80 sm:flex-none dark:bg-input/30"
         {...aria}
       >
-        <CalendarIcon aria-hidden="true" className="text-muted-foreground" />
-        {label}
+        <CalendarIcon aria-hidden="true" className="shrink-0 text-muted-foreground" />
+        <span className="min-w-0 truncate">{label}</span>
       </Button>
       {loaded && (
         <Suspense
@@ -97,7 +101,7 @@ export function AvailabilityRangePicker({
         <Button
           variant="ghost"
           size="icon"
-          className="size-11"
+          className="size-11 shrink-0"
           aria-label={t('ui.date.clear')}
           onClick={() => onChange(undefined)}
         >

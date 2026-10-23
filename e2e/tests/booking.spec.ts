@@ -75,17 +75,33 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   request,
 }) => {
   const { name } = await demoEstablishment(request);
+  // One day per project: the projects run in parallel against the same
+  // instance and would otherwise race for the same first free spot.
+  const day =
+    { chromium: 21, mobile: 22, "mobile-safari": 23 }[
+      test.info().project.name
+    ] ?? 24;
+  const dayName = new RegExp(`\\b${day} giugno`);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto(`/b/${DEMO_SLUG}`);
   await expect(page.getByText(name).first()).toBeVisible();
   const noSidewaysScroll = async (step: string) => {
-    const widths = await page.evaluate(() => ({
-      scroll: document.documentElement.scrollWidth,
-      inner: window.innerWidth,
-    }));
+    const widths = await page.evaluate(() => {
+      const inner = window.innerWidth;
+      // Elements reaching past the viewport: named in the failure message.
+      const offenders = [...document.querySelectorAll<HTMLElement>("body *")]
+        .map((el) => ({ el, right: el.getBoundingClientRect().right }))
+        .filter(({ right }) => right > inner + 1)
+        .slice(0, 8)
+        .map(
+          ({ el, right }) =>
+            `${el.tagName.toLowerCase()}[${(el.getAttribute("class") ?? "").slice(0, 70)}] right=${Math.round(right)}`,
+        );
+      return { scroll: document.documentElement.scrollWidth, inner, offenders };
+    });
     expect(
       widths.scroll,
-      `${step}: scrollWidth ${widths.scroll} > ${widths.inner}`,
+      `${step}: scrollWidth ${widths.scroll} > ${widths.inner}\n${widths.offenders.join("\n")}`,
     ).toBeLessThanOrEqual(widths.inner);
   };
   await noSidewaysScroll("1 Quando");
@@ -98,23 +114,24 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
     if (/giugno/.test((await grid.getAttribute("aria-label")) ?? "")) break;
     await page.getByRole("button", { name: /mese successivo|Next/i }).click();
   }
-  await grid.getByRole("button", { name: /\b16 giugno/ }).click();
+  await grid.getByRole("button", { name: dayName }).click();
   await page
     .getByRole("grid")
     .first()
-    .getByRole("button", { name: /\b16 giugno/ })
+    .getByRole("button", { name: dayName })
     .click();
   await page.keyboard.press("Escape");
   await noSidewaysScroll("1 Quando (date chosen)");
   await page.getByRole("button", { name: "Avanti" }).click();
 
   // 2. Dove: list view, first free spot.
+  // Parallel runs of this test share the instance: a free spot at random,
+  // so two of them do not race for the same one.
   await page.getByRole("button", { name: "Mostra come elenco" }).click();
   await noSidewaysScroll("2 Dove");
-  await page
-    .getByRole("button", { name: / – Libero/ })
-    .first()
-    .click();
+  const free = page.getByRole("button", { name: / – Libero/ });
+  await expect(free.first()).toBeVisible();
+  await free.nth(Math.floor(Math.random() * (await free.count()))).click();
   await page.getByRole("button", { name: "Avanti" }).click();
 
   // 3. Cosa.
@@ -131,7 +148,9 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
   await page.getByRole("button", { name: "Leggi le condizioni" }).click();
   await noSidewaysScroll("4 Chi (terms open)");
   // The summary shows one date for a single day.
-  await expect(page.getByText(/^16\/06\/\d{4}$/).first()).toBeVisible();
+  await expect(
+    page.getByText(new RegExp(`^${day}/06/\\d{4}$`)).first(),
+  ).toBeVisible();
 });
 
 test("unknown slug shows not found", async ({ page }) => {
