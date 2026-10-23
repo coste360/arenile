@@ -23,8 +23,19 @@ const src = fileURLToPath(new URL('./src', import.meta.url));
 const webModules = fileURLToPath(new URL('../web/node_modules', import.meta.url));
 const lucide = fileURLToPath(new URL('../web/node_modules/lucide-react', import.meta.url));
 
-const site = process.env.ARENILE_DOCS_SITE ?? 'https://docs.arenile.app';
-const base = process.env.ARENILE_DOCS_BASE ?? '/';
+/**
+ * Value of an environment variable, with empty or blank treated as unset: CI
+ * passes repository variables that do not exist as empty strings.
+ * @param {string} name
+ * @param {string} fallback
+ */
+const envOr = (name, fallback) => process.env[name]?.trim() || fallback;
+
+const site = envOr('ARENILE_DOCS_SITE', 'https://docs.arenile.app');
+if (!URL.canParse(site)) {
+  throw new Error(`ARENILE_DOCS_SITE must be an absolute URL (got "${site}")`);
+}
+const base = envOr('ARENILE_DOCS_BASE', '/');
 /** Path of a file in public/ under the base path. @param {string} file */
 const publicPath = (file) => `${base.replace(/\/?$/, '/')}${file}`;
 /** Absolute URL of a file in public/ (social images need absolute URLs). @param {string} file */
