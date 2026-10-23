@@ -180,6 +180,13 @@ export function createOfflineRuntime(options: OfflineRuntimeOptions): OfflineRun
       if (savedAt !== undefined) await onUser(queryClient.getQueryData<Me>(queryKeys.me));
       await queue.init().catch(() => undefined);
       unsubscribers.push(persister.start());
+      // The throttled save must not lose the last second before a reload or
+      // a tab close (e.g. a map saved and the page reloaded at once).
+      if (typeof window !== 'undefined') {
+        const onHide = () => void persister.persistNow().catch(() => undefined);
+        window.addEventListener('pagehide', onHide);
+        unsubscribers.push(() => window.removeEventListener('pagehide', onHide));
+      }
       unsubscribers.push(
         queryClient.getQueryCache().subscribe((event) => {
           if (

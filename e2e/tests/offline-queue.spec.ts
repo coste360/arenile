@@ -215,7 +215,8 @@ test("offline after a reload: the map and today's booking are readable, a cash p
   await page.reload();
   await expect(page.getByText("Sei offline")).toBeVisible();
   // Readable from the saved copy: the map with its spots and the booking of today.
-  await expect(page.getByRole("group", { name: /^Mappa con \d+ postazioni$/ })).toBeVisible();
+  await expect(page.getByTestId("beach-map")).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Postazione B3:/ })).toBeVisible();
   const checkInRow = page.getByRole("button", { name: `Registra il check-in di ${seeded.customer}` });
   await expect(checkInRow).toBeVisible();
 

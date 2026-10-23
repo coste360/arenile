@@ -21,6 +21,7 @@ import type { KeyValueStore } from './kv';
  * - The snapshot carries a `buster` (app build) and its save time; it is
  *   discarded when older than `maxAge` or written by another build.
  * - Writes are throttled; `persistNow()` forces one (tests, page hide).
+ * - Restored entries get dataUpdatedAt 0: they are a copy, stale at once.
  */
 
 export interface PersistedSnapshot {
@@ -98,9 +99,15 @@ export function createQueryPersister(options: QueryPersisterOptions): QueryPersi
         await store.delete(SNAPSHOT_KEY).catch(() => undefined);
         return undefined;
       }
-      const queries = snap.state.queries.filter((q) =>
-        accept({ queryKey: q.queryKey as QueryKey, state: q.state as Query['state'] }),
-      );
+      const queries = snap.state.queries
+        .filter((q) =>
+          accept({ queryKey: q.queryKey as QueryKey, state: q.state as Query['state'] }),
+        )
+        // A restored entry is a saved copy, never fresh data: stale at once,
+        // so that online every mounted page refetches it (and never edits
+        // a map or a booking from the copy), while offline the refetch
+        // pauses and the copy stays on screen.
+        .map((q) => ({ ...q, state: { ...q.state, dataUpdatedAt: 0 } }));
       hydrate(queryClient, { mutations: [], queries });
       savedAt = snap.savedAt;
       return snap.savedAt;

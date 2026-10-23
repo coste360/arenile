@@ -40,6 +40,19 @@ describe('QueryPersister_Policy', () => {
     expect(reloaded.queryClient.getQueryData(['secret', 'customers'])).toBeUndefined();
   });
 
+  it('restores entries as stale so that online pages refetch them', async () => {
+    const { queryClient, persister, backing } = setup();
+    queryClient.setQueryData(['keep', 'map'], 'copy');
+    await persister.persistNow();
+
+    const reloaded = setup(backing);
+    await reloaded.persister.restore();
+    const q = reloaded.queryClient.getQueryCache().find({ queryKey: ['keep', 'map'] });
+    expect(q?.state.data).toBe('copy');
+    expect(q?.state.dataUpdatedAt).toBe(0);
+    expect(q?.isStaleByTime(5 * 60_000)).toBe(true);
+  });
+
   it('applies the policy again at restore', async () => {
     const backing = new Map<string, PersistedSnapshot>();
     const { queryClient, persister } = setup(backing);

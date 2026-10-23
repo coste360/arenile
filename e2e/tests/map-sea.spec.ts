@@ -63,8 +63,9 @@ test("the classic map has the sea at the top and flips with the sea side", async
   await expect(page.getByText(/postazioni · salvata$/)).toBeVisible();
   expect(await y("A1")).toBeGreaterThan(await y("B1"));
 
-  // Persisted as one new version.
+  // Persisted as one new version (the offline copy restored at reload is
+  // refetched at once while online, so the saved layout is what stays).
   await page.reload();
   await expect(canvas).toBeVisible();
-  expect(await y("A1")).toBeGreaterThan(await y("B1"));
+  await expect.poll(async () => (await y("A1")) > (await y("B1"))).toBe(true);
 });
