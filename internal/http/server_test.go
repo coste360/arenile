@@ -43,6 +43,7 @@ func (r readiness) MigrationsAligned(ctx context.Context) (bool, error) {
 type env struct {
 	t      *testing.T
 	db     *store.DB
+	h      http.Handler
 	srv    *httptest.Server
 	auth   *auth.Service
 	broker *event.Broker
@@ -85,7 +86,7 @@ func newEnv(t *testing.T, db *store.DB) *env {
 	})
 	srv := httptest.NewServer(h)
 	t.Cleanup(srv.Close)
-	return &env{t: t, db: db, srv: srv, auth: as, broker: broker, clock: c, orgA: res.Organization, estA: estA, estB: estB}
+	return &env{t: t, db: db, h: h, srv: srv, auth: as, broker: broker, clock: c, orgA: res.Organization, estA: estA, estB: estB}
 }
 
 type client struct {
@@ -152,6 +153,46 @@ func assertProblem(t *testing.T, resp *http.Response, body map[string]any, statu
 	}
 	if body["type"] != typ || int(body["status"].(float64)) != status || body["title"] == "" || body["request_id"] == "" {
 		t.Fatalf("problem body %v", body)
+	}
+}
+
+// TestHTTP_LoginOverTLS_SecureCookies: SecureCookies is false in this
+// environment (plain-HTTP development, desktop loopback profile), yet a
+// login that arrives over a TLS listener (desktop LAN mode) sets the
+// session and CSRF cookies with Secure, so a browser never sends them in
+// clear to the same host.
+func TestHTTP_LoginOverTLS_SecureCookies(t *testing.T) {
+	e := newEnv(t, storetest.SQLite(t))
+	srv := httptest.NewTLSServer(e.h)
+	t.Cleanup(srv.Close)
+	body, _ := json.Marshal(map[string]string{"email": "owner@lido-a.it", "password": "password-a-123"})
+	req, _ := http.NewRequest(http.MethodPost, srv.URL+"/api/admin/v1/auth/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := srv.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		t.Fatalf("login over tls: %d", resp.StatusCode)
+	}
+	names := map[string]bool{}
+	for _, c := range resp.Cookies() {
+		names[c.Name] = true
+		if !c.Secure {
+			t.Errorf("cookie %s without Secure over TLS", c.Name)
+		}
+	}
+	if !names["arenile_session"] || !names["arenile_csrf"] {
+		t.Fatalf("cookies: %v", names)
+	}
+	// Plain HTTP keeps the configured behaviour (no Secure).
+	c := e.client()
+	plain, _ := c.login("owner@lido-a.it", "password-a-123")
+	for _, ck := range plain.Cookies() {
+		if ck.Secure {
+			t.Errorf("cookie %s Secure over plain http with SecureCookies=false", ck.Name)
+		}
 	}
 }
 

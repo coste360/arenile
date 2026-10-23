@@ -84,11 +84,12 @@ func (h *Handlers) CompleteFirstRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ttl := h.Auth.SessionTTL()
-	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure follows the configuration (loopback HTTP on the desktop)
-		Name: middleware.SessionCookie, Value: res.Token, Path: "/", HttpOnly: true, Secure: h.SecureCookies,
+	secure := middleware.CookieSecure(r, h.SecureCookies)
+	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure follows the configuration (loopback HTTP on the desktop) or the TLS request
+		Name: middleware.SessionCookie, Value: res.Token, Path: "/", HttpOnly: true, Secure: secure,
 		SameSite: http.SameSiteLaxMode, MaxAge: int(ttl.Seconds()), Expires: res.ExpiresAt,
 	})
-	middleware.SetCSRFCookie(w, middleware.NewCSRFToken(), h.SecureCookies, ttl)
+	middleware.SetCSRFCookie(w, middleware.NewCSRFToken(), secure, ttl)
 	h.Log.Info("desktop first run completed", "user_id", res.Principal.UserID)
 	writeJSON(w, http.StatusCreated, admin.MeFromPrincipal(res.Principal))
 }

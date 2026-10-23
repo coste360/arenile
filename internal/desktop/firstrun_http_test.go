@@ -2,6 +2,7 @@ package desktop
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -46,15 +47,18 @@ func TestFirstRun_LoopbackEnforcement(t *testing.T) {
 		name, method, remote, host, xff string
 		want                            int
 		wantType                        string
+		tls                             bool
 	}{
-		{"lan peer status", http.MethodGet, "192.168.1.5:50000", "192.168.1.20:8443", "", 403, "loopback_required"},
-		{"lan peer create", http.MethodPost, "192.168.1.5:50000", "127.0.0.1:18190", "", 403, "loopback_required"},
-		{"forged forwarded-for", http.MethodPost, "10.0.0.7:50000", "127.0.0.1:18190", "127.0.0.1", 403, "loopback_required"},
-		{"dns rebinding host", http.MethodPost, "127.0.0.1:50000", "arenile.attacker.example:18190", "", 403, "loopback_required"},
-		{"ipv6 loopback status", http.MethodGet, "[::1]:50000", "[::1]:18190", "", 200, ""},
-		{"loopback status", http.MethodGet, "127.0.0.1:50000", "127.0.0.1:18190", "", 200, ""},
-		{"loopback create", http.MethodPost, "127.0.0.1:50000", "localhost:18190", "", 201, ""},
-		{"loopback replay", http.MethodPost, "127.0.0.1:50000", "127.0.0.1:18190", "", 409, "setup_completed"},
+		{"lan peer status", http.MethodGet, "192.168.1.5:50000", "192.168.1.20:8443", "", 403, "loopback_required", false},
+		{"lan peer create", http.MethodPost, "192.168.1.5:50000", "127.0.0.1:18190", "", 403, "loopback_required", false},
+		{"forged forwarded-for", http.MethodPost, "10.0.0.7:50000", "127.0.0.1:18190", "127.0.0.1", 403, "loopback_required", false},
+		{"dns rebinding host", http.MethodPost, "127.0.0.1:50000", "arenile.attacker.example:18190", "", 403, "loopback_required", false},
+		{"ipv6 loopback status", http.MethodGet, "[::1]:50000", "[::1]:18190", "", 200, "", false},
+		{"loopback status", http.MethodGet, "127.0.0.1:50000", "127.0.0.1:18190", "", 200, "", false},
+		// Over the desktop LAN listener (TLS) the cookies carry Secure even
+		// though the loopback profile of the configuration does not.
+		{"loopback create over tls", http.MethodPost, "127.0.0.1:50000", "localhost:18190", "", 201, "", true},
+		{"loopback replay", http.MethodPost, "127.0.0.1:50000", "127.0.0.1:18190", "", 409, "setup_completed", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -66,6 +70,9 @@ func TestFirstRun_LoopbackEnforcement(t *testing.T) {
 				r = httptest.NewRequest(tt.method, "/api/desktop/v1/first-run", nil)
 			}
 			r.RemoteAddr, r.Host = tt.remote, tt.host
+			if tt.tls {
+				r.TLS = &tls.ConnectionState{}
+			}
 			if tt.xff != "" {
 				r.Header.Set("X-Forwarded-For", tt.xff)
 			}
@@ -75,8 +82,14 @@ func TestFirstRun_LoopbackEnforcement(t *testing.T) {
 				t.Fatalf("%d %s, want %d %s", w.Code, w.Body, tt.want, tt.wantType)
 			}
 			if tt.want == 201 {
-				if !strings.Contains(strings.Join(w.Header().Values("Set-Cookie"), "\n"), "arenile_session=") {
-					t.Fatalf("session cookie: %v", w.Header().Values("Set-Cookie"))
+				cookies := w.Header().Values("Set-Cookie")
+				if !strings.Contains(strings.Join(cookies, "\n"), "arenile_session=") {
+					t.Fatalf("session cookie: %v", cookies)
+				}
+				for _, c := range cookies {
+					if strings.Contains(c, "Secure") != tt.tls {
+						t.Fatalf("Secure must follow TLS (%v): %q", tt.tls, c)
+					}
 				}
 			}
 		})

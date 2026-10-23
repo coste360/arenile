@@ -32,6 +32,15 @@ type Authenticator interface {
 
 func infoHTTPS(r *http.Request) bool { return reqctx.From(r.Context()).HTTPS }
 
+// CookieSecure decides the Secure attribute of a cookie set in answer to
+// r: the configured default (config.SecureCookies: false only for plain
+// HTTP development and the desktop loopback profile) OR the request came
+// over HTTPS (TLS on this listener or a trusted X-Forwarded-Proto). The
+// desktop LAN listener serves the same handler over TLS while the loopback
+// listener is plain HTTP, so a static flag would send the session cookie
+// in clear on the lido Wi-Fi.
+func CookieSecure(r *http.Request, configured bool) bool { return configured || infoHTTPS(r) }
+
 // Authenticate puts the principal (from a Bearer API key or the session
 // cookie) in the context. An invalid Bearer key is rejected; an invalid or
 // expired cookie is ignored (the request continues unauthenticated).
@@ -126,7 +135,7 @@ func CSRF(secure bool, cookieMaxAge time.Duration) Middleware {
 			cookie, err := r.Cookie(CSRFCookie)
 			hasCookie := err == nil && len(cookie.Value) >= 32
 			if !hasCookie {
-				SetCSRFCookie(w, NewCSRFToken(), secure, cookieMaxAge)
+				SetCSRFCookie(w, NewCSRFToken(), CookieSecure(r, secure), cookieMaxAge)
 			}
 			if isUnsafe(r.Method) && reqctx.From(r.Context()).AuthMethod == reqctx.AuthCookie {
 				header := r.Header.Get(CSRFHeader)

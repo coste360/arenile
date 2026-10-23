@@ -110,13 +110,15 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ttl := h.Auth.SessionTTL()
-	// Secure is configurable so that plain-HTTP local development works.
-	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure set from config (HTTPS base URL)
-		Name: middleware.SessionCookie, Value: res.Token, Path: "/", HttpOnly: true, Secure: h.SecureCookies,
+	// Secure is configurable so that plain-HTTP local development works; a
+	// request over TLS always gets Secure cookies (middleware.CookieSecure).
+	secure := middleware.CookieSecure(r, h.SecureCookies)
+	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure set from config (HTTPS base URL) or the TLS request
+		Name: middleware.SessionCookie, Value: res.Token, Path: "/", HttpOnly: true, Secure: secure,
 		SameSite: http.SameSiteLaxMode, MaxAge: int(ttl.Seconds()), Expires: res.ExpiresAt,
 	})
 	// Rotate the CSRF token together with the session.
-	middleware.SetCSRFCookie(w, middleware.NewCSRFToken(), h.SecureCookies, ttl)
+	middleware.SetCSRFCookie(w, middleware.NewCSRFToken(), secure, ttl)
 	writeJSON(w, http.StatusOK, MeFromPrincipal(res.Principal))
 }
 
@@ -129,7 +131,7 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request, _ api.LogoutPa
 		return
 	}
 	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure set from config (HTTPS base URL)
-		Name: middleware.SessionCookie, Value: "", Path: "/", HttpOnly: true, Secure: h.SecureCookies, SameSite: http.SameSiteLaxMode, MaxAge: -1})
+		Name: middleware.SessionCookie, Value: "", Path: "/", HttpOnly: true, Secure: middleware.CookieSecure(r, h.SecureCookies), SameSite: http.SameSiteLaxMode, MaxAge: -1})
 	w.WriteHeader(http.StatusNoContent)
 }
 
