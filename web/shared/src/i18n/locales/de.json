@@ -144,7 +144,9 @@
       "team": "Benutzer",
       "online": "Öffentliche Seite",
       "payments": "Online-Zahlungen",
-      "email": "E-Mail und Benachrichtigungen"
+      "email": "E-Mail und Benachrichtigungen",
+      "apiKeys": "API-Schlüssel",
+      "webhooks": "Webhooks"
     },
     "operations": "Betrieb",
     "configGroup": "Konfiguration",

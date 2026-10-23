@@ -1,0 +1,8 @@
+{
+  "apiKeys": {
+    "description": "Clés pour connecter des systèmes externes à l'API Arenile, avec des droits limités et une expiration facultative."
+  },
+  "webhooks": {
+    "description": "Notifications signées vers vos systèmes lors des changements de réservations, paiements et configuration, avec journal des envois."
+  }
+}

@@ -13,6 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coste360/arenile/internal/domain/apikey"
+	"github.com/coste360/arenile/internal/domain/report"
+	"github.com/coste360/arenile/internal/domain/webhook"
+
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/uptrace/bun"
@@ -81,10 +85,14 @@ type Deps struct {
 	Cash      *cash.Service
 	Fiscal    *fiscal.Service
 	// M4 services (public page, online payments, notifications).
-	Online         *online.Service
-	Checkout       *checkout.Service
-	Notify         *notify.Service
-	Gateway        *gateway.Service
+	Online   *online.Service
+	Checkout *checkout.Service
+	Notify   *notify.Service
+	Gateway  *gateway.Service
+	// M5A services (reports, API keys, outgoing webhooks).
+	Reports        *report.Service
+	APIKeys        *apikey.Service
+	Webhooks       *webhook.Service
 	Bus            ext.EventBus
 	Readiness      ReadinessChecker
 	TrustedProxies []netip.Prefix
@@ -172,6 +180,7 @@ func New(d Deps) http.Handler {
 			Customers: d.Customers, Bookings: d.Bookings, Inventory: d.Inventory, Passes: d.Passes,
 			Payments: d.Payments, Cash: d.Cash, Fiscal: d.Fiscal,
 			Online: d.Online, Notify: d.Notify, Gateway: d.Gateway,
+			Reports: d.Reports, APIKeys: d.APIKeys, Webhooks: d.Webhooks,
 			Stream: &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
 		},
 		publicHandlers: &public.Handlers{

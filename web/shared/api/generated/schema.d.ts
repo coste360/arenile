@@ -1088,7 +1088,7 @@ export interface paths {
         put?: never;
         /**
          * Registra il check-in
-         * @description Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition.
+         * @description Da confirmed a checked_in (permesso operations.run). Stato non ammesso: 409 invalid_transition. Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
          */
         post: operations["checkInBooking"];
         delete?: never;
@@ -1206,7 +1206,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Aggiunge una nota */
+        /**
+         * Aggiunge una nota
+         * @description Idempotency-Key consigliata (coda offline del pannello, spec 21.2).
+         */
         post: operations["addBookingNote"];
         delete?: never;
         options?: never;
@@ -2269,6 +2272,386 @@ export interface paths {
         put?: never;
         /** Esegue subito la riconciliazione (come il job ogni 15 minuti) */
         post: operations["runReconciliation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Indicatori principali del periodo (occupazione, ricavi, prenotazioni, saldi aperti)
+         * @description KPI del periodo per le schede del cruscotto dei report. Permesso reports.read.
+         */
+        get: operations["getReportSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/occupancy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Occupazione per giorno, zona, fila o fascia
+         * @description Unità = (postazione, giorno, fascia AM/PM). Capacità = postazioni attive delle mappe dello stabilimento × giorni aperti (esclusi i giorni di chiusura e quelli fuori stagione) × 2 fasce, meno le unità bloccate (spot_blocks). Occupate = allocazioni booking e season, esclusi i giorni rilasciati dagli abbonati e non rivenduti (contati in released_units); gli hold non contano. occupancy_bp = occupied_units * 10000 / capacity_units (0 se capacità 0). Permesso reports.read.
+         */
+        get: operations["getOccupancyReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/revenue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ricavi per periodo, canale, pack, extra, metodo di pagamento o aliquota IVA
+         * @description Due basi di calcolo. `collected` (incassato, default): pagamenti riusciti per business_date, rimborsi in negativo; IVA da payments.vat_breakdown; il canale è quello della prenotazione collegata (`counter` per le vendite al banco senza prenotazione). `booked` (venduto): valore delle prenotazioni confermate (confirmed, checked_in, completed, no_show) per giorno di conferma (confirmed_at nel fuso dello stabilimento), dallo snapshot del prezzo corrente. group_by payment_method richiede collected; pack ed extra richiedono booked (altrimenti 400 validation_failed). Permesso reports.read.
+         */
+        get: operations["getRevenueReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Prenotazioni per canale, anticipo di prenotazione, formula o giorno
+         * @description Prenotazioni vendute nel periodo (giorno di creazione nel fuso dello stabilimento), esclusi draft, held, expired e rejected. Anticipo (lead time) = starts_on − giorno di creazione, in fasce. Permesso reports.read.
+         */
+        get: operations["getBookingsReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/cancellations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cancellazioni e mancate presentazioni
+         * @description Prenotazioni con primo giorno (starts_on) nel periodo: totale, cancellate, no-show, valore perso e rimborsato, tassi in punti base. Permesso reports.read.
+         */
+        get: operations["getCancellationsReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/season-passes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Abbonamenti stagionali, rilasci e rivendite
+         * @description Abbonamenti venduti nel periodo (giorno di conferma) e rinnovi; rilasci con data nel periodo (unità giorno×fascia), quante rivendute, ricavo delle rivendite (valore delle righe rivendute) e crediti riconosciuti agli abbonati. Permesso reports.read.
+         */
+        get: operations["getSeasonPassesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/top-customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Migliori clienti del periodo (solo nome visualizzato, nessun contatto)
+         * @description Classifica per incassato (pagamenti netti delle loro prenotazioni nel periodo) o per numero di prenotazioni. Mai email, telefono o altri dati personali oltre al nome; i clienti anonimizzati compaiono come "Cliente anonimizzato". Permesso reports.read.
+         */
+        get: operations["getTopCustomersReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/open-balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Saldi aperti (prenotazioni con importo ancora da incassare)
+         * @description Prenotazioni in stato confirmed, checked_in, completed o no_show con balance_due > 0 e primo giorno nel periodo. Solo nome visualizzato del cliente. Permesso reports.read.
+         */
+        get: operations["getOpenBalancesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/reports/comparison": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Confronto con l'anno precedente sullo stesso intervallo di calendario
+         * @description Confronta from..to con lo stesso intervallo di calendario dell'anno precedente (stesso giorno e mese; il 29 febbraio diventa 28 febbraio) o di `compare_year`. Per ogni metrica: valore corrente, precedente, differenza assoluta e relativa in punti base (assente se il precedente è 0). La serie allinea i due anni per giorno/settimana/mese di calendario. Permesso reports.read.
+         */
+        get: operations["getYearComparisonReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/api-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chiavi API dello stabilimento (mai il segreto) */
+        get: operations["listAPIKeys"];
+        put?: never;
+        /**
+         * Crea una chiave API (il segreto è restituito una sola volta)
+         * @description Il segreto `ar_live_<prefix>_<secret>` compare solo in questa risposta (Cache-Control: no-store) ed è salvato come hash. Niente Idempotency-Key: la risposta conterrebbe il segreto e verrebbe memorizzata. Gli scope sono permessi (Permission) tranne users.manage. Audit api_key.created.
+         */
+        post: operations["createAPIKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/api-keys/{apiKeyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio di una chiave API */
+        get: operations["getAPIKey"];
+        put?: never;
+        post?: never;
+        /** Revoca una chiave (immediata e definitiva; la riga resta per l'audit) */
+        delete: operations["revokeAPIKey"];
+        options?: never;
+        head?: never;
+        /**
+         * Rinomina, cambia scope o scadenza di una chiave attiva
+         * @description Campi assenti invariati; `clear_expiry: true` rimuove la scadenza. Una chiave revocata non si modifica (409 conflict). Audit api_key.updated.
+         */
+        patch: operations["updateAPIKey"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Endpoint dei webhook in uscita (mai il segreto) */
+        get: operations["listWebhookEndpoints"];
+        put?: never;
+        /**
+         * Registra un endpoint (il segreto di firma è restituito una sola volta)
+         * @description URL https (http solo verso localhost/127.0.0.1/::1, per sviluppo), senza credenziali nella URL, massimo 2048 caratteri. Eventi: tipi di WebhookEventType, `<gruppo>.*` o `*`. Il segreto `whsec_…` è cifrato a riposo (AES-GCM, ARENILE_SECRET_KEY) e compare solo in questa risposta. Niente Idempotency-Key (la risposta contiene il segreto). Audit webhook.created.
+         */
+        post: operations["createWebhookEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio di un endpoint */
+        get: operations["getWebhookEndpoint"];
+        put?: never;
+        post?: never;
+        /** Elimina un endpoint e il suo registro delle consegne */
+        delete: operations["deleteWebhookEndpoint"];
+        options?: never;
+        head?: never;
+        /**
+         * Modifica URL, descrizione, eventi o stato attivo
+         * @description Campi assenti invariati. `active: true` riattiva anche un endpoint disattivato automaticamente (azzera consecutive_failures, disabled_at e disabled_reason); `active: false` lo mette in pausa (le consegne pendenti falliscono con "endpoint disabled"). Audit webhook.updated.
+         */
+        patch: operations["updateWebhookEndpoint"];
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/rotate-secret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ruota il segreto di firma (il nuovo è restituito una sola volta)
+         * @description Durante il periodo di grazia ogni consegna porta due firme v1 nello stesso header (`t=…,v1=<nuovo>,v1=<precedente>`), così il ricevente può aggiornare il segreto senza perdere eventi. grace_hours 0 revoca subito il precedente. Audit webhook.secret_rotated.
+         */
+        post: operations["rotateWebhookSecret"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invia subito un evento di prova `webhook.test` a questo solo endpoint
+         * @description Scrive un evento `webhook.test` già marcato come distribuito (non arriva ad altri endpoint né ai sink) e ne tenta la consegna in modo sincrono, un solo tentativo senza ripetizioni (timeout come le consegne normali). Funziona anche con endpoint in pausa. Risponde con la consegna e il suo esito; il tentativo compare nel registro.
+         */
+        post: operations["sendWebhookTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Registro delle consegne dell'endpoint (più recenti prima) */
+        get: operations["listWebhookDeliveries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio di una consegna con corpo inviato ed estratto della risposta */
+        get: operations["getWebhookDelivery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/redeliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rimette in coda una consegna (fallita o già consegnata) per un nuovo invio
+         * @description Azzera failed_at/delivered_at/last_error e pianifica il tentativo subito (next_attempt_at = ora); il contatore attempts prosegue e il limite di 24 ore riparte da ora. Rifiutato con 409 se la consegna è già in attesa o l'endpoint è disattivato. Audit webhook.redelivered.
+         */
+        post: operations["redeliverWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/maps/{mapId}/reorient": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sposta il lato mare ribaltando o ruotando l'intera disposizione
+         * @description Cambia sea_side e trasforma la geometria (postazioni, decorazioni, tessere della passerella) così che ogni fila mantenga la sua distanza dal mare. Lati opposti: specchio parallelo alla riva (top↔bottom ribalta y, left↔right ribalta x; l'ordine lungo la riva resta invariato). Lati adiacenti: rotazione di 90° (orario o antiorario, quella che porta il vecchio lato mare sul nuovo) con scambio di width e height. Solo geometria: id, etichette, file, zone e allocazioni invariati. Un unico salvataggio versionato (If-Match obbligatorio, versione +1, evento config.map_changed con change "reoriented"). Se esistono allocazioni future sulle postazioni della mappa serve acknowledge_future_allocations=true, altrimenti 409 spot_has_future_allocations con spot_ids. dry_run=true restituisce l'anteprima senza salvare (nessun 409, solo i conteggi). Permesso establishment.configure.
+         */
+        post: operations["reorientMap"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5430,6 +5813,451 @@ export interface components {
             /** Format: date-time */
             finished_at: string;
         };
+        /** @enum {string} */
+        ReportFormat: "json" | "csv";
+        /**
+         * Format: int64
+         * @description Rapporto in punti base (10000 = 100%). Intero, mai float.
+         */
+        RatioBP: number;
+        ReportPeriod: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            /** @description Giorni di calendario del periodo (inclusi gli estremi). */
+            days: number;
+        };
+        ReportSummary: {
+            period: components["schemas"]["ReportPeriod"];
+            occupancy_bp: components["schemas"]["RatioBP"];
+            /** Format: int64 */
+            occupied_units: number;
+            /** Format: int64 */
+            capacity_units: number;
+            revenue_collected: components["schemas"]["Money"];
+            revenue_booked: components["schemas"]["Money"];
+            bookings: number;
+            average_booking_value: components["schemas"]["Money"];
+            cancellations: number;
+            no_shows: number;
+            season_passes_sold: number;
+            open_balance_total: components["schemas"]["Money"];
+            open_balance_bookings: number;
+            /** Format: date-time */
+            generated_at: string;
+        };
+        /** @enum {string} */
+        OccupancyGroupBy: "day" | "zone" | "row" | "slot";
+        OccupancyRow: {
+            /** @description Chiave stabile del gruppo: YYYY-MM-DD, id zona, `<zone_id>:<row_label>`, AM o PM. */
+            key: string;
+            /** @description Etichetta leggibile (giorno, nome zona, `Zona · Fila A`, Mattina/Pomeriggio). */
+            label: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: int64 */
+            capacity_units: number;
+            /**
+             * Format: int64
+             * @description Unità occupate (booking + season non rilasciate + rivendite).
+             */
+            occupied_units: number;
+            /**
+             * Format: int64
+             * @description Delle occupate, quelle degli abbonati.
+             */
+            season_units: number;
+            /**
+             * Format: int64
+             * @description Unità rilasciate dagli abbonati e non rivendute (libere).
+             */
+            released_units: number;
+            /**
+             * Format: int64
+             * @description Unità bloccate (già escluse dalla capacità).
+             */
+            blocked_units: number;
+            occupancy_bp: components["schemas"]["RatioBP"];
+        };
+        OccupancyReport: {
+            period: components["schemas"]["ReportPeriod"];
+            group_by: components["schemas"]["OccupancyGroupBy"];
+            rows: components["schemas"]["OccupancyRow"][];
+            totals: components["schemas"]["OccupancyRow"];
+        };
+        /** @enum {string} */
+        RevenueGroupBy: "day" | "week" | "month" | "channel" | "pack" | "extra" | "payment_method" | "vat_rate";
+        /** @enum {string} */
+        RevenueBasis: "collected" | "booked";
+        RevenueRow: {
+            /** @description Chiave stabile: YYYY-MM-DD, settimana ISO `YYYY-Www`, `YYYY-MM`, canale (desk, online, api, counter), codice pack o extra, metodo di pagamento, aliquota in punti base (`1000`). */
+            key: string;
+            label: string;
+            /** @description Movimenti (collected) o prenotazioni/righe (booked). */
+            count: number;
+            gross: components["schemas"]["Money"];
+            taxable: components["schemas"]["Money"];
+            tax: components["schemas"]["Money"];
+            /** @description Rimborsi già sottratti da gross (solo collected; 0 per booked). */
+            refunds: components["schemas"]["Money"];
+        };
+        RevenueReport: {
+            period: components["schemas"]["ReportPeriod"];
+            group_by: components["schemas"]["RevenueGroupBy"];
+            basis: components["schemas"]["RevenueBasis"];
+            rows: components["schemas"]["RevenueRow"][];
+            totals: components["schemas"]["RevenueRow"];
+        };
+        /** @enum {string} */
+        BookingsReportGroupBy: "channel" | "lead_time" | "formula" | "day";
+        /**
+         * @description Fasce di anticipo: stesso giorno, 1-3, 4-7, 8-14, 15-30, 31-60, oltre 60 giorni.
+         * @enum {string}
+         */
+        LeadTimeBucket: "same_day" | "d1_3" | "d4_7" | "d8_14" | "d15_30" | "d31_60" | "d61_plus";
+        BookingsReportRow: {
+            /** @description Canale, LeadTimeBucket, formula o YYYY-MM-DD. */
+            key: string;
+            label: string;
+            bookings: number;
+            value: components["schemas"]["Money"];
+            average_value: components["schemas"]["Money"];
+            share_bp: components["schemas"]["RatioBP"];
+            /** @description Anticipo medio in giorni (arrotondato per difetto). */
+            average_lead_days: number;
+        };
+        BookingsReport: {
+            period: components["schemas"]["ReportPeriod"];
+            group_by: components["schemas"]["BookingsReportGroupBy"];
+            rows: components["schemas"]["BookingsReportRow"][];
+            totals: components["schemas"]["BookingsReportRow"];
+        };
+        /** @enum {string} */
+        CancellationsGroupBy: "day" | "month" | "channel";
+        CancellationsRow: {
+            key: string;
+            label: string;
+            /** @description Prenotazioni del gruppo (denominatore dei tassi). */
+            bookings: number;
+            cancelled: number;
+            no_shows: number;
+            cancelled_bp: components["schemas"]["RatioBP"];
+            no_show_bp: components["schemas"]["RatioBP"];
+            /** @description Valore delle prenotazioni cancellate meno quanto trattenuto (penali). */
+            lost_value: components["schemas"]["Money"];
+            refunded: components["schemas"]["Money"];
+        };
+        CancellationsReport: {
+            period: components["schemas"]["ReportPeriod"];
+            group_by: components["schemas"]["CancellationsGroupBy"];
+            rows: components["schemas"]["CancellationsRow"][];
+            totals: components["schemas"]["CancellationsRow"];
+        };
+        /** @enum {string} */
+        SeasonPassesGroupBy: "day" | "month" | "zone";
+        SeasonPassesRow: {
+            key: string;
+            label: string;
+            /**
+             * Format: int64
+             * @description Unità (giorno × fascia) rilasciate dagli abbonati, non revocate.
+             */
+            released_units: number;
+            /** Format: int64 */
+            resold_units: number;
+            resale_bp: components["schemas"]["RatioBP"];
+            resale_revenue: components["schemas"]["Money"];
+            credits_issued: components["schemas"]["Money"];
+        };
+        SeasonPassesReport: {
+            period: components["schemas"]["ReportPeriod"];
+            group_by: components["schemas"]["SeasonPassesGroupBy"];
+            passes_sold: number;
+            passes_value: components["schemas"]["Money"];
+            /** @description Abbonamenti venduti come rinnovo (renewal_of_booking_id valorizzato). */
+            renewals: number;
+            rows: components["schemas"]["SeasonPassesRow"][];
+            totals: components["schemas"]["SeasonPassesRow"];
+        };
+        /** @enum {string} */
+        TopCustomersSort: "revenue" | "bookings";
+        TopCustomerRow: {
+            rank: number;
+            /** Format: uuid */
+            customer_id: string;
+            /** @description Nome e cognome (mai email, telefono o altri dati). */
+            display_name: string;
+            bookings: number;
+            /** @description Giorni-postazione prenotati nel periodo. */
+            spot_days: number;
+            revenue: components["schemas"]["Money"];
+            last_booking_on?: components["schemas"]["Date"];
+        };
+        TopCustomersReport: {
+            period: components["schemas"]["ReportPeriod"];
+            sort: components["schemas"]["TopCustomersSort"];
+            rows: components["schemas"]["TopCustomerRow"][];
+        };
+        OpenBalanceRow: {
+            /** Format: uuid */
+            booking_id: string;
+            code: string;
+            /** Format: uuid */
+            customer_id: string;
+            display_name: string;
+            status: components["schemas"]["BookingStatus"];
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            total_amount: components["schemas"]["Money"];
+            paid_amount: components["schemas"]["Money"];
+            balance_due: components["schemas"]["Money"];
+        };
+        OpenBalancesReport: {
+            period: components["schemas"]["ReportPeriod"];
+            rows: components["schemas"]["OpenBalanceRow"][];
+            total_balance: components["schemas"]["Money"];
+        };
+        /** @enum {string} */
+        ComparisonGranularity: "day" | "week" | "month";
+        /** @enum {string} */
+        ComparisonMetricKey: "occupancy_bp" | "revenue_collected" | "revenue_booked" | "bookings" | "average_booking_value" | "cancellations" | "no_shows" | "season_passes_sold" | "released_units" | "resold_units";
+        /**
+         * @description Unità del valore: cents (Money), count, basis_points.
+         * @enum {string}
+         */
+        ComparisonUnit: "cents" | "count" | "basis_points";
+        ComparisonMetric: {
+            metric: components["schemas"]["ComparisonMetricKey"];
+            unit: components["schemas"]["ComparisonUnit"];
+            /** Format: int64 */
+            current: number;
+            /** Format: int64 */
+            previous: number;
+            /**
+             * Format: int64
+             * @description current − previous.
+             */
+            delta: number;
+            /**
+             * Format: int64
+             * @description Variazione relativa (current − previous) × 10000 / previous, troncata; assente se previous = 0.
+             */
+            delta_bp?: number;
+        };
+        ComparisonPoint: {
+            /** @description Chiave del bucket nel periodo corrente (YYYY-MM-DD, YYYY-Www, YYYY-MM). */
+            key: string;
+            label: string;
+            current_from: components["schemas"]["Date"];
+            previous_from: components["schemas"]["Date"];
+            current_revenue: components["schemas"]["Money"];
+            previous_revenue: components["schemas"]["Money"];
+            current_occupancy_bp: components["schemas"]["RatioBP"];
+            previous_occupancy_bp: components["schemas"]["RatioBP"];
+            current_bookings: number;
+            previous_bookings: number;
+        };
+        YearComparisonReport: {
+            current: components["schemas"]["ReportPeriod"];
+            previous: components["schemas"]["ReportPeriod"];
+            granularity: components["schemas"]["ComparisonGranularity"];
+            metrics: components["schemas"]["ComparisonMetric"][];
+            series: components["schemas"]["ComparisonPoint"][];
+        };
+        /** @enum {string} */
+        ApiKeyStatus: "active" | "expired" | "revoked";
+        ApiKey: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Parte visibile della chiave, per riconoscerla (`ar_live_abcd2345`). */
+            prefix: string;
+            /** Format: uuid */
+            establishment_id: string;
+            scopes: components["schemas"]["Permission"][];
+            status: components["schemas"]["ApiKeyStatus"];
+            /** Format: uuid */
+            created_by_user_id?: string;
+            /** @description Nome dell'utente che l'ha creata (vuoto se l'utente non esiste più). */
+            created_by_name?: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            last_used_at?: string;
+            /** Format: date-time */
+            expires_at?: string;
+            /** Format: date-time */
+            revoked_at?: string;
+        };
+        ApiKeyList: {
+            items: components["schemas"]["ApiKey"][];
+        };
+        ApiKeyCreate: {
+            name: string;
+            scopes: components["schemas"]["Permission"][];
+            /**
+             * Format: date-time
+             * @description Scadenza facoltativa, nel futuro.
+             */
+            expires_at?: string;
+        };
+        ApiKeyUpdate: {
+            name?: string;
+            scopes?: components["schemas"]["Permission"][];
+            /**
+             * Format: date-time
+             * @description Nuova scadenza, nel futuro.
+             */
+            expires_at?: string;
+            /** @description true rimuove la scadenza (incompatibile con expires_at). */
+            clear_expiry?: boolean;
+        };
+        ApiKeyCreated: {
+            api_key: components["schemas"]["ApiKey"];
+            /** @description Chiave completa `ar_live_<prefix>_<secret>`, mostrata solo ora. */
+            secret: string;
+        };
+        /**
+         * @description Tipi di evento sottoscrivibili (spec 18.1) più `webhook.test`, inviato solo dal test.
+         * @enum {string}
+         */
+        WebhookEventType: "booking.created" | "booking.held" | "booking.confirmed" | "booking.modified" | "booking.cancelled" | "booking.checked_in" | "booking.no_show" | "booking.completed" | "booking.approval_requested" | "allocation.released" | "season.day_released" | "season.renewal_offered" | "payment.succeeded" | "payment.failed" | "payment.refunded" | "customer.created" | "customer.anonymized" | "cash_session.closed" | "config.pricing_changed" | "config.map_changed" | "webhook.test";
+        /** @description Un WebhookEventType, un gruppo `<prefisso>.*` (es. `booking.*`) o `*` (tutti). */
+        WebhookEventFilter: string;
+        /**
+         * @description active; paused (disattivato dal gestore); disabled (disattivato automaticamente dopo errori ripetuti).
+         * @enum {string}
+         */
+        WebhookEndpointStatus: "active" | "paused" | "disabled";
+        WebhookEndpoint: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            description: string;
+            events: components["schemas"]["WebhookEventFilter"][];
+            active: boolean;
+            status: components["schemas"]["WebhookEndpointStatus"];
+            consecutive_failures: number;
+            /** Format: date-time */
+            disabled_at?: string;
+            disabled_reason?: string;
+            /**
+             * Format: date-time
+             * @description Fine del periodo di grazia del segreto precedente, se in corso.
+             */
+            previous_secret_expires_at?: string;
+            /**
+             * Format: date-time
+             * @description Ultimo tentativo di consegna (qualsiasi esito).
+             */
+            last_delivery_at?: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        WebhookEndpointList: {
+            items: components["schemas"]["WebhookEndpoint"][];
+        };
+        WebhookEndpointCreate: {
+            url: string;
+            description?: string;
+            events: components["schemas"]["WebhookEventFilter"][];
+            /** @default true */
+            active: boolean;
+        };
+        WebhookEndpointUpdate: {
+            url?: string;
+            description?: string;
+            events?: components["schemas"]["WebhookEventFilter"][];
+            active?: boolean;
+        };
+        WebhookEndpointCreated: {
+            endpoint: components["schemas"]["WebhookEndpoint"];
+            /** @description Segreto di firma `whsec_…`, mostrato solo ora. */
+            secret: string;
+        };
+        WebhookSecretRotate: {
+            /**
+             * @description Ore in cui anche il segreto precedente firma le consegne.
+             * @default 24
+             */
+            grace_hours: number;
+        };
+        WebhookSecretRotated: {
+            endpoint: components["schemas"]["WebhookEndpoint"];
+            /** @description Nuovo segreto `whsec_…`, mostrato solo ora. */
+            secret: string;
+        };
+        /**
+         * @description pending (in coda o in attesa di ripetizione), delivered (2xx), failed (definitivamente).
+         * @enum {string}
+         */
+        WebhookDeliveryStatus: "pending" | "delivered" | "failed";
+        WebhookDelivery: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            endpoint_id: string;
+            /** @description Id dell'evento nell'envelope (`evt_<uuid>`), uguale all'header Arenile-Event-Id. */
+            event_id: string;
+            event_type: string;
+            status: components["schemas"]["WebhookDeliveryStatus"];
+            attempts: number;
+            /** @description Codice HTTP dell'ultimo tentativo (assente se nessuna risposta). */
+            status_code?: number;
+            last_error?: string;
+            /** Format: date-time */
+            next_attempt_at?: string;
+            /** Format: date-time */
+            delivered_at?: string;
+            /** Format: date-time */
+            failed_at?: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        WebhookDeliveryDetail: components["schemas"]["WebhookDelivery"] & {
+            /** @description Envelope JSON inviato (spec 18.1), uguale per ogni tentativo. */
+            request_body: {
+                [key: string]: unknown;
+            };
+            /** @description Primi 1024 byte della risposta dell'ultimo tentativo. */
+            response_excerpt?: string;
+        };
+        WebhookDeliveryList: {
+            items: components["schemas"]["WebhookDelivery"][];
+            next_cursor?: string;
+        };
+        /**
+         * @description Trasformazione applicata: none (stesso lato), mirror_y (top↔bottom), mirror_x (left↔right), rotate_cw / rotate_ccw (lati adiacenti, 90°, width e height scambiati).
+         * @enum {string}
+         */
+        MapTransform: "none" | "mirror_y" | "mirror_x" | "rotate_cw" | "rotate_ccw";
+        MapReorientRequest: {
+            sea_side: components["schemas"]["SeaSide"];
+            /**
+             * @description Calcola l'anteprima senza salvare.
+             * @default false
+             */
+            dry_run: boolean;
+            /**
+             * @description Conferma esplicita quando ci sono allocazioni future (solo la geometria cambia).
+             * @default false
+             */
+            acknowledge_future_allocations: boolean;
+        };
+        MapReorientResult: {
+            document: components["schemas"]["MapDocument"];
+            from_sea_side: components["schemas"]["SeaSide"];
+            to_sea_side: components["schemas"]["SeaSide"];
+            transform: components["schemas"]["MapTransform"];
+            /** @description false con dry_run (document è l'anteprima, versione invariata). */
+            applied: boolean;
+            /** @description Allocazioni (booking, season, block) da oggi in avanti sulle postazioni della mappa. */
+            future_allocations: number;
+            spots_with_future_allocations: number;
+        };
     };
     responses: {
         /** @description Richiesta non valida */
@@ -5597,6 +6425,15 @@ export interface components {
         SeasonPassID: string;
         ReleaseID: string;
         CashSessionID: string;
+        /** @description Primo giorno del periodo (incluso). */
+        ReportFrom: components["schemas"]["Date"];
+        /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+        ReportTo: components["schemas"]["Date"];
+        /** @description Formato (default json; in alternativa Accept: text/csv). */
+        ReportFormat: components["schemas"]["ReportFormat"];
+        ApiKeyID: string;
+        WebhookEndpointID: string;
+        WebhookDeliveryID: string;
     };
     requestBodies: never;
     headers: {
@@ -9402,6 +10239,12 @@ export interface operations {
                 /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
                 "If-Match"?: components["parameters"]["IfMatch"];
                 /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
                  *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
                  */
@@ -9652,6 +10495,12 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
                  *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
@@ -12098,6 +12947,880 @@ export interface operations {
             404: components["responses"]["NotFound"];
             501: components["responses"]["NotImplemented"];
             503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getReportSummary: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Indicatori */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSummary"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getOccupancyReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Raggruppamento (default day). */
+                group_by?: components["schemas"]["OccupancyGroupBy"];
+                /** @description Limita a una zona. */
+                zone_id?: string;
+                /** @description Limita a una mappa. */
+                map_id?: string;
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Occupazione */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OccupancyReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getRevenueReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Raggruppamento (default day). */
+                group_by?: components["schemas"]["RevenueGroupBy"];
+                /** @description Base di calcolo (default collected). */
+                basis?: components["schemas"]["RevenueBasis"];
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ricavi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getBookingsReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Raggruppamento (default channel). */
+                group_by?: components["schemas"]["BookingsReportGroupBy"];
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prenotazioni */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingsReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCancellationsReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Raggruppamento (default month). */
+                group_by?: components["schemas"]["CancellationsGroupBy"];
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancellazioni e no-show */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancellationsReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getSeasonPassesReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Raggruppamento delle righe dei rilasci (default month). */
+                group_by?: components["schemas"]["SeasonPassesGroupBy"];
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Abbonamenti e rilasci */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonPassesReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getTopCustomersReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Ordinamento (default revenue). */
+                sort?: components["schemas"]["TopCustomersSort"];
+                /** @description Numero di clienti (default 20). */
+                limit?: number;
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Migliori clienti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopCustomersReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getOpenBalancesReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Saldi aperti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenBalancesReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getYearComparisonReport: {
+        parameters: {
+            query: {
+                /** @description Primo giorno del periodo (incluso). */
+                from: components["parameters"]["ReportFrom"];
+                /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
+                to: components["parameters"]["ReportTo"];
+                /** @description Anno di confronto (default: anno di from − 1). */
+                compare_year?: number;
+                /** @description Granularità della serie (default week). */
+                granularity?: components["schemas"]["ComparisonGranularity"];
+                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                format?: components["parameters"]["ReportFormat"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confronto */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["YearComparisonReport"];
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listAPIKeys: {
+        parameters: {
+            query?: {
+                /** @description Include anche le chiavi revocate (default false). */
+                include_revoked?: boolean;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Chiavi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createAPIKey: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiKeyCreate"];
+            };
+        };
+        responses: {
+            /** @description Chiave creata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyCreated"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getAPIKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                apiKeyId: components["parameters"]["ApiKeyID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Chiave */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKey"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    revokeAPIKey: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                apiKeyId: components["parameters"]["ApiKeyID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revocata (idempotente) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateAPIKey: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                apiKeyId: components["parameters"]["ApiKeyID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiKeyUpdate"];
+            };
+        };
+        responses: {
+            /** @description Chiave aggiornata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKey"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listWebhookEndpoints: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Endpoint */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookEndpointList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createWebhookEndpoint: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebhookEndpointCreate"];
+            };
+        };
+        responses: {
+            /** @description Endpoint creato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookEndpointCreated"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getWebhookEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Endpoint */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookEndpoint"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    deleteWebhookEndpoint: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateWebhookEndpoint: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebhookEndpointUpdate"];
+            };
+        };
+        responses: {
+            /** @description Endpoint aggiornato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookEndpoint"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    rotateWebhookSecret: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WebhookSecretRotate"];
+            };
+        };
+        responses: {
+            /** @description Segreto ruotato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookSecretRotated"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    sendWebhookTest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Esito del tentativo (anche se il ricevente ha risposto con errore) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDelivery"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listWebhookDeliveries: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stato. */
+                status?: components["schemas"]["WebhookDeliveryStatus"];
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di consegne */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDeliveryList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getWebhookDelivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+                deliveryId: components["parameters"]["WebhookDeliveryID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Consegna */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDeliveryDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    redeliverWebhook: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+                deliveryId: components["parameters"]["WebhookDeliveryID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Consegna rimessa in coda */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDelivery"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    reorientMap: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
+                "If-Match": components["parameters"]["IfMatchRequired"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                mapId: components["parameters"]["MapID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MapReorientRequest"];
+            };
+        };
+        responses: {
+            /** @description Mappa riorientata (o anteprima con dry_run) */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MapReorientResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
+            501: components["responses"]["NotImplemented"];
         };
     };
 }

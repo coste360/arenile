@@ -11,6 +11,17 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 
 ### Added
 
+- M5 parte A, contratto e scaffolding ([ADR 0014](docs/adr/0014-scelte-m5a.md)): report completi in
+  `api/openapi.yaml` (riepilogo, occupazione per giorno/zona/fila/fascia, ricavi per periodo/canale/pack/extra/metodo
+  di pagamento/aliquota IVA su base incassato o venduto, prenotazioni per canale e anticipo, cancellazioni e
+  no-show, abbonamenti e rivendite dei rilasci, clienti migliori, saldi aperti, confronto con l'anno precedente;
+  esportazione CSV di ciascuno), gestione delle chiavi API (scadenza, segreto mostrato una volta) e dei webhook in
+  uscita (eventi sottoscritti, rotazione del segreto con periodo di grazia, pausa, registro delle consegne, reinvio,
+  evento di prova `webhook.test`), `POST .../maps/{mapId}/reorient` per spostare il lato mare ribaltando o ruotando
+  la disposizione; `Idempotency-Key` documentata su check-in e note (coda offline). Migrazione
+  `00007_integrations_reports` (SQLite e PostgreSQL). Pagine Report, Chiavi API e Webhook nel pannello e contratto
+  della modalità offline (`web/admin/src/offline`). Le nuove operazioni rispondono `501` finché i builder non le
+  completano.
 - M4, contratto e scaffolding ([ADR 0013](docs/adr/0013-scelte-m4.md)): API pubblica completa in
   `api/openapi.yaml` (profilo con configurazione del flusso ed `ETag`, calendario, mappa pubblica,
   disponibilità online, catalogo, preventivo, prenotazione con sessione di checkout `X-Arenile-Checkout`,

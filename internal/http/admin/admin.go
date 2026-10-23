@@ -11,6 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coste360/arenile/internal/domain/apikey"
+	"github.com/coste360/arenile/internal/domain/report"
+	"github.com/coste360/arenile/internal/domain/webhook"
+
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
@@ -48,7 +52,8 @@ import (
 // (Online: settings and terms; Notify: resend confirmation, magic link),
 // paymentsettings.go (Online), email.go (Online settings; Notify: test
 // email, message log), reconciliation.go (Gateway), and the via_provider
-// branch of payments.go (Gateway).
+// branch of payments.go (Gateway). M5A: reports.go (Reports), apikeys.go
+// (APIKeys), webhookendpoints.go (Webhooks), maps_reorient.go (Mapping).
 type Handlers struct {
 	Auth           *auth.Service
 	Establishments *establishment.Service
@@ -71,8 +76,12 @@ type Handlers struct {
 	Online  *online.Service
 	Notify  *notify.Service
 	Gateway *gateway.Service
-	Stream  *sse.Server
-	Log     *slog.Logger
+	// M5A: reports, API keys and outgoing webhooks.
+	Reports  *report.Service
+	APIKeys  *apikey.Service
+	Webhooks *webhook.Service
+	Stream   *sse.Server
+	Log      *slog.Logger
 	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
 	SecureCookies bool
 }

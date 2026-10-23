@@ -1,0 +1,8 @@
+{
+  "apiKeys": {
+    "description": "Chiavi per collegare gestionali e servizi esterni all'API di Arenile, con permessi limitati e scadenza facoltativa."
+  },
+  "webhooks": {
+    "description": "Notifiche firmate verso i tuoi sistemi quando cambiano prenotazioni, pagamenti e configurazione, con registro delle consegne."
+  }
+}

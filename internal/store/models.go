@@ -228,8 +228,10 @@ type APIKey struct {
 	CreatedByUserID *string    `bun:"created_by_user_id"`
 	LastUsedAt      *time.Time `bun:"last_used_at"`
 	RevokedAt       *time.Time `bun:"revoked_at"`
-	CreatedAt       time.Time  `bun:"created_at,notnull"`
-	UpdatedAt       time.Time  `bun:"updated_at,notnull"`
+	// ExpiresAt is the optional expiry (00007); nil = never expires.
+	ExpiresAt *time.Time `bun:"expires_at"`
+	CreatedAt time.Time  `bun:"created_at,notnull"`
+	UpdatedAt time.Time  `bun:"updated_at,notnull"`
 }
 
 // AuditEntry is an insert-only audit log row.
@@ -275,8 +277,17 @@ type WebhookEndpoint struct {
 	ConsecutiveFailures int        `bun:"consecutive_failures,notnull"`
 	DisabledAt          *time.Time `bun:"disabled_at"`
 	DisabledReason      *string    `bun:"disabled_reason"`
-	CreatedAt           time.Time  `bun:"created_at,notnull"`
-	UpdatedAt           time.Time  `bun:"updated_at,notnull"`
+	// Description is the panel label (00007).
+	Description string `bun:"description,notnull"`
+	// PreviousSecret is the key ring ciphertext (AAD "<id>:previous") of the
+	// secret replaced by the last rotation; it still signs deliveries until
+	// PreviousSecretExpiresAt (00007).
+	PreviousSecret          *string    `bun:"previous_secret"`
+	PreviousSecretExpiresAt *time.Time `bun:"previous_secret_expires_at"`
+	// LastDeliveryAt is the time of the last delivery attempt (00007).
+	LastDeliveryAt *time.Time `bun:"last_delivery_at"`
+	CreatedAt      time.Time  `bun:"created_at,notnull"`
+	UpdatedAt      time.Time  `bun:"updated_at,notnull"`
 }
 
 // Matches reports whether the endpoint subscribes to eventType. An empty list

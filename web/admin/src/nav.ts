@@ -8,6 +8,7 @@ import {
   CreditCardIcon,
   EuroIcon,
   GlobeIcon,
+  KeyRoundIcon,
   LayersIcon,
   LayoutGridIcon,
   MailIcon,
@@ -20,6 +21,7 @@ import {
   UsersIcon,
   UserCogIcon,
   WalletIcon,
+  WebhookIcon,
   BanIcon,
   type LucideIcon,
 } from 'lucide-react';
@@ -107,7 +109,7 @@ export const NAV_ITEMS = [
     descriptionKey: 'admin.placeholder.reports',
     milestone: 'M5',
     icon: BarChart3Icon,
-    available: false,
+    available: true,
   },
 ] as const satisfies readonly (NavItemBase & {
   to: string;
@@ -174,6 +176,19 @@ export const CONFIG_NAV_ITEMS = [
     to: '/e/$establishmentId/config/team',
     labelKey: 'nav.config.team',
     icon: UserCogIcon,
+    ownerOnly: true,
+  },
+  // M5A integrations (owner only: permission users.manage).
+  {
+    to: '/e/$establishmentId/config/api-keys',
+    labelKey: 'nav.config.apiKeys',
+    icon: KeyRoundIcon,
+    ownerOnly: true,
+  },
+  {
+    to: '/e/$establishmentId/config/webhooks',
+    labelKey: 'nav.config.webhooks',
+    icon: WebhookIcon,
     ownerOnly: true,
   },
 ] as const satisfies readonly (NavItemBase & { to: string; ownerOnly?: boolean })[];

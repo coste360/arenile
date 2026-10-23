@@ -20,6 +20,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/coste360/arenile/internal/domain/apikey"
+	"github.com/coste360/arenile/internal/domain/report"
+	"github.com/coste360/arenile/internal/domain/webhook"
+
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/coste360/arenile/internal/clock"
@@ -116,6 +120,10 @@ type App struct {
 	Notify   *notify.Service
 	Gateway  *gateway.Service
 	Checkout *checkout.Service
+	// M5A services (wired by wireSeason, see m5.go).
+	Reports  *report.Service
+	APIKeys  *apikey.Service
+	Webhooks *webhook.Service
 	Outbox   *event.Outbox
 	Bus      ext.EventBus
 
@@ -224,6 +232,7 @@ func (a *App) wire() error {
 	a.registry = NewRegistry(c, x)
 	a.wireOperations(aw)
 	a.wireOnline(aw)
+	a.wireSeason(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -263,6 +272,7 @@ func (a *App) wire() error {
 		Customers: a.Customers, Bookings: a.Bookings, Inventory: a.Inventory, Passes: a.Passes,
 		Payments: a.Payments, Cash: a.Cash, Fiscal: a.Fiscal,
 		Online: a.Online, Checkout: a.Checkout, Notify: a.Notify, Gateway: a.Gateway,
+		Reports: a.Reports, APIKeys: a.APIKeys, Webhooks: a.Webhooks,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

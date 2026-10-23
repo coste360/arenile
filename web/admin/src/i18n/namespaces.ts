@@ -3,6 +3,7 @@ import bookingsIt from '../features/bookings/locales/it.json';
 import cashIt from '../features/cash/locales/it.json';
 import configurationIt from '../features/configuration/locales/it.json';
 import customersIt from '../features/customers/locales/it.json';
+import integrationsIt from '../features/integrations/locales/it.json';
 import mapEditorIt from '../features/map-editor/locales/it.json';
 import onlineIt from '../features/online/locales/it.json';
 import operationsIt from '../features/operations/locales/it.json';
@@ -10,6 +11,7 @@ import passesIt from '../features/passes/locales/it.json';
 import planningIt from '../features/planning/locales/it.json';
 import policiesIt from '../features/policies/locales/it.json';
 import pricingIt from '../features/pricing/locales/it.json';
+import reportsIt from '../features/reports/locales/it.json';
 import setupWizardIt from '../features/setup-wizard/locales/it.json';
 
 type Messages = Record<string, unknown>;
@@ -25,7 +27,7 @@ export interface FeatureNamespace {
 }
 
 /**
- * One i18n namespace per admin feature (M1/M2, M3, M4). Each feature owns its
+ * One i18n namespace per admin feature (M1/M2, M3, M4, M5). Each feature owns its
  * `features/<folder>/locales/{it,en,de,fr}.json`; the shared `translation`
  * namespace keeps the shell strings (navigation, common errors, actions).
  */
@@ -136,6 +138,25 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/online/locales/en.json'),
       de: () => import('../features/online/locales/de.json'),
       fr: () => import('../features/online/locales/fr.json'),
+    },
+  },
+  // M5A: reports and integrations (API keys, outgoing webhooks).
+  {
+    ns: 'reports',
+    it: reportsIt,
+    load: {
+      en: () => import('../features/reports/locales/en.json'),
+      de: () => import('../features/reports/locales/de.json'),
+      fr: () => import('../features/reports/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'integrations',
+    it: integrationsIt,
+    load: {
+      en: () => import('../features/integrations/locales/en.json'),
+      de: () => import('../features/integrations/locales/de.json'),
+      fr: () => import('../features/integrations/locales/fr.json'),
     },
   },
 ];

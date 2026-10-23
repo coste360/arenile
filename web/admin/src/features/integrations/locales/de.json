@@ -1,0 +1,8 @@
+{
+  "apiKeys": {
+    "description": "Schlüssel, um externe Systeme mit der Arenile-API zu verbinden, mit eingeschränkten Rechten und optionalem Ablaufdatum."
+  },
+  "webhooks": {
+    "description": "Signierte Benachrichtigungen an Ihre Systeme bei Änderungen an Buchungen, Zahlungen und Konfiguration, mit Zustellprotokoll."
+  }
+}
