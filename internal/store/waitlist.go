@@ -323,6 +323,27 @@ func CustomerWaitlistEntries(ctx context.Context, db bun.IDB, es EstablishmentSc
 	return items, nil
 }
 
+// HasOpenWaitlistEntryForEmail reports whether a customer with this email
+// (normalised) already has an open entry (waiting or offered) for the same
+// pack and period: the public join then does nothing (no new customer, no
+// entry, no email), so one address cannot be flooded through the public
+// endpoint.
+func HasOpenWaitlistEntryForEmail(ctx context.Context, db bun.IDB, es EstablishmentScope, email, packID string, startsOn, endsOn calendar.Date) (bool, error) {
+	if err := es.mustBeValid(); err != nil {
+		return false, err
+	}
+	n, err := db.NewSelect().Model((*WaitlistEntry)(nil)).
+		Join("JOIN customers AS cu ON cu.id = wle.customer_id").
+		Where("wle.establishment_id = ?", es.ID()).
+		Where("wle.status IN (?)", bun.List([]string{WaitlistWaiting, WaitlistOffered})).
+		Where("wle.pack_id = ?", packID).Where("wle.starts_on = ?", startsOn).Where("wle.ends_on = ?", endsOn).
+		Where("LOWER(cu.email) = ?", email).Count(ctx)
+	if err != nil {
+		return false, fmt.Errorf("store: open waitlist entry by email: %w", err)
+	}
+	return n > 0, nil
+}
+
 // ---- offers -----------------------------------------------------------------------
 
 // InsertWaitlistOffer inserts an offer of es (ErrConflict: the entry

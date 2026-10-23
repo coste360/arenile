@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -375,6 +376,20 @@ func TestWaitlist_PublicJoinAndAnonymisation(t *testing.T) {
 		if err := x.svc.Join(x.Ctx, checkouttest.Slug, join); err != nil {
 			t.Fatal(err)
 		}
+		// A repeated join of the same address, pack and period adds nothing
+		// (no second customer, entry or email) and still succeeds.
+		if err := x.svc.Join(x.Ctx, checkouttest.Slug, join); err != nil {
+			t.Fatal(err)
+		}
+		if n := x.Count((*store.WaitlistEntry)(nil), "channel = ?", store.ChannelOnline); n != 1 {
+			t.Fatalf("entries after a repeated join %d", n)
+		}
+		if n := x.Count((*store.Customer)(nil), "email = ?", "dora@example.org"); n != 1 {
+			t.Fatalf("customers after a repeated join %d", n)
+		}
+		if len(x.mails.sent) != 1 {
+			t.Fatalf("emails after a repeated join %d", len(x.mails.sent))
+		}
 		tok := x.mails.token(t, notify.TemplateWaitlistJoined, "dora@example.org")
 		pe, err := x.svc.GetByToken(x.Ctx, checkouttest.Slug, tok)
 		if err != nil || pe.Entry.Status != store.WaitlistWaiting || pe.Entry.Channel != store.ChannelOnline || pe.Entry.Locale != "en" || pe.PackName != "base" {
@@ -461,4 +476,76 @@ func retryable(err error) bool {
 		}
 	}
 	return false
+}
+
+// TestConcurrency_WaitlistOfferAccept (INV-72): the holder of an offer
+// answers it 100 times in parallel (accept and decline interleaved): exactly
+// one answer wins (one closed offer, at most one booking, the hold either
+// converted into that booking or released, never both), the others get
+// "no offer".
+func TestConcurrency_WaitlistOfferAccept(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		x := newFx(t, db)
+		x.fillSeats()
+		e := x.entry("Carla")
+		x.cancel(x.sold[1])
+		x.pump()
+		if x.pending(e.ID) == nil {
+			t.Fatal("no offer")
+		}
+		tok := x.mails.token(t, notify.TemplateWaitlistOffer, "carla@example.org")
+		var wg sync.WaitGroup
+		var accepted, declined, refused atomic.Int32
+		start := make(chan struct{})
+		for i := range 100 {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				var err error
+				for attempt := 0; attempt < 50; attempt++ {
+					if i%2 == 0 {
+						_, err = x.svc.AcceptByToken(x.Ctx, checkouttest.Slug, tok, "")
+					} else {
+						_, err = x.svc.DeclineByToken(x.Ctx, checkouttest.Slug, tok, false)
+					}
+					if err == nil || !retryable(err) {
+						break
+					}
+					time.Sleep(time.Duration(attempt+1) * time.Millisecond)
+				}
+				switch {
+				case err == nil && i%2 == 0:
+					accepted.Add(1)
+				case err == nil:
+					declined.Add(1)
+				case errors.Is(err, waitlist.ErrNoOffer), errors.Is(err, waitlist.ErrOfferExpired):
+					refused.Add(1)
+				default:
+					t.Error(err)
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		if accepted.Load()+declined.Load() != 1 || refused.Load() != 99 {
+			t.Fatalf("accepted %d declined %d refused %d", accepted.Load(), declined.Load(), refused.Load())
+		}
+		if n := x.Count((*store.WaitlistOffer)(nil), "status <> ?", store.WaitlistOfferPending); n != 1 {
+			t.Fatalf("closed offers %d", n)
+		}
+		bookings := x.Count((*store.Booking)(nil), "customer_id = ?", e.CustomerID)
+		alloc := x.Count((*store.SpotAllocation)(nil), "spot_id = ? AND date = ?", x.F.Spots[1].ID, day)
+		holds := x.Count((*store.Hold)(nil), "released_at IS NULL AND converted_booking_id IS NULL")
+		if accepted.Load() == 1 {
+			if bookings != 1 || alloc != 2 || holds != 0 || x.get(e.ID).Status != store.WaitlistConverted {
+				t.Fatalf("after accept: bookings %d allocations %d open holds %d status %s", bookings, alloc, holds, x.get(e.ID).Status)
+			}
+		} else if bookings != 0 || alloc != 0 || holds != 0 {
+			t.Fatalf("after decline: bookings %d allocations %d open holds %d", bookings, alloc, holds)
+		}
+		if n := x.Count((*store.OutboxEvent)(nil), "type = ?", event.WaitlistConverted); n != int(accepted.Load()) {
+			t.Fatalf("converted events %d", n)
+		}
+	})
 }

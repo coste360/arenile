@@ -303,6 +303,20 @@ func TestPublicRateLimit_ReadsAndCreations(t *testing.T) {
 	if w := httptest.NewRecorder(); func() int { h.ServeHTTP(w, links); return w.Code }() != 429 {
 		t.Fatal("manage-links is a creation: limited after 10 creations")
 	}
+	join := httptest.NewRequest(http.MethodPost, "/api/public/v1/lido/waitlist", strings.NewReader("{}"))
+	join.RemoteAddr = "1.1.1.1:1"
+	if w := httptest.NewRecorder(); func() int { h.ServeHTTP(w, join); return w.Code }() != 429 {
+		t.Fatal("waitlist join is a creation: limited after 10 creations")
+	}
+	for _, path := range []string{"/api/public/v1/lido/waitlist/tok/accept", "/api/public/v1/lido/waitlist/tok/decline"} {
+		r := httptest.NewRequest(http.MethodPost, path, strings.NewReader("{}"))
+		r.RemoteAddr = "4.4.4.4:1"
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != 200 {
+			t.Fatalf("%s limited (%d): steps of an existing waitlist request are reads", path, w.Code)
+		}
+	}
 	quote := httptest.NewRequest(http.MethodPost, "/api/public/v1/lido/quote", strings.NewReader("{}"))
 	quote.RemoteAddr = "3.3.3.3:1"
 	for i := range 11 {

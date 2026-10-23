@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -71,6 +72,15 @@ func (s *Service) Join(ctx context.Context, slug string, in PublicJoinInput) err
 	}
 	if err := s.sellsOnline(ctx, es, req.PackID, req.ZoneID); err != nil {
 		return err
+	}
+	// One open request per address, pack and period: a repeated join (or a
+	// flood aimed at an address) writes nothing and sends nothing more; the
+	// caller still gets 202 (no enumeration).
+	if dup, err := store.HasOpenWaitlistEntryForEmail(ctx, s.d.DB, es, in.Email, req.PackID, req.StartsOn, req.EndsOn); err != nil {
+		return fmt.Errorf("waitlist: %w", err)
+	} else if dup {
+		s.d.Log.InfoContext(ctx, "waitlist: public join ignored, open request exists", slog.String("establishment_id", es.ID()))
+		return nil
 	}
 	actor := audit.Actor{Type: audit.ActorCustomer, IP: in.IP}
 	return store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
