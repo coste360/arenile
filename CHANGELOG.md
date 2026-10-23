@@ -32,12 +32,15 @@ offline).
   acconto o saldo confermato solo dal webhook (INV-69), rifiuto, azioni di massa, proroga della scadenza, chiusura e
   rilascio automatico alla scadenza (job `renewals.sync`). Test di accettazione M5 `TestAcceptance_SeasonCycle`.
 - M5 parte B, lista d'attesa e crediti cliente (spec 9, 10.5, 13.4, 19, 23): lista d'attesa con priorità (ordine
-  di iscrizione e riordino manuale), iscrizione dal pannello o dalla pagina pubblica (202 senza dati, link personale
-  via email), offerta automatica sugli eventi di rilascio con hold riservato e scadenza (impostazioni per
+  di iscrizione e riordino manuale), iscrizione dal pannello o tramite l'API pubblica (202 senza dati, link
+  personale via email, una sola richiesta aperta per indirizzo, pacchetto e periodo; la pagina di prenotazione non ha
+  ancora il modulo), offerta automatica sugli eventi di rilascio con hold riservato e scadenza (impostazioni per
   stabilimento), passaggio all'iscrizione successiva, accettazione che prosegue nel checkout di M4 (INV-72; job
   `waitlist.expire`); registro crediti con saldo mai negativo anche in concorrenza, scadenza materializzata (job
   `credits.expire`), crediti manuali e rettifiche dal pannello, uso del credito dal link magico e nei rinnovi, parte
-  pagata con credito restituita come credito nei rimborsi (INV-70, INV-71). Email `waitlist_joined` e
+  pagata con credito restituita come credito nei rimborsi con la regola "prima il denaro", credito speso su una
+  prenotazione scaduta o rifiutata prima della conferma restituito nella stessa transazione (INV-70, INV-71); la
+  prelazione decade se l'abbonamento di origine viene annullato (INV-68). Email `waitlist_joined` e
   `waitlist_offer` in it/en/de/fr.
 - M5 parte B, pannello e pagina pubblica: pagine **Rinnovi** (campagne, proposte, azioni di massa), **Lista
   d'attesa** (coda, offerte, impostazioni), procedura **Nuova stagione** e sezione crediti della scheda cliente;

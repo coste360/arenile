@@ -295,6 +295,7 @@ abbonamenti N ──campagna──► renewal_proposals + prenotazioni held N+1 
                                │  email (link magico) ──► accettazione ──► checkout M4 ──► webhook
                                │                                                         │
                                │◄──── sink "renewal" su booking.confirmed: converted ◄────┘
+                               │      (e su booking.cancelled dell'abbonamento di origine: proposta scaduta, posto libero)
                                └──── job renewals.sync (ogni minuto): scadenze, rilascio, recupero conversioni
 eventi di rilascio (booking.cancelled, allocation.released, ...) ──sink "waitlist"──► offerta = hold riservato
                                                          ──► email /b/{slug}/m/w/{token} ──► checkout M4

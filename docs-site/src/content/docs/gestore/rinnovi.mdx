@@ -71,11 +71,14 @@ subito**.
 Il cliente apre il link dell'email e vede la proposta nell'area di gestione: prezzo nuovo e precedente, scadenza,
 scelta tra acconto e intero importo (secondo la [policy](/gestore/policy/)), uso del credito disponibile e
 accettazione delle condizioni. **Rinnova e paga** porta al pagamento online; **Non rinnovo** libera la postazione.
+Senza pagamenti online attivi il pulsante è **Conferma il rinnovo** e la pagina spiega che il saldo si paga in cassa
+entro la scadenza. Il link dell'email vale solo per l'ultima email ricevuta (proposta o promemoria).
 
 <Aside type="note" title="Conferma solo dal pagamento">
 Il rinnovo online diventa **Rinnovato** solo quando arriva la conferma del pagamento dal circuito (o dal driver
-manuale), mai dal ritorno del browser. Senza pagamenti online attivi, l'accettazione resta in attesa e la
-confermi al banco.
+manuale), mai dal ritorno del browser. Senza pagamenti online attivi, l'accettazione resta **Accettato, da pagare**
+e la confermi al banco incassando il saldo: se la scadenza passa senza conferma, la proposta scade e la postazione
+torna in vendita come per le proposte senza risposta; il credito eventualmente usato torna al cliente.
 </Aside>
 
 ## Scadenza e chiusura

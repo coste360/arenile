@@ -22,7 +22,8 @@ emails them the link to book it.
 **Settings** opens the options valid for the whole establishment:
 
 - **Waitlist active**: off, no entries are accepted and no offers are sent.
-- **Join from the public page**: the customer can join from the website when nothing is available.
+- **Join from the public page**: for now through the API only (`POST /api/public/v1/{slug}/waitlist`, for
+  websites and integrations); the booking page has no join form yet, so the switch is not shown in the panel.
 - **Automatic offers**: when a spot frees up an offer goes to the first in line; off, offers are only sent by hand.
 - **Default offer duration (minutes)**: how long the spot stays held waiting for the answer.
 
@@ -37,8 +38,10 @@ emails them the link to book it.
 
 </Steps>
 
-From the public page customers join by themselves: they get an email with the **personal link** to their request,
-where they can check it or leave the list. Every new email renews the link: only the latest one works.
+Customers who join through the public API (a website or an integration calling
+`POST /api/public/v1/{slug}/waitlist`) get an email with the **personal link** to their request, where they can
+check it or leave the list. Every new email renews the link: only the latest one works. One open request per
+address, pack and period: repeats create nothing and send no further email.
 
 ## The queue
 
