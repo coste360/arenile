@@ -168,7 +168,7 @@
       "map": "Vue opérationnelle du plan pour n'importe quelle date, colorée par statut.",
       "bookings": "Liste filtrable des réservations, détail et création.",
       "calendar": "Grille de planning emplacements × jours pour les longs séjours.",
-      "customers": "Fiches clients, historique, crédits et abonnements.",
+      "customers": "Fiches clients, historique, avoirs et abonnements.",
       "seasonPasses": "Abonnements saisonniers, libérations journalières et renouvellements.",
       "renewals": "Campagnes de renouvellement des abonnements avec droit de préemption.",
       "waitlist": "Demandes sans disponibilité et offres automatiques lorsqu'une place se libère.",

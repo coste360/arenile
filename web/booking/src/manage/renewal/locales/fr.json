@@ -27,7 +27,7 @@
     "deposit": "Acompte de {{amount}}",
     "full": "Montant total de {{amount}}"
   },
-  "useCredit": "Utiliser le crédit disponible ({{amount}})",
+  "useCredit": "Utiliser l'avoir disponible ({{amount}})",
   "showTerms": "Lire les conditions",
   "termsVersion": "Conditions, version {{version}}",
   "acceptTerms": "J'ai lu et j'accepte les conditions de réservation (version {{version}})",
@@ -49,11 +49,11 @@
   },
   "problem": {
     "renewal_expired": "La période de préemption a expiré : l'emplacement a été libéré.",
-    "credit_insufficient": "Le crédit disponible ne suffit pas : rechargez la page."
+    "credit_insufficient": "L'avoir disponible ne suffit pas : rechargez la page."
   },
   "credit": {
-    "available": "Vous disposez d'un crédit de {{amount}} à utiliser dans l'établissement.",
-    "apply": "Utiliser {{amount}} de crédit pour le solde",
+    "available": "Vous disposez d'un avoir de {{amount}}, utilisable pour cette réservation ou à la caisse.",
+    "apply": "Utiliser {{amount}} d'avoir pour le solde",
     "applied": "Crédit de {{amount}} appliqué à la réservation."
   }
 }

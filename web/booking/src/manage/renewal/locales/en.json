@@ -52,7 +52,7 @@
     "credit_insufficient": "The available credit is not enough: reload the page."
   },
   "credit": {
-    "available": "You have a credit of {{amount}} to use at the establishment.",
+    "available": "You have a credit of {{amount}} to use for this booking or at the desk.",
     "apply": "Use {{amount}} of credit for the balance",
     "applied": "Credit of {{amount}} applied to the booking."
   }

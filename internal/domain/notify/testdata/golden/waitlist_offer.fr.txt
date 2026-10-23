@@ -1,14 +1,14 @@
-Subject: Une place s'est libérée chez Lido Delfino
+Subject: Un emplacement s'est libéré chez Lido Delfino
 
-Une place s'est libérée pour vous
-=================================
+Un emplacement s'est libéré pour vous
+=====================================
 
-Bonjour Mario, une place correspondant à votre demande s'est libérée chez Lido Delfino.
+Bonjour Mario, un emplacement correspondant à votre demande s'est libéré chez Lido Delfino.
 
 - Période : du samedi 10 juillet 2027 au lundi 12 juillet 2027
-- Formule : Ombrellone e 2 lettini
+- Forfait : Ombrellone e 2 lettini
 
-La place vous est réservée jusqu'au jeudi 12 août 2027, 22:00. Passé ce délai, elle sera proposée à la personne suivante sur la liste.
+L'emplacement vous est réservé jusqu'au jeudi 12 août 2027, 22:00. Passé ce délai, il sera proposé à la personne suivante sur la liste.
 
 Accepter l'offre et finaliser la réservation (https://arenile.example/b/lido-delfino/m/TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_A)
 

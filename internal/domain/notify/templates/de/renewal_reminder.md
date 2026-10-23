@@ -1,8 +1,8 @@
 ---
 subject: Erinnerung: Verlängern Sie Ihr Saisonabo bis {{renewal.deadline}}
-preheader: Ihr Vorrecht auf Ihren Platz läuft bald ab.
+preheader: Ihr Vorkaufsrecht auf Ihren Platz läuft bald ab.
 ---
-# Ihr Vorrecht läuft bald ab
+# Ihr Vorkaufsrecht läuft bald ab
 
 Hallo {{customer.first_name}}, wir erinnern Sie daran, dass Ihr Platz bei **{{establishment.name}}** nur noch bis **{{renewal.deadline}}** für Sie reserviert ist.
 

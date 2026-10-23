@@ -7,7 +7,7 @@ preheader: We will write to you as soon as a spot frees up for your dates.
 Hi {{customer.first_name}}, we have registered your request at **{{establishment.name}}**.
 
 - Dates: {{waitlist.period}}
-- Option: {{waitlist.pack}}
+- Package: {{waitlist.pack}}
 
 As soon as a matching spot frees up we will send you an email with an offer reserved for a limited time.
 

@@ -7,7 +7,7 @@ preheader: Wir schreiben Ihnen, sobald für Ihren Zeitraum ein Platz frei wird.
 Hallo {{customer.first_name}}, wir haben Ihre Anfrage bei **{{establishment.name}}** registriert.
 
 - Zeitraum: {{waitlist.period}}
-- Angebot: {{waitlist.pack}}
+- Paket: {{waitlist.pack}}
 
 Sobald ein passender Platz frei wird, senden wir Ihnen eine E-Mail mit einem zeitlich reservierten Angebot.
 

@@ -7,7 +7,7 @@ preheader: The spot is reserved for you until {{offer.expires}}.
 Hi {{customer.first_name}}, a spot matching your request has freed up at **{{establishment.name}}**.
 
 - Dates: {{waitlist.period}}
-- Option: {{waitlist.pack}}
+- Package: {{waitlist.pack}}
 
 The spot is reserved for you until **{{offer.expires}}**. After that it goes to the next person on the list.
 

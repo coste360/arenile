@@ -23,12 +23,15 @@ var renewalTemplates = map[string]bool{TemplateRenewalProposal: true, TemplateRe
 var RenewalVars = []string{"renewal.deadline"}
 
 // renewalLink issues the manage link of a renewal email; a proposal whose
-// booking is no longer held or pending payment is not sent (errSkip).
+// booking is no longer held or pending payment is not sent (errSkip). The
+// links of the earlier emails of the same proposal (first proposal,
+// reminders) are revoked: only the latest email opens the renewal page, so
+// a bulk send and its reminders never leave several valid links around.
 func (s *Service) renewalLink(ctx context.Context, es store.EstablishmentScope, d *bookingData) (*MagicLink, error) {
 	if d.Booking.Status != statusHeld && d.Booking.Status != statusPendingPayment {
 		return nil, fmt.Errorf("%w: renewal booking is %s", errSkip, d.Booking.Status)
 	}
-	return s.issueForEmail(ctx, es, d.Booking.ID, nil)
+	return s.issueForEmail(ctx, es, d.Booking.ID, []string{})
 }
 
 // renewalVars formats the deadline of the payload in the establishment

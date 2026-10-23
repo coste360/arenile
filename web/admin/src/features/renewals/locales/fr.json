@@ -1,6 +1,6 @@
 {
   "title": "Renouvellements",
-  "description": "Campagnes de renouvellement des abonnements : propositions avec droit de préemption, envois, acceptations et emplacements libérés à l'échéance.",
+  "description": "Campagnes de renouvellement des abonnements : propositions avec droit de préemption, envois, acceptations et emplacements libérés à la date limite.",
   "optional": "(facultatif)",
   "countdown": {
     "expired": "Expirée",
@@ -33,9 +33,9 @@
     "done": "Renouvellement de {{spot}} refusé : emplacement libéré."
   },
   "deadline": {
-    "date": "Nouvelle échéance",
+    "date": "Nouvelle date limite",
     "help": "La préemption se termine à 23:59 le jour choisi (heure de l'établissement).",
-    "submit": "Enregistrer l'échéance"
+    "submit": "Enregistrer la date limite"
   },
   "create": {
     "title": "Nouvelle campagne",
@@ -44,7 +44,7 @@
     "target": "Nouvelle saison",
     "pickSeason": "Choisissez la saison",
     "sameSeason": "Choisissez deux saisons différentes.",
-    "deadline": "Échéance de la préemption",
+    "deadline": "Date limite de la préemption",
     "deadlineHelp": "Jusqu'à cette date, l'emplacement reste réservé à l'abonné.",
     "name": "Nom",
     "namePlaceholder": "Renouvellements {{year}}",
@@ -79,7 +79,7 @@
     "reason": "Motif",
     "status": "Statut",
     "sent": "Envoi",
-    "deadline": "Échéance",
+    "deadline": "Date limite",
     "actions": "Actions"
   },
   "status": {
@@ -108,12 +108,12 @@
     "pick": "Campagne",
     "seasons": "Saison {{source}} → {{target}}",
     "status": "Statut",
-    "deadline": "Échéance de la préemption",
+    "deadline": "Date limite de la préemption",
     "total": "Valeur des propositions",
     "converted": "Renouvellements confirmés",
-    "changeDeadline": "Modifier l'échéance",
+    "changeDeadline": "Modifier la date limite",
     "changeDeadlineHelp": "S'applique aux propositions encore en attente.",
-    "deadlineChanged": "Échéance mise à jour.",
+    "deadlineChanged": "Date limite mise à jour.",
     "close": "Clôturer la campagne",
     "closeTitle": "Clôturer la campagne ?",
     "closeDescription_one": "{{count}} proposition encore ouverte sera clôturée et son emplacement libéré.",
@@ -165,14 +165,14 @@
     "onSelection": "Sur les propositions sélectionnées",
     "send": "Envoyer ou relancer",
     "accept": "Accepter",
-    "extend": "Prolonger l'échéance",
+    "extend": "Prolonger la date limite",
     "decline": "Refuser et libérer",
     "release": "Libérer maintenant",
     "clear": "Désélectionner",
     "sendUnsent": "Envoyer à ceux qui ne l'ont pas encore reçue",
     "remind": "Relancer ceux qui n'ont pas répondu",
     "releaseExpired": "Libérer les préemptions expirées",
-    "extendTitle": "Prolonger l'échéance",
+    "extendTitle": "Prolonger la date limite",
     "extendDescription_one": "{{count}} proposition sélectionnée.",
     "extendDescription_other": "{{count}} propositions sélectionnées.",
     "result": "Terminé : {{succeeded}} réussies, {{skipped}} ignorées, {{failed}} en échec.",
@@ -212,7 +212,7 @@
       },
       "releaseExpired": {
         "title": "Libérer les préemptions expirées ?",
-        "description": "Les emplacements des propositions sans réponse dont l'échéance est passée redeviennent réservables."
+        "description": "Les emplacements des propositions sans réponse dont la date limite est passée redeviennent réservables."
       }
     }
   }

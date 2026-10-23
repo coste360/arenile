@@ -52,7 +52,7 @@
     "credit_insufficient": "Das verfügbare Guthaben reicht nicht aus: Laden Sie die Seite neu."
   },
   "credit": {
-    "available": "Sie haben ein Guthaben von {{amount}}, das Sie im Betrieb verwenden können.",
+    "available": "Sie haben ein Guthaben von {{amount}}, das Sie für diese Buchung oder an der Kasse verwenden können.",
     "apply": "{{amount}} Guthaben für den Restbetrag verwenden",
     "applied": "Guthaben von {{amount}} auf die Buchung angerechnet."
   }

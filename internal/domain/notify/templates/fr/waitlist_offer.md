@@ -1,15 +1,15 @@
 ---
-subject: Une place s'est libérée chez {{establishment.name}}
-preheader: La place vous est réservée jusqu'au {{offer.expires}}.
+subject: Un emplacement s'est libéré chez {{establishment.name}}
+preheader: L'emplacement vous est réservé jusqu'au {{offer.expires}}.
 ---
-# Une place s'est libérée pour vous
+# Un emplacement s'est libéré pour vous
 
-Bonjour {{customer.first_name}}, une place correspondant à votre demande s'est libérée chez **{{establishment.name}}**.
+Bonjour {{customer.first_name}}, un emplacement correspondant à votre demande s'est libéré chez **{{establishment.name}}**.
 
 - Période : {{waitlist.period}}
-- Formule : {{waitlist.pack}}
+- Forfait : {{waitlist.pack}}
 
-La place vous est réservée jusqu'au **{{offer.expires}}**. Passé ce délai, elle sera proposée à la personne suivante sur la liste.
+L'emplacement vous est réservé jusqu'au **{{offer.expires}}**. Passé ce délai, il sera proposé à la personne suivante sur la liste.
 
 [Accepter l'offre et finaliser la réservation]({{waitlist_url}})
 

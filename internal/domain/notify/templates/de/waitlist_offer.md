@@ -7,7 +7,7 @@ preheader: Der Platz ist bis {{offer.expires}} für Sie reserviert.
 Hallo {{customer.first_name}}, bei **{{establishment.name}}** ist ein Platz frei geworden, der zu Ihrer Anfrage passt.
 
 - Zeitraum: {{waitlist.period}}
-- Angebot: {{waitlist.pack}}
+- Paket: {{waitlist.pack}}
 
 Der Platz ist bis **{{offer.expires}}** für Sie reserviert. Danach geht er an die nächste Person auf der Liste.
 

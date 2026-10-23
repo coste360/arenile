@@ -139,9 +139,9 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 }
 
 // issueForEmail issues a link in its own transaction. For the manage_link
-// template (revokePrevious != nil) the previous links are revoked, except
-// the new one and the ids in revokePrevious (the link just shown at the
-// desk by RegenerateLink).
+// and renewal templates (revokePrevious != nil) the previous links are
+// revoked, except the new one and the ids in revokePrevious (the link just
+// shown at the desk by RegenerateLink).
 func (s *Service) issueForEmail(ctx context.Context, es store.EstablishmentScope, bookingID string, revokePrevious []string) (*MagicLink, error) {
 	var link *MagicLink
 	err := store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {

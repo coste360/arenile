@@ -39,13 +39,13 @@
   },
   "create": {
     "title": "Neue Kampagne",
-    "description": "Ein Angebot für jeden Abo-Inhaber der Ausgangssaison, mit demselben Platz und dem Preis der neuen Preisliste.",
+    "description": "Ein Angebot für jeden Abonnenten der Ausgangssaison, mit demselben Platz und dem Preis der neuen Preisliste.",
     "source": "Ausgangssaison",
     "target": "Neue Saison",
     "pickSeason": "Saison wählen",
     "sameSeason": "Wählen Sie zwei verschiedene Saisons.",
     "deadline": "Frist des Vorkaufsrechts",
-    "deadlineHelp": "Bis zu diesem Datum bleibt der Platz für den Abo-Inhaber reserviert.",
+    "deadlineHelp": "Bis zu diesem Datum bleibt der Platz für den Abonnenten reserviert.",
     "name": "Name",
     "namePlaceholder": "Verlängerungen {{year}}",
     "notes": "Interne Notizen",
@@ -139,7 +139,7 @@
   },
   "empty": {
     "title": "Keine Verlängerungskampagnen",
-    "description": "Bereiten Sie die neue Saison mit dem Saisonwechsel vor und bieten Sie dann den Abo-Inhabern die Verlängerung an.",
+    "description": "Bereiten Sie die neue Saison mit dem Saisonwechsel vor und bieten Sie dann den Abonnentenn die Verlängerung an.",
     "rollover": "Saisonwechsel"
   },
   "row": {
@@ -204,11 +204,11 @@
       },
       "unsent": {
         "title": "Noch nicht versendete Angebote senden?",
-        "description": "Jeder Abo-Inhaber mit E-Mail, der das Angebot noch nicht erhalten hat, erhält den Verlängerungslink."
+        "description": "Jeder Abonnent mit E-Mail, der das Angebot noch nicht erhalten hat, erhält den Verlängerungslink."
       },
       "remind": {
         "title": "Erinnerung senden?",
-        "description": "Alle Abo-Inhaber, die noch nicht geantwortet haben, erhalten den Verlängerungslink erneut."
+        "description": "Alle Abonnenten, die noch nicht geantwortet haben, erhalten den Verlängerungslink erneut."
       },
       "releaseExpired": {
         "title": "Abgelaufene Vorkaufsrechte freigeben?",

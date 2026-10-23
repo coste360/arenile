@@ -52,7 +52,7 @@
     "credit_insufficient": "Il credito disponibile non è sufficiente: ricarica la pagina."
   },
   "credit": {
-    "available": "Hai un credito di {{amount}} da usare presso lo stabilimento.",
+    "available": "Hai un credito di {{amount}} che puoi usare per questa prenotazione o in cassa.",
     "apply": "Usa {{amount}} di credito per il saldo",
     "applied": "Credito di {{amount}} applicato alla prenotazione."
   }

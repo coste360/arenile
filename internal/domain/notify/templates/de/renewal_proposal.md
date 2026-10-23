@@ -4,7 +4,7 @@ preheader: Ihr Platz ist bis {{renewal.deadline}} für Sie reserviert.
 ---
 # Verlängern Sie Ihr Saisonabo
 
-Hallo {{customer.first_name}}, die neue Saison bei **{{establishment.name}}** steht bevor und Ihr Platz ist für Sie reserviert: Sie haben das Vorrecht auf die Verlängerung. Hier ist das Angebot.
+Hallo {{customer.first_name}}, die neue Saison bei **{{establishment.name}}** steht bevor und Ihr Platz ist für Sie reserviert: Sie haben das Vorkaufsrecht auf die Verlängerung. Hier ist das Angebot.
 
 {{> summary}}
 
