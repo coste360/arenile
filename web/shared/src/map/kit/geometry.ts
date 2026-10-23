@@ -10,9 +10,10 @@ import { KIT_BY_ID } from './assets';
 export const SPOT_ART_SCALE = 1.3;
 
 /**
- * Side of a modular walkway tile in map units. The kit draws each tile on a
- * 120-unit viewBox with the planks touching its edges: every tile is drawn
- * at this same scale and placed on this grid so that the pieces join.
+ * Side of a modular walkway tile in map units: the kit's 120-unit viewBox
+ * at half scale. The planks the kit draws are narrower than the viewBox, so
+ * a run reads as a strip inside its tiles; the side is the module the pieces
+ * join on, not the width of the planks. Every tile is drawn at this scale.
  */
 export const KIT_TILE = 60;
 

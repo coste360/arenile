@@ -14,18 +14,27 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 - Kit di illustrazioni della mappa ([ADR 0012](docs/adr/0012-kit-mappa.md)): le 107 illustrazioni originali di
   Coste360 (`assets/beach-map-kit`, provenienza in `NOTICE.md`) sostituiscono pallini e rettangoli in editor,
   mappa operativa e mini mappa delle prenotazioni. Un solo sprite `<symbol>` per pagina con i soli disegni usati,
-  caricato in modo pigro, e un `<use>` per elemento (1.000 postazioni restano fluide); lo stato è un alone
-  sotto il disegno più un badge con glifo (presente, abbonato, assente oggi, in attesa, bloccato, da incassare,
-  prelazione), leggibile in chiaro, scuro e senza colori; sabbia, mare e battigia nello stile del kit.
-- API: `SpotKind` aggiunge `sunbed`, `daybed`, `cabana`, `hammock`; `asset` opzionale su postazioni, decorazioni e
-  generatore di file (id del kit, validato dal backend), `variant` sulle decorazioni (colore della bandiera
-  `green|yellow|red`). Migrazione `00004_map_kit_assets` (SQLite e PostgreSQL).
-- Editor: tavolozza con ricerca e categorie per postazioni ed elementi, proprietà "Illustrazione" e
-  "Colore della bandiera", passerelle modulari su griglia di 60 unità che si raccordano, rotazione per ogni asset.
+  caricato in modo pigro, e un `<use>` per elemento (1.000 postazioni misurate fluide in Chromium, con margine
+  ridotto a CPU rallentata 4×: numeri nell'ADR); lo stato è un anello intorno al disegno più un badge con un
+  glifo per ogni stato prenotato (online, cassa, presente, abbonato, assente oggi, in attesa, bloccato, da
+  incassare, prelazione), leggibile in chiaro, scuro e in scala di grigi; legenda sopra la mappa; sul telefono
+  il disegno mantiene le proporzioni della mappa senza spazio vuoto; sabbia, mare e battigia nello stile del kit.
+- API: `SpotKind` aggiunge `sunbed`, `daybed`, `cabana`, `hammock` (anche in `requires_spot_kind` dei pack);
+  `asset` opzionale su postazioni, decorazioni e generatore di file (id del kit, validato dal backend; mai su
+  un testo), `variant` sulle decorazioni (colore della bandiera `green|yellow|red`). Migrazione
+  `00004_map_kit_assets` (SQLite e PostgreSQL).
+- Editor: tavolozza con ricerca e categorie per postazioni ed elementi (frecce per riga e colonna,
+  illustrazione attuale annunciata), proprietà "Illustrazione" e "Colore della bandiera", illustrazione anche
+  nel generatore di file; il tipo resta semantico: un'illustrazione di un'altra famiglia cambia il tipo e il
+  pannello lo dice, un cambio di tipo riporta l'illustrazione a quella predefinita; passerelle modulari di 60
+  unità che si raccordano (agganciate alla griglia delle tessere quando il passo della griglia divide 60),
+  rotazione per ogni asset.
 - `make gen` rigenera anche il kit (`web/scripts/gen-map-kit.mjs`: sanifica gli SVG e fallisce su contenuti non
   ammessi) in `web/shared/src/map/kit/generated/` e `internal/domain/mapping/kitassets_gen.go`.
 - Modello "Lido classico" e demo con il kit (ombrelloni con lettini, gazebo, passerella, bar, docce, WC, DAE,
-  torretta, bandiera, sedia JOB, rampa, palme); `seed demo` aggiorna una demo esistente una sola volta.
+  torretta, bandiera, sedia JOB, rampa, palme); `seed demo` aggiorna una demo esistente una sola volta,
+  sostituendo solo le quattro decorazioni del modello pre-kit (quelle aggiunte a mano restano) con una voce
+  di audit per mappa e il riepilogo di cosa ha tolto e aggiunto.
 
 ### Note di aggiornamento
 

@@ -94,7 +94,8 @@ Convenzioni: ogni tabella ha `id` (UUIDv7), `created_at`, `updated_at`. Le tabel
 | label | text | Es. `A12` |
 | row_label | text | Es. `A` |
 | number | int | |
-| kind | enum | `umbrella`, `gazebo`, `tent`, `palm`, `custom` |
+| kind | enum | `umbrella`, `gazebo`, `tent`, `palm`, `sunbed`, `daybed`, `cabana`, `hammock`, `custom`. Tipo semantico (pack `requires_spot_kind`, assegnazione); le famiglie del kit sono aggiunte dall'ADR 0012 |
+| asset | text null | Illustrazione del kit della mappa (id del manifest, solo asset prenotabili; ADR 0012). Null = illustrazione predefinita del tipo |
 | x, y, rotation | numeric | Posizione sulla mappa |
 | shape | json | `{type: "circle"|"rect", w, h}` |
 | capacity | json | Componenti inclusi di default (es. `{umbrella:1, sunbed:2}`) |
@@ -109,6 +110,8 @@ Convenzioni: ogni tabella ha `id` (UUIDv7), `created_at`, `updated_at`. Le tabel
 |---|---|
 | map_id | uuid |
 | kind | enum: `walkway`, `shower`, `lifeguard`, `bar`, `entrance`, `cabin_block`, `text`, `custom` |
+| asset | text null: illustrazione del kit (qualsiasi asset del manifest; mai su `text`). Null = illustrazione predefinita del tipo (`custom`: nessuna) |
+| variant | text null: variante di colore prevista dall'asset (`bandiera_mare`: `green`, `yellow`, `red`) |
 | x, y, rotation | numeric |
 | shape | json |
 | label | json i18n null |

@@ -10,9 +10,9 @@
 | **Periodo tariffario** | Intervallo di date con nome (bassa, media, alta, Ferragosto) usato dalle regole di prezzo. |
 | **Mappa** | Rappresentazione grafica di un'area (spiaggia, piscina). |
 | **Zona** | Raggruppamento logico di postazioni (Prima fila, Zona B, Piscina). |
-| **Postazione** | Elemento prenotabile con posizione: ombrellone, gazebo, tenda, palma. |
+| **Postazione** | Elemento prenotabile con posizione: ombrellone, gazebo, tenda, palma, lettino, daybed, cabana, amaca (`kind`, semantico). Il disegno è un'illustrazione del kit della mappa (`asset`, ADR 0012), predefinita per tipo. |
 | **Pool** | Inventario a quantità senza posizione: "lettini sfusi", "ombrelloni zona libera". |
-| **Elemento decorativo** | Elemento non prenotabile della mappa: passerella, docce, torretta, bar. |
+| **Elemento decorativo** | Elemento non prenotabile della mappa: passerella, docce, torretta, bar, oppure una qualsiasi illustrazione del kit (bandiera, WC, DAE, palme…) come `custom` con `asset`. |
 | **Componente** | Unità di inventario consumata da un pack: ombrellone, lettino, sdraio, cabina. |
 | **Pack** | Prodotto vendibile composto da componenti (1 ombrellone + 2 lettini). |
 | **Extra** | Aggiunta opzionale a un pack (lettino aggiuntivo, cabina, telo, parcheggio). |

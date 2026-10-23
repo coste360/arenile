@@ -56,8 +56,11 @@ accessibilità da soli.
   (`element.style`, `<style>`), valori arbitrari di Tailwind che aggirano il tema (colori, dimensioni
   come `text-[10px]`, proprietà) e i token `--ar-*`. Le uniche esenzioni sono elencate nello script
   con la loro ragione: geometria SVG della mappa (`BeachMap`, `MapLegend`, `MapCanvas`), variabili del
-  tema scritte a runtime (`theme.ts`, `ThemeProvider`), iframe dell'embed sulla pagina ospite, e i
-  componenti shadcn generati dalla CLI;
+  tema scritte a runtime (`theme.ts`, `ThemeProvider`), iframe dell'embed sulla pagina ospite, i
+  componenti shadcn generati dalla CLI, lo sprite del kit della mappa (`MapKitDefs`, corpi SVG sanificati
+  al build, ADR 0012) e i file di test, che possono leggere stili calcolati o contenere i frammenti SVG
+  che il generatore del kit deve rifiutare (`gen-map-kit.test.mjs`); il colore della bandiera del kit usa
+  la proprietà arbitraria `[--beach-flag:…]` su un token del tema, non utility custom;
   `npm run budget` controlla il budget della pagina di prenotazione; regole in
   `.claude/rules/frontend.md` e `AGENTS.md`; test e2e su tema scuro, palette comandi e selettore di
   date.
