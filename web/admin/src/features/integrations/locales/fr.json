@@ -1,8 +1,253 @@
 {
+  "ownerOnly": "Seul le titulaire peut gérer les intégrations.",
+  "never": "Jamais",
+  "actions": "Actions",
+  "saved": "Modifications enregistrées",
+  "secret": {
+    "copied": "Copié dans le presse-papiers",
+    "copyFailed": "Échec de la copie : sélectionnez le texte et copiez-le manuellement.",
+    "once": "Copiez-le maintenant et conservez-le en lieu sûr : par sécurité, il ne sera plus affiché.",
+    "copy": "Copier",
+    "done": "C'est noté, fermer"
+  },
+  "validation": {
+    "required": "Champ obligatoire.",
+    "scopes": "Choisissez au moins une autorisation.",
+    "expiryPast": "L'expiration doit être aujourd'hui ou plus tard.",
+    "url": "Adresse https complète (http uniquement vers localhost).",
+    "events": "Choisissez au moins un événement."
+  },
+  "scopes": {
+    "establishment": {
+      "configure": {
+        "label": "Configuration",
+        "description": "Établissement, plans, tarifs et règles."
+      }
+    },
+    "payments": {
+      "configure": {
+        "label": "Paiements",
+        "description": "Configuration des moyens de paiement."
+      }
+    },
+    "bookings": {
+      "write": {
+        "label": "Réservations (écriture)",
+        "description": "Créer, modifier et annuler réservations et clients."
+      },
+      "read": {
+        "label": "Réservations (lecture)",
+        "description": "Lire réservations, disponibilités et clients."
+      }
+    },
+    "cash": {
+      "operate": {
+        "label": "Caisse",
+        "description": "Sessions de caisse et encaissements."
+      }
+    },
+    "refunds": {
+      "issue": {
+        "label": "Remboursements",
+        "description": "Émettre des remboursements."
+      }
+    },
+    "operations": {
+      "run": {
+        "label": "Opérations",
+        "description": "Arrivées, déplacements et vue du jour."
+      }
+    },
+    "reports": {
+      "read": {
+        "label": "Rapports",
+        "description": "Rapports et exports."
+      }
+    }
+  },
   "apiKeys": {
-    "description": "Clés pour connecter des systèmes externes à l'API Arenile, avec des droits limités et une expiration facultative."
+    "title": "Clés API",
+    "description": "Clés pour connecter des systèmes externes à l'API Arenile, avec des autorisations limitées et une expiration facultative.",
+    "new": "Nouvelle clé",
+    "edit": "Modifier la clé",
+    "create": "Créer la clé",
+    "usage": "Les services externes envoient la clé à chaque requête dans l'en-tête",
+    "showRevoked": "Afficher les révoquées",
+    "empty": "Aucune clé API",
+    "emptyHint": "Créez une clé par système externe, avec seulement les autorisations nécessaires.",
+    "formHint": "Une clé agit uniquement sur cet établissement et avec les autorisations choisies.",
+    "nameHint": "Pour la reconnaître, par exemple le nom du logiciel.",
+    "expiryHint": "Facultative : après ce jour la clé cesse de fonctionner.",
+    "scopesHint": "La gestion des utilisateurs n'est jamais accordée aux clés.",
+    "editAria": "Modifier la clé {{name}}",
+    "revoke": "Révoquer",
+    "revokeAria": "Révoquer la clé {{name}}",
+    "revokeTitle": "Révoquer la clé {{name}} ?",
+    "revokeConfirm": "Les requêtes faites avec cette clé seront refusées immédiatement. Action irréversible.",
+    "revoked": "Clé révoquée",
+    "revokedOn": "Révoquée le {{date}}",
+    "noExpiry": "Aucune",
+    "createdTitle": "Clé créée",
+    "createdDescription": "Voici la clé complète à saisir dans le service externe.",
+    "createdHint": "Utilisation : Authorization: Bearer <clé>",
+    "fields": {
+      "name": "Nom",
+      "scopes": "Autorisations",
+      "status": "Statut",
+      "created": "Créée",
+      "lastUsed": "Dernière utilisation",
+      "expires": "Expiration",
+      "key": "Clé API"
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expirée",
+      "revoked": "Révoquée"
+    }
   },
   "webhooks": {
-    "description": "Notifications signées vers vos systèmes lors des changements de réservations, paiements et configuration, avec journal des envois."
+    "title": "Webhooks",
+    "description": "Notifications signées vers vos systèmes lorsque réservations, paiements et configuration changent, avec journal des envois.",
+    "new": "Nouveau point de terminaison",
+    "edit": "Modifier le point de terminaison",
+    "create": "Créer",
+    "formHint": "Arenile envoie une requête POST signée à cette adresse pour chaque événement choisi.",
+    "urlHint": "Doit être en https ; http uniquement vers localhost pour les essais.",
+    "eventsHint": "Choisissez des événements, un groupe entier ou tous les événements.",
+    "eventsPlaceholder": "Choisir les événements",
+    "activeHint": "En pause, les événements ne sont pas envoyés (le test fonctionne quand même).",
+    "moreEvents": "+{{n}}",
+    "failures": "Échecs consécutifs : {{n}}",
+    "editAria": "Modifier le point de terminaison {{url}}",
+    "delete": "Supprimer le point de terminaison",
+    "deleteTitle": "Supprimer le point de terminaison {{url}} ?",
+    "deleted": "Point de terminaison supprimé",
+    "deleteConfirm": "Le point de terminaison et son journal seront supprimés.",
+    "log": "Journal des envois",
+    "logAria": "Journal des envois de {{url}}",
+    "moreAria": "Autres actions pour {{url}}",
+    "test": "Envoyer un événement de test",
+    "rotate": "Renouveler le secret",
+    "rotateHint": "Génère un nouveau secret de signature. Pendant la période de grâce, les envois sont signés avec les deux.",
+    "rotateSubmit": "Générer un nouveau secret",
+    "grace": "Période de grâce",
+    "graceHint": "Délai pour mettre à jour le secret dans le système destinataire.",
+    "graceOption": {
+      "h0": "Aucune (l'ancien cesse immédiatement)",
+      "h1": "1 heure",
+      "h24": "24 heures",
+      "h72": "3 jours",
+      "h168": "7 jours"
+    },
+    "rotatedTitle": "Nouveau secret de signature",
+    "rotatedDescription": "Mettez à jour le système destinataire pendant la période de grâce.",
+    "createdTitle": "Point de terminaison créé",
+    "createdDescription": "Voici le secret pour vérifier la signature des envois.",
+    "signatureTitle": "Vérification de la signature",
+    "signatureHelp": "Chaque envoi porte l'en-tête",
+    "signatureHow": "v1 est le HMAC-SHA256, avec le secret du point de terminaison, de \"<t>.<corps>\" ; pendant un renouvellement deux valeurs v1 apparaissent.",
+    "empty": "Aucun point de terminaison",
+    "emptyHint": "Ajoutez l'adresse de votre système pour recevoir les événements Arenile.",
+    "testOk": "Événement de test livré à {{url}}",
+    "testFailed": "Événement de test non livré à {{url}}",
+    "testCode": "Réponse HTTP {{code}}",
+    "testNoResponse": "Aucune réponse du système destinataire",
+    "fields": {
+      "url": "Adresse (URL)",
+      "description": "Description",
+      "events": "Événements",
+      "status": "Statut",
+      "lastDelivery": "Dernier envoi",
+      "active": "Actif",
+      "secret": "Secret de signature"
+    },
+    "status": {
+      "active": "Actif",
+      "paused": "En pause",
+      "disabled": "Désactivé après des échecs"
+    }
+  },
+  "groups": {
+    "booking": "Réservations",
+    "allocation": "Emplacements",
+    "season": "Abonnements",
+    "payment": "Paiements",
+    "customer": "Clients",
+    "cash_session": "Caisse",
+    "config": "Configuration"
+  },
+  "events": {
+    "all": "Tous les événements",
+    "group": "{{group}} : tous",
+    "types": {
+      "booking": {
+        "created": "Réservation créée",
+        "held": "Réservation en attente",
+        "confirmed": "Réservation confirmée",
+        "modified": "Réservation modifiée",
+        "cancelled": "Réservation annulée",
+        "checked_in": "Client arrivé",
+        "no_show": "Client absent",
+        "completed": "Réservation terminée",
+        "approval_requested": "Approbation demandée"
+      },
+      "allocation": {
+        "released": "Emplacement libéré"
+      },
+      "season": {
+        "day_released": "Jour libéré par l'abonné",
+        "renewal_offered": "Renouvellement proposé"
+      },
+      "payment": {
+        "succeeded": "Paiement réussi",
+        "failed": "Paiement échoué",
+        "refunded": "Paiement remboursé"
+      },
+      "customer": {
+        "created": "Client créé",
+        "anonymized": "Client anonymisé"
+      },
+      "cash_session": {
+        "closed": "Caisse clôturée"
+      },
+      "config": {
+        "pricing_changed": "Tarifs modifiés",
+        "map_changed": "Plan modifié"
+      },
+      "webhook": {
+        "test": "Événement de test"
+      }
+    }
+  },
+  "deliveries": {
+    "title": "Journal des envois",
+    "event": "Événement",
+    "status": "Résultat",
+    "attempts": "Tentatives",
+    "code": "HTTP",
+    "when": "Quand",
+    "created": "Créé",
+    "detail": "Détail de l'envoi",
+    "detailAria": "Détail de l'envoi {{event}}",
+    "redeliver": "Renvoyer",
+    "redeliverAria": "Renvoyer {{event}}",
+    "redelivered": "Envoi remis en file",
+    "deliveredAt": "Livré {{at}}",
+    "failedAt": "Échoué {{at}}",
+    "nextAt": "Prochaine tentative {{at}}",
+    "filter": "Résultat",
+    "allStatuses": "Tous",
+    "statusOption": {
+      "pending": "En cours",
+      "delivered": "Livré",
+      "failed": "Échoué"
+    },
+    "empty": "Aucun envoi",
+    "more": "Charger plus",
+    "loading": "Chargement…",
+    "lastError": "Dernière erreur",
+    "body": "Corps envoyé",
+    "response": "Réponse (extrait)",
+    "noResponse": "Aucune réponse"
   }
 }

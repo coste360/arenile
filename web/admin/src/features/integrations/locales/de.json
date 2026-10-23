@@ -1,8 +1,253 @@
 {
+  "ownerOnly": "Nur der Inhaber kann Integrationen verwalten.",
+  "never": "Nie",
+  "actions": "Aktionen",
+  "saved": "Änderungen gespeichert",
+  "secret": {
+    "copied": "In die Zwischenablage kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen: Text markieren und manuell kopieren.",
+    "once": "Kopiere ihn jetzt und bewahre ihn sicher auf: Aus Sicherheitsgründen wird er nicht erneut angezeigt.",
+    "copy": "Kopieren",
+    "done": "Gespeichert, schließen"
+  },
+  "validation": {
+    "required": "Pflichtfeld.",
+    "scopes": "Wähle mindestens eine Berechtigung.",
+    "expiryPast": "Das Ablaufdatum muss heute oder später sein.",
+    "url": "Vollständige https-Adresse (http nur für localhost).",
+    "events": "Wähle mindestens ein Ereignis."
+  },
+  "scopes": {
+    "establishment": {
+      "configure": {
+        "label": "Konfiguration",
+        "description": "Betrieb, Pläne, Preislisten und Richtlinien."
+      }
+    },
+    "payments": {
+      "configure": {
+        "label": "Zahlungen",
+        "description": "Konfiguration der Zahlungsarten."
+      }
+    },
+    "bookings": {
+      "write": {
+        "label": "Buchungen (schreiben)",
+        "description": "Buchungen und Kunden anlegen, ändern und stornieren."
+      },
+      "read": {
+        "label": "Buchungen (lesen)",
+        "description": "Buchungen, Verfügbarkeit und Kunden lesen."
+      }
+    },
+    "cash": {
+      "operate": {
+        "label": "Kasse",
+        "description": "Kassensitzungen und Einnahmen."
+      }
+    },
+    "refunds": {
+      "issue": {
+        "label": "Erstattungen",
+        "description": "Erstattungen ausführen."
+      }
+    },
+    "operations": {
+      "run": {
+        "label": "Betrieb",
+        "description": "Check-in, Umzüge und Tagesansicht."
+      }
+    },
+    "reports": {
+      "read": {
+        "label": "Berichte",
+        "description": "Berichte und Exporte."
+      }
+    }
+  },
   "apiKeys": {
-    "description": "Schlüssel, um externe Systeme mit der Arenile-API zu verbinden, mit eingeschränkten Rechten und optionalem Ablaufdatum."
+    "title": "API-Schlüssel",
+    "description": "Schlüssel, um externe Systeme mit der Arenile-API zu verbinden, mit eingeschränkten Berechtigungen und optionalem Ablauf.",
+    "new": "Neuer Schlüssel",
+    "edit": "Schlüssel bearbeiten",
+    "create": "Schlüssel erstellen",
+    "usage": "Externe Dienste senden den Schlüssel bei jeder Anfrage im Header",
+    "showRevoked": "Widerrufene anzeigen",
+    "empty": "Keine API-Schlüssel",
+    "emptyHint": "Erstelle einen Schlüssel pro externem System, nur mit den nötigen Berechtigungen.",
+    "formHint": "Ein Schlüssel wirkt nur für diesen Betrieb und nur mit den gewählten Berechtigungen.",
+    "nameHint": "Zum Wiedererkennen, z. B. der Name des Systems.",
+    "expiryHint": "Optional: nach diesem Tag funktioniert der Schlüssel nicht mehr.",
+    "scopesHint": "Benutzerverwaltung wird Schlüsseln nie gewährt.",
+    "editAria": "Schlüssel {{name}} bearbeiten",
+    "revoke": "Widerrufen",
+    "revokeAria": "Schlüssel {{name}} widerrufen",
+    "revokeTitle": "Schlüssel {{name}} widerrufen?",
+    "revokeConfirm": "Anfragen mit diesem Schlüssel werden sofort abgelehnt. Das kann nicht rückgängig gemacht werden.",
+    "revoked": "Schlüssel widerrufen",
+    "revokedOn": "Widerrufen am {{date}}",
+    "noExpiry": "Keine",
+    "createdTitle": "Schlüssel erstellt",
+    "createdDescription": "Hier ist der vollständige Schlüssel für den externen Dienst.",
+    "createdHint": "Verwendung: Authorization: Bearer <Schlüssel>",
+    "fields": {
+      "name": "Name",
+      "scopes": "Berechtigungen",
+      "status": "Status",
+      "created": "Erstellt",
+      "lastUsed": "Zuletzt verwendet",
+      "expires": "Ablauf",
+      "key": "API-Schlüssel"
+    },
+    "status": {
+      "active": "Aktiv",
+      "expired": "Abgelaufen",
+      "revoked": "Widerrufen"
+    }
   },
   "webhooks": {
-    "description": "Signierte Benachrichtigungen an Ihre Systeme bei Änderungen an Buchungen, Zahlungen und Konfiguration, mit Zustellprotokoll."
+    "title": "Webhooks",
+    "description": "Signierte Benachrichtigungen an deine Systeme bei Änderungen an Buchungen, Zahlungen und Konfiguration, mit Zustellprotokoll.",
+    "new": "Neuer Endpunkt",
+    "edit": "Endpunkt bearbeiten",
+    "create": "Endpunkt erstellen",
+    "formHint": "Arenile sendet für jedes gewählte Ereignis eine signierte POST-Anfrage an diese Adresse.",
+    "urlHint": "Muss https sein; http nur für localhost zum Testen.",
+    "eventsHint": "Wähle einzelne Ereignisse, eine ganze Gruppe oder alle Ereignisse.",
+    "eventsPlaceholder": "Ereignisse wählen",
+    "activeHint": "Pausiert werden keine Ereignisse gesendet (der Test funktioniert trotzdem).",
+    "moreEvents": "+{{n}}",
+    "failures": "Fehler in Folge: {{n}}",
+    "editAria": "Endpunkt {{url}} bearbeiten",
+    "delete": "Endpunkt löschen",
+    "deleteTitle": "Endpunkt {{url}} löschen?",
+    "deleted": "Endpunkt gelöscht",
+    "deleteConfirm": "Der Endpunkt und sein Zustellprotokoll werden gelöscht.",
+    "log": "Zustellprotokoll",
+    "logAria": "Zustellprotokoll von {{url}}",
+    "moreAria": "Weitere Aktionen für {{url}}",
+    "test": "Testereignis senden",
+    "rotate": "Geheimnis erneuern",
+    "rotateHint": "Erzeugt ein neues Signaturgeheimnis. Während der Übergangszeit wird mit beiden signiert.",
+    "rotateSubmit": "Neues Geheimnis erzeugen",
+    "grace": "Übergangszeit",
+    "graceHint": "Zeit, um das Geheimnis im empfangenden System zu aktualisieren.",
+    "graceOption": {
+      "h0": "Keine (das alte endet sofort)",
+      "h1": "1 Stunde",
+      "h24": "24 Stunden",
+      "h72": "3 Tage",
+      "h168": "7 Tage"
+    },
+    "rotatedTitle": "Neues Signaturgeheimnis",
+    "rotatedDescription": "Aktualisiere das empfangende System innerhalb der Übergangszeit.",
+    "createdTitle": "Endpunkt erstellt",
+    "createdDescription": "Hier ist das Geheimnis zur Prüfung der Signatur.",
+    "signatureTitle": "Signaturprüfung",
+    "signatureHelp": "Jede Zustellung enthält den Header",
+    "signatureHow": "v1 ist der HMAC-SHA256 mit dem Endpunkt-Geheimnis über \"<t>.<body>\"; während einer Erneuerung erscheinen zwei v1-Werte.",
+    "empty": "Keine Endpunkte",
+    "emptyHint": "Füge die Adresse deines Systems hinzu, um Arenile-Ereignisse zu empfangen.",
+    "testOk": "Testereignis an {{url}} zugestellt",
+    "testFailed": "Testereignis an {{url}} nicht zugestellt",
+    "testCode": "HTTP-Antwort {{code}}",
+    "testNoResponse": "Keine Antwort vom empfangenden System",
+    "fields": {
+      "url": "Adresse (URL)",
+      "description": "Beschreibung",
+      "events": "Ereignisse",
+      "status": "Status",
+      "lastDelivery": "Letzte Zustellung",
+      "active": "Aktiv",
+      "secret": "Signaturgeheimnis"
+    },
+    "status": {
+      "active": "Aktiv",
+      "paused": "Pausiert",
+      "disabled": "Wegen Fehlern deaktiviert"
+    }
+  },
+  "groups": {
+    "booking": "Buchungen",
+    "allocation": "Plätze",
+    "season": "Saisonabos",
+    "payment": "Zahlungen",
+    "customer": "Kunden",
+    "cash_session": "Kasse",
+    "config": "Konfiguration"
+  },
+  "events": {
+    "all": "Alle Ereignisse",
+    "group": "{{group}}: alle",
+    "types": {
+      "booking": {
+        "created": "Buchung erstellt",
+        "held": "Buchung vorgemerkt",
+        "confirmed": "Buchung bestätigt",
+        "modified": "Buchung geändert",
+        "cancelled": "Buchung storniert",
+        "checked_in": "Gast eingecheckt",
+        "no_show": "Nicht erschienen",
+        "completed": "Buchung abgeschlossen",
+        "approval_requested": "Freigabe angefordert"
+      },
+      "allocation": {
+        "released": "Platz freigegeben"
+      },
+      "season": {
+        "day_released": "Tag vom Abonnenten freigegeben",
+        "renewal_offered": "Verlängerung angeboten"
+      },
+      "payment": {
+        "succeeded": "Zahlung erfolgreich",
+        "failed": "Zahlung fehlgeschlagen",
+        "refunded": "Zahlung erstattet"
+      },
+      "customer": {
+        "created": "Kunde angelegt",
+        "anonymized": "Kunde anonymisiert"
+      },
+      "cash_session": {
+        "closed": "Kasse geschlossen"
+      },
+      "config": {
+        "pricing_changed": "Preise geändert",
+        "map_changed": "Plan geändert"
+      },
+      "webhook": {
+        "test": "Testereignis"
+      }
+    }
+  },
+  "deliveries": {
+    "title": "Zustellprotokoll",
+    "event": "Ereignis",
+    "status": "Ergebnis",
+    "attempts": "Versuche",
+    "code": "HTTP",
+    "when": "Wann",
+    "created": "Erstellt",
+    "detail": "Zustelldetails",
+    "detailAria": "Details der Zustellung {{event}}",
+    "redeliver": "Erneut senden",
+    "redeliverAria": "{{event}} erneut senden",
+    "redelivered": "Zustellung erneut eingereiht",
+    "deliveredAt": "Zugestellt {{at}}",
+    "failedAt": "Fehlgeschlagen {{at}}",
+    "nextAt": "Nächster Versuch {{at}}",
+    "filter": "Ergebnis",
+    "allStatuses": "Alle",
+    "statusOption": {
+      "pending": "Ausstehend",
+      "delivered": "Zugestellt",
+      "failed": "Fehlgeschlagen"
+    },
+    "empty": "Keine Zustellungen",
+    "more": "Mehr laden",
+    "loading": "Wird geladen…",
+    "lastError": "Letzter Fehler",
+    "body": "Gesendeter Inhalt",
+    "response": "Antwort (Auszug)",
+    "noResponse": "Keine Antwort"
   }
 }

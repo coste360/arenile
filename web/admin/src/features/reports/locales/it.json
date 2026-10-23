@@ -1,5 +1,185 @@
 {
+  "title": "Report",
   "page": {
     "description": "Occupazione, ricavi, canali, cancellazioni, abbonamenti, clienti migliori, saldi aperti e confronto con l'anno precedente, con esportazione CSV."
+  },
+  "forbidden": {
+    "title": "Accesso non consentito",
+    "description": "Il tuo ruolo non ha accesso ai report e alle esportazioni."
+  },
+  "period": {
+    "label": "Periodo",
+    "season": "Stagione",
+    "month": "Mese",
+    "custom": "Personalizzato",
+    "seasonLabel": "Stagione",
+    "noSeasons": "Nessuna stagione configurata",
+    "seasonOption": "{{year}} ({{from}} – {{to}})",
+    "range": "Dal – al",
+    "monthLabel": "Mese",
+    "year": "Anno",
+    "compare": "Confronta con l'anno precedente",
+    "compareWith": "Confronta con il {{year}}",
+    "showing": "Dati dal {{from}} al {{to}} (estremi inclusi).",
+    "error": {
+      "incomplete": "Scegli anche il giorno di fine del periodo.",
+      "reversed": "Il giorno di fine viene prima di quello di inizio.",
+      "tooLong": "Il periodo può durare al massimo 400 giorni.",
+      "noSeason": "Scegli una stagione oppure passa a mese o periodo personalizzato."
+    }
+  },
+  "tabs": {
+    "label": "Report disponibili",
+    "summary": "Riepilogo",
+    "occupancy": "Occupazione",
+    "revenue": "Ricavi",
+    "bookings": "Prenotazioni",
+    "cancellations": "Cancellazioni e no-show",
+    "passes": "Abbonamenti e rilasci",
+    "customers": "Clienti migliori",
+    "balances": "Saldi aperti"
+  },
+  "csv": {
+    "label": "Esporta CSV",
+    "aria": "Esporta CSV: {{report}}"
+  },
+  "chart": {
+    "caption": "Grafico dei dati riportati nella tabella seguente."
+  },
+  "summary": {
+    "kpis": "Indicatori del periodo",
+    "unitsHint": "{{occupied}} fasce occupate su {{capacity}}",
+    "openBalanceHint": "Prenotazioni con saldo: {{n}}",
+    "new": "Nuovo",
+    "vs": "{{year}}: {{value}}"
+  },
+  "metric": {
+    "occupancy_bp": "Occupazione",
+    "revenue_collected": "Incassato",
+    "revenue_booked": "Prenotato",
+    "bookings": "Prenotazioni",
+    "average_booking_value": "Valore medio prenotazione",
+    "cancellations": "Cancellazioni",
+    "no_shows": "No-show",
+    "season_passes_sold": "Abbonamenti venduti",
+    "released_units": "Fasce rilasciate",
+    "resold_units": "Fasce rivendute",
+    "open_balance": "Saldi aperti"
+  },
+  "comparison": {
+    "title": "Confronto con il {{year}}",
+    "description": "Dal {{currentFrom}} al {{currentTo}} rispetto agli stessi giorni dell'anno precedente ({{previousFrom}} – {{previousTo}}).",
+    "bucket": "Periodo",
+    "revenueOf": "Incassato {{year}}",
+    "bookingsOf": "Prenotazioni {{year}}",
+    "occupancyOf": "Occupazione {{year}}",
+    "metric": "Indicatore",
+    "delta": "Variazione",
+    "metricsCaption": "Indicatori a confronto con l'anno precedente",
+    "seriesCaption": "Andamento a confronto con l'anno precedente",
+    "align": "Allineamento",
+    "alignOption": {
+      "calendar": "Stesse date del calendario",
+      "weekday": "Stesso giorno della settimana"
+    }
+  },
+  "groupBy": {
+    "label": "Raggruppa per",
+    "day": "Giorno",
+    "week": "Settimana",
+    "month": "Mese",
+    "zone": "Zona",
+    "row": "Fila",
+    "slot": "Fascia",
+    "channel": "Canale",
+    "pack": "Pack",
+    "extra": "Extra",
+    "payment_method": "Metodo di pagamento",
+    "vat_rate": "Aliquota IVA",
+    "lead_time": "Anticipo",
+    "formula": "Formula"
+  },
+  "occupancy": {
+    "rate": "Occupazione",
+    "occupied": "Occupate",
+    "capacity": "Capacità",
+    "season": "Abbonati",
+    "released": "Rilasciate",
+    "blocked": "Bloccate",
+    "total": "Totale periodo: {{rate}} ({{occupied}} fasce occupate su {{capacity}}).",
+    "help": "Fasce (postazione × giorno × mattina/pomeriggio) occupate sulla capacità dei giorni aperti."
+  },
+  "revenue": {
+    "basis": "Base di calcolo",
+    "basisOption": {
+      "collected": "Incassato",
+      "booked": "Prenotato"
+    },
+    "basisHelp": {
+      "collected": "Pagamenti riusciti nel periodo, al netto dei rimborsi.",
+      "booked": "Valore delle prenotazioni per i giorni del periodo, indipendentemente dal pagamento."
+    },
+    "movements": "Movimenti",
+    "lines": "Righe",
+    "gross": "Lordo",
+    "taxable": "Imponibile",
+    "tax": "IVA",
+    "refunds": "Rimborsi",
+    "total": "Totale lordo: {{gross}}, di cui IVA {{tax}}."
+  },
+  "bookings": {
+    "count": "Prenotazioni",
+    "share": "Quota",
+    "value": "Valore",
+    "average": "Valore medio",
+    "lead": "Anticipo medio (giorni)",
+    "total": "Prenotazioni: {{n}}, valore {{value}}, media {{average}}."
+  },
+  "cancellations": {
+    "bookings": "Prenotazioni",
+    "cancelled": "Cancellate",
+    "cancelledRate": "% cancellate",
+    "noShows": "No-show",
+    "noShowRate": "% no-show",
+    "lost": "Valore perso",
+    "refunded": "Rimborsato",
+    "total": "Cancellazioni {{cancelled}}, no-show {{noShows}}, valore perso {{lost}}."
+  },
+  "passes": {
+    "help": "Giorni rilasciati dagli abbonati e quanti sono stati rivenduti.",
+    "sold": "Abbonamenti venduti",
+    "value": "Valore abbonamenti",
+    "renewals": "Rinnovi",
+    "released": "Fasce rilasciate",
+    "resold": "Fasce rivendute",
+    "resaleRate": "% rivendute",
+    "resaleRevenue": "Ricavi da rivendita",
+    "credits": "Crediti emessi"
+  },
+  "customers": {
+    "help": "Solo nome e cognome: i recapiti restano nella scheda cliente.",
+    "rank": "#",
+    "name": "Cliente",
+    "bookings": "Prenotazioni",
+    "spotDays": "Giorni-postazione",
+    "revenue": "Valore",
+    "last": "Ultima prenotazione",
+    "sort": "Ordina per",
+    "sortOption": {
+      "revenue": "Valore",
+      "bookings": "Numero di prenotazioni"
+    },
+    "limit": "Clienti"
+  },
+  "balances": {
+    "help": "Prenotazioni del periodo con un importo ancora da incassare.",
+    "totalDue": "Da incassare: {{amount}} su {{n}} prenotazioni.",
+    "code": "Codice",
+    "customer": "Cliente",
+    "status": "Stato",
+    "dates": "Date",
+    "total": "Totale",
+    "paid": "Pagato",
+    "due": "Saldo"
   }
 }

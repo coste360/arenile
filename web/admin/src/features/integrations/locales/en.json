@@ -1,8 +1,253 @@
 {
+  "ownerOnly": "Only the owner can manage integrations.",
+  "never": "Never",
+  "actions": "Actions",
+  "saved": "Changes saved",
+  "secret": {
+    "copied": "Copied to clipboard",
+    "copyFailed": "Copy failed: select the text and copy it manually.",
+    "once": "Copy it now and keep it somewhere safe: for security it will not be shown again.",
+    "copy": "Copy",
+    "done": "Saved it, close"
+  },
+  "validation": {
+    "required": "Required field.",
+    "scopes": "Choose at least one permission.",
+    "expiryPast": "The expiry must be today or later.",
+    "url": "Full https address (http only to localhost).",
+    "events": "Choose at least one event."
+  },
+  "scopes": {
+    "establishment": {
+      "configure": {
+        "label": "Configuration",
+        "description": "Establishment, maps, price lists and policies."
+      }
+    },
+    "payments": {
+      "configure": {
+        "label": "Payments",
+        "description": "Payment method configuration."
+      }
+    },
+    "bookings": {
+      "write": {
+        "label": "Bookings (write)",
+        "description": "Create, change and cancel bookings and customers."
+      },
+      "read": {
+        "label": "Bookings (read)",
+        "description": "Read bookings, availability and customers."
+      }
+    },
+    "cash": {
+      "operate": {
+        "label": "Cash desk",
+        "description": "Cash sessions and takings."
+      }
+    },
+    "refunds": {
+      "issue": {
+        "label": "Refunds",
+        "description": "Issue refunds."
+      }
+    },
+    "operations": {
+      "run": {
+        "label": "Operations",
+        "description": "Check-in, moves and the day view."
+      }
+    },
+    "reports": {
+      "read": {
+        "label": "Reports",
+        "description": "Reports and exports."
+      }
+    }
+  },
   "apiKeys": {
-    "description": "Keys to connect external systems to the Arenile API, with limited permissions and optional expiry."
+    "title": "API keys",
+    "description": "Keys to connect external systems to the Arenile API, with limited permissions and optional expiry.",
+    "new": "New key",
+    "edit": "Edit key",
+    "create": "Create key",
+    "usage": "External services send the key with every request in the header",
+    "showRevoked": "Show revoked",
+    "empty": "No API keys",
+    "emptyHint": "Create one key per external system, with only the permissions it needs.",
+    "formHint": "A key acts only on this establishment and only with the chosen permissions.",
+    "nameHint": "To recognise it, for example the name of the system.",
+    "expiryHint": "Optional: after this day the key stops working.",
+    "scopesHint": "User management is never granted to keys.",
+    "editAria": "Edit the key {{name}}",
+    "revoke": "Revoke",
+    "revokeAria": "Revoke the key {{name}}",
+    "revokeTitle": "Revoke the key {{name}}?",
+    "revokeConfirm": "Requests made with this key will be refused immediately. This cannot be undone.",
+    "revoked": "Key revoked",
+    "revokedOn": "Revoked on {{date}}",
+    "noExpiry": "None",
+    "createdTitle": "Key created",
+    "createdDescription": "Here is the full key to enter in the external service.",
+    "createdHint": "Use it as: Authorization: Bearer <key>",
+    "fields": {
+      "name": "Name",
+      "scopes": "Permissions",
+      "status": "Status",
+      "created": "Created",
+      "lastUsed": "Last used",
+      "expires": "Expiry",
+      "key": "API key"
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    }
   },
   "webhooks": {
-    "description": "Signed notifications to your systems when bookings, payments and configuration change, with a delivery log."
+    "title": "Webhooks",
+    "description": "Signed notifications to your systems when bookings, payments and configuration change, with a delivery log.",
+    "new": "New endpoint",
+    "edit": "Edit endpoint",
+    "create": "Create endpoint",
+    "formHint": "Arenile sends a signed POST request to this address for every chosen event.",
+    "urlHint": "Must be https; http is allowed only to localhost for testing.",
+    "eventsHint": "Choose single events, a whole group or every event.",
+    "eventsPlaceholder": "Choose events",
+    "activeHint": "When paused, events are not sent (the test still works).",
+    "moreEvents": "+{{n}}",
+    "failures": "Consecutive failures: {{n}}",
+    "editAria": "Edit the endpoint {{url}}",
+    "delete": "Delete endpoint",
+    "deleteTitle": "Delete the endpoint {{url}}?",
+    "deleted": "Endpoint deleted",
+    "deleteConfirm": "The endpoint and its delivery log will be deleted.",
+    "log": "Delivery log",
+    "logAria": "Delivery log of {{url}}",
+    "moreAria": "More actions for {{url}}",
+    "test": "Send test event",
+    "rotate": "Rotate secret",
+    "rotateHint": "Generates a new signing secret. During the grace period deliveries are signed with both.",
+    "rotateSubmit": "Generate new secret",
+    "grace": "Grace period",
+    "graceHint": "Time to update the secret in the receiving system.",
+    "graceOption": {
+      "h0": "None (the old one stops at once)",
+      "h1": "1 hour",
+      "h24": "24 hours",
+      "h72": "3 days",
+      "h168": "7 days"
+    },
+    "rotatedTitle": "New signing secret",
+    "rotatedDescription": "Update the receiving system within the grace period.",
+    "createdTitle": "Endpoint created",
+    "createdDescription": "Here is the secret to verify the signature of deliveries.",
+    "signatureTitle": "Signature verification",
+    "signatureHelp": "Every delivery carries the header",
+    "signatureHow": "v1 is the HMAC-SHA256, keyed with the endpoint secret, of \"<t>.<body>\"; during a rotation two v1 values appear.",
+    "empty": "No endpoints",
+    "emptyHint": "Add your system's address to receive Arenile events.",
+    "testOk": "Test event delivered to {{url}}",
+    "testFailed": "Test event not delivered to {{url}}",
+    "testCode": "HTTP response {{code}}",
+    "testNoResponse": "No response from the receiving system",
+    "fields": {
+      "url": "Address (URL)",
+      "description": "Description",
+      "events": "Events",
+      "status": "Status",
+      "lastDelivery": "Last delivery",
+      "active": "Active",
+      "secret": "Signing secret"
+    },
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "disabled": "Disabled after failures"
+    }
+  },
+  "groups": {
+    "booking": "Bookings",
+    "allocation": "Spots",
+    "season": "Season passes",
+    "payment": "Payments",
+    "customer": "Customers",
+    "cash_session": "Cash desk",
+    "config": "Configuration"
+  },
+  "events": {
+    "all": "All events",
+    "group": "{{group}}: all",
+    "types": {
+      "booking": {
+        "created": "Booking created",
+        "held": "Booking held",
+        "confirmed": "Booking confirmed",
+        "modified": "Booking modified",
+        "cancelled": "Booking cancelled",
+        "checked_in": "Customer checked in",
+        "no_show": "No-show",
+        "completed": "Booking completed",
+        "approval_requested": "Approval requested"
+      },
+      "allocation": {
+        "released": "Spot released"
+      },
+      "season": {
+        "day_released": "Day released by pass holder",
+        "renewal_offered": "Renewal offered"
+      },
+      "payment": {
+        "succeeded": "Payment succeeded",
+        "failed": "Payment failed",
+        "refunded": "Payment refunded"
+      },
+      "customer": {
+        "created": "Customer created",
+        "anonymized": "Customer anonymised"
+      },
+      "cash_session": {
+        "closed": "Cash session closed"
+      },
+      "config": {
+        "pricing_changed": "Prices changed",
+        "map_changed": "Map changed"
+      },
+      "webhook": {
+        "test": "Test event"
+      }
+    }
+  },
+  "deliveries": {
+    "title": "Delivery log",
+    "event": "Event",
+    "status": "Outcome",
+    "attempts": "Attempts",
+    "code": "HTTP",
+    "when": "When",
+    "created": "Created",
+    "detail": "Delivery detail",
+    "detailAria": "Detail of the delivery {{event}}",
+    "redeliver": "Redeliver",
+    "redeliverAria": "Redeliver {{event}}",
+    "redelivered": "Delivery queued again",
+    "deliveredAt": "Delivered {{at}}",
+    "failedAt": "Failed {{at}}",
+    "nextAt": "Next attempt {{at}}",
+    "filter": "Outcome",
+    "allStatuses": "All",
+    "statusOption": {
+      "pending": "Pending",
+      "delivered": "Delivered",
+      "failed": "Failed"
+    },
+    "empty": "No deliveries",
+    "more": "Load more",
+    "loading": "Loading…",
+    "lastError": "Last error",
+    "body": "Body sent",
+    "response": "Response (excerpt)",
+    "noResponse": "No response"
   }
 }
