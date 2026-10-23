@@ -18,3 +18,12 @@ export { default as LiveMap } from './LiveMap.astro';
 export { default as LivePriceSimulator } from './LivePriceSimulator.astro';
 export { default as StatusBadges } from './StatusBadges.astro';
 export { default as ApiOperation } from './ApiOperation.astro';
+
+// Home page building blocks (src/content/docs/index.mdx and en/index.mdx).
+export { default as SectionIntro } from './home/SectionIntro.astro';
+export { default as FeatureRow } from './home/FeatureRow.astro';
+export { default as FeatureCards } from './home/FeatureCards.astro';
+export { default as StartSteps } from './home/StartSteps.astro';
+export { default as Faq } from './home/Faq.astro';
+export { default as TechPanel } from './home/TechPanel.astro';
+export { default as HelpCta } from './home/HelpCta.astro';

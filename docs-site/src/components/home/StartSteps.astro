@@ -1,0 +1,107 @@
+---
+/**
+ * <StartSteps items={[{ title, text, href, linkText, badge? }]} />
+ * "How to start" for managers: numbered cards, each with one clear link.
+ */
+interface Item {
+  title: string;
+  text: string;
+  href: string;
+  linkText: string;
+  badge?: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<ol class="start-steps not-content">
+  {
+    items.map((item, i) => (
+      <li class="ss">
+        <span class="ss-num" aria-hidden="true">
+          {i + 1}
+        </span>
+        <h3>
+          {item.title}
+        </h3>
+        {item.badge && <p class="ss-badge">{item.badge}</p>}
+        <p>{item.text}</p>
+        <a href={item.href} class="ss-link">
+          {item.linkText} <span aria-hidden="true">→</span>
+        </a>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .start-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: none;
+  }
+  .ss {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--primary-on-surface) 7%, var(--card)),
+      var(--card) 60%
+    );
+  }
+  .ss-num {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 700;
+  }
+  h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0;
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-lg);
+    font-weight: 700;
+  }
+  .ss-badge {
+    align-self: flex-start;
+    margin: 0;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--highlight) 30%, var(--background));
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+  }
+  p {
+    flex: 1;
+    margin: 0;
+    color: var(--sl-color-gray-2);
+    line-height: 1.55;
+  }
+  .ss-link {
+    color: var(--primary-on-surface);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .ss-link:hover {
+    text-decoration: underline;
+  }
+</style>

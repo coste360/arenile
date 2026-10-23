@@ -1,0 +1,102 @@
+---
+/**
+ * <Coste360Mark /> — "di Coste360.it", the maker of Arenile, linking to
+ * https://www.coste360.it/. Uses only the company's original PNGs
+ * (public/brand/coste360-logo-{primary,white}.png, copies of
+ * assets/brand/coste360/logo-*.png): primary on light, white on dark. The
+ * files carry wide transparent margins (logotype at 32,77 715x157 of 781x312),
+ * so the image is shown inside a clipping box sized to the logotype: the
+ * logo is never redrawn, only framed so it reads at header size.
+ *
+ * `compact` (narrow headers): the company's original compass mark only
+ * (public/brand/coste360-icon-{primary,white}.svg, copies of
+ * assets/brand/coste360/icon-*.svg), labelled for screen readers.
+ */
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const brand = (file: string) => `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}brand/${file}`;
+const t = Astro.locals.t;
+---
+
+{
+  compact ? (
+    <a href="https://www.coste360.it/" class="c360 c360-compact" title={t('arenile.header.makerTitle')}>
+      <img src={brand('coste360-icon-primary.svg')} alt="Coste360.it" width="24" height="24" class="dark:sl-hidden" />
+      <img src={brand('coste360-icon-white.svg')} alt="Coste360.it" width="24" height="24" class="light:sl-hidden" />
+    </a>
+  ) : (
+<a href="https://www.coste360.it/" class="c360" title={t('arenile.header.makerTitle')}>
+  <span class="c360-by">{t('arenile.header.by')}</span>
+  <span class="c360-clip">
+    <img
+      src={brand('coste360-logo-primary.png')}
+      alt="Coste360.it"
+      width="781"
+      height="312"
+      decoding="async"
+      class="dark:sl-hidden"
+    />
+    <img
+      src={brand('coste360-logo-white.png')}
+      alt="Coste360.it"
+      width="781"
+      height="312"
+      decoding="async"
+      class="light:sl-hidden"
+    />
+  </span>
+</a>
+  )
+}
+
+<style>
+  .c360 {
+    /* Height of the logotype (without the PNG's transparent margins). */
+    --c360-h: 1.125rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.25rem;
+    border-radius: 0.5rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-xs);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .c360:hover {
+    color: var(--sl-color-white);
+  }
+  .c360:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+  .c360-compact {
+    padding: 0.375rem;
+  }
+  .c360-compact img {
+    width: 1.5rem;
+    height: 1.5rem;
+    vertical-align: top;
+  }
+  .c360-clip {
+    display: block;
+    overflow: hidden;
+    height: var(--c360-h);
+    /* 715/157 of the logotype's aspect ratio. */
+    width: calc(var(--c360-h) * 715 / 157);
+  }
+  /* No display here: Starlight's light:/dark:sl-hidden pick the variant. */
+  .c360-clip img {
+    vertical-align: top;
+    max-width: none;
+    /* Image scaled so that its 157 px logotype band fills the box. */
+    height: calc(var(--c360-h) * 312 / 157);
+    width: auto;
+    margin-top: calc(var(--c360-h) * -77 / 157);
+    margin-left: calc(var(--c360-h) * -32 / 157);
+  }
+</style>

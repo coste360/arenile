@@ -1,0 +1,113 @@
+---
+/**
+ * <FeatureRow icon="umbrella" title="…" shot="admin-map-spot" alt="…" href="/gestore/…" linkText="…" reverse>
+ *   Plain-language description (Markdown inline allowed).
+ * </FeatureRow>
+ *
+ * One benefit of the home: icon, H3, text and a link to the guide beside the
+ * real screenshot (light/dark). `reverse` puts the image on the left on wide
+ * screens; on phones the text always comes first.
+ */
+import Screenshot from '../Screenshot.astro';
+import HomeIcon, { type HomeIconName } from './HomeIcon.astro';
+
+interface Props {
+  icon: HomeIconName;
+  title: string;
+  shot: string;
+  alt: string;
+  href?: string;
+  linkText?: string;
+  reverse?: boolean;
+}
+
+const { icon, title, shot, alt, href, linkText, reverse = false } = Astro.props;
+---
+
+<section class:list={['feature-row', 'not-content', { reverse }]}>
+  <div class="fr-copy">
+    <span class="fr-icon"><HomeIcon name={icon} size={22} /></span>
+    <h3>{title}</h3>
+    <div class="fr-text"><slot /></div>
+    {
+      href && linkText && (
+        <a class="fr-link" href={href}>
+          {linkText} <span aria-hidden="true">→</span>
+        </a>
+      )
+    }
+  </div>
+  <div class="fr-media">
+    <Screenshot name={shot} alt={alt} sizes="(max-width: 50rem) 100vw, 38rem" />
+  </div>
+</section>
+
+<style>
+  .feature-row {
+    display: grid;
+    gap: 1.5rem;
+    align-items: center;
+    margin-block: 2.5rem;
+  }
+  .fr-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .fr-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    background: color-mix(in oklab, var(--primary-on-surface) 12%, var(--background));
+    color: var(--primary-on-surface);
+  }
+  h3 {
+    margin: 0;
+    color: var(--sl-color-white);
+    font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  .fr-text {
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-lg);
+    line-height: 1.6;
+  }
+  .fr-text :global(p) {
+    margin: 0;
+  }
+  .fr-text :global(p + p) {
+    margin-top: 0.75rem;
+  }
+  .fr-text :global(strong) {
+    color: var(--sl-color-white);
+  }
+  .fr-link {
+    color: var(--primary-on-surface);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .fr-link:hover {
+    text-decoration: underline;
+  }
+  .fr-media :global(.arenile-shot) {
+    margin: 0;
+  }
+  @media (min-width: 50rem) {
+    .feature-row {
+      grid-template-columns: 5fr 7fr;
+      gap: 3.5rem;
+      margin-block: 4rem;
+    }
+    .feature-row.reverse {
+      grid-template-columns: 7fr 5fr;
+    }
+    .feature-row.reverse .fr-media {
+      order: -1;
+    }
+  }
+</style>

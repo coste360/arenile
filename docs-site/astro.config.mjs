@@ -21,6 +21,7 @@ import { API_REFERENCE_BASE } from './src/lib/constants.mjs';
 const shared = fileURLToPath(new URL('../web/shared/src', import.meta.url));
 const src = fileURLToPath(new URL('./src', import.meta.url));
 const webModules = fileURLToPath(new URL('../web/node_modules', import.meta.url));
+const lucide = fileURLToPath(new URL('../web/node_modules/lucide-react', import.meta.url));
 
 const site = process.env.ARENILE_DOCS_SITE ?? 'https://docs.arenile.app';
 const base = process.env.ARENILE_DOCS_BASE ?? '/';
@@ -37,15 +38,7 @@ export default defineConfig({
     starlight({
       title: 'Arenile',
       description:
-        'Gestionale per stabilimenti balneari, codice sorgente disponibile (BSL 1.1), di Coste360 SRL.',
-      // Official logo (assets/brand/arenile/outlined, text as outlines so it
-      // needs no web font), cropped to its content; light and dark variants.
-      logo: {
-        light: './src/assets/brand/arenile-logo-horizontal.svg',
-        dark: './src/assets/brand/arenile-logo-horizontal-dark.svg',
-        alt: 'Arenile — Coste360.it',
-        replacesTitle: true,
-      },
+        'Arenile, il gestionale gratuito per stabilimenti balneari di Coste360 SRL: mappa degli ombrelloni, prenotazioni online senza commissioni, cassa e abbonamenti.',
       favicon: '/favicon.svg',
       defaultLocale: 'root',
       locales: {
@@ -82,6 +75,15 @@ export default defineConfig({
       ],
       components: {
         Footer: './src/components/overrides/Footer.astro',
+        // Coste360 logo in the header (desktop) and in the mobile menu.
+        Header: './src/components/overrides/Header.astro',
+        // App icon + outlined "Arenile" name (assets/brand copies).
+        SiteTitle: './src/components/overrides/SiteTitle.astro',
+        MobileMenuFooter: './src/components/overrides/MobileMenuFooter.astro',
+        // Product hero and structured data (JSON-LD) of the home pages
+        // (frontmatter `home`); every other page keeps Starlight's defaults.
+        Hero: './src/components/overrides/Hero.astro',
+        Head: './src/components/overrides/Head.astro',
       },
       plugins: [
         starlightOpenAPI([
@@ -138,7 +140,9 @@ export default defineConfig({
     resolve: {
       // Real components from web/shared (map with the kit, status badges,
       // shadcn primitives): one copy of React for the site and the components.
-      alias: { '@arenile/shared': shared, '~': src },
+      // lucide-react (the icon set of the panel) from web/node_modules, rendered
+      // to static SVG at build time by the home components.
+      alias: { '@arenile/shared': shared, '~': src, 'lucide-react': lucide },
       dedupe: ['react', 'react-dom', '@tanstack/react-query', 'i18next', 'react-i18next'],
     },
     // The shared sources import their runtime deps (radix-ui, lucide-react,

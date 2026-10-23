@@ -1,0 +1,116 @@
+---
+/**
+ * <FeatureCards items={[{ icon, title, text, badge?, href? }]} />
+ * A grid of smaller benefits (icon, title, one or two sentences).
+ */
+import HomeIcon, { type HomeIconName } from './HomeIcon.astro';
+
+interface Item {
+  icon: HomeIconName;
+  title: string;
+  text: string;
+  badge?: string;
+  href?: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<ul class="feature-cards not-content">
+  {
+    items.map((item) => (
+      <li class="fc">
+        <span class="fc-icon">
+          <HomeIcon name={item.icon} size={22} />
+        </span>
+        <h3>
+          {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+        </h3>
+        {item.badge && <p class="fc-badge">{item.badge}</p>}
+        <p>{item.text}</p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .fc {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 4px);
+    background: var(--card);
+    transition:
+      border-color 150ms ease,
+      transform 150ms ease;
+  }
+  .fc:hover {
+    border-color: color-mix(in oklab, var(--primary-on-surface) 45%, var(--border));
+  }
+  .fc-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.7rem;
+    background: color-mix(in oklab, var(--primary-on-surface) 12%, var(--background));
+    color: var(--primary-on-surface);
+  }
+  h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0;
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-lg);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  h3 a:focus-visible {
+    outline: none;
+  }
+  .fc:has(a:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .fc-badge {
+    align-self: flex-start;
+    margin: 0;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--highlight) 30%, var(--background));
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+  }
+  p {
+    margin: 0;
+    color: var(--sl-color-gray-2);
+    line-height: 1.55;
+  }
+</style>

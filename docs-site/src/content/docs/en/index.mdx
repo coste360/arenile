@@ -1,67 +1,228 @@
 ---
-title: Arenile
-description: The source-available (BSL 1.1) management system for beach establishments, by Coste360 SRL. Documentation for operators, administrators and developers.
+title: Free beach club management software
+description: Arenile is free management software for beach clubs and lidos, with no subscription and no commission on online bookings. Umbrella map, cash desk and passes.
 template: splash
+head:
+  - tag: title
+    content: Arenile — Free beach club management software
+  - tag: meta
+    attrs:
+      property: og:title
+      content: Arenile — Free beach club management software
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
 hero:
-  tagline: Umbrella map, commission-free online booking, pricing, Stripe payments and cash desk in one program, on your own server.
+  title: Beach club management software
+  tagline: Umbrella map, online booking from your own website, cash desk and season passes in one program. Run it on the cash desk computer or on your own server, and your data stays yours.
   actions:
-    - text: Start with the manager guide
-      link: /en/gestore/
+    - text: Get started
+      link: /en/installazione/scegli-come-installare/
       icon: right-arrow
-    - text: Install Arenile
-      link: /en/installazione/
-      variant: minimal
+    - text: See how it works
+      link: /en/gestore/
+      variant: secondary
+home:
+  facts: Free, with no commissions and with its source code available.
+  techLink:
+    text: Technical? Installation and API
+    link: '#for-technicians-and-developers'
+  shot:
+    name: admin-map
+    alt: Arenile's map of the day with the Lido Demo umbrellas coloured by status
+  phone:
+    name: public-when-mobile
+    alt: The Lido Demo online booking page on a smartphone
 ---
 
-import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
-import { Screenshot, LiveMap, StatusBadges } from '~/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import {
+  Faq,
+  FeatureCards,
+  FeatureRow,
+  HelpCta,
+  LiveMap,
+  StatusBadges,
+  SectionIntro,
+  StartSteps,
+  TechPanel,
+} from '~/components';
 
-<Screenshot name="admin-map" alt="Arenile's operational map with the spot statuses of the Lido Demo" />
+<SectionIntro title="What you can do with Arenile">
+  Use it from the cash desk computer, a tablet or a phone. When someone books, pays or arrives, the whole staff
+  sees it right away.
+</SectionIntro>
 
-## Who this documentation is for
+<FeatureRow
+  icon="umbrella"
+  title="The umbrella map"
+  shot="admin-map-spot"
+  alt="The map of the day with an umbrella's card open: customer, period, paid and balance"
+  href="/en/gestore/mappa-del-giorno/"
+  linkText="Discover the map of the day"
+>
+  Draw your beach with the Coste360 map kit: rows, umbrellas, sunbeds, walkways and services. Every spot shows
+  with colours and symbols whether it is free, booked, to be collected or held by a season pass holder. One tap
+  shows who is there, what they paid and what is still due.
+</FeatureRow>
 
-<CardGrid>
-  <Card title="Operators and staff" icon="open-book">
-    Every feature of the panel step by step: configuration, map of the day, bookings, cash desk, public page and
-    payments. With screenshots that are always current, in light and dark theme.
-    [Manager guide](/en/gestore/)
-  </Card>
-  <Card title="Whoever installs and maintains it" icon="setting">
-    Docker, building from source, configuration, HTTPS, backups, upgrades, security and privacy.
-    [Installation and operations](/en/installazione/)
-  </Card>
-  <Card title="Integrators" icon="seti:json">
-    Public and panel REST APIs, idempotency, errors, payment webhooks and events. Reference generated from the
-    OpenAPI contract. [API and webhooks](/en/api/)
-  </Card>
-  <Card title="Developers" icon="puzzle">
-    Architecture, invariants, Go extensions, payment drivers, development with AI agents and contributions.
-    [Development and extensions](/en/sviluppo/)
-  </Card>
-</CardGrid>
+<FeatureRow
+  icon="globe"
+  title="Online umbrella booking, with no commission"
+  shot="public-embed"
+  alt="Arenile's booking form embedded in the Lido Demo website"
+  href="/en/gestore/pagina-pubblica/"
+  linkText="Turn on online booking"
+  reverse
+>
+  Your customers pick days, spot and services and book from **your website** or a page of your own, even at
+  night. With Stripe the payments go straight to your account and Arenile keeps nothing; if you prefer, the
+  customer pays on arrival.
+</FeatureRow>
 
-## The beach, live
+<FeatureRow
+  icon="receipt"
+  title="Cash desk and daily takings"
+  shot="admin-cash"
+  alt="Arenile's cash desk with float, takings by method and the day's movements"
+  href="/en/gestore/cassa/"
+  linkText="See the cash desk"
+>
+  Open the till, take cash or card payments, record deposits and withdrawals and close the day with a count. The
+  takings summary by VAT rate is ready for your accountant.
+</FeatureRow>
 
-This is the Lido Demo map drawn with the same component as the panel and the Coste360 map kit: pan it, zoom it,
-tap the spots.
+<FeatureRow
+  icon="calendar-sync"
+  title="Season passes and released days"
+  shot="admin-passes"
+  alt="The list of Lido Demo season passes with spot, period, status and balance"
+  href="/en/gestore/abbonamenti/"
+  linkText="Manage season passes"
+  reverse
+>
+  All the season's pass holders in one list, with balances and credits. When a holder stays away, you release
+  the spot for that day: if you sell it again, the holder earns a credit.
+</FeatureRow>
 
-<LiveMap />
+<FeatureCards
+  items={[
+    {
+      icon: 'wifi-off',
+      title: 'Works without internet',
+      text: 'Installed on a computer at the beach, Arenile keeps working when the connection drops. Soon also as a desktop app for the cash desk PC.',
+    },
+    {
+      icon: 'languages',
+      title: 'In 4 languages',
+      text: 'Panel and booking page in Italian, English, German and French, for your staff and your guests.',
+    },
+    {
+      icon: 'badge-euro',
+      title: 'No subscription',
+      text: 'No monthly fee and no paid edition: every feature is included.',
+    },
+    {
+      icon: 'shield-check',
+      title: 'Your data stays yours',
+      text: 'Customers, bookings and takings live on your computer or your server, with backups you control.',
+    },
+  ]}
+/>
 
-Every status has a colour **and** a symbol, so the map can be read without telling colours apart:
+<SectionIntro title="Get started for free, in three steps">
+  You do not need to be a computer expert: the guided setup takes you from the map to the price list.
+</SectionIntro>
+
+<StartSteps
+  items={[
+    {
+      title: 'Choose where to run it',
+      text: 'On a computer at the beach, or online if you want bookings from your website; soon also with the desktop app. The comparison helps you decide in two minutes.',
+      href: '/en/installazione/scegli-come-installare/',
+      linkText: 'Compare the options',
+    },
+    {
+      title: 'Install Arenile',
+      badge: 'Desktop coming soon',
+      text: 'The desktop app will install with a double click, from the Coste360 portal. You, or one of your employees, install the online edition by following the step-by-step guide.',
+      href: '/en/installazione/',
+      linkText: 'Installation guide',
+    },
+    {
+      title: 'Set up your beach in 15 minutes',
+      text: 'The guided setup has you draw the beach, set prices and seasons and open the booking page.',
+      href: '/en/gestore/configurazione-guidata/',
+      linkText: 'See the guided setup',
+    },
+  ]}
+/>
+
+<HelpCta
+  title="Rather not deal with it?"
+  text="Ask the Coste360 team to install and configure Arenile for you: map, price list and booking page ready for the season."
+  href="https://www.coste360.it/contatti"
+  linkText="Contact the Coste360 team"
+/>
+
+<SectionIntro title="Try the map">
+  This is Arenile's real map with the Lido Demo data: pan it, zoom it and tap the umbrellas.
+</SectionIntro>
+
+<LiveMap height="28rem" />
 
 <StatusBadges />
 
-## From zero to online in four steps
+<SectionIntro title="Frequently asked questions" />
+
+<Faq
+  items={[
+    {
+      q: 'Is Arenile really free?',
+      a: 'Yes. If you install it yourself, on your own online server or on a computer at the beach (and soon with the desktop app), Arenile is free for your establishments: no license fee, no commission and every feature included, including the booking page for your customers. If you would rather not do it yourself, the Coste360 team can install and configure it for you as a paid service. The license (BSL 1.1, source available) reserves to Coste360 the offering of Arenile as a service to third parties, such as hosting or installation.',
+      link: '/en/sviluppo/licenza/',
+      linkText: 'What the license says',
+    },
+    {
+      q: 'Do I need a server?',
+      a: 'Not necessarily. You can run Arenile on the cash desk computer with the desktop app (coming soon), on a small computer at the beach or on an online server costing a few euros a month, which you need to take bookings from your website. Either way your data stays yours.',
+      link: '/en/installazione/scegli-come-installare/',
+      linkText: 'Choose how to install',
+    },
+    {
+      q: 'Are there commissions on online bookings?',
+      a: 'Arenile takes no commission, neither on bookings nor on takings. Card payments go through Stripe straight to your account, and Stripe charges its own per-transaction fees. You can also confirm online bookings without payment and collect on arrival.',
+      link: '/en/gestore/pagamenti-online/',
+      linkText: 'Online payments',
+    },
+    {
+      q: 'Does it work without internet?',
+      a: 'Yes, with the desktop app (coming soon) or with a computer at the beach: map, bookings from the panel, pass holders and cash desk work without a connection. Customer online bookings, however, need Arenile to be reachable from the internet.',
+      link: '/en/installazione/scegli-come-installare/',
+      linkText: 'Compare the options',
+    },
+    {
+      q: 'Can I try it before using it for real?',
+      a: 'Yes. Load the Lido Demo, a sample beach club with map, price list, pass holders and bookings, and try every feature without touching your data.',
+      link: '/en/installazione/dati-demo/',
+      linkText: 'Load the demo data',
+    },
+  ]}
+/>
+
+<TechPanel>
+
+## For technicians and developers
+
+Arenile is a single program (Go and React) with available source code: install it with Docker on a VPS or on
+site, integrate it through REST APIs and webhooks and extend it in Go.
 
 <CardGrid>
-  <LinkCard title="1. Choose how to install" href="/en/installazione/scegli-come-installare/" description="VPS with Docker, on-site server, desktop (coming) or managed hosting." />
-  <LinkCard title="2. Install with Docker" href="/en/installazione/docker/" description="One compose file, one secret key, one command." />
-  <LinkCard title="3. Guided setup" href="/en/gestore/configurazione-guidata/" description="Map, price list and public page in under 15 minutes." />
-  <LinkCard title="4. Turn on Stripe and the widget" href="/en/gestore/pagamenti-online/" description="Online payments to your account and bookings from your website." />
+  <LinkCard title="Install with Docker" href="/en/installazione/docker/" description="One compose file, one secret key, one command. HTTPS, backups and upgrades." />
+  <LinkCard title="API and webhooks" href="/en/api/" description="Public and panel APIs, idempotency, errors, events and the OpenAPI reference." />
+  <LinkCard title="Source available" href="/en/sviluppo/licenza/" description="BSL 1.1: free for your own establishments, AGPL-3.0 after three years." />
+  <LinkCard title="Architecture and extensions" href="/en/sviluppo/architettura/" description="Code structure, invariants, Go extensions and payment drivers." />
 </CardGrid>
 
-<Aside type="note" title="Source available">
-  Arenile is released under the BSL 1.1: free for establishments that run it for themselves, with readable and
-  modifiable code, and every version converts to AGPL-3.0 after three years. GitHub hosts the source and the
-  instructions; the Docker image is public and free. [License details](/en/sviluppo/licenza/).
-</Aside>
+</TechPanel>

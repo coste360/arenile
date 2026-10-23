@@ -42,5 +42,7 @@
   "arenile.api.auth": "Authentication",
   "arenile.api.public": "Public",
   "arenile.api.session": "Session or API key",
-  "arenile.sim.date": "Day"
+  "arenile.sim.date": "Day",
+  "arenile.header.by": "by",
+  "arenile.header.makerTitle": "Coste360.it, the company behind Arenile"
 }

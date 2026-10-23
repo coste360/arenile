@@ -1,0 +1,39 @@
+---
+/**
+ * Site title: the Arenile app icon (navy tile with the A) followed by the name
+ * "Arenile" (Titillium Web as outlines, navy on light, white on dark). All
+ * three files are identical copies of assets/brand/arenile (app icon flat,
+ * outlined/arenile-name-*.svg). The company is credited separately in the
+ * header ("di Coste360.it", Header override).
+ */
+import icon from '../../assets/brand/arenile-app-icon-flat.svg';
+import nameNavy from '../../assets/brand/arenile-name-navy.svg';
+import nameWhite from '../../assets/brand/arenile-name-white.svg';
+
+const { siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="site-title" translate="no">
+  <img class="st-icon" src={icon.src} width="36" height="36" alt="" />
+  <img class="st-name dark:sl-hidden" src={nameNavy.src} width={nameNavy.width} height={nameNavy.height} alt="Arenile" />
+  <img class="st-name light:sl-hidden" src={nameWhite.src} width={nameWhite.width} height={nameWhite.height} alt="Arenile" />
+</a>
+
+<style>
+  .site-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+    text-decoration: none;
+  }
+  .st-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+  }
+  .st-name {
+    height: 1.35rem;
+    width: auto;
+  }
+</style>

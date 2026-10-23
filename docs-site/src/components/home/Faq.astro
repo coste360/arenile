@@ -1,0 +1,109 @@
+---
+/**
+ * <Faq items={[{ q, a, link?, linkText? }]} />
+ * Short questions and answers as native <details> (no JavaScript), plus the
+ * matching schema.org FAQPage JSON-LD built from the same strings, so the
+ * structured data always equals the visible text.
+ */
+interface Item {
+  q: string;
+  a: string;
+  link?: string;
+  linkText?: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+};
+---
+
+<div class="faq not-content">
+  {
+    items.map((item, i) => (
+      <details class="faq-item" open={i === 0}>
+        <summary>
+          <span>{item.q}</span>
+          <span class="faq-chev" aria-hidden="true" />
+        </summary>
+        <div class="faq-a">
+          <p>{item.a}</p>
+          {item.link && item.linkText && (
+            <a href={item.link}>
+              {item.linkText} <span aria-hidden="true">→</span>
+            </a>
+          )}
+        </div>
+      </details>
+    ))
+  }
+</div>
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+
+<style>
+  .faq {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 0.25rem;
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-lg);
+    font-weight: 600;
+    list-style: none;
+    cursor: pointer;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
+  .faq-chev {
+    flex: none;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 150ms ease;
+  }
+  details[open] .faq-chev {
+    transform: rotate(-135deg) translateY(-2px);
+  }
+  .faq-a {
+    padding: 0 0.25rem 1.25rem;
+    color: var(--sl-color-gray-2);
+    line-height: 1.6;
+  }
+  .faq-a p {
+    margin: 0 0 0.5rem;
+    max-width: 48rem;
+  }
+  .faq-a a {
+    color: var(--primary-on-surface);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .faq-a a:hover {
+    text-decoration: underline;
+  }
+</style>

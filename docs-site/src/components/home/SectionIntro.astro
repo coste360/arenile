@@ -1,0 +1,62 @@
+---
+/**
+ * <SectionIntro kicker="…" id="…" title="…">lead text</SectionIntro>
+ * Centered section heading of the home: small kicker, H2 and lead paragraph.
+ * `id` gives the H2 an anchor (the tech link of the hero points to one).
+ */
+interface Props {
+  kicker?: string;
+  title: string;
+  id?: string;
+  small?: boolean;
+}
+const { kicker, title, id, small = false } = Astro.props;
+---
+
+<header class:list={['section-intro', 'not-content', { small }]}>
+  {kicker && <p class="si-kicker">{kicker}</p>}
+  <h2 id={id}>{title}</h2>
+  {Astro.slots.has('default') && <div class="si-lead"><slot /></div>}
+</header>
+
+<style>
+  .section-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin: clamp(3.5rem, 8vw, 6rem) auto 0;
+    max-width: 44rem;
+    text-align: center;
+  }
+  .si-kicker {
+    margin: 0;
+    color: var(--primary-on-surface);
+    font-size: var(--sl-text-sm);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  h2 {
+    margin: 0;
+    color: var(--sl-color-white);
+    font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.625rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    scroll-margin-top: calc(var(--sl-nav-height) + 1.5rem);
+  }
+  .small h2 {
+    font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  }
+  .si-lead {
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-lg);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .si-lead :global(p) {
+    margin: 0;
+  }
+</style>

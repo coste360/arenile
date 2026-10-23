@@ -1,0 +1,77 @@
+---
+/**
+ * <HelpCta title="…" text="…" href="…" linkText="…" />
+ * A friendly banner under "how to start": who prefers not to install Arenile
+ * by themselves can ask the Coste360 team (external link).
+ */
+import HomeIcon from './HomeIcon.astro';
+
+interface Props {
+  title: string;
+  text: string;
+  href: string;
+  linkText: string;
+}
+const { title, text, href, linkText } = Astro.props;
+---
+
+<aside class="help-cta not-content">
+  <span class="hc-icon"><HomeIcon name="wrench" size={22} /></span>
+  <div class="hc-copy">
+    <p class="hc-title">{title}</p>
+    <p class="hc-text">{text}</p>
+  </div>
+  <a class="hc-link" href={href}>
+    {linkText} <span aria-hidden="true">→</span>
+  </a>
+</aside>
+
+<style>
+  .help-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    margin-top: 1rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px dashed color-mix(in oklab, var(--primary-on-surface) 45%, var(--border));
+    border-radius: calc(var(--radius) + 4px);
+    background: color-mix(in oklab, var(--primary-on-surface) 5%, var(--background));
+  }
+  .hc-icon {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.7rem;
+    background: color-mix(in oklab, var(--primary-on-surface) 12%, var(--background));
+    color: var(--primary-on-surface);
+  }
+  .hc-copy {
+    flex: 1 1 18rem;
+  }
+  .hc-title {
+    margin: 0;
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-lg);
+    font-weight: 700;
+  }
+  .hc-text {
+    margin: 0.25rem 0 0;
+    color: var(--sl-color-gray-2);
+    line-height: 1.55;
+  }
+  .hc-link {
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--primary-on-surface);
+    border-radius: 999px;
+    color: var(--primary-on-surface);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .hc-link:hover {
+    background: color-mix(in oklab, var(--primary-on-surface) 10%, transparent);
+  }
+</style>

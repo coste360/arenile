@@ -1,0 +1,196 @@
+---
+/**
+ * Hero of splash pages. Pages with the `home` frontmatter (the home in every
+ * locale) get the product hero: the full Arenile logo (outlined copies of
+ * assets/brand, light/dark), H1 (hero.title), one line of key facts
+ * (home.facts), subtitle (hero.tagline), actions (hero.actions), a text link
+ * for technical readers and the real panel screenshot (light/dark,
+ * <Screenshot>) with the public booking page on a phone. Any other splash page keeps
+ * Starlight's default hero.
+ */
+import Default from '@astrojs/starlight/components/Hero.astro';
+import { LinkButton } from '@astrojs/starlight/components';
+import Screenshot from '../Screenshot.astro';
+import HomeIcon from '../home/HomeIcon.astro';
+import logoLight from '../../assets/brand/arenile-logo-horizontal.svg';
+import logoDark from '../../assets/brand/arenile-logo-horizontal-dark.svg';
+
+const { data } = Astro.locals.starlightRoute.entry;
+const home = data.home;
+const { title = data.title, tagline, actions = [] } = data.hero || {};
+---
+
+{
+  home ? (
+    <div class="home-hero">
+      <div class="hh-copy">
+        <div class="hh-logo">
+          <img src={logoLight.src} width="720" height="224" alt="Arenile — Coste360.it" class="dark:sl-hidden" />
+          <img src={logoDark.src} width="720" height="224" alt="Arenile — Coste360.it" class="light:sl-hidden" />
+        </div>
+        <h1 id="_top" data-page-title set:html={title} />
+        <p class="hh-facts">{home.facts}</p>
+        {tagline && <p class="hh-tagline" set:html={tagline} />}
+        {actions.length > 0 && (
+          <div class="hh-actions">
+            {actions.map(({ icon, link: href, text, variant }) => (
+              <LinkButton {href} {variant} icon={icon?.name} class="hh-action">
+                {text}
+              </LinkButton>
+            ))}
+          </div>
+        )}
+        <a class="hh-tech" href={home.techLink.link}>
+          <HomeIcon name="wrench" size={16} />
+          <span>{home.techLink.text}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+      <div class="hh-visual">
+        <div class="hh-glow" aria-hidden="true" />
+        <div class="hh-desktop">
+          <Screenshot name={home.shot.name} alt={home.shot.alt} eager sizes="(max-width: 67.5rem) 100vw, 67.5rem" />
+        </div>
+        {home.phone && (
+          <div class="hh-phone">
+            <Screenshot name={home.phone.name} alt={home.phone.alt} sizes="12rem" />
+          </div>
+        )}
+      </div>
+    </div>
+  ) : (
+    <Default />
+  )
+}
+
+<style>
+  .home-hero {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    padding-block: clamp(1rem, 4vw, 3rem) 1rem;
+  }
+  .hh-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+  }
+  .hh-logo {
+    margin-bottom: -0.5rem;
+  }
+  .hh-logo img {
+    width: clamp(13rem, 10rem + 12vw, 19rem);
+    height: auto;
+  }
+  h1 {
+    margin: 0;
+    max-width: 20ch;
+    color: var(--sl-color-white);
+    font-size: clamp(2.125rem, 1.1rem + 4.4vw, 4rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .hh-facts {
+    margin: -0.25rem 0 0;
+    color: var(--primary-on-surface);
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+    font-weight: 600;
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+  .hh-tagline {
+    margin: 0;
+    max-width: 42rem;
+    color: var(--sl-color-gray-2);
+    font-size: clamp(1.0625rem, 0.95rem + 0.6vw, 1.3125rem);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  .hh-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .hh-actions :global(.hh-action) {
+    padding: 0.8rem 1.4rem;
+    font-size: var(--sl-text-base);
+    font-weight: 600;
+  }
+  .hh-tech {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    text-underline-offset: 0.2em;
+  }
+  .hh-tech:hover {
+    color: var(--sl-color-white);
+    text-decoration: underline;
+  }
+  .hh-visual {
+    position: relative;
+    isolation: isolate;
+  }
+  .hh-glow {
+    position: absolute;
+    z-index: -1;
+    inset: 8% 4% -6%;
+    border-radius: 2rem;
+    background:
+      radial-gradient(60% 70% at 20% 30%, color-mix(in oklab, #16cde1 38%, transparent), transparent 70%),
+      radial-gradient(55% 60% at 85% 60%, color-mix(in oklab, #0d79ac 40%, transparent), transparent 70%),
+      radial-gradient(50% 50% at 50% 100%, color-mix(in oklab, #fff0d1 70%, transparent), transparent 70%);
+    filter: blur(48px);
+    opacity: 0.55;
+  }
+  :global(:root[data-theme='dark']) .hh-glow {
+    opacity: 0.4;
+  }
+  .hh-desktop :global(.arenile-shot) {
+    margin: 0;
+  }
+  .hh-desktop :global(.shot-frame) {
+    box-shadow:
+      0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
+      0 30px 60px -20px color-mix(in oklab, #092d62 35%, transparent);
+  }
+  .hh-phone {
+    display: none;
+  }
+  @media (min-width: 50rem) {
+    .hh-desktop {
+      margin-inline-end: 7rem;
+    }
+    .hh-phone {
+      display: block;
+      position: absolute;
+      right: 0;
+      bottom: -1.5rem;
+      width: 12.5rem;
+    }
+    .hh-phone :global(.arenile-shot) {
+      margin: 0;
+    }
+    .hh-phone :global(.shot-frame) {
+      box-shadow: 0 30px 50px -18px color-mix(in oklab, #092d62 55%, transparent);
+    }
+  }
+  @media (max-width: 30rem) {
+    .hh-actions {
+      flex-direction: column;
+      align-self: stretch;
+    }
+    .hh-actions :global(.hh-action) {
+      justify-content: center;
+    }
+  }
+</style>

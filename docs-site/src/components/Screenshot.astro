@@ -24,9 +24,13 @@ interface Props {
   caption?: string;
   /** Hide the browser/phone frame. */
   frameless?: boolean;
+  /** Above the fold (home hero): load eagerly instead of lazily. */
+  eager?: boolean;
+  /** Override the `sizes` hint when the layout shows the image narrower. */
+  sizes?: string;
 }
 
-const { name, alt, caption, frameless = false } = Astro.props;
+const { name, alt, caption, frameless = false, eager = false, sizes: sizesProp } = Astro.props;
 if (!alt?.trim()) throw new Error(`<Screenshot name="${name}">: the alt text is required`);
 
 const shot = resolveScreenshot(name);
@@ -40,7 +44,7 @@ if (themes.length === 1 && STRICT) {
 }
 
 const widths = mobile ? [390, 780] : [720, 1080, 1440];
-const sizes = mobile ? '(max-width: 40rem) 80vw, 22rem' : '(max-width: 50rem) 100vw, 46rem';
+const sizes = sizesProp ?? (mobile ? '(max-width: 40rem) 80vw, 22rem' : '(max-width: 50rem) 100vw, 46rem');
 const full = Object.fromEntries(
   await Promise.all(
     themes.map(async (t) => [t, (await getImage({ src: shot.images[t]!, format: 'webp', quality: 85 })).src]),
@@ -86,7 +90,7 @@ const t = Astro.locals.t;
               sizes={sizes}
               format="webp"
               quality={82}
-              loading="lazy"
+              loading={eager ? 'eager' : 'lazy'}
               decoding="async"
               class:list={['shot-img', themes.length === 2 && `only-${theme}`]}
             />

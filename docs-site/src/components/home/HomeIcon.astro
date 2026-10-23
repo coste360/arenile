@@ -1,0 +1,61 @@
+---
+/**
+ * <HomeIcon name="umbrella" /> — an icon of the panel's set (lucide-react,
+ * from web/node_modules), rendered to static SVG at build time: no client
+ * JavaScript. Only the names below are accepted (typos fail the type check).
+ */
+import {
+  BadgeEuro,
+  BookOpen,
+  CalendarSync,
+  Check,
+  Code,
+  Download,
+  Globe,
+  Languages,
+  Laptop,
+  Map as MapIcon,
+  Receipt,
+  Scale,
+  Server,
+  ShieldCheck,
+  Umbrella,
+  Webhook,
+  WifiOff,
+  Wrench,
+} from 'lucide-react';
+
+const icons = {
+  'badge-euro': BadgeEuro,
+  'book-open': BookOpen,
+  'calendar-sync': CalendarSync,
+  check: Check,
+  code: Code,
+  download: Download,
+  globe: Globe,
+  languages: Languages,
+  laptop: Laptop,
+  map: MapIcon,
+  receipt: Receipt,
+  scale: Scale,
+  server: Server,
+  'shield-check': ShieldCheck,
+  umbrella: Umbrella,
+  webhook: Webhook,
+  'wifi-off': WifiOff,
+  wrench: Wrench,
+} as const;
+
+export type HomeIconName = keyof typeof icons;
+
+interface Props {
+  name: HomeIconName;
+  class?: string;
+  size?: number;
+}
+
+const { name, class: className, size = 20 } = Astro.props;
+const Icon = icons[name];
+---
+
+<Icon className={className} size={size} strokeWidth={1.75} aria-hidden="true" focusable="false" />

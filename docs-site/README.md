@@ -34,6 +34,10 @@ screenshot mancante fa fallire la build; altrimenti al suo posto compare un segn
   - `<ApiOperation id="createPublicBooking" />` metodo, percorso e sintesi letti dal contratto, con link al riferimento;
 - `src/styles/global.css` integrazione Tailwind v4 + Starlight; i token (colori, raggio, font, palette della mappa)
   vengono da `web/shared/src/styles/globals.css` tramite `scripts/sync-theme.mjs` (file generato e ignorato da git);
+- home (`src/content/docs/index.mdx`, `en/index.mdx`): hero di prodotto dal frontmatter `home` (override `Hero`),
+  blocchi in `src/components/home/` (vantaggi, passi, FAQ con JSON-LD `FAQPage`, area per tecnici) e JSON-LD
+  `SoftwareApplication` dall'override `Head`; intestazione con icona e nome (override `SiteTitle`) e "di Coste360.it" (override
+  `Header` e `MobileMenuFooter`);
 - `src/routeData.ts` tiene i 200+ link del riferimento API fuori dalla barra laterale delle altre pagine;
 - `screenshots.manifest.json` elenco degli screenshot (nome, percorso, viewport, descrizione): fonte unica per
   la pipeline di acquisizione (`e2e/docs/`) e per i contenuti.
@@ -55,9 +59,11 @@ variabile di repository `DOCS_PAGES=true` (opzionali `DOCS_SITE_URL`, `DOCS_BASE
 
 L'indirizzo canonico è `https://docs.arenile.app`; si cambia con la variabile d'ambiente `ARENILE_DOCS_SITE`
 (origine, ad esempio `https://arenile.app`) e `ARENILE_DOCS_BASE` (percorso, ad esempio `/docs/`): canonical,
-sitemap e immagine social (`public/og.png`, URL assoluto) li seguono. Logo (chiaro/scuro, testo convertito in
-tracciati), favicon (`public/favicon.svg` con fallback PNG) e logo Coste360 del piè di pagina (`public/brand/`)
-sono copie dei file del kit in `assets/brand/` (© Coste360 SRL, fuori dalla licenza del codice, vedi
+sitemap, `robots.txt` (`src/pages/robots.txt.ts`) e immagine social (`public/og.png`, URL assoluto) li seguono.
+Logo dell'intestazione (icona dell'app `arenile-app-icon-flat.svg` e nome `arenile-name-{navy,white}.svg`, override
+`SiteTitle`), logo orizzontale della home (`arenile-logo-horizontal{,-dark}.svg`, testo convertito in tracciati),
+favicon (`public/favicon.svg` con fallback PNG) e logo Coste360 dell'intestazione e del piè di pagina
+(`public/brand/`: PNG originali e simbolo per i telefoni) sono copie identiche dei file del kit in `assets/brand/` (© Coste360 SRL, fuori dalla licenza del codice, vedi
 `assets/brand/*/NOTICE.md` e `TRADEMARK.md`); i colori vengono dai token condivisi di `globals.css`.
 
 `astro` è fissato a 7.4.1 perché le versioni successive richiedono Node.js >= 22.23.4.

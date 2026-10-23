@@ -1,0 +1,28 @@
+---
+/**
+ * <TechPanel>…</TechPanel>
+ * The clearly separated, quieter area of the home for technicians and
+ * developers (installation, API, licence, architecture): a muted panel that
+ * holds a Markdown H2 (with its anchor) and Starlight LinkCards.
+ */
+---
+
+<section class="tech-panel">
+  <slot />
+</section>
+
+<style>
+  .tech-panel {
+    margin-top: clamp(3.5rem, 8vw, 6rem);
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 8px);
+    background: var(--muted);
+  }
+  .tech-panel :global(.section-intro) {
+    margin-top: 0;
+  }
+  .tech-panel :global(.sl-link-card) {
+    background: var(--card);
+  }
+</style>

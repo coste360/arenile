@@ -1,67 +1,228 @@
 ---
-title: Arenile
-description: Il gestionale per stabilimenti balneari con codice sorgente disponibile (BSL 1.1), di Coste360 SRL. Documentazione per gestori, tecnici e sviluppatori.
+title: Gestionale per stabilimenti balneari gratuito
+description: Arenile è il gestionale gratuito per stabilimenti balneari, senza canone e senza commissioni sulle prenotazioni online. Mappa ombrelloni, cassa e abbonamenti.
 template: splash
+head:
+  - tag: title
+    content: Arenile — Gestionale per stabilimenti balneari gratuito
+  - tag: meta
+    attrs:
+      property: og:title
+      content: Arenile — Gestionale per stabilimenti balneari gratuito
+  - tag: meta
+    attrs:
+      property: og:type
+      content: website
 hero:
-  tagline: Mappa degli ombrelloni, prenotazioni online senza commissioni, prezzi, pagamenti con Stripe e cassa in un solo programma, sul tuo server.
+  title: Il gestionale per stabilimenti balneari
+  tagline: Mappa degli ombrelloni, prenotazioni online dal tuo sito, cassa e abbonamenti in un solo programma. Lo usi sul computer della cassa o sul tuo server, e i dati restano tuoi.
   actions:
-    - text: Inizia dalla guida del gestore
-      link: /gestore/
+    - text: Inizia ora
+      link: /installazione/scegli-come-installare/
       icon: right-arrow
-    - text: Installa Arenile
-      link: /installazione/
-      variant: minimal
+    - text: Guarda come funziona
+      link: /gestore/
+      variant: secondary
+home:
+  facts: Gratuito, senza commissioni, con il codice sorgente pubblico.
+  techLink:
+    text: Sei un tecnico? Installazione e API
+    link: '#per-tecnici-e-sviluppatori'
+  shot:
+    name: admin-map
+    alt: La mappa del giorno di Arenile con gli ombrelloni del Lido Demo colorati secondo lo stato
+  phone:
+    name: public-when-mobile
+    alt: La pagina di prenotazione online del Lido Demo su uno smartphone
 ---
 
-import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components';
-import { Screenshot, LiveMap, StatusBadges } from '~/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import {
+  Faq,
+  FeatureCards,
+  FeatureRow,
+  HelpCta,
+  LiveMap,
+  StatusBadges,
+  SectionIntro,
+  StartSteps,
+  TechPanel,
+} from '~/components';
 
-<Screenshot name="admin-map" alt="La mappa operativa di Arenile con gli stati delle postazioni del Lido Demo" />
+<SectionIntro title="Cosa puoi fare con Arenile">
+  Si usa dal computer della cassa, dal tablet o dal telefono. Quando qualcuno prenota, paga o arriva, tutto il
+  personale lo vede subito.
+</SectionIntro>
 
-## Per chi è questa documentazione
+<FeatureRow
+  icon="umbrella"
+  title="La mappa degli ombrelloni"
+  shot="admin-map-spot"
+  alt="La mappa del giorno con la scheda di un ombrellone aperta: cliente, periodo, pagato e saldo"
+  href="/gestore/mappa-del-giorno/"
+  linkText="Scopri la mappa del giorno"
+>
+  Disegni la tua spiaggia con il kit grafico di Coste360: file, ombrelloni, lettini, passerelle e servizi.
+  Ogni postazione mostra con colori e simboli se è libera, prenotata, da incassare o di un abbonato. Un tocco
+  e vedi chi c'è, quanto ha pagato e cosa resta da incassare.
+</FeatureRow>
 
-<CardGrid>
-  <Card title="Gestori e personale" icon="open-book">
-    Ogni funzione del pannello passo per passo: configurazione, mappa del giorno, prenotazioni, cassa, pagina
-    pubblica e pagamenti. Con screenshot sempre aggiornati, in tema chiaro e scuro.
-    [Guida del gestore](/gestore/)
-  </Card>
-  <Card title="Chi installa e mantiene" icon="setting">
-    Docker, compilazione dai sorgenti, configurazione, HTTPS, backup, aggiornamenti, sicurezza e privacy.
-    [Installazione e operatività](/installazione/)
-  </Card>
-  <Card title="Integratori" icon="seti:json">
-    API REST pubblica e del pannello, idempotenza, errori, webhook dei pagamenti ed eventi. Riferimento generato
-    dal contratto OpenAPI. [API e webhook](/api/)
-  </Card>
-  <Card title="Sviluppatori" icon="puzzle">
-    Architettura, invarianti, estensioni Go, driver di pagamento, sviluppo con agenti AI e contributi.
-    [Sviluppo ed estensioni](/sviluppo/)
-  </Card>
-</CardGrid>
+<FeatureRow
+  icon="globe"
+  title="Prenotazione degli ombrelloni online, senza commissioni"
+  shot="public-embed"
+  alt="Il modulo di prenotazione di Arenile inserito nel sito del Lido Demo"
+  href="/gestore/pagina-pubblica/"
+  linkText="Attiva le prenotazioni online"
+  reverse
+>
+  I tuoi clienti scelgono giorni, posto e servizi e prenotano dal **tuo sito** o da una pagina tutta tua,
+  anche di notte. Con Stripe i pagamenti arrivano direttamente sul tuo conto e Arenile non trattiene nulla;
+  se preferisci, il cliente paga all'arrivo.
+</FeatureRow>
 
-## La spiaggia, dal vivo
+<FeatureRow
+  icon="receipt"
+  title="Cassa e corrispettivi"
+  shot="admin-cash"
+  alt="La cassa di Arenile con fondo cassa, incassi per metodo e movimenti della giornata"
+  href="/gestore/cassa/"
+  linkText="Guarda la cassa"
+>
+  Apri la cassa, incassi in contanti o con carta, registri versamenti e prelievi e a fine giornata chiudi con il
+  conteggio. Il riepilogo dei corrispettivi per aliquota è pronto da passare al commercialista.
+</FeatureRow>
 
-Questa è la mappa del Lido Demo disegnata con lo stesso componente del pannello e il kit grafico Coste360:
-spostala, ingrandiscila, tocca le postazioni.
+<FeatureRow
+  icon="calendar-sync"
+  title="Abbonamenti stagionali e rilasci"
+  shot="admin-passes"
+  alt="L'elenco degli abbonamenti stagionali del Lido Demo con postazione, periodo, stato e saldo"
+  href="/gestore/abbonamenti/"
+  linkText="Gestisci gli abbonamenti"
+  reverse
+>
+  Tutti gli abbonati della stagione in un elenco, con saldo e crediti. Quando un abbonato non viene, rilasci il
+  posto per quel giorno: se lo rivendi, l'abbonato matura un credito.
+</FeatureRow>
 
-<LiveMap />
+<FeatureCards
+  items={[
+    {
+      icon: 'wifi-off',
+      title: 'Anche senza internet',
+      text: "Installato su un computer nel lido, Arenile continua a funzionare anche se la connessione salta. Presto anche come app desktop per il PC della cassa.",
+    },
+    {
+      icon: 'languages',
+      title: 'In 4 lingue',
+      text: 'Pannello e pagina di prenotazione in italiano, inglese, tedesco e francese, per il personale e per i turisti.',
+    },
+    {
+      icon: 'badge-euro',
+      title: 'Nessun canone',
+      text: 'Nessun abbonamento mensile e nessuna versione a pagamento: tutte le funzioni sono incluse.',
+    },
+    {
+      icon: 'shield-check',
+      title: 'I dati restano tuoi',
+      text: 'Clienti, prenotazioni e incassi stanno sul tuo computer o sul tuo server, con copie di sicurezza che controlli tu.',
+    },
+  ]}
+/>
 
-Ogni stato ha un colore **e** un simbolo, così la mappa si legge anche senza distinguere i colori:
+<SectionIntro title="Come iniziare gratis, in tre passi">
+  Non serve essere esperti di computer: la configurazione guidata ti accompagna dalla mappa al listino.
+</SectionIntro>
+
+<StartSteps
+  items={[
+    {
+      title: 'Scegli dove usarlo',
+      text: 'Su un computer nel lido, oppure online se vuoi ricevere le prenotazioni dal tuo sito; presto anche con l’app desktop. Il confronto ti aiuta a decidere in due minuti.',
+      href: '/installazione/scegli-come-installare/',
+      linkText: 'Confronta le soluzioni',
+    },
+    {
+      title: 'Installa Arenile',
+      badge: 'Desktop in arrivo',
+      text: "L'app desktop si installerà con un doppio clic, dal portale Coste360. La versione online la installi tu, o un tuo dipendente, seguendo la guida passo passo.",
+      href: '/installazione/',
+      linkText: 'Guida all’installazione',
+    },
+    {
+      title: 'Prepara il lido in 15 minuti',
+      text: 'La configurazione guidata ti fa disegnare la spiaggia, impostare prezzi e stagioni e aprire la pagina di prenotazione.',
+      href: '/gestore/configurazione-guidata/',
+      linkText: 'Vedi la configurazione guidata',
+    },
+  ]}
+/>
+
+<HelpCta
+  title="Preferisci non pensarci?"
+  text="Chiedi al team Coste360 di installare e configurare Arenile per te: mappa, listino e pagina di prenotazione pronti per la stagione."
+  href="https://www.coste360.it/contatti"
+  linkText="Contatta il team Coste360"
+/>
+
+<SectionIntro title="Prova la mappa">
+  Questa è la vera mappa di Arenile con i dati del Lido Demo: spostala, ingrandiscila e tocca gli ombrelloni.
+</SectionIntro>
+
+<LiveMap height="28rem" />
 
 <StatusBadges />
 
-## Da zero a online in quattro passi
+<SectionIntro title="Domande frequenti" />
+
+<Faq
+  items={[
+    {
+      q: 'Arenile è davvero gratis?',
+      a: "Sì. Se lo installi tu, sul tuo server online o su un computer nel lido (e presto con l'app desktop), Arenile è gratis per i tuoi stabilimenti: nessun canone, nessuna commissione e tutte le funzioni incluse, compresa la pagina di prenotazione per i tuoi clienti. Se preferisci non farlo da solo, il team Coste360 può installarlo e configurarlo per te come servizio a pagamento. La licenza (BSL 1.1, codice sorgente disponibile) riserva a Coste360 l'offerta di Arenile come servizio a terzi, ad esempio hosting o installazione.",
+      link: '/sviluppo/licenza/',
+      linkText: 'Cosa dice la licenza',
+    },
+    {
+      q: 'Serve un server?',
+      a: "Non per forza. Puoi usare Arenile sul computer della cassa con l'app desktop (in arrivo), su un piccolo computer nel lido oppure su un server online da pochi euro al mese, che serve se vuoi ricevere prenotazioni dal tuo sito. In ogni caso i dati restano tuoi.",
+      link: '/installazione/scegli-come-installare/',
+      linkText: 'Scegli come installare',
+    },
+    {
+      q: 'Le prenotazioni online hanno commissioni?',
+      a: "Arenile non prende commissioni, né sulle prenotazioni né sugli incassi. I pagamenti con carta passano da Stripe direttamente sul tuo conto e Stripe applica le proprie tariffe per transazione. Puoi anche confermare le prenotazioni online senza pagamento e incassare all'arrivo.",
+      link: '/gestore/pagamenti-online/',
+      linkText: 'Pagamenti online',
+    },
+    {
+      q: 'Funziona senza internet?',
+      a: "Sì, con l'app desktop (in arrivo) o con un computer nel lido: mappa, prenotazioni dal pannello, abbonati e cassa funzionano anche senza connessione. Le prenotazioni online dei clienti, invece, richiedono che Arenile sia raggiungibile da internet.",
+      link: '/installazione/scegli-come-installare/',
+      linkText: 'Confronta le soluzioni',
+    },
+    {
+      q: 'Posso provarlo prima di usarlo davvero?',
+      a: 'Sì. Puoi caricare il Lido Demo, uno stabilimento di esempio con mappa, listino, abbonati e prenotazioni, e provare ogni funzione senza toccare i tuoi dati.',
+      link: '/installazione/dati-demo/',
+      linkText: 'Carica i dati dimostrativi',
+    },
+  ]}
+/>
+
+<TechPanel>
+
+## Per tecnici e sviluppatori
+
+Arenile è un unico programma (Go e React) con codice sorgente disponibile: si installa con Docker su un VPS o
+in sede, si integra con API REST e webhook e si estende in Go.
 
 <CardGrid>
-  <LinkCard title="1. Scegli come installare" href="/installazione/scegli-come-installare/" description="VPS con Docker, server in sede, desktop (in arrivo) o hosting gestito." />
-  <LinkCard title="2. Installa con Docker" href="/installazione/docker/" description="Un compose, una chiave segreta, un comando." />
-  <LinkCard title="3. Configurazione guidata" href="/gestore/configurazione-guidata/" description="Mappa, listino e pagina pubblica in meno di 15 minuti." />
-  <LinkCard title="4. Attiva Stripe e il widget" href="/gestore/pagamenti-online/" description="Pagamenti online sul tuo conto e prenotazioni dal tuo sito." />
+  <LinkCard title="Installazione con Docker" href="/installazione/docker/" description="Un compose, una chiave segreta, un comando. HTTPS, backup e aggiornamenti." />
+  <LinkCard title="API e webhook" href="/api/" description="API pubblica e del pannello, idempotenza, errori, eventi e riferimento OpenAPI." />
+  <LinkCard title="Codice sorgente disponibile" href="/sviluppo/licenza/" description="Licenza BSL 1.1: gratis per i propri stabilimenti, AGPL-3.0 dopo tre anni." />
+  <LinkCard title="Architettura ed estensioni" href="/sviluppo/architettura/" description="Struttura del codice, invarianti, estensioni Go e driver di pagamento." />
 </CardGrid>
 
-<Aside type="note" title="Codice sorgente disponibile">
-  Arenile è distribuito con licenza BSL 1.1: gratuito per gli stabilimenti che lo usano per sé, codice leggibile
-  e modificabile, ogni versione convertita in AGPL-3.0 dopo tre anni. Su GitHub trovi sorgenti e istruzioni;
-  l'immagine Docker è pubblica e gratuita. [Dettagli sulla licenza](/sviluppo/licenza/).
-</Aside>
+</TechPanel>

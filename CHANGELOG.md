@@ -43,6 +43,14 @@ offline).
   Coste360 e riquadri nei colori del marchio; indirizzo predefinito `https://docs.arenile.app` (configurabile
   con `ARENILE_DOCS_SITE`). Contatto e documentazione nel contratto OpenAPI, link su docs.arenile.app in
   README, CONTRIBUTING e nei template Docker, Coolify e CapRover.
+- Documentazione, home per i gestori: logo Arenile al centro, titolo "Il gestionale per stabilimenti balneari",
+  riga "Gratuito, senza commissioni, con il codice sorgente pubblico", pulsanti "Inizia ora" e "Guarda come
+  funziona", link per i tecnici, schermata reale del pannello con la pagina di prenotazione sul telefono; poi
+  funzioni con schermate, tre passi per iniziare con l'aiuto del team Coste360 per chi non vuole installarlo da
+  sé, mappa dal vivo, domande frequenti e un'area separata per tecnici e sviluppatori; stesso impianto in
+  inglese. SEO: title e description per "gestionale per stabilimenti balneari gratuito", JSON-LD
+  `SoftwareApplication` (gratuito, Coste360 SRL) e `FAQPage`, `robots.txt` con la sitemap. Intestazione: icona
+  dell'app con il nome "Arenile" e "di Coste360.it" con il logo originale (solo il simbolo sui telefoni).
 - M5 parte A, report completi (spec 15.3): riepilogo, occupazione per giorno/zona/fila/fascia, ricavi incassati o
   venduti per periodo/canale/pack/extra/metodo/aliquota, prenotazioni per canale/anticipo/formula, cancellazioni e
   no-show, abbonamenti con rilasci e rivendite, clienti migliori (solo nome), saldi aperti e confronto con l'anno
