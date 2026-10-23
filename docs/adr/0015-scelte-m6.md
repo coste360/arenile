@@ -122,3 +122,29 @@ Decisioni prese durante l'implementazione, a complemento dei punti sopra.
     `00007`. M6 va unita e rilasciata **prima** di M5A: un database già a `00007` incontrerebbe la migrazione
     mancante `00006` (errore di goose); in alternativa M6 va rinumerata al momento del merge. ADR: 0013 = M4,
     0014 = M5A, 0015 = M6. Invarianti M6: INV-49..54 (INV-48 è del kit mappa, su `main`).
+19. **Il pannello in una finestra propria, non nel browser** (decisione del product owner, 2026-10-23: "tutto dentro
+    l'app"; modifica la sezione 29.1, che prevedeva il browser predefinito). In modalità locale e rete locale il
+    launcher apre il pannello nel webview di sistema con lo stesso `github.com/webview/webview_go` della modalità
+    remota (nessuna nuova dipendenza): WKWebView su macOS, WebView2 su Windows. Scartati Electron/CEF (centinaia di MB,
+    un secondo motore da aggiornare) e Wails/Tauri (un altro framework e un altro ciclo di build per una sola finestra).
+    `webview_go` non dà menu, chiusura senza distruzione, download né stampa: li aggiunge `internal/desktop/shell`,
+    diviso in nucleo puro testato su ogni sistema (stato della finestra, menu come dati e collegamento ai comandi,
+    comportamento alla chiusura, nomi dei file scaricati, politica dei link esterni) e strato nativo minimo: su macOS
+    uno shim Objective-C di circa 300 righe con sole API pubbliche (menu principale; `windowShouldClose:`,
+    `applicationShouldHandleReopen:` e `applicationShouldTerminate:` aggiunti alle classi create da `webview_go`;
+    `WKNavigationDelegate` che trasforma allegati e `<a download>` in `WKDownload` verso `~/Downloads`;
+    `NSPrintOperation` per `window.print`), su Windows solo Win32 da Go (`golang.org/x/sys`: sottoclasse di
+    `WM_CLOSE`, `Get/SetWindowPlacement`, primo piano), perché WebView2 gestisce già download, stampa, zoom e
+    scorciatoie. L'icona della barra di sistema resta (`fyne.io/systray` con `RunWithExternalLoop` su macOS, nel ciclo
+    di eventi della finestra; su Windows nel proprio thread). Chiusura: su macOS la finestra si nasconde (convenzione
+    della piattaforma), su Windows chiude l'app salvo `keep_running_in_tray` (falsa di default, consigliata con la rete
+    locale; impostazione desktop nel contratto). Istanza unica: listener di attivazione su loopback con token casuale in
+    `instance.json` (0600), il secondo avvio chiede di mostrare la finestra e termina. Prima di chiudere il ciclo di
+    eventi la pagina passa ad `about:blank`, così il flusso SSE del pannello non trattiene lo spegnimento del server.
+    Linux resta sul browser (punto 9, WebKitGTK 4.0); il browser resta disponibile ovunque (*Apri nel browser*,
+    `-browser`) e come ripiego se manca WebView2.
+20. **Windows ARM64 nativo.** I PC Snapdragon (Surface Pro) eseguirebbero la build x64 in emulazione; il pacchetto
+    `windows_arm64` è costruito sul runner GitHub `windows-11-arm` con CGO tramite **llvm-mingw** (host e target
+    aarch64, la stessa toolchain dei builder windows/arm64 di Go; versione e sha256 fissati nel workflow), scelto
+    rispetto a MSVC (cgo non lo supporta) e a zig (toolchain meno collaudata per C++ con WebView2). Inno Setup gira in
+    emulazione x86 e produce un installer `ArchitecturesAllowed=arm64`; firma con gli stessi passi della build x64.

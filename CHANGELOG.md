@@ -49,6 +49,23 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
   Artifact Signing), AppImage per Linux costruita su `ubuntu-22.04`; pacchetti senza firma con suffisso
   `-unsigned`. I pacchetti finiscono solo nell'artefatto `portal-bundle-<tag>` per il futuro portale Coste360,
   mai come asset di una release GitHub. Target `make desktop-build` e `make desktop-package-{macos,windows,linux}`.
+- M6, il pannello dell'app desktop gira in una finestra propria, senza browser (spec 29.1 rivista, ADR 0015 punto
+  19, `internal/desktop/shell`): webview di sistema (WKWebView su macOS, WebView2 su Windows) con icona nel Dock o
+  nella barra delle applicazioni, titolo "Arenile", dimensione minima, posizione, dimensioni e zoom ricordati in
+  `window.json`, istanza unica (il secondo avvio porta in primo piano la finestra tramite un listener di attivazione
+  su loopback con token in `instance.json`). Su macOS menu dell'app (*Arenile*, *Modifica* con copia e incolla nei
+  campi, *Vista* con ricarica e ingrandimento, *Finestra*), chiusura della finestra = l'app resta nella barra dei menu
+  e nel Dock, *Esci* ⌘Q = backup di uscita e arresto della rete locale; download (`<a download>`, blob, allegati) nella
+  cartella Download con notifica, `window.print` con il pannello di stampa del sistema, link esterni nel browser. Su
+  Windows chiudere la finestra chiude l'app salvo la nuova impostazione `keep_running_in_tray` (*Alla chiusura della
+  finestra resta attivo nella barra di sistema*, `DesktopSettings`, falsa di default). Voce *Apri nel browser* nella
+  barra di sistema e nel menu *Vista*, flag `-browser`; Linux e Windows senza WebView2 restano sul browser. La finestra
+  della modalità remota usa lo stesso strato nativo (su macOS copia e incolla prima non funzionavano). `Arenile.app`
+  non è più `LSUIElement`.
+- M6, pacchetto Windows ARM64 nativo (`Arenile_<tag>_windows_arm64_setup.exe`) accanto a quello x64: job sul runner
+  GitHub `windows-11-arm` con CGO tramite llvm-mingw (versione e sha256 fissati), stessi passi di firma, artefatto
+  `desktop-windows-arm64` nel `portal-bundle-<tag>`; il bundle accoglie anche i pacchetti costruiti quando un solo job
+  desktop fallisce.
 - M6, `arenile-desktop -pair <QR|URL> [-pair-code] [-pair-fingerprint]`: abbina il PC a un'istanza in modalità
   remota da riga di comando; la modalità remota è ora collegata al launcher.
 - M6, `/meta` riporta `desktop.lan_qr_svg` (solo in modalità rete locale): la pagina *Rete locale* mostra il QR

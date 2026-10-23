@@ -1,8 +1,8 @@
 # Building the desktop packages
 
 The desktop edition (spec 29.1, milestone M6) is the launcher `cmd/arenile-desktop`: the
-same core as `arenile serve`, with the admin panel and the public page embedded, plus a tray
-icon. This page explains how to build its packages locally and in CI, and how signing works.
+same core as `arenile serve`, with the admin panel and the public page embedded, shown in the
+app's own window (no browser needed) plus a tray icon. This page explains how to build its packages locally and in CI, and how signing works.
 
 Distribution rule: the packages are **never** uploaded as GitHub release assets, and pull
 requests never upload them as Actions artifacts either. The release workflow puts them in
@@ -13,6 +13,7 @@ the source code and these instructions only.
 | OS | Package | Tool | Runner |
 | --- | --- | --- | --- |
 | Windows 10/11 x64 | `Arenile_<tag>_windows_amd64_setup.exe` | Inno Setup 6 | `windows-latest` |
+| Windows 11 on Arm (Snapdragon, Surface Pro) | `Arenile_<tag>_windows_arm64_setup.exe` | Inno Setup 6, llvm-mingw | `windows-11-arm` |
 | macOS 13+ (Apple Silicon and Intel) | `Arenile_<tag>_macos_universal.dmg` | `lipo`, `hdiutil`, `codesign`, `notarytool` | `macos-latest` |
 | Linux x86_64 | `Arenile_<tag>_linux_x86_64.AppImage` | `appimagetool` (pinned) | `ubuntu-latest` |
 
@@ -54,17 +55,22 @@ DESKTOP_TAGS=desktop make desktop-package-macos   # tray build (CGO), as in CI
 ```
 
 - **Build tags.** With `DESKTOP_TAGS` empty, the launcher has no CGO and no tray (it is
-  headless). It cross-compiles from any OS, so it is handy for testing the packaging. The
-  packages for the portal use `DESKTOP_TAGS=desktop`: on macOS and Windows this turns CGO on
-  (tray and remote-mode webview) and the build must run on the native OS; on Linux the tray
-  build stays CGO-free (tray over D-Bus, no webview) and cross-compiles. On macOS, the host
+  headless and opens the browser). It cross-compiles from any OS, so it is handy for testing
+  the packaging. The packages for the portal use `DESKTOP_TAGS=desktop`: on macOS and Windows
+  this turns CGO on (panel window, tray, remote-mode webview: `-version` prints `(window)`)
+  and the build must run on the native OS; on Linux the tray build stays CGO-free (tray over
+  D-Bus, panel in the browser) and cross-compiles. On macOS, the host
   clang builds both slices (`clang -arch x86_64` and `-arch arm64`), and `lipo` merges them
   into one universal binary.
 - **macOS.** You need only the Xcode command line tools. Without a Developer ID, the `.app`
   gets an ad-hoc signature (it runs on the Mac that built it) and the `.dmg` is named
   `-unsigned`. Gatekeeper blocks it on other Macs: right click, then *Open*.
 - **Windows.** You need Git Bash, MinGW (`gcc` and `windres`, for the icon and version
-  resources and for CGO) and Inno Setup 6 (`choco install innosetup`). Without `windres` the
+  resources and for CGO) and Inno Setup 6 (`choco install innosetup`). For the arm64 package
+  set `WINDOWS_GOARCH=arm64` and put llvm-mingw's `bin` (the `ucrt-aarch64` build, which runs
+  natively on Windows on Arm) on the `PATH` with `CC=aarch64-w64-mingw32-clang`
+  `CXX=aarch64-w64-mingw32-clang++`: it provides the C/C++ compiler for CGO (webview_go is
+  C++) and `aarch64-w64-mingw32-windres` for the resources. cgo cannot use MSVC. Without `windres` the
   `.exe` has no icon, and the script prints a warning. The stages can be run one at a time:
   `scripts/desktop/package-windows.sh binary|sign FILE|installer|checksums`.
 - **Linux.** Any distribution with `curl`, `file` and `sha256sum`. FUSE is not needed (the
@@ -74,7 +80,34 @@ DESKTOP_TAGS=desktop make desktop-package-macos   # tray build (CGO), as in CI
   when the brand mark changes, then commit the outputs.
 
 Smoke test: `dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop -version` prints
-`arenile-desktop <tag> (headless|tray)`.
+`arenile-desktop <tag> (headless|tray|window)`.
+
+## The panel window (spec 29.1)
+
+With the `desktop` tag on macOS and Windows (`internal/desktop/shell`, ADR 0015 point 19):
+
+- The panel opens in the system webview (WKWebView, WebView2), title "Arenile", minimum
+  960x600, size, position, maximized state and zoom saved in `<data dir>/window.json`.
+- The tray menu keeps *Apri pannello* (brings the window to the front) and adds *Apri nel
+  browser*; `-browser` starts with the panel in the browser (tray only, no Dock icon),
+  `-no-browser` and `-no-tray` keep their old meaning (no window). Windows without the
+  WebView2 runtime (rare: Windows 11 ships it) falls back to the browser.
+- A second launch on the same data folder sends a message to the running one (loopback
+  listener, token in `instance.json`) and exits: the window comes to the front.
+- macOS: Dock icon and application menu (*Arenile*: Informazioni, Impostazioni ⌘, which
+  opens Configurazione → App desktop, Nascondi, Esci ⌘Q; *Modifica*; *Vista*: Ricarica ⌘R,
+  zoom ⌘+ ⌘- ⌘0, Schermo intero, Apri nel browser; *Finestra*). The close button and ⌘W hide
+  the window; the Dock icon or the menu bar icon shows it again. ⌘Q, *Esci* and the Dock's
+  quit stop the app in order (exit backup, LAN mode off). Downloads go to `~/Downloads`
+  (unique name, notification, Downloads stack bounce); `window.print` opens the system print
+  panel; links to other sites open in the default browser.
+- Windows: closing the window quits Arenile unless *Configurazione → App desktop → Alla
+  chiusura della finestra resta attivo nella barra di sistema* is on (`keep_running_in_tray`,
+  default off; turn it on for a cash desk PC that serves the LAN mode). WebView2 handles
+  downloads (Downloads folder and its flyout), printing (print preview), zoom (Ctrl +/-/0),
+  reload (F5) and the edit shortcuts by itself. The window icon comes from resource 32512 of
+  the exe (`arenile.rc.in`).
+- Linux: no window (WebKitGTK 4.0, see below); the panel opens in the default browser.
 
 ## Versioning and reproducibility
 
@@ -90,12 +123,16 @@ Smoke test: `dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop -vers
 
 ## CI
 
-`desktop.yml` runs three native jobs after a shared frontend build:
+`desktop.yml` runs four native jobs after a shared frontend build:
 
 1. `macos` (`macos-latest`, arm64) builds the universal binary, the `.app` and the `.dmg`,
    signs and notarizes when the secrets are present, then runs `lipo -archs` and `-version`.
-2. `windows` (`windows-latest`) builds the exe with its resources, signs it (PFX or Azure),
-   builds the Inno Setup installer, signs it, writes the checksums and runs `-version`.
+2. `windows` is a matrix: `amd64` on `windows-latest` (MinGW gcc of the image) and `arm64`
+   on the GitHub-hosted `windows-11-arm` runner, where it downloads llvm-mingw (version and
+   sha256 pinned in the workflow) for CGO. Each builds the exe with its resources, signs it
+   (PFX or Azure), builds the Inno Setup installer (`/DArch=amd64|arm64`), signs it, writes
+   the checksums and runs `-version` natively, checking `(window)`, `GOARCH` and
+   `CGO_ENABLED=1` in the build info.
 3. `linux` (`ubuntu-latest`) builds the AppImage and runs it with `-version`. The binary
    is CGO-free, so the runner's glibc is irrelevant and the AppImage runs on any current
    distribution (Ubuntu 22.04/24.04, Debian 12/13, Fedora) without extra libraries.
@@ -105,12 +142,12 @@ repository an Actions artifact can be downloaded by anyone with a GitHub account
 would make GitHub a download channel. A maintainer who needs a test package runs the
 workflow by hand (`workflow_dispatch`, unsigned, kept 3 days). In a release, `release.yml`
 calls the workflow with `secrets: inherit`, and the `portal-bundle` job merges the
-`desktop-{windows,macos,linux}` artifacts with the server binaries before it writes
+`desktop-{windows-amd64,windows-arm64,macos,linux}` artifacts with the server binaries before it writes
 `checksums.txt`. The bundle is kept 7 days as the hand-off to the portal and, when the
 `PORTAL_UPLOAD_URL` and `PORTAL_UPLOAD_TOKEN` secrets exist, pushed to the portal intake
 endpoint (one `multipart/form-data` POST per file, `version` and `file` fields, Bearer token).
 A failed desktop job does not block the server bundle or the release: the bundle then carries
-the server binaries only, with a warning in the job summary, and `desktop.yml` can be re-run
+the server binaries and the desktop packages that were built, with a warning in the job summary, and `desktop.yml` can be re-run
 with the same tag. The `release` job still publishes only the notes and `openapi.yaml`.
 
 ## Signing
@@ -182,8 +219,8 @@ portal publishes. If a signature is needed later, a detached GPG signature
 - Windows: per user, no administrator rights, in `%LOCALAPPDATA%\Programs\Arenile` (an
   administrator can choose *all users*), with a Start menu entry and an optional desktop icon.
   The uninstaller removes the autostart value `HKCU\...\Run\Arenile`.
-- macOS: drag `Arenile.app` to Applications. It lives in the menu bar (`LSUIElement`), with no
-  Dock icon.
+- macOS: drag `Arenile.app` to Applications. It is a regular app (Dock icon, application
+  menu) with an icon in the menu bar as well; closing the window keeps it running there.
 - Linux: make the AppImage executable and run it. The `.desktop` file and icon are inside.
 - The data stays in the user folder of the OS (`%APPDATA%\Arenile`,
   `~/Library/Application Support/Arenile`, `~/.local/share/arenile`). No installer or
@@ -243,5 +280,16 @@ keychain entry afterwards (service `it.coste360.arenile`, account
 - Moving from the desktop app to an online instance: the secret key stays in the OS
   keychain and cannot be exported yet, so secrets encrypted with it (TOTP) must be set up
   again on the new instance.
-- Windows arm64 and Linux aarch64 packages are not built yet. `package-linux.sh` already
-  supports `LINUX_GOARCH=arm64` on an arm64 host (`ubuntu-24.04-arm`).
+- The Windows arm64 job has not run on GitHub yet and the package has not been tried on a
+  Snapdragon PC; the Windows window layer (`win_windows.go`) is type-checked for amd64 and
+  arm64 but was not run on Windows. Linux aarch64 packages are not built yet;
+  `package-linux.sh` already supports `LINUX_GOARCH=arm64` on an arm64 host (`ubuntu-24.04-arm`).
+- macOS logout or shutdown while Arenile runs: the app cancels the request, runs its own quit
+  (exit backup) and exits; macOS reports that Arenile interrupted the logout, the next try
+  succeeds. A Windows logoff ends the process without the exit backup (as in the tray build);
+  the daily backup covers it.
+- On macOS a top-level navigation of the window to another origin (redirect, script, form)
+  is sent to the default browser; on Windows webview_go has no navigation hook, so only links
+  and `window.open` are diverted (the panel itself never navigates away).
+- Open SSE streams keep `app.Run`'s graceful shutdown waiting up to its timeout (15 s) on
+  every edition; the window unloads its page before quitting, a browser tab does not.
