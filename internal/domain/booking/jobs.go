@@ -88,9 +88,10 @@ func (s *Service) ExpireHolds(ctx context.Context) (int, error) {
 }
 
 // expireLocked moves the locked booking b to expired: resources released,
-// booking.expired with diff, and, when money was paid online, the refund
-// of what was paid scheduled by the ExpiredRefunder in the same
-// transaction (INV-51: an expired booking does not keep the customer's
+// booking.expired with diff, and, when something was paid, the refund in
+// the same transaction: what was paid with customer credit goes back as
+// credit at once (INV-71), what was paid online is scheduled by the
+// ExpiredRefunder (INV-51: an expired booking does not keep the customer's
 // money).
 func (s *Service) expireLocked(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, diff map[string]any) (*outcome, error) {
 	alloc, err := s.releaseAll(ctx, tx, es, b)
@@ -109,6 +110,9 @@ func (s *Service) expireLocked(ctx context.Context, tx bun.IDB, es store.Establi
 		o.after = func(ctx context.Context, tx bun.IDB, b *store.Booking) error {
 			return s.d.ExpiredRefunds.RefundExpiredBooking(ctx, tx, es, b.ID)
 		}
+	}
+	if err := s.returnCreditOnEnd(ctx, tx, es, b, o); err != nil {
+		return nil, err
 	}
 	return o, nil
 }

@@ -147,5 +147,24 @@ func TestRefund_CreditPaidPartGoesBackAsCredit(t *testing.T) {
 		if n := e.count(t, "payments", "booking_id = ? AND direction = ? AND method = ?", b.ID, store.PaymentDirectionRefund, store.PaymentMethodCredit); n != 1 {
 			t.Fatalf("credit refunds %d", n)
 		}
+		// A refund aimed at the credit payment itself comes back as credit
+		// of source cancellation (policy expiry), never as "manual".
+		var orig store.Payment
+		if err := db.NewSelect().Model(&orig).Where("pm.booking_id = ?", b.ID).Where("pm.direction = ?", store.PaymentDirectionIn).
+			Where("pm.method = ?", store.PaymentMethodCredit).Scan(e.ctx); err != nil {
+			t.Fatal(err)
+		}
+		res, err = e.svc.RefundBooking(e.ctx, e.owner, "", e.estA.ID, payment.RefundRequest{
+			BookingID: b.ID, Amount: 1000, As: payment.RefundAsRefund, Method: store.PaymentMethodCash, PaymentID: orig.ID, Reason: "storno",
+		})
+		if err != nil || res.Payment.Method != store.PaymentMethodCredit || res.Payment.Amount != 1000 {
+			t.Fatalf("refund of the credit payment: %v %+v", err, res)
+		}
+		if n := e.count(t, "customer_credits", "customer_id = ? AND source = ? AND amount = 1000", e.custA.ID, store.CreditSourceCancellation); n != 1 {
+			t.Fatalf("cancellation credit of the payment refund %d", n)
+		}
+		if bal := balanceOf(t, e); bal != 4000 {
+			t.Fatalf("credit after the payment refund %d", bal)
+		}
 	})
 }

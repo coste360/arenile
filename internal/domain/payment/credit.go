@@ -179,14 +179,63 @@ func (s *Service) payCredit(ctx context.Context, es store.EstablishmentScope, bo
 	return &res.Payment, nil
 }
 
+// CreditRefundSplit is the single rule of spec 13.4 / INV-71 for a money
+// refund of amount on a booking paid partly with customer credit: money
+// first. The refund is paid back with the other methods as long as they
+// cover it (what was paid with cash, card or online, net of the refunds
+// done and of the provider refunds in flight); only the excess, up to what
+// the booking received as credit and has not given back yet, returns as
+// credit. It returns that credit part (0 = all money). Used by the desk and
+// online refunds (refundInTx) and by the booking cancellations (panel and
+// magic link), so every path splits the same amount the same way.
+func CreditRefundSplit(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, bookingID string, amount money.Cents) (money.Cents, error) {
+	if amount <= 0 {
+		return 0, nil
+	}
+	creditNet, err := store.BookingCreditNet(ctx, tx, es, bookingID)
+	if err != nil {
+		return 0, fmt.Errorf("payment: %w", err)
+	}
+	if creditNet <= 0 {
+		return 0, nil
+	}
+	totals, err := store.BookingPaymentTotals(ctx, tx, es, bookingID)
+	if err != nil {
+		return 0, fmt.Errorf("payment: %w", err)
+	}
+	inFlight, err := store.SumOpenRefundIntents(ctx, tx, es, "", bookingID)
+	if err != nil {
+		return 0, fmt.Errorf("payment: %w", err)
+	}
+	moneyLeft := max(totals.Net()-inFlight-creditNet, 0)
+	if amount <= moneyLeft {
+		return 0, nil
+	}
+	return min(amount-moneyLeft, creditNet), nil
+}
+
+// CreditToReturn is what a booking that ends before its confirmation
+// (expired hold, declined renewal) must give back as credit: everything it
+// received through the payment method credit and has not returned yet
+// (INV-71). The money part of such a booking follows the provider refund
+// of the gateway (INV-51).
+func CreditToReturn(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, bookingID string) (money.Cents, error) {
+	net, err := store.BookingCreditNet(ctx, tx, es, bookingID)
+	if err != nil {
+		return 0, fmt.Errorf("payment: %w", err)
+	}
+	return max(net, 0), nil
+}
+
 // splitCreditRefund handles the part of a money refund that the booking
 // received as customer credit: that part goes back as credit (spec 13.4),
 // never as money. A refund of a specific payment of method credit becomes a
-// credit refund entirely. Otherwise, when the money refund exceeds what was
-// paid with other methods (net of refunds and in-flight provider refunds),
-// the excess (up to the credit-paid amount) is recorded first as a credit
-// refund and req.Amount is reduced to the money part. It returns the result
-// of the credit part and whether nothing is left to refund as money.
+// credit refund entirely (source cancellation, expiry from the policy of the
+// booking, like every credit that comes back from a booking). Otherwise the
+// amount is split with CreditRefundSplit (money first): the credit part is
+// recorded first as a credit refund and req.Amount is reduced to the money
+// part. It returns the result of the credit part and whether nothing is
+// left to refund as money.
 func (s *Service) splitCreditRefund(ctx context.Context, tx bun.IDB, p *auth.Principal, ip string, es store.EstablishmentScope, b *store.Booking, info *estInfo, req *RefundRequest) (*Result, bool, error) {
 	if req.As != RefundAsRefund {
 		return nil, false, nil
@@ -196,34 +245,21 @@ func (s *Service) splitCreditRefund(ctx context.Context, tx bun.IDB, p *auth.Pri
 		if err == nil && orig.Method == store.PaymentMethodCredit {
 			req.As, req.Method = RefundAsCredit, store.PaymentMethodCredit
 			if req.CreditSource == "" {
-				req.CreditSource = store.CreditSourceManual
+				req.CreditSource = store.CreditSourceCancellation
 			}
 		}
 		return nil, false, nil
 	}
-	creditNet, err := store.BookingCreditNet(ctx, tx, es, b.ID)
+	part, err := CreditRefundSplit(ctx, tx, es, b.ID, req.Amount)
 	if err != nil {
-		return nil, false, fmt.Errorf("payment: %w", err)
+		return nil, false, err
 	}
-	if creditNet <= 0 {
+	if part <= 0 {
 		return nil, false, nil
 	}
-	totals, err := store.BookingPaymentTotals(ctx, tx, es, b.ID)
-	if err != nil {
-		return nil, false, fmt.Errorf("payment: %w", err)
-	}
-	inFlight, err := store.SumOpenRefundIntents(ctx, tx, es, "", b.ID)
-	if err != nil {
-		return nil, false, fmt.Errorf("payment: %w", err)
-	}
-	moneyLeft := max(totals.Net()-inFlight-creditNet, 0)
-	if req.Amount <= moneyLeft {
-		return nil, false, nil
-	}
-	part := min(req.Amount-moneyLeft, creditNet)
 	src := req.CreditSource
 	if src == "" {
-		src = store.CreditSourceManual
+		src = store.CreditSourceCancellation
 	}
 	rest := req.Amount - part
 	creditReq := RefundRequest{

@@ -5,6 +5,7 @@ package booking_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/uptrace/bun"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
 	"github.com/coste360/arenile/internal/domain/cash"
+	"github.com/coste360/arenile/internal/domain/checkout/checkouttest"
 	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/event"
@@ -89,6 +91,59 @@ func TestBookingCancel_CreditPaidPartReturnsAsCredit(t *testing.T) {
 		totals, err := store.BookingPaymentTotals(f.Ctx, db, es, b.ID)
 		if err != nil || totals.Net() != 0 {
 			t.Fatalf("booking net %d %v", totals.Net(), err)
+		}
+	})
+}
+
+// TestBooking_ExpiredHeldCreditReturnsCredit (INV-71): credit spent on a
+// booking that is still held (a renewal or waitlist acceptance below the
+// deposit) goes back as credit in the same transaction that expires the
+// hold, so an unanswered or abandoned booking never keeps the customer's
+// credit.
+func TestBooking_ExpiredHeldCreditReturnsCredit(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		ctx, f := e.Ctx, e.F
+		s := e.Create(e.Seat(f.Spots[0], "2027-07-10"))
+		e.Details(s, "credito@example.org")
+		b := e.Booking(s.BookingID)
+		if b.Status != "held" || b.TotalAmount <= 500 {
+			t.Fatalf("held booking: %s %d", b.Status, b.TotalAmount)
+		}
+		if err := store.RunInTx(ctx, db, func(ctx context.Context, tx bun.Tx) error {
+			return e.Credits.GrantCredit(ctx, tx, e.ES, &store.CustomerCredit{CustomerID: b.CustomerID, Amount: 500, Source: store.CreditSourceGoodwill})
+		}); err != nil {
+			t.Fatal(err)
+		}
+		pm, err := e.Payments.PayHeldWithCredit(ctx, e.ES, b.ID, 0, "")
+		if err != nil || pm == nil || pm.Amount != 500 {
+			t.Fatalf("credit on the hold: %+v %v", pm, err)
+		}
+		if got := e.Booking(b.ID); got.Status != "held" || got.PaidAmount != 500 {
+			t.Fatalf("after credit: %s paid %d", got.Status, got.PaidAmount)
+		}
+		if bal, err := store.GetCustomerCreditBalance(ctx, db, e.ES, b.CustomerID); err != nil || bal != 0 {
+			t.Fatalf("balance after redemption %d %v", bal, err)
+		}
+		f.Clock.Set(f.Clock.Now().Add(time.Hour))
+		if n, err := e.Book.ExpireHolds(ctx); err != nil || n != 1 {
+			t.Fatalf("expire holds: %d %v", n, err)
+		}
+		if got := e.Booking(b.ID); got.Status != "expired" || got.PaidAmount != 0 {
+			t.Fatalf("expired booking: %s paid %d", got.Status, got.PaidAmount)
+		}
+		if bal, err := store.GetCustomerCreditBalance(ctx, db, e.ES, b.CustomerID); err != nil || bal != 500 {
+			t.Fatalf("credit back %d %v", bal, err)
+		}
+		if n := e.Count((*store.CustomerCredit)(nil), "customer_id = ? AND source = ? AND amount = 500", b.CustomerID, store.CreditSourceCancellation); n != 1 {
+			t.Fatalf("cancellation credit rows %d", n)
+		}
+		if n := e.Count((*store.Payment)(nil), "booking_id = ? AND direction = ? AND method = ?", b.ID, store.PaymentDirectionRefund, store.PaymentMethodCredit); n != 1 {
+			t.Fatalf("credit refunds %d", n)
+		}
+		// Idempotent: a second sweep changes nothing.
+		if n, err := e.Book.ExpireHolds(ctx); err != nil || n != 0 {
+			t.Fatalf("second sweep: %d %v", n, err)
 		}
 	})
 }

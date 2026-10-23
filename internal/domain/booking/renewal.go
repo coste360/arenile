@@ -111,9 +111,14 @@ func (s *Service) EndRenewal(ctx context.Context, tx bun.IDB, actor audit.Actor,
 			if reason != "" {
 				b.CancelReason = &reason
 			}
-			return &outcome{action: eventCancelled, alloc: alloc, diff: map[string]any{
+			o := &outcome{action: eventCancelled, alloc: alloc, diff: map[string]any{
 				"renewal": "declined", "refund_amount": int64(0), "settlement": string(SettleNone),
-			}}, nil
+			}}
+			// Credit applied before the decline goes back as credit (INV-71).
+			if err := s.returnCreditOnEnd(ctx, tx, es, b, o); err != nil {
+				return nil, err
+			}
+			return o, nil
 		}
 		why := "renewal_expired"
 		if declined {
