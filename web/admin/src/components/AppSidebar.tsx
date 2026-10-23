@@ -22,6 +22,7 @@ import { ChevronDownIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EstablishmentSwitcher, useCurrentEstablishment, useIsOwner } from '../establishment';
+import { useIsDesktopEdition } from '../lib/meta';
 import { CONFIG_NAV_ITEMS, ESTABLISHMENTS_NAV_ITEM, NAV_ITEMS } from '../nav';
 import { NavUser } from './NavUser';
 
@@ -36,6 +37,7 @@ export function AppSidebar() {
   const { setOpenMobile } = useSidebar();
   const current = useCurrentEstablishment();
   const isOwner = useIsOwner();
+  const isDesktop = useIsDesktopEdition();
   const close = () => setOpenMobile(false);
   const available = NAV_ITEMS.filter((item) => item.available);
   const upcoming = NAV_ITEMS.filter((item) => !item.available);
@@ -126,18 +128,20 @@ export function AppSidebar() {
                   onClick={close}
                 />
                 {current.id &&
-                  CONFIG_NAV_ITEMS.filter((item) => !('ownerOnly' in item) || isOwner).map(
-                    (item) => (
-                      <ConfigLink
-                        key={item.to}
-                        to={item.to}
-                        params={{ establishmentId: current.id as string }}
-                        label={t(item.labelKey)}
-                        icon={item.icon}
-                        onClick={close}
-                      />
-                    ),
-                  )}
+                  CONFIG_NAV_ITEMS.filter(
+                    (item) =>
+                      (!('ownerOnly' in item) || isOwner) &&
+                      (!('desktopOnly' in item) || isDesktop),
+                  ).map((item) => (
+                    <ConfigLink
+                      key={item.to}
+                      to={item.to}
+                      params={{ establishmentId: current.id as string }}
+                      label={t(item.labelKey)}
+                      icon={item.icon}
+                      onClick={close}
+                    />
+                  ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

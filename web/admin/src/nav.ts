@@ -12,8 +12,10 @@ import {
   LayoutGridIcon,
   MailIcon,
   MapIcon,
+  MonitorIcon,
   PackageIcon,
   ShieldCheckIcon,
+  SmartphoneIcon,
   SparklesIcon,
   SunIcon,
   TicketIcon,
@@ -176,6 +178,23 @@ export const CONFIG_NAV_ITEMS = [
     icon: UserCogIcon,
     ownerOnly: true,
   },
-] as const satisfies readonly (NavItemBase & { to: string; ownerOnly?: boolean })[];
+  {
+    to: '/e/$establishmentId/config/devices',
+    labelKey: 'nav.config.devices',
+    icon: SmartphoneIcon,
+  },
+  {
+    to: '/e/$establishmentId/config/desktop',
+    labelKey: 'nav.config.desktop',
+    icon: MonitorIcon,
+    ownerOnly: true,
+    desktopOnly: true,
+  },
+] as const satisfies readonly (NavItemBase & {
+  to: string;
+  ownerOnly?: boolean;
+  /** Shown only on the desktop edition (lib/meta useIsDesktopEdition, M6). */
+  desktopOnly?: boolean;
+})[];
 
 export type ConfigNavPath = (typeof CONFIG_NAV_ITEMS)[number]['to'];

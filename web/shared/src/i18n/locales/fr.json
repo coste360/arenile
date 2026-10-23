@@ -144,7 +144,9 @@
       "team": "Utilisateurs",
       "online": "Page publique",
       "payments": "Paiements en ligne",
-      "email": "E-mails et notifications"
+      "email": "E-mails et notifications",
+      "devices": "Appareils",
+      "desktop": "Application de bureau"
     },
     "operations": "Exploitation",
     "configGroup": "Configuration",

@@ -29,6 +29,9 @@
 // registered cash register). Any other driver leaves the document pending;
 // the job of Jobs (IssuePending) calls the device after commit, never
 // inside a transaction, and stores the outcome with a conditional UPDATE.
+// An asynchronous driver (the "bridge" driver of internal/fiscalbridge,
+// M6) answers with an error implementing `Deferred() bool`: the document
+// stays pending and the next run collects the outcome.
 // It implements payment.Fiscal.
 //
 // Permissions: the export and the document list require

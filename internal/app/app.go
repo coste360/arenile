@@ -25,6 +25,7 @@ import (
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/config"
 	"github.com/coste360/arenile/internal/crypto"
+	"github.com/coste360/arenile/internal/desktop/control"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/booking"
@@ -32,11 +33,13 @@ import (
 	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/customer"
+	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
@@ -46,6 +49,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/fiscalbridge"
 	httpserver "github.com/coste360/arenile/internal/http"
 	"github.com/coste360/arenile/internal/http/sse"
 	"github.com/coste360/arenile/internal/jobs"
@@ -62,6 +66,7 @@ type options struct {
 	clock   clock.Clock
 	version string
 	signals bool
+	desktop control.Control
 }
 
 // Option configures New.
@@ -116,12 +121,18 @@ type App struct {
 	Notify   *notify.Service
 	Gateway  *gateway.Service
 	Checkout *checkout.Service
-	Outbox   *event.Outbox
-	Bus      ext.EventBus
+	// M6/M7 services (wired by wireDevices, see m6.go).
+	Meta         *meta.Service
+	Devices      *device.Service
+	FiscalBridge *fiscalbridge.Service
+	Outbox       *event.Outbox
+	Bus          ext.EventBus
 
 	mu    sync.Mutex
 	addr  string
 	ready chan struct{}
+	// extra are the servers started by ServeListener (desktop LAN mode).
+	extra []*http.Server
 }
 
 // NewLogger returns the standard JSON logger.
@@ -224,6 +235,7 @@ func (a *App) wire() error {
 	a.registry = NewRegistry(c, x)
 	a.wireOperations(aw)
 	a.wireOnline(aw)
+	a.wireDevices(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -249,7 +261,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range append(a.operationJobs(), a.onlineJobs()...) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -263,6 +275,8 @@ func (a *App) wire() error {
 		Customers: a.Customers, Bookings: a.Bookings, Inventory: a.Inventory, Passes: a.Passes,
 		Payments: a.Payments, Cash: a.Cash, Fiscal: a.Fiscal,
 		Online: a.Online, Checkout: a.Checkout, Notify: a.Notify, Gateway: a.Gateway,
+		Meta: a.Meta, Devices: a.Devices, FiscalBridge: a.FiscalBridge,
+		Desktop: a.opts.desktop, DesktopUsers: usersCounter{db: a.db},
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),
@@ -411,6 +425,9 @@ func (a *App) Run(ctx context.Context) error {
 	a.log.Info("shutting down")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), ShutdownTimeout)
 	defer cancel()
+	a.mu.Lock()
+	servers = append(servers, a.extra...)
+	a.mu.Unlock()
 	for _, s := range servers {
 		if err := s.Shutdown(shutdownCtx); err != nil {
 			a.log.Warn("http shutdown", slog.String("error", err.Error()))

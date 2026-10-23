@@ -144,7 +144,9 @@
       "team": "Benutzer",
       "online": "Öffentliche Seite",
       "payments": "Online-Zahlungen",
-      "email": "E-Mail und Benachrichtigungen"
+      "email": "E-Mail und Benachrichtigungen",
+      "devices": "Geräte",
+      "desktop": "Desktop-App"
     },
     "operations": "Betrieb",
     "configGroup": "Konfiguration",

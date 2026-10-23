@@ -18,16 +18,19 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/coste360/arenile/internal/clock"
+	"github.com/coste360/arenile/internal/desktop/control"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/customer"
+	devicedomain "github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
@@ -37,8 +40,11 @@ import (
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/fiscalbridge"
 	"github.com/coste360/arenile/internal/http/admin"
 	"github.com/coste360/arenile/internal/http/api"
+	desktophttp "github.com/coste360/arenile/internal/http/desktop"
+	devicehttp "github.com/coste360/arenile/internal/http/device"
 	"github.com/coste360/arenile/internal/http/middleware"
 	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/internal/http/public"
@@ -81,15 +87,24 @@ type Deps struct {
 	Cash      *cash.Service
 	Fiscal    *fiscal.Service
 	// M4 services (public page, online payments, notifications).
-	Online         *online.Service
-	Checkout       *checkout.Service
-	Notify         *notify.Service
-	Gateway        *gateway.Service
-	Bus            ext.EventBus
-	Readiness      ReadinessChecker
-	TrustedProxies []netip.Prefix
-	SecureCookies  bool
-	Static         *static.Handler
+	Online   *online.Service
+	Checkout *checkout.Service
+	Notify   *notify.Service
+	Gateway  *gateway.Service
+	// M6/M7: instance metadata, paired devices, fiscal bridge and the
+	// desktop edition control (nil on the server edition).
+	Meta         *meta.Service
+	Devices      *devicedomain.Service
+	FiscalBridge *fiscalbridge.Service
+	Desktop      control.Control
+	DesktopUsers desktophttp.UsersCounter
+	// PairingsPerMinute overrides the per-IP limit of POST /api/device/v1/pair (default 10).
+	PairingsPerMinute int
+	Bus               ext.EventBus
+	Readiness         ReadinessChecker
+	TrustedProxies    []netip.Prefix
+	SecureCookies     bool
+	Static            *static.Handler
 	// Metrics, when non-nil, is mounted at /metrics (disabled by default).
 	Metrics http.Handler
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
@@ -102,10 +117,14 @@ type Deps struct {
 	PublicCreationsPerMinute int
 }
 
-// Paths that do not require authentication under /api/admin/.
+// Paths that do not require authentication under /api/admin/,
+// /api/device/ and /api/desktop/.
 const (
 	loginPath      = "/api/admin/v1/auth/login"
 	authPathPrefix = "/api/admin/v1/auth/"
+	metaPath       = "/api/admin/v1/meta"
+	pairPath       = "/api/device/v1/pair"
+	firstRunPath   = "/api/desktop/v1/first-run"
 )
 
 // New builds the root handler.
@@ -125,6 +144,10 @@ func New(d Deps) http.Handler {
 	}
 	if creations <= 0 {
 		creations = 10
+	}
+	pairings := d.PairingsPerMinute
+	if pairings <= 0 {
+		pairings = 10
 	}
 	sessionTTL := 7 * 24 * time.Hour
 	if d.Auth != nil {
@@ -151,16 +174,26 @@ func New(d Deps) http.Handler {
 		}),
 		middleware.OnPrefix("/api/", middleware.LimitBody(1<<20), middleware.RequireJSON),
 		middleware.OnPrefix("/api/admin/",
-			middleware.Authenticate(d.Auth, d.Log),
-			middleware.RequireAuth([]string{loginPath}, authPathPrefix),
+			middleware.Authenticate(adminAuthenticator(d), d.Log),
+			middleware.RequireAuth([]string{loginPath, metaPath}, authPathPrefix),
 			middleware.CSRF(d.SecureCookies, sessionTTL),
 		),
+		// M6/M7 device API: device tokens only, no cookies (no CSRF).
+		middleware.OnPrefix("/api/device/",
+			middleware.OnPrefix(pairPath, middleware.PublicRateLimit(
+				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
+				auth.NewRateLimiter(d.Clock, pairings, time.Minute),
+			)),
+			middleware.Authenticate(devicedomain.DeviceOnly{Devices: deviceAuthenticator(d)}, d.Log),
+			middleware.RequireAuth([]string{pairPath}, ""),
+		),
+		desktopGuard(d, sessionTTL),
 		middleware.OnPrefix("/api/public/", middleware.PublicRateLimit(
 			auth.NewRateLimiter(d.Clock, reads, time.Minute),
 			auth.NewRateLimiter(d.Clock, creations, time.Minute),
 		)),
 		middleware.OnPrefix("/api/", middleware.Idempotency(middleware.IdempotencyOptions{
-			DB: d.DB, Clock: d.Clock, Log: d.Log, Skip: []string{authPathPrefix},
+			DB: d.DB, Clock: d.Clock, Log: d.Log, Skip: []string{authPathPrefix, "/api/device/", "/api/desktop/"},
 		})),
 	)
 
@@ -172,7 +205,12 @@ func New(d Deps) http.Handler {
 			Customers: d.Customers, Bookings: d.Bookings, Inventory: d.Inventory, Passes: d.Passes,
 			Payments: d.Payments, Cash: d.Cash, Fiscal: d.Fiscal,
 			Online: d.Online, Notify: d.Notify, Gateway: d.Gateway,
+			Meta: d.Meta, Devices: d.Devices, FiscalBridge: d.FiscalBridge,
 			Stream: &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
+		},
+		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
+		desktopHandlers: &desktopHandlers{
+			Control: d.Desktop, Auth: d.Auth, Users: d.DesktopUsers, Log: d.Log, SecureCookies: d.SecureCookies,
 		},
 		publicHandlers: &public.Handlers{
 			Establishments: d.Establishments, Online: d.Online, Checkout: d.Checkout,
@@ -220,6 +258,8 @@ type server struct {
 	*admin.Handlers
 	*publicHandlers
 	*webhookHandlers
+	*deviceHandlers
+	*desktopHandlers
 	ops *ops
 }
 
@@ -227,7 +267,43 @@ type server struct {
 type (
 	publicHandlers  = public.Handlers
 	webhookHandlers = webhooks.Handlers
+	deviceHandlers  = devicehttp.Handlers
+	desktopHandlers = desktophttp.Handlers
 )
+
+// adminAuthenticator dispatches bearer credentials on their scheme: device
+// tokens to the device service, API keys to auth (strategy, M6/M7).
+func adminAuthenticator(d Deps) middleware.Authenticator {
+	if d.Devices == nil {
+		return d.Auth
+	}
+	return devicedomain.BearerAuthenticator{Auth: d.Auth, Devices: d.Devices}
+}
+
+// desktopGuard protects /api/desktop/ on the desktop edition: loopback
+// only, session cookie, CSRF (first-run is public and checks the setup
+// token). On the server edition there is no guard and the handlers answer
+// 404 not_found, so the API does not reveal desktop-only behaviour.
+func desktopGuard(d Deps, sessionTTL time.Duration) middleware.Middleware {
+	if d.Desktop == nil {
+		return func(next http.Handler) http.Handler { return next }
+	}
+	return middleware.OnPrefix("/api/desktop/",
+		middleware.LoopbackOnly(),
+		middleware.Authenticate(d.Auth, d.Log),
+		middleware.RequireAuth([]string{firstRunPath}, authPathPrefix),
+		middleware.CSRF(d.SecureCookies, sessionTTL),
+	)
+}
+
+// deviceAuthenticator returns the device token authenticator or nil (an
+// untyped nil keeps DeviceOnly failing closed when no service is wired).
+func deviceAuthenticator(d Deps) devicedomain.TokenAuthenticator {
+	if d.Devices == nil {
+		return nil
+	}
+	return d.Devices
+}
 
 var _ api.ServerInterface = (*server)(nil)
 

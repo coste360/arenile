@@ -1,0 +1,10 @@
+{
+  "firstRun": {
+    "title": "Benvenuto in Arenile",
+    "description": "Crea l'utente titolare per iniziare: poi ti guidiamo nella configurazione dello stabilimento."
+  },
+  "settings": {
+    "title": "App desktop",
+    "description": "Backup automatici, ripristino, avvio all'accensione e modalità rete locale per gli altri dispositivi del lido."
+  }
+}

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/desktop/control"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
@@ -19,6 +20,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/customer"
+	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
@@ -69,6 +71,11 @@ const (
 	CheckoutNotFound      = api.ProblemType("checkout_not_found")
 	ProviderUnavailable   = api.ProblemType("payment_provider_unavailable")
 	SignatureInvalid      = api.ProblemType("webhook_signature_invalid")
+	PairingCodeInvalid    = api.ProblemType("pairing_code_invalid")
+	LANModeRequired       = api.ProblemType("lan_mode_required")
+	LoopbackRequired      = api.ProblemType("loopback_required")
+	SetupTokenInvalid     = api.ProblemType("setup_token_invalid")
+	SetupCompleted        = api.ProblemType("setup_completed")
 )
 
 type meta struct {
@@ -114,6 +121,11 @@ var catalog = map[api.ProblemType]meta{
 	CheckoutNotFound:      {http.StatusNotFound, "Sessione di prenotazione non trovata o scaduta"},
 	ProviderUnavailable:   {http.StatusServiceUnavailable, "Servizio di pagamento non raggiungibile, riprova tra poco"},
 	SignatureInvalid:      {http.StatusBadRequest, "Firma del webhook non valida"},
+	PairingCodeInvalid:    {http.StatusBadRequest, "Codice di abbinamento non valido o scaduto"},
+	LANModeRequired:       {http.StatusConflict, "Attiva la modalità rete locale per abbinare altri dispositivi"},
+	LoopbackRequired:      {http.StatusForbidden, "Operazione disponibile solo dal computer della cassa"},
+	SetupTokenInvalid:     {http.StatusForbidden, "Collegamento di configurazione non valido: riapri Arenile dal menu"},
+	SetupCompleted:        {http.StatusConflict, "Configurazione iniziale già completata"},
 }
 
 // Option customises a problem.
@@ -252,6 +264,22 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, ProviderUnavailable, RetryAfter(30*time.Second))
 	case errors.Is(err, ext.ErrInvalidSignature):
 		Write(w, r, SignatureInvalid)
+	case errors.Is(err, device.ErrPairingCodeInvalid):
+		Write(w, r, PairingCodeInvalid)
+	case errors.Is(err, device.ErrLANModeRequired):
+		Write(w, r, LANModeRequired)
+	case errors.Is(err, control.ErrLoopbackRequired):
+		Write(w, r, LoopbackRequired)
+	case errors.Is(err, control.ErrSetupTokenInvalid):
+		Write(w, r, SetupTokenInvalid)
+	case errors.Is(err, control.ErrSetupCompleted):
+		Write(w, r, SetupCompleted)
+	case errors.Is(err, control.ErrBackupNotFound):
+		Write(w, r, NotFound)
+	case errors.Is(err, control.ErrBackupInProgress):
+		Write(w, r, Conflict, Detail("Un backup o un ripristino è già in corso."))
+	case errors.Is(err, control.ErrInvalidSettings):
+		Write(w, r, ValidationFailed, Detail(err.Error()))
 	case errors.Is(err, auth.ErrUnauthenticated):
 		Write(w, r, Unauthorized)
 	case errors.Is(err, auth.ErrInvalidCredentials):

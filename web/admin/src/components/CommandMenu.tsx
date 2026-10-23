@@ -13,6 +13,7 @@ import { SearchIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentEstablishment, useIsOwner } from '../establishment';
+import { useIsDesktopEdition } from '../lib/meta';
 import { CONFIG_NAV_ITEMS, ESTABLISHMENTS_NAV_ITEM, NAV_ITEMS } from '../nav';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iP(hone|ad|od)/.test(navigator.platform);
@@ -24,6 +25,7 @@ export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const current = useCurrentEstablishment();
   const isOwner = useIsOwner();
+  const isDesktop = useIsDesktopEdition();
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -83,7 +85,9 @@ export function CommandMenu() {
               {t(ESTABLISHMENTS_NAV_ITEM.labelKey)}
             </CommandItem>
             {current.id &&
-              CONFIG_NAV_ITEMS.filter((i) => !('ownerOnly' in i) || isOwner).map((item) => (
+              CONFIG_NAV_ITEMS.filter(
+                (i) => (!('ownerOnly' in i) || isOwner) && (!('desktopOnly' in i) || isDesktop),
+              ).map((item) => (
                 <CommandItem
                   key={item.to}
                   onSelect={() => go(item.to, { establishmentId: current.id as string })}

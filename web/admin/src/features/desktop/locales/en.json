@@ -1,0 +1,10 @@
+{
+  "firstRun": {
+    "title": "Welcome to Arenile",
+    "description": "Create the owner user to get started: then we will guide you through the establishment setup."
+  },
+  "settings": {
+    "title": "Desktop app",
+    "description": "Automatic backups, restore, start at login and local network mode for the other devices of the beach."
+  }
+}

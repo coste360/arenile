@@ -225,6 +225,26 @@ const emailSettingsRoute = createRoute({
   component: lazyRouteComponent(() => import('./features/online'), 'EmailSettingsPage'),
 });
 
+// ---- M6/M7 devices and desktop edition ----------------------------------------
+// Devices (pairing QR, revoke) and the desktop app settings (desktop edition
+// only); the first-run page is outside the authenticated shell.
+
+const devicesRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/devices',
+  component: lazyRouteComponent(() => import('./features/devices'), 'DevicesPage'),
+});
+const desktopSettingsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/desktop',
+  component: lazyRouteComponent(() => import('./features/desktop'), 'DesktopSettingsPage'),
+});
+const firstRunRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'first-run',
+  component: lazyRouteComponent(() => import('./features/desktop'), 'FirstRunPage'),
+});
+
 // ---- M3 operations ---------------------------------------------------------
 // Establishment-scoped pages of spec 15.1 "Operatività", lazy-loaded from the
 // feature folders (owned by the feature builders).
@@ -315,6 +335,7 @@ const reportsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
+  firstRunRoute,
   appRoute.addChildren([
     indexRoute,
     settingsRoute,
@@ -340,6 +361,8 @@ const routeTree = rootRoute.addChildren([
       onlineSettingsRoute,
       paymentSettingsRoute,
       emailSettingsRoute,
+      devicesRoute,
+      desktopSettingsRoute,
       todayRoute,
       operationalMapRoute,
       bookingsRoute,

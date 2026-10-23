@@ -1,0 +1,10 @@
+{
+  "firstRun": {
+    "title": "Bienvenue dans Arenile",
+    "description": "Créez l'utilisateur propriétaire pour commencer : nous vous guiderons ensuite dans la configuration de l'établissement."
+  },
+  "settings": {
+    "title": "Application de bureau",
+    "description": "Sauvegardes automatiques, restauration, démarrage à l'allumage et mode réseau local pour les autres appareils de la plage."
+  }
+}

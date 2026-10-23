@@ -75,6 +75,12 @@ type Principal struct {
 	// TOTPEnrolmentRequired is true when the installation requires TOTP for
 	// owners and this owner has not enrolled yet: only auth operations are allowed.
 	TOTPEnrolmentRequired bool
+	// Device principals (M6/M7, spec 29.2) are user principals authenticated
+	// with a device token: DeviceID is the paired device and Grants are
+	// narrowed to DeviceEstablishmentID (see Service.PrincipalForDevice).
+	DeviceID              string
+	DeviceName            string
+	DeviceEstablishmentID string
 
 	// API key principals.
 	APIKeyID              string

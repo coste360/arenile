@@ -540,6 +540,129 @@ func (e DecorationKind) Valid() bool {
 	}
 }
 
+// Defines values for DesktopBackupReason.
+const (
+	DesktopBackupReasonDaily      DesktopBackupReason = "daily"
+	DesktopBackupReasonExit       DesktopBackupReason = "exit"
+	DesktopBackupReasonManual     DesktopBackupReason = "manual"
+	DesktopBackupReasonPreRestore DesktopBackupReason = "pre_restore"
+)
+
+// Valid indicates whether the value is a known member of the DesktopBackupReason enum.
+func (e DesktopBackupReason) Valid() bool {
+	switch e {
+	case DesktopBackupReasonDaily:
+		return true
+	case DesktopBackupReasonExit:
+		return true
+	case DesktopBackupReasonManual:
+		return true
+	case DesktopBackupReasonPreRestore:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DesktopRuntimeMode.
+const (
+	Lan   DesktopRuntimeMode = "lan"
+	Local DesktopRuntimeMode = "local"
+)
+
+// Valid indicates whether the value is a known member of the DesktopRuntimeMode enum.
+func (e DesktopRuntimeMode) Valid() bool {
+	switch e {
+	case Lan:
+		return true
+	case Local:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeviceKind.
+const (
+	DeviceKindDesktop DeviceKind = "desktop"
+	DeviceKindMobile  DeviceKind = "mobile"
+)
+
+// Valid indicates whether the value is a known member of the DeviceKind enum.
+func (e DeviceKind) Valid() bool {
+	switch e {
+	case DeviceKindDesktop:
+		return true
+	case DeviceKindMobile:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DevicePairingQRPayloadV.
+const (
+	N1 DevicePairingQRPayloadV = 1
+)
+
+// Valid indicates whether the value is a known member of the DevicePairingQRPayloadV enum.
+func (e DevicePairingQRPayloadV) Valid() bool {
+	switch e {
+	case N1:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DevicePlatform.
+const (
+	DevicePlatformAndroid DevicePlatform = "android"
+	DevicePlatformIos     DevicePlatform = "ios"
+	DevicePlatformLinux   DevicePlatform = "linux"
+	DevicePlatformMacos   DevicePlatform = "macos"
+	DevicePlatformOther   DevicePlatform = "other"
+	DevicePlatformWindows DevicePlatform = "windows"
+)
+
+// Valid indicates whether the value is a known member of the DevicePlatform enum.
+func (e DevicePlatform) Valid() bool {
+	switch e {
+	case DevicePlatformAndroid:
+		return true
+	case DevicePlatformIos:
+		return true
+	case DevicePlatformLinux:
+		return true
+	case DevicePlatformMacos:
+		return true
+	case DevicePlatformOther:
+		return true
+	case DevicePlatformWindows:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for Edition.
+const (
+	EditionDesktop Edition = "desktop"
+	EditionServer  Edition = "server"
+)
+
+// Valid indicates whether the value is a known member of the Edition enum.
+func (e Edition) Valid() bool {
+	switch e {
+	case EditionDesktop:
+		return true
+	case EditionServer:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for EmailSettingsTransport.
 const (
 	File EmailSettingsTransport = "file"
@@ -573,6 +696,42 @@ func (e ExtraAttachTo) Valid() bool {
 	case ExtraAttachToBooking:
 		return true
 	case ExtraAttachToLine:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FiscalBridgeJobKind.
+const (
+	FiscalBridgeJobKindIssue FiscalBridgeJobKind = "issue"
+	FiscalBridgeJobKindVoid  FiscalBridgeJobKind = "void"
+)
+
+// Valid indicates whether the value is a known member of the FiscalBridgeJobKind enum.
+func (e FiscalBridgeJobKind) Valid() bool {
+	switch e {
+	case FiscalBridgeJobKindIssue:
+		return true
+	case FiscalBridgeJobKindVoid:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FiscalBridgeJobResultOutcome.
+const (
+	FiscalBridgeJobResultOutcomeFailed    FiscalBridgeJobResultOutcome = "failed"
+	FiscalBridgeJobResultOutcomeSucceeded FiscalBridgeJobResultOutcome = "succeeded"
+)
+
+// Valid indicates whether the value is a known member of the FiscalBridgeJobResultOutcome enum.
+func (e FiscalBridgeJobResultOutcome) Valid() bool {
+	switch e {
+	case FiscalBridgeJobResultOutcomeFailed:
+		return true
+	case FiscalBridgeJobResultOutcomeSucceeded:
 		return true
 	default:
 		return false
@@ -801,6 +960,21 @@ func (e MessageStatus) Valid() bool {
 	case MessageStatusSending:
 		return true
 	case MessageStatusSent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MetaProduct.
+const (
+	Arenile MetaProduct = "arenile"
+)
+
+// Valid indicates whether the value is a known member of the MetaProduct enum.
+func (e MetaProduct) Valid() bool {
+	switch e {
+	case Arenile:
 		return true
 	default:
 		return false
@@ -1253,16 +1427,21 @@ const (
 	ProblemTypeInvalidCredentials         ProblemType = "invalid_credentials"
 	ProblemTypeInvalidTotp                ProblemType = "invalid_totp"
 	ProblemTypeInvalidTransition          ProblemType = "invalid_transition"
+	ProblemTypeLanModeRequired            ProblemType = "lan_mode_required"
+	ProblemTypeLoopbackRequired           ProblemType = "loopback_required"
 	ProblemTypeMethodNotAllowed           ProblemType = "method_not_allowed"
 	ProblemTypeNoPrice                    ProblemType = "no_price"
 	ProblemTypeNotFound                   ProblemType = "not_found"
 	ProblemTypeNotImplemented             ProblemType = "not_implemented"
+	ProblemTypePairingCodeInvalid         ProblemType = "pairing_code_invalid"
 	ProblemTypePaymentProviderUnavailable ProblemType = "payment_provider_unavailable"
 	ProblemTypePolicyViolation            ProblemType = "policy_violation"
 	ProblemTypePoolExhausted              ProblemType = "pool_exhausted"
 	ProblemTypePreconditionRequired       ProblemType = "precondition_required"
 	ProblemTypeQuotaExceeded              ProblemType = "quota_exceeded"
 	ProblemTypeRateLimited                ProblemType = "rate_limited"
+	ProblemTypeSetupCompleted             ProblemType = "setup_completed"
+	ProblemTypeSetupTokenInvalid          ProblemType = "setup_token_invalid"
 	ProblemTypeSpotHasFutureAllocations   ProblemType = "spot_has_future_allocations"
 	ProblemTypeSpotUnavailable            ProblemType = "spot_unavailable"
 	ProblemTypeTotpAlreadyEnabled         ProblemType = "totp_already_enabled"
@@ -1308,6 +1487,10 @@ func (e ProblemType) Valid() bool {
 		return true
 	case ProblemTypeInvalidTransition:
 		return true
+	case ProblemTypeLanModeRequired:
+		return true
+	case ProblemTypeLoopbackRequired:
+		return true
 	case ProblemTypeMethodNotAllowed:
 		return true
 	case ProblemTypeNoPrice:
@@ -1315,6 +1498,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeNotFound:
 		return true
 	case ProblemTypeNotImplemented:
+		return true
+	case ProblemTypePairingCodeInvalid:
 		return true
 	case ProblemTypePaymentProviderUnavailable:
 		return true
@@ -1327,6 +1512,10 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeQuotaExceeded:
 		return true
 	case ProblemTypeRateLimited:
+		return true
+	case ProblemTypeSetupCompleted:
+		return true
+	case ProblemTypeSetupTokenInvalid:
 		return true
 	case ProblemTypeSpotHasFutureAllocations:
 		return true
@@ -3048,6 +3237,13 @@ type CoverageReport struct {
 	To Date `json:"to"`
 }
 
+// CurrentDeviceInfo Dispositivo con cui è autenticata la richiesta (solo con token per dispositivo).
+type CurrentDeviceInfo struct {
+	EstablishmentId string `json:"establishment_id"`
+	Id              string `json:"id"`
+	Name            string `json:"name"`
+}
+
 // Customer defines model for Customer.
 type Customer struct {
 	AgreementId  *string    `json:"agreement_id,omitempty"`
@@ -3239,12 +3435,180 @@ type DecorationKind string
 // DecorationVariant Variante di colore dell'illustrazione, se l'illustrazione ne prevede (bandiera_mare: green, yellow, red).
 type DecorationVariant = string
 
+// DesktopBackup defines model for DesktopBackup.
+type DesktopBackup struct {
+	CreatedAt time.Time           `json:"created_at"`
+	Name      string              `json:"name"`
+	Reason    DesktopBackupReason `json:"reason"`
+	SizeBytes int64               `json:"size_bytes"`
+}
+
+// DesktopBackupList defines model for DesktopBackupList.
+type DesktopBackupList struct {
+	Directory string          `json:"directory"`
+	Items     []DesktopBackup `json:"items"`
+}
+
+// DesktopBackupReason defines model for DesktopBackupReason.
+type DesktopBackupReason string
+
+// DesktopRestoreScheduled defines model for DesktopRestoreScheduled.
+type DesktopRestoreScheduled struct {
+	Backup          DesktopBackup `json:"backup"`
+	RestartRequired bool          `json:"restart_required"`
+}
+
+// DesktopRuntime Presente solo con `edition=desktop`.
+type DesktopRuntime struct {
+	// LanCertFingerprint SHA-256 del certificato TLS autogenerato, esadecimale maiuscolo separato da `:` (solo `mode=lan`).
+	LanCertFingerprint *string `json:"lan_cert_fingerprint,omitempty"`
+
+	// LanUrl Indirizzo sulla rete locale (solo `mode=lan`), es. `https://192.168.1.20:8443`.
+	LanUrl *string `json:"lan_url,omitempty"`
+
+	// Mode `local`: server raggiungibile solo da 127.0.0.1. `lan`: anche dalla rete locale del lido, in TLS con certificato autogenerato.
+	Mode DesktopRuntimeMode `json:"mode"`
+}
+
+// DesktopRuntimeMode `local`: server raggiungibile solo da 127.0.0.1. `lan`: anche dalla rete locale del lido, in TLS con certificato autogenerato.
+type DesktopRuntimeMode string
+
+// DesktopSettings defines model for DesktopSettings.
+type DesktopSettings struct {
+	// Autostart Avvio automatico all'accensione del PC.
+	Autostart   bool `json:"autostart"`
+	BackupDaily bool `json:"backup_daily"`
+
+	// BackupDir Cartella dei backup (default `<cartella dati>/backups`).
+	BackupDir    string `json:"backup_dir"`
+	BackupOnExit bool   `json:"backup_on_exit"`
+
+	// BackupRetention Numero di backup automatici conservati (i manuali non vengono eliminati).
+	BackupRetention int `json:"backup_retention"`
+
+	// LanEnabled Modalità rete locale (TLS con certificato autogenerato).
+	LanEnabled bool `json:"lan_enabled"`
+
+	// LanPort Porta del listener sulla rete locale (default 8443).
+	LanPort *int `json:"lan_port,omitempty"`
+
+	// UpdateCheck Controllo della nuova versione (falso di default: nessuna chiamata di rete).
+	UpdateCheck bool `json:"update_check"`
+}
+
+// Device defines model for Device.
+type Device struct {
+	AppVersion *string   `json:"app_version,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
+
+	// Current Vero se la richiesta è autenticata con il token di questo dispositivo.
+	Current         bool   `json:"current"`
+	EstablishmentId string `json:"establishment_id"`
+
+	// FiscalBridge Vero se il dispositivo è il ponte fiscale attivo dello stabilimento.
+	FiscalBridge bool   `json:"fiscal_bridge"`
+	Id           string `json:"id"`
+
+	// Kind `mobile`: app mobile (M7). `desktop`: app desktop in modalità remota (M6).
+	Kind       DeviceKind     `json:"kind"`
+	LastUsedAt *time.Time     `json:"last_used_at,omitempty"`
+	Name       string         `json:"name"`
+	Platform   DevicePlatform `json:"platform"`
+	RevokedAt  *time.Time     `json:"revoked_at,omitempty"`
+	Role       Role           `json:"role"`
+
+	// TokenPrefix Parte visibile del token (`ar_dev_<prefix>`), per riconoscerlo.
+	TokenPrefix *string `json:"token_prefix,omitempty"`
+	UserId      string  `json:"user_id"`
+	UserName    string  `json:"user_name"`
+}
+
+// DeviceKind `mobile`: app mobile (M7). `desktop`: app desktop in modalità remota (M6).
+type DeviceKind string
+
+// DeviceList defines model for DeviceList.
+type DeviceList struct {
+	Items []Device `json:"items"`
+
+	// NextCursor Presente se esistono altri elementi.
+	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// DevicePairRequest defines model for DevicePairRequest.
+type DevicePairRequest struct {
+	AppVersion *string `json:"app_version,omitempty"`
+	Code       string  `json:"code"`
+
+	// Kind `mobile`: app mobile (M7). `desktop`: app desktop in modalità remota (M6).
+	Kind DeviceKind `json:"kind"`
+
+	// Name Nome mostrato nel pannello (es. "iPhone di Anna", "PC cassa").
+	Name     string         `json:"name"`
+	Platform DevicePlatform `json:"platform"`
+}
+
+// DevicePairResult defines model for DevicePairResult.
+type DevicePairResult struct {
+	Device          Device `json:"device"`
+	EstablishmentId string `json:"establishment_id"`
+
+	// Token Token per dispositivo, restituito solo ora. Conservarlo nel portachiavi sicuro del dispositivo.
+	Token string `json:"token"`
+}
+
+// DevicePairingCode defines model for DevicePairingCode.
+type DevicePairingCode struct {
+	// Code Codice da digitare in alternativa al QR: 8 caratteri base32 Crockford in due gruppi (`ABCD-EFGH`), confrontato senza distinguere maiuscole e trattini.
+	Code            string                 `json:"code"`
+	EstablishmentId string                 `json:"establishment_id"`
+	ExpiresAt       time.Time              `json:"expires_at"`
+	QrPayload       DevicePairingQRPayload `json:"qr_payload"`
+
+	// QrText Testo da codificare nel QR: `arenile://pair?d=<qr_payload JSON in base64url>`. L'app lo decodifica; un browser che scansiona il QR apre `qr_payload.url`.
+	QrText string `json:"qr_text"`
+	UserId string `json:"user_id"`
+}
+
+// DevicePairingCodeRequest defines model for DevicePairingCodeRequest.
+type DevicePairingCodeRequest struct {
+	// Kind `mobile`: app mobile (M7). `desktop`: app desktop in modalità remota (M6).
+	Kind       *DeviceKind `json:"kind,omitempty"`
+	TtlSeconds *int        `json:"ttl_seconds,omitempty"`
+
+	// UserId Utente a cui legare il dispositivo (default l'utente corrente; un altro utente richiede `users.manage`).
+	UserId *string `json:"user_id,omitempty"`
+}
+
+// DevicePairingQRPayload defines model for DevicePairingQRPayload.
+type DevicePairingQRPayload struct {
+	Code              string  `json:"code"`
+	EstablishmentName *string `json:"establishment_name,omitempty"`
+
+	// Fingerprint SHA-256 del certificato TLS (solo con certificato autogenerato, modalità rete locale). L'app accetta il certificato solo se coincide (certificate pinning).
+	Fingerprint *string `json:"fingerprint,omitempty"`
+
+	// Url Indirizzo dell'istanza (base URL; nell'edizione desktop l'indirizzo sulla rete locale).
+	Url string `json:"url"`
+
+	// V Versione del formato.
+	V DevicePairingQRPayloadV `json:"v"`
+}
+
+// DevicePairingQRPayloadV Versione del formato.
+type DevicePairingQRPayloadV int
+
+// DevicePlatform defines model for DevicePlatform.
+type DevicePlatform string
+
 // DiscountBreakdown defines model for DiscountBreakdown.
 type DiscountBreakdown struct {
 	// Amount Importo in centesimi di euro (IVA inclusa).
 	Amount Money  `json:"amount"`
 	Source string `json:"source"`
 }
+
+// Edition `server`: binario o immagine Docker (VPS, server in sede). `desktop`: server interno dell'app desktop sul PC della cassa (spec 29.1). La modalità remota dell'app desktop è un client: l'istanza a cui si collega riporta la propria edizione.
+type Edition string
 
 // EmailSettings defines model for EmailSettings.
 type EmailSettings struct {
@@ -3467,6 +3831,123 @@ type ExtraList struct {
 type FieldError struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
+}
+
+// FirstRunRequest defines model for FirstRunRequest.
+type FirstRunRequest struct {
+	Email            openapi_types.Email `json:"email"`
+	Name             string              `json:"name"`
+	OrganizationName string              `json:"organization_name"`
+	Password         string              `json:"password"`
+	SetupToken       string              `json:"setup_token"`
+}
+
+// FirstRunStatus defines model for FirstRunStatus.
+type FirstRunStatus struct {
+	// Required Vero finché non esiste alcun utente.
+	Required bool `json:"required"`
+}
+
+// FiscalBridgeDocument Documento da emettere, specchio di `ext.FiscalDocumentRequest` (importi lordi in centesimi).
+type FiscalBridgeDocument struct {
+	BookingId       *string               `json:"booking_id,omitempty"`
+	Currency        string                `json:"currency"`
+	EstablishmentId string                `json:"establishment_id"`
+	IdempotencyKey  string                `json:"idempotency_key"`
+	IssuedAt        time.Time             `json:"issued_at"`
+	Lines           []FiscalBridgeLine    `json:"lines"`
+	PaymentId       *string               `json:"payment_id,omitempty"`
+	Payments        []FiscalBridgePayment `json:"payments"`
+	Total           int64                 `json:"total"`
+}
+
+// FiscalBridgeJob defines model for FiscalBridgeJob.
+type FiscalBridgeJob struct {
+	Attempt int `json:"attempt"`
+
+	// Document Documento da emettere, specchio di `ext.FiscalDocumentRequest` (importi lordi in centesimi).
+	Document *FiscalBridgeDocument `json:"document,omitempty"`
+	Id       string                `json:"id"`
+
+	// Kind `issue`: emetti il documento. `void`: annulla il documento `ref`.
+	Kind           FiscalBridgeJobKind `json:"kind"`
+	LeaseExpiresAt time.Time           `json:"lease_expires_at"`
+
+	// Ref Riferimento del documento da annullare (solo `void`).
+	Ref *string `json:"ref,omitempty"`
+}
+
+// FiscalBridgeJobBatch defines model for FiscalBridgeJobBatch.
+type FiscalBridgeJobBatch struct {
+	Jobs []FiscalBridgeJob `json:"jobs"`
+}
+
+// FiscalBridgeJobKind `issue`: emetti il documento. `void`: annulla il documento `ref`.
+type FiscalBridgeJobKind string
+
+// FiscalBridgeJobResult defines model for FiscalBridgeJobResult.
+type FiscalBridgeJobResult struct {
+	Error    *string                      `json:"error,omitempty"`
+	IssuedAt *time.Time                   `json:"issued_at,omitempty"`
+	Number   *string                      `json:"number,omitempty"`
+	Outcome  FiscalBridgeJobResultOutcome `json:"outcome"`
+
+	// Raw Risposta del driver locale, conservata per l'audit (max 16 KiB).
+	Raw *map[string]interface{} `json:"raw,omitempty"`
+	Ref *string                 `json:"ref,omitempty"`
+
+	// Retryable Errore temporaneo (registratore spento, carta finita): il lavoro torna in coda.
+	Retryable *bool `json:"retryable,omitempty"`
+}
+
+// FiscalBridgeJobResultOutcome defines model for FiscalBridgeJobResult.Outcome.
+type FiscalBridgeJobResultOutcome string
+
+// FiscalBridgeLine defines model for FiscalBridgeLine.
+type FiscalBridgeLine struct {
+	Description string `json:"description"`
+	Gross       int64  `json:"gross"`
+	Quantity    int64  `json:"quantity"`
+	UnitGross   int64  `json:"unit_gross"`
+
+	// VatRateBp Aliquota IVA in punti base (2200 = 22%).
+	VatRateBp int64 `json:"vat_rate_bp"`
+}
+
+// FiscalBridgePayment defines model for FiscalBridgePayment.
+type FiscalBridgePayment struct {
+	Amount int64  `json:"amount"`
+	Method string `json:"method"`
+}
+
+// FiscalBridgeRegistration defines model for FiscalBridgeRegistration.
+type FiscalBridgeRegistration struct {
+	DeviceStatus *FiscalDeviceStatus `json:"device_status,omitempty"`
+
+	// Driver Codice del FiscalDriver locale dell'app desktop (es. `none`, o il driver del registratore).
+	Driver string `json:"driver"`
+}
+
+// FiscalBridgeStatus defines model for FiscalBridgeStatus.
+type FiscalBridgeStatus struct {
+	DeviceId     *string             `json:"device_id,omitempty"`
+	DeviceName   *string             `json:"device_name,omitempty"`
+	DeviceStatus *FiscalDeviceStatus `json:"device_status,omitempty"`
+	Driver       *string             `json:"driver,omitempty"`
+	FailedJobs   int                 `json:"failed_jobs"`
+	LastSeenAt   *time.Time          `json:"last_seen_at,omitempty"`
+
+	// Online Ultimo contatto entro 60 secondi.
+	Online      bool `json:"online"`
+	PendingJobs int  `json:"pending_jobs"`
+	Registered  bool `json:"registered"`
+}
+
+// FiscalDeviceStatus defines model for FiscalDeviceStatus.
+type FiscalDeviceStatus struct {
+	CheckedAt *time.Time `json:"checked_at,omitempty"`
+	Message   *string    `json:"message,omitempty"`
+	Online    bool       `json:"online"`
 }
 
 // FiscalDocument defines model for FiscalDocument.
@@ -3929,9 +4410,12 @@ type MarketingConsent struct {
 
 // Me defines model for Me.
 type Me struct {
-	ApiKey        *ApiKeyInfo     `json:"api_key,omitempty"`
-	Memberships   []Membership    `json:"memberships"`
-	PrincipalType MePrincipalType `json:"principal_type"`
+	ApiKey *ApiKeyInfo `json:"api_key,omitempty"`
+
+	// Device Dispositivo con cui è autenticata la richiesta (solo con token per dispositivo).
+	Device        *CurrentDeviceInfo `json:"device,omitempty"`
+	Memberships   []Membership       `json:"memberships"`
+	PrincipalType MePrincipalType    `json:"principal_type"`
 
 	// TotpEnrolmentRequired Vero quando l'installazione richiede il TOTP ai proprietari e
 	// l'utente non lo ha ancora attivato: finché resta vero sono
@@ -3982,8 +4466,66 @@ type MessageQueued struct {
 // MessageStatus defines model for MessageStatus.
 type MessageStatus string
 
+// Meta Metadati pubblici dell'istanza (spec 29.2). I client confrontano `version` con la propria versione minima supportata e `min_client_versions` con la propria versione.
+type Meta struct {
+	// ApiVersion Versione del contratto (`info.version` di api/openapi.yaml).
+	ApiVersion   string           `json:"api_version"`
+	Capabilities MetaCapabilities `json:"capabilities"`
+
+	// Desktop Presente solo con `edition=desktop`.
+	Desktop *DesktopRuntime `json:"desktop,omitempty"`
+
+	// Edition `server`: binario o immagine Docker (VPS, server in sede). `desktop`: server interno dell'app desktop sul PC della cassa (spec 29.1). La modalità remota dell'app desktop è un client: l'istanza a cui si collega riporta la propria edizione.
+	Edition Edition `json:"edition"`
+
+	// Features Slug stabili delle funzioni attive su questa istanza (es. `bookings`, `cash`, `season_passes`, `public_page`, `online_payments`, `device_pairing`, `fiscal_bridge`, `desktop_backups`, `lan_mode`). I client ignorano gli slug sconosciuti.
+	Features []string `json:"features"`
+
+	// MinClientVersions Versioni minime dei client che questa istanza supporta (semver).
+	MinClientVersions MinClientVersions `json:"min_client_versions"`
+	Product           MetaProduct       `json:"product"`
+
+	// ServerTime Ora del server (UTC), per segnalare orologi dei dispositivi molto sfasati.
+	ServerTime time.Time `json:"server_time"`
+
+	// Version Versione del server (tag di release, `dev` in sviluppo).
+	Version string `json:"version"`
+}
+
+// MetaProduct defines model for Meta.Product.
+type MetaProduct string
+
+// MetaCapabilities defines model for MetaCapabilities.
+type MetaCapabilities struct {
+	// DevicePairing Abbinamento dei dispositivi possibile ora (falso nell'edizione desktop senza rete locale).
+	DevicePairing bool `json:"device_pairing"`
+
+	// FiscalBridge L'istanza accetta un ponte fiscale da un'app desktop in modalità remota.
+	FiscalBridge  bool     `json:"fiscal_bridge"`
+	FiscalDrivers []string `json:"fiscal_drivers"`
+
+	// OnlineBooking Pagina pubblica e widget disponibili (falso nell'edizione desktop).
+	OnlineBooking bool `json:"online_booking"`
+
+	// OnlinePayments Pagamenti online disponibili (falso nell'edizione desktop, solo driver `manual`).
+	OnlinePayments   bool     `json:"online_payments"`
+	PaymentProviders []string `json:"payment_providers"`
+
+	// PushNotifications Notifiche push tramite relay configurate (M7).
+	PushNotifications bool `json:"push_notifications"`
+
+	// Realtime Flusso SSE `GET /api/admin/v1/stream` disponibile.
+	Realtime bool `json:"realtime"`
+}
+
 // MethodTotals Importi per metodo di pagamento (chiavi di PaymentMethod).
 type MethodTotals map[string]Money
+
+// MinClientVersions Versioni minime dei client che questa istanza supporta (semver).
+type MinClientVersions struct {
+	Desktop string `json:"desktop"`
+	Mobile  string `json:"mobile"`
+}
 
 // Money Importo in centesimi di euro (IVA inclusa).
 type Money = int64
@@ -6358,6 +6900,9 @@ type ZoneList struct {
 // AgreementID defines model for AgreementID.
 type AgreementID = string
 
+// BackupName defines model for BackupName.
+type BackupName = string
+
 // BookingID defines model for BookingID.
 type BookingID = string
 
@@ -6382,11 +6927,17 @@ type Cursor = string
 // CustomerID defines model for CustomerID.
 type CustomerID = string
 
+// DeviceID defines model for DeviceID.
+type DeviceID = string
+
 // EstablishmentID defines model for EstablishmentID.
 type EstablishmentID = string
 
 // ExtraID defines model for ExtraID.
 type ExtraID = string
+
+// FiscalBridgeJobID defines model for FiscalBridgeJobID.
+type FiscalBridgeJobID = string
 
 // FixedPriceID defines model for FixedPriceID.
 type FixedPriceID = string
@@ -7000,6 +7551,30 @@ type AnonymizeCustomerParams struct {
 	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ListDevicesParams defines parameters for ListDevices.
+type ListDevicesParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit          *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+	IncludeRevoked *bool  `form:"include_revoked,omitempty" json:"include_revoked,omitempty"`
+}
+
+// CreateDevicePairingCodeParams defines parameters for CreateDevicePairingCode.
+type CreateDevicePairingCodeParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RevokeDeviceParams defines parameters for RevokeDevice.
+type RevokeDeviceParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
@@ -7917,6 +8492,36 @@ type StreamEventsParams struct {
 	Establishment string `form:"establishment" json:"establishment"`
 }
 
+// CreateDesktopBackupParams defines parameters for CreateDesktopBackup.
+type CreateDesktopBackupParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RestoreDesktopBackupParams defines parameters for RestoreDesktopBackup.
+type RestoreDesktopBackupParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdateDesktopSettingsParams defines parameters for UpdateDesktopSettings.
+type UpdateDesktopSettingsParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// PollFiscalBridgeJobsParams defines parameters for PollFiscalBridgeJobs.
+type PollFiscalBridgeJobsParams struct {
+	// Wait Secondi di attesa massima (default 25).
+	Wait *int `form:"wait,omitempty" json:"wait,omitempty"`
+
+	// Max Numero massimo di lavori (default 10).
+	Max *int `form:"max,omitempty" json:"max,omitempty"`
+}
+
 // GetPublicEstablishmentParams defines parameters for GetPublicEstablishment.
 type GetPublicEstablishmentParams struct {
 	// IfNoneMatch ETag letto in precedenza; se coincide la risposta è 304.
@@ -8139,6 +8744,9 @@ type CreateCustomerJSONRequestBody = CustomerInput
 // UpdateCustomerJSONRequestBody defines body for UpdateCustomer for application/json ContentType.
 type UpdateCustomerJSONRequestBody = CustomerInput
 
+// CreateDevicePairingCodeJSONRequestBody defines body for CreateDevicePairingCode for application/json ContentType.
+type CreateDevicePairingCodeJSONRequestBody = DevicePairingCodeRequest
+
 // UpdateEmailSettingsJSONRequestBody defines body for UpdateEmailSettings for application/json ContentType.
 type UpdateEmailSettingsJSONRequestBody = EmailSettingsInput
 
@@ -8258,6 +8866,21 @@ type CreateZoneJSONRequestBody = ZoneInput
 
 // UpdateZoneJSONRequestBody defines body for UpdateZone for application/json ContentType.
 type UpdateZoneJSONRequestBody = ZoneInput
+
+// CompleteFirstRunJSONRequestBody defines body for CompleteFirstRun for application/json ContentType.
+type CompleteFirstRunJSONRequestBody = FirstRunRequest
+
+// UpdateDesktopSettingsJSONRequestBody defines body for UpdateDesktopSettings for application/json ContentType.
+type UpdateDesktopSettingsJSONRequestBody = DesktopSettings
+
+// RegisterFiscalBridgeJSONRequestBody defines body for RegisterFiscalBridge for application/json ContentType.
+type RegisterFiscalBridgeJSONRequestBody = FiscalBridgeRegistration
+
+// SubmitFiscalBridgeJobResultJSONRequestBody defines body for SubmitFiscalBridgeJobResult for application/json ContentType.
+type SubmitFiscalBridgeJobResultJSONRequestBody = FiscalBridgeJobResult
+
+// PairDeviceJSONRequestBody defines body for PairDevice for application/json ContentType.
+type PairDeviceJSONRequestBody = DevicePairRequest
 
 // CreatePublicBookingJSONRequestBody defines body for CreatePublicBooking for application/json ContentType.
 type CreatePublicBookingJSONRequestBody = PublicBookingCreate
@@ -8456,6 +9079,15 @@ type ServerInterface interface {
 	// ExportCustomer Esportazione GDPR dei dati del cliente (JSON)
 	// (GET /api/admin/v1/establishments/{establishmentId}/customers/{customerId}/export)
 	ExportCustomer(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, customerId CustomerID)
+	// ListDevices Dispositivi abbinati allo stabilimento
+	// (GET /api/admin/v1/establishments/{establishmentId}/devices)
+	ListDevices(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListDevicesParams)
+	// CreateDevicePairingCode Crea un codice di abbinamento monouso a breve scadenza (QR)
+	// (POST /api/admin/v1/establishments/{establishmentId}/devices/pairing-codes)
+	CreateDevicePairingCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateDevicePairingCodeParams)
+	// RevokeDevice Revoca un dispositivo (il suo token smette subito di funzionare)
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/devices/{deviceId})
+	RevokeDevice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, deviceId DeviceID, params RevokeDeviceParams)
 	// GetEmailSettings Impostazioni delle email transazionali
 	// (GET /api/admin/v1/establishments/{establishmentId}/email-settings)
 	GetEmailSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
@@ -8480,6 +9112,9 @@ type ServerInterface interface {
 	// UpdateExtra Sostituisce extra
 	// (PUT /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
 	UpdateExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID, params UpdateExtraParams)
+	// GetFiscalBridgeStatus Stato del ponte fiscale dello stabilimento
+	// (GET /api/admin/v1/establishments/{establishmentId}/fiscal-bridge)
+	GetFiscalBridgeStatus(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
 	// GetCorrispettivi Corrispettivi per aliquota IVA e metodo di pagamento (JSON o CSV)
 	// (GET /api/admin/v1/establishments/{establishmentId}/fiscal/corrispettivi)
 	GetCorrispettivi(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params GetCorrispettiviParams)
@@ -8756,9 +9391,54 @@ type ServerInterface interface {
 	// UpdateZone Sostituisce zona
 	// (PUT /api/admin/v1/establishments/{establishmentId}/zones/{zoneId})
 	UpdateZone(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, zoneId ZoneID, params UpdateZoneParams)
+	// GetMeta Versione, edizione e capacità dell'istanza
+	// (GET /api/admin/v1/meta)
+	GetMeta(w http.ResponseWriter, r *http.Request)
 	// StreamEvents Flusso SSE degli eventi di uno stabilimento
 	// (GET /api/admin/v1/stream)
 	StreamEvents(w http.ResponseWriter, r *http.Request, params StreamEventsParams)
+	// ListDesktopBackups Backup presenti nella cartella dei backup
+	// (GET /api/desktop/v1/backups)
+	ListDesktopBackups(w http.ResponseWriter, r *http.Request)
+	// CreateDesktopBackup Esegue subito un backup (come "Backup ora" del menu)
+	// (POST /api/desktop/v1/backups)
+	CreateDesktopBackup(w http.ResponseWriter, r *http.Request, params CreateDesktopBackupParams)
+	// RestoreDesktopBackup Pianifica il ripristino di un backup (riavvio del server interno)
+	// (POST /api/desktop/v1/backups/{backupName}/restore)
+	RestoreDesktopBackup(w http.ResponseWriter, r *http.Request, backupName BackupName, params RestoreDesktopBackupParams)
+	// GetFirstRunStatus Indica se serve la creazione guidata del primo utente owner
+	// (GET /api/desktop/v1/first-run)
+	GetFirstRunStatus(w http.ResponseWriter, r *http.Request)
+	// CompleteFirstRun Crea l'utente owner, l'organizzazione e lo stabilimento al primo avvio
+	// (POST /api/desktop/v1/first-run)
+	CompleteFirstRun(w http.ResponseWriter, r *http.Request)
+	// GetDesktopSettings Impostazioni dell'app desktop (backup, aggiornamenti, rete locale)
+	// (GET /api/desktop/v1/settings)
+	GetDesktopSettings(w http.ResponseWriter, r *http.Request)
+	// UpdateDesktopSettings Aggiorna le impostazioni dell'app desktop
+	// (PUT /api/desktop/v1/settings)
+	UpdateDesktopSettings(w http.ResponseWriter, r *http.Request, params UpdateDesktopSettingsParams)
+	// UnregisterFiscalBridge Annulla la registrazione di questo dispositivo come ponte fiscale
+	// (DELETE /api/device/v1/fiscal-bridge)
+	UnregisterFiscalBridge(w http.ResponseWriter, r *http.Request)
+	// RegisterFiscalBridge Registra (o aggiorna) questo dispositivo come ponte fiscale dello stabilimento
+	// (PUT /api/device/v1/fiscal-bridge)
+	RegisterFiscalBridge(w http.ResponseWriter, r *http.Request)
+	// PollFiscalBridgeJobs Attende i lavori fiscali da eseguire sul FiscalDriver locale (long polling)
+	// (GET /api/device/v1/fiscal-bridge/jobs)
+	PollFiscalBridgeJobs(w http.ResponseWriter, r *http.Request, params PollFiscalBridgeJobsParams)
+	// SubmitFiscalBridgeJobResult Esito di un lavoro fiscale eseguito sul FiscalDriver locale
+	// (POST /api/device/v1/fiscal-bridge/jobs/{jobId}/result)
+	SubmitFiscalBridgeJobResult(w http.ResponseWriter, r *http.Request, jobId FiscalBridgeJobID)
+	// PairDevice Scambia un codice di abbinamento con un token per dispositivo
+	// (POST /api/device/v1/pair)
+	PairDevice(w http.ResponseWriter, r *http.Request)
+	// UnpairCurrentDevice Scollega questo dispositivo (revoca il proprio token)
+	// (DELETE /api/device/v1/self)
+	UnpairCurrentDevice(w http.ResponseWriter, r *http.Request)
+	// GetCurrentDevice Il dispositivo del token (verifica che il token sia ancora valido)
+	// (GET /api/device/v1/self)
+	GetCurrentDevice(w http.ResponseWriter, r *http.Request)
 	// GetPublicEstablishment Dati pubblici dello stabilimento (tema, lingue, configurazione del flusso)
 	// (GET /api/public/v1/{slug})
 	GetPublicEstablishment(w http.ResponseWriter, r *http.Request, slug Slug, params GetPublicEstablishmentParams)
@@ -9173,6 +9853,24 @@ func (_ Unimplemented) ExportCustomer(w http.ResponseWriter, r *http.Request, es
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// ListDevices Dispositivi abbinati allo stabilimento
+// (GET /api/admin/v1/establishments/{establishmentId}/devices)
+func (_ Unimplemented) ListDevices(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListDevicesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateDevicePairingCode Crea un codice di abbinamento monouso a breve scadenza (QR)
+// (POST /api/admin/v1/establishments/{establishmentId}/devices/pairing-codes)
+func (_ Unimplemented) CreateDevicePairingCode(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreateDevicePairingCodeParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RevokeDevice Revoca un dispositivo (il suo token smette subito di funzionare)
+// (DELETE /api/admin/v1/establishments/{establishmentId}/devices/{deviceId})
+func (_ Unimplemented) RevokeDevice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, deviceId DeviceID, params RevokeDeviceParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // GetEmailSettings Impostazioni delle email transazionali
 // (GET /api/admin/v1/establishments/{establishmentId}/email-settings)
 func (_ Unimplemented) GetEmailSettings(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
@@ -9218,6 +9916,12 @@ func (_ Unimplemented) GetExtra(w http.ResponseWriter, r *http.Request, establis
 // UpdateExtra Sostituisce extra
 // (PUT /api/admin/v1/establishments/{establishmentId}/extras/{extraId})
 func (_ Unimplemented) UpdateExtra(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, extraId ExtraID, params UpdateExtraParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetFiscalBridgeStatus Stato del ponte fiscale dello stabilimento
+// (GET /api/admin/v1/establishments/{establishmentId}/fiscal-bridge)
+func (_ Unimplemented) GetFiscalBridgeStatus(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -9773,9 +10477,99 @@ func (_ Unimplemented) UpdateZone(w http.ResponseWriter, r *http.Request, establ
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// GetMeta Versione, edizione e capacità dell'istanza
+// (GET /api/admin/v1/meta)
+func (_ Unimplemented) GetMeta(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // StreamEvents Flusso SSE degli eventi di uno stabilimento
 // (GET /api/admin/v1/stream)
 func (_ Unimplemented) StreamEvents(w http.ResponseWriter, r *http.Request, params StreamEventsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListDesktopBackups Backup presenti nella cartella dei backup
+// (GET /api/desktop/v1/backups)
+func (_ Unimplemented) ListDesktopBackups(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreateDesktopBackup Esegue subito un backup (come "Backup ora" del menu)
+// (POST /api/desktop/v1/backups)
+func (_ Unimplemented) CreateDesktopBackup(w http.ResponseWriter, r *http.Request, params CreateDesktopBackupParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RestoreDesktopBackup Pianifica il ripristino di un backup (riavvio del server interno)
+// (POST /api/desktop/v1/backups/{backupName}/restore)
+func (_ Unimplemented) RestoreDesktopBackup(w http.ResponseWriter, r *http.Request, backupName BackupName, params RestoreDesktopBackupParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetFirstRunStatus Indica se serve la creazione guidata del primo utente owner
+// (GET /api/desktop/v1/first-run)
+func (_ Unimplemented) GetFirstRunStatus(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CompleteFirstRun Crea l'utente owner, l'organizzazione e lo stabilimento al primo avvio
+// (POST /api/desktop/v1/first-run)
+func (_ Unimplemented) CompleteFirstRun(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetDesktopSettings Impostazioni dell'app desktop (backup, aggiornamenti, rete locale)
+// (GET /api/desktop/v1/settings)
+func (_ Unimplemented) GetDesktopSettings(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdateDesktopSettings Aggiorna le impostazioni dell'app desktop
+// (PUT /api/desktop/v1/settings)
+func (_ Unimplemented) UpdateDesktopSettings(w http.ResponseWriter, r *http.Request, params UpdateDesktopSettingsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UnregisterFiscalBridge Annulla la registrazione di questo dispositivo come ponte fiscale
+// (DELETE /api/device/v1/fiscal-bridge)
+func (_ Unimplemented) UnregisterFiscalBridge(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RegisterFiscalBridge Registra (o aggiorna) questo dispositivo come ponte fiscale dello stabilimento
+// (PUT /api/device/v1/fiscal-bridge)
+func (_ Unimplemented) RegisterFiscalBridge(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// PollFiscalBridgeJobs Attende i lavori fiscali da eseguire sul FiscalDriver locale (long polling)
+// (GET /api/device/v1/fiscal-bridge/jobs)
+func (_ Unimplemented) PollFiscalBridgeJobs(w http.ResponseWriter, r *http.Request, params PollFiscalBridgeJobsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// SubmitFiscalBridgeJobResult Esito di un lavoro fiscale eseguito sul FiscalDriver locale
+// (POST /api/device/v1/fiscal-bridge/jobs/{jobId}/result)
+func (_ Unimplemented) SubmitFiscalBridgeJobResult(w http.ResponseWriter, r *http.Request, jobId FiscalBridgeJobID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// PairDevice Scambia un codice di abbinamento con un token per dispositivo
+// (POST /api/device/v1/pair)
+func (_ Unimplemented) PairDevice(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UnpairCurrentDevice Scollega questo dispositivo (revoca il proprio token)
+// (DELETE /api/device/v1/self)
+func (_ Unimplemented) UnpairCurrentDevice(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetCurrentDevice Il dispositivo del token (verifica che il token sia ancora valido)
+// (GET /api/device/v1/self)
+func (_ Unimplemented) GetCurrentDevice(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -13584,6 +14378,183 @@ func (siw *ServerInterfaceWrapper) ExportCustomer(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// ListDevices operation middleware
+func (siw *ServerInterfaceWrapper) ListDevices(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListDevicesParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "include_revoked" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "include_revoked", r.URL.Query(), &params.IncludeRevoked, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "include_revoked"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "include_revoked", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListDevices(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateDevicePairingCode operation middleware
+func (siw *ServerInterfaceWrapper) CreateDevicePairingCode(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateDevicePairingCodeParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateDevicePairingCode(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RevokeDevice operation middleware
+func (siw *ServerInterfaceWrapper) RevokeDevice(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "deviceId" -------------
+	var deviceId DeviceID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "deviceId", chi.URLParam(r, "deviceId"), &deviceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deviceId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RevokeDeviceParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RevokeDevice(w, r, establishmentId, deviceId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetEmailSettings operation middleware
 func (siw *ServerInterfaceWrapper) GetEmailSettings(w http.ResponseWriter, r *http.Request) {
 
@@ -14048,6 +15019,32 @@ func (siw *ServerInterfaceWrapper) UpdateExtra(w http.ResponseWriter, r *http.Re
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.UpdateExtra(w, r, establishmentId, extraId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetFiscalBridgeStatus operation middleware
+func (siw *ServerInterfaceWrapper) GetFiscalBridgeStatus(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetFiscalBridgeStatus(w, r, establishmentId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -20069,6 +21066,20 @@ func (siw *ServerInterfaceWrapper) UpdateZone(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
+// GetMeta operation middleware
+func (siw *ServerInterfaceWrapper) GetMeta(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMeta(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // StreamEvents operation middleware
 func (siw *ServerInterfaceWrapper) StreamEvents(w http.ResponseWriter, r *http.Request) {
 
@@ -20093,6 +21104,336 @@ func (siw *ServerInterfaceWrapper) StreamEvents(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.StreamEvents(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListDesktopBackups operation middleware
+func (siw *ServerInterfaceWrapper) ListDesktopBackups(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListDesktopBackups(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateDesktopBackup operation middleware
+func (siw *ServerInterfaceWrapper) CreateDesktopBackup(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateDesktopBackupParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateDesktopBackup(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RestoreDesktopBackup operation middleware
+func (siw *ServerInterfaceWrapper) RestoreDesktopBackup(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "backupName" -------------
+	var backupName BackupName
+
+	err = runtime.BindStyledParameterWithOptions("simple", "backupName", chi.URLParam(r, "backupName"), &backupName, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "backupName", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RestoreDesktopBackupParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RestoreDesktopBackup(w, r, backupName, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetFirstRunStatus operation middleware
+func (siw *ServerInterfaceWrapper) GetFirstRunStatus(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetFirstRunStatus(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CompleteFirstRun operation middleware
+func (siw *ServerInterfaceWrapper) CompleteFirstRun(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CompleteFirstRun(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetDesktopSettings operation middleware
+func (siw *ServerInterfaceWrapper) GetDesktopSettings(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetDesktopSettings(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateDesktopSettings operation middleware
+func (siw *ServerInterfaceWrapper) UpdateDesktopSettings(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateDesktopSettingsParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateDesktopSettings(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UnregisterFiscalBridge operation middleware
+func (siw *ServerInterfaceWrapper) UnregisterFiscalBridge(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UnregisterFiscalBridge(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RegisterFiscalBridge operation middleware
+func (siw *ServerInterfaceWrapper) RegisterFiscalBridge(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RegisterFiscalBridge(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PollFiscalBridgeJobs operation middleware
+func (siw *ServerInterfaceWrapper) PollFiscalBridgeJobs(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PollFiscalBridgeJobsParams
+
+	// ------------- Optional query parameter "wait" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "wait", r.URL.Query(), &params.Wait, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "wait"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wait", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "max" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "max", r.URL.Query(), &params.Max, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "max"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "max", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PollFiscalBridgeJobs(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SubmitFiscalBridgeJobResult operation middleware
+func (siw *ServerInterfaceWrapper) SubmitFiscalBridgeJobResult(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "jobId" -------------
+	var jobId FiscalBridgeJobID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "jobId", chi.URLParam(r, "jobId"), &jobId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "jobId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SubmitFiscalBridgeJobResult(w, r, jobId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PairDevice operation middleware
+func (siw *ServerInterfaceWrapper) PairDevice(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PairDevice(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UnpairCurrentDevice operation middleware
+func (siw *ServerInterfaceWrapper) UnpairCurrentDevice(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UnpairCurrentDevice(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetCurrentDevice operation middleware
+func (siw *ServerInterfaceWrapper) GetCurrentDevice(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetCurrentDevice(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -22043,6 +23384,63 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/payments/reconciliation", wrapper.RunReconciliation)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/meta", wrapper.GetMeta)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/devices/pairing-codes", wrapper.CreateDevicePairingCode)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/devices", wrapper.ListDevices)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/devices/{deviceId}", wrapper.RevokeDevice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/fiscal-bridge", wrapper.GetFiscalBridgeStatus)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/device/v1/pair", wrapper.PairDevice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/device/v1/self", wrapper.UnpairCurrentDevice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/device/v1/self", wrapper.GetCurrentDevice)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/device/v1/fiscal-bridge", wrapper.UnregisterFiscalBridge)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/device/v1/fiscal-bridge", wrapper.RegisterFiscalBridge)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/device/v1/fiscal-bridge/jobs", wrapper.PollFiscalBridgeJobs)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/device/v1/fiscal-bridge/jobs/{jobId}/result", wrapper.SubmitFiscalBridgeJobResult)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/desktop/v1/first-run", wrapper.GetFirstRunStatus)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/desktop/v1/first-run", wrapper.CompleteFirstRun)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/desktop/v1/settings", wrapper.GetDesktopSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/desktop/v1/settings", wrapper.UpdateDesktopSettings)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/desktop/v1/backups", wrapper.ListDesktopBackups)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/desktop/v1/backups", wrapper.CreateDesktopBackup)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/desktop/v1/backups/{backupName}/restore", wrapper.RestoreDesktopBackup)
 	})
 
 	return r

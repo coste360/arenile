@@ -2275,6 +2275,300 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/meta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Versione, edizione e capacità dell'istanza
+         * @description Spec 29.1 e 29.2. Non richiede autenticazione: l'app mobile e l'app desktop lo leggono prima dell'abbinamento per verificare la compatibilità (versione minima) e la modalità dell'istanza. Non contiene dati dello stabilimento né dati personali. Il pannello lo usa per rilevare l'edizione desktop (pagina pubblica e pagamenti online disattivati).
+         */
+        get: operations["getMeta"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/devices/pairing-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Crea un codice di abbinamento monouso a breve scadenza (QR)
+         * @description Spec 29.2. Il codice (e il QR che lo contiene) si scambia una sola volta con un token per dispositivo tramite `pairDevice`, entro `expires_at` (default 5 minuti). Il token avrà i permessi del ruolo dell'utente (`user_id`, default l'utente corrente) limitati a questo stabilimento. Creare un codice per un altro utente richiede `users.manage`. Nell'edizione desktop senza modalità rete locale risponde `409 lan_mode_required` (nessun indirizzo raggiungibile dagli altri dispositivi). Il codice è restituito solo in questa risposta e conservato come hash; per questo l'operazione non accetta `Idempotency-Key`.
+         */
+        post: operations["createDevicePairingCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dispositivi abbinati allo stabilimento
+         * @description Spec 29.2. Con `users.manage` elenca tutti i dispositivi dello stabilimento, altrimenti solo quelli dell'utente corrente. I revocati sono esclusi salvo `include_revoked=true`. Ordine: ultimo utilizzo decrescente.
+         */
+        get: operations["listDevices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/devices/{deviceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoca un dispositivo (il suo token smette subito di funzionare)
+         * @description Spec 29.2. Ogni utente può revocare i propri dispositivi; quelli degli altri richiedono `users.manage`. Idempotente: revocare un dispositivo già revocato risponde 204. Se il dispositivo era il ponte fiscale dello stabilimento, la registrazione del ponte viene disattivata nella stessa transazione. Audit `device.revoked`.
+         */
+        delete: operations["revokeDevice"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/fiscal-bridge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stato del ponte fiscale dello stabilimento
+         * @description Spec 29.1. Dispositivo registrato come ponte, ultimo contatto (online se entro 60 secondi), stato del registratore riportato dal dispositivo, documenti in coda e falliti. Permesso `reports.read` o `cash.operate`.
+         */
+        get: operations["getFiscalBridgeStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/device/v1/pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Scambia un codice di abbinamento con un token per dispositivo
+         * @description Spec 29.2. Non autenticato, limitato per IP (10 tentativi al minuto). Il codice è monouso: lo scambio lo consuma con un UPDATE condizionale, quindi due richieste concorrenti con lo stesso codice producono un solo token. Codice inesistente, scaduto o già usato rispondono tutti `400 pairing_code_invalid` (nessun oracolo). Il token (`ar_dev_<prefix>_<secret>`) è restituito solo qui; il server conserva lo SHA-256. Si usa poi come `Authorization: Bearer` sulle API admin (permessi del ruolo dell'utente nello stabilimento del codice) e sulle API `/api/device/v1`. Nessun cookie, quindi nessun CSRF.
+         */
+        post: operations["pairDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/device/v1/self": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Il dispositivo del token (verifica che il token sia ancora valido) */
+        get: operations["getCurrentDevice"];
+        put?: never;
+        post?: never;
+        /** Scollega questo dispositivo (revoca il proprio token) */
+        delete: operations["unpairCurrentDevice"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/device/v1/fiscal-bridge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Registra (o aggiorna) questo dispositivo come ponte fiscale dello stabilimento
+         * @description Spec 29.1 e 14.2. Chiamato dall'app desktop in modalità remota all'avvio e a ogni cambio di stato del registratore. Un solo ponte attivo per stabilimento: la registrazione di un nuovo dispositivo disattiva la precedente (audit `fiscal_bridge.registered`). Il dispositivo deve appartenere a un utente con `cash.operate`. Per emettere i documenti tramite il ponte lo stabilimento usa il driver fiscale `bridge` (`settings.fiscal.driver`).
+         */
+        put: operations["registerFiscalBridge"];
+        post?: never;
+        /**
+         * Annulla la registrazione di questo dispositivo come ponte fiscale
+         * @description I lavori non ancora completati restano in coda per il prossimo ponte registrato.
+         */
+        delete: operations["unregisterFiscalBridge"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/device/v1/fiscal-bridge/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Attende i lavori fiscali da eseguire sul FiscalDriver locale (long polling)
+         * @description Connessione in uscita dal dispositivo verso l'istanza: nessuna porta in ingresso sul PC della cassa. La risposta arriva appena c'è almeno un lavoro, oppure dopo `wait` secondi con `jobs` vuoto. I lavori restituiti sono assegnati in esclusiva a questo dispositivo fino a `lease_expires_at`: se il risultato non arriva entro la scadenza tornano in coda (consegna almeno una volta; il driver locale deduplica con `idempotency_key`). Ogni chiamata aggiorna l'ultimo contatto del ponte. Solo il dispositivo registrato come ponte attivo riceve lavori; gli altri ricevono `409 conflict`.
+         */
+        get: operations["pollFiscalBridgeJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/device/v1/fiscal-bridge/jobs/{jobId}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Esito di un lavoro fiscale eseguito sul FiscalDriver locale
+         * @description Idempotente: lo stesso esito inviato di nuovo risponde 204. Un esito per un lavoro non più assegnato a questo dispositivo (lease scaduto e riassegnato) o già chiuso con un esito diverso risponde `409 conflict`. Con `outcome=failed` e `retryable=true` il lavoro torna in coda con backoff fino a 5 tentativi; altrimenti il documento fiscale passa a `failed`.
+         */
+        post: operations["submitFiscalBridgeJobResult"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/v1/first-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Indica se serve la creazione guidata del primo utente owner
+         * @description Solo edizione desktop e solo da loopback (altrimenti `404 not_found` sull'edizione server e `403 loopback_required` da un'altra macchina). Non autenticato.
+         */
+        get: operations["getFirstRunStatus"];
+        put?: never;
+        /**
+         * Crea l'utente owner, l'organizzazione e lo stabilimento al primo avvio
+         * @description Spec 29.1. Solo da loopback e solo finché non esistono utenti. Richiede il token monouso generato dal launcher a ogni avvio e passato al browser nel frammento dell'URL (`/admin/first-run#token=...`, mai in query string né nei log). In caso di successo esegue l'accesso (cookie di sessione e CSRF come `login`) e il pannello prosegue con la configurazione guidata (sezione 15.2).
+         */
+        post: operations["completeFirstRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/v1/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Impostazioni dell'app desktop (backup, aggiornamenti, rete locale)
+         * @description Solo edizione desktop, da loopback, utente owner.
+         */
+        get: operations["getDesktopSettings"];
+        /**
+         * Aggiorna le impostazioni dell'app desktop
+         * @description Solo edizione desktop, da loopback, utente owner. `backup_dir` deve essere una cartella esistente e scrivibile (anche una chiavetta USB). Attivare `lan_enabled` avvia il listener TLS sulla rete locale con il certificato autogenerato; disattivarlo lo chiude.
+         */
+        put: operations["updateDesktopSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/v1/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Backup presenti nella cartella dei backup
+         * @description Solo edizione desktop, da loopback, utente owner. Ordine dal più recente.
+         */
+        get: operations["listDesktopBackups"];
+        put?: never;
+        /**
+         * Esegue subito un backup (come "Backup ora" del menu)
+         * @description Backup consistente del database SQLite (`VACUUM INTO`), lo stesso formato di `arenile backup`: ripristinabile con `arenile restore` su una VPS (spec 29.1). Applica la retention configurata.
+         */
+        post: operations["createDesktopBackup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/v1/backups/{backupName}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pianifica il ripristino di un backup (riavvio del server interno)
+         * @description Il database è in uso, quindi il ripristino avviene al riavvio: il launcher ferma il server, salva il database corrente come `pre_restore`, copia il backup validato e riavvia. Il pannello mostra un messaggio e si ricarica. Solo edizione desktop, da loopback, utente owner.
+         */
+        post: operations["restoreDesktopBackup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2284,7 +2578,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -2372,6 +2666,7 @@ export interface components {
             principal_type: "user" | "api_key";
             user?: components["schemas"]["User"];
             api_key?: components["schemas"]["ApiKeyInfo"];
+            device?: components["schemas"]["CurrentDeviceInfo"];
             memberships: components["schemas"]["Membership"][];
             /**
              * @description Vero quando l'installazione richiede il TOTP ai proprietari e
@@ -5430,6 +5725,306 @@ export interface components {
             /** Format: date-time */
             finished_at: string;
         };
+        /** @description Metadati pubblici dell'istanza (spec 29.2). I client confrontano `version` con la propria versione minima supportata e `min_client_versions` con la propria versione. */
+        Meta: {
+            /** @enum {string} */
+            product: "arenile";
+            /** @description Versione del server (tag di release, `dev` in sviluppo). */
+            version: string;
+            /** @description Versione del contratto (`info.version` di api/openapi.yaml). */
+            api_version: string;
+            edition: components["schemas"]["Edition"];
+            desktop?: components["schemas"]["DesktopRuntime"];
+            /**
+             * Format: date-time
+             * @description Ora del server (UTC), per segnalare orologi dei dispositivi molto sfasati.
+             */
+            server_time: string;
+            min_client_versions: components["schemas"]["MinClientVersions"];
+            capabilities: components["schemas"]["MetaCapabilities"];
+            /** @description Slug stabili delle funzioni attive su questa istanza (es. `bookings`, `cash`, `season_passes`, `public_page`, `online_payments`, `device_pairing`, `fiscal_bridge`, `desktop_backups`, `lan_mode`). I client ignorano gli slug sconosciuti. */
+            features: string[];
+        };
+        /**
+         * @description `server`: binario o immagine Docker (VPS, server in sede). `desktop`: server interno dell'app desktop sul PC della cassa (spec 29.1). La modalità remota dell'app desktop è un client: l'istanza a cui si collega riporta la propria edizione.
+         * @enum {string}
+         */
+        Edition: "server" | "desktop";
+        /** @description Presente solo con `edition=desktop`. */
+        DesktopRuntime: {
+            /**
+             * @description `local`: server raggiungibile solo da 127.0.0.1. `lan`: anche dalla rete locale del lido, in TLS con certificato autogenerato.
+             * @enum {string}
+             */
+            mode: "local" | "lan";
+            /**
+             * Format: uri
+             * @description Indirizzo sulla rete locale (solo `mode=lan`), es. `https://192.168.1.20:8443`.
+             */
+            lan_url?: string;
+            /** @description SHA-256 del certificato TLS autogenerato, esadecimale maiuscolo separato da `:` (solo `mode=lan`). */
+            lan_cert_fingerprint?: string;
+        };
+        /** @description Versioni minime dei client che questa istanza supporta (semver). */
+        MinClientVersions: {
+            mobile: string;
+            desktop: string;
+        };
+        MetaCapabilities: {
+            /** @description Pagina pubblica e widget disponibili (falso nell'edizione desktop). */
+            online_booking: boolean;
+            /** @description Pagamenti online disponibili (falso nell'edizione desktop, solo driver `manual`). */
+            online_payments: boolean;
+            payment_providers: string[];
+            fiscal_drivers: string[];
+            /** @description Abbinamento dei dispositivi possibile ora (falso nell'edizione desktop senza rete locale). */
+            device_pairing: boolean;
+            /** @description L'istanza accetta un ponte fiscale da un'app desktop in modalità remota. */
+            fiscal_bridge: boolean;
+            /** @description Flusso SSE `GET /api/admin/v1/stream` disponibile. */
+            realtime: boolean;
+            /** @description Notifiche push tramite relay configurate (M7). */
+            push_notifications: boolean;
+        };
+        /** @enum {string} */
+        DevicePlatform: "ios" | "android" | "windows" | "macos" | "linux" | "other";
+        /**
+         * @description `mobile`: app mobile (M7). `desktop`: app desktop in modalità remota (M6).
+         * @enum {string}
+         */
+        DeviceKind: "mobile" | "desktop";
+        DevicePairingCodeRequest: {
+            /**
+             * Format: uuid
+             * @description Utente a cui legare il dispositivo (default l'utente corrente; un altro utente richiede `users.manage`).
+             */
+            user_id?: string;
+            kind?: components["schemas"]["DeviceKind"];
+            /** @default 300 */
+            ttl_seconds: number;
+        };
+        DevicePairingCode: {
+            /** @description Codice da digitare in alternativa al QR: 8 caratteri base32 Crockford in due gruppi (`ABCD-EFGH`), confrontato senza distinguere maiuscole e trattini. */
+            code: string;
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: uuid */
+            establishment_id: string;
+            /** Format: uuid */
+            user_id: string;
+            qr_payload: components["schemas"]["DevicePairingQRPayload"];
+            /** @description Testo da codificare nel QR: `arenile://pair?d=<qr_payload JSON in base64url>`. L'app lo decodifica; un browser che scansiona il QR apre `qr_payload.url`. */
+            qr_text: string;
+        };
+        DevicePairingQRPayload: {
+            /**
+             * @description Versione del formato.
+             * @enum {integer}
+             */
+            v: 1;
+            /**
+             * Format: uri
+             * @description Indirizzo dell'istanza (base URL; nell'edizione desktop l'indirizzo sulla rete locale).
+             */
+            url: string;
+            code: string;
+            /** @description SHA-256 del certificato TLS (solo con certificato autogenerato, modalità rete locale). L'app accetta il certificato solo se coincide (certificate pinning). */
+            fingerprint?: string;
+            establishment_name?: string;
+        };
+        DevicePairRequest: {
+            code: string;
+            /** @description Nome mostrato nel pannello (es. "iPhone di Anna", "PC cassa"). */
+            name: string;
+            platform: components["schemas"]["DevicePlatform"];
+            kind: components["schemas"]["DeviceKind"];
+            app_version?: string;
+        };
+        DevicePairResult: {
+            /** @description Token per dispositivo, restituito solo ora. Conservarlo nel portachiavi sicuro del dispositivo. */
+            token: string;
+            device: components["schemas"]["Device"];
+            /** Format: uuid */
+            establishment_id: string;
+        };
+        Device: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            establishment_id: string;
+            /** Format: uuid */
+            user_id: string;
+            user_name: string;
+            role: components["schemas"]["Role"];
+            name: string;
+            platform: components["schemas"]["DevicePlatform"];
+            kind: components["schemas"]["DeviceKind"];
+            app_version?: string;
+            /** @description Parte visibile del token (`ar_dev_<prefix>`), per riconoscerlo. */
+            token_prefix?: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            last_used_at?: string;
+            /** Format: date-time */
+            revoked_at?: string;
+            /** @description Vero se la richiesta è autenticata con il token di questo dispositivo. */
+            current: boolean;
+            /** @description Vero se il dispositivo è il ponte fiscale attivo dello stabilimento. */
+            fiscal_bridge: boolean;
+        };
+        DeviceList: {
+            items: components["schemas"]["Device"][];
+            /** @description Presente se esistono altri elementi. */
+            next_cursor?: string;
+        };
+        /** @description Dispositivo con cui è autenticata la richiesta (solo con token per dispositivo). */
+        CurrentDeviceInfo: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: uuid */
+            establishment_id: string;
+        };
+        FiscalBridgeRegistration: {
+            /** @description Codice del FiscalDriver locale dell'app desktop (es. `none`, o il driver del registratore). */
+            driver: string;
+            device_status?: components["schemas"]["FiscalDeviceStatus"];
+        };
+        FiscalDeviceStatus: {
+            online: boolean;
+            message?: string;
+            /** Format: date-time */
+            checked_at?: string;
+        };
+        FiscalBridgeStatus: {
+            registered: boolean;
+            /** Format: uuid */
+            device_id?: string;
+            device_name?: string;
+            driver?: string;
+            /** @description Ultimo contatto entro 60 secondi. */
+            online: boolean;
+            /** Format: date-time */
+            last_seen_at?: string;
+            device_status?: components["schemas"]["FiscalDeviceStatus"];
+            pending_jobs: number;
+            failed_jobs: number;
+        };
+        /**
+         * @description `issue`: emetti il documento. `void`: annulla il documento `ref`.
+         * @enum {string}
+         */
+        FiscalBridgeJobKind: "issue" | "void";
+        FiscalBridgeJob: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["FiscalBridgeJobKind"];
+            attempt: number;
+            /** Format: date-time */
+            lease_expires_at: string;
+            document?: components["schemas"]["FiscalBridgeDocument"];
+            /** @description Riferimento del documento da annullare (solo `void`). */
+            ref?: string;
+        };
+        /** @description Documento da emettere, specchio di `ext.FiscalDocumentRequest` (importi lordi in centesimi). */
+        FiscalBridgeDocument: {
+            /** Format: uuid */
+            establishment_id: string;
+            booking_id?: string;
+            payment_id?: string;
+            currency: string;
+            lines: components["schemas"]["FiscalBridgeLine"][];
+            payments: components["schemas"]["FiscalBridgePayment"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: date-time */
+            issued_at: string;
+            idempotency_key: string;
+        };
+        FiscalBridgeLine: {
+            description: string;
+            /** Format: int64 */
+            quantity: number;
+            /** Format: int64 */
+            unit_gross: number;
+            /** Format: int64 */
+            gross: number;
+            /**
+             * Format: int64
+             * @description Aliquota IVA in punti base (2200 = 22%).
+             */
+            vat_rate_bp: number;
+        };
+        FiscalBridgePayment: {
+            method: string;
+            /** Format: int64 */
+            amount: number;
+        };
+        FiscalBridgeJobBatch: {
+            jobs: components["schemas"]["FiscalBridgeJob"][];
+        };
+        FiscalBridgeJobResult: {
+            /** @enum {string} */
+            outcome: "succeeded" | "failed";
+            ref?: string;
+            number?: string;
+            /** Format: date-time */
+            issued_at?: string;
+            /** @description Risposta del driver locale, conservata per l'audit (max 16 KiB). */
+            raw?: {
+                [key: string]: unknown;
+            };
+            error?: string;
+            /** @description Errore temporaneo (registratore spento, carta finita): il lavoro torna in coda. */
+            retryable?: boolean;
+        };
+        FirstRunStatus: {
+            /** @description Vero finché non esiste alcun utente. */
+            required: boolean;
+        };
+        FirstRunRequest: {
+            setup_token: string;
+            /** Format: email */
+            email: string;
+            name: string;
+            password: string;
+            organization_name: string;
+        };
+        DesktopSettings: {
+            /** @description Cartella dei backup (default `<cartella dati>/backups`). */
+            backup_dir: string;
+            /** @description Numero di backup automatici conservati (i manuali non vengono eliminati). */
+            backup_retention: number;
+            backup_daily: boolean;
+            backup_on_exit: boolean;
+            /** @description Controllo della nuova versione (falso di default: nessuna chiamata di rete). */
+            update_check: boolean;
+            /** @description Avvio automatico all'accensione del PC. */
+            autostart: boolean;
+            /** @description Modalità rete locale (TLS con certificato autogenerato). */
+            lan_enabled: boolean;
+            /** @description Porta del listener sulla rete locale (default 8443). */
+            lan_port?: number;
+        };
+        /** @enum {string} */
+        DesktopBackupReason: "manual" | "daily" | "exit" | "pre_restore";
+        DesktopBackup: {
+            name: string;
+            /** Format: int64 */
+            size_bytes: number;
+            /** Format: date-time */
+            created_at: string;
+            reason: components["schemas"]["DesktopBackupReason"];
+        };
+        DesktopBackupList: {
+            directory: string;
+            items: components["schemas"]["DesktopBackup"][];
+        };
+        DesktopRestoreScheduled: {
+            backup: components["schemas"]["DesktopBackup"];
+            restart_required: boolean;
+        };
     };
     responses: {
         /** @description Richiesta non valida */
@@ -5546,6 +6141,10 @@ export interface components {
         };
     };
     parameters: {
+        DeviceID: string;
+        FiscalBridgeJobID: string;
+        /** @description Nome del file di backup come restituito da `listDesktopBackups` (nessun percorso). */
+        BackupName: string;
         /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
         Cursor: string;
         /** @description Numero massimo di elementi (default 50). */
@@ -12098,6 +12697,530 @@ export interface operations {
             404: components["responses"]["NotFound"];
             501: components["responses"]["NotImplemented"];
             503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getMeta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Metadati dell'istanza */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Meta"];
+                };
+            };
+        };
+    };
+    createDevicePairingCode: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DevicePairingCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description Codice creato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevicePairingCode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listDevices: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+                include_revoked?: boolean;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di dispositivi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    revokeDevice: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                deviceId: components["parameters"]["DeviceID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revocato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getFiscalBridgeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalBridgeStatus"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    pairDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DevicePairRequest"];
+            };
+        };
+        responses: {
+            /** @description Dispositivo abbinato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevicePairResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCurrentDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dispositivo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Device"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    unpairCurrentDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revocato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    registerFiscalBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FiscalBridgeRegistration"];
+            };
+        };
+        responses: {
+            /** @description Registrato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalBridgeStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    unregisterFiscalBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Registrazione annullata (idempotente) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    pollFiscalBridgeJobs: {
+        parameters: {
+            query?: {
+                /** @description Secondi di attesa massima (default 25). */
+                wait?: number;
+                /** @description Numero massimo di lavori (default 10). */
+                max?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lavori assegnati (eventualmente nessuno) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FiscalBridgeJobBatch"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    submitFiscalBridgeJobResult: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: components["parameters"]["FiscalBridgeJobID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FiscalBridgeJobResult"];
+            };
+        };
+        responses: {
+            /** @description Esito registrato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getFirstRunStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato del primo avvio */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FirstRunStatus"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    completeFirstRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FirstRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Owner creato e accesso effettuato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getDesktopSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Impostazioni */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateDesktopSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DesktopSettings"];
+            };
+        };
+        responses: {
+            /** @description Impostazioni aggiornate */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listDesktopBackups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Backup */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopBackupList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createDesktopBackup: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Backup creato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopBackup"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    restoreDesktopBackup: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                /** @description Nome del file di backup come restituito da `listDesktopBackups` (nessun percorso). */
+                backupName: components["parameters"]["BackupName"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ripristino pianificato */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopRestoreScheduled"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
         };
     };
 }

@@ -16,10 +16,12 @@ import (
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/customer"
+	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/meta"
 	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
@@ -29,6 +31,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/fiscalbridge"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/middleware"
 	"github.com/coste360/arenile/internal/http/problem"
@@ -48,7 +51,8 @@ import (
 // (Online: settings and terms; Notify: resend confirmation, magic link),
 // paymentsettings.go (Online), email.go (Online settings; Notify: test
 // email, message log), reconciliation.go (Gateway), and the via_provider
-// branch of payments.go (Gateway).
+// branch of payments.go (Gateway). M6/M7: meta.go (Meta), devices.go
+// (Devices) and fiscalbridge.go (FiscalBridge status).
 type Handlers struct {
 	Auth           *auth.Service
 	Establishments *establishment.Service
@@ -71,8 +75,12 @@ type Handlers struct {
 	Online  *online.Service
 	Notify  *notify.Service
 	Gateway *gateway.Service
-	Stream  *sse.Server
-	Log     *slog.Logger
+	// M6/M7: instance metadata, paired devices and fiscal bridge.
+	Meta         *meta.Service
+	Devices      *device.Service
+	FiscalBridge *fiscalbridge.Service
+	Stream       *sse.Server
+	Log          *slog.Logger
 	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
 	SecureCookies bool
 }

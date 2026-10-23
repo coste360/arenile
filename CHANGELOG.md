@@ -11,6 +11,16 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 
 ### Added
 
+- M6/M7 lato core, contratto e scaffolding ([ADR 0014](docs/adr/0014-scelte-m6.md)): `GET /api/admin/v1/meta`
+  pubblico (versione, edizione `server|desktop`, modalità desktop `local|lan`, versioni minime dei client,
+  capacità); dispositivi abbinati con codice monouso e QR (`devices/pairing-codes`), elenco e revoca, token per
+  dispositivo `ar_dev_...` come `Authorization: Bearer` sulle API admin e sulle nuove API `/api/device/v1`
+  (abbinamento, dispositivo corrente, ponte fiscale con long polling); API dell'edizione desktop
+  `/api/desktop/v1` solo da loopback (primo avvio, impostazioni, backup e ripristino); nuovi tipi di errore
+  `pairing_code_invalid`, `lan_mode_required`, `loopback_required`, `setup_token_invalid`, `setup_completed`.
+  Migrazione `00006_devices_fiscal_bridge` (SQLite e PostgreSQL). Driver fiscale `bridge`. Launcher
+  `cmd/arenile-desktop` (senza CGO di default, tray con il tag `desktop`) e `make build-desktop`. Pagine
+  *Dispositivi* e *App desktop* nel pannello. Le operazioni M6 rispondono `501` finché i builder non le completano.
 - M4, contratto e scaffolding ([ADR 0013](docs/adr/0013-scelte-m4.md)): API pubblica completa in
   `api/openapi.yaml` (profilo con configurazione del flusso ed `ETag`, calendario, mappa pubblica,
   disponibilità online, catalogo, preventivo, prenotazione con sessione di checkout `X-Arenile-Checkout`,

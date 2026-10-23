@@ -1,0 +1,10 @@
+{
+  "firstRun": {
+    "title": "Willkommen bei Arenile",
+    "description": "Lege den Inhaber an, um zu beginnen: Danach führen wir dich durch die Einrichtung des Betriebs."
+  },
+  "settings": {
+    "title": "Desktop-App",
+    "description": "Automatische Sicherungen, Wiederherstellung, Autostart und lokaler Netzwerkmodus für die anderen Geräte des Strandbads."
+  }
+}
