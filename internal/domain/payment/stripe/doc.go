@@ -5,40 +5,39 @@
 //
 // # Design
 //
+//   - Official SDK: github.com/stripe/stripe-go/v87 (MIT), API version
+//     pinned by the SDK (APIVersion). The SDK backends are built once with
+//     the configured HTTP client and base URL (tests point them at an
+//     httptest.Server; no network in unit tests), retries limited to
+//     MaxNetworkRetries with the same idempotency key, telemetry and SDK
+//     logging off. ADR 0014 records why this supersedes the "no SDK"
+//     sketch of ADR 0013 §7.
 //   - Stateless: the driver never touches the database; per-establishment
 //     credentials arrive decrypted in every call (ext.Credentials, keys
-//     CredSecretKey, CredWebhookSecret, CredPublishableKey; ADR 0006).
-//   - No SDK: plain net/http against the Stripe REST API with form-encoded
-//     requests and a pinned Stripe-Version header (APIVersion). No new Go
-//     dependency (license and supply-chain surface stay unchanged); the API
-//     base URL is configurable so tests run against an httptest.Server.
+//     CredSecretKey, CredWebhookSecret, CredPublishableKey; ADR 0006) and a
+//     short-lived SDK client is created per call around the shared backends.
 //   - CreatePayment: Stripe Checkout Session in redirect mode by default
-//     (mode=payment, line item with the booking description, amount in
+//     (mode=payment, one line item with the booking description, amount in
 //     cents, currency, customer_email, success_url / cancel_url,
 //     client_reference_id = booking id, metadata establishment_id /
-//     booking_id / booking_code, payment_intent_data.metadata the same,
-//     expires_at = now + 30 minutes); header Idempotency-Key =
-//     CreatePaymentRequest.IdempotencyKey ("<booking_id>:<attempt>").
+//     booking_id / booking_code plus the gateway ids, the same metadata on
+//     payment_intent_data, locale and expires_at from the request hints
+//     HintLocale / HintExpiresAt, expiry clamped to Stripe's 30 min..24 h
+//     window); the request IdempotencyKey is sent as Idempotency-Key.
 //     PreferredMode embedded -> PaymentIntent with automatic payment
-//     methods and ClientSecret (Payment Element), when enabled.
-//   - ParseWebhook: verifies Stripe-Signature (t=..., v1=... HMAC-SHA256 of
-//     "<t>.<raw body>" with the webhook secret, constant-time compare,
-//     tolerance 5 minutes against the injected clock, multiple v1 values
-//     accepted for secret rotation); maps checkout.session.completed and
-//     payment_intent.succeeded -> ext.PaymentSucceeded,
-//     payment_intent.payment_failed -> ext.PaymentFailed (FailureReason =
-//     last_payment_error.code, never the message), charge.refunded ->
-//     ext.PaymentRefunded (amount = amount_refunded delta of the event);
-//     other types -> ext.ErrIgnoredEvent. ProviderRef is the Checkout
-//     Session id for checkout events and the PaymentIntent id otherwise;
-//     metadata carries booking and establishment ids.
-//   - Refund: POST /v1/refunds with payment_intent and amount, idempotent.
-//   - Optional capabilities (gateway.PaymentStatusChecker,
-//     gateway.CredentialsVerifier): PaymentStatus retrieves a Checkout
-//     Session or PaymentIntent; VerifyCredentials calls GET /v1/account and
-//     returns the account display name.
-//   - Errors: network errors and 5xx/429 wrap gateway-agnostic
-//     ErrUnavailable (mapped to 503 payment_provider_unavailable by the
-//     gateway); 4xx are returned with the Stripe error code only. Never log
-//     keys, signatures or raw bodies.
+//     methods and ClientSecret (Payment Element).
+//   - ParseWebhook: signature verified with the SDK (constant-time HMAC,
+//     every v1 value tried for secret rotation), timestamp checked against
+//     the injected clock (SignatureTolerance, replay protection); mapping
+//     documented on ParseWebhook. Failure reasons are Stripe codes, never
+//     messages.
+//   - Refund: POST /v1/refunds on the PaymentIntent, idempotent.
+//   - Optional capabilities (declared by the gateway, made of pkg/ext types):
+//     PaymentStatus (reconciliation), VerifyCredentials ("test connection")
+//     and CancelPayment (a new attempt expires the previous session).
+//   - Errors: network errors, 5xx and 429 are ErrUnavailable (Temporary()
+//     true, mapped to 503 payment_provider_unavailable by the gateway); a
+//     reused idempotency key is ErrIdempotencyConflict; other 4xx are
+//     *APIError with the Stripe type and code only. Keys, signatures, raw
+//     bodies and Stripe messages are never logged or wrapped.
 package stripe

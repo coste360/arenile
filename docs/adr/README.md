@@ -21,6 +21,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0011](0011-revisione-m3.md) | Revisione di M3: quota online anche sul canale `api`, `price_current` per le prenotazioni modificate dopo la conferma, hold confermati sotto lock e puliti per intero, check-in solo nel soggiorno, deviazioni dichiarate dalla spec 11.3 | accettato |
 | [0012](0012-kit-mappa.md) | Kit di illustrazioni della mappa: `<symbol>`/`<use>`, stato sovrapposto, campi `asset`/`variant`, provenienza | accettato |
 | [0013](0013-scelte-m4.md) | Scelte di M4: percorsi pubblici e sessione di checkout, webhook, cliente provvisorio, link magici, `payment_intents`, capacità facoltative dei driver, Stripe senza SDK, email | accettato |
+| [0014](0014-pagamenti-online-m4.md) | Pagamenti online di M4: SDK Stripe ufficiale, webhook unico percorso di conferma, pagamenti tardivi e doppi rimborsati, rimborsi prenotati e registrati alla conferma, riconciliazione per intent | accettato |
 
 ## Come aggiungere un ADR
 

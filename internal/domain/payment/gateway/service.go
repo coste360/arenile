@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/http"
+	"strings"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -18,7 +18,6 @@ import (
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/payment"
-	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/pkg/ext"
@@ -30,7 +29,65 @@ const (
 	DefaultPendingAfter      = 10 * time.Minute
 	// MaxWebhookBody bounds the raw webhook body read before verification.
 	MaxWebhookBody = 256 << 10
+	// reconcileBatch bounds the intents looked at by one run.
+	reconcileBatch = 200
+	// refundRetryAfter is the age after which a refund never sent to the
+	// provider (crash, provider down) is retried by the reconciliation.
+	refundRetryAfter = time.Minute
+	// reportLimit bounds the rows of the reconciliation report and
+	// reportLiveChecks the provider lookups it makes.
+	reportLimit      = 500
+	reportLiveChecks = 25
+	// unknownRefRetryWindow: a recent event for a reference not (yet)
+	// known is answered 503 so the provider retries (the transaction that
+	// stores the reference may not have committed).
+	unknownRefRetryWindow = time.Hour
+	maxRawEventIDs        = 50
 )
+
+// Metadata keys shared with payment drivers (the core Stripe driver uses
+// the same literals: stripe.Hint* / stripe.Meta*). Hints in
+// ext.CreatePaymentRequest.Metadata are read by the driver and not
+// forwarded; Meta* keys of ext.PaymentEvent.Metadata are set by the driver.
+const (
+	MetaLocale         = "locale"     // hint: customer locale ("it", "en")
+	MetaExpiresAt      = "expires_at" // hint: RFC 3339 end of the booking hold
+	MetaIntentID       = "intent_id"  // forwarded: payment_intents id
+	MetaPurpose        = "purpose"    // forwarded: full, deposit, balance
+	MetaOutcome        = "outcome"
+	MetaPaymentIntent  = "payment_intent"
+	MetaAmountCaptured = "amount_captured"
+)
+
+// Outcomes (ext.PaymentEvent.Metadata[MetaOutcome]) refining the event type.
+const (
+	OutcomeExpired       = "expired"
+	OutcomeAttemptFailed = "attempt_failed"
+	OutcomeRefundFailed  = "refund_failed"
+	OutcomeRefundTotal   = "refund_total"
+	OutcomeRefundSingle  = "refund_single"
+)
+
+// EventRefundScheduled is the outbox event (payload event.PaymentChange,
+// version 1, status pending, direction refund) written when the gateway
+// schedules an automatic refund: late payment on a booking whose resources
+// are gone, or an online payment above the booking total. Notify sends the
+// customer the "rimborso in corso" message from it.
+const EventRefundScheduled = "payment.refund_scheduled"
+
+// Reconciliation issues (api.ReconciliationIssue).
+const (
+	IssueNone                = "none"
+	IssuePendingTooLong      = "pending_too_long"
+	IssueStatusMismatch      = "status_mismatch"
+	IssueMissingLedgerRow    = "missing_ledger_row"
+	IssueAmountMismatch      = "amount_mismatch"
+	IssueProviderUnreachable = "provider_unreachable"
+)
+
+// placeholderPrefix marks the external_id of a refund intent not yet sent
+// to the provider (external_id is NOT NULL and unique per provider).
+const placeholderPrefix = "pending:"
 
 // Errors of the gateway (mapped by internal/http/problem).
 var (
@@ -40,11 +97,26 @@ var (
 	// ErrSignatureInvalid: webhook signature missing or wrong (400
 	// webhook_signature_invalid). Wraps ext.ErrInvalidSignature.
 	ErrSignatureInvalid = fmt.Errorf("gateway: %w", ext.ErrInvalidSignature)
-	// ErrProviderNotConfigured: no credentials for the provider of the URL
-	// or of the active configuration (404 for webhooks, 409 for refunds).
+	// ErrProviderNotConfigured: no credentials for the provider of the
+	// active configuration (409 for payments and refunds).
 	ErrProviderNotConfigured = fmt.Errorf("%w: nessun provider di pagamento impostato", configerr.ErrConflict)
+	// ErrWebhookTarget: the establishment or the provider of a webhook URL
+	// does not exist or was never configured (404, no details).
+	ErrWebhookTarget = fmt.Errorf("%w: webhook target", configerr.ErrNotFound)
 	// ErrRefundNotSupported: the provider of the payment cannot refund.
 	ErrRefundNotSupported = fmt.Errorf("%w: il provider non supporta i rimborsi", configerr.ErrConflict)
+	// ErrNotOnlinePayment: the refunded payment was not made online.
+	ErrNotOnlinePayment = configerr.Invalid("payment_id", "Il pagamento scelto non è un pagamento online rimborsabile tramite il provider.")
+	// ErrIdempotencyMismatch: the key was already used for another refund.
+	ErrIdempotencyMismatch = fmt.Errorf("%w: chiave di idempotenza già usata per un altro rimborso", configerr.ErrConflict)
+	// ErrProviderRefused: the provider refused the request (4xx); the
+	// short provider code is appended.
+	ErrProviderRefused = fmt.Errorf("%w: il provider di pagamento ha rifiutato la richiesta", configerr.ErrConflict)
+	// errRetryLater rolls back a webhook whose reference is not known yet;
+	// HandleWebhook answers 503 so the provider retries.
+	errRetryLater = fmt.Errorf("%w: reference not known yet", ErrProviderUnavailable)
+	// errDuplicate rolls back the transaction of an already processed event.
+	errDuplicate = errors.New("gateway: duplicate event")
 )
 
 // ---- ports (implemented elsewhere, asserted in internal/app/m4.go) -------
@@ -72,11 +144,24 @@ type Providers interface {
 	PaymentProvider(code string) (ext.PaymentProvider, bool)
 }
 
+// LateConfirmer is the OPTIONAL booking-side path of a late payment (ADR
+// 0014): a provider payment that succeeds after the booking hold expired.
+// It must re-allocate the resources of the expired booking through the
+// inventory (DB constraints decide) and confirm it, with audit and outbox,
+// inside tx; any error (resources taken, transition refused) means "not
+// possible" and the gateway refunds the payment instead. The gateway calls
+// it inside a savepoint, so a failure leaves tx usable. Implemented by the
+// booking service when available (internal/app wires it); without it every
+// late payment is refunded.
+type LateConfirmer interface {
+	ConfirmLatePayment(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, bookingID string, pm *store.Payment) error
+}
+
 // PaymentStatusChecker is an OPTIONAL capability of a payment driver, used
-// by reconciliation to fetch the current outcome of a provider payment
-// (see doc.go). It returns the normalised event the provider would have
-// sent (ProviderEventID may be empty; the gateway then uses a synthetic
-// id), or nil when the payment is still pending.
+// by reconciliation to fetch the current outcome of a provider payment or
+// refund (see doc.go). It returns the normalised event the provider would
+// have sent (ProviderEventID may be empty; the gateway then uses a
+// synthetic id), or nil when the payment is still pending.
 type PaymentStatusChecker interface {
 	PaymentStatus(ctx context.Context, providerRef string, creds ext.Credentials) (*ext.PaymentEvent, error)
 }
@@ -88,8 +173,17 @@ type CredentialsVerifier interface {
 	VerifyCredentials(ctx context.Context, creds ext.Credentials) (accountLabel string, err error)
 }
 
+// PaymentCanceller is an OPTIONAL capability: it closes a provider payment
+// replaced by a new attempt (Stripe: expire the Checkout Session), so the
+// customer cannot pay twice. An error (also for a payment no longer open,
+// e.g. just paid) leaves the intent untouched: the webhook or the
+// reconciliation reports its real outcome.
+type PaymentCanceller interface {
+	CancelPayment(ctx context.Context, providerRef string, creds ext.Credentials) error
+}
+
 // Deps are the dependencies of the gateway. Every field is required except
-// Log, PendingAfter and ReconcileInterval.
+// Log, LateConfirmer, PendingAfter and ReconcileInterval.
 type Deps struct {
 	DB        bun.IDB
 	Clock     clock.Clock
@@ -99,7 +193,10 @@ type Deps struct {
 	Providers Providers
 	Settings  ProviderSettings
 	Ledger    Ledger
-	// BaseURL is config.EffectiveBaseURL() (return and cancel URLs).
+	// LateConfirmer confirms late payments when resources are still free
+	// (optional, see LateConfirmer).
+	LateConfirmer LateConfirmer
+	// BaseURL is config.EffectiveBaseURL() (default return and cancel URLs).
 	BaseURL string
 	// PendingAfter is the age after which a pending intent is reconciled.
 	PendingAfter time.Duration
@@ -125,6 +222,10 @@ func NewService(d Deps) *Service {
 	}
 	return &Service{d: d}
 }
+
+// SetLateConfirmer installs the late payment path after construction (the
+// booking service is built after the payment services in internal/app).
+func (s *Service) SetLateConfirmer(c LateConfirmer) { s.d.LateConfirmer = c }
 
 // Purpose of a provider payment.
 type Purpose string
@@ -169,18 +270,23 @@ type StartResult struct {
 type WebhookOutcome struct {
 	// Duplicate: the event was already processed (no effect).
 	Duplicate bool
-	// Ignored: authentic event of a type Arenile does not handle.
+	// Ignored: authentic event of a type (or for a reference) Arenile does
+	// not handle.
 	Ignored bool
 }
 
 // RefundRequest refunds (part of) an online payment through its provider.
 type RefundRequest struct {
+	// BookingID, when set, must be the booking of the payment.
 	BookingID string
 	// PaymentID is the ledger row (direction in) of the provider payment.
 	PaymentID      string
 	Amount         money.Cents
 	Reason         string
 	IdempotencyKey string
+	// Actor is the audit actor (zero value = system; the checkout passes
+	// the customer, RefundBooking the staff principal).
+	Actor audit.Actor
 }
 
 // ReportQuery filters the reconciliation report.
@@ -194,8 +300,7 @@ type ReportItem struct {
 	Intent         store.PaymentIntent
 	BookingCode    string
 	ProviderStatus string
-	// Issue is one of none, pending_too_long, status_mismatch,
-	// missing_ledger_row, amount_mismatch, provider_unreachable.
+	// Issue is one of the Issue* constants.
 	Issue string
 }
 
@@ -214,66 +319,141 @@ type ReconcileStats struct {
 	StartedAt, FinishedAt    time.Time
 }
 
-// Start creates a provider payment for a booking of es (see doc.go for the
-// transaction shape). tx is the caller's transaction for the local rows.
-func (s *Service) Start(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, req StartRequest) (*StartResult, error) {
-	return nil, configerr.ErrNotImplemented
+// ---- helpers ------------------------------------------------------------------
+
+func (s *Service) now() time.Time { return s.d.Clock.Now().UTC() }
+
+func (s *Service) authorize(ctx context.Context, p *auth.Principal, establishmentID string, perm auth.Permission) (store.EstablishmentScope, error) {
+	es, err := p.Authorize(ctx, s.d.DB, establishmentID, perm)
+	if errors.Is(err, store.ErrNotFound) {
+		return es, payment.ErrEstablishmentNotFound
+	}
+	return es, err
 }
 
-// LatestForBooking returns the most recent payment intent of a booking
-// (store.ErrNotFound when none): status polling of the public page.
-func (s *Service) LatestForBooking(ctx context.Context, db bun.IDB, es store.EstablishmentScope, bookingID string) (*store.PaymentIntent, error) {
-	return nil, configerr.ErrNotImplemented
+// provider returns the configuration and the driver of provider for es.
+func (s *Service) provider(ctx context.Context, db bun.IDB, es store.EstablishmentScope, code string) (*online.ProviderConfig, ext.PaymentProvider, error) {
+	cfg, err := s.d.Settings.ProviderConfig(ctx, db, es, code)
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return nil, nil, ErrProviderNotConfigured
+		}
+		return nil, nil, fmt.Errorf("gateway: provider settings: %w", err)
+	}
+	pp, ok := s.d.Providers.PaymentProvider(code)
+	if !ok {
+		return nil, nil, ErrProviderNotConfigured
+	}
+	return cfg, pp, nil
 }
 
-// HandleWebhook verifies and applies one provider notification for the
-// establishment of the URL. r.Body is read raw (MaxWebhookBody).
-func (s *Service) HandleWebhook(ctx context.Context, provider, establishmentID string, r *http.Request) (*WebhookOutcome, error) {
-	return nil, configerr.ErrNotImplemented
+// providerError classifies a driver error: temporary failures become
+// ErrProviderUnavailable, refusals ErrProviderRefused with the provider
+// code. The driver message is never propagated (it may echo request data).
+func providerError(op string, err error) error {
+	if err == nil {
+		return nil
+	}
+	if isTemporary(err) {
+		return fmt.Errorf("gateway: %s: %w", op, ErrProviderUnavailable)
+	}
+	if errors.Is(err, context.Canceled) {
+		return fmt.Errorf("gateway: %s: %w", op, err)
+	}
+	return fmt.Errorf("%w (%s)", ErrProviderRefused, providerCode(err))
 }
 
-// RefundViaProvider executes a refund with the provider of the payment and
-// records a refund intent (pending until the provider confirms; the ledger
-// row is written by the webhook or reconciliation). Used by the admin
-// refund with via_provider and by customer cancellations.
-func (s *Service) RefundViaProvider(ctx context.Context, es store.EstablishmentScope, req RefundRequest) (*store.PaymentIntent, error) {
-	return nil, configerr.ErrNotImplemented
+// isTemporary reports a retryable driver error (Temporary() true, or a
+// timeout).
+func isTemporary(err error) bool {
+	var t interface{ Temporary() bool }
+	if errors.As(err, &t) && t.Temporary() {
+		return true
+	}
+	return errors.Is(err, context.DeadlineExceeded) || errors.Is(err, ErrProviderUnavailable)
 }
 
-// RefundBooking is RefundViaProvider with the principal check
-// (auth.PermRefundsIssue), for internal/http/admin/payments.go.
-func (s *Service) RefundBooking(ctx context.Context, p *auth.Principal, establishmentID string, req RefundRequest) (*store.PaymentIntent, error) {
-	return nil, configerr.ErrNotImplemented
+func isIdempotencyConflict(err error) bool {
+	var ic interface{ IdempotencyConflict() bool }
+	return errors.As(err, &ic) && ic.IdempotencyConflict()
 }
 
-// Report builds the reconciliation report (auth.PermBookingsRead).
-func (s *Service) Report(ctx context.Context, p *auth.Principal, establishmentID string, q ReportQuery) (*Report, error) {
-	return nil, configerr.ErrNotImplemented
+// providerCode is the short machine code of a driver refusal.
+func providerCode(err error) string {
+	var pc interface{ ProviderCode() string }
+	if errors.As(err, &pc) && pc.ProviderCode() != "" {
+		return pc.ProviderCode()
+	}
+	return "error"
 }
 
-// ReconcileEstablishment runs the reconciliation now for one establishment
-// (auth.PermPaymentsConfigure).
-func (s *Service) ReconcileEstablishment(ctx context.Context, p *auth.Principal, establishmentID string) (*ReconcileStats, error) {
-	return nil, configerr.ErrNotImplemented
+func strPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
-// Reconcile is the job body: every establishment, intents pending for more
-// than PendingAfter.
-func (s *Service) Reconcile(ctx context.Context) (*ReconcileStats, error) {
-	return nil, configerr.ErrNotImplemented
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
-// Jobs returns the background jobs of the gateway (reconciliation).
-func (s *Service) Jobs() []jobs.Job {
-	return []jobs.Job{{
-		Name:     "payments.reconcile",
-		Interval: s.d.ReconcileInterval,
-		Run: func(ctx context.Context) error {
-			_, err := s.Reconcile(ctx)
-			if errors.Is(err, configerr.ErrNotImplemented) {
-				return nil
-			}
-			return err
-		},
-	}}
+func isOpen(status string) bool {
+	return status == store.IntentCreated || status == store.IntentPending
+}
+
+func isPlaceholder(externalID string) bool { return strings.HasPrefix(externalID, placeholderPrefix) }
+
+// appendEvent records an applied provider event id on the intent.
+func appendEvent(pi *store.PaymentIntent, id string) {
+	for _, x := range pi.RawEventIDs {
+		if x == id {
+			return
+		}
+	}
+	pi.RawEventIDs = append(pi.RawEventIDs, id)
+	if n := len(pi.RawEventIDs); n > maxRawEventIDs {
+		pi.RawEventIDs = pi.RawEventIDs[n-maxRawEventIDs:]
+	}
+}
+
+// change is the outbox payload of an intent (no personal data).
+func change(pi *store.PaymentIntent, paymentID, direction, status string) event.PaymentChange {
+	if paymentID == "" {
+		paymentID = pi.ID
+	}
+	return event.PaymentChange{
+		PaymentID: paymentID, BookingID: deref(pi.BookingID), Provider: pi.Provider, Method: store.PaymentMethodCard,
+		Direction: direction, Amount: int64(pi.Amount), Status: status,
+	}
+}
+
+// record writes an audit entry of intent pi and, when eventType is set, the
+// outbox event (same transaction).
+func (s *Service) record(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, actor audit.Actor, action string, pi *store.PaymentIntent, diff map[string]any, eventType string, ch event.PaymentChange) error {
+	if diff == nil {
+		diff = map[string]any{}
+	}
+	diff["provider"], diff["kind"], diff["status"], diff["amount"] = pi.Provider, pi.Kind, pi.Status, int64(pi.Amount)
+	if pi.BookingID != nil {
+		diff["booking_id"] = *pi.BookingID
+	}
+	if actor.Type == "" {
+		actor = audit.SystemActor
+	}
+	if err := s.d.Audit.Record(ctx, tx, audit.Entry{
+		EstablishmentID: es.ID(), Actor: actor, Action: action, EntityType: "payment_intent", EntityID: pi.ID, Diff: diff,
+	}); err != nil {
+		return fmt.Errorf("gateway: %w", err)
+	}
+	if eventType == "" {
+		return nil
+	}
+	if _, err := s.d.Outbox.Write(ctx, tx, eventType, es.ID(), 1, ch); err != nil {
+		return fmt.Errorf("gateway: %w", err)
+	}
+	return nil
 }

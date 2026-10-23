@@ -2,8 +2,11 @@ package admin
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/payment"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/internal/money"
@@ -12,8 +15,9 @@ import (
 )
 
 // Handlers of the payment domain (internal/domain/payment, spec 13): manual
-// payments of a booking, manual refunds, counter sales and the payments
-// list. Permissions are checked by the service.
+// payments of a booking, manual refunds, refunds through the online
+// provider (via_provider, internal/domain/payment/gateway), counter sales
+// and the payments list. Permissions are checked by the services.
 
 // ListBookingPayments implements GET /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/payments.
 func (h *Handlers) ListBookingPayments(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, bookingID api.BookingID) {
@@ -59,6 +63,10 @@ func (h *Handlers) RecordBookingRefund(w http.ResponseWriter, r *http.Request, e
 	if !decode(w, r, &req) {
 		return
 	}
+	if req.ViaProvider != nil && *req.ViaProvider {
+		h.refundViaProvider(w, r, establishmentID, bookingID, params, req)
+		return
+	}
 	in := payment.RefundRequest{
 		BookingID: bookingID, Amount: money.Cents(req.Amount), Method: string(req.Method),
 		CashSessionID: req.CashSessionId, IdempotencyKey: paymentDeref(params.IdempotencyKey),
@@ -73,6 +81,62 @@ func (h *Handlers) RecordBookingRefund(w http.ResponseWriter, r *http.Request, e
 		return
 	}
 	writeJSON(w, http.StatusCreated, PaymentToAPI(&res.Payment, nil))
+}
+
+// refundViaProvider is the via_provider branch of RecordBookingRefund (spec
+// 13.4): the refund is executed by the provider of payment_id through the
+// payment gateway; the response is the refund as known now (status pending
+// until the provider confirms, succeeded when it confirmed synchronously).
+func (h *Handlers) refundViaProvider(w http.ResponseWriter, r *http.Request, establishmentID, bookingID string, params api.RecordBookingRefundParams, req api.RefundInput) {
+	if h.Gateway == nil {
+		problem.Write(w, r, problem.NotImplemented)
+		return
+	}
+	if req.As != nil && *req.As == api.RefundInputAsCredit {
+		problem.Error(w, r, h.Log, configerr.Invalid("as", "Il rimborso tramite provider restituisce denaro: non può essere un credito."))
+		return
+	}
+	in := gateway.RefundRequest{
+		BookingID: bookingID, PaymentID: paymentDeref(req.PaymentId), Amount: money.Cents(req.Amount),
+		Reason: paymentDeref(req.Reason), IdempotencyKey: paymentDeref(params.IdempotencyKey),
+	}
+	ri, err := h.Gateway.RefundBooking(r.Context(), principalOf(r), establishmentID, in)
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, RefundIntentToAPI(ri, in.PaymentID))
+}
+
+// RefundIntentToAPI maps a provider refund (payment_intents row of kind
+// refund) to api.Payment: the id is the ledger row once the provider
+// confirmed, the intent id before; created and pending map to pending,
+// expired and cancelled to cancelled.
+func RefundIntentToAPI(ri *store.PaymentIntent, refundOf string) api.Payment {
+	id, status := ri.ID, api.PaymentStatusPending
+	switch ri.Status {
+	case store.IntentSucceeded:
+		status = api.PaymentStatusSucceeded
+		if ri.PaymentID != nil {
+			id = *ri.PaymentID
+		}
+	case store.IntentFailed:
+		status = api.PaymentStatusFailed
+	case store.IntentCancelled, store.IntentExpired:
+		status = api.PaymentStatusCancelled
+	}
+	out := api.Payment{
+		Id: id, Amount: int64(ri.Amount), Direction: api.PaymentDirection(store.PaymentDirectionRefund),
+		Method: api.PaymentMethod(store.PaymentMethodCard), Provider: ri.Provider, Status: status,
+		BookingId: ri.BookingID, CreatedAt: ri.CreatedAt.UTC(), Description: strPtr("Rimborso tramite " + ri.Provider),
+	}
+	if !strings.HasPrefix(ri.ExternalID, "pending:") {
+		out.ProviderRef = strPtr(ri.ExternalID)
+	}
+	if refundOf != "" {
+		out.RefundOfPaymentId = strPtr(refundOf)
+	}
+	return out
 }
 
 // ListPayments implements GET /api/admin/v1/establishments/{establishmentId}/payments.
