@@ -31,6 +31,7 @@
 - Driver Stripe (Checkout), webhook, riconciliazione, rimborsi.
 - Link magico per la gestione del cliente, email transazionali, QR e `.ics`.
 - Assegnazione automatica per le zone `zone`.
+- Documentazione completa del sistema (sito `docs-site/`, Astro Starlight, italiano come lingua sorgente e inglese): guida del gestore funzione per funzione, installazione e operatività, API e webhook, sviluppo ed estensioni. Gli screenshot sono generati da Playwright sui dati demo in tema chiaro e scuro e vengono rigenerati a ogni release, quindi non invecchiano. Le pagine includono componenti reali e interattivi (mappa con il kit di elementi, simulatore prezzi su dati demo, badge di stato), presi da `web/shared` senza duplicarli. Il riferimento API è generato da `api/openapi.yaml`. Il sito ha ricerca integrata ed è pubblicato con ogni release.
 - **Accettazione:** prenotazione completa da smartphone dentro un iframe su un dominio esterno in meno di 2 minuti; nessuna doppia vendita tra cassa e online in un test con carico parallelo; budget di peso e Lighthouse rispettati.
 
 ### M5 — Completamento della stagione

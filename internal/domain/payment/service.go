@@ -378,8 +378,17 @@ func (s *Service) sessionFor(ctx context.Context, tx bun.IDB, es store.Establish
 	return s.d.Cash.SessionForPayment(ctx, tx, es, sessionID, method)
 }
 
-// redeemCredit checks the customer credit balance and consumes amount.
+// redeemCredit checks the customer credit balance and consumes amount. The
+// customer row is locked first (store.LockCustomer): credit movements of one
+// customer serialize, so two payments of different bookings cannot both
+// spend the same balance (INV-47, the ledger has no balance constraint).
 func (s *Service) redeemCredit(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, info *estInfo, customerID string, amount money.Cents, pm *store.Payment) error {
+	if err := store.LockCustomer(ctx, tx, es, customerID); err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return ErrCustomerNotFound
+		}
+		return fmt.Errorf("payment: %w", err)
+	}
 	bal, err := s.d.Credits.CreditBalance(ctx, tx, es, customerID, info.today)
 	if err != nil {
 		return fmt.Errorf("payment: credit balance: %w", err)

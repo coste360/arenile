@@ -77,7 +77,9 @@ Verificata da: `TestAvailability_OnlineQuota` (`internal/domain/availability`), 
 **INV-10 — Rilasci degli abbonati coerenti.**
 Per ogni `season_release` non revocata, non esiste un'allocazione `season` della stessa riga per quella
 data e fascia; `resold_booking_line_id` è valorizzato solo se esiste un'allocazione `booking` di quella riga.
-Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations` (`internal/domain/inventory` e `internal/domain/pass`), `TestConcurrency_SeasonReleaseSameDay`, `TestPassFlow_RealServices` (`internal/domain/pass`), tag `integration`. Stato: implemented.
+Rilascio e revoca avvengono sotto il lock della prenotazione dell'abbonamento (lo stesso di ogni cambio di stato),
+quindi una cancellazione concorrente non lascia mai un'allocazione `season` a un abbonamento cancellato (INV-20).
+Verificata da: `TestSeasonRelease_RemovesAndRestoresAllocations` (`internal/domain/inventory` e `internal/domain/pass`), `TestConcurrency_SeasonReleaseSameDay`, `TestPassFlow_RealServices`, `TestConcurrency_RevokeVsCancel` (100 revoche contro cancellazioni con i servizi reali, `internal/domain/pass`), tag `integration`. Stato: implemented.
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 ## Prezzi (spec 8)
@@ -293,3 +295,11 @@ non cambia nulla. IVA dimostrativa 22% su stabilimento, pacchetti ed extra.
 Verificata da: `TestSeedDemoOperations_VolumesVATAndIdempotency`, `TestSeedDemoOperations_SkipsMissingUseCases`
 (`internal/domain/setup`, tag `integration`) e `TestAcceptance_DemoSeed` (`internal/acceptance`). Stato: implemented
 (`arenile seed demo` usa lo stesso adattatore `App.DemoOperations`; `TestCLI_Lifecycle` in `cmd/arenile` lo esegue).
+
+**INV-47 — Credito cliente mai negativo.**
+Per ogni cliente la somma dei movimenti non scaduti di `customer_credits` è `>= 0`, anche con redemption
+concorrenti su prenotazioni diverse o vendite libere: ogni redemption blocca la riga del cliente
+(`store.LockCustomer`, UPDATE no-op nella transazione del pagamento) prima di leggere il saldo, così due
+pagamenti non possono spendere due volte lo stesso credito (lo schema ha solo `CHECK amount <> 0`).
+Verificata da: `TestConcurrency_CreditRedemption_NeverNegative` (`internal/domain/payment`, tag `integration`,
+100 tentativi, SQLite e PostgreSQL). Stato: implemented.

@@ -135,6 +135,19 @@ func loadPass(ctx context.Context, db bun.IDB, es store.EstablishmentScope, id s
 	return v, nil
 }
 
+// lockPass locks the booking row of a pass for the rest of tx
+// (store.LockBooking, the lock of every booking state change) and then loads
+// the pass view, so that the status checked is the latest committed one.
+func lockPass(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, id string) (*store.SeasonPassView, error) {
+	if _, err := store.LockBooking(ctx, tx, es, id); err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("pass: %w", err)
+	}
+	return loadPass(ctx, tx, es, id)
+}
+
 // ResaleDeps are the dependencies of Resale.
 type ResaleDeps struct {
 	Clock   clock.Clock

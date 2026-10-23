@@ -260,6 +260,25 @@ func CustomerWipeFreeText(ctx context.Context, db bun.IDB, es EstablishmentScope
 
 // ---- credits -------------------------------------------------------------------
 
+// LockCustomer locks the row of a customer of es for the rest of the
+// transaction (no-op UPDATE, as LockBooking): credit redemptions of the same
+// customer serialize on it, so that two concurrent payments can never spend
+// the same balance twice (INV-47). ErrNotFound for an unknown customer.
+func LockCustomer(ctx context.Context, db bun.IDB, es EstablishmentScope, id string) error {
+	if err := es.mustBeValid(); err != nil {
+		return err
+	}
+	res, err := db.NewUpdate().Model((*Customer)(nil)).Set("version = version").
+		Where("id = ?", id).Where("establishment_id = ?", es.ID()).Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("store: lock customer: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
 // InsertCustomerCredit appends a movement to the credit ledger of es.
 func InsertCustomerCredit(ctx context.Context, db bun.IDB, es EstablishmentScope, c *CustomerCredit) error {
 	if err := es.mustBeValid(); err != nil {

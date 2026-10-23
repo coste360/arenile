@@ -41,7 +41,9 @@ func (s *Service) ListReleases(ctx context.Context, p *auth.Principal, establish
 }
 
 // Release frees half-days of an active pass for resale (spec 7.7, INV-10):
-// in one transaction it deletes the season allocations of those half-days
+// in one transaction it locks the pass booking (the lock every booking state
+// change takes, so a concurrent cancellation serializes with it and the
+// status read is the committed one), deletes the season allocations of those half-days
 // (Inventory.RemoveSeasonDays), inserts one season_releases row per
 // half-day, writes the audit log and season.day_released. Half-days already
 // released fail with ErrAlreadyReleased (the partial unique index on active
@@ -54,7 +56,7 @@ func (s *Service) Release(ctx context.Context, p *auth.Principal, ip, establishm
 	note := strings.TrimSpace(in.Note)
 	var out []store.SeasonRelease
 	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
-		v, err := loadPass(ctx, tx, es, passID)
+		v, err := lockPass(ctx, tx, es, passID)
 		if err != nil {
 			return err
 		}
@@ -109,7 +111,9 @@ func (s *Service) Release(ctx context.Context, p *auth.Principal, ip, establishm
 	return out, err
 }
 
-// Revoke cancels a release that has not been resold: the season allocation
+// Revoke cancels a release that has not been resold: under the lock of the
+// pass booking (a cancellation committed meanwhile is seen: ErrNotActive,
+// never a season allocation of a cancelled pass, INV-20) the season allocation
 // is recreated (Inventory.RestoreSeasonDays; a spot taken meanwhile by a
 // hold or block fails with *availability.ConflictError) and revoked_at is
 // set, with audit and season.day_release_revoked. A resold half-day cannot
@@ -120,7 +124,7 @@ func (s *Service) Revoke(ctx context.Context, p *auth.Principal, ip, establishme
 		return err
 	}
 	return store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
-		v, err := loadPass(ctx, tx, es, passID)
+		v, err := lockPass(ctx, tx, es, passID)
 		if err != nil {
 			return err
 		}

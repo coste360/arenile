@@ -494,3 +494,52 @@ func TestPaymentService_AtomicRollback(t *testing.T) {
 		}
 	})
 }
+
+// TestConcurrency_CreditRedemption_NeverNegative (INV-47): 100 counter sales
+// paid with the same customer credit of 50.00 run in parallel; exactly one
+// spends it, the balance never goes below zero and the redemption rows match
+// the payments. Without the customer lock two transactions could both read
+// the balance of 50 and both insert a -50 movement.
+func TestConcurrency_CreditRedemption_NeverNegative(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		if err := (credits{}).GrantCredit(e.ctx, e.db, e.esA, &store.CustomerCredit{
+			ID: store.NewID(), CustomerID: e.custA.ID, Amount: 5000, Source: store.CreditSourceManual, CreatedAt: t0,
+		}); err != nil {
+			t.Fatal(err)
+		}
+		var wg sync.WaitGroup
+		var ok, refused atomic.Int32
+		for i := 0; i < 100; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				_, err := e.svc.RecordCounterSale(e.ctx, e.cashier, "", e.estA.ID, payment.CounterSaleInput{
+					Amount: 5000, Method: store.PaymentMethodCredit, Description: "Lettino", CustomerID: e.custA.ID,
+				})
+				switch {
+				case err == nil:
+					ok.Add(1)
+				case errors.Is(err, configerr.ErrValidation):
+					refused.Add(1)
+				default:
+					t.Error(err)
+				}
+			}()
+		}
+		wg.Wait()
+		if ok.Load() != 1 || refused.Load() != 99 {
+			t.Fatalf("ok %d refused %d", ok.Load(), refused.Load())
+		}
+		bal, err := (credits{}).CreditBalance(e.ctx, e.db, e.esA, e.custA.ID, day0)
+		if err != nil || bal != 0 {
+			t.Fatalf("balance %d %v", bal, err)
+		}
+		if n := e.count(t, "customer_credits", "customer_id = ? AND source = ?", e.custA.ID, store.CreditSourceRedemption); n != 1 {
+			t.Fatalf("redemption rows %d", n)
+		}
+		if n := e.count(t, "payments", "method = ? AND status = ?", store.PaymentMethodCredit, store.PaymentSucceeded); n != 1 {
+			t.Fatalf("credit payments %d", n)
+		}
+	})
+}
