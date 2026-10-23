@@ -392,6 +392,25 @@ func GetCustomerBookingStats(ctx context.Context, db bun.IDB, es EstablishmentSc
 	}, nil
 }
 
+// CountCustomerBookings counts the bookings of es that point to customerID,
+// excluding excludeBookingID when set (the public flow: a customer with no
+// other booking than the one being filled was created by that checkout).
+func CountCustomerBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, customerID, excludeBookingID string) (int, error) {
+	if err := es.mustBeValid(); err != nil {
+		return 0, err
+	}
+	q := db.NewSelect().Model((*Booking)(nil)).
+		Where("bk.establishment_id = ?", es.ID()).Where("bk.customer_id = ?", customerID)
+	if excludeBookingID != "" {
+		q = q.Where("bk.id <> ?", excludeBookingID)
+	}
+	n, err := q.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("store: count customer bookings: %w", err)
+	}
+	return int(n), nil
+}
+
 // CustomerPayments returns every payment and refund linked to a customer,
 // directly (customer_id) or through one of its bookings, oldest first.
 func CustomerPayments(ctx context.Context, db bun.IDB, es EstablishmentScope, customerID string) ([]Payment, error) {

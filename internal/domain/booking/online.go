@@ -35,8 +35,10 @@ import (
 // the customer types their details only at step 4. CreateOnline points the
 // booking to the establishment's online placeholder customer
 // (customer.Service, created on first use, hidden from lists, searches and
-// exports); AttachCustomer re-points it to the resolved customer (existing
-// by email/phone in es, or new).
+// exports); AttachCustomer re-points it to a customer created for that
+// checkout (never an existing customer matched by email or phone: the
+// public page must not reveal or impersonate stored customers, see
+// customer.ResolveOnline).
 //
 // Zone-mode lines of an online booking stay pending while held (they
 // consume the zone pool, the database decides the capacity) and get their
@@ -74,7 +76,7 @@ const maxAssignAttempts = 5
 // online bookings.
 type OnlineCustomers interface {
 	OnlinePlaceholder(ctx context.Context, tx bun.IDB, es store.EstablishmentScope) (*store.Customer, error)
-	ResolveOnline(ctx context.Context, tx bun.IDB, actor audit.Actor, es store.EstablishmentScope, in customer.Input) (*store.Customer, error)
+	ResolveOnline(ctx context.Context, tx bun.IDB, actor audit.Actor, es store.EstablishmentScope, bookingID, currentCustomerID string, in customer.Input) (*store.Customer, error)
 }
 
 // errNoOnlineCustomers: the Customers port cannot serve the public channel.
@@ -163,7 +165,7 @@ func (s *Service) AttachCustomer(ctx context.Context, tx bun.IDB, actor audit.Ac
 		if b.HoldExpiresAt == nil || !b.HoldExpiresAt.After(now) {
 			return nil, availability.ErrHoldExpired
 		}
-		c, err := oc.ResolveOnline(ctx, tx, actor, es, in.Customer)
+		c, err := oc.ResolveOnline(ctx, tx, actor, es, b.ID, b.CustomerID, in.Customer)
 		if err != nil {
 			return nil, err
 		}

@@ -19,7 +19,7 @@ import (
 // A held online booking needs a customer before the visitor types their
 // details (bookings.customer_id is NOT NULL): it points to the
 // establishment's placeholder customer until step 4 re-points it to the
-// real customer (ResolveOnline). The placeholder:
+// customer created for that checkout (ResolveOnline). The placeholder:
 //
 //   - has a deterministic id per establishment (UUIDv5 of the
 //     establishment id), so concurrent first uses insert the same row and
@@ -77,12 +77,22 @@ func (s *Service) OnlinePlaceholder(ctx context.Context, tx bun.IDB, es store.Es
 }
 
 // ResolveOnline returns the customer of step 4 of the public flow in tx
-// (spec 12.3, ADR 0013 §3): the existing customer of es with the same email
-// (checked first) or phone, otherwise a new customer. An existing customer
-// is never modified from the public page (no data overwrite by whoever
-// knows an address), except that a marketing consent given now is added
-// when the customer has none. actor is the checkout session (audit).
-func (s *Service) ResolveOnline(ctx context.Context, tx bun.IDB, actor audit.Actor, es store.EstablishmentScope, in Input) (*store.Customer, error) {
+// (spec 12.3, 23; ADR 0013 §3 as amended): the details typed by the
+// visitor are stored on a customer that belongs to this checkout only.
+// They are NEVER matched to an existing customer of es by email or phone:
+// whoever knows an address could otherwise read that customer's stored
+// name, email and phone back from the session (stateToAPI), book under
+// their record (emails to the victim, booking in their history) and be
+// priced with their tags (residents, agreements). Duplicates are a staff
+// concern (the panel shows the duplicate hints on the customer card).
+//
+// currentID is the customer of the booking before this step: the
+// placeholder (first time) or the customer a previous PATCH of the same
+// session created, which is updated in place (typo corrections) when no
+// other booking points to it; a customer with other bookings (linked by
+// the staff) is never rewritten from the public page: a new one is created.
+// actor is the checkout session (audit).
+func (s *Service) ResolveOnline(ctx context.Context, tx bun.IDB, actor audit.Actor, es store.EstablishmentScope, bookingID, currentID string, in Input) (*store.Customer, error) {
 	est, err := store.GetEstablishment(ctx, tx, es)
 	if err != nil {
 		return nil, fmt.Errorf("customer: resolve online: %w", err)
@@ -93,39 +103,31 @@ func (s *Service) ResolveOnline(ctx context.Context, tx bun.IDB, actor audit.Act
 	if err != nil {
 		return nil, err
 	}
-	dups, err := store.FindCustomerDuplicates(ctx, tx, es, deref(f.Email), deref(f.Phone), PlaceholderID(es.ID()))
-	if err != nil {
-		return nil, fmt.Errorf("customer: resolve online: %w", err)
-	}
-	var match *store.Customer
-	for _, field := range []string{"email", "phone"} {
-		for i := range dups {
-			d := &dups[i]
-			if match == nil && field == "email" && f.Email != nil && deref(d.Email) == *f.Email {
-				match = d
-			}
-			if match == nil && field == "phone" && f.Phone != nil && deref(d.Phone) == *f.Phone {
-				match = d
-			}
+	if own, err := s.ownCustomer(ctx, tx, es, bookingID, currentID); err != nil {
+		return nil, err
+	} else if own != nil {
+		next := *own
+		apply(&next, &f)
+		if f.MarketingConsent == nil && own.MarketingConsent != nil {
+			// A consent given earlier in this session is not withdrawn by
+			// leaving the box unticked on a later submit (spec 23: explicit).
+			next.MarketingConsent = own.MarketingConsent
 		}
-	}
-	if match != nil {
-		if f.MarketingConsent == nil || match.MarketingConsent != nil {
-			return match, nil
+		fields := changedFields(own, &next)
+		if len(fields) == 0 {
+			return own, nil
 		}
-		next := *match
-		next.MarketingConsent = f.MarketingConsent
-		next.Version = match.Version + 1
+		next.Version = own.Version + 1
 		next.UpdatedAt = now
-		ok, err := store.UpdateCustomer(ctx, tx, es, &next, match.Version)
+		ok, err := store.UpdateCustomer(ctx, tx, es, &next, own.Version)
 		if err != nil {
 			return nil, fmt.Errorf("customer: resolve online: %w", err)
 		}
 		if !ok {
-			return nil, s.lostRace(ctx, tx, es, match.ID)
+			return nil, s.lostRace(ctx, tx, es, own.ID)
 		}
 		if err := s.recordAs(ctx, tx, actor, es, "customer.updated", event.CustomerUpdated, &next, map[string]any{
-			"fields": []string{"marketing_consent"}, "source": ConsentSourceOnline,
+			"fields": fields, "source": ConsentSourceOnline,
 		}); err != nil {
 			return nil, err
 		}
@@ -140,6 +142,33 @@ func (s *Service) ResolveOnline(ctx context.Context, tx bun.IDB, actor audit.Act
 		"fields": changedFields(&store.Customer{}, c), "source": ConsentSourceOnline,
 	}); err != nil {
 		return nil, err
+	}
+	return c, nil
+}
+
+// ownCustomer returns the customer currentID when it was created by the
+// checkout of bookingID (not the placeholder, not anonymized, no other
+// booking of es points to it), nil otherwise.
+func (s *Service) ownCustomer(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, bookingID, currentID string) (*store.Customer, error) {
+	if currentID == "" || currentID == PlaceholderID(es.ID()) {
+		return nil, nil
+	}
+	c, err := store.GetCustomer(ctx, tx, es, currentID)
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("customer: resolve online: %w", err)
+	}
+	if c.AnonymizedAt != nil {
+		return nil, nil
+	}
+	n, err := store.CountCustomerBookings(ctx, tx, es, c.ID, bookingID)
+	if err != nil {
+		return nil, fmt.Errorf("customer: resolve online: %w", err)
+	}
+	if n > 0 {
+		return nil, nil
 	}
 	return c, nil
 }

@@ -27,7 +27,9 @@ in parallelo sullo stesso contratto: i punti che la specifica lascia aperti vann
 3. **Cliente provvisorio.** `bookings.customer_id` è obbligatorio ma il cliente scrive i suoi dati solo al passo
    4: la prenotazione `held` punta al cliente segnaposto dello stabilimento (tag `_online_placeholder`, escluso
    da elenchi, ricerche, esportazioni e conservazione) finché `AttachCustomer` non la collega al cliente
-   risolto (esistente per email o telefono, oppure nuovo). Le transizioni del canale pubblico sono metodi del
+   creato per quel checkout (mai un cliente esistente trovato per email o telefono: chi conosce un recapito
+   leggerebbe nome, email e telefono del cliente dalla sessione e prenoterebbe a suo nome con i suoi prezzi; i
+   doppioni si uniscono dal pannello). Le transizioni del canale pubblico sono metodi del
    servizio prenotazioni con `audit.Actor` (cliente o sistema) invece di un `*auth.Principal`
    (`internal/domain/booking/online.go`).
 4. **Link magici in una tabella propria.** `magic_link_tokens` (hash, scadenza = fine prenotazione + 30 giorni,
