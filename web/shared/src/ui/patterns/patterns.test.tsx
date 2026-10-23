@@ -258,6 +258,53 @@ describe('DataTable', () => {
     await user.keyboard('{Enter}');
     expect(onRowClick).toHaveBeenCalledWith(passes[1]);
   });
+
+  it('does not open the row when Enter is pressed on a control inside it', async () => {
+    const user = userEvent.setup();
+    const onRowClick = vi.fn();
+    const onEdit = vi.fn();
+    const withAction: ColumnDef<Pass>[] = [
+      ...passColumns,
+      {
+        id: 'actions',
+        cell: ({ row }) => (
+          <button type="button" onClick={(e) => (e.stopPropagation(), onEdit(row.original.id))}>
+            Modifica {row.original.spot}
+          </button>
+        ),
+      },
+    ];
+    renderWithI18n(
+      <DataTable
+        columns={withAction}
+        data={passes}
+        caption="Abbonamenti"
+        onRowClick={onRowClick}
+      />,
+    );
+    screen.getByRole('button', { name: 'Modifica A1' }).focus();
+    await user.keyboard('{Enter}');
+    expect(onEdit).toHaveBeenCalledWith('a1');
+    expect(onRowClick).not.toHaveBeenCalled();
+  });
+
+  it('shows an error in the body and keeps the toolbar', () => {
+    renderWithI18n(
+      <DataTable
+        columns={passColumns}
+        data={passes}
+        caption="Abbonamenti"
+        searchable
+        error={<p>Errore di rete</p>}
+        loadMore={{ hasMore: true, onLoadMore: () => {} }}
+      />,
+    );
+    expect(screen.getByText('Errore di rete')).toBeInTheDocument();
+    expect(screen.getByRole('searchbox', { name: 'Filtra…' })).toBeInTheDocument();
+    expect(screen.queryByText('A1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Totale')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Carica altri' })).not.toBeInTheDocument();
+  });
 });
 
 describe('Page / SectionCard / StatCard / NavTabs', () => {

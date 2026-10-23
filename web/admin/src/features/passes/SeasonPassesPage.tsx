@@ -5,7 +5,6 @@ import { Button } from '@arenile/shared/ui/button';
 import { Label } from '@arenile/shared/ui/label';
 import {
   DataTable,
-  DataTableColumnHeader,
   EmptyState,
   FormSheet,
   OptionSelect,
@@ -116,7 +115,7 @@ export function SeasonPassesPage() {
     {
       accessorKey: 'spot_label',
       sortingFn: 'alphanumeric',
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('columns.spot')} />,
+      header: t('columns.spot'),
       meta: { label: t('columns.spot') },
       cell: ({ row }) => (
         <span className="flex items-center gap-2 font-medium">
@@ -129,9 +128,7 @@ export function SeasonPassesPage() {
     },
     {
       accessorKey: 'customer_display_name',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('columns.customer')} />
-      ),
+      header: t('columns.customer'),
       meta: { label: t('columns.customer') },
     },
     {
@@ -169,9 +166,7 @@ export function SeasonPassesPage() {
     },
     {
       accessorKey: 'balance_due',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('columns.balance')} />
-      ),
+      header: t('columns.balance'),
       meta: { label: t('columns.balance'), align: 'right' },
       cell: ({ row }) =>
         row.original.balance_due > 0 ? (
@@ -232,7 +227,6 @@ export function SeasonPassesPage() {
           data={rows}
           pageSize={0}
           getRowId={(p) => p.id}
-          searchable
           toolbar={
             <span className="text-sm text-muted-foreground">
               {t('list.count', { count: passes.length })}

@@ -5,8 +5,7 @@
     "new": "Nuovo cliente",
     "empty": "Nessun cliente.",
     "emptyFiltered": "Nessun cliente corrisponde alla ricerca.",
-    "loadMore": "Carica altri",
-    "loadingMore": "Caricamento…"
+    "loadMore": "Carica altri"
   },
   "detail": {
     "title": "Cliente",
@@ -24,8 +23,6 @@
     "consent": "Marketing"
   },
   "filters": {
-    "title": "Filtri",
-    "search": "Cerca",
     "searchPlaceholder": "Nome, telefono o email",
     "tag": "Tag",
     "byTag": "Filtra per tag {{tag}}",

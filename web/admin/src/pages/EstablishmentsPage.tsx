@@ -1,4 +1,4 @@
-import { useEstablishments, type Establishment } from '@arenile/shared/api';
+import { useEstablishmentPages, type Establishment } from '@arenile/shared/api';
 import {
   DataTable,
   QueryState,
@@ -7,18 +7,13 @@ import {
   type ColumnDef,
 } from '@arenile/shared/ui/patterns';
 import { ExternalLinkIcon } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /** Establishments accessible to the current user (M0 endpoint, cursor pagination). */
 export function EstablishmentsPage() {
   const { t } = useTranslation();
-  const [cursor, setCursor] = useState<string | undefined>();
-  // Pages already loaded before the current cursor.
-  const [previous, setPrevious] = useState<Establishment[]>([]);
-  const query = useEstablishments(cursor ? { cursor } : {});
-  const items = [...previous, ...(query.data?.items ?? [])];
-  const next = query.data?.next_cursor;
+  const query = useEstablishmentPages();
+  const items = query.data?.pages.flatMap((p) => p.items) ?? [];
 
   const columns: ColumnDef<Establishment>[] = [
     {
@@ -75,40 +70,44 @@ export function EstablishmentsPage() {
   return (
     <section aria-labelledby="establishments-title">
       <SectionCard titleId="establishments-title" title={t('admin.establishments.title')} flush>
-        {query.isError ? (
+        <DataTable
+          embedded
+          caption={t('admin.establishments.title')}
+          columns={columns}
+          data={items}
+          loading={query.isPending}
+          error={
+            query.isError && items.length === 0 ? (
+              <QueryState
+                isLoading={false}
+                error={query.error}
+                onRetry={() => void query.refetch()}
+              />
+            ) : undefined
+          }
+          getRowId={(e) => e.id}
+          pageSize={0}
+          columnToggle={false}
+          empty={
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              {t('admin.establishments.empty')}
+            </p>
+          }
+          loadMore={{
+            hasMore: !!query.hasNextPage,
+            loading: query.isFetchingNextPage,
+            label: t('admin.establishments.loadMore'),
+            onLoadMore: () => void query.fetchNextPage(),
+          }}
+        />
+        {query.isFetchNextPageError && (
           <div className="px-6 pb-6">
             <QueryState
               isLoading={false}
               error={query.error}
-              onRetry={() => void query.refetch()}
+              onRetry={() => void query.fetchNextPage()}
             />
           </div>
-        ) : (
-          <DataTable
-            embedded
-            caption={t('admin.establishments.title')}
-            columns={columns}
-            data={items}
-            loading={query.isPending && previous.length === 0}
-            getRowId={(e) => e.id}
-            pageSize={0}
-            columnToggle={false}
-            empty={
-              <p className="py-10 text-center text-sm text-muted-foreground">
-                {t('admin.establishments.empty')}
-              </p>
-            }
-            loadMore={{
-              hasMore: !!next || (query.isPending && previous.length > 0),
-              loading: query.isPending,
-              label: t('admin.establishments.loadMore'),
-              onLoadMore: () => {
-                if (!next) return;
-                setPrevious(items);
-                setCursor(next);
-              },
-            }}
-          />
         )}
       </SectionCard>
     </section>

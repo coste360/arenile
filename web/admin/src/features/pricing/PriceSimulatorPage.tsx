@@ -241,7 +241,7 @@ function Simulator(p: {
           noValidate
           onSubmit={submit}
           aria-label={t('simulator.formLabel')}
-          className="min-w-0"
+          className="min-w-0 lg:sticky lg:top-18"
         >
           <SectionCard
             title={t('simulator.formLabel')}

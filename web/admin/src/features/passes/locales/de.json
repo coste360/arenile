@@ -18,7 +18,6 @@
     "noSeasons": "Keine Saison eingerichtet.",
     "otherZone": "Weitere Plätze",
     "row": "Reihe {{row}}",
-    "zoneCaption": "Saisonabos der Zone {{zone}}",
     "openAria": "Saisonabo {{spot}} von {{customer}} öffnen",
     "loadMore": "Weitere laden"
   },

@@ -156,22 +156,27 @@ function PromoSection(p: PricingTabProps) {
         description={t('promo.description')}
         flush
       >
-        <ListQueryState query={list} />
-        {list.data && (
-          <DataTable
-            embedded
-            caption={t('promo.title')}
-            columns={columns}
-            data={items}
-            getRowId={(x) => x.id}
-            searchable={items.length > 5}
-            toolbar={add}
-            initialSorting={[{ id: 'code', desc: false }]}
-            empty={
-              <EmptyState icon={TicketPercentIcon} title={t('promo.empty')} bordered={false} />
-            }
-          />
-        )}
+        <DataTable
+          loading={list.isPending}
+          error={
+            list.error ? (
+              <QueryState
+                isLoading={false}
+                error={list.error}
+                onRetry={() => void list.refetch()}
+              />
+            ) : undefined
+          }
+          embedded
+          caption={t('promo.title')}
+          columns={columns}
+          data={items}
+          getRowId={(x) => x.id}
+          searchable={items.length > 5}
+          toolbar={add}
+          initialSorting={[{ id: 'code', desc: false }]}
+          empty={<EmptyState icon={TicketPercentIcon} title={t('promo.empty')} bordered={false} />}
+        />
       </SectionCard>
       <FormSheet
         size="lg"
@@ -183,24 +188,6 @@ function PromoSection(p: PricingTabProps) {
         <PromoForm key={editor.key} {...p} item={editor.item} onDone={editor.close} />
       </FormSheet>
     </section>
-  );
-}
-
-/** Loading/error state of a list inside a flush SectionCard (padded like the card body). */
-function ListQueryState({
-  query,
-}: {
-  query: { isPending: boolean; error: unknown; refetch: () => unknown };
-}) {
-  if (!query.isPending && !query.error) return null;
-  return (
-    <div className="px-6 pb-6">
-      <QueryState
-        isLoading={query.isPending}
-        error={query.error}
-        onRetry={() => void query.refetch()}
-      />
-    </div>
   );
 }
 
@@ -409,22 +396,27 @@ function AgreementSection(p: PricingTabProps) {
         description={t('agreements.description')}
         flush
       >
-        <ListQueryState query={list} />
-        {list.data && (
-          <DataTable
-            embedded
-            caption={t('agreements.title')}
-            columns={columns}
-            data={items}
-            getRowId={(x) => x.id}
-            searchable={items.length > 5}
-            toolbar={add}
-            initialSorting={[{ id: 'name', desc: false }]}
-            empty={
-              <EmptyState icon={HandshakeIcon} title={t('agreements.empty')} bordered={false} />
-            }
-          />
-        )}
+        <DataTable
+          loading={list.isPending}
+          error={
+            list.error ? (
+              <QueryState
+                isLoading={false}
+                error={list.error}
+                onRetry={() => void list.refetch()}
+              />
+            ) : undefined
+          }
+          embedded
+          caption={t('agreements.title')}
+          columns={columns}
+          data={items}
+          getRowId={(x) => x.id}
+          searchable={items.length > 5}
+          toolbar={add}
+          initialSorting={[{ id: 'name', desc: false }]}
+          empty={<EmptyState icon={HandshakeIcon} title={t('agreements.empty')} bordered={false} />}
+        />
       </SectionCard>
       <FormSheet
         size="lg"

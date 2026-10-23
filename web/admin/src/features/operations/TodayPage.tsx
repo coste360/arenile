@@ -192,7 +192,10 @@ export function TodayPage() {
               label={t('kpi.takings')}
               value={
                 takings.isLoading ? (
-                  <span aria-busy="true">…</span>
+                  <>
+                    <span aria-hidden="true">…</span>
+                    <span className="sr-only">{t('common.loading', { ns: 'translation' })}</span>
+                  </>
                 ) : takings.error ? (
                   '—'
                 ) : (

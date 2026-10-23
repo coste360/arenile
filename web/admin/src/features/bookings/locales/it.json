@@ -5,7 +5,6 @@
     "empty": "Nessuna prenotazione.",
     "emptyFiltered": "Nessuna prenotazione corrisponde ai filtri.",
     "loadMore": "Carica altre",
-    "loadingMore": "Caricamento…",
     "pass": "Abbonamento"
   },
   "detail": {
@@ -128,8 +127,6 @@
     "balance": "Saldo"
   },
   "filters": {
-    "title": "Filtri",
-    "search": "Cerca",
     "searchPlaceholder": "Codice, cliente o telefono",
     "period": "Periodo",
     "status": "Stato",

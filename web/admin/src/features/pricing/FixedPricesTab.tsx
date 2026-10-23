@@ -164,7 +164,7 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
         <EmptyState icon={PackageIcon} title={t('fixed.noPacks')} />
       )}
       {list.data && p.packs.length > 0 && categories.length === 0 && (
-        <EmptyState icon={TagsIcon} title={t('fixed.noCategories')} />
+        <EmptyState icon={TagsIcon} title={t('fixed.noCategories')} action={add || undefined} />
       )}
       {list.data && rows.length > 0 && (
         <DataTable

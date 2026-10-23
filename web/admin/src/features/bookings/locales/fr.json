@@ -5,7 +5,6 @@
     "empty": "Aucune réservation.",
     "emptyFiltered": "Aucune réservation ne correspond aux filtres.",
     "loadMore": "Charger plus",
-    "loadingMore": "Chargement…",
     "pass": "Abonnement"
   },
   "detail": {
@@ -128,8 +127,6 @@
     "balance": "Solde"
   },
   "filters": {
-    "title": "Filtres",
-    "search": "Rechercher",
     "searchPlaceholder": "Code, client ou téléphone",
     "period": "Période",
     "status": "Statut",

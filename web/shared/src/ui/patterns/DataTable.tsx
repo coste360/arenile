@@ -122,6 +122,11 @@ export interface DataTableProps<TData, TValue = unknown> {
   empty?: ReactNode;
   /** Skeleton rows while data is loading. */
   loading?: boolean;
+  /**
+   * Shown in the table body instead of the rows (e.g. a <QueryState error/>):
+   * the toolbar stays usable, so filters that caused the error can be changed.
+   */
+  error?: ReactNode;
   getRowId?: (row: TData, index: number) => string;
   /** Row click (also Enter on the focused row); keep a real link/button in a cell too. */
   onRowClick?: (row: TData) => void;
@@ -130,6 +135,7 @@ export interface DataTableProps<TData, TValue = unknown> {
   /**
    * Group rows under full-width heading rows. Groups keep the order of first
    * appearance in `data`; rows inside a group follow the current sorting.
+   * Groups are built per page: use with `pageSize={0}` or `loadMore`.
    */
   groupBy?: (row: TData) => string;
   /** Content of a group heading row (default: the key). */
@@ -170,6 +176,7 @@ export function DataTable<TData, TValue = unknown>({
   loadMore,
   empty,
   loading,
+  error,
   getRowId,
   onRowClick,
   getRowLabel,
@@ -288,7 +295,13 @@ export function DataTable<TData, TValue = unknown>({
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {error ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={visibleColumns} className="p-4 whitespace-normal">
+                  {error}
+                </TableCell>
+              </TableRow>
+            ) : loading ? (
               Array.from({ length: 5 }, (_, i) => (
                 <TableRow key={`skeleton-${i}`}>
                   {Array.from({ length: visibleColumns }, (_, j) => (
@@ -333,7 +346,7 @@ export function DataTable<TData, TValue = unknown>({
               </TableRow>
             )}
           </TableBody>
-          {hasFooter && !loading && rows.length > 0 && (
+          {hasFooter && !loading && !error && rows.length > 0 && (
             <TableFooter>
               {table.getFooterGroups().map((group) => (
                 <TableRow key={group.id} className="hover:bg-transparent">
@@ -355,7 +368,7 @@ export function DataTable<TData, TValue = unknown>({
           <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
         </div>
       )}
-      {loadMore?.hasMore && (
+      {loadMore?.hasMore && !error && (
         <div className={cn('flex justify-center', embedded && 'pb-4')}>
           <Button variant="outline" onClick={loadMore.onLoadMore} disabled={loadMore.loading}>
             {loadMore.loading
@@ -382,7 +395,9 @@ function groupRows<TData>(
   const groups = new Map<string, Row<TData>[]>();
   for (const r of visible) {
     const k = groupBy(r.original);
-    groups.set(k, [...(groups.get(k) ?? []), r]);
+    const list = groups.get(k);
+    if (list) list.push(r);
+    else groups.set(k, [r]);
   }
   return [...groups.entries()].sort(([a], [b]) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
 }
@@ -404,7 +419,7 @@ function DataRow<TData>({
       data-state={row.getIsSelected() ? 'selected' : undefined}
       className={
         clickable
-          ? 'cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none'
+          ? 'cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring'
           : undefined
       }
       tabIndex={clickable ? 0 : undefined}

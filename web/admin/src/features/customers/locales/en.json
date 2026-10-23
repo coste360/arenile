@@ -5,8 +5,7 @@
     "new": "New customer",
     "empty": "No customers yet.",
     "emptyFiltered": "No customers match the search.",
-    "loadMore": "Load more",
-    "loadingMore": "Loading…"
+    "loadMore": "Load more"
   },
   "detail": {
     "title": "Customer",
@@ -24,8 +23,6 @@
     "consent": "Marketing"
   },
   "filters": {
-    "title": "Filters",
-    "search": "Search",
     "searchPlaceholder": "Name, phone or email",
     "tag": "Tag",
     "byTag": "Filter by tag {{tag}}",

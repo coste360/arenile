@@ -5,7 +5,6 @@
     "empty": "Noch keine Buchungen.",
     "emptyFiltered": "Keine Buchung entspricht den Filtern.",
     "loadMore": "Weitere laden",
-    "loadingMore": "Wird geladen…",
     "pass": "Saisonabo"
   },
   "detail": {
@@ -128,8 +127,6 @@
     "balance": "Offen"
   },
   "filters": {
-    "title": "Filter",
-    "search": "Suche",
     "searchPlaceholder": "Code, Kunde oder Telefon",
     "period": "Zeitraum",
     "status": "Status",

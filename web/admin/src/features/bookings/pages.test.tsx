@@ -111,6 +111,23 @@ describe('BookingsPage', () => {
     );
   });
 
+  it('keeps the filters usable when the list request fails', async () => {
+    const routes: Record<string, Handler> = {
+      ...baseRoutes('cashier'),
+      ...inventoryRoutes(),
+      [`GET ${estPath('/bookings')}`]: (req) =>
+        new URL(req.url).searchParams.get('balance_due') === 'true'
+          ? json(200, { items: [summary(1)] })
+          : json(500, { title: 'boom', status: 500 }),
+    };
+    renderApp(`/e/${EST_ID}/prenotazioni`, routes);
+    const table = await screen.findByRole('table', { name: 'Prenotazioni' });
+    expect(await within(table).findByRole('button', { name: 'Riprova' })).toBeInTheDocument();
+    // The toolbar is still there: changing a filter recovers the list.
+    await userEvent.setup().click(screen.getByLabelText('Solo con saldo da incassare'));
+    expect(await within(table).findByText('AR-1')).toBeInTheDocument();
+  });
+
   it('creates a quantity booking with an inline customer from the sheet', async () => {
     const routes: Record<string, Handler> = {
       ...baseRoutes('cashier'),

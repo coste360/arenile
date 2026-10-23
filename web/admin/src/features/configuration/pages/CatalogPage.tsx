@@ -215,23 +215,22 @@ function ComponentsTab({ ctx }: { ctx: ConfigContext }) {
   return (
     <div className="space-y-4">
       <TabHint>{t('catalog.componentsHint')}</TabHint>
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('catalog.tabs.components')}
-          toolbar={add || undefined}
-          columns={columns}
-          data={list.data ?? []}
-          loading={list.isPending}
-          getRowId={(c) => c.id}
-          searchable
-          pageSize={0}
-          empty={
-            <EmptyState icon={BoxIcon} title={t('catalog.emptyComponents')} bordered={false} />
-          }
-        />
-      )}
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('catalog.tabs.components')}
+        toolbar={add || undefined}
+        columns={columns}
+        data={list.data ?? []}
+        loading={list.isPending}
+        getRowId={(c) => c.id}
+        searchable
+        pageSize={0}
+        empty={<EmptyState icon={BoxIcon} title={t('catalog.emptyComponents')} bordered={false} />}
+      />
       <FormDialog
         open={editor.open}
         onOpenChange={editor.setOpen}
@@ -412,21 +411,22 @@ function PacksTab({ ctx }: { ctx: ConfigContext }) {
   return (
     <div className="space-y-4">
       <TabHint>{t('catalog.packsHint')}</TabHint>
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('catalog.tabs.packs')}
-          toolbar={add || undefined}
-          columns={columns}
-          data={items}
-          loading={list.isPending}
-          getRowId={(p) => p.id}
-          searchable
-          pageSize={0}
-          empty={<EmptyState icon={PackageIcon} title={t('catalog.emptyPacks')} bordered={false} />}
-        />
-      )}
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('catalog.tabs.packs')}
+        toolbar={add || undefined}
+        columns={columns}
+        data={items}
+        loading={list.isPending}
+        getRowId={(p) => p.id}
+        searchable
+        pageSize={0}
+        empty={<EmptyState icon={PackageIcon} title={t('catalog.emptyPacks')} bordered={false} />}
+      />
       <FormSheet
         open={editor.open}
         onOpenChange={editor.setOpen}
@@ -765,21 +765,22 @@ function ExtrasTab({ ctx }: { ctx: ConfigContext }) {
   return (
     <div className="space-y-4">
       <TabHint>{t('catalog.extrasHint')}</TabHint>
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('catalog.tabs.extras')}
-          toolbar={add || undefined}
-          columns={columns}
-          data={items}
-          loading={list.isPending}
-          getRowId={(x) => x.id}
-          searchable
-          pageSize={0}
-          empty={<EmptyState icon={PuzzleIcon} title={t('catalog.emptyExtras')} bordered={false} />}
-        />
-      )}
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('catalog.tabs.extras')}
+        toolbar={add || undefined}
+        columns={columns}
+        data={items}
+        loading={list.isPending}
+        getRowId={(x) => x.id}
+        searchable
+        pageSize={0}
+        empty={<EmptyState icon={PuzzleIcon} title={t('catalog.emptyExtras')} bordered={false} />}
+      />
       <FormSheet
         open={editor.open}
         onOpenChange={editor.setOpen}

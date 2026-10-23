@@ -5,7 +5,6 @@ import { Label } from '@arenile/shared/ui/label';
 import { Switch } from '@arenile/shared/ui/switch';
 import {
   DataTable,
-  DataTableColumnHeader,
   EmptyState,
   Page,
   QueryState,
@@ -45,7 +44,7 @@ export function CustomersPage() {
   const columns: ColumnDef<Customer>[] = [
     {
       accessorKey: 'display_name',
-      header: ({ column }) => <DataTableColumnHeader column={column} title={t('columns.name')} />,
+      header: t('columns.name'),
       meta: { label: t('columns.name') },
       cell: ({ row }) => (
         <span className="flex items-center gap-2 font-medium">
@@ -122,58 +121,60 @@ export function CustomersPage() {
         )
       }
     >
-      {list.error ? (
-        <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable
-          caption={t('list.title')}
-          columns={columns}
-          data={rows}
-          loading={list.isPending}
-          pageSize={0}
-          getRowId={(r) => r.id}
-          onRowClick={open}
-          searchable
-          searchPlaceholder={t('filters.searchPlaceholder')}
-          searchValue={search}
-          onSearchChange={setSearch}
-          filters={
-            <>
-              <Label htmlFor="customers-tag" className="sr-only">
-                {t('filters.tag')}
-              </Label>
-              <InputGroup className="w-full sm:w-48">
-                <InputGroupAddon>
-                  <TagIcon aria-hidden="true" />
-                </InputGroupAddon>
-                <InputGroupInput
-                  id="customers-tag"
-                  value={tag}
-                  onChange={(e) => setTag(e.target.value)}
-                  placeholder={t('filters.tag')}
-                />
-              </InputGroup>
-              <div className="flex items-center gap-2">
-                <Switch id="customers-anon" checked={anonymized} onCheckedChange={setAnonymized} />
-                <Label htmlFor="customers-anon">{t('filters.anonymized')}</Label>
-              </div>
-            </>
-          }
-          loadMore={{
-            hasMore: !!list.hasNextPage,
-            loading: list.isFetchingNextPage,
-            onLoadMore: () => void list.fetchNextPage(),
-            label: t('list.loadMore'),
-          }}
-          empty={
-            <EmptyState
-              icon={UsersRoundIcon}
-              bordered={false}
-              title={filtered ? t('list.emptyFiltered') : t('list.empty')}
-            />
-          }
-        />
-      )}
+      <DataTable
+        error={
+          list.error ? (
+            <QueryState isLoading={false} error={list.error} onRetry={() => void list.refetch()} />
+          ) : undefined
+        }
+        caption={t('list.title')}
+        columns={columns}
+        data={rows}
+        loading={list.isPending}
+        pageSize={0}
+        getRowId={(r) => r.id}
+        onRowClick={open}
+        getRowLabel={(r) => r.display_name}
+        searchable
+        searchPlaceholder={t('filters.searchPlaceholder')}
+        searchValue={search}
+        onSearchChange={setSearch}
+        filters={
+          <>
+            <Label htmlFor="customers-tag" className="sr-only">
+              {t('filters.tag')}
+            </Label>
+            <InputGroup className="w-full sm:w-48">
+              <InputGroupAddon>
+                <TagIcon aria-hidden="true" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="customers-tag"
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                placeholder={t('filters.tag')}
+              />
+            </InputGroup>
+            <div className="flex items-center gap-2">
+              <Switch id="customers-anon" checked={anonymized} onCheckedChange={setAnonymized} />
+              <Label htmlFor="customers-anon">{t('filters.anonymized')}</Label>
+            </div>
+          </>
+        }
+        loadMore={{
+          hasMore: !!list.hasNextPage,
+          loading: list.isFetchingNextPage,
+          onLoadMore: () => void list.fetchNextPage(),
+          label: t('list.loadMore'),
+        }}
+        empty={
+          <EmptyState
+            icon={UsersRoundIcon}
+            bordered={false}
+            title={filtered ? t('list.emptyFiltered') : t('list.empty')}
+          />
+        }
+      />
       <CustomerFormDialog
         establishmentId={establishmentId}
         open={creating}
