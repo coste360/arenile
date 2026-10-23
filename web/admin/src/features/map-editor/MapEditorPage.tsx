@@ -28,6 +28,7 @@ import {
   Undo2Icon,
 } from 'lucide-react';
 import { Link, useParams } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -37,7 +38,7 @@ import {
 import { useConfigContext } from '../configuration/api/useConfigContext';
 import { localize } from '../configuration/lib/i18nText';
 import { problemMessageKey } from '@arenile/shared/api';
-import { MapSaveProblem, useMapDocument, useSaveMap } from './api';
+import { MapSaveProblem, mapDocumentKey, useMapDocument, useSaveMap } from './api';
 import { ConflictDialog, type ConflictInfo } from './ConflictDialog';
 import { MapSettingsForm, RenumberRowForm, RowGeneratorForm, type ZoneOption } from './dialogs';
 import { MapCanvas } from './MapCanvas';
@@ -101,6 +102,16 @@ export function MapEditorPage() {
   const ctx = useConfigContext();
   const { t } = useTranslation('mapEditor');
   const docQuery = useMapDocument(ctx.establishmentId, mapId);
+  const qc = useQueryClient();
+  // The offline copy restored at startup is invalidated until refetched: it
+  // must never seed the draft (the editor keeps its draft and never refetches
+  // behind the user's back), so a mount that finds the copy waits for the
+  // first fetch; offline, the editor stays on its skeleton (configuration is
+  // not edited offline, spec 21.2).
+  const [startedFromCopy] = useState(
+    () => qc.getQueryState(mapDocumentKey(ctx.establishmentId, mapId))?.isInvalidated === true,
+  );
+  const serverDoc = startedFromCopy && !docQuery.isFetchedAfterMount ? undefined : docQuery.data;
   const zoneList = zonesResource.useList(ctx.establishmentId);
   const componentList = componentsResource.useList(ctx.establishmentId);
   // Bumped after an explicit reload: remounts the editor on the server version.
@@ -132,9 +143,9 @@ export function MapEditorPage() {
           </Button>
         }
         title={
-          docQuery.data
+          serverDoc
             ? t('editor.titleNamed', {
-                name: localize(docQuery.data.map.name, ctx.uiLocale, ctx.defaultLocale),
+                name: localize(serverDoc.map.name, ctx.uiLocale, ctx.defaultLocale),
               })
             : t('editor.title')
         }
@@ -148,14 +159,14 @@ export function MapEditorPage() {
             <Skeleton className="h-[60vh] w-full" />
           </>
         }
-        isLoading={docQuery.isPending || zoneList.isPending}
+        isLoading={(!serverDoc && !docQuery.error) || zoneList.isPending}
         error={docQuery.error ?? zoneList.error}
         onRetry={() => void docQuery.refetch()}
       />
-      {docQuery.data && zoneList.data && (
+      {serverDoc && zoneList.data && (
         <Editor
-          key={`${docQuery.data.map.id}:${generation}`}
-          serverDoc={docQuery.data}
+          key={`${serverDoc.map.id}:${generation}`}
+          serverDoc={serverDoc}
           zones={zoneList.data}
           components={components}
           establishmentId={ctx.establishmentId}

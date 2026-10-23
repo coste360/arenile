@@ -49,8 +49,9 @@ describe('QueryPersister_Policy', () => {
     await reloaded.persister.restore();
     const q = reloaded.queryClient.getQueryCache().find({ queryKey: ['keep', 'map'] });
     expect(q?.state.data).toBe('copy');
-    expect(q?.state.dataUpdatedAt).toBe(0);
-    expect(q?.isStaleByTime(5 * 60_000)).toBe(true);
+    expect(q?.state.isInvalidated).toBe(true);
+    // Even a staleTime of Infinity (the map editor) refetches an invalidated copy.
+    expect(q?.isStaleByTime(Infinity)).toBe(true);
   });
 
   it('applies the policy again at restore', async () => {
