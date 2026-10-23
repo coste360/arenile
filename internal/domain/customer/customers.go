@@ -288,6 +288,7 @@ func (s *Service) Anonymize(ctx context.Context, p *auth.Principal, ip, establis
 		return s.record(ctx, tx, p, ip, es, "customer.anonymized", event.CustomerAnonymized, &next, map[string]any{
 			"fields": changedFields(cur, &next), "bookings_notes_wiped": wiped.Bookings,
 			"payment_notes_wiped": wiped.Payments, "credit_notes_wiped": wiped.Credits,
+			"renewal_reasons_wiped": wiped.RenewalReasons,
 		})
 	})
 	return out, err
