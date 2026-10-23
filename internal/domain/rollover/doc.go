@@ -7,12 +7,17 @@
 // existing closures), and a season_rollovers row. Catalog, zones, spots and
 // maps are not season-scoped and stay as they are.
 //
+// Preview: the dry run executes exactly the same writes in a transaction
+// that is always rolled back, so counts and warnings are the apply's.
+//
 // Idempotency: season_rollovers is unique on (establishment_id,
 // source_season_id, target_year). Apply first looks the row up and, when
 // found, returns the recorded result with AlreadyApplied = true (HTTP 200)
 // without writing; a season of target_year that was not created by a
 // rollover of this source is ErrTargetExists (409 season_rollover_conflict).
-// Concurrent applies serialise on the unique index (the loser re-reads).
+// Concurrent applies serialise on a row lock of the source season taken
+// at the start of the transaction (the loser then finds the row); the
+// unique index stays the last arbiter.
 //
 // Audit "season.rolled_over" and outbox event season.rolled_over (ids,
 // years and counts only) are written in the same transaction. Permission

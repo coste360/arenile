@@ -31,6 +31,17 @@
 //     expires_at and entries whose ends_on is in the past.
 //   - Remove (panel or link): entry -> removed, pending offer revoked.
 //
+// Implementation notes (ADR 0017):
+//   - the offer hold uses the channel of the entry (online quota for
+//     online/api entries, ADR 0011) and lasts up to inventory.MaxOfferHoldTTL;
+//     the resources are chosen from the advisory availability (spots freed
+//     by the event first), each candidate tried in its own transaction;
+//   - the personal link is rotated by every email that carries it (joined,
+//     offer: the latest one is valid) and stored in the email queue only
+//     encrypted with the key ring (notify.EnqueueWaitlist);
+//   - the hold of an offer that is declined, revoked or expired is offered
+//     to the next entries, never back to the same one for that release.
+//
 // GDPR (spec 23): entries cascade with the customer; anonymisation removes
 // the customer's entries (status removed, token cleared). Events and logs
 // carry ids only.

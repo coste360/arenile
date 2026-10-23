@@ -503,7 +503,25 @@ func (s *Service) CancelAsCustomer(ctx context.Context, actor audit.Actor, es st
 				return o, nil
 			}
 			if rf.As != SettleCredit {
-				diff["refund_due"] = int64(rf.Amount)
+				// M5B: the credit-paid part goes back as credit, the rest is due.
+				creditPart, err := creditRefundPart(ctx, tx, es, b.ID, rf)
+				if err != nil {
+					return nil, err
+				}
+				if creditPart > 0 {
+					diff["refund_credit_part"] = int64(creditPart)
+					o.after = func(ctx context.Context, tx bun.IDB, b *store.Booking) error {
+						pm, err := s.recordCreditRefund(ctx, tx, nil, es, b.ID, creditPart, false)
+						if err != nil {
+							return err
+						}
+						res.Recorded = pm
+						return nil
+					}
+				}
+				if rest := rf.Amount - creditPart; rest > 0 {
+					diff["refund_due"] = int64(rest)
+				}
 				return o, nil
 			}
 			o.after = func(ctx context.Context, tx bun.IDB, b *store.Booking) error {

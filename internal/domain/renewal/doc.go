@@ -11,12 +11,19 @@
 //     (proposed/accepted) proposal per source pass. Each proposal owns a
 //     booking of the target season created through the booking service
 //     (booking.CreateInput{Status: held, IsSeasonPass: true, Formula:
-//     season, SeasonID: target, RenewalOfBookingID: source pass, same spot
-//     and pack, HoldTTL until DeadlineAt}). The booking's allocations hold
+//     season, SeasonID: target, RenewalOfBookingID: source pass, same spot,
+//     pack, slots and extras, Force}); the booking service caps the hold of
+//     a new booking at 24 hours, so the hold is then moved to DeadlineAt in
+//     the same transaction (booking.ExtendHold). The booking's allocations hold
 //     the spot (DB-enforced, ADR 0003); the operational map already shows
 //     held bookings with renewal_of_booking_id as `renewal_offer`.
 //   - Price: the target season engine (booking service quote/pricing),
 //     never copied from the old pass; previous_amount is informative.
+//   - Period (PassInterval, plan.go): the whole target season when the
+//     source pass ran to the end of its season, else its dates shifted by
+//     the year difference (pricing.ShiftDate) and clamped.
+//   - Credit (optional ports Credits / CreditApplier): shown and applied
+//     only from the verified magic link, never in the anonymous checkout.
 //
 // Lifecycle (every change: audit + outbox in the same transaction):
 //

@@ -65,6 +65,9 @@ type Deps struct {
 // Service implements the customer use cases.
 type Service struct {
 	d Deps
+	// ledger, when set (UseCreditLedger, M5B), owns GrantCredit and
+	// CreditBalance (credit_ledger.go).
+	ledger CreditLedger
 }
 
 // NewService returns a Service.
@@ -150,6 +153,9 @@ func (s *Service) Resolve(ctx context.Context, tx bun.IDB, p *auth.Principal, es
 // filled when empty. The caller audits the operation that caused it.
 // Implements payment.Credits and pass.Credits.
 func (s *Service) GrantCredit(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, c *store.CustomerCredit) error {
+	if s.ledger != nil {
+		return s.ledger.GrantCredit(ctx, tx, es, c)
+	}
 	if c == nil || c.Amount == 0 {
 		return configerr.Invalid("amount", "L'importo del credito non può essere zero.")
 	}
@@ -177,6 +183,9 @@ func (s *Service) GrantCredit(ctx context.Context, tx bun.IDB, es store.Establis
 // CreditBalance is the sum of the non-expired credit movements of a
 // customer on date today. Implements payment.Credits.
 func (s *Service) CreditBalance(ctx context.Context, db bun.IDB, es store.EstablishmentScope, customerID string, today calendar.Date) (money.Cents, error) {
+	if s.ledger != nil {
+		return s.ledger.CreditBalance(ctx, db, es, customerID, today)
+	}
 	sum, err := store.SumCustomerCredits(ctx, db, es, customerID, today)
 	if err != nil {
 		return 0, fmt.Errorf("customer: credit balance: %w", err)

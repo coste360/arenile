@@ -362,6 +362,12 @@ func refundRequest(bookingID string, rf RefundPreview, in CancelInput) payment.R
 	if rf.As == SettleCredit {
 		req.As = payment.RefundAsCredit
 		req.Method = store.PaymentMethodCredit
+		// M5B: the credit carries its origin (its expiry comes from the
+		// policy snapshot of the booking, credit.Service).
+		req.CreditSource = store.CreditSourceCancellation
+		if in.Weather {
+			req.CreditSource = store.CreditSourceWeather
+		}
 	} else {
 		req.As = payment.RefundAsRefund
 		req.Method = in.RefundMethod

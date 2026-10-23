@@ -16,10 +16,16 @@
 //     row on first grant). Zero rows on a debit = ErrInsufficient. So
 //     balance = SUM(amount) per customer and is never negative, enforced by
 //     the database (CHECK balance >= 0) even under concurrency.
-//   - Redemptions are written only by the payment service (method credit,
-//     payment.Service.redeemCredit), which locks the customer row first
-//     (store.LockCustomer, INV-47) and calls ExpireDue for that customer in
-//     the same transaction, so expired credit is never spent.
+//   - Redemptions are written only by the payment service (method credit:
+//     payment.Service.redeemCredit, PayWithCredit, PayHeldWithCredit), which
+//     locks the customer row first (store.LockCustomer, INV-47). GrantCredit
+//     locks the balance row and materialises the expired credit (ExpireDue)
+//     before every debit in the same transaction, so expired credit is
+//     never spent.
+//   - Reversals (negative cancellation / season_release / weather
+//     movements, e.g. pass.UnmarkResold) are capped at what is left of the
+//     balance: spent credit cannot be taken back and the reversal never
+//     blocks the cancellation that causes it.
 //   - Expiry is materialised: a grant with expires_on < today and a
 //     remaining amount gets one expiry row (amount = -remaining,
 //     reference_credit_id = grant; unique per grant, so the job is
@@ -34,7 +40,10 @@
 //     same transaction; payloads carry ids and cents only, never PII.
 //
 // Service implements payment.Credits and pass.Credits (GrantCredit,
-// CreditBalance) so that internal/app can wire it in place of
-// customer.Service; customer.Service.GrantCredit stays as a thin
-// compatibility path until then and must not be used by new code.
+// CreditBalance). internal/app makes customer.Service (the Credits port of
+// the payment and pass services) delegate to it with
+// customer.UseCreditLedger, so every movement maintains the balance table.
+// It also serves the panel ledger (Ledger, Grant), the magic-link balance
+// and payment (Summary, ApplyFromLink) and renewal.CreditApplier
+// (ApplyCreditToBooking).
 package credit

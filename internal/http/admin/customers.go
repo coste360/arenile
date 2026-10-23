@@ -195,7 +195,7 @@ func customerInputFromAPI(in *api.CustomerInput) customer.Input {
 func customerCreditToAPI(c *store.CustomerCredit) api.CustomerCredit {
 	out := api.CustomerCredit{
 		Id: c.ID, Amount: int64(c.Amount), Source: api.CustomerCreditSource(c.Source),
-		BookingId: c.BookingID, ExpiresOn: c.ExpiresOn, CreatedAt: c.CreatedAt,
+		BookingId: c.BookingID, ExpiresOn: c.ExpiresOn, CreatedAt: c.CreatedAt, ReferenceCreditId: c.ReferenceCreditID,
 	}
 	if c.Note != "" {
 		note := c.Note

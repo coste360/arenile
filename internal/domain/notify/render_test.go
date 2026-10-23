@@ -60,11 +60,22 @@ func fixtureContent(t *testing.T, tpl string, cat catalog) Content {
 		"refund.amount": formatMoney(15000, "EUR", cat.locale), "payment.amount": formatMoney(37000, "EUR", cat.locale),
 		"message.template": TemplateBookingConfirmed, "message.attempts": "8",
 	}}
+	if waitlistTemplates[tpl] {
+		vars := map[string]string{
+			"establishment.name": d.Est.Name, "customer.first_name": d.Customer.FirstName, "customer.last_name": d.Customer.LastName,
+			"waitlist.period": formatPeriod(cat, d.Booking.StartsOn, d.Booking.EndsOn), "waitlist.pack": "Ombrellone e 2 lettini",
+			"waitlist_url": fixtureManageURL, "offer.expires": formatDateTime(cat, expires),
+		}
+		return Content{Locale: cat.locale, Vars: vars, Contacts: establishmentContacts(d.Est)}
+	}
 	switch tpl {
 	case TemplateBookingConfirmed, TemplateBookingModified:
 		o.QR, o.ICS, o.Policy, o.ManageURL, o.LinkExpires = true, true, tpl == TemplateBookingConfirmed, fixtureManageURL, expires
 	case TemplateManageLink:
 		o.ManageURL, o.LinkExpires = fixtureManageURL, expires
+	case TemplateRenewalProposal, TemplateRenewalReminder:
+		o.ManageURL, o.LinkExpires, o.Policy = fixtureManageURL, expires, tpl == TemplateRenewalProposal
+		o.Vars["renewal.deadline"] = formatDeadline(cat, time.Date(2027, 3, 31, 23, 59, 0, 0, time.UTC))
 	}
 	return bookingContent(cat, d, o)
 }
@@ -117,7 +128,7 @@ func checkRendered(t *testing.T, tpl string, r Rendered) {
 	if got := strings.Contains(r.HTML, "cid:"+QRContentID); got != wantQR {
 		t.Fatalf("QR image present = %v, want %v", got, wantQR)
 	}
-	wantLink := wantQR || tpl == TemplateManageLink
+	wantLink := wantQR || tpl == TemplateManageLink || waitlistTemplates[tpl] || renewalTemplates[tpl]
 	if got := strings.Contains(r.HTML, fixtureManageURL) && strings.Contains(r.Text, fixtureManageURL); got != wantLink {
 		t.Fatalf("manage link present = %v, want %v", got, wantLink)
 	}
@@ -228,6 +239,12 @@ func TestTemplates_ParityAndVariables(t *testing.T) {
 		"establishment.name": true, "customer.first_name": true, "customer.last_name": true, "booking.code": true,
 		"booking.period": true, "booking.total": true, "booking.paid": true, "booking.balance": true, "manage_url": true,
 		"link.expires": true, "refund.amount": true, "payment.amount": true, "message.template": true, "message.attempts": true,
+	}
+	for _, v := range WaitlistVars {
+		known[v] = true
+	}
+	for _, v := range RenewalVars {
+		known[v] = true
 	}
 	partials := map[string]bool{"summary": true, "qr": true, "manage_button": true, "policy": true, "ics_note": true}
 	for _, tpl := range Templates {

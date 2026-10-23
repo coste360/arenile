@@ -636,6 +636,10 @@ func (s *Service) refund(ctx context.Context, tx bun.IDB, p *auth.Principal, ip 
 // what was paid. The booking lock held by the caller serialises this path
 // with gateway.reserveRefund, which locks the booking after the intent.
 func (s *Service) refundInTx(ctx context.Context, tx bun.IDB, p *auth.Principal, ip string, es store.EstablishmentScope, b *store.Booking, info *estInfo, req RefundRequest) (*Result, error) {
+	// M5B: what was paid with customer credit goes back as credit (credit.go).
+	if credited, done, err := s.splitCreditRefund(ctx, tx, p, ip, es, b, info, &req); err != nil || done {
+		return credited, err
+	}
 	totals, err := store.BookingPaymentTotals(ctx, tx, es, b.ID)
 	if err != nil {
 		return nil, fmt.Errorf("payment: %w", err)

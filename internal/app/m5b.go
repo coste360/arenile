@@ -18,25 +18,41 @@ import (
 //     a.Checkout (+ ResolveManage, PayManagedAmount), Notify = a.Notify;
 //   - waitlist: Holds = a.Inventory (+ CreateHoldInTx, ReleaseHoldInTx),
 //     Checkout = a.Checkout (+ CreateFromHold), Notify = a.Notify, BaseURL;
-//   - credit: replace customer.Service as payment/pass Credits port
-//     (a.Payments / a.Passes deps) once GrantCredit maintains the balance.
+//   - credit: customer.Service (payment/pass Credits port) delegates to it
+//     (UseCreditLedger); Payments = a.Payments for the magic-link payments.
 //
 // Jobs and sinks are registered through renewalJobs / renewalSinks below
 // (update wantJobs in app_test.go when adding one).
 func (a *App) wireRenewals(aw *audit.Writer) {
 	c := a.opts.clock
-	a.Credits = credit.NewService(credit.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log})
-	a.Rollover = rollover.NewService(rollover.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log})
-	a.Renewals = renewal.NewService(renewal.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Notify: a.Notify})
+	// Credit ledger (M5B): customer.Service, the Credits port of the payment
+	// and pass services, delegates GrantCredit / CreditBalance to it, so
+	// every movement maintains customer_credit_balances (conditional
+	// UPDATE, never negative) without rewiring those services.
+	a.Credits = credit.NewService(credit.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Payments: a.Payments})
+	a.Customers.UseCreditLedger(a.Credits)
+	a.Rollover = rollover.NewService(rollover.Deps{DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Copier: a.Pricing})
+	a.Renewals = renewal.NewService(renewal.Deps{
+		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log,
+		Bookings: a.Bookings, Checkout: a.Checkout, Notify: a.Notify, Credits: a.Credits,
+		CreditApplier: a.Credits,
+	})
 	a.Waitlist = waitlist.NewService(waitlist.Deps{
 		DB: a.db, Clock: c, Audit: aw, Outbox: a.Outbox, Log: a.log, Notify: a.Notify, BaseURL: a.cfg.BaseURL,
+		Holds: a.Inventory, Checkout: a.Checkout, Customers: a.Customers, Terms: a.Online,
 	})
 }
 
 // renewalJobs are the background jobs of the M5B services (none until
 // implemented: credit.JobExpire, renewal.JobSync, waitlist.JobExpire).
-func (a *App) renewalJobs() []jobs.Job { return nil }
+func (a *App) renewalJobs() []jobs.Job {
+	var out []jobs.Job
+	out = append(out, a.Renewals.Jobs()...)
+	out = append(out, a.Credits.Jobs()...)
+	out = append(out, a.Waitlist.Jobs()...)
+	return out
+}
 
-// renewalSinks are the in-process event sinks of the M5B services (the
-// waitlist service once its Handle is implemented).
-func (a *App) renewalSinks() []ext.EventSink { return nil }
+// renewalSinks are the in-process event sinks of the M5B services: the
+// waitlist offers freed inventory and forgets anonymised customers.
+func (a *App) renewalSinks() []ext.EventSink { return []ext.EventSink{a.Waitlist} }

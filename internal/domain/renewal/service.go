@@ -1,7 +1,6 @@
 package renewal
 
 import (
-	"context"
 	"log/slog"
 	"time"
 
@@ -9,17 +8,24 @@ import (
 
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/audit"
-	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/checkout"
-	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/event"
-	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
 
 // JobSync is the name of the proposal/booking synchronisation job.
 const JobSync = "renewals.sync"
+
+// Limits of the inputs.
+const (
+	maxName    = 200
+	maxNotes   = 2000
+	maxReason  = 500
+	maxNote    = 1000
+	maxPassIDs = 2000
+	syncBatch  = 200
+)
 
 // Deps are the dependencies of the service.
 type Deps struct {
@@ -31,6 +37,10 @@ type Deps struct {
 	Bookings Bookings
 	Checkout Checkout
 	Notify   Notifier
+	// Credits and CreditApplier are optional (nil: no credit on the
+	// renewal page; see ports.go).
+	Credits       Credits
+	CreditApplier CreditApplier
 }
 
 // Service implements the renewal use cases.
@@ -186,92 +196,4 @@ type PublicAcceptResult struct {
 	Proposal      PublicProposal
 	CreditApplied money.Cents
 	Pay           checkout.PayOutcome
-}
-
-// ---- panel ------------------------------------------------------------------
-
-// ListCampaigns lists campaigns, newest first (bookings.read).
-func (s *Service) ListCampaigns(ctx context.Context, p *auth.Principal, establishmentID, targetSeasonID, status, cursor string, limit int) (store.Page[Campaign], error) {
-	return store.Page[Campaign]{}, configerr.ErrNotImplemented
-}
-
-// CreateCampaign previews or creates a campaign and its proposals
-// (bookings.write). Idempotent per (source, target): ErrCampaignExists.
-func (s *Service) CreateCampaign(ctx context.Context, p *auth.Principal, establishmentID string, in CreateInput) (*CreateResult, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// GetCampaign returns a campaign with counts (bookings.read).
-func (s *Service) GetCampaign(ctx context.Context, p *auth.Principal, establishmentID, id string) (*Campaign, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// UpdateCampaign renames, extends or closes a campaign (bookings.write,
-// optimistic concurrency on version).
-func (s *Service) UpdateCampaign(ctx context.Context, p *auth.Principal, establishmentID, id string, expected *int64, in UpdateInput) (*Campaign, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// ListProposals lists the proposals of a campaign (bookings.read).
-func (s *Service) ListProposals(ctx context.Context, p *auth.Principal, establishmentID, campaignID string, f ProposalFilter, cursor string, limit int) (store.Page[Proposal], error) {
-	return store.Page[Proposal]{}, configerr.ErrNotImplemented
-}
-
-// Bulk applies an action to many proposals, one transaction each.
-func (s *Service) Bulk(ctx context.Context, p *auth.Principal, establishmentID, campaignID string, in BulkInput) (*BulkResult, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// GetProposal returns one proposal (bookings.read).
-func (s *Service) GetProposal(ctx context.Context, p *auth.Principal, establishmentID, id string) (*Proposal, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// Accept accepts on behalf of the customer (bookings.write).
-func (s *Service) Accept(ctx context.Context, p *auth.Principal, establishmentID, id string, expected *int64, in AcceptInput) (*Proposal, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// Decline records a decline and releases the spot (bookings.write).
-func (s *Service) Decline(ctx context.Context, p *auth.Principal, establishmentID, id string, expected *int64, reason, ip string) (*Proposal, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// Send emails (or re-emails) the proposal with a fresh magic link.
-func (s *Service) Send(ctx context.Context, p *auth.Principal, establishmentID, id, ip string) (*Proposal, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// ---- customer (magic link) ----------------------------------------------------
-
-// GetByToken returns the proposal of the magic link (ErrNotRenewal if the
-// booking is not a proposal).
-func (s *Service) GetByToken(ctx context.Context, slug, token string) (*PublicProposal, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// AcceptByToken accepts and starts the payment (ErrExpired after deadline).
-func (s *Service) AcceptByToken(ctx context.Context, slug, token string, in PublicAcceptInput) (*PublicAcceptResult, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// DeclineByToken declines and releases the spot.
-func (s *Service) DeclineByToken(ctx context.Context, slug, token, reason string) (*PublicProposal, error) {
-	return nil, configerr.ErrNotImplemented
-}
-
-// ---- jobs ----------------------------------------------------------------------
-
-// Sync aligns proposals with their booking (converted / expired) and
-// returns how many proposals changed.
-func (s *Service) Sync(ctx context.Context) (int, error) {
-	return 0, configerr.ErrNotImplemented
-}
-
-// Jobs returns the renewal jobs. Registered by internal/app once implemented.
-func (s *Service) Jobs() []jobs.Job {
-	return []jobs.Job{{Name: JobSync, Interval: time.Minute, RunOnStart: true, Timeout: 2 * time.Minute, Run: func(ctx context.Context) error {
-		_, err := s.Sync(ctx)
-		return err
-	}}}
 }

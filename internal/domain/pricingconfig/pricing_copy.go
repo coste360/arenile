@@ -60,35 +60,8 @@ func (s *Service) CopySeason(ctx context.Context, p *auth.Principal, establishme
 		if err != nil {
 			return err
 		}
-		src, err := store.PricingGetSeason(ctx, tx, es, sourceSeasonID)
-		if err != nil {
-			return mapStoreErr(err, nil)
-		}
-		if in.TargetYear < 2000 || in.TargetYear > 2200 {
-			return configerr.Invalid("target_year", "Anno non valido.")
-		}
-		if in.TargetYear == src.Year {
-			return configerr.Invalid("target_year", "Deve essere diverso dall'anno della stagione di origine.")
-		}
-		res := &CopySeasonResult{SourceSeasonID: src.ID, Warnings: []string{}}
-		target, err := s.targetSeason(ctx, tx, p, es, src, in, res)
-		if err != nil {
-			return err
-		}
-		if err := ensureEmptyTarget(ctx, tx, es, target.ID, in); err != nil {
-			return err
-		}
-		if err := s.copyInto(ctx, tx, es, src, target, in, res); err != nil {
-			return err
-		}
-		res.Season = *target
-		out = res
-		diff := map[string]any{
-			"source_season_id": src.ID, "target_season_id": target.ID, "target_year": target.Year,
-			"season_created": res.SeasonCreated, "rate_periods": res.RatePeriods, "price_rules": res.PriceRules,
-			"fixed_prices": res.FixedPrices, "policies": res.Policies, "warnings": res.Warnings,
-		}
-		return change(ctx, tx, s.d, p, es, EntitySeasonCopy, target.ID, ChangeCopied, target.ID, diff)
+		out, err = s.CopySeasonInTx(ctx, tx, p, es, sourceSeasonID, in)
+		return err
 	})
 	return out, err
 }

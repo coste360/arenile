@@ -1,0 +1,40 @@
+Subject: Renew your season pass – Lido Delfino
+
+Renew your season pass
+======================
+
+Hi Mario, the new season at Lido Delfino is coming and your spot is reserved for you: you have the right of first refusal on the renewal. Here is the offer.
+
+Code: LD-2027-000001
+Booked by: Mario Rossi
+Dates: From Saturday, 10 July 2027 to Monday, 12 July 2027
+Time slot: Full day
+Area: Front row
+Spots: A1
+Package: Umbrella and 2 sunbeds
+Extras: Lettino aggiuntivo × 2
+Total: €1,234.50
+Paid: €300.00
+Deposit due: €70.00
+Balance due: €934.50
+
+You can confirm by Wednesday, 31 March 2027, 23:59: after that date the spot becomes available to everyone.
+
+Manage your booking:
+https://arenile.example/b/lido-delfino/m/TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_A
+
+From the page you can accept the renewal and pay online, or decline it. This link is personal and stays valid until Friday, 13 August 2027.
+
+Cancellation terms
+- Up to 7 days before arrival: 100% refund
+- Up to 2 days before arrival: 50% credit
+- After these deadlines the amount paid is not refundable.
+- You can change the booking up to 3 days before arrival.
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Service email about your booking at Lido Delfino. It contains no advertising and no tracking.
