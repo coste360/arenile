@@ -1,0 +1,63 @@
+---
+title: Cambio stagione
+description: Fine stagione e nuova stagione in pochi passi - copia di periodi, chiusure, prezzi e policy con anteprima, poi la campagna di rinnovo degli abbonamenti.
+sidebar:
+  order: 15
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Stagioni e periodi** → **Nuova stagione da questa**. **Chi:** chi può configurare lo
+stabilimento (gestori e proprietari).
+
+A fine stagione Arenile prepara la stagione successiva copiando la configurazione di quella appena chiusa, con le
+date spostate sull'anno nuovo. Catalogo, mappe e postazioni non dipendono dalla stagione e restano come sono.
+Subito dopo puoi [proporre i rinnovi](/gestore/rinnovi/) agli abbonati: tutto il ciclo si fa dal pannello, senza
+interventi sul database.
+
+<Screenshot name="admin-season-rollover" alt="Procedura Nuova stagione: stagione di origine, cosa copiare e anteprima con i conteggi della stagione da creare" />
+
+## Creare la nuova stagione
+
+<Steps>
+
+1. **1. Stagione di partenza e date**: scegli la **Stagione di origine**, l'**Anno della nuova stagione** e
+   controlla **Apertura** e **Chiusura** (proposte spostando le date di un anno).
+2. **2. Cosa copiare**: lascia attivi i blocchi da copiare: **Periodi tariffari**, **Giorni di chiusura**,
+   **Regole di prezzo**, **Prezzi fissi**, **Policy**.
+3. **Calcola anteprima**: il riquadro **3. Anteprima della stagione** mostra quanti periodi, chiusure, regole,
+   prezzi fissi e policy verranno creati e quanti **Abbonati da rinnovare** ci sono. Nulla è ancora scritto.
+4. Controlla gli avvisi **Da controllare** (per esempio una chiusura che non è stato possibile copiare), poi
+   **Crea la stagione** e conferma.
+
+</Steps>
+
+La nuova stagione nasce **in bozza**: controlla date e prezzi in [Stagioni e periodi](/gestore/stagioni-e-periodi/)
+e nel [listino](/gestore/prezzi/) prima di attivarla.
+
+### Come vengono spostate le date
+
+- Le date si spostano di un anno mantenendo il giorno della settimana dove ha senso (un evento di sabato resta di
+  sabato), mentre inizi e fine mese e festività fisse come Ferragosto restano sulla loro data di calendario.
+- Una chiusura che cadrebbe fuori dalla nuova stagione, o in un giorno già chiuso, non viene copiata e compare tra
+  gli avvisi.
+- L'anteprima e la creazione fanno esattamente gli stessi calcoli: i numeri dell'anteprima sono quelli che
+  ottieni.
+
+<Aside type="tip" title="Ripetere non crea doppioni">
+Se premi di nuovo **Crea la stagione** per lo stesso anno, Arenile mostra la stagione già creata con questo
+passaggio invece di crearne un'altra. Se esiste già una stagione di quell'anno creata a mano, la procedura si
+ferma con un avviso: correggi prima la stagione esistente.
+</Aside>
+
+## Dopo la creazione
+
+Dal riquadro **Stagione creata** puoi:
+
+- **Apri la stagione** per rivedere date e periodi;
+- **Proponi i rinnovi a N abbonati**: apre la pagina [Rinnovi](/gestore/rinnovi/) con la nuova campagna già
+  impostata sulle due stagioni.
+
+In fondo alla pagina, **Passaggi già eseguiti** elenca i cambi di stagione fatti, con cosa è stato copiato e
+quando.

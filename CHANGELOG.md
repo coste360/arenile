@@ -24,6 +24,26 @@ offline).
   estensione di `customer_credits` e saldo `customer_credit_balances` mai negativo); policy `credit_validity_days`;
   nuovi eventi webhook `season.renewal_*`, `season.rolled_over`, `waitlist.*`, `credit.*`. Gli endpoint rispondono
   501 finché non sono implementati.
+- M5 parte B, passaggio di stagione e rinnovi degli abbonamenti (spec 8.7, 10.4, 19, 28): anteprima e applicazione
+  idempotente del passaggio alla stagione successiva (periodi, regole, prezzi fissi, policy e chiusure spostate
+  sull'anno, INV-67); campagne "proponi rinnovi" con una prenotazione `held` per abbonato sulla stessa postazione,
+  prezzo del nuovo listino e prelazione fino alla scadenza garantita dalle allocazioni (INV-68); invio e promemoria
+  via email con link magico (template it/en/de/fr), accettazione dal pannello o dal link con pagamento online di
+  acconto o saldo confermato solo dal webhook (INV-69), rifiuto, azioni di massa, proroga della scadenza, chiusura e
+  rilascio automatico alla scadenza (job `renewals.sync`). Test di accettazione M5 `TestAcceptance_SeasonCycle`.
+- M5 parte B, lista d'attesa e crediti cliente (spec 9, 10.5, 13.4, 19, 23): lista d'attesa con priorità (ordine
+  di iscrizione e riordino manuale), iscrizione dal pannello o dalla pagina pubblica (202 senza dati, link personale
+  via email), offerta automatica sugli eventi di rilascio con hold riservato e scadenza (impostazioni per
+  stabilimento), passaggio all'iscrizione successiva, accettazione che prosegue nel checkout di M4 (INV-72; job
+  `waitlist.expire`); registro crediti con saldo mai negativo anche in concorrenza, scadenza materializzata (job
+  `credits.expire`), crediti manuali e rettifiche dal pannello, uso del credito dal link magico e nei rinnovi, parte
+  pagata con credito restituita come credito nei rimborsi (INV-70, INV-71). Email `waitlist_joined` e
+  `waitlist_offer` in it/en/de/fr.
+- M5 parte B, pannello e pagina pubblica: pagine **Rinnovi** (campagne, proposte, azioni di massa), **Lista
+  d'attesa** (coda, offerte, impostazioni), procedura **Nuova stagione** e sezione crediti della scheda cliente;
+  proposta di rinnovo e uso del credito nell'area di gestione, pagina personale della lista d'attesa
+  `/b/{slug}/m/w/{token}`. Guide in italiano e inglese (Cambio stagione, Rinnovi, Lista d'attesa, Crediti) e test
+  end-to-end Playwright `e2e/tests/m5b.spec.ts` (progetto `m5b`).
 - M5 parte A, report completi (spec 15.3): riepilogo, occupazione per giorno/zona/fila/fascia, ricavi incassati o
   venduti per periodo/canale/pack/extra/metodo/aliquota, prenotazioni per canale/anticipo/formula, cancellazioni e
   no-show, abbonamenti con rilasci e rivendite, clienti migliori (solo nome), saldi aperti e confronto con l'anno
@@ -239,6 +259,14 @@ offline).
 
 ### Fixed
 
+- Pagina pubblica: la lingua scelta nel selettore non viene più riportata subito a quella automatica (browser o
+  lingua dello stabilimento).
+- Le schede (`SectionCard`) con azioni larghe nell'intestazione non sovrappongono più i pulsanti al titolo sugli
+  schermi stretti: le azioni vanno a capo sotto il titolo.
+- M5 parte B: il rinnovo pagato online diventa "Rinnovato" appena arriva la conferma del pagamento (evento
+  `booking.confirmed`), non al giro successivo del job; il link dell'email della lista d'attesa punta alla pagina
+  `/b/{slug}/m/w/{token}`; l'anonimizzazione di un cliente cancella anche il motivo di rifiuto dei rinnovi; ricerca
+  attiva nelle tabelle di Rinnovi e Lista d'attesa.
 - `seed demo` non fa più partire, al primo `serve`, le email di conferma delle prenotazioni dimostrative.
 - Revisione di sicurezza M4: la pagina pubblica non collega più una prenotazione a un cliente esistente con la
   stessa email o telefono (chi conosceva un recapito ne leggeva nome, email e telefono dalla sessione e

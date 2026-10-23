@@ -1,0 +1,73 @@
+---
+title: Waitlist
+description: Requests with no availability in priority order, automatic offers when a spot frees up, personal link to book.
+sidebar:
+  order: 25.6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Waitlist**. **Who:** cashiers, managers and owners; the settings whoever can configure
+the establishment.
+
+When there is no room for the requested dates, the customer joins the **waitlist**. As soon as a compatible spot
+frees up (cancellation, day released by a pass holder, expired booking), Arenile holds it for the first in line and
+emails them the link to book it.
+
+<Screenshot name="admin-waitlist" alt="Waitlist: queue with position, period, request, status and running offer with the time left" />
+
+## Settings
+
+**Settings** opens the options valid for the whole establishment:
+
+- **Waitlist active**: off, no entries are accepted and no offers are sent.
+- **Join from the public page**: the customer can join from the website when nothing is available.
+- **Automatic offers**: when a spot frees up an offer goes to the first in line; off, offers are only sent by hand.
+- **Default offer duration (minutes)**: how long the spot stays held waiting for the answer.
+
+## Adding a customer
+
+<Steps>
+
+1. **New entry**.
+2. Choose the **Customer**, the **Period**, the **Time slot** and the **Pack**.
+3. Optional: **Zone** (or **Any zone**), **Quantity** and **Note**.
+4. **Add to waitlist**.
+
+</Steps>
+
+From the public page customers join by themselves: they get an email with the **personal link** to their request,
+where they can check it or leave the list. Every new email renews the link: only the latest one works.
+
+## The queue
+
+The order is the **#** column: the higher, the sooner the offer. The **Move up** and **Move down** arrows change the
+priority; an entry with a running offer has no number until it is answered.
+
+From the row menu:
+
+- **Offer a spot**: choose the **Spot** (or **The first matching one**) and the **Offer duration (minutes)**, then
+  **Send the offer**.
+- **Revoke the offer**: the spot is free again and goes to the next one.
+- **Edit the request** or **Remove from the waitlist**.
+
+Clicking the name opens the detail with the history of the **Offers** (when, which spot, why, outcome).
+
+## What the customer sees
+
+The offer email leads to the request page: **Spot … has freed up for you!** with the deadline.
+
+- **Book now** continues in the normal online booking, already at the details and payment step. The confirmation
+  comes as always only from the payment.
+- **Decline** frees the spot, which goes to the next in line; the customer stays on the list (or leaves it, if
+  they choose so).
+
+<Aside type="note" title="One spot, one offer">
+The hold on the spot is guaranteed by the database: even when many spots free up together, each freed spot
+produces at most one offer. An expired, declined or revoked offer goes to the next one, never back to the same
+person for that spot. Entries from the panel follow the desk rules; entries from the website follow the online
+rules and payment.
+</Aside>
+
+When a customer asks for their data to be erased (GDPR), their entries are removed.

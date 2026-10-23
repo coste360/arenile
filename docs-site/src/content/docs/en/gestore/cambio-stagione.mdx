@@ -1,0 +1,61 @@
+---
+title: Season rollover
+description: End of season to new season in a few steps - copy of rate periods, closures, prices and policies with a preview, then the season pass renewal campaign.
+sidebar:
+  order: 15
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Seasons and periods** → **New season from this one**. **Who:** whoever can configure
+the establishment (managers and owners).
+
+At the end of the season Arenile prepares the next one by copying the configuration of the season just closed,
+with the dates moved to the new year. Catalogue, maps and spots do not depend on the season and stay as they are.
+Right after, you can [propose the renewals](/en/gestore/rinnovi/) to the pass holders: the whole cycle happens in
+the panel, with no database work.
+
+<Screenshot name="admin-season-rollover" alt="New season wizard: starting season, what to copy and preview with the counts of the season to create" />
+
+## Creating the new season
+
+<Steps>
+
+1. **1. Starting season and dates**: choose the **Source season**, the **Year of the new season** and check
+   **Opening** and **Closing** (proposed by moving the dates by one year).
+2. **2. What to copy**: keep on the blocks to copy: **Rate periods**, **Closure days**, **Price rules**, **Fixed
+   prices**, **Policies**.
+3. **Calculate preview**: the **3. Preview of season** box shows how many periods, closures, rules, fixed prices and
+   policies will be created and how many **Pass holders to renew** there are. Nothing is written yet.
+4. Check the **To check** warnings (for example a closure that could not be copied), then **Create season** and
+   confirm.
+
+</Steps>
+
+The new season starts as a **draft**: check dates and prices in [Seasons and periods](/en/gestore/stagioni-e-periodi/)
+and in the [price list](/en/gestore/prezzi/) before activating it.
+
+### How dates are moved
+
+- Dates move by one year keeping the weekday where it makes sense (an event on a Saturday stays on a Saturday),
+  while month starts and ends and fixed holidays such as 15 August keep their calendar date.
+- A closure that would fall outside the new season, or on a day already closed, is not copied and shows up among
+  the warnings.
+- The preview and the creation run exactly the same computation: the preview numbers are what you get.
+
+<Aside type="tip" title="Repeating creates no duplicates">
+If you press **Create season** again for the same year, Arenile shows the season already created by this rollover
+instead of creating another one. If a season of that year already exists and was created by hand, the wizard
+stops with a warning: fix the existing season first.
+</Aside>
+
+## After the creation
+
+From the **Season created** box you can:
+
+- **Open the season** to review dates and periods;
+- **Offer renewals to N pass holders**: opens the [Renewals](/en/gestore/rinnovi/) page with the new campaign
+  already set on the two seasons.
+
+At the bottom of the page, **Rollovers already run** lists the rollovers done, with what was copied and when.
