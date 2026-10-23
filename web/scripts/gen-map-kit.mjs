@@ -11,7 +11,9 @@
 // with an allowlist is enough (no optimiser, no parser dependency). The
 // generation FAILS on anything unexpected: elements outside the allowlist
 // (script, style, image, use, foreignObject, a, animation...), event handler
-// attributes, href/xlink:href, url(...) references, javascript: values, a
+// attributes, href/xlink:href, url(...) references, javascript: values,
+// backslashes (CSS escapes that could spell url() once a presentation
+// attribute is parsed as CSS), characters the tokenizer cannot place, a
 // viewBox other than 0 0 120 120, or a manifest that does not match the files.
 // See docs/adr/0012-kit-mappa.md.
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -151,6 +153,8 @@ function checkAttr(file, tag, name, value) {
   if (lower.startsWith('on')) fail(file, `<${tag}>: event attribute "${name}" not allowed`);
   if (lower === 'href' || lower.endsWith(':href')) fail(file, `<${tag}>: "${name}" not allowed`);
   if (lower === 'style') fail(file, `<${tag}>: "style" attribute not allowed`);
+  // A backslash is a CSS escape: "u\72l(#x)" is url(#x) once parsed as CSS.
+  if (value.includes('\\')) fail(file, `<${tag}>: backslash in ${name}="${value}"`);
   if (/url\s*\(/i.test(value)) fail(file, `<${tag}>: external reference ${name}="${value}"`);
   if (/javascript:|data:|&#|<|>/i.test(value)) {
     fail(file, `<${tag}>: unsafe value ${name}="${value}"`);
@@ -186,7 +190,11 @@ export function symbolBody(file, source, transform) {
   const stack = [];
   const tagRe = /<(\/?)([a-zA-Z][\w:-]*)([^>]*?)(\/?)>|([^<]+)/g;
   let m;
+  let pos = 0;
   while ((m = tagRe.exec(inner)) !== null) {
+    // Every character must belong to a token: a stray "<" is an error, not a skip.
+    if (m.index !== pos) fail(file, `unexpected "${inner.slice(pos, m.index).trim()}"`);
+    pos = tagRe.lastIndex;
     if (m[5] !== undefined) {
       const chunk = m[5];
       if (!chunk.trim()) continue;
@@ -219,6 +227,7 @@ export function symbolBody(file, source, transform) {
       stack.push(tag);
     }
   }
+  if (pos !== inner.length) fail(file, `unexpected "${inner.slice(pos).trim()}"`);
   if (stack.length) fail(file, `unclosed <${stack.join('>, <')}>`);
   let body = out.join('');
   if (!body) fail(file, 'empty drawing');

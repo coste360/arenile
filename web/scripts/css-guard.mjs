@@ -167,7 +167,8 @@ for (const top of SCAN) {
       }
     }
 
-    // Tests may read computed styles; the rule targets code that writes them.
+    // Tests may read computed styles, and gen-map-kit.test.mjs holds the SVG
+    // fixtures the generator must reject; the rule targets code that writes styles.
     if (!vendored && !STYLE_CODE_ALLOW.has(path) && !/\.test\.(?:[jt]sx?|mjs)$/.test(path)) {
       for (const m of text.matchAll(STYLE_CODE_RE)) {
         fail(
