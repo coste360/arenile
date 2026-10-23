@@ -262,9 +262,11 @@ func (l *Launcher) activateRunning(ctx context.Context) error {
 // apart from config.Parse): loopback HTTP on port, SQLite in dataDir,
 // automatic migrations, no telemetry. It is parsed from a fixed map, not
 // from the process environment, so the desktop behaves the same on every
-// PC. ARENILE_DEV=true is the loopback-HTTP profile of the core: base URL
-// optional and cookies without the Secure attribute, which browsers would
-// otherwise drop on http://127.0.0.1 (Safari).
+// PC. ARENILE_EDITION=desktop is the loopback profile of the core: cookies
+// without the Secure attribute on http://127.0.0.1 (browsers would drop
+// them, Safari first) while TLS requests on the LAN listener still get it
+// (middleware.CookieSecure). ARENILE_DEV stays false: no development
+// behaviour ever ships on a desktop install.
 func DesktopConfig(dataDir string, port int, secretKey []byte) (config.Config, error) {
 	addr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
 	env := map[string]string{
@@ -274,7 +276,7 @@ func DesktopConfig(dataDir string, port int, secretKey []byte) (config.Config, e
 		config.EnvSecretKey:   base64.StdEncoding.EncodeToString(secretKey),
 		config.EnvAutoMigrate: "true",
 		config.EnvTelemetry:   "false",
-		config.EnvDev:         "true",
+		config.EnvEdition:     config.EditionDesktop,
 		config.EnvLogLevel:    "info",
 	}
 	return config.Parse(func(k string) (string, bool) { v, ok := env[k]; return v, ok })

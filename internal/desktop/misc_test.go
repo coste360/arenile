@@ -15,6 +15,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/coste360/arenile/internal/config"
 )
 
 func TestRotatingFile_Rotation(t *testing.T) {
@@ -216,6 +218,10 @@ func TestDesktopConfig_LoopbackProfile(t *testing.T) {
 	}
 	if cfg.SecureCookies() || cfg.Telemetry || !cfg.AutoMigrate || cfg.UsesPostgres() || cfg.ValidateServe() != nil {
 		t.Fatalf("profile %+v", cfg)
+	}
+	// Desktop is an edition, not development: Dev stays off.
+	if cfg.Dev || !cfg.Desktop() || cfg.Edition != config.EditionDesktop {
+		t.Fatalf("edition %q dev=%v", cfg.Edition, cfg.Dev)
 	}
 	t.Setenv("DATABASE_URL", "postgres://elsewhere")
 	t.Setenv("ARENILE_TELEMETRY", "true")

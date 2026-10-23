@@ -185,3 +185,32 @@ func TestParse_ProdDoesNotGenerateKey(t *testing.T) {
 		t.Fatal("missing key must fail in production")
 	}
 }
+
+// TestParse_DesktopEdition: ARENILE_EDITION=desktop is the loopback profile
+// of the desktop launcher: no public base URL needed, plain-HTTP cookies
+// without Secure, and no development behaviour (Dev stays false). Anything
+// but server|desktop is rejected.
+func TestParse_DesktopEdition(t *testing.T) {
+	e := env(map[string]string{
+		EnvEdition: "desktop", EnvAddr: "127.0.0.1:18200", EnvBaseURL: "http://127.0.0.1:18200",
+		EnvDataDir: t.TempDir(), EnvSecretKey: validKey(7),
+	})
+	cfg, err := Parse(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cfg.Desktop() || cfg.Dev || cfg.SecureCookies() || cfg.ValidateServe() != nil {
+		t.Fatalf("desktop profile: %+v", cfg)
+	}
+	e = env(map[string]string{EnvEdition: "desktop", EnvDataDir: t.TempDir(), EnvSecretKey: validKey(7)})
+	if cfg, err = Parse(e); err != nil || cfg.ValidateServe() != nil {
+		t.Fatalf("desktop without base url must serve: %v %v", err, cfg.ValidateServe())
+	}
+	srv, _ := Parse(env(map[string]string{EnvBaseURL: "http://lido.example", EnvDataDir: t.TempDir(), EnvSecretKey: validKey(7)}))
+	if srv.Desktop() || srv.Edition != EditionServer || !srv.SecureCookies() {
+		t.Fatalf("server default: %+v", srv)
+	}
+	if _, err := Parse(env(map[string]string{EnvEdition: "mobile", EnvDataDir: t.TempDir()})); err == nil || !errors.Is(err, ErrInvalid) {
+		t.Fatalf("unknown edition accepted: %v", err)
+	}
+}
