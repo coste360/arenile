@@ -90,6 +90,7 @@ func TestValidatePack_Table(t *testing.T) {
 		{"zero quantity", func(p *PackInput) { p.Composition["sunbed"] = 0 }, "composition.sunbed"},
 		{"negative quantity", func(p *PackInput) { p.Composition["sunbed"] = -1 }, "composition.sunbed"},
 		{"bad spot kind", func(p *PackInput) { p.RequiresSpotKind = []string{"umbrella", "yacht"} }, "requires_spot_kind[1]"},
+		{"kit spot kinds", func(p *PackInput) { p.RequiresSpotKind = []string{"sunbed", "daybed", "cabana", "hammock"} }, ""},
 		{"bad formula", func(p *PackInput) { p.AllowedFormulas = []string{"day", "year"} }, "allowed_formulas[1]"},
 		{"no formula", func(p *PackInput) { p.AllowedFormulas = nil }, "allowed_formulas"},
 		{"bad channel", func(p *PackInput) { p.Channels = []string{"phone"} }, "channels[0]"},

@@ -234,7 +234,11 @@ func validateDecorationFields(ve *configerr.ValidationError, field string, d Dec
 	if !slices.Contains(DecorationKinds, d.Kind) {
 		ve.Add(field+".kind", "Tipo di elemento non valido.")
 	}
-	validateDecorationAsset(ve, field, d.Asset, d.Variant)
+	if d.Kind == "text" && d.Asset != "" {
+		ve.Add(field+".asset", "Un testo non ha un'illustrazione.")
+	} else {
+		validateDecorationAsset(ve, field, d.Asset, d.Variant)
+	}
 	validatePosition(ve, field, d.X, d.Y, d.Rotation, m)
 	validateShape(ve, field+".shape", d.Shape, m)
 	validateI18n(ve, field+".label", d.Label, false)

@@ -264,7 +264,9 @@ func (c *cli) seed(ctx context.Context, args []string) error {
 		fmt.Fprintf(c.stdout, "Configurazione dimostrativa creata: stagione %d, %d postazioni, %d regole di prezzo\n",
 			demo.SeasonYear, demo.SpotsCreated, demo.RulesCreated)
 	case demo.MapsUpgraded > 0:
-		fmt.Fprintf(c.stdout, "Configurazione dimostrativa già presente: %d mappe aggiornate con le illustrazioni del kit\n", demo.MapsUpgraded)
+		fmt.Fprintf(c.stdout, "Configurazione dimostrativa già presente: %d mappe aggiornate con le illustrazioni del kit "+
+			"(%d postazioni illustrate, %d elementi del modello pre-kit rimossi, %d elementi del kit aggiunti)\n",
+			demo.MapsUpgraded, demo.SpotsIllustrated, demo.DecorationsRemoved, demo.DecorationsAdded)
 	default:
 		fmt.Fprintln(c.stdout, "Configurazione dimostrativa già presente: nessuna modifica")
 	}

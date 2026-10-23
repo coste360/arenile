@@ -29,7 +29,8 @@ func d(n int) calendar.Date { return day1.AddDays(n - 1) }
 func iv(from, to int, s calendar.Slots) Interval { return Interval{From: d(from), To: d(to), Slots: s} }
 
 // fixture is a beach with rows A and B of 5 umbrellas each (zone1), one gazebo
-// G1 (zone1) and one umbrella Z1 in zone2. Spot IDs: A1=101.., B1=201.., G1=301, Z1=401.
+// G1 (zone1), one umbrella Z1 in zone2 and one sunbed L1 (zone1, a kit kind).
+// Spot IDs: A1=101.., B1=201.., G1=301, Z1=401, L1=501.
 type fixture struct {
 	spots   []Spot
 	byLabel map[string]Spot
@@ -51,6 +52,7 @@ func newFixture() fixture {
 	}
 	add(Spot{ID: id(301), ZoneID: zone1, Label: "G1", Row: "G", Number: 1, Kind: "gazebo", X: 80, Y: 0})
 	add(Spot{ID: id(401), ZoneID: zone2, Label: "Z1", Row: "Z", Number: 1, Kind: "umbrella", X: 0, Y: 50})
+	add(Spot{ID: id(501), ZoneID: zone1, Label: "L1", Row: "L", Number: 1, Kind: "sunbed", X: 90, Y: 0})
 	f.byLabel["B5"] = withAttrs(&f, "B5", "accessible")
 	return f
 }
@@ -214,6 +216,11 @@ func TestAutoAssign_Table(t *testing.T) {
 			l.SpotKinds = []string{"gazebo"}
 			return AssignInput{Lines: []Line{l}, Spots: f.spots, Free: f.allFree()}
 		}, map[int]string{1: "G1"}},
+		{"kit spot kind filter (pack requires sunbed)", func(f fixture) AssignInput {
+			l := line(1, 1, iv(1, 2, full))
+			l.SpotKinds = []string{"sunbed"}
+			return AssignInput{Lines: []Line{l}, Spots: f.spots, Free: f.allFree()}
+		}, map[int]string{1: "L1"}},
 		{"zone filter", func(f fixture) AssignInput {
 			l := line(1, 1, iv(1, 2, full))
 			l.ZoneID = zone2

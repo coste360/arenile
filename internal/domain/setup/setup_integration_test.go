@@ -778,8 +778,9 @@ func TestSeedDemo_IdempotentAndComplete(t *testing.T) {
 
 func ptr[T any](v T) *T { return &v }
 
-// A demo seeded before the map kit (spots without asset, plain decorations)
-// gets the kit on the next seed, once.
+// A demo seeded before the map kit (spots without asset, the four plain
+// template decorations) gets the kit on the next seed, once; decorations
+// added by hand are kept, and the change is audited.
 func TestSeedDemo_UpgradesPreKitMaps(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		ctx := context.Background()
@@ -791,7 +792,7 @@ func TestSeedDemo_UpgradesPreKitMaps(t *testing.T) {
 		if err := db.NewSelect().Model(&m).Where("m.establishment_id = ?", f.est.ID).Limit(1).Scan(ctx); err != nil {
 			t.Fatal(err)
 		}
-		// Back to the pre-kit state.
+		// Back to the pre-kit state: the template bar, plus a hand-made sign.
 		if _, err := db.NewUpdate().TableExpr("spots").Set("asset = NULL").Where("establishment_id = ?", f.est.ID).Exec(ctx); err != nil {
 			t.Fatal(err)
 		}
@@ -799,14 +800,20 @@ func TestSeedDemo_UpgradesPreKitMaps(t *testing.T) {
 			t.Fatal(err)
 		}
 		old := store.MapDecoration{
-			ID: store.NewID(), EstablishmentID: f.est.ID, MapID: m.ID, Kind: "bar", X: 50, Y: 50,
+			ID: store.NewID(), EstablishmentID: f.est.ID, MapID: m.ID, Kind: "bar", X: float64(m.Width) - 40, Y: 40,
 			Shape: store.Shape{Type: "rect", W: 40, H: 30}, CreatedAt: time.Now(), UpdatedAt: time.Now(),
 		}
-		if _, err := db.NewInsert().Model(&old).Exec(ctx); err != nil {
-			t.Fatal(err)
+		mine := store.MapDecoration{
+			ID: store.NewID(), EstablishmentID: f.est.ID, MapID: m.ID, Kind: "text", X: 300, Y: 300,
+			Shape: store.Shape{Type: "rect", W: 80, H: 20}, Label: store.I18nText{"it": "Mio"}, CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		}
+		for _, d := range []*store.MapDecoration{&old, &mine} {
+			if _, err := db.NewInsert().Model(d).Exec(ctx); err != nil {
+				t.Fatal(err)
+			}
 		}
 		up, err := f.svc.SeedDemo(ctx, f.est.ID)
-		if err != nil || up.Applied || up.MapsUpgraded != 1 {
+		if err != nil || up.Applied || up.MapsUpgraded != 1 || up.DecorationsRemoved != 1 || up.DecorationsAdded < 5 || up.SpotsIllustrated == 0 {
 			t.Fatalf("upgrade: %+v %v", up, err)
 		}
 		var spots []store.Spot
@@ -822,13 +829,25 @@ func TestSeedDemo_UpgradesPreKitMaps(t *testing.T) {
 		if err := db.NewSelect().Model(&decos).Where("md.establishment_id = ?", f.est.ID).Scan(ctx); err != nil {
 			t.Fatal(err)
 		}
-		if len(decos) < 5 {
-			t.Fatalf("kit decorations: %d", len(decos))
-		}
+		kept := false
 		for _, d := range decos {
-			if d.ID == old.ID || d.Asset == nil {
-				t.Fatalf("pre-kit decoration left: %+v", d)
+			if d.ID == old.ID {
+				t.Fatalf("pre-kit template decoration left: %+v", d)
 			}
+			if d.ID == mine.ID {
+				kept = true
+				continue
+			}
+			if d.Asset == nil {
+				t.Fatalf("decoration without asset: %+v", d)
+			}
+		}
+		if !kept || len(decos) < 6 {
+			t.Fatalf("hand-made decoration kept=%v, %d decorations", kept, len(decos))
+		}
+		if n, err := db.NewSelect().Model((*store.AuditEntry)(nil)).
+			Where("establishment_id = ? AND action = ? AND entity_id = ?", f.est.ID, "setup.demo_map_kit_upgraded", m.ID).Count(ctx); err != nil || n != 1 {
+			t.Fatalf("audit entries: %d %v", n, err)
 		}
 		var after store.Map
 		if err := db.NewSelect().Model(&after).Where("m.id = ?", m.ID).Scan(ctx); err != nil {

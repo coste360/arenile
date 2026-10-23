@@ -24,8 +24,13 @@ type DemoResult struct {
 	SpotsCreated int
 	RulesCreated int
 	// MapsUpgraded counts the maps of an already configured demo that got
-	// the map kit illustrations (docs/adr/0012-kit-mappa.md).
-	MapsUpgraded int
+	// the map kit illustrations (docs/adr/0012-kit-mappa.md), with what
+	// changed in them: spots given an illustration, pre-kit template
+	// decorations removed and kit decorations added.
+	MapsUpgraded       int
+	SpotsIllustrated   int
+	DecorationsRemoved int
+	DecorationsAdded   int
 }
 
 // DemoDayPrices are the day prices of the demo price list (cents) by price
@@ -68,7 +73,9 @@ var policyAugustWeeks = PolicySpec{
 // template policies plus "August online weeks Saturday to Saturday", a promo
 // code and an agreement. It is idempotent: when the establishment already
 // has maps it only gives the map kit illustrations to maps seeded before
-// the kit (upgradeDemoMapKit), which is itself idempotent. It runs as the system actor (CLI).
+// the kit (upgradeDemoMapKit: spots without illustration and the four plain
+// template decorations; hand-made decorations are kept), which is itself
+// idempotent and audited. It runs as the system actor (CLI).
 // Customers and bookings arrive with M3.
 func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoResult, error) {
 	res := &DemoResult{}
@@ -83,7 +90,9 @@ func (s *Service) SeedDemo(ctx context.Context, establishmentID string) (*DemoRe
 		}
 		if n > 0 {
 			// Already configured: only bring the maps up to the map kit.
-			res.MapsUpgraded, err = upgradeDemoMapKit(ctx, tx, es, s.d.Clock.Now())
+			up, err := s.upgradeDemoMapKit(ctx, tx, es, s.d.Clock.Now())
+			res.MapsUpgraded, res.SpotsIllustrated = up.Maps, up.SpotsIllustrated
+			res.DecorationsRemoved, res.DecorationsAdded = up.DecorationsRemoved, up.DecorationsAdded
 			return err
 		}
 		e, err := store.GetEstablishment(ctx, tx, es)

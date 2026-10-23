@@ -9,14 +9,16 @@ import (
 	"unicode/utf8"
 
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/store"
 )
 
 // Value sets of the catalog (spec 6.2, 6.3).
 var (
-	// SpotKinds are the kinds of spot a pack may require.
-	SpotKinds = []string{"umbrella", "gazebo", "tent", "palm", "custom"}
+	// SpotKinds are the kinds of spot a pack may require: the one list of
+	// the mapping area, so a pack can target every kind a spot can have.
+	SpotKinds = mapping.SpotKinds
 	// Formulas are the duration formulas a pack may allow.
 	Formulas = []string{
 		string(pricing.FormulaHalfDay), string(pricing.FormulaDay), string(pricing.FormulaMultiDay),

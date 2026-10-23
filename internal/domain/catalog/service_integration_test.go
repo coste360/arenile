@@ -3,6 +3,7 @@
 package catalog_test
 
 import (
+	"reflect"
 	"context"
 	"encoding/json"
 	"errors"
@@ -194,6 +195,21 @@ func TestCatalogIntegration_CRUD(t *testing.T) {
 			t.Fatalf("get pack: %+v %v", got, err)
 		}
 
+		// A pack may require a kit spot kind (ADR 0012): the catalog and the
+		// map share one list, so the pack is accepted and read back.
+		kit := packInput("lettino")
+		kit.RequiresSpotKind = []string{"sunbed", "daybed"}
+		kp, err := e.svc.CreatePack(ctx, e.ownerA, "", a, kit)
+		if err != nil {
+			t.Fatalf("kit kind pack: %v", err)
+		}
+		if got, err := e.svc.GetPack(ctx, e.viewerA, a, kp.ID); err != nil || !reflect.DeepEqual(got.RequiresSpotKind, []string{"sunbed", "daybed"}) {
+			t.Fatalf("kit kind pack read back: %+v %v", got, err)
+		}
+		if _, err := e.svc.DeletePack(ctx, e.ownerA, "", a, kp.ID, nil); err != nil {
+			t.Fatalf("delete kit kind pack: %v", err)
+		}
+
 		in.Name = it("Standard")
 		in.VATRateBP = ptr(int64(2200))
 		in.MaxPerBooking = ptr(4)
@@ -352,9 +368,10 @@ func TestCatalogIntegration_CRUD(t *testing.T) {
 				t.Errorf("missing audit action %s", action)
 			}
 		}
-		// Packs of A: 3 created, 3 updated, 1 archived (the first pack was already
-		// inactive), 1 deleted; extras: 2 created, 1 updated, 1 deleted, 1 archived.
-		if n := e.count(t, "outbox_events", "establishment_id = ? AND type = ?", a, event.ConfigPricingChanged); n != 13 {
+		// Packs of A: 4 created, 3 updated, 1 archived (the first pack was already
+		// inactive), 2 deleted (the kit-kind pack among them); extras: 2 created,
+		// 1 updated, 1 deleted, 1 archived.
+		if n := e.count(t, "outbox_events", "establishment_id = ? AND type = ?", a, event.ConfigPricingChanged); n != 15 {
 			t.Fatalf("pricing_changed events = %d", n)
 		}
 		var payload string

@@ -64,6 +64,7 @@ func TestValidateDocument_Cases(t *testing.T) {
 		{"non-bookable spot asset", func(in *SaveInput) { in.Spots[0].Asset = "bar" }, "spots[0].asset"},
 		{"decoration asset", func(in *SaveInput) { in.Decorations[0].Asset = "doccia_doppia" }, ""},
 		{"decoration bookable asset", func(in *SaveInput) { in.Decorations[0].Asset = "lettino" }, ""},
+		{"text with asset", func(in *SaveInput) { in.Decorations[0].Kind, in.Decorations[0].Asset = "text", "bar" }, "decorations[0].asset"},
 		{"unknown decoration asset", func(in *SaveInput) { in.Decorations[0].Asset = "../x.svg" }, "decorations[0].asset"},
 		{"flag variant", func(in *SaveInput) {
 			in.Decorations[0].Kind, in.Decorations[0].Asset, in.Decorations[0].Variant = "custom", "bandiera_mare", "red"

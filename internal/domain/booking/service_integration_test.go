@@ -19,6 +19,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
+	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
@@ -431,6 +432,47 @@ func TestBookingAutoAssign_PendingZoneLines(t *testing.T) {
 		}
 		got, _ := f.Svc.Get(f.Ctx, f.Owner, f.Est.ID, z.Booking.ID)
 		if got.Lines[0].AssignmentStatus != store.AssignmentAssigned || *got.Lines[0].SpotID != f.FreeSpots[1].ID || len(got.SpotAllocations) != 4 {
+			t.Fatalf("assigned %+v", got.Lines[0])
+		}
+	})
+}
+
+// A pack that requires a kit spot kind (ADR 0012, sunbed) is assigned to a
+// spot of that kind and never to the umbrellas of the same zone.
+func TestBookingAutoAssign_PackRequiresKitSpotKind(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		now := f.Clock.Now()
+		sunbed := &store.Spot{
+			ID: store.NewID(), EstablishmentID: f.Est.ID, MapID: f.FreeSpots[0].MapID, ZoneID: f.FreeZone.ID, Label: "L1", RowLabel: "L", Number: 1,
+			Kind: "sunbed", X: 300, Y: 10, Shape: store.Shape{Type: "rect", W: 20, H: 40}, Capacity: map[string]int{}, MaxExtra: map[string]int{},
+			Attributes: []string{}, Active: true, CreatedAt: now, UpdatedAt: now,
+		}
+		f.Insert(sunbed)
+		pack := &store.Pack{
+			ID: store.NewID(), EstablishmentID: f.Est.ID, Code: "lettino", Name: store.I18nText{"it": "Lettino"}, Description: store.I18nText{},
+			Composition: map[string]int{"sunbed": 1}, RequiresSpotKind: []string{"sunbed"}, AllowedFormulas: []string{"day", "multi_day"},
+			Channels: []string{"desk", "online"}, MaxPerBooking: 4, Active: true, Version: 1, CreatedAt: now, UpdatedAt: now,
+		}
+		f.Insert(pack)
+		if _, err := f.Pricing.CreateRule(f.Ctx, f.Owner, f.Est.ID, pricingconfig.RuleInput{
+			SeasonID: f.Season.ID, Name: "lettino", TargetType: pricing.TargetPack, TargetIDs: []string{pack.ID},
+			Action: pricing.Action{Type: pricing.ActionSet, Amount: 1000}, Stage: pricing.StageBase, Active: true,
+		}); err != nil {
+			t.Fatal(err)
+		}
+		in := f.Input(f.FreeSpots[0], "2027-07-10", "2027-07-11")
+		in.Lines[0] = booking.LineInput{PackID: pack.ID, ZoneID: f.FreeZone.ID}
+		z := f.MustCreate(in)
+		if z.Lines[0].AssignmentStatus != store.AssignmentPending {
+			t.Fatalf("zone line %+v", z.Lines[0])
+		}
+		res, err := f.Svc.AutoAssign(f.Ctx, f.Owner, f.Est.ID, booking.AutoAssignInput{From: d("2027-07-01"), To: d("2027-07-31")})
+		if err != nil || !res.Applied || len(res.Assigned) != 1 || res.Assigned[0].SpotID != sunbed.ID {
+			t.Fatalf("apply: %v %+v", err, res)
+		}
+		got, _ := f.Svc.Get(f.Ctx, f.Owner, f.Est.ID, z.Booking.ID)
+		if got.Lines[0].AssignmentStatus != store.AssignmentAssigned || *got.Lines[0].SpotID != sunbed.ID {
 			t.Fatalf("assigned %+v", got.Lines[0])
 		}
 	})

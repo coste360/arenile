@@ -8,6 +8,7 @@ import (
 
 	"github.com/uptrace/bun"
 
+	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/store"
 )
 
@@ -25,6 +26,11 @@ const kitTile = 60.0
 // the kit art leaves a transparent margin inside its viewBox. Keep it equal to
 // SPOT_ART_SCALE in web/shared/src/map/kit/geometry.ts.
 const kitArtScale = 1.3
+
+// kitUnit is the drawn side of a template umbrella: the kit decorations of a
+// generated map are sized from it, so services, furniture and spots share
+// one scale instead of reading as specks next to the umbrellas.
+const kitUnit = layoutUmbrellaDia * kitArtScale
 
 // kitSpotAssets is the illustration of template spots by kind.
 var kitSpotAssets = map[string]string{
@@ -91,23 +97,25 @@ func kitDecorations(establishmentID, mapID string, width, height float64, occupi
 		add("passerella_verticale", "walkway", "", kitTile/2, kitTile+run/2, kitTile, run, 0)
 		placed = append(placed, kitRect{0, 0, kitTile, height})
 	}
+	// The sign of the entrance sits beside the head of the walkway; the
+	// shore row stays inside the map (items at most 56 units tall).
 	top, shore := 50.0, height-28
 	items := []kitItem{
-		{asset: "ingresso", kind: "entrance", x: 108, y: top, size: 40},
+		{asset: "ingresso", kind: "entrance", x: kitTile + 26, y: kitTile / 2, size: 44},
 		{asset: "bar", kind: "bar", x: width - 130, y: top, size: 84},
-		{asset: "doccia_doppia", kind: "shower", x: 170, y: top, size: 46},
-		{asset: "torretta_bagnino", kind: "lifeguard", x: width / 2, y: shore, size: 46},
-		{asset: "bandiera_mare", kind: "custom", variant: "green", x: width/2 + 52, y: shore, size: 40},
-		{asset: "wc", kind: "custom", x: width - 270, y: top, size: 42},
-		{asset: "dae", kind: "custom", x: width - 212, y: top, size: 34},
-		{asset: "rampa_accessibile", kind: "custom", x: 112, y: shore, size: 40}, //nolint:misspell // kit asset id (Italian)
-		{asset: "sedia_job", kind: "custom", x: 162, y: shore, size: 36},
-		{asset: "pattino_salvataggio", kind: "custom", x: width/2 - 72, y: shore, size: 50, rotation: 90},
-		{asset: "palma", kind: "custom", x: 236, y: top - 4, size: 56},
-		{asset: "palma_piccola", kind: "custom", x: width - 40, y: top + 6, size: 44},
-		{asset: "fioriera_rotonda", kind: "custom", x: 292, y: top, size: 30},
-		{asset: "fioriera_rotonda", kind: "custom", x: width - 320, y: top, size: 30},
-		{asset: "salvagente_palo", kind: "custom", x: width - 90, y: shore, size: 34},
+		{asset: "doccia_doppia", kind: "shower", x: 170, y: top, size: 56},
+		{asset: "torretta_bagnino", kind: "lifeguard", x: width / 2, y: shore, size: 56},
+		{asset: "bandiera_mare", kind: "custom", variant: "green", x: width/2 + 56, y: shore, size: 48},
+		{asset: "wc", kind: "custom", x: width - 270, y: top, size: kitUnit},
+		{asset: "dae", kind: "custom", x: width - 212, y: top, size: 44},
+		{asset: "rampa_accessibile", kind: "custom", x: 112, y: shore, size: kitUnit}, //nolint:misspell // kit asset id (Italian)
+		{asset: "sedia_job", kind: "custom", x: 168, y: shore, size: 48},
+		{asset: "pattino_salvataggio", kind: "custom", x: width/2 - 76, y: shore, size: 56, rotation: 90},
+		{asset: "palma", kind: "custom", x: 240, y: top - 4, size: 64},
+		{asset: "palma_piccola", kind: "custom", x: width - 40, y: top + 6, size: kitUnit},
+		{asset: "fioriera_rotonda", kind: "custom", x: 300, y: top, size: 40},
+		{asset: "fioriera_rotonda", kind: "custom", x: width - 320, y: top, size: 40},
+		{asset: "salvagente_palo", kind: "custom", x: width - 90, y: shore, size: 44},
 	}
 	for _, it := range items {
 		r := kitSquare(it.x, it.y, it.size)
@@ -130,30 +138,58 @@ func kitDecorations(establishmentID, mapID string, width, height float64, occupi
 	return out
 }
 
+// preKitTemplateDecoration reports whether d is one of the four plain
+// decorations the classic template drew before the kit (entrance, bar,
+// showers and lifeguard, at fixed positions of a width x height map). Only
+// these are replaced by an upgrade; anything else was added by hand.
+func preKitTemplateDecoration(d store.MapDecoration, width, height float64) bool {
+	if d.Asset != nil || d.Shape.Type != "rect" {
+		return false
+	}
+	type ref struct{ x, y, w, h float64 }
+	refs := map[string]ref{
+		"entrance":  {layoutMargin / 2, layoutMargin / 2, 40, 20},
+		"bar":       {width - layoutMargin/2, layoutMargin / 2, 40, 30},
+		"shower":    {layoutMargin / 2, height - layoutMargin, 20, 20},
+		"lifeguard": {width / 2, height - layoutMargin/2, 30, 30},
+	}
+	r, ok := refs[d.Kind]
+	near := func(a, b float64) bool { return math.Abs(a-b) < 0.5 }
+	return ok && near(d.X, r.x) && near(d.Y, r.y) && near(d.Shape.W, r.w) && near(d.Shape.H, r.h)
+}
+
+// kitUpgrade is what upgradeDemoMapKit changed.
+type kitUpgrade struct {
+	Maps, SpotsIllustrated, DecorationsRemoved, DecorationsAdded int
+}
+
 // upgradeDemoMapKit gives the kit illustrations to a demo establishment
 // seeded before the kit existed: spots without an illustration get the one
-// of their kind, and maps whose decorations have no illustration get the kit
-// decorations instead (the old shapes are replaced). Maps that already use
-// the kit are left alone, so re-seeding is idempotent. Changed maps get a new
-// version (ETag). It returns the number of maps changed.
-func upgradeDemoMapKit(ctx context.Context, tx bun.Tx, es store.EstablishmentScope, now time.Time) (int, error) {
+// of their kind, and the four plain decorations of the pre-kit template
+// (entrance, bar, showers, lifeguard, matched by kind, position and size)
+// are replaced by the kit decorations; decorations added by hand are kept
+// and never covered. Maps that already use the kit are left alone, so
+// re-seeding is idempotent. Each changed map gets a new version (ETag) and
+// an audit entry listing what changed.
+func (s *Service) upgradeDemoMapKit(ctx context.Context, tx bun.Tx, es store.EstablishmentScope, now time.Time) (kitUpgrade, error) {
+	var up kitUpgrade
 	var maps []store.Map
 	if err := tx.NewSelect().Model(&maps).Where("m.establishment_id = ?", es.ID()).Scan(ctx); err != nil {
-		return 0, fmt.Errorf("setup: demo kit: list maps: %w", err)
+		return up, fmt.Errorf("setup: demo kit: list maps: %w", err)
 	}
-	changed := 0
 	for i := range maps {
 		m := &maps[i]
 		spots, err := store.ListMapSpots(ctx, tx, es, m.ID)
 		if err != nil {
-			return 0, err
+			return up, err
 		}
 		decos, err := store.ListMapDecorations(ctx, tx, es, m.ID)
 		if err != nil {
-			return 0, err
+			return up, err
 		}
-		touched := false
-		occupied := make([]kitRect, 0, len(spots))
+		width, height := float64(m.Width), float64(m.Height)
+		illustrated := 0
+		occupied := make([]kitRect, 0, len(spots)+len(decos))
 		for j := range spots {
 			sp := &spots[j]
 			occupied = append(occupied, kitSpotRect(sp.X, sp.Y, sp.Shape))
@@ -165,39 +201,60 @@ func upgradeDemoMapKit(ctx context.Context, tx bun.Tx, es store.EstablishmentSco
 			}
 			sp.UpdatedAt = now
 			if err := store.UpdateSpot(ctx, tx, es, sp); err != nil {
-				return 0, fmt.Errorf("setup: demo kit: spot %s: %w", sp.Label, err)
+				return up, fmt.Errorf("setup: demo kit: spot %s: %w", sp.Label, err)
 			}
-			touched = true
+			illustrated++
 		}
 		usesKit := false
-		ids := make([]string, 0, len(decos))
+		var template []string
+		removed := make([]string, 0)
 		for _, d := range decos {
 			usesKit = usesKit || d.Asset != nil
-			ids = append(ids, d.ID)
+			if preKitTemplateDecoration(d, width, height) {
+				template = append(template, d.ID)
+				removed = append(removed, d.Kind)
+				continue
+			}
+			occupied = append(occupied, kitSquare(d.X, d.Y, max(d.Shape.W, d.Shape.H)))
 		}
-		if !usesKit {
-			if len(ids) > 0 {
-				if err := store.DeleteDecorations(ctx, tx, es, m.ID, ids); err != nil {
-					return 0, err
+		var fresh []store.MapDecoration
+		if !usesKit && (len(template) > 0 || len(decos) == 0) {
+			if len(template) > 0 {
+				if err := store.DeleteDecorations(ctx, tx, es, m.ID, template); err != nil {
+					return up, err
 				}
 			}
-			fresh := kitDecorations(es.ID(), m.ID, float64(m.Width), float64(m.Height), occupied, now)
+			fresh = kitDecorations(es.ID(), m.ID, width, height, occupied, now)
 			if len(fresh) > 0 {
 				if err := store.InsertDecorations(ctx, tx, es, fresh); err != nil {
-					return 0, err
+					return up, err
 				}
 			}
-			touched = true
 		}
-		if !touched {
+		if illustrated == 0 && len(template) == 0 && len(fresh) == 0 {
 			continue
 		}
 		if _, err := tx.NewUpdate().Model((*store.Map)(nil)).
 			Set("version = version + 1").Set("updated_at = ?", now).
 			Where("m.id = ?", m.ID).Where("m.establishment_id = ?", es.ID()).Exec(ctx); err != nil {
-			return 0, fmt.Errorf("setup: demo kit: bump map version: %w", err)
+			return up, fmt.Errorf("setup: demo kit: bump map version: %w", err)
 		}
-		changed++
+		added := make([]string, 0, len(fresh))
+		for _, d := range fresh {
+			added = append(added, *d.Asset)
+		}
+		if err := s.d.Audit.Record(ctx, tx, audit.Entry{
+			EstablishmentID: es.ID(), Actor: audit.SystemActor, Action: "setup.demo_map_kit_upgraded",
+			EntityType: "map", EntityID: m.ID, Diff: map[string]any{
+				"spots_illustrated": illustrated, "decorations_removed": removed, "decorations_added": added,
+			},
+		}); err != nil {
+			return up, err
+		}
+		up.Maps++
+		up.SpotsIllustrated += illustrated
+		up.DecorationsRemoved += len(template)
+		up.DecorationsAdded += len(fresh)
 	}
-	return changed, nil
+	return up, nil
 }
