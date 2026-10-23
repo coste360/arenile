@@ -44,7 +44,10 @@ consegna dei webhook e l'autenticazione con chiave API esistono da M0.
    oggi e domani) sono in IndexedDB scritti dall'app con un piccolo wrapper sull'API nativa: nessuna nuova
    dipendenza, il service worker non mette mai in cache le risposte `/api/` (dati personali, per utente). Coda
    offline solo per check-in, nota e incasso in contanti, inviata in ordine con `Idempotency-Key` (aggiunta al
-   contratto di `checkInBooking` e `addBookingNote`); i conflitti si mostrano all'utente.
+   contratto di `checkInBooking` e `addBookingNote`); i conflitti si mostrano all'utente. Il service worker passa da
+   `autoUpdate` a `prompt` (nessun ricaricamento durante un'operazione: l'utente conferma l'aggiornamento); la copia
+   offline è la persistenza di TanStack Query scritta a mano su `dehydrate`/`hydrate` con un'allowlist di chiavi
+   (`admin/src/offline/cache.ts`), senza i pacchetti `persist-client`.
 7. **Lato mare in alto di default.** Nuove mappe, generatore di file, modello classico e demo hanno il mare in alto
    (fila A più vicina al mare). Il cambio del lato mare di una mappa esistente può riorientare tutta la disposizione
    con `POST .../maps/{mapId}/reorient` (endpoint dedicato invece di un parametro del salvataggio: anteprima con

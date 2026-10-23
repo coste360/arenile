@@ -73,7 +73,10 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/domain/cash` | Sessioni di cassa per registro, movimenti, chiusure con differenza (INV-25) | `store`, `audit`, `event` |
 | `internal/domain/fiscal` | Corrispettivi per aliquota e metodo (JSON/CSV), documenti commerciali tramite `ext.FiscalDriver` (`none`, `export`) | `pkg/ext`, `store` |
 | `internal/domain/notification` | Template, invio email (SMTP), `ext.Notifier` | |
-| `internal/domain/event` | Tipi di evento, scrittura nell'outbox, dispatcher verso sink, webhook in uscita e SSE | |
+| `internal/domain/event` | Tipi di evento, scrittura nell'outbox, dispatcher verso sink, webhook in uscita e SSE; `Deliverer` (lease per tentativo, firma `SignAll`, backoff, `AttemptNow` per l'evento di prova) e client di uscita anti-SSRF (`egress.go`) | |
+| `internal/domain/report` | Report di sola lettura (spec 15.3): riepilogo, occupazione, ricavi incassati/venduti, prenotazioni, cancellazioni, abbonamenti, clienti migliori, saldi aperti, confronto anno su anno (`align` calendar/weekday), CSV italiano; calcoli puri sui dati letti da `store/report.go` | `store`, `money`, `calendar`, `payment` |
+| `internal/domain/apikey` | Chiavi API dello stabilimento (spec 17): creazione con segreto mostrato una volta (SHA-256), scope senza `users.manage`, scadenza, revoca, audit | `auth`, `store`, `audit` |
+| `internal/domain/webhook` | Endpoint dei webhook in uscita (spec 18.2): validazione di URL ed eventi, segreto cifrato e rotazione con periodo di grazia, registro e reinvio delle consegne, job di ritenzione | `event`, `store`, `audit` |
 | `internal/domain/auth` | Utenti, membership, ruoli e permessi (spec 16), sessioni, TOTP, chiavi API | `x/crypto` |
 | `internal/store` | Repository Bun; **unico posto con SQL**; ogni query operativa filtra per `establishment_id` | `bun` |
 | `internal/jobs` | Job runner in-process: job di base (dispatch outbox, webhook in uscita con backoff, pulizia sessioni e chiavi di idempotenza) più i job dei servizi registrati dalla composizione (rilascio hold scaduti ogni 30 s, scadenza e completamento prenotazioni, emissione documenti fiscali); riconciliazione pagamenti e backup in M4/M5 | `clock` |
@@ -245,3 +248,26 @@ web/ ──npm --prefix web run build──► web/admin/dist, web/booking/dist 
      ──copia──► internal/http/static/{admin,booking}
 go build ./cmd/arenile ──► binario unico ──► immagine distroless (deploy/Dockerfile)
 ```
+
+## 9. M5 parte A: report, integrazioni, pannello offline, lato del mare
+
+- **Report** (`internal/domain/report`, ADR 0014): solo lettura, mai scritture né eventi. Le query stanno in
+  `internal/store/report.go` e restituiscono righe grezze filtrate per `establishment_id`; aggregazione, scorporo IVA
+  (stesse celle dei corrispettivi, INV-51) e confronto anno su anno sono funzioni pure testate a tabella. Il CSV è
+  generato dalle stesse righe del JSON (`format=csv` o `Accept: text/csv`).
+- **Chiavi API** (`internal/domain/apikey`): autenticate dal middleware come le sessioni (`auth.AuthenticateAPIKey`),
+  con un rate limit per chiave (`middleware.APIKeyRateLimit`); le prenotazioni e gli hold creati con una chiave hanno
+  sempre canale `api` (`auth.ChannelFor`, INV-52).
+- **Webhook in uscita** (`internal/domain/webhook`, `internal/domain/event`): l'outbox resta l'unica sorgente; il
+  dispatcher crea una `webhook_deliveries` per endpoint iscritto, il `Deliverer` la invia con lease e backoff. Tutto il
+  traffico esce dal client di `event.NewEgressClient` (risoluzione unica, connessione all'IP controllato, niente
+  redirect né proxy, reti private solo con `ARENILE_WEBHOOKS_ALLOW_PRIVATE`, INV-53). Firma e verifica:
+  [`docs/guida/webhook-verifica-firma.md`](guida/webhook-verifica-firma.md).
+- **Pannello offline** (spec 21.2, `web/shared/src/offline`, `web/admin/src/offline`, `web/admin/src/pwa`): il service
+  worker precarica solo shell e risorse statiche, mai `/api/`; una allowlist di query dello stabilimento corrente è
+  salvata in IndexedDB per 48 ore; check-in, note e incassi in contanti offline finiscono in una coda inviata in ordine
+  con la `Idempotency-Key` generata all'accodamento. La disponibilità resta solo sul server: creare o spostare
+  prenotazioni richiede la connessione (INV-55).
+- **Lato del mare** (spec 11.2, `mapping.ReorientLayout`): trasformazione pura (specchio per lati opposti, rotazione
+  di 90° per lati adiacenti) applicata dal servizio delle mappe in un unico salvataggio versionato con audit ed evento
+  `config.map_changed` (`reoriented`); id e allocazioni non cambiano (INV-56).

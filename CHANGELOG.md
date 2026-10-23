@@ -11,6 +11,27 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 
 ### Added
 
+- M5 parte A, report completi (spec 15.3): riepilogo, occupazione per giorno/zona/fila/fascia, ricavi incassati o
+  venduti per periodo/canale/pack/extra/metodo/aliquota, prenotazioni per canale/anticipo/formula, cancellazioni e
+  no-show, abbonamenti con rilasci e rivendite, clienti migliori (solo nome), saldi aperti e confronto con l'anno
+  precedente allineato per data o per giorno della settimana (nuovo parametro `align=calendar|weekday`). Esportazione
+  CSV italiana di ogni report (BOM, `;`, virgola decimale). Il ricavo incassato coincide al centesimo con i
+  corrispettivi (INV-51); una stagione di un lido da 300 postazioni risponde in meno di 0,3 secondi.
+- M5 parte A, chiavi API e webhook in uscita dal pannello: chiavi con scope, scadenza (rifiutata in autenticazione),
+  revoca immediata, limite di 300 richieste al minuto per chiave e canale `api` forzato per prenotazioni e hold creati
+  con una chiave (quota online, ADR 0011); endpoint webhook con filtro sugli eventi, evento di prova sincrono,
+  registro delle consegne con reinvio, rotazione del segreto con doppia firma nel periodo di grazia, ritenzione di 30
+  giorni, limite di 256 KiB sul corpo e protezione SSRF (risoluzione unica e connessione all'IP controllato, link-local
+  e metadati sempre bloccati, reti private solo con la nuova variabile `ARENILE_WEBHOOKS_ALLOW_PRIVATE`, nessun
+  redirect seguito). Guida in [`docs/guida/integrazioni.md`](docs/guida/integrazioni.md) con la verifica della firma;
+  invarianti INV-52, INV-53, INV-54.
+- M5 parte A, pannello PWA con offline limitato (spec 21.2): pannello installabile (manifest e icone Arenile, avviso
+  di nuova versione con aggiornamento su conferma), copia offline in IndexedDB solo dello stabilimento corrente
+  (utente, mappe, situazione di oggi e domani, scadenza 48 ore, cancellata all'uscita o al cambio utente), indicatore
+  di connessione con operazioni in coda, avviso offline, coda di check-in, note e incassi in contanti inviata in
+  ordine con `Idempotency-Key` alla riconnessione e conflitti da rivedere (riprova o scarta); creazione e spostamento
+  di prenotazioni non disponibili offline. Il service worker non mette mai in cache le risposte `/api/`. Guida in
+  [`docs/guida/pannello-offline.md`](docs/guida/pannello-offline.md); invariante INV-55.
 - M5 parte A, contratto e scaffolding ([ADR 0014](docs/adr/0014-scelte-m5a.md)): report completi in
   `api/openapi.yaml` (riepilogo, occupazione per giorno/zona/fila/fascia, ricavi per periodo/canale/pack/extra/metodo
   di pagamento/aliquota IVA su base incassato o venduto, prenotazioni per canale e anticipo, cancellazioni e
@@ -22,6 +43,18 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
   `00007_integrations_reports` (SQLite e PostgreSQL). Pagine Report, Chiavi API e Webhook nel pannello e contratto
   della modalità offline (`web/admin/src/offline`). Le nuove operazioni rispondono `501` finché i builder non le
   completano.
+- Mappa con il mare in alto (spec 11.2): nuove mappe, generatore di file, modello classico e demo hanno il mare
+  in alto con la fila A più vicina; passerella, ingresso e servizi del kit seguono il lato del mare. Cambiando il
+  lato del mare l'editor propone "Ribalta la disposizione" (specchio per lati opposti, rotazione di 90° per lati
+  adiacenti, tessere delle passerelle sulla loro griglia, un solo salvataggio versionato con evento
+  `config.map_changed` `reoriented`, avviso e conferma se ci sono allocazioni future) oppure "Solo il mare".
+  `seed demo` porta una volta il mare in alto nelle mappe del modello di una demo esistente (solo geometria,
+  con voce di audit `setup.demo_map_reoriented`); le mappe disegnate a mano non cambiano.
+- M5 parte A, integrazione: guida [`docs/guida/webhook-verifica-firma.md`](docs/guida/webhook-verifica-firma.md)
+  (formato di `Arenile-Signature`, controlli, esempi Node.js/Python/Go/PHP, vettore di prova verificato da
+  `TestSignature_DocumentedVector`); test end-to-end per report con confronto anno su anno e CSV, chiave API creata dal
+  pannello e usata sull'API admin, endpoint webhook con consegna firmata verso un ricevitore locale, check-in offline
+  inviato una sola volta alla riconnessione; invariante INV-56 (lato del mare: solo geometria).
 - M4, contratto e scaffolding ([ADR 0013](docs/adr/0013-scelte-m4.md)): API pubblica completa in
   `api/openapi.yaml` (profilo con configurazione del flusso ed `ETag`, calendario, mappa pubblica,
   disponibilità online, catalogo, preventivo, prenotazione con sessione di checkout `X-Arenile-Checkout`,
@@ -65,6 +98,11 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 
 ### Fixed
 
+- Report: un indicatore passato da 0 a 0 mostrava "Nuovo" invece di "0,0%".
+- Le schede a più righe (Report, Stabilimento) a 390 px si sovrapponevano al contenuto: l'altezza fissa del gruppo di
+  schede ora si adatta quando vanno a capo.
+- Oggi e Cassa a 390 px scorrevano in orizzontale (griglia senza colonna esplicita): ora restano nella larghezza dello
+  schermo.
 - Revisione di M3 ([ADR 0011](docs/adr/0011-revisione-m3.md)): la conferma di un hold blocca le sue righe e gli hold
   scaduti vengono rimossi per intero sotto il lock della prenotazione proprietaria (su PostgreSQL una vendita
   concorrente poteva lasciare una prenotazione confermata senza allocazioni); rilascio e revoca dei giorni di un
