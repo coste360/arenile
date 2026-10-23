@@ -1,7 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
-import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import {
   BackLink,
   DataTable,
@@ -13,6 +12,7 @@ import {
   SectionCard,
   StatCard,
   type ColumnDef,
+  SegmentedControl,
 } from '@arenile/shared/ui/patterns';
 import { dateToIso, formatIsoDate } from '@arenile/shared/lib/dates';
 import { formatBasisPoints } from '@arenile/shared/lib/money';
@@ -100,16 +100,15 @@ export function CorrispettiviPage() {
       actions={downloads}
     >
       <PageToolbar>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          aria-label={t('corrispettivi.period')}
+        <SegmentedControl
+          label={t('corrispettivi.period')}
           value={mode}
-          onValueChange={(v) => v && setMode(v as Period['mode'])}
-        >
-          <ToggleGroupItem value="day">{t('corrispettivi.day')}</ToggleGroupItem>
-          <ToggleGroupItem value="month">{t('corrispettivi.month')}</ToggleGroupItem>
-        </ToggleGroup>
+          onValueChange={(v) => setMode(v as Period['mode'])}
+          options={[
+            { value: 'day', label: t('corrispettivi.day') },
+            { value: 'month', label: t('corrispettivi.month') },
+          ]}
+        />
         {mode === 'day' ? (
           <DatePicker
             aria-label={t('corrispettivi.date')}

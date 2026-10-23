@@ -1,7 +1,8 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Tabs, TabsContent } from '../tabs';
 import { renderWithI18n } from '../../testing';
 import {
   ConfirmDialog,
@@ -10,12 +11,15 @@ import {
   DatePicker,
   I18nTextInput,
   MoneyInput,
+  NARROW_QUERY,
   NavTab,
   NavTabs,
   Page,
   PageHeader,
   PercentInput,
+  ResponsiveTabsList,
   SectionCard,
+  SegmentedControl,
   StatCard,
   ThemeProvider,
   ThemeToggle,
@@ -334,21 +338,150 @@ describe('Page / SectionCard / StatCard / NavTabs', () => {
     expect(screen.getByRole('button', { name: 'Esporta' })).toBeInTheDocument();
   });
 
-  it('marks the active route tab', () => {
-    renderWithI18n(
-      <NavTabs label="Strumenti prezzi">
+  const navOptions = [
+    { value: '/a', label: 'Listino' },
+    { value: '/b', label: 'Matrice' },
+  ];
+  function Nav({ onValueChange = () => {} }: { onValueChange?: (v: string) => void }) {
+    return (
+      <NavTabs
+        label="Strumenti prezzi"
+        options={navOptions}
+        value="/a"
+        onValueChange={onValueChange}
+      >
         <NavTab active>
           <a href="/a">Listino</a>
         </NavTab>
         <NavTab active={false}>
           <a href="/b">Matrice</a>
         </NavTab>
-      </NavTabs>,
+      </NavTabs>
     );
+  }
+
+  it('marks the active route tab', () => {
+    renderWithI18n(<Nav />);
     const nav = screen.getByRole('navigation', { name: 'Strumenti prezzi' });
     expect(nav).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Listino' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Matrice' })).toHaveAttribute('data-state', 'inactive');
+  });
+
+  describe('on a narrow screen', () => {
+    const original = window.matchMedia;
+    beforeEach(() => {
+      window.matchMedia = ((query: string) => ({
+        matches: query === NARROW_QUERY,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      })) as typeof window.matchMedia;
+    });
+    afterEach(() => {
+      window.matchMedia = original;
+    });
+
+    it('route tabs become a Select that navigates', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      renderWithI18n(<Nav onValueChange={onValueChange} />);
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      const select = screen.getByRole('combobox', { name: 'Strumenti prezzi' });
+      expect(select).toHaveTextContent('Listino');
+      await user.click(select);
+      await user.click(await screen.findByRole('option', { name: 'Matrice' }));
+      expect(onValueChange).toHaveBeenCalledWith('/b');
+    });
+
+    it('tabs become a Select driving the same Tabs value', async () => {
+      const user = userEvent.setup();
+      function Harness() {
+        const [tab, setTab] = useState('general');
+        const options = [
+          { value: 'general', label: 'Generale' },
+          { value: 'pricing', label: 'Prezzi e IVA' },
+        ];
+        return (
+          <Tabs value={tab} onValueChange={setTab}>
+            <ResponsiveTabsList
+              label="Sezioni"
+              value={tab}
+              onValueChange={setTab}
+              options={options}
+            />
+            <TabsContent value="general">Pannello generale</TabsContent>
+            <TabsContent value="pricing">Pannello prezzi</TabsContent>
+          </Tabs>
+        );
+      }
+      renderWithI18n(<Harness />);
+      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+      expect(screen.getByText('Pannello generale')).toBeInTheDocument();
+      await user.click(screen.getByRole('combobox', { name: 'Sezioni' }));
+      await user.click(await screen.findByRole('option', { name: 'Prezzi e IVA' }));
+      expect(await screen.findByText('Pannello prezzi')).toBeInTheDocument();
+    });
+
+    it('collapses a long segmented control, keeps a short one', () => {
+      const options = [
+        { value: 'FULL', label: 'Giorno intero' },
+        { value: 'AM', label: 'Mattina' },
+        { value: 'PM', label: 'Pomeriggio' },
+      ];
+      renderWithI18n(
+        <>
+          <SegmentedControl
+            collapseOnNarrow
+            label="Fasce"
+            value="AM"
+            onValueChange={() => {}}
+            options={options}
+          />
+          <SegmentedControl label="Periodo" value="AM" onValueChange={() => {}} options={options} />
+        </>,
+      );
+      expect(screen.getByRole('combobox', { name: 'Fasce' })).toHaveTextContent('Mattina');
+      expect(screen.getByRole('radiogroup', { name: 'Periodo' })).toBeInTheDocument();
+    });
+  });
+
+  it('renders tabs and a segmented control on a wide screen', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    renderWithI18n(
+      <>
+        <Tabs value="general">
+          <ResponsiveTabsList
+            label="Sezioni"
+            value="general"
+            onValueChange={() => {}}
+            options={[
+              { value: 'general', label: 'Generale' },
+              { value: 'pricing', label: 'Prezzi e IVA' },
+            ]}
+          />
+        </Tabs>
+        <SegmentedControl
+          collapseOnNarrow
+          label="Fasce"
+          value="FULL"
+          onValueChange={onValueChange}
+          options={[
+            { value: 'FULL', label: 'Giorno intero' },
+            { value: 'AM', label: 'Mattina' },
+          ]}
+        />
+      </>,
+    );
+    expect(screen.getByRole('tablist', { name: 'Sezioni' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Generale' })).toHaveAttribute('aria-selected', 'true');
+    await user.click(screen.getByRole('radio', { name: 'Mattina' }));
+    expect(onValueChange).toHaveBeenCalledWith('AM');
   });
 });
 

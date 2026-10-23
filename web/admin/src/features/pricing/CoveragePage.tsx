@@ -10,6 +10,7 @@ import {
   PageToolbar,
   QueryState,
   SectionCard,
+  SegmentedControl,
 } from '@arenile/shared/ui/patterns';
 import { CalendarXIcon, CircleCheckIcon, LockIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -18,7 +19,7 @@ import { useConfigContext } from '../configuration/api/useConfigContext';
 import { useEditor } from '../configuration/api/useCrud';
 import { useCoverage, type CoverageReport, type Slots } from './api';
 import { calendarMonths, gapCountsByDay, heatLevel } from './coverage';
-import { PricingLayout, SeasonSelect, SingleToggle } from './kit';
+import { PricingLayout, SeasonSelect } from './kit';
 import type { RuleValues } from './rules.schema';
 import { RuleForm } from './RulesTab';
 import { useSelectedSeason } from './season';
@@ -135,13 +136,11 @@ export function CoveragePage() {
         </Alert>
       )}
       <PageToolbar>
-        <span aria-hidden="true" className="text-sm text-muted-foreground">
-          {t('fields.slots')}
-        </span>
-        <SingleToggle
+        <SegmentedControl
+          collapseOnNarrow
           label={t('fields.slots')}
           value={slots}
-          onChange={(v) => {
+          onValueChange={(v) => {
             setSlots(v as Slots);
             setDay(undefined);
           }}

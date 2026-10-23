@@ -15,8 +15,6 @@ import {
   Spinner,
   Tabs,
   TabsContent,
-  TabsList,
-  TabsTrigger,
 } from '@arenile/shared/ui';
 import {
   type ColumnDef,
@@ -33,6 +31,7 @@ import {
   SectionCard,
   SheetForm,
   StatusBadge,
+  ResponsiveTabsList,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -205,10 +204,16 @@ export function PoliciesPage() {
       actions={<SeasonSelect seasons={sel.seasons} season={sel.season} onSelect={sel.select} />}
     >
       <Tabs value={tab} onValueChange={(v) => setTab(v as 'season' | 'default')} className="gap-4">
-        <TabsList variant="line" aria-label={t('tabs.label')}>
-          <TabsTrigger value="season">{t('tabs.season')}</TabsTrigger>
-          <TabsTrigger value="default">{t('tabs.default')}</TabsTrigger>
-        </TabsList>
+        <ResponsiveTabsList
+          variant="line"
+          label={t('tabs.label')}
+          value={tab}
+          onValueChange={(v) => setTab(v as 'season' | 'default')}
+          options={[
+            { value: 'season', label: t('tabs.season') },
+            { value: 'default', label: t('tabs.default') },
+          ]}
+        />
         <TabsContent value="default">
           {ctx.establishment ? (
             <DefaultPolicyForm

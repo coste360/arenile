@@ -3,7 +3,7 @@ import { Button } from '@arenile/shared/ui/button';
 import { ButtonGroup } from '@arenile/shared/ui/button-group';
 import { FieldDescription, FieldLegend, FieldSeparator, FieldSet } from '@arenile/shared/ui/field';
 import { Input } from '@arenile/shared/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import {
   type ColumnDef,
   DataTable,
@@ -15,6 +15,7 @@ import {
   QueryState,
   RowActions,
   StatusBadge,
+  ResponsiveTabsList,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -93,14 +94,16 @@ export function CatalogPage() {
       readOnly={!ctx.canConfigure}
     >
       <Tabs value={tab} onValueChange={setTab} className="gap-4">
-        <TabsList aria-label={t('catalog.title')}>
-          {TABS.map(({ id, icon: Icon }) => (
-            <TabsTrigger key={id} value={id}>
-              <Icon aria-hidden="true" />
-              {t(`catalog.tabs.${id}`)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <ResponsiveTabsList
+          label={t('catalog.title')}
+          value={tab}
+          onValueChange={setTab}
+          options={TABS.map(({ id, icon }) => ({
+            value: id,
+            icon,
+            label: t(`catalog.tabs.${id}`),
+          }))}
+        />
         <TabsContent value="components">
           <ComponentsTab ctx={ctx} />
         </TabsContent>

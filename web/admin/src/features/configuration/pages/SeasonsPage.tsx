@@ -6,7 +6,7 @@ import { FieldDescription, FieldLegend, FieldSet } from '@arenile/shared/ui/fiel
 import { Input } from '@arenile/shared/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
 import { Spinner } from '@arenile/shared/ui/spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { cn } from '@arenile/shared/lib/utils';
 import { dateFnsLocale } from '@arenile/shared/lib/dateLocales';
 import { formatIsoDate, isoToDate } from '@arenile/shared/lib/dates';
@@ -22,6 +22,7 @@ import {
   RowActions,
   SectionCard,
   StatusBadge,
+  ResponsiveTabsList,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useSearch } from '@tanstack/react-router';
@@ -315,6 +316,7 @@ function RatePeriodsCard({
   const list = ratePeriods.useList(establishmentId, { season_id: season.id });
   const remove = ratePeriods.useRemove(establishmentId);
   const editor = useEditor<RatePeriod>();
+  const [view, setView] = useState('timeline');
   const items = [...(list.data ?? [])].sort((a, b) => a.sort_order - b.sort_order);
   const gaps = list.data ? uncoveredDays(season, items) : 0;
   const name = (p: RatePeriod) => localize(p.name, uiLocale, defaultLocale) || p.code;
@@ -398,17 +400,16 @@ function RatePeriodsCard({
             onRetry={() => void list.refetch()}
           />
           {list.data && (
-            <Tabs defaultValue="timeline" className="gap-4">
-              <TabsList aria-label={t('periods.views')}>
-                <TabsTrigger value="timeline">
-                  <ChartGanttIcon aria-hidden="true" />
-                  {t('periods.viewTimeline')}
-                </TabsTrigger>
-                <TabsTrigger value="calendar">
-                  <CalendarDaysIcon aria-hidden="true" />
-                  {t('periods.viewCalendar')}
-                </TabsTrigger>
-              </TabsList>
+            <Tabs value={view} onValueChange={setView} className="gap-4">
+              <ResponsiveTabsList
+                label={t('periods.views')}
+                value={view}
+                onValueChange={setView}
+                options={[
+                  { value: 'timeline', icon: ChartGanttIcon, label: t('periods.viewTimeline') },
+                  { value: 'calendar', icon: CalendarDaysIcon, label: t('periods.viewCalendar') },
+                ]}
+              />
               <TabsContent value="timeline">
                 <PeriodTimeline season={season} periods={items} />
               </TabsContent>

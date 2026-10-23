@@ -28,6 +28,7 @@
     "closedDescription": "Ruhetag oder außerhalb der Saison: Plätze sind nicht buchbar.",
     "viewMap": "Karte",
     "viewList": "Liste",
+    "views": "Ansicht",
     "aria": "Betriebskarte {{name}}, {{date}}, {{slot}}"
   },
   "slot": {

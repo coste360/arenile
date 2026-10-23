@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { NARROW_QUERY } from '@arenile/shared/ui/patterns';
 import { describe, expect, it } from 'vitest';
 import { EST_ID, baseRoutes, callsTo, establishment, json, problem, renderApp } from '../testing';
 
@@ -156,5 +157,33 @@ describe('EstablishmentSettingsPage', () => {
     expect(
       within(screen.getByRole('main')).queryByRole('link', { name: 'Configurazione guidata' }),
     ).toBeNull();
+  });
+
+  it('switches sections from a Select on a narrow screen (no tab bar to wrap)', async () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query === NARROW_QUERY,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    try {
+      const user = userEvent.setup();
+      renderApp(PATH, baseRoutes('owner'));
+      const picker = await screen.findByRole('combobox', { name: 'Sezioni delle impostazioni' });
+      expect(screen.queryByRole('tablist')).toBeNull();
+      expect(picker).toHaveTextContent('Generale');
+      await user.click(picker);
+      await user.click(await screen.findByRole('option', { name: 'Prezzi e IVA' }));
+      expect(
+        await screen.findByRole('region', { name: 'Impostazioni dei prezzi' }),
+      ).toBeInTheDocument();
+    } finally {
+      window.matchMedia = original;
+    }
   });
 });

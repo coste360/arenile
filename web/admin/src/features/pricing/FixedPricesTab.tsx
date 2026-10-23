@@ -6,8 +6,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  ToggleGroup,
-  ToggleGroupItem,
 } from '@arenile/shared/ui';
 import {
   type ColumnDef,
@@ -18,6 +16,7 @@ import {
   FormDialog,
   OptionSelect,
   QueryState,
+  SegmentedControl,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PackageIcon, PlusIcon, TagsIcon } from 'lucide-react';
@@ -175,20 +174,21 @@ export function FixedPricesTab(p: PricingTabProps & { categories: string[] }) {
           pageSize={0}
           columnToggle={false}
           filters={
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              aria-label={t('fields.formula')}
+            <SegmentedControl
+              collapseOnNarrow
+              label={t('fields.formula')}
               value={formula}
-              onValueChange={(v) => v && setFormula(v as FixedFormula)}
-            >
-              {FIXED_FORMULAS.map((f) => (
-                <ToggleGroupItem key={f} value={f}>
-                  {t(`formulas.${f}`)}
-                  <span className="text-muted-foreground tabular-nums">{countByFormula(f)}</span>
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+              onValueChange={(v) => setFormula(v as FixedFormula)}
+              options={FIXED_FORMULAS.map((f) => ({
+                value: f,
+                label: (
+                  <>
+                    {t(`formulas.${f}`)}
+                    <span className="text-muted-foreground tabular-nums">{countByFormula(f)}</span>
+                  </>
+                ),
+              }))}
+            />
           }
           toolbar={add}
           groupBy={(r) => r.pack}

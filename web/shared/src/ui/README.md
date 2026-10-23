@@ -53,10 +53,8 @@ Hard-coded English strings in generated code must go through `t('ui.…')`.
   spinner strings are translated (`ui.*` keys).
 - `form`: `FormMessage` translates the zod message (messages are i18n keys).
 - `alert`: extra `success` and `warning` variants (never restyle an Alert with `className`).
-- `tabs`: `TabsList` scrolls horizontally instead of wrapping (`max-w-full overflow-x-auto
-justify-start`, the `line` variant gets bottom padding so its underline is not clipped); the trigger
-  classes are exported as `tabsTriggerClasses` for `NavTabs`.
-- `toggle-group`: `max-w-full overflow-x-auto`, a segmented control scrolls on narrow screens.
+- `tabs`: the trigger classes are exported as `tabsTriggerClasses` for `NavTabs` (no visual
+  change). Narrow screens are handled by `ResponsiveTabsList`, never by scrolling.
 - `sonner`: uses our `useTheme` (no next-themes); `breadcrumb`: `BreadcrumbPage` has no fake
   `role="link"`; `hooks/use-mobile`: `useSyncExternalStore` version.
 
@@ -191,7 +189,8 @@ const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues });
 | `Page` / `BackLink` / `PageToolbar`                              | page skeleton (section + PageHeader + `notice`), back link for `eyebrow`, row of page-scope controls                                                                                                                                                        |
 | `SectionCard`                                                    | titled card: `title`, `description`, `icon`, `actions`, `footer`, `flush` (for `DataTable embedded`), `as`                                                                                                                                                  |
 | `StatCard`                                                       | KPI tile: `label`, `value`, `hint`, `icon`, `tone` (`default` \| `danger` \| `success`), `children`                                                                                                                                                         |
-| `NavTabs` / `NavTab`                                             | route links with the `TabsList` look; `NavTab active` wraps the router link                                                                                                                                                                                 |
+| `NavTabs` / `NavTab`                                             | route links with the `TabsList` look (`NavTab active` wraps the router link), a Select below `sm` (`options`, `value`, `onValueChange`)                                                                                                                     |
+| `ResponsiveTabsList` / `SegmentedControl`                        | tab bar / single-choice toggle that become a full-width Select below `sm` (`collapseOnNarrow` for segmented controls); `useIsNarrow`, `NARROW_QUERY`                                                                                                        |
 | `FormSection` / `FieldRow`                                       | settings layout; `FieldRow` = FormField+FormItem+FormLabel+FormControl+FormDescription+FormMessage                                                                                                                                                          |
 | `MoneyInput`                                                     | `value: number \| null` **integer cents** ⇄ "1.234,50 €"; exact parsing (no floats); `null` when empty/invalid (+ `aria-invalid`, the typed text stays visible)                                                                                             |
 | `PercentInput`                                                   | integer **basis points** ⇄ "5,5 %"                                                                                                                                                                                                                          |
@@ -240,11 +239,18 @@ everywhere it applies. Page-level `className` is for layout only (grid, gap, wid
 
 ### Tabs
 
-- In-page tabs: `Tabs` + `TabsList` (default variant) + `TabsTrigger`, never restyled. The list
-  scrolls horizontally when it does not fit (mobile), it never wraps.
-- Tabs that switch route (Listino / Simulatore / Matrice / Copertura / Policy): `NavTabs` + `NavTab`,
-  identical look.
-- A second level of tabs inside a tab: `TabsList variant="line"`.
+- In-page tabs: a controlled `<Tabs value onValueChange>` with `ResponsiveTabsList` (`label`,
+  `value`, `onValueChange`, `options: { value, label, icon? }[]`) and `TabsContent`. From `sm` up it
+  is the shadcn `TabsList`; below `sm` (`NARROW_QUERY`, `useIsNarrow`) a full-width `Select` with
+  icon + label drives the same value. Never a raw `TabsList`, never wrapping or scrolling, no
+  scrollbars anywhere. Same behaviour on every tabbed page.
+- Tabs that switch route (Listino / Simulatore / Matrice / Copertura / Policy): `NavTabs` + `NavTab`
+  with `options`/`value`/`onValueChange` (navigate) for the narrow Select.
+- A second level of tabs inside a tab: `ResponsiveTabsList variant="line"`.
+- Segmented controls (Giorno intero/Mattina/Pomeriggio, Giorno/Mese, formulas): `SegmentedControl`;
+  pass `collapseOnNarrow` when the options do not fit in 288px (320px screen minus gutters), it then
+  becomes the same Select below `sm`. Field-level toggles inside forms (`MultiToggle`,
+  `SingleToggle`) wrap instead.
 
 ### Lists (tables)
 
@@ -298,7 +304,7 @@ everywhere it applies. Page-level `className` is for layout only (grid, gap, wid
 - Spacing: 24px (`space-y-6`/`gap-6`) between page blocks, 16px (`gap-4`) inside grids of cards,
   8px (`gap-2`) inside toolbars.
 - Mobile (390px): no horizontal page scroll; grids collapse to one column (`min-w-0` on grid
-  children holding tables), tabs scroll, header actions wrap.
+  children holding tables), tab bars and long segmented controls become a Select, header actions wrap.
 
 ## Rules for new screens
 

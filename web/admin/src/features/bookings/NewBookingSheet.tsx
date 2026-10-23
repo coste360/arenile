@@ -3,7 +3,7 @@ import { Form } from '@arenile/shared/ui/form';
 import { Input } from '@arenile/shared/ui/input';
 import { Label } from '@arenile/shared/ui/label';
 import { Switch } from '@arenile/shared/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { Textarea } from '@arenile/shared/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@arenile/shared/ui/toggle-group';
 import {
@@ -14,6 +14,7 @@ import {
   MoneyInput,
   OptionSelect,
   SheetForm,
+  ResponsiveTabsList,
 } from '@arenile/shared/ui/patterns';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
@@ -292,12 +293,15 @@ function NewBookingForm({
             value={values.target}
             onValueChange={(v) => form.setValue('target', v as NewBookingValues['target'])}
           >
-            <TabsList>
-              <TabsTrigger value="spots">{t('new.targetSpots')}</TabsTrigger>
-              <TabsTrigger value="zone" disabled={zoneOptions.length === 0}>
-                {t('new.targetZone')}
-              </TabsTrigger>
-            </TabsList>
+            <ResponsiveTabsList
+              label={t('new.target')}
+              value={values.target}
+              onValueChange={(v) => form.setValue('target', v as NewBookingValues['target'])}
+              options={[
+                { value: 'spots', label: t('new.targetSpots') },
+                { value: 'zone', label: t('new.targetZone'), disabled: zoneOptions.length === 0 },
+              ]}
+            />
             <TabsContent value="spots" className="pt-2">
               <SpotPicker
                 establishmentId={establishmentId}

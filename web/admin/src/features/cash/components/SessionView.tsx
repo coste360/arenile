@@ -1,6 +1,8 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { useState } from 'react';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import {
   DataTable,
+  ResponsiveTabsList,
   EmptyState,
   SectionCard,
   StatCard,
@@ -31,6 +33,7 @@ export function SessionView({
 }) {
   const { t } = useTranslation('cash');
   const { session } = detail;
+  const [activity, setActivity] = useState('payments');
   const takings = normalizeTotals(detail.totals_by_method);
   const expected = expectedTotals(detail);
   const mv = netMovements(detail.movements);
@@ -99,16 +102,23 @@ export function SessionView({
         </SectionCard>
 
         <SectionCard title={t('current.activity')} flush className="min-w-0 lg:col-span-2">
-          <Tabs defaultValue="payments" className="gap-4">
+          <Tabs value={activity} onValueChange={setActivity} className="gap-4">
             <div className="px-6">
-              <TabsList>
-                <TabsTrigger value="payments">
-                  {t('tabs.payments')} ({detail.payments.length})
-                </TabsTrigger>
-                <TabsTrigger value="movements">
-                  {t('tabs.movements')} ({detail.movements.length})
-                </TabsTrigger>
-              </TabsList>
+              <ResponsiveTabsList
+                label={t('current.activity')}
+                value={activity}
+                onValueChange={setActivity}
+                options={[
+                  {
+                    value: 'payments',
+                    label: `${t('tabs.payments')} (${detail.payments.length})`,
+                  },
+                  {
+                    value: 'movements',
+                    label: `${t('tabs.movements')} (${detail.movements.length})`,
+                  },
+                ]}
+              />
             </div>
             <TabsContent value="payments">
               <PaymentsTable detail={detail} ctx={ctx} embedded />

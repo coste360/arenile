@@ -2,11 +2,18 @@ import { useProblemText } from '@arenile/shared/api';
 import { formatCents } from '@arenile/shared/lib/money';
 import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
-import { EmptyState, Page, QueryState, SectionCard, StatCard } from '@arenile/shared/ui/patterns';
+import {
+  EmptyState,
+  Page,
+  QueryState,
+  ResponsiveTabsList,
+  SectionCard,
+  StatCard,
+} from '@arenile/shared/ui/patterns';
 import { Progress } from '@arenile/shared/ui/progress';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { Spinner } from '@arenile/shared/ui/spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@arenile/shared/ui/tabs';
+import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { Link } from '@tanstack/react-router';
 import {
   CalendarDaysIcon,
@@ -47,6 +54,7 @@ const NewBookingSheet = lazy(() =>
  */
 export function TodayPage() {
   const { t, i18n } = useTranslation('operations');
+  const [worklist, setWorklist] = useState('checkin');
   const establishmentId = useRequiredEstablishmentId();
   const { date, slot, today, setDay } = useDaySearch();
   const permissions = useOperationsPermissions();
@@ -222,19 +230,39 @@ export function TodayPage() {
             <StatusChart byStatus={kpis.byStatus} />
           </SectionCard>
           <SectionCard title={t('today.worklist')}>
-            <Tabs defaultValue="checkin">
-              <TabsList>
-                <TabsTrigger value="checkin">
-                  {t('today.toCheckIn')} <Badge variant="secondary">{toCheckIn.length}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="balance">
-                  {t('today.toCollect')} <Badge variant="secondary">{toCollect.length}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="assign">
-                  {t('today.toAssign')}{' '}
-                  <Badge variant="secondary">{day.data.pending_assignments.length}</Badge>
-                </TabsTrigger>
-              </TabsList>
+            <Tabs value={worklist} onValueChange={setWorklist}>
+              <ResponsiveTabsList
+                label={t('today.worklist')}
+                value={worklist}
+                onValueChange={setWorklist}
+                options={[
+                  {
+                    value: 'checkin',
+                    label: (
+                      <>
+                        {t('today.toCheckIn')} <Badge variant="secondary">{toCheckIn.length}</Badge>
+                      </>
+                    ),
+                  },
+                  {
+                    value: 'balance',
+                    label: (
+                      <>
+                        {t('today.toCollect')} <Badge variant="secondary">{toCollect.length}</Badge>
+                      </>
+                    ),
+                  },
+                  {
+                    value: 'assign',
+                    label: (
+                      <>
+                        {t('today.toAssign')}{' '}
+                        <Badge variant="secondary">{day.data.pending_assignments.length}</Badge>
+                      </>
+                    ),
+                  },
+                ]}
+              />
               <TabsContent value="checkin">
                 <WorkList
                   empty={t('today.noCheckIns')}

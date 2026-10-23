@@ -35,7 +35,7 @@ import {
   type Option,
   type ScaledInputProps,
 } from '@arenile/shared/ui/patterns';
-import { Link, useMatchRoute } from '@tanstack/react-router';
+import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
 import {
   AlertCircleIcon,
   CalculatorIcon,
@@ -114,10 +114,23 @@ export function PricingNav({
     { to: '/e/$establishmentId/policies', label: t('nav.policies'), icon: ShieldCheckIcon },
   ] as const;
   const matchRoute = useMatchRoute();
+  const navigate = useNavigate();
+  const current = links.find((l) => matchRoute({ to: l.to, params: { establishmentId } }));
   return (
-    <NavTabs label={t('nav.label')}>
+    <NavTabs
+      label={t('nav.label')}
+      options={links.map((l) => ({ value: l.to, label: l.label, icon: l.icon }))}
+      value={current?.to ?? links[0].to}
+      onValueChange={(to) =>
+        void navigate({
+          to: to as (typeof links)[number]['to'],
+          params: { establishmentId },
+          search,
+        })
+      }
+    >
       {links.map((l) => (
-        <NavTab key={l.to} active={!!matchRoute({ to: l.to, params: { establishmentId } })}>
+        <NavTab key={l.to} active={l === current}>
           <Link
             to={l.to}
             params={{ establishmentId }}

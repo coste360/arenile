@@ -19,6 +19,18 @@ export { BackLink, Page, PageToolbar, type PageProps, type PageToolbarProps } fr
 export { SectionCard, type SectionCardProps } from './SectionCard';
 export { StatCard, type StatCardProps, type StatTone } from './StatCard';
 export { NavTab, NavTabs, type NavTabsProps } from './NavTabs';
+export {
+  NARROW_QUERY,
+  OptionSelectMenu,
+  ResponsiveTabsList,
+  SegmentedControl,
+  useIsNarrow,
+  useMediaQuery,
+  type OptionPickerProps,
+  type ResponsiveTabsListProps,
+  type SegmentedControlProps,
+  type TabOption,
+} from './ResponsiveTabs';
 export { FieldRow, FormSection, type FieldRowProps, type FormSectionProps } from './FormSection';
 export { MoneyInput, PercentInput, type ScaledInputProps } from './MoneyInput';
 export {

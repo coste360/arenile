@@ -45,7 +45,7 @@ export function StatCard({
       </div>
       <p
         className={cn(
-          'truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl',
+          'text-lg font-semibold tracking-tight break-words tabular-nums sm:text-2xl',
           TONE[tone],
         )}
       >

@@ -28,6 +28,7 @@
     "closedDescription": "Giorno di chiusura o fuori stagione: le postazioni non sono prenotabili.",
     "viewMap": "Mappa",
     "viewList": "Elenco",
+    "views": "Vista",
     "aria": "Mappa operativa {{name}}, {{date}}, {{slot}}"
   },
   "slot": {
