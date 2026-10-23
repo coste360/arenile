@@ -47,7 +47,11 @@ function storageOf(win: Window): Storage | null {
  * Resolves the manage token of the page: the one in the path (stored for
  * later), else the one stored for this slug in this tab.
  */
-export function resolveManageToken(win: Window, slug: string, fromPath: string | null): string | null {
+export function resolveManageToken(
+  win: Window,
+  slug: string,
+  fromPath: string | null,
+): string | null {
   const store = createManageTokenStore(storageOf(win));
   if (fromPath) {
     store.save(slug, fromPath);

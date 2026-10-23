@@ -53,7 +53,10 @@ describe('parseBookingLocation', () => {
       view: 'manage',
       manageToken: null,
     });
-    expect(parseBookingLocation('/b/lido/m/', '')).toMatchObject({ view: 'manage', manageToken: null });
+    expect(parseBookingLocation('/b/lido/m/', '')).toMatchObject({
+      view: 'manage',
+      manageToken: null,
+    });
   });
 
   it('reads the host page of the widget only in embed mode', () => {

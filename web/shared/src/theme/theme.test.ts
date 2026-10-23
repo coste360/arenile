@@ -58,7 +58,14 @@ describe('themeToCssVars / applyTheme', () => {
   it('keeps links and prices AA in both colour schemes (spec 12.6)', () => {
     const ratio = (a: string, b: string) =>
       contrastRatio(parseHexColor(a) as Rgb, parseHexColor(b) as Rgb);
-    for (const primary of [DEFAULT_PRIMARY, '#0e6ba8', '#1a1a1a', '#ff6600', '#ffe600', '#2563eb']) {
+    for (const primary of [
+      DEFAULT_PRIMARY,
+      '#0e6ba8',
+      '#1a1a1a',
+      '#ff6600',
+      '#ffe600',
+      '#2563eb',
+    ]) {
       const t = resolveTheme({ primary_color: primary });
       expect(ratio(t.primaryOnSurface, '#ffffff')).toBeGreaterThanOrEqual(4.5);
       expect(ratio(t.primaryOnSurfaceDark, DARK_SURFACE)).toBeGreaterThanOrEqual(4.5);

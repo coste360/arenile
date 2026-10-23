@@ -205,7 +205,6 @@
   --beach-flag-red: #ef6b62;
 }
 
-
 /* Elements themed by applyTheme() outside <html> (the theme preview of the panel). */
 [data-themed] {
   --primary-on-surface: var(--primary-on-surface-light, oklch(0.45 0.11 245));
