@@ -177,9 +177,9 @@ jobs:
           severity: CRITICAL,HIGH
 
   e2e:
-    name: End-to-end (Playwright)
+    name: End-to-end (Playwright, M4 acceptance, Lighthouse)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
 
@@ -217,6 +217,23 @@ jobs:
       - name: make e2e
         if: steps.detect.outputs.present == 'true'
         run: make e2e
+
+      - name: M4 acceptance on the real binary (curl, fake Stripe, signed webhook)
+        if: steps.detect.outputs.present == 'true'
+        run: make acceptance-m4
+
+      - name: Lighthouse (mobile, throttled) on the public page
+        if: steps.detect.outputs.present == 'true'
+        run: make lighthouse
+
+      - name: Upload Lighthouse scores
+        if: always() && steps.detect.outputs.present == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse
+          path: e2e/lighthouse/results.json
+          retention-days: 30
+          if-no-files-found: ignore
 
       - name: Upload Playwright report
         if: failure() && steps.detect.outputs.present == 'true'

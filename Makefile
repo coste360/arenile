@@ -260,6 +260,14 @@ else
 	@echo "e2e/ not present yet: skipping end-to-end tests"
 endif
 
+.PHONY: lighthouse
+lighthouse: build ## Lighthouse mobile (rete e CPU rallentate) sulla pagina pubblica: performance >= 90, a11y/best practices/SEO >= 95
+	node e2e/lighthouse/run.mjs
+
+.PHONY: acceptance-m4
+acceptance-m4: build ## Accettazione M4 sul binario reale con curl (checkout, Stripe finto con webhook firmato, link magico, rimborso)
+	scripts/acceptance/m4-real-binary.sh
+
 .PHONY: check
 check: gen-check lint test ## gen + verifica codice generato + lint + test (< 2 min)
 
@@ -281,17 +289,33 @@ else
 endif
 
 .PHONY: docs-build
-docs-build: ## Build statica della documentazione in docs-site/dist (con indice di ricerca)
+docs-build: ## Build statica della documentazione in docs-site/dist (ricerca, riferimento API, verifica link); ARENILE_DOCS_STRICT=1 esige tutti gli screenshot
 ifneq ($(HAS_DOCS),)
 	$(DOCS_ENV) npm --prefix docs-site run build
 else
 	@echo "docs-site/ not present yet"
 endif
 
-.PHONY: docs-screenshots
-docs-screenshots: web-build ## Rigenera gli screenshot chiaro/scuro della documentazione con Playwright
+.PHONY: docs-check
+docs-check: ## Verifica dei tipi della documentazione (astro check: componenti, contenuti, configurazione)
 ifneq ($(HAS_DOCS),)
-	npm --prefix docs-site run screenshots
+	$(DOCS_ENV) npm --prefix docs-site run check
+else
+	@echo "docs-site/ not present yet"
+endif
+
+.PHONY: docs-preview
+docs-preview: ## Serve la build statica della documentazione (dopo make docs-build)
+ifneq ($(HAS_DOCS),)
+	$(DOCS_ENV) npm --prefix docs-site run preview
+else
+	@echo "docs-site/ not present yet"
+endif
+
+.PHONY: docs-screenshots
+docs-screenshots: build ## Rigenera screenshot chiaro/scuro e dati demo della documentazione (binario reale + seed demo, Playwright); DOCS_ONLY=nome,prefisso-* per un sottoinsieme
+ifneq ($(HAS_DOCS),)
+	ARENILE_DOCS_BIN="$(BIN_DIR)/arenile" npm --prefix docs-site run screenshots
 else
 	@echo "docs-site/ not present yet"
 endif

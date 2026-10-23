@@ -19,6 +19,7 @@ web/**/dist/
 .vite/
 playwright-report/
 test-results/
+e2e/lighthouse/results.json
 
 # docs site (Astro)
 docs-site/dist/
@@ -29,6 +30,7 @@ docs-site/.astro/
 .env.*
 !.env.example
 CLAUDE.local.md
+.claude/worktrees/
 .DS_Store
 coverage.out
 
