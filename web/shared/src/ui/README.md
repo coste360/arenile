@@ -52,9 +52,11 @@ Hard-coded English strings in generated code must go through `t('ui.…')`.
 - `dialog`: optional `closeLabel` prop; close/sheet/sidebar/breadcrumb/pagination/command/
   spinner strings are translated (`ui.*` keys).
 - `form`: `FormMessage` translates the zod message (messages are i18n keys).
+- `alert`: extra `success` and `warning` variants (never restyle an Alert with `className`).
 - `tabs`: `TabsList` scrolls horizontally instead of wrapping (`max-w-full overflow-x-auto
-justify-start`, the `line` variant keeps `overflow-visible` for its underline); the trigger
+justify-start`, the `line` variant gets bottom padding so its underline is not clipped); the trigger
   classes are exported as `tabsTriggerClasses` for `NavTabs`.
+- `toggle-group`: `max-w-full overflow-x-auto`, a segmented control scrolls on narrow screens.
 - `sonner`: uses our `useTheme` (no next-themes); `breadcrumb`: `BreadcrumbPage` has no fake
   `role="link"`; `hooks/use-mobile`: `useSyncExternalStore` version.
 
@@ -268,6 +270,9 @@ everywhere it applies. Page-level `className` is for layout only (grid, gap, wid
 - Empty: `empty={<EmptyState bordered={false} …/>}` inside the table; loading: `loading` (skeleton
   rows); error: `QueryState` instead of the table.
 - Mobile: the table scrolls horizontally inside its container; the toolbar wraps (search full width).
+- Editable cells (an input per row, e.g. the cash count) keep a plain shadcn `Table`: inline
+  `cell` functions of columns rebuilt on every render remount and lose focus. Use the same
+  surface and header classes as DataTable there.
 
 ### Sections, KPIs, forms, dialogs
 
@@ -280,6 +285,11 @@ everywhere it applies. Page-level `className` is for layout only (grid, gap, wid
   marker instead of asterisks); two columns on `sm+` with `grid gap-4 sm:grid-cols-2`, one on
   mobile. Save bar = `SectionCard footer` (or `FormSection footer`) aligned right; in dialogs and
   sheets `FormDialog`/`FormSheet` footer: Annulla (outline) then the primary action, right aligned.
+- Buttons: default size everywhere (page header, SectionCard actions, toolbars, footers);
+  `size="sm"` only inside table rows and dense toolbars of the map editor; icon-only buttons use
+  `size="icon-sm"` with `aria-label`.
+- Notices: `Alert` (`default`, `destructive`, `success`, `warning`), `role="status"` for
+  non-errors.
 - Confirmations: `ConfirmDialog` (`destructive` for deletions). Feedback: `toast` from sonner.
 - Empty / not available: `EmptyState` (bordered when standalone). Loading/error: `QueryState`.
 - Typography: page title `text-2xl font-semibold`, section title `font-semibold` (16px),

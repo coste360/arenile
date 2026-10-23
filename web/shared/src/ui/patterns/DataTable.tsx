@@ -139,6 +139,8 @@ export interface DataTableProps<TData, TValue = unknown> {
    * and last columns align with the card padding.
    */
   embedded?: boolean;
+  /** Long tables: the body scrolls inside a 70vh area under a sticky header row. */
+  stickyHeader?: boolean;
   initialSorting?: SortingState;
   initialColumnVisibility?: VisibilityState;
   className?: string;
@@ -174,6 +176,7 @@ export function DataTable<TData, TValue = unknown>({
   groupBy,
   renderGroup,
   embedded,
+  stickyHeader,
   initialSorting = [],
   initialColumnVisibility = {},
   className,
@@ -255,6 +258,8 @@ export function DataTable<TData, TValue = unknown>({
         data-slot="data-table"
         className={cn(
           embedded ? 'border-t' : 'overflow-hidden rounded-xl border bg-card shadow-sm',
+          stickyHeader &&
+            '[&_[data-slot=table-container]]:max-h-[70vh] [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-muted',
         )}
       >
         <Table>
@@ -346,10 +351,12 @@ export function DataTable<TData, TValue = unknown>({
         </Table>
       </div>
       {paginated && table.getPageCount() > 1 && (
-        <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
+        <div className={cn(embedded && 'px-6 pb-4')}>
+          <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
+        </div>
       )}
       {loadMore?.hasMore && (
-        <div className="flex justify-center">
+        <div className={cn('flex justify-center', embedded && 'pb-4')}>
           <Button variant="outline" onClick={loadMore.onLoadMore} disabled={loadMore.loading}>
             {loadMore.loading
               ? t('ui.table.loadingMore')
