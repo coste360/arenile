@@ -72,6 +72,8 @@ func run(args []string, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "arenile-desktop %s (%s)\n", version, uiKind)
 		return 0
 	}
+	// Tray, notifications and pairing form follow the OS language (it/en).
+	desktop.SetLocale(desktop.DetectLocale(os.Getenv))
 	// Console log for the UI adapter; the launcher logs to the data folder.
 	log := slog.New(slog.NewTextHandler(stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

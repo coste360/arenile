@@ -48,8 +48,8 @@ const (
 	MenuQuit      = "quit"
 )
 
-// MenuItem is an entry of the tray menu (labels are Italian, the source
-// language; the tray has no locale negotiation yet).
+// MenuItem is an entry of the tray menu (labels from T: Italian source,
+// English when the OS language is English, see DetectLocale).
 type MenuItem struct {
 	ID       string // one of the Menu* constants
 	Label    string
@@ -317,9 +317,9 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrSecretStoreUnavailable):
-			l.ui.Notify("Arenile", "Portachiavi del sistema non disponibile o bloccato: sbloccalo (o consenti l'accesso) e riapri Arenile. I dati non sono stati toccati.")
+			l.ui.Notify("Arenile", T("notify.keyring_locked"))
 		case errors.Is(err, ErrSecretKeyMissing):
-			l.ui.Notify("Arenile", "Chiave segreta dell'archivio non trovata: Arenile non riparte con una chiave nuova. Dettagli nella cartella dati (logs).")
+			l.ui.Notify("Arenile", T("notify.key_missing"))
 		}
 		return err
 	}
@@ -361,7 +361,7 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 	if settings.LANEnabled {
 		if err := l.rt.StartLAN(ctx, settings.LANPort); err != nil {
 			log.Warn("desktop LAN mode not started", slog.String("error", err.Error()))
-			l.ui.Notify("Arenile", "Modalità rete locale non avviata: controlla le impostazioni.")
+			l.ui.Notify("Arenile", T("notify.lan_not_started"))
 		} else {
 			l.warnCertRenewal()
 		}
@@ -377,7 +377,7 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Go(func() {
 		sched := &Scheduler{Runtime: l.rt, Clock: l.o.Clock, Log: log, Tick: l.o.ScheduleTick, OnFailure: func(error) {
-			l.ui.Notify("Arenile", "Backup giornaliero non riuscito: controlla la cartella dei backup.")
+			l.ui.Notify("Arenile", T("notify.daily_backup_fail"))
 		}}
 		_ = sched.Run(bgCtx)
 	})
@@ -387,7 +387,7 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 			s, _ := l.rt.Settings(bgCtx)
 			return s.UpdateCheck
 		}, func(latest string) {
-			l.ui.Notify("Arenile", "È disponibile la versione "+latest+": scaricala dal portale Coste360.")
+			l.ui.Notify("Arenile", T("notify.update", latest))
 		}, l.o.UpdateTick)
 	})
 	wg.Go(func() { l.supervise(bgCtx) })
@@ -544,7 +544,7 @@ func (l *Launcher) fail(err error) {
 	l.mu.Lock()
 	l.fatal = err
 	l.mu.Unlock()
-	l.ui.Notify("Arenile", "Arenile si è fermato per un errore: riaprilo. Dettagli nella cartella dati (logs).")
+	l.ui.Notify("Arenile", T("notify.fatal"))
 	l.ui.Quit()
 }
 
@@ -571,10 +571,10 @@ func (l *Launcher) restore(ctx context.Context, name string) error {
 	}
 	if restoreErr != nil {
 		l.log.Error("desktop restore failed", slog.String("error", restoreErr.Error()))
-		l.ui.Notify("Arenile", "Ripristino non riuscito: i dati attuali non sono stati modificati.")
+		l.ui.Notify("Arenile", T("notify.restore_fail"))
 		return nil
 	}
-	l.ui.Notify("Arenile", "Ripristino completato: ricarica la pagina del pannello.")
+	l.ui.Notify("Arenile", T("notify.restore_ok"))
 	return nil
 }
 
@@ -602,22 +602,22 @@ func (l *Launcher) shutdown() {
 func (l *Launcher) menu() []MenuItem {
 	s, _ := l.rt.Settings(context.Background())
 	items := []MenuItem{
-		{ID: MenuOpen, Label: "Apri pannello", OnClick: func() { _ = l.ui.OpenURL(l.panelURL()) }},
-		{ID: MenuBackup, Label: "Backup ora", OnClick: func() { go l.backupNow() }},
-		{ID: MenuDataDir, Label: "Apri cartella dati", OnClick: func() { _ = l.ui.OpenFolder(l.dataDir) }},
+		{ID: MenuOpen, Label: T("menu.open"), OnClick: func() { _ = l.ui.OpenURL(l.panelURL()) }},
+		{ID: MenuBackup, Label: T("menu.backup"), OnClick: func() { go l.backupNow() }},
+		{ID: MenuDataDir, Label: T("menu.data_dir"), OnClick: func() { _ = l.ui.OpenFolder(l.dataDir) }},
 	}
 	if l.rt.d.Autostart != nil {
 		items = append(items, MenuItem{
-			ID: MenuAutostart, Label: "Avvio automatico all'accensione", Checkbox: true, Checked: s.Autostart, //nolint:misspell // Italian label (spec 29.1)
+			ID: MenuAutostart, Label: T("menu.autostart"), Checkbox: true, Checked: s.Autostart,
 			OnClick: func() { go l.toggle(func(s *control.Settings) { s.Autostart = !s.Autostart }) },
 		})
 	}
 	if l.rt.LANAvailable() {
-		label := "Modalità rete locale"
+		label := T("menu.lan")
 		if d := l.rt.Runtime().Desktop; d != nil && d.LANURL != "" {
 			label += " (" + d.LANURL + ")"
 			if soon, at := l.certRenewalSoon(); soon {
-				label += " — certificato in rinnovo il " + at
+				label += T("menu.lan_renewal", at)
 			}
 		}
 		items = append(items, MenuItem{
@@ -625,13 +625,13 @@ func (l *Launcher) menu() []MenuItem {
 			OnClick: func() { go l.toggle(func(s *control.Settings) { s.LANEnabled = !s.LANEnabled }) },
 		}, MenuItem{
 			// Always present (disabled while off): the tray keeps the item order.
-			ID: MenuLANQR, Label: "Mostra QR rete locale", Disabled: !s.LANEnabled,
+			ID: MenuLANQR, Label: T("menu.lan_qr"), Disabled: !s.LANEnabled,
 			OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + "/admin/rete-locale") },
 		})
 	}
 	items = append(items,
-		MenuItem{ID: MenuRestore, Label: "Ripristina un backup…", OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + "/admin/desktop") }},
-		MenuItem{ID: MenuQuit, Label: "Esci", OnClick: l.ui.Quit},
+		MenuItem{ID: MenuRestore, Label: T("menu.restore"), OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + "/admin/desktop") }},
+		MenuItem{ID: MenuQuit, Label: T("menu.quit"), OnClick: l.ui.Quit},
 	)
 	return items
 }
@@ -661,7 +661,7 @@ func (l *Launcher) certRenewalSoon() (bool, string) {
 // the new one, so the operator plans it (spec 29.1).
 func (l *Launcher) warnCertRenewal() {
 	if soon, at := l.certRenewalSoon(); soon {
-		l.ui.Notify("Arenile", "Il certificato della rete locale sarà rinnovato il "+at+": dopo quel giorno riabbina le app e riaccetta il certificato nei browser.")
+		l.ui.Notify("Arenile", T("notify.cert_renewal", at))
 	}
 }
 
@@ -669,10 +669,10 @@ func (l *Launcher) backupNow() {
 	b, err := l.rt.BackupNow(context.Background(), control.BackupManual)
 	if err != nil {
 		l.log.Error("desktop manual backup failed", slog.String("error", err.Error()))
-		l.ui.Notify("Arenile", "Backup non riuscito: controlla la cartella dei backup.")
+		l.ui.Notify("Arenile", T("notify.backup_fail"))
 		return
 	}
-	l.ui.Notify("Arenile", "Backup completato: "+b.Name)
+	l.ui.Notify("Arenile", T("notify.backup_ok", b.Name))
 }
 
 func (l *Launcher) toggle(change func(*control.Settings)) {
@@ -681,7 +681,7 @@ func (l *Launcher) toggle(change func(*control.Settings)) {
 	change(&s)
 	if _, err := l.rt.UpdateSettings(ctx, s); err != nil {
 		l.log.Warn("desktop setting not changed", slog.String("error", err.Error()))
-		l.ui.Notify("Arenile", "Impostazione non modificata: "+err.Error())
+		l.ui.Notify("Arenile", T("notify.setting_fail", err.Error()))
 		l.refreshMenu()
 	}
 }

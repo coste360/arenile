@@ -17,8 +17,9 @@ import (
 )
 
 // ErrNotPaired: remote mode chosen but this PC is not paired (or its token
-// was revoked) and no pairing form is available in this build.
-var ErrNotPaired = errors.New("modalità remota: questo PC non è abbinato a un'istanza (avvia con -pair oppure usa la build con finestra)")
+// was revoked) and no pairing form is available in this build. The message
+// shown to the operator comes from desktop.T("err.not_paired").
+var ErrNotPaired = errors.New("remote: this PC is not paired with an instance (start with -pair or use the build with the window)")
 
 // Options configure the remote mode.
 type Options struct {
@@ -150,7 +151,7 @@ func (m *Mode) Run(ctx context.Context, ui desktop.UI, dataDir string, log *slog
 	if cfg.FiscalBridge {
 		agent, err := m.newAgent(cfg, token, hc, dataDir, log)
 		if err != nil {
-			ui.Notify("Arenile", "Ponte fiscale non avviato: "+err.Error())
+			ui.Notify("Arenile", desktop.T("notify.bridge_fail", err.Error()))
 			log.Error("fiscal bridge not started", slog.String("error", err.Error()))
 		} else {
 			wg.Go(func() {
@@ -169,7 +170,7 @@ func (m *Mode) Run(ctx context.Context, ui desktop.UI, dataDir string, log *slog
 			log.Warn("remote mode: device token refused, pairing removed")
 			_ = tokens.Delete(context.Background())
 			_ = SaveConfig(dataDir, forgotten)
-			ui.Notify("Arenile", "Questo PC è stato scollegato dal pannello dell'istanza: abbinalo di nuovo.")
+			ui.Notify("Arenile", desktop.T("notify.revoked"))
 			cancel()
 			ui.Quit()
 		}
@@ -219,8 +220,8 @@ func (m *Mode) pair(ctx context.Context, ui desktop.UI, dataDir string) (Config,
 		form = nativePairing()
 	}
 	if form == nil {
-		ui.Notify("Arenile", "Modalità remota: abbina questo PC con il codice del pannello (Configurazione → Dispositivi).")
-		return Config{}, ErrNotPaired
+		ui.Notify("Arenile", desktop.T("notify.pair_needed"))
+		return Config{}, fmt.Errorf("%w: %s", ErrNotPaired, desktop.T("err.not_paired"))
 	}
 	var cfg Config
 	err := form.Ask(ctx, func(in PairInput) error {
@@ -284,30 +285,30 @@ func (m *Mode) applyAutostart(cfg Config, log *slog.Logger) {
 // menu is the tray menu of the remote mode in builds without the native
 // window.
 func (m *Mode) menu(ctx context.Context, ui desktop.UI, dataDir string, cfg Config, token string, hc *http.Client, panel string) []desktop.MenuItem {
-	bridge := "Ponte fiscale: disattivato"
+	bridge := desktop.T("menu.bridge_off")
 	if cfg.FiscalBridge {
-		bridge = "Ponte fiscale: attivo (" + cfg.FiscalDriver + ")"
+		bridge = desktop.T("menu.bridge_on", cfg.FiscalDriver)
 	}
 	return []desktop.MenuItem{
-		{ID: desktop.MenuOpen, Label: "Apri pannello", OnClick: func() { _ = ui.OpenURL(panel) }},
+		{ID: desktop.MenuOpen, Label: desktop.T("menu.open"), OnClick: func() { _ = ui.OpenURL(panel) }},
 		{ID: "bridge", Label: bridge, Disabled: true},
-		{ID: desktop.MenuDataDir, Label: "Apri cartella dati", OnClick: func() { _ = ui.OpenFolder(dataDir) }},
-		{ID: "local", Label: "Passa alla modalità locale (al prossimo avvio)", OnClick: func() {
+		{ID: desktop.MenuDataDir, Label: desktop.T("menu.data_dir"), OnClick: func() { _ = ui.OpenFolder(dataDir) }},
+		{ID: "local", Label: desktop.T("menu.switch_local"), OnClick: func() {
 			if err := SetMode(dataDir, desktop.ModeLocal); err == nil {
-				ui.Notify("Arenile", "Al prossimo avvio Arenile userà il server interno di questo PC.")
+				ui.Notify("Arenile", desktop.T("notify.switch_local"))
 			}
 		}},
-		{ID: "unpair", Label: "Scollega questo PC dall'istanza", OnClick: func() {
+		{ID: "unpair", Label: desktop.T("menu.unpair"), OnClick: func() {
 			go func() {
 				if err := m.Unpair(ctx, dataDir, cfg, token, hc); err != nil {
-					ui.Notify("Arenile", "Scollegamento non riuscito: "+err.Error())
+					ui.Notify("Arenile", desktop.T("notify.unpair_fail", err.Error()))
 					return
 				}
-				ui.Notify("Arenile", "PC scollegato dall'istanza.")
+				ui.Notify("Arenile", desktop.T("notify.unpaired"))
 				ui.Quit()
 			}()
 		}},
-		{ID: desktop.MenuQuit, Label: "Esci", OnClick: ui.Quit},
+		{ID: desktop.MenuQuit, Label: desktop.T("menu.quit"), OnClick: ui.Quit},
 	}
 }
 
@@ -325,17 +326,17 @@ func (m *Mode) Unpair(ctx context.Context, dataDir string, cfg Config, token str
 		return serr
 	}
 	if err != nil {
-		return fmt.Errorf("istanza non raggiungibile, revoca il dispositivo dal pannello: %w", err)
+		return fmt.Errorf(desktop.T("err.unreachable"), err) //nolint:err113 // operator-facing message, locale-dependent
 	}
 	if status != http.StatusNoContent && status != http.StatusUnauthorized {
-		return fmt.Errorf("risposta inattesa dell'istanza (%d)", status)
+		return fmt.Errorf(desktop.T("err.unexpected_code"), status) //nolint:err113 // operator-facing message, locale-dependent
 	}
 	return nil
 }
 
 func windowTitle(c Config) string {
 	if c.EstablishmentName != "" {
-		return "Arenile — " + c.EstablishmentName
+		return desktop.T("menu.window_title", c.EstablishmentName)
 	}
 	return "Arenile"
 }

@@ -3,11 +3,15 @@
 package remote
 
 import (
+	"bytes"
 	"context"
 	"html"
+	"html/template"
 	"sync"
 
 	webview "github.com/webview/webview_go"
+
+	"github.com/coste360/arenile/internal/desktop"
 )
 
 // The native panel window of the remote mode: the system webview (WKWebView
@@ -66,13 +70,16 @@ func (webviewWindow) Open(ctx context.Context, o WindowOptions) error {
 
 type webviewPairing struct{}
 
-// Ask implements PairingForm with a plain HTML form (no styling: native
-// controls follow the OS theme).
+// Ask implements PairingForm with a small HTML form rendered from
+// pairingTemplate in the launcher locale (desktop.T). The styling follows
+// the panel's look (system font, muted labels, rounded fields, one primary
+// button) with the OS light/dark scheme; it is not part of the SPA, so the
+// shadcn rule of the web workspace does not apply here.
 func (webviewPairing) Ask(ctx context.Context, submit func(PairInput) error) error {
 	w := webview.New(false)
 	defer w.Destroy()
-	w.SetTitle("Arenile — collega questo PC a un'istanza")
-	w.SetSize(560, 520, webview.HintNone)
+	w.SetTitle(desktop.T("menu.pairing_title"))
+	w.SetSize(560, 560, webview.HintNone)
 	var mu sync.Mutex
 	paired := false
 	_ = w.Bind("arenilePair", func(qr, url, code, name string) (string, error) {
@@ -85,7 +92,7 @@ func (webviewPairing) Ask(ctx context.Context, submit func(PairInput) error) err
 		w.Dispatch(w.Terminate)
 		return "", nil
 	})
-	w.SetHtml(pairingHTML)
+	w.SetHtml(PairingHTML())
 	stop := terminateOnDone(ctx, w)
 	defer stop()
 	w.Run()
@@ -109,28 +116,56 @@ func terminateOnDone(ctx context.Context, w webview.WebView) (stop func()) {
 	return func() { close(done) }
 }
 
-const pairingHTML = `<!doctype html>
-<html lang="it"><head><meta charset="utf-8"><meta name="color-scheme" content="light dark">
-<title>Collega a un'istanza</title></head>
-<body>
-<h1>Collega questo PC</h1>
-<p>Nel pannello dell'istanza apri <b>Configurazione → Dispositivi</b>, crea un codice di abbinamento e inseriscilo qui insieme all'indirizzo dell'istanza (oppure incolla il testo del QR).</p>
-<form id="f">
-<p><label>Indirizzo dell'istanza<br><input name="url" type="url" placeholder="https://lido.example.it" size="40"></label></p>
-<p><label>Codice di abbinamento<br><input name="code" placeholder="ABCD-EFGH" size="12" autocapitalize="characters"></label></p>
-<p><label>Oppure testo del QR<br><input name="qr" placeholder="arenile://pair?d=…" size="40"></label></p>
-<p><label>Nome di questo PC<br><input name="name" value="PC cassa" size="30"></label></p>
-<p><button type="submit">Collega</button></p>
+// PairingHTML renders the pairing form in the current locale (pure).
+func PairingHTML() string {
+	var b bytes.Buffer
+	_ = pairingTemplate.Execute(&b, map[string]string{
+		"lang": string(desktop.CurrentLocale()), "title": desktop.T("pair.title"), "intro": desktop.T("pair.intro"),
+		"url": desktop.T("pair.url"), "code": desktop.T("pair.code"), "qr": desktop.T("pair.qr"),
+		"name": desktop.T("pair.name"), "nameValue": desktop.T("pair.name_value"),
+		"submit": desktop.T("pair.submit"), "inProgress": desktop.T("pair.in_progress"),
+	})
+	return b.String()
+}
+
+var pairingTemplate = template.Must(template.New("pairing").Parse(`<!doctype html>
+<html lang="{{.lang}}"><head><meta charset="utf-8"><meta name="color-scheme" content="light dark">
+<title>{{.title}}</title>
+<style>
+  :root { color-scheme: light dark; --fg: #0f172a; --muted: #64748b; --border: #cbd5e1; --bg: #ffffff; --primary: #0e6ba8; --primary-fg: #ffffff; --ring: #93c5fd; --error: #b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #e2e8f0; --muted: #94a3b8; --border: #334155; --bg: #0b1220; --primary: #3b9ddd; --primary-fg: #06111f; --ring: #1d4ed8; --error: #fca5a5; } }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 32rem; margin: 0 auto; padding: 1.5rem 1.5rem 2rem; }
+  h1 { font-size: 1.25rem; font-weight: 600; margin: 0 0 .5rem; }
+  p.intro { color: var(--muted); margin: 0 0 1.25rem; }
+  label { display: block; font-weight: 500; margin: 0 0 .25rem; }
+  .field { margin-bottom: .9rem; }
+  input { box-sizing: border-box; width: 100%; height: 2.25rem; padding: 0 .65rem; border: 1px solid var(--border); border-radius: .5rem; background: transparent; color: inherit; font: inherit; }
+  input:focus { outline: 2px solid var(--ring); outline-offset: 1px; }
+  button { height: 2.25rem; padding: 0 1rem; border: 0; border-radius: .5rem; background: var(--primary); color: var(--primary-fg); font: inherit; font-weight: 500; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: default; }
+  #err { min-height: 1.5rem; margin: .75rem 0 0; color: var(--error); }
+  #err.busy { color: var(--muted); }
+</style></head>
+<body><main>
+<h1>{{.title}}</h1>
+<p class="intro">{{.intro}}</p>
+<form id="f" autocomplete="off">
+<div class="field"><label for="url">{{.url}}</label><input id="url" name="url" type="url" placeholder="https://lido.example.it"></div>
+<div class="field"><label for="code">{{.code}}</label><input id="code" name="code" placeholder="ABCD-EFGH" autocapitalize="characters" spellcheck="false"></div>
+<div class="field"><label for="qr">{{.qr}}</label><input id="qr" name="qr" placeholder="arenile://pair?d=…" spellcheck="false"></div>
+<div class="field"><label for="name">{{.name}}</label><input id="name" name="name" value="{{.nameValue}}"></div>
+<button type="submit">{{.submit}}</button>
 <p id="err" role="alert"></p>
 </form>
 <script>
 document.getElementById("f").addEventListener("submit", function (e) {
   e.preventDefault();
   var f = e.target, b = f.querySelector("button"), err = document.getElementById("err");
-  b.disabled = true; err.textContent = "Collegamento in corso…";
+  b.disabled = true; err.className = "busy"; err.textContent = {{.inProgress}};
   window.arenilePair(f.qr.value, f.url.value, f.code.value, f.name.value).then(function (msg) {
-    err.textContent = msg || ""; b.disabled = false;
+    err.className = ""; err.textContent = msg || ""; b.disabled = false;
   });
 });
 </script>
-</body></html>`
+</main></body></html>`))
