@@ -87,12 +87,21 @@ type Deps struct {
 	Cash      *cash.Service
 	Fiscal    *fiscal.Service
 	// M4 services (public page, online payments, notifications).
-	Online   *online.Service
-	Checkout *checkout.Service
-	Notify   *notify.Service
-	Gateway  *gateway.Service
+	Online         *online.Service
+	Checkout       *checkout.Service
+	Notify         *notify.Service
+	Gateway        *gateway.Service
+	Bus            ext.EventBus
+	Readiness      ReadinessChecker
+	TrustedProxies []netip.Prefix
+	SecureCookies  bool
+	Static         *static.Handler
+	// Metrics, when non-nil, is mounted at /metrics (disabled by default).
+	Metrics http.Handler
+
 	// M6/M7: instance metadata, paired devices, fiscal bridge and the
-	// desktop edition control (nil on the server edition).
+	// desktop edition control (nil on the server edition). Own block so
+	// that gofumpt alignment never touches the M4 lines above.
 	Meta         *meta.Service
 	Devices      *devicedomain.Service
 	FiscalBridge *fiscalbridge.Service
@@ -100,13 +109,7 @@ type Deps struct {
 	DesktopUsers desktophttp.UsersCounter
 	// PairingsPerMinute overrides the per-IP limit of POST /api/device/v1/pair (default 10).
 	PairingsPerMinute int
-	Bus               ext.EventBus
-	Readiness         ReadinessChecker
-	TrustedProxies    []netip.Prefix
-	SecureCookies     bool
-	Static            *static.Handler
-	// Metrics, when non-nil, is mounted at /metrics (disabled by default).
-	Metrics http.Handler
+
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
 	// SSEHeartbeat overrides the SSE heartbeat (tests).

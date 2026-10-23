@@ -75,14 +75,16 @@ type Handlers struct {
 	Online  *online.Service
 	Notify  *notify.Service
 	Gateway *gateway.Service
-	// M6/M7: instance metadata, paired devices and fiscal bridge.
+	Stream  *sse.Server
+	Log     *slog.Logger
+	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
+	SecureCookies bool
+
+	// M6/M7: instance metadata, paired devices and fiscal bridge (own block:
+	// gofumpt alignment must not touch the lines above).
 	Meta         *meta.Service
 	Devices      *device.Service
 	FiscalBridge *fiscalbridge.Service
-	Stream       *sse.Server
-	Log          *slog.Logger
-	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
-	SecureCookies bool
 }
 
 // Login implements POST /api/admin/v1/auth/login.

@@ -121,12 +121,14 @@ type App struct {
 	Notify   *notify.Service
 	Gateway  *gateway.Service
 	Checkout *checkout.Service
-	// M6/M7 services (wired by wireDevices, see m6.go).
+	Outbox   *event.Outbox
+	Bus      ext.EventBus
+
+	// M6/M7 services (wired by wireDevices, see m6.go); own block so that
+	// gofumpt alignment never touches the lines above.
 	Meta         *meta.Service
 	Devices      *device.Service
 	FiscalBridge *fiscalbridge.Service
-	Outbox       *event.Outbox
-	Bus          ext.EventBus
 
 	mu    sync.Mutex
 	addr  string
