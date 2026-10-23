@@ -24,6 +24,7 @@ import seasonRolloverIt from '../features/season-rollover/locales/it.json';
 import setupWizardIt from '../features/setup-wizard/locales/it.json';
 import importsIt from '../features/imports/locales/it.json';
 import testModeIt from '../features/test-mode/locales/it.json';
+import printersIt from '../features/printers/locales/it.json';
 
 type Messages = Record<string, unknown>;
 type Loader = () => Promise<{ default: Messages }>;
@@ -270,6 +271,16 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/test-mode/locales/en.json'),
       de: () => import('../features/test-mode/locales/de.json'),
       fr: () => import('../features/test-mode/locales/fr.json'),
+    },
+  },
+  // ESC/POS network printers (ADR 0021).
+  {
+    ns: 'printers',
+    it: printersIt,
+    load: {
+      en: () => import('../features/printers/locales/en.json'),
+      de: () => import('../features/printers/locales/de.json'),
+      fr: () => import('../features/printers/locales/fr.json'),
     },
   },
 ];

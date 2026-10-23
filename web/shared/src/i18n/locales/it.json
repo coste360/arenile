@@ -155,7 +155,8 @@
       "seasonRollover": "Nuova stagione",
       "cashRegisters": "Casse",
       "imports": "Importa dati",
-      "testMode": "Modalità prova"
+      "testMode": "Modalità prova",
+      "printers": "Stampanti"
     },
     "operations": "Operatività",
     "configGroup": "Configurazione",

@@ -93,6 +93,8 @@ tags:
     description: Report, esportazioni CSV e confronto con l'anno precedente
   - name: integrations
     description: Chiavi API e webhook in uscita
+  - name: printing
+    description: Stampanti ESC/POS di rete, instradamento dei documenti e lavori di stampa (edizione desktop, ADR 0021)
 
 paths:
   /healthz:
@@ -10556,6 +10558,533 @@ paths:
           $ref: "#/components/responses/NotImplemented"
 
 
+  # ---- ESC/POS network printers and print jobs (00011, ADR 0021) ----
+  /api/admin/v1/establishments/{establishmentId}/printers:
+    get:
+      operationId: listPrinters
+      tags: [printing]
+      summary: "Stampanti ESC/POS di rete dello stabilimento"
+      description: >-
+        Permesso cash.operate. `escpos_available` è true solo nell'edizione desktop (locale o rete locale:
+        il server è nello stabilimento e raggiunge la stampante); sull'edizione server (VPS/Docker) è false con
+        `unavailable_reason` server_edition e la stampa ripiega su quella del browser. La configurazione si può
+        comunque preparare su entrambe le edizioni.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: include_inactive
+          in: query
+          required: false
+          description: "Includi le stampanti disattivate."
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrinterList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createPrinter
+      tags: [printing]
+      summary: "Aggiungi una stampante di rete"
+      description: >-
+        Permesso establishment.configure. `host` è un indirizzo IP privato o di rete locale (RFC 1918,
+        link-local, ULA IPv6, loopback) o un nome che si risolve solo in indirizzi privati; altrimenti
+        422 printer_address_not_allowed. Nome già usato → 409 conflict.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrinterInput"
+      responses:
+        "201":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Printer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/printers/{printerId}:
+    get:
+      operationId: getPrinter
+      tags: [printing]
+      summary: "Dettaglio della stampante"
+      description: "Permesso cash.operate."
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PrinterID"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Printer"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updatePrinter
+      tags: [printing]
+      summary: "Modifica la stampante"
+      description: >-
+        Permesso establishment.configure. Stesse regole di createPrinter. Cambiare larghezza carta o
+        `print_logo` invalida il logo raster in cache.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PrinterID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrinterInput"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Printer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: deletePrinter
+      tags: [printing]
+      summary: "Elimina la stampante"
+      description: >-
+        Permesso establishment.configure. Elimina anche i suoi instradamenti; i lavori di stampa restano nello
+        storico senza stampante (quelli in coda passano a cancelled).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PrinterID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Eliminata"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/printers/{printerId}/check:
+    post:
+      operationId: checkPrinter
+      tags: [printing]
+      summary: "Verifica se la stampante è raggiungibile"
+      description: >-
+        Permesso cash.operate. Apre una connessione TCP verso host:porta (timeout 3 s), chiede lo stato
+        (DLE EOT) se la stampante risponde, aggiorna status, last_checked_at e last_error della stampante.
+        Non stampa nulla. Edizione server → 409 printing_unavailable.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PrinterID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrinterCheckResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/printers/{printerId}/test-print:
+    post:
+      operationId: testPrinter
+      tags: [printing]
+      summary: "Stampa di prova"
+      description: >-
+        Permesso cash.operate. Accoda un lavoro test_page (nome stabilimento, logo se attivo, stampante,
+        larghezza, codepage con caratteri accentati e €, righe a due colonne, QR, taglio) verso questa
+        stampante, ignorando l'instradamento. Risponde 202 con il lavoro; l'esito si legge con getPrintJob.
+        Edizione server → 409 printing_unavailable; stampante disattivata → 409 conflict.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PrinterID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "202":
+          description: "Accodato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/print-routes:
+    get:
+      operationId: getPrintRoutes
+      tags: [printing]
+      summary: "Instradamento dei documenti verso le stampanti"
+      description: >-
+        Permesso cash.operate. Una riga per (tipo documento, cassa); `register_id` assente = regola
+        predefinita per quel documento, usata dalle casse senza una regola propria. L'ETag copre l'intero
+        insieme.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintRouteSet"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updatePrintRoutes
+      tags: [printing]
+      summary: "Sostituisci l'instradamento dei documenti"
+      description: >-
+        Permesso establishment.configure. Sostituisce l'intero insieme in una transazione. Al massimo una
+        riga per (document_kind, register_id) (400 validation_failed altrimenti); stampante o cassa di un
+        altro stabilimento → 404.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrintRouteSet"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintRouteSet"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/print-routes/resolve:
+    get:
+      operationId: resolvePrintRoute
+      tags: [printing]
+      summary: "Stampante da usare per un documento"
+      description: >-
+        Permesso cash.operate. Usato dai pulsanti di stampa (cassa, chiusura Z, ricevuta, biglietto): regola
+        della cassa, altrimenti regola predefinita. `ready` è true solo se l'edizione è desktop e la stampante
+        instradata è attiva e non risulta irraggiungibile; altrimenti `reason` spiega perché e il client usa la
+        stampa del browser.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: document_kind
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/PrintDocumentKind"
+        - name: register_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintRouteResolution"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/print-jobs:
+    get:
+      operationId: listPrintJobs
+      tags: [printing]
+      summary: "Lavori di stampa recenti"
+      description: "Permesso cash.operate. Dal più recente; nessun dato personale (solo tipo, riferimento, esito)."
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PrintJobStatus"
+        - name: printer_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJobList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createPrintJob
+      tags: [printing]
+      summary: "Stampa un documento su stampante ESC/POS"
+      description: >-
+        Permesso cash.operate. Il server compone il documento (ricevuta di pagamento non fiscale, riepilogo
+        chiusura Z, biglietto della vendita giornaliera, pagina di prova) e lo accoda verso la stampante
+        indicata o instradata. L'header Idempotency-Key (o, in sua assenza, la chiave derivata
+        `<document_kind>:<document_id>:<printer>`) garantisce che una ristampa accidentale non produca un
+        secondo lavoro: stessa chiave → stesso lavoro (200). Per ristampare di proposito si usa una chiave nuova.
+        Edizione server → 409 printing_unavailable; nessuna regola né printer_id → 409 print_route_missing;
+        documento inesistente → 404.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrintJobInput"
+      responses:
+        "200":
+          description: "Lavoro già esistente con la stessa chiave di idempotenza"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJob"
+        "202":
+          description: "Accodato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJob"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}:
+    get:
+      operationId: getPrintJob
+      tags: [printing]
+      summary: "Stato del lavoro di stampa"
+      description: "Permesso cash.operate."
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PrintJobID"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}/retry:
+    post:
+      operationId: retryPrintJob
+      tags: [printing]
+      summary: "Riprova un lavoro di stampa fallito"
+      description: >-
+        Permesso cash.operate. Solo da failed: torna queued con tentativi azzerati e lo stesso contenuto.
+        Altri stati → 409 invalid_transition. Edizione server → 409 printing_unavailable.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/PrintJobID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "202":
+          description: "Riaccodato"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
 components:
   securitySchemes:
     cookieAuth:
@@ -11023,6 +11552,23 @@ components:
         x-go-type: string
 
 
+    # ---- ESC/POS printing (00011) ----
+    PrinterID:
+      name: printerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PrintJobID:
+      name: printJobId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
   responses:
     BadRequest:
       description: Richiesta non valida
@@ -11170,6 +11716,9 @@ components:
         - import_invalid
         - import_already_applied
         - refund_in_progress
+        - printing_unavailable
+        - printer_address_not_allowed
+        - print_route_missing
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -20981,5 +21530,311 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ImportJob"
+        next_cursor:
+          type: string
+
+    # ---- ESC/POS network printers and print jobs (00011, ADR 0021) ----
+    PrinterDriver:
+      type: string
+      enum: [network]
+      description: >-
+        Come arrivano i byte alla stampante. v1: solo network (TCP raw, porta 9100, edizione desktop).
+        Ponti futuri (app desktop per il VPS, app mobile Bluetooth) aggiungeranno valori qui.
+    PrinterPaperWidth:
+      type: integer
+      enum: [58, 80]
+      description: "Larghezza carta in mm."
+    PrinterCodepage:
+      type: string
+      enum: [cp858, cp437, cp850, cp852, cp1252]
+      description: "Codepage del testo; cp858 (default) ha € e le vocali accentate italiane."
+    PrinterCutMode:
+      type: string
+      enum: [full, partial, none]
+    PrinterStatus:
+      type: string
+      enum: [unknown, reachable, unreachable]
+    PrinterUnavailableReason:
+      type: string
+      enum: [server_edition]
+    Printer:
+      type: object
+      required: [id, name, driver, host, port, paper_width_mm, chars_per_line, codepage, cut_mode, feed_lines,
+        print_logo, logo_cached, active, status, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          type: string
+        driver:
+          $ref: "#/components/schemas/PrinterDriver"
+        host:
+          type: string
+          description: "IP o nome host della rete locale."
+        port:
+          type: integer
+        paper_width_mm:
+          $ref: "#/components/schemas/PrinterPaperWidth"
+        chars_per_line:
+          type: integer
+          description: "Caratteri per riga del font A (default 32 su 58 mm, 48 su 80 mm)."
+        codepage:
+          $ref: "#/components/schemas/PrinterCodepage"
+        codepage_table:
+          type: integer
+          description: "Numero della tabella ESC t se il modello non usa quello standard Epson."
+        cut_mode:
+          $ref: "#/components/schemas/PrinterCutMode"
+        feed_lines:
+          type: integer
+          description: "Righe di avanzamento prima del taglio."
+        print_logo:
+          type: boolean
+          description: "Stampa in testa il logo dello stabilimento (raster con dithering, in cache)."
+        logo_cached:
+          type: boolean
+        drawer_pin:
+          type: integer
+          enum: [2, 5]
+          description: "Pin del cassetto collegato alla stampante; assente = nessun cassetto."
+        active:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/PrinterStatus"
+        last_checked_at:
+          type: string
+          format: date-time
+        last_success_at:
+          type: string
+          format: date-time
+        last_error:
+          type: string
+          description: "Ultimo errore di rete (testo tecnico, senza dati personali)."
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    PrinterInput:
+      type: object
+      required: [name, host, paper_width_mm]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        host:
+          type: string
+          minLength: 1
+          maxLength: 253
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          default: 9100
+        paper_width_mm:
+          $ref: "#/components/schemas/PrinterPaperWidth"
+        chars_per_line:
+          type: integer
+          minimum: 24
+          maximum: 64
+        codepage:
+          $ref: "#/components/schemas/PrinterCodepage"
+        codepage_table:
+          type: integer
+          minimum: 0
+          maximum: 255
+        cut_mode:
+          $ref: "#/components/schemas/PrinterCutMode"
+        feed_lines:
+          type: integer
+          minimum: 0
+          maximum: 10
+        print_logo:
+          type: boolean
+        drawer_pin:
+          type: integer
+          enum: [2, 5]
+        active:
+          type: boolean
+    PrinterList:
+      type: object
+      required: [items, escpos_available]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Printer"
+        escpos_available:
+          type: boolean
+          description: "true solo nell'edizione desktop."
+        unavailable_reason:
+          $ref: "#/components/schemas/PrinterUnavailableReason"
+    PrinterCheckResult:
+      type: object
+      required: [status, checked_at]
+      properties:
+        status:
+          $ref: "#/components/schemas/PrinterStatus"
+        latency_ms:
+          type: integer
+        error:
+          type: string
+        paper_low:
+          type: boolean
+          description: "Sensore carta quasi finita, se la stampante risponde a DLE EOT."
+        cover_open:
+          type: boolean
+        checked_at:
+          type: string
+          format: date-time
+    PrintDocumentKind:
+      type: string
+      enum: [daily_ticket, cash_z, payment_receipt, test_page]
+      description: >-
+        daily_ticket = biglietto della vendita giornaliera (document_id = id del biglietto); cash_z = riepilogo
+        della chiusura di cassa (document_id = id della sessione di cassa); payment_receipt = ricevuta non
+        fiscale di un pagamento (document_id = id del pagamento); test_page = pagina di prova (nessun document_id).
+    PrintRoute:
+      type: object
+      required: [document_kind, printer_id]
+      properties:
+        document_kind:
+          $ref: "#/components/schemas/PrintDocumentKind"
+        register_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Cassa; assente = regola predefinita del documento."
+        printer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        copies:
+          type: integer
+          minimum: 1
+          maximum: 3
+          default: 1
+        kick_drawer:
+          type: boolean
+          description: "Apre il cassetto della stampante (se ha drawer_pin) dopo la stampa di un pagamento in contanti."
+    PrintRouteSet:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          maxItems: 200
+          items:
+            $ref: "#/components/schemas/PrintRoute"
+    PrintRouteUnreadyReason:
+      type: string
+      enum: [server_edition, no_route, printer_inactive, printer_unreachable]
+    PrintRouteResolution:
+      type: object
+      required: [document_kind, ready, copies, kick_drawer]
+      properties:
+        document_kind:
+          $ref: "#/components/schemas/PrintDocumentKind"
+        ready:
+          type: boolean
+        reason:
+          $ref: "#/components/schemas/PrintRouteUnreadyReason"
+        printer:
+          $ref: "#/components/schemas/Printer"
+        copies:
+          type: integer
+        kick_drawer:
+          type: boolean
+    PrintJobStatus:
+      type: string
+      enum: [queued, printing, printed, failed, cancelled]
+    PrintJobInput:
+      type: object
+      required: [document_kind]
+      properties:
+        document_kind:
+          $ref: "#/components/schemas/PrintDocumentKind"
+        document_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Obbligatorio tranne che per test_page."
+        register_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Cassa da cui si stampa (sceglie la regola di instradamento)."
+        printer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Stampante esplicita; ignora l'instradamento."
+        copies:
+          type: integer
+          minimum: 1
+          maximum: 3
+        kick_drawer:
+          type: boolean
+    PrintJob:
+      type: object
+      required: [id, document_kind, status, attempts, max_attempts, copies, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        printer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Assente se la stampante è stata eliminata."
+        printer_name:
+          type: string
+        document_kind:
+          $ref: "#/components/schemas/PrintDocumentKind"
+        document_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        register_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        status:
+          $ref: "#/components/schemas/PrintJobStatus"
+        attempts:
+          type: integer
+        max_attempts:
+          type: integer
+        next_attempt_at:
+          type: string
+          format: date-time
+        last_error:
+          type: string
+        copies:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        printed_at:
+          type: string
+          format: date-time
+    PrintJobList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrintJob"
         next_cursor:
           type: string

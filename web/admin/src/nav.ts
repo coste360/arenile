@@ -2,6 +2,7 @@ import {
   BanknoteIcon,
   CalculatorIcon,
   FlaskConicalIcon,
+  PrinterIcon,
   UploadIcon,
   BarChart3Icon,
   BuildingIcon,
@@ -213,6 +214,12 @@ export const CONFIG_NAV_ITEMS = [
     to: '/e/$establishmentId/config/import',
     labelKey: 'nav.config.imports',
     icon: UploadIcon,
+  },
+  // ESC/POS network printers (ADR 0021).
+  {
+    to: '/e/$establishmentId/config/printers',
+    labelKey: 'nav.config.printers',
+    icon: PrinterIcon,
   },
   {
     to: '/e/$establishmentId/config/team',

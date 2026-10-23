@@ -27,6 +27,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0017](0017-scelte-m5b.md) | Scelte di M5 (parte B): passaggio di stagione idempotente, rinnovi come prenotazioni held in prelazione, lista d'attesa con hold riservati, crediti con saldo vincolato dal database | accettato |
 | [0018](0018-marchio.md) | Marchio ufficiale Arenile (brand kit v2.0 rifinito, regole d'uso colore/bianco/navy) e Coste360.it: asset in `assets/brand` esclusi dalla licenza del codice, testo in tracciati senza font a runtime, tema shadcn sui colori del kit, componenti condivisi del marchio | accettato |
 | [0019](0019-funzioni-rinviate.md) | Funzioni rinviate: modalità prova, rimborso garantito, azioni dalla mappa con If-Match obbligatorio, più casse e chiusura Z in HTML stampabile (nessuna libreria PDF), prezzo manuale degli abbonamenti, notifiche, tentativi webhook, XLSX, importazione CSV | accettato |
+| [0021](0021-stampa-escpos-di-rete.md) | Stampa ESC/POS su stampanti di rete (Wi-Fi/Ethernet, porta 9100) solo nell'edizione desktop in v1: codificatore e modelli lato server, instradamento per cassa, lavori di stampa idempotenti con riprova, interfaccia Driver per i ponti futuri | accettato |
 
 ## Come aggiungere un ADR
 

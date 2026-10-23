@@ -1851,6 +1851,234 @@ func (e PricingUnit) Valid() bool {
 	}
 }
 
+// Defines values for PrintDocumentKind.
+const (
+	CashZ          PrintDocumentKind = "cash_z"
+	DailyTicket    PrintDocumentKind = "daily_ticket"
+	PaymentReceipt PrintDocumentKind = "payment_receipt"
+	TestPage       PrintDocumentKind = "test_page"
+)
+
+// Valid indicates whether the value is a known member of the PrintDocumentKind enum.
+func (e PrintDocumentKind) Valid() bool {
+	switch e {
+	case CashZ:
+		return true
+	case DailyTicket:
+		return true
+	case PaymentReceipt:
+		return true
+	case TestPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrintJobStatus.
+const (
+	PrintJobStatusCancelled PrintJobStatus = "cancelled"
+	PrintJobStatusFailed    PrintJobStatus = "failed"
+	PrintJobStatusPrinted   PrintJobStatus = "printed"
+	PrintJobStatusPrinting  PrintJobStatus = "printing"
+	PrintJobStatusQueued    PrintJobStatus = "queued"
+)
+
+// Valid indicates whether the value is a known member of the PrintJobStatus enum.
+func (e PrintJobStatus) Valid() bool {
+	switch e {
+	case PrintJobStatusCancelled:
+		return true
+	case PrintJobStatusFailed:
+		return true
+	case PrintJobStatusPrinted:
+		return true
+	case PrintJobStatusPrinting:
+		return true
+	case PrintJobStatusQueued:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrintRouteUnreadyReason.
+const (
+	PrintRouteUnreadyReasonNoRoute            PrintRouteUnreadyReason = "no_route"
+	PrintRouteUnreadyReasonPrinterInactive    PrintRouteUnreadyReason = "printer_inactive"
+	PrintRouteUnreadyReasonPrinterUnreachable PrintRouteUnreadyReason = "printer_unreachable"
+	PrintRouteUnreadyReasonServerEdition      PrintRouteUnreadyReason = "server_edition"
+)
+
+// Valid indicates whether the value is a known member of the PrintRouteUnreadyReason enum.
+func (e PrintRouteUnreadyReason) Valid() bool {
+	switch e {
+	case PrintRouteUnreadyReasonNoRoute:
+		return true
+	case PrintRouteUnreadyReasonPrinterInactive:
+		return true
+	case PrintRouteUnreadyReasonPrinterUnreachable:
+		return true
+	case PrintRouteUnreadyReasonServerEdition:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterDrawerPin.
+const (
+	PrinterDrawerPinN2 PrinterDrawerPin = 2
+	PrinterDrawerPinN5 PrinterDrawerPin = 5
+)
+
+// Valid indicates whether the value is a known member of the PrinterDrawerPin enum.
+func (e PrinterDrawerPin) Valid() bool {
+	switch e {
+	case PrinterDrawerPinN2:
+		return true
+	case PrinterDrawerPinN5:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterCodepage.
+const (
+	Cp1252 PrinterCodepage = "cp1252"
+	Cp437  PrinterCodepage = "cp437"
+	Cp850  PrinterCodepage = "cp850"
+	Cp852  PrinterCodepage = "cp852"
+	Cp858  PrinterCodepage = "cp858"
+)
+
+// Valid indicates whether the value is a known member of the PrinterCodepage enum.
+func (e PrinterCodepage) Valid() bool {
+	switch e {
+	case Cp1252:
+		return true
+	case Cp437:
+		return true
+	case Cp850:
+		return true
+	case Cp852:
+		return true
+	case Cp858:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterCutMode.
+const (
+	PrinterCutModeFull    PrinterCutMode = "full"
+	PrinterCutModeNone    PrinterCutMode = "none"
+	PrinterCutModePartial PrinterCutMode = "partial"
+)
+
+// Valid indicates whether the value is a known member of the PrinterCutMode enum.
+func (e PrinterCutMode) Valid() bool {
+	switch e {
+	case PrinterCutModeFull:
+		return true
+	case PrinterCutModeNone:
+		return true
+	case PrinterCutModePartial:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterDriver.
+const (
+	Network PrinterDriver = "network"
+)
+
+// Valid indicates whether the value is a known member of the PrinterDriver enum.
+func (e PrinterDriver) Valid() bool {
+	switch e {
+	case Network:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterInputDrawerPin.
+const (
+	PrinterInputDrawerPinN2 PrinterInputDrawerPin = 2
+	PrinterInputDrawerPinN5 PrinterInputDrawerPin = 5
+)
+
+// Valid indicates whether the value is a known member of the PrinterInputDrawerPin enum.
+func (e PrinterInputDrawerPin) Valid() bool {
+	switch e {
+	case PrinterInputDrawerPinN2:
+		return true
+	case PrinterInputDrawerPinN5:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterPaperWidth.
+const (
+	N58 PrinterPaperWidth = 58
+	N80 PrinterPaperWidth = 80
+)
+
+// Valid indicates whether the value is a known member of the PrinterPaperWidth enum.
+func (e PrinterPaperWidth) Valid() bool {
+	switch e {
+	case N58:
+		return true
+	case N80:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterStatus.
+const (
+	Reachable   PrinterStatus = "reachable"
+	Unknown     PrinterStatus = "unknown"
+	Unreachable PrinterStatus = "unreachable"
+)
+
+// Valid indicates whether the value is a known member of the PrinterStatus enum.
+func (e PrinterStatus) Valid() bool {
+	switch e {
+	case Reachable:
+		return true
+	case Unknown:
+		return true
+	case Unreachable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PrinterUnavailableReason.
+const (
+	PrinterUnavailableReasonServerEdition PrinterUnavailableReason = "server_edition"
+)
+
+// Valid indicates whether the value is a known member of the PrinterUnavailableReason enum.
+func (e PrinterUnavailableReason) Valid() bool {
+	switch e {
+	case PrinterUnavailableReasonServerEdition:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProblemType.
 const (
 	ProblemTypeBadRequest                 ProblemType = "bad_request"
@@ -1882,6 +2110,9 @@ const (
 	ProblemTypePolicyViolation            ProblemType = "policy_violation"
 	ProblemTypePoolExhausted              ProblemType = "pool_exhausted"
 	ProblemTypePreconditionRequired       ProblemType = "precondition_required"
+	ProblemTypePrintRouteMissing          ProblemType = "print_route_missing"
+	ProblemTypePrinterAddressNotAllowed   ProblemType = "printer_address_not_allowed"
+	ProblemTypePrintingUnavailable        ProblemType = "printing_unavailable"
 	ProblemTypeQuotaExceeded              ProblemType = "quota_exceeded"
 	ProblemTypeRateLimited                ProblemType = "rate_limited"
 	ProblemTypeRefundInProgress           ProblemType = "refund_in_progress"
@@ -1964,6 +2195,12 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypePoolExhausted:
 		return true
 	case ProblemTypePreconditionRequired:
+		return true
+	case ProblemTypePrintRouteMissing:
+		return true
+	case ProblemTypePrinterAddressNotAllowed:
+		return true
+	case ProblemTypePrintingUnavailable:
 		return true
 	case ProblemTypeQuotaExceeded:
 		return true
@@ -6904,6 +7141,206 @@ type PricingSettings struct {
 // PricingUnit defines model for PricingUnit.
 type PricingUnit string
 
+// PrintDocumentKind daily_ticket = biglietto della vendita giornaliera (document_id = id del biglietto); cash_z = riepilogo della chiusura di cassa (document_id = id della sessione di cassa); payment_receipt = ricevuta non fiscale di un pagamento (document_id = id del pagamento); test_page = pagina di prova (nessun document_id).
+type PrintDocumentKind string
+
+// PrintJob defines model for PrintJob.
+type PrintJob struct {
+	Attempts   int       `json:"attempts"`
+	Copies     int       `json:"copies"`
+	CreatedAt  time.Time `json:"created_at"`
+	DocumentId *string   `json:"document_id,omitempty"`
+
+	// DocumentKind daily_ticket = biglietto della vendita giornaliera (document_id = id del biglietto); cash_z = riepilogo della chiusura di cassa (document_id = id della sessione di cassa); payment_receipt = ricevuta non fiscale di un pagamento (document_id = id del pagamento); test_page = pagina di prova (nessun document_id).
+	DocumentKind  PrintDocumentKind `json:"document_kind"`
+	Id            string            `json:"id"`
+	LastError     *string           `json:"last_error,omitempty"`
+	MaxAttempts   int               `json:"max_attempts"`
+	NextAttemptAt *time.Time        `json:"next_attempt_at,omitempty"`
+	PrintedAt     *time.Time        `json:"printed_at,omitempty"`
+
+	// PrinterId Assente se la stampante è stata eliminata.
+	PrinterId   *string        `json:"printer_id,omitempty"`
+	PrinterName *string        `json:"printer_name,omitempty"`
+	RegisterId  *string        `json:"register_id,omitempty"`
+	Status      PrintJobStatus `json:"status"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+}
+
+// PrintJobInput defines model for PrintJobInput.
+type PrintJobInput struct {
+	Copies *int `json:"copies,omitempty"`
+
+	// DocumentId Obbligatorio tranne che per test_page.
+	DocumentId *string `json:"document_id,omitempty"`
+
+	// DocumentKind daily_ticket = biglietto della vendita giornaliera (document_id = id del biglietto); cash_z = riepilogo della chiusura di cassa (document_id = id della sessione di cassa); payment_receipt = ricevuta non fiscale di un pagamento (document_id = id del pagamento); test_page = pagina di prova (nessun document_id).
+	DocumentKind PrintDocumentKind `json:"document_kind"`
+	KickDrawer   *bool             `json:"kick_drawer,omitempty"`
+
+	// PrinterId Stampante esplicita; ignora l'instradamento.
+	PrinterId *string `json:"printer_id,omitempty"`
+
+	// RegisterId Cassa da cui si stampa (sceglie la regola di instradamento).
+	RegisterId *string `json:"register_id,omitempty"`
+}
+
+// PrintJobList defines model for PrintJobList.
+type PrintJobList struct {
+	Items      []PrintJob `json:"items"`
+	NextCursor *string    `json:"next_cursor,omitempty"`
+}
+
+// PrintJobStatus defines model for PrintJobStatus.
+type PrintJobStatus string
+
+// PrintRoute defines model for PrintRoute.
+type PrintRoute struct {
+	Copies *int `json:"copies,omitempty"`
+
+	// DocumentKind daily_ticket = biglietto della vendita giornaliera (document_id = id del biglietto); cash_z = riepilogo della chiusura di cassa (document_id = id della sessione di cassa); payment_receipt = ricevuta non fiscale di un pagamento (document_id = id del pagamento); test_page = pagina di prova (nessun document_id).
+	DocumentKind PrintDocumentKind `json:"document_kind"`
+
+	// KickDrawer Apre il cassetto della stampante (se ha drawer_pin) dopo la stampa di un pagamento in contanti.
+	KickDrawer *bool  `json:"kick_drawer,omitempty"`
+	PrinterId  string `json:"printer_id"`
+
+	// RegisterId Cassa; assente = regola predefinita del documento.
+	RegisterId *string `json:"register_id,omitempty"`
+}
+
+// PrintRouteResolution defines model for PrintRouteResolution.
+type PrintRouteResolution struct {
+	Copies int `json:"copies"`
+
+	// DocumentKind daily_ticket = biglietto della vendita giornaliera (document_id = id del biglietto); cash_z = riepilogo della chiusura di cassa (document_id = id della sessione di cassa); payment_receipt = ricevuta non fiscale di un pagamento (document_id = id del pagamento); test_page = pagina di prova (nessun document_id).
+	DocumentKind PrintDocumentKind        `json:"document_kind"`
+	KickDrawer   bool                     `json:"kick_drawer"`
+	Printer      *Printer                 `json:"printer,omitempty"`
+	Ready        bool                     `json:"ready"`
+	Reason       *PrintRouteUnreadyReason `json:"reason,omitempty"`
+}
+
+// PrintRouteSet defines model for PrintRouteSet.
+type PrintRouteSet struct {
+	Items []PrintRoute `json:"items"`
+}
+
+// PrintRouteUnreadyReason defines model for PrintRouteUnreadyReason.
+type PrintRouteUnreadyReason string
+
+// Printer defines model for Printer.
+type Printer struct {
+	Active bool `json:"active"`
+
+	// CharsPerLine Caratteri per riga del font A (default 32 su 58 mm, 48 su 80 mm).
+	CharsPerLine int `json:"chars_per_line"`
+
+	// Codepage Codepage del testo; cp858 (default) ha € e le vocali accentate italiane.
+	Codepage PrinterCodepage `json:"codepage"`
+
+	// CodepageTable Numero della tabella ESC t se il modello non usa quello standard Epson.
+	CodepageTable *int           `json:"codepage_table,omitempty"`
+	CreatedAt     time.Time      `json:"created_at"`
+	CutMode       PrinterCutMode `json:"cut_mode"`
+
+	// DrawerPin Pin del cassetto collegato alla stampante; assente = nessun cassetto.
+	DrawerPin *PrinterDrawerPin `json:"drawer_pin,omitempty"`
+
+	// Driver Come arrivano i byte alla stampante. v1: solo network (TCP raw, porta 9100, edizione desktop). Ponti futuri (app desktop per il VPS, app mobile Bluetooth) aggiungeranno valori qui.
+	Driver PrinterDriver `json:"driver"`
+
+	// FeedLines Righe di avanzamento prima del taglio.
+	FeedLines int `json:"feed_lines"`
+
+	// Host IP o nome host della rete locale.
+	Host          string     `json:"host"`
+	Id            string     `json:"id"`
+	LastCheckedAt *time.Time `json:"last_checked_at,omitempty"`
+
+	// LastError Ultimo errore di rete (testo tecnico, senza dati personali).
+	LastError     *string    `json:"last_error,omitempty"`
+	LastSuccessAt *time.Time `json:"last_success_at,omitempty"`
+	LogoCached    bool       `json:"logo_cached"`
+	Name          string     `json:"name"`
+
+	// PaperWidthMm Larghezza carta in mm.
+	PaperWidthMm PrinterPaperWidth `json:"paper_width_mm"`
+	Port         int               `json:"port"`
+
+	// PrintLogo Stampa in testa il logo dello stabilimento (raster con dithering, in cache).
+	PrintLogo bool          `json:"print_logo"`
+	Status    PrinterStatus `json:"status"`
+	UpdatedAt time.Time     `json:"updated_at"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
+}
+
+// PrinterDrawerPin Pin del cassetto collegato alla stampante; assente = nessun cassetto.
+type PrinterDrawerPin int
+
+// PrinterCheckResult defines model for PrinterCheckResult.
+type PrinterCheckResult struct {
+	CheckedAt time.Time `json:"checked_at"`
+	CoverOpen *bool     `json:"cover_open,omitempty"`
+	Error     *string   `json:"error,omitempty"`
+	LatencyMs *int      `json:"latency_ms,omitempty"`
+
+	// PaperLow Sensore carta quasi finita, se la stampante risponde a DLE EOT.
+	PaperLow *bool         `json:"paper_low,omitempty"`
+	Status   PrinterStatus `json:"status"`
+}
+
+// PrinterCodepage Codepage del testo; cp858 (default) ha € e le vocali accentate italiane.
+type PrinterCodepage string
+
+// PrinterCutMode defines model for PrinterCutMode.
+type PrinterCutMode string
+
+// PrinterDriver Come arrivano i byte alla stampante. v1: solo network (TCP raw, porta 9100, edizione desktop). Ponti futuri (app desktop per il VPS, app mobile Bluetooth) aggiungeranno valori qui.
+type PrinterDriver string
+
+// PrinterInput defines model for PrinterInput.
+type PrinterInput struct {
+	Active       *bool `json:"active,omitempty"`
+	CharsPerLine *int  `json:"chars_per_line,omitempty"`
+
+	// Codepage Codepage del testo; cp858 (default) ha € e le vocali accentate italiane.
+	Codepage      *PrinterCodepage       `json:"codepage,omitempty"`
+	CodepageTable *int                   `json:"codepage_table,omitempty"`
+	CutMode       *PrinterCutMode        `json:"cut_mode,omitempty"`
+	DrawerPin     *PrinterInputDrawerPin `json:"drawer_pin,omitempty"`
+	FeedLines     *int                   `json:"feed_lines,omitempty"`
+	Host          string                 `json:"host"`
+	Name          string                 `json:"name"`
+
+	// PaperWidthMm Larghezza carta in mm.
+	PaperWidthMm PrinterPaperWidth `json:"paper_width_mm"`
+	Port         *int              `json:"port,omitempty"`
+	PrintLogo    *bool             `json:"print_logo,omitempty"`
+}
+
+// PrinterInputDrawerPin defines model for PrinterInput.DrawerPin.
+type PrinterInputDrawerPin int
+
+// PrinterList defines model for PrinterList.
+type PrinterList struct {
+	// EscposAvailable true solo nell'edizione desktop.
+	EscposAvailable   bool                      `json:"escpos_available"`
+	Items             []Printer                 `json:"items"`
+	UnavailableReason *PrinterUnavailableReason `json:"unavailable_reason,omitempty"`
+}
+
+// PrinterPaperWidth Larghezza carta in mm.
+type PrinterPaperWidth int
+
+// PrinterStatus defines model for PrinterStatus.
+type PrinterStatus string
+
+// PrinterUnavailableReason defines model for PrinterUnavailableReason.
+type PrinterUnavailableReason string
+
 // Problem Errore RFC 9457 (`application/problem+json`).
 type Problem struct {
 	// Conflicts Mezze giornate non disponibili (solo per `spot_unavailable`, `pool_exhausted`, `quota_exceeded`).
@@ -9663,6 +10100,12 @@ type PreviewToken = string
 // PriceRuleID defines model for PriceRuleID.
 type PriceRuleID = string
 
+// PrintJobID defines model for PrintJobID.
+type PrintJobID = string
+
+// PrinterID defines model for PrinterID.
+type PrinterID = string
+
 // PromoCodeID defines model for PromoCodeID.
 type PromoCodeID = string
 
@@ -11065,6 +11508,109 @@ type SimulatePriceParams struct {
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
 }
 
+// ListPrintJobsParams defines parameters for ListPrintJobs.
+type ListPrintJobsParams struct {
+	// Cursor Cursore opaco restituito come `next_cursor` dalla pagina precedente.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Numero massimo di elementi (default 50).
+	Limit     *Limit          `form:"limit,omitempty" json:"limit,omitempty"`
+	Status    *PrintJobStatus `form:"status,omitempty" json:"status,omitempty"`
+	PrinterId *string         `form:"printer_id,omitempty" json:"printer_id,omitempty"`
+}
+
+// CreatePrintJobParams defines parameters for CreatePrintJob.
+type CreatePrintJobParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// RetryPrintJobParams defines parameters for RetryPrintJob.
+type RetryPrintJobParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdatePrintRoutesParams defines parameters for UpdatePrintRoutes.
+type UpdatePrintRoutesParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// ResolvePrintRouteParams defines parameters for ResolvePrintRoute.
+type ResolvePrintRouteParams struct {
+	DocumentKind PrintDocumentKind `form:"document_kind" json:"document_kind"`
+	RegisterId   *string           `form:"register_id,omitempty" json:"register_id,omitempty"`
+}
+
+// ListPrintersParams defines parameters for ListPrinters.
+type ListPrintersParams struct {
+	// IncludeInactive Includi le stampanti disattivate.
+	IncludeInactive *bool `form:"include_inactive,omitempty" json:"include_inactive,omitempty"`
+}
+
+// CreatePrinterParams defines parameters for CreatePrinter.
+type CreatePrinterParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// DeletePrinterParams defines parameters for DeletePrinter.
+type DeletePrinterParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// UpdatePrinterParams defines parameters for UpdatePrinter.
+type UpdatePrinterParams struct {
+	// IfMatch ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// CheckPrinterParams defines parameters for CheckPrinter.
+type CheckPrinterParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
+// TestPrinterParams defines parameters for TestPrinter.
+type TestPrinterParams struct {
+	// IdempotencyKey Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+	// richiesta ripetuta con la stessa chiave restituisce la risposta
+	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // ListPromoCodesParams defines parameters for ListPromoCodes.
 type ListPromoCodesParams struct {
 	// Active Filtra per stato.
@@ -12302,6 +12848,18 @@ type UpdatePriceRuleJSONRequestBody = PriceRuleInput
 // SimulatePriceJSONRequestBody defines body for SimulatePrice for application/json ContentType.
 type SimulatePriceJSONRequestBody = SimulateRequest
 
+// CreatePrintJobJSONRequestBody defines body for CreatePrintJob for application/json ContentType.
+type CreatePrintJobJSONRequestBody = PrintJobInput
+
+// UpdatePrintRoutesJSONRequestBody defines body for UpdatePrintRoutes for application/json ContentType.
+type UpdatePrintRoutesJSONRequestBody = PrintRouteSet
+
+// CreatePrinterJSONRequestBody defines body for CreatePrinter for application/json ContentType.
+type CreatePrinterJSONRequestBody = PrinterInput
+
+// UpdatePrinterJSONRequestBody defines body for UpdatePrinter for application/json ContentType.
+type UpdatePrinterJSONRequestBody = PrinterInput
+
 // CreatePromoCodeJSONRequestBody defines body for CreatePromoCode for application/json ContentType.
 type CreatePromoCodeJSONRequestBody = PromoCodeInput
 
@@ -12898,6 +13456,48 @@ type ServerInterface interface {
 	// SimulatePrice Simulatore: quotazione con dettaglio passo per passo e policy
 	// (POST /api/admin/v1/establishments/{establishmentId}/pricing/simulate)
 	SimulatePrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SimulatePriceParams)
+	// ListPrintJobs Lavori di stampa recenti
+	// (GET /api/admin/v1/establishments/{establishmentId}/print-jobs)
+	ListPrintJobs(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPrintJobsParams)
+	// CreatePrintJob Stampa un documento su stampante ESC/POS
+	// (POST /api/admin/v1/establishments/{establishmentId}/print-jobs)
+	CreatePrintJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePrintJobParams)
+	// GetPrintJob Stato del lavoro di stampa
+	// (GET /api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId})
+	GetPrintJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printJobId PrintJobID)
+	// RetryPrintJob Riprova un lavoro di stampa fallito
+	// (POST /api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}/retry)
+	RetryPrintJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printJobId PrintJobID, params RetryPrintJobParams)
+	// GetPrintRoutes Instradamento dei documenti verso le stampanti
+	// (GET /api/admin/v1/establishments/{establishmentId}/print-routes)
+	GetPrintRoutes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID)
+	// UpdatePrintRoutes Sostituisci l'instradamento dei documenti
+	// (PUT /api/admin/v1/establishments/{establishmentId}/print-routes)
+	UpdatePrintRoutes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdatePrintRoutesParams)
+	// ResolvePrintRoute Stampante da usare per un documento
+	// (GET /api/admin/v1/establishments/{establishmentId}/print-routes/resolve)
+	ResolvePrintRoute(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ResolvePrintRouteParams)
+	// ListPrinters Stampanti ESC/POS di rete dello stabilimento
+	// (GET /api/admin/v1/establishments/{establishmentId}/printers)
+	ListPrinters(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPrintersParams)
+	// CreatePrinter Aggiungi una stampante di rete
+	// (POST /api/admin/v1/establishments/{establishmentId}/printers)
+	CreatePrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePrinterParams)
+	// DeletePrinter Elimina la stampante
+	// (DELETE /api/admin/v1/establishments/{establishmentId}/printers/{printerId})
+	DeletePrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params DeletePrinterParams)
+	// GetPrinter Dettaglio della stampante
+	// (GET /api/admin/v1/establishments/{establishmentId}/printers/{printerId})
+	GetPrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID)
+	// UpdatePrinter Modifica la stampante
+	// (PUT /api/admin/v1/establishments/{establishmentId}/printers/{printerId})
+	UpdatePrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params UpdatePrinterParams)
+	// CheckPrinter Verifica se la stampante è raggiungibile
+	// (POST /api/admin/v1/establishments/{establishmentId}/printers/{printerId}/check)
+	CheckPrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params CheckPrinterParams)
+	// TestPrinter Stampa di prova
+	// (POST /api/admin/v1/establishments/{establishmentId}/printers/{printerId}/test-print)
+	TestPrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params TestPrinterParams)
 	// ListPromoCodes Elenco codici promozionali
 	// (GET /api/admin/v1/establishments/{establishmentId}/promo-codes)
 	ListPromoCodes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPromoCodesParams)
@@ -14188,6 +14788,90 @@ func (_ Unimplemented) GetPriceMatrix(w http.ResponseWriter, r *http.Request, es
 // SimulatePrice Simulatore: quotazione con dettaglio passo per passo e policy
 // (POST /api/admin/v1/establishments/{establishmentId}/pricing/simulate)
 func (_ Unimplemented) SimulatePrice(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params SimulatePriceParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListPrintJobs Lavori di stampa recenti
+// (GET /api/admin/v1/establishments/{establishmentId}/print-jobs)
+func (_ Unimplemented) ListPrintJobs(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPrintJobsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreatePrintJob Stampa un documento su stampante ESC/POS
+// (POST /api/admin/v1/establishments/{establishmentId}/print-jobs)
+func (_ Unimplemented) CreatePrintJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePrintJobParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPrintJob Stato del lavoro di stampa
+// (GET /api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId})
+func (_ Unimplemented) GetPrintJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printJobId PrintJobID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// RetryPrintJob Riprova un lavoro di stampa fallito
+// (POST /api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}/retry)
+func (_ Unimplemented) RetryPrintJob(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printJobId PrintJobID, params RetryPrintJobParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPrintRoutes Instradamento dei documenti verso le stampanti
+// (GET /api/admin/v1/establishments/{establishmentId}/print-routes)
+func (_ Unimplemented) GetPrintRoutes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePrintRoutes Sostituisci l'instradamento dei documenti
+// (PUT /api/admin/v1/establishments/{establishmentId}/print-routes)
+func (_ Unimplemented) UpdatePrintRoutes(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params UpdatePrintRoutesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ResolvePrintRoute Stampante da usare per un documento
+// (GET /api/admin/v1/establishments/{establishmentId}/print-routes/resolve)
+func (_ Unimplemented) ResolvePrintRoute(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ResolvePrintRouteParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// ListPrinters Stampanti ESC/POS di rete dello stabilimento
+// (GET /api/admin/v1/establishments/{establishmentId}/printers)
+func (_ Unimplemented) ListPrinters(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params ListPrintersParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CreatePrinter Aggiungi una stampante di rete
+// (POST /api/admin/v1/establishments/{establishmentId}/printers)
+func (_ Unimplemented) CreatePrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, params CreatePrinterParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// DeletePrinter Elimina la stampante
+// (DELETE /api/admin/v1/establishments/{establishmentId}/printers/{printerId})
+func (_ Unimplemented) DeletePrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params DeletePrinterParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetPrinter Dettaglio della stampante
+// (GET /api/admin/v1/establishments/{establishmentId}/printers/{printerId})
+func (_ Unimplemented) GetPrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// UpdatePrinter Modifica la stampante
+// (PUT /api/admin/v1/establishments/{establishmentId}/printers/{printerId})
+func (_ Unimplemented) UpdatePrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params UpdatePrinterParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CheckPrinter Verifica se la stampante è raggiungibile
+// (POST /api/admin/v1/establishments/{establishmentId}/printers/{printerId}/check)
+func (_ Unimplemented) CheckPrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params CheckPrinterParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// TestPrinter Stampa di prova
+// (POST /api/admin/v1/establishments/{establishmentId}/printers/{printerId}/test-print)
+func (_ Unimplemented) TestPrinter(w http.ResponseWriter, r *http.Request, establishmentId EstablishmentID, printerId PrinterID, params TestPrinterParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -24391,6 +25075,839 @@ func (siw *ServerInterfaceWrapper) SimulatePrice(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r)
 }
 
+// ListPrintJobs operation middleware
+func (siw *ServerInterfaceWrapper) ListPrintJobs(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPrintJobsParams
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "printer_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "printer_id", r.URL.Query(), &params.PrinterId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "printer_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printer_id", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListPrintJobs(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreatePrintJob operation middleware
+func (siw *ServerInterfaceWrapper) CreatePrintJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePrintJobParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreatePrintJob(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPrintJob operation middleware
+func (siw *ServerInterfaceWrapper) GetPrintJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "printJobId" -------------
+	var printJobId PrintJobID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "printJobId", chi.URLParam(r, "printJobId"), &printJobId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printJobId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPrintJob(w, r, establishmentId, printJobId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RetryPrintJob operation middleware
+func (siw *ServerInterfaceWrapper) RetryPrintJob(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "printJobId" -------------
+	var printJobId PrintJobID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "printJobId", chi.URLParam(r, "printJobId"), &printJobId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printJobId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RetryPrintJobParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RetryPrintJob(w, r, establishmentId, printJobId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPrintRoutes operation middleware
+func (siw *ServerInterfaceWrapper) GetPrintRoutes(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPrintRoutes(w, r, establishmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePrintRoutes operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePrintRoutes(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePrintRoutesParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePrintRoutes(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ResolvePrintRoute operation middleware
+func (siw *ServerInterfaceWrapper) ResolvePrintRoute(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ResolvePrintRouteParams
+
+	// ------------- Required query parameter "document_kind" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "document_kind", r.URL.Query(), &params.DocumentKind, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "document_kind"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "document_kind", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "register_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "register_id", r.URL.Query(), &params.RegisterId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "register_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "register_id", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ResolvePrintRoute(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListPrinters operation middleware
+func (siw *ServerInterfaceWrapper) ListPrinters(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListPrintersParams
+
+	// ------------- Optional query parameter "include_inactive" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "include_inactive", r.URL.Query(), &params.IncludeInactive, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "include_inactive"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "include_inactive", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListPrinters(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreatePrinter operation middleware
+func (siw *ServerInterfaceWrapper) CreatePrinter(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePrinterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreatePrinter(w, r, establishmentId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePrinter operation middleware
+func (siw *ServerInterfaceWrapper) DeletePrinter(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "printerId" -------------
+	var printerId PrinterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "printerId", chi.URLParam(r, "printerId"), &printerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeletePrinterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePrinter(w, r, establishmentId, printerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPrinter operation middleware
+func (siw *ServerInterfaceWrapper) GetPrinter(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "printerId" -------------
+	var printerId PrinterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "printerId", chi.URLParam(r, "printerId"), &printerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printerId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPrinter(w, r, establishmentId, printerId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdatePrinter operation middleware
+func (siw *ServerInterfaceWrapper) UpdatePrinter(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "printerId" -------------
+	var printerId PrinterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "printerId", chi.URLParam(r, "printerId"), &printerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdatePrinterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatch
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = &IfMatch
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdatePrinter(w, r, establishmentId, printerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CheckPrinter operation middleware
+func (siw *ServerInterfaceWrapper) CheckPrinter(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "printerId" -------------
+	var printerId PrinterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "printerId", chi.URLParam(r, "printerId"), &printerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CheckPrinterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CheckPrinter(w, r, establishmentId, printerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// TestPrinter operation middleware
+func (siw *ServerInterfaceWrapper) TestPrinter(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "establishmentId" -------------
+	var establishmentId EstablishmentID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "establishmentId", chi.URLParam(r, "establishmentId"), &establishmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "establishmentId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "printerId" -------------
+	var printerId PrinterID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "printerId", chi.URLParam(r, "printerId"), &printerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: r.URL.RawPath == ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "printerId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params TestPrinterParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "Idempotency-Key" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
+		var IdempotencyKey IdempotencyKey
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
+			return
+		}
+
+		params.IdempotencyKey = &IdempotencyKey
+
+	}
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.TestPrinter(w, r, establishmentId, printerId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListPromoCodes operation middleware
 func (siw *ServerInterfaceWrapper) ListPromoCodes(w http.ResponseWriter, r *http.Request) {
 
@@ -33524,6 +35041,48 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/imports/{importId}/apply", wrapper.ApplyImportJob)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/printers", wrapper.ListPrinters)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/printers", wrapper.CreatePrinter)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/printers/{printerId}", wrapper.DeletePrinter)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/printers/{printerId}", wrapper.GetPrinter)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/printers/{printerId}", wrapper.UpdatePrinter)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/printers/{printerId}/check", wrapper.CheckPrinter)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/printers/{printerId}/test-print", wrapper.TestPrinter)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/print-routes", wrapper.GetPrintRoutes)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/print-routes", wrapper.UpdatePrintRoutes)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/print-routes/resolve", wrapper.ResolvePrintRoute)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/print-jobs", wrapper.ListPrintJobs)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/print-jobs", wrapper.CreatePrintJob)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}", wrapper.GetPrintJob)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}/retry", wrapper.RetryPrintJob)
 	})
 
 	return r

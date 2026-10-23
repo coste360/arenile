@@ -155,7 +155,8 @@
       "seasonRollover": "Neue Saison",
       "cashRegisters": "Kassen",
       "imports": "Daten importieren",
-      "testMode": "Testmodus"
+      "testMode": "Testmodus",
+      "printers": "Drucker"
     },
     "operations": "Tagesgeschäft",
     "configGroup": "Konfiguration",

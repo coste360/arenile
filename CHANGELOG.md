@@ -13,6 +13,13 @@ offline).
 
 ### Added
 
+- Contratto della stampa ESC/POS su stampanti di rete (ADR 0021), endpoint ancora `501 not_implemented`: stampanti
+  (`/printers`, verifica raggiungibilità, stampa di prova), instradamento dei documenti per cassa (`/print-routes`,
+  `/print-routes/resolve`) e lavori di stampa (`/print-jobs`, stato e riprova). Solo edizione desktop (sul server
+  `409 printing_unavailable`, ripiego sulla stampa del browser); indirizzi solo di rete locale. Migrazione 00011
+  (entrambi i dialetti): `printers`, `printer_routes`, `print_jobs` con chiave di idempotenza unica. Pacchetti
+  `internal/escpos`, `internal/printing/templates` (`TicketDoc`), `internal/domain/printing` (interfaccia `Driver`).
+  Pannello: pagina segnaposto Configurazione → Stampanti.
 - Contratto delle funzioni rinviate (ADR 0019), endpoint ancora `501 not_implemented`: modalità prova
   (`/test-mode`, anteprima, eliminazione in blocco), rimborsi garantiti (`/refund-requests`), casse multiple
   (`/cash-registers`, `register_id` sulle sessioni) e chiusura Z stampabile (`/cash-sessions/{id}/z-report`), prezzo

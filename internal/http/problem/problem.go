@@ -99,6 +99,13 @@ const (
 	RefundInProgress        = api.ProblemType("refund_in_progress")
 )
 
+// ESC/POS printing type slugs (ADR 0021).
+const (
+	PrintingUnavailable      = api.ProblemType("printing_unavailable")
+	PrinterAddressNotAllowed = api.ProblemType("printer_address_not_allowed")
+	PrintRouteMissing        = api.ProblemType("print_route_missing")
+)
+
 type meta struct {
 	status int
 	title  string
@@ -157,6 +164,10 @@ var catalog = map[api.ProblemType]meta{
 	ImportInvalid:           {http.StatusUnprocessableEntity, "Il file da importare contiene errori"},
 	ImportAlreadyApplied:    {http.StatusConflict, "Questo file è già stato importato"},
 	RefundInProgress:        {http.StatusConflict, "C'è già un rimborso in corso per questa prenotazione"},
+	// ESC/POS printing (ADR 0021).
+	PrintingUnavailable:      {http.StatusConflict, "La stampa ESC/POS è disponibile solo con l'app desktop"},
+	PrinterAddressNotAllowed: {http.StatusUnprocessableEntity, "L'indirizzo della stampante deve essere della rete locale"},
+	PrintRouteMissing:        {http.StatusConflict, "Nessuna stampante configurata per questo documento"},
 }
 
 // Option customises a problem.

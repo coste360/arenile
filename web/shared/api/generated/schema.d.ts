@@ -3843,6 +3843,206 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/printers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stampanti ESC/POS di rete dello stabilimento
+         * @description Permesso cash.operate. `escpos_available` è true solo nell'edizione desktop (locale o rete locale: il server è nello stabilimento e raggiunge la stampante); sull'edizione server (VPS/Docker) è false con `unavailable_reason` server_edition e la stampa ripiega su quella del browser. La configurazione si può comunque preparare su entrambe le edizioni.
+         */
+        get: operations["listPrinters"];
+        put?: never;
+        /**
+         * Aggiungi una stampante di rete
+         * @description Permesso establishment.configure. `host` è un indirizzo IP privato o di rete locale (RFC 1918, link-local, ULA IPv6, loopback) o un nome che si risolve solo in indirizzi privati; altrimenti 422 printer_address_not_allowed. Nome già usato → 409 conflict.
+         */
+        post: operations["createPrinter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/printers/{printerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dettaglio della stampante
+         * @description Permesso cash.operate.
+         */
+        get: operations["getPrinter"];
+        /**
+         * Modifica la stampante
+         * @description Permesso establishment.configure. Stesse regole di createPrinter. Cambiare larghezza carta o `print_logo` invalida il logo raster in cache.
+         */
+        put: operations["updatePrinter"];
+        post?: never;
+        /**
+         * Elimina la stampante
+         * @description Permesso establishment.configure. Elimina anche i suoi instradamenti; i lavori di stampa restano nello storico senza stampante (quelli in coda passano a cancelled).
+         */
+        delete: operations["deletePrinter"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/printers/{printerId}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verifica se la stampante è raggiungibile
+         * @description Permesso cash.operate. Apre una connessione TCP verso host:porta (timeout 3 s), chiede lo stato (DLE EOT) se la stampante risponde, aggiorna status, last_checked_at e last_error della stampante. Non stampa nulla. Edizione server → 409 printing_unavailable.
+         */
+        post: operations["checkPrinter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/printers/{printerId}/test-print": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stampa di prova
+         * @description Permesso cash.operate. Accoda un lavoro test_page (nome stabilimento, logo se attivo, stampante, larghezza, codepage con caratteri accentati e €, righe a due colonne, QR, taglio) verso questa stampante, ignorando l'instradamento. Risponde 202 con il lavoro; l'esito si legge con getPrintJob. Edizione server → 409 printing_unavailable; stampante disattivata → 409 conflict.
+         */
+        post: operations["testPrinter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/print-routes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Instradamento dei documenti verso le stampanti
+         * @description Permesso cash.operate. Una riga per (tipo documento, cassa); `register_id` assente = regola predefinita per quel documento, usata dalle casse senza una regola propria. L'ETag copre l'intero insieme.
+         */
+        get: operations["getPrintRoutes"];
+        /**
+         * Sostituisci l'instradamento dei documenti
+         * @description Permesso establishment.configure. Sostituisce l'intero insieme in una transazione. Al massimo una riga per (document_kind, register_id) (400 validation_failed altrimenti); stampante o cassa di un altro stabilimento → 404.
+         */
+        put: operations["updatePrintRoutes"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/print-routes/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stampante da usare per un documento
+         * @description Permesso cash.operate. Usato dai pulsanti di stampa (cassa, chiusura Z, ricevuta, biglietto): regola della cassa, altrimenti regola predefinita. `ready` è true solo se l'edizione è desktop e la stampante instradata è attiva e non risulta irraggiungibile; altrimenti `reason` spiega perché e il client usa la stampa del browser.
+         */
+        get: operations["resolvePrintRoute"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/print-jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lavori di stampa recenti
+         * @description Permesso cash.operate. Dal più recente; nessun dato personale (solo tipo, riferimento, esito).
+         */
+        get: operations["listPrintJobs"];
+        put?: never;
+        /**
+         * Stampa un documento su stampante ESC/POS
+         * @description Permesso cash.operate. Il server compone il documento (ricevuta di pagamento non fiscale, riepilogo chiusura Z, biglietto della vendita giornaliera, pagina di prova) e lo accoda verso la stampante indicata o instradata. L'header Idempotency-Key (o, in sua assenza, la chiave derivata `<document_kind>:<document_id>:<printer>`) garantisce che una ristampa accidentale non produca un secondo lavoro: stessa chiave → stesso lavoro (200). Per ristampare di proposito si usa una chiave nuova. Edizione server → 409 printing_unavailable; nessuna regola né printer_id → 409 print_route_missing; documento inesistente → 404.
+         */
+        post: operations["createPrintJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stato del lavoro di stampa
+         * @description Permesso cash.operate.
+         */
+        get: operations["getPrintJob"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/print-jobs/{printJobId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Riprova un lavoro di stampa fallito
+         * @description Permesso cash.operate. Solo da failed: torna queued con tentativi azzerati e lo stesso contenuto. Altri stati → 409 invalid_transition. Edizione server → 409 printing_unavailable.
+         */
+        post: operations["retryPrintJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3852,7 +4052,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "printing_unavailable" | "printer_address_not_allowed" | "print_route_missing";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -8610,6 +8810,184 @@ export interface components {
             items: components["schemas"]["ImportJob"][];
             next_cursor?: string;
         };
+        /**
+         * @description Come arrivano i byte alla stampante. v1: solo network (TCP raw, porta 9100, edizione desktop). Ponti futuri (app desktop per il VPS, app mobile Bluetooth) aggiungeranno valori qui.
+         * @enum {string}
+         */
+        PrinterDriver: "network";
+        /**
+         * @description Larghezza carta in mm.
+         * @enum {integer}
+         */
+        PrinterPaperWidth: 58 | 80;
+        /**
+         * @description Codepage del testo; cp858 (default) ha € e le vocali accentate italiane.
+         * @enum {string}
+         */
+        PrinterCodepage: "cp858" | "cp437" | "cp850" | "cp852" | "cp1252";
+        /** @enum {string} */
+        PrinterCutMode: "full" | "partial" | "none";
+        /** @enum {string} */
+        PrinterStatus: "unknown" | "reachable" | "unreachable";
+        /** @enum {string} */
+        PrinterUnavailableReason: "server_edition";
+        Printer: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            driver: components["schemas"]["PrinterDriver"];
+            /** @description IP o nome host della rete locale. */
+            host: string;
+            port: number;
+            paper_width_mm: components["schemas"]["PrinterPaperWidth"];
+            /** @description Caratteri per riga del font A (default 32 su 58 mm, 48 su 80 mm). */
+            chars_per_line: number;
+            codepage: components["schemas"]["PrinterCodepage"];
+            /** @description Numero della tabella ESC t se il modello non usa quello standard Epson. */
+            codepage_table?: number;
+            cut_mode: components["schemas"]["PrinterCutMode"];
+            /** @description Righe di avanzamento prima del taglio. */
+            feed_lines: number;
+            /** @description Stampa in testa il logo dello stabilimento (raster con dithering, in cache). */
+            print_logo: boolean;
+            logo_cached: boolean;
+            /**
+             * @description Pin del cassetto collegato alla stampante; assente = nessun cassetto.
+             * @enum {integer}
+             */
+            drawer_pin?: 2 | 5;
+            active: boolean;
+            status: components["schemas"]["PrinterStatus"];
+            /** Format: date-time */
+            last_checked_at?: string;
+            /** Format: date-time */
+            last_success_at?: string;
+            /** @description Ultimo errore di rete (testo tecnico, senza dati personali). */
+            last_error?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        PrinterInput: {
+            name: string;
+            host: string;
+            /** @default 9100 */
+            port: number;
+            paper_width_mm: components["schemas"]["PrinterPaperWidth"];
+            chars_per_line?: number;
+            codepage?: components["schemas"]["PrinterCodepage"];
+            codepage_table?: number;
+            cut_mode?: components["schemas"]["PrinterCutMode"];
+            feed_lines?: number;
+            print_logo?: boolean;
+            /** @enum {integer} */
+            drawer_pin?: 2 | 5;
+            active?: boolean;
+        };
+        PrinterList: {
+            items: components["schemas"]["Printer"][];
+            /** @description true solo nell'edizione desktop. */
+            escpos_available: boolean;
+            unavailable_reason?: components["schemas"]["PrinterUnavailableReason"];
+        };
+        PrinterCheckResult: {
+            status: components["schemas"]["PrinterStatus"];
+            latency_ms?: number;
+            error?: string;
+            /** @description Sensore carta quasi finita, se la stampante risponde a DLE EOT. */
+            paper_low?: boolean;
+            cover_open?: boolean;
+            /** Format: date-time */
+            checked_at: string;
+        };
+        /**
+         * @description daily_ticket = biglietto della vendita giornaliera (document_id = id del biglietto); cash_z = riepilogo della chiusura di cassa (document_id = id della sessione di cassa); payment_receipt = ricevuta non fiscale di un pagamento (document_id = id del pagamento); test_page = pagina di prova (nessun document_id).
+         * @enum {string}
+         */
+        PrintDocumentKind: "daily_ticket" | "cash_z" | "payment_receipt" | "test_page";
+        PrintRoute: {
+            document_kind: components["schemas"]["PrintDocumentKind"];
+            /**
+             * Format: uuid
+             * @description Cassa; assente = regola predefinita del documento.
+             */
+            register_id?: string;
+            /** Format: uuid */
+            printer_id: string;
+            /** @default 1 */
+            copies: number;
+            /** @description Apre il cassetto della stampante (se ha drawer_pin) dopo la stampa di un pagamento in contanti. */
+            kick_drawer?: boolean;
+        };
+        PrintRouteSet: {
+            items: components["schemas"]["PrintRoute"][];
+        };
+        /** @enum {string} */
+        PrintRouteUnreadyReason: "server_edition" | "no_route" | "printer_inactive" | "printer_unreachable";
+        PrintRouteResolution: {
+            document_kind: components["schemas"]["PrintDocumentKind"];
+            ready: boolean;
+            reason?: components["schemas"]["PrintRouteUnreadyReason"];
+            printer?: components["schemas"]["Printer"];
+            copies: number;
+            kick_drawer: boolean;
+        };
+        /** @enum {string} */
+        PrintJobStatus: "queued" | "printing" | "printed" | "failed" | "cancelled";
+        PrintJobInput: {
+            document_kind: components["schemas"]["PrintDocumentKind"];
+            /**
+             * Format: uuid
+             * @description Obbligatorio tranne che per test_page.
+             */
+            document_id?: string;
+            /**
+             * Format: uuid
+             * @description Cassa da cui si stampa (sceglie la regola di instradamento).
+             */
+            register_id?: string;
+            /**
+             * Format: uuid
+             * @description Stampante esplicita; ignora l'instradamento.
+             */
+            printer_id?: string;
+            copies?: number;
+            kick_drawer?: boolean;
+        };
+        PrintJob: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Assente se la stampante è stata eliminata.
+             */
+            printer_id?: string;
+            printer_name?: string;
+            document_kind: components["schemas"]["PrintDocumentKind"];
+            /** Format: uuid */
+            document_id?: string;
+            /** Format: uuid */
+            register_id?: string;
+            status: components["schemas"]["PrintJobStatus"];
+            attempts: number;
+            max_attempts: number;
+            /** Format: date-time */
+            next_attempt_at?: string;
+            last_error?: string;
+            copies: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: date-time */
+            printed_at?: string;
+        };
+        PrintJobList: {
+            items: components["schemas"]["PrintJob"][];
+            next_cursor?: string;
+        };
     };
     responses: {
         /** @description Richiesta non valida */
@@ -8802,6 +9180,8 @@ export interface components {
         ApiKeyID: string;
         WebhookEndpointID: string;
         WebhookDeliveryID: string;
+        PrinterID: string;
+        PrintJobID: string;
     };
     requestBodies: never;
     headers: {
@@ -18946,6 +19326,508 @@ export interface operations {
             409: components["responses"]["Conflict"];
             412: components["responses"]["PreconditionFailed"];
             422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listPrinters: {
+        parameters: {
+            query?: {
+                /** @description Includi le stampanti disattivate. */
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrinterList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createPrinter: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrinterInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Printer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPrinter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                printerId: components["parameters"]["PrinterID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Printer"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updatePrinter: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                printerId: components["parameters"]["PrinterID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrinterInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Printer"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    deletePrinter: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                printerId: components["parameters"]["PrinterID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminata */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    checkPrinter: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                printerId: components["parameters"]["PrinterID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrinterCheckResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    testPrinter: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                printerId: components["parameters"]["PrinterID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accodato */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPrintRoutes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintRouteSet"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updatePrintRoutes: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrintRouteSet"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintRouteSet"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    resolvePrintRoute: {
+        parameters: {
+            query: {
+                document_kind: components["schemas"]["PrintDocumentKind"];
+                register_id?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintRouteResolution"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listPrintJobs: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+                status?: components["schemas"]["PrintJobStatus"];
+                printer_id?: string;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintJobList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createPrintJob: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrintJobInput"];
+            };
+        };
+        responses: {
+            /** @description Lavoro già esistente con la stessa chiave di idempotenza */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintJob"];
+                };
+            };
+            /** @description Accodato */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintJob"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPrintJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                printJobId: components["parameters"]["PrintJobID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    retryPrintJob: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                printJobId: components["parameters"]["PrintJobID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Riaccodato */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             501: components["responses"]["NotImplemented"];
         };
     };
