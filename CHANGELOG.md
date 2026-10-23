@@ -34,7 +34,8 @@ offline).
 - Email: in fondo a ogni messaggio una firma discreta "Arenile — Coste360.it" con il marchio Arenile come
   immagine inline (cid:, nessuna immagine remota né tracciamento) e link a https://arenile.app, anche nella
   parte di testo; il marchio dello stabilimento resta in primo piano. Il colore predefinito delle email senza
-  tema è l'oceano di Arenile, lo stesso della pagina pubblica.
+  tema è il navy Coste360 `#0b2542` (primario del pannello, testo bianco AAA); la finestra di abbinamento
+  dell'app desktop usa gli stessi colori del pannello in chiaro e in scuro.
 - Edizione desktop con il marchio ufficiale: icone per macOS (.icns sulla griglia di macOS), Windows (.ico
   16–256 px) e Linux (PNG 512 e SVG) generate da `scripts/desktop/gen-icons.sh`; nella barra dei menu di
   macOS la "A" monocromatica (immagine template), nella tray di Windows e Linux la tile a colori. "Informazioni

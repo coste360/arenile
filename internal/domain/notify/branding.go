@@ -14,9 +14,9 @@ import (
 // a link colour readable on the white body. Pure functions.
 
 // DefaultPrimaryColor is used when the theme has no valid primary colour:
-// the Arenile ocean blue, the same default as the public page
-// (web/shared/src/theme DEFAULT_PRIMARY).
-const DefaultPrimaryColor = "#0D79AC"
+// the Coste360 navy, the primary of the admin theme
+// (web/shared/src/styles/globals.css --primary); white text on it is AAA.
+const DefaultPrimaryColor = "#0B2542"
 
 // Branding is the visual identity of one establishment in an email.
 type Branding struct {

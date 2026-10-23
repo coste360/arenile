@@ -147,12 +147,14 @@ func PairingHTML() string {
 }
 
 // The heading mark is the Arenile favicon (assets/brand/arenile/arenile-favicon.svg).
+// Colours are the Coste360 tokens of web/shared/src/styles/globals.css (light
+// and dark), whose AA contrast is checked by the theme test.
 var pairingTemplate = template.Must(template.New("pairing").Parse(`<!doctype html>
 <html lang="{{.lang}}"><head><meta charset="utf-8"><meta name="color-scheme" content="light dark">
 <title>{{.title}}</title>
 <style>
-  :root { color-scheme: light dark; --fg: #0b305f; --muted: #52637a; --border: #c9d5e3; --bg: #ffffff; --primary: #092d62; --primary-fg: #ffffff; --ring: #0d79ac; --error: #b91c1c; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #e6eef7; --muted: #9fb1c6; --border: #2a3f5c; --bg: #071a33; --primary: #16cde1; --primary-fg: #092d62; --ring: #16cde1; --error: #fca5a5; } }
+  :root { color-scheme: light dark; --fg: #0f172a; --muted: #475569; --border: #74849b; --bg: #ffffff; --primary: #0b2542; --primary-fg: #ffffff; --ring: #185482; --error: #b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f8fafc; --muted: #a7b4c6; --border: #7590b0; --bg: #07192d; --primary: #38bdf8; --primary-fg: #0b2542; --ring: #38bdf8; --error: #fc8888; } }
   html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif; }
   main { max-width: 32rem; margin: 0 auto; padding: 1.5rem 1.5rem 2rem; }
   h1 { display: flex; align-items: center; gap: .6rem; font-size: 1.25rem; font-weight: 600; margin: 0 0 .5rem; }
