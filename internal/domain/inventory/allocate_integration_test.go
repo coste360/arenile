@@ -272,6 +272,47 @@ func TestInventoryConfirm_ExpiredHold(t *testing.T) {
 	})
 }
 
+// TestInventoryConfirm_ReclaimedHold: a hold whose rows were reclaimed by a
+// concurrent allocation (INV-05) cannot be confirmed, even when the booking
+// row still says the hold is valid; a partial reclaim (some rows) fails too.
+// Without this a confirmed booking could end up with no allocation (INV-20).
+func TestInventoryConfirm_ReclaimedHold(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		ctx := context.Background()
+		f := newFixture(t, db)
+		exp := f.clock.Now().Add(time.Minute)
+		hold, err := f.book(t, bookingSpec{status: "held", expires: &exp, from: "2027-07-13", to: "2027-07-13", lines: []lineSpec{{zone: f.seat, spot: f.spots["A4"]}}}, map[string]int{"sunbed": 1})
+		must(t, err)
+		// Two minutes later a sale that needs only the sunbed pool reclaims
+		// the expired hold whole: its spot rows go too (never a partial set).
+		f.clock.Advance(2 * time.Minute)
+		_, err = f.book(t, bookingSpec{from: "2027-07-13", to: "2027-07-13", lines: []lineSpec{{zone: f.qtyZone, qty: 1}}}, map[string]int{"sunbed": 1})
+		must(t, err)
+		if n := f.count(t, "spot_allocations", "booking_id = ?", hold.id) + f.count(t, "pool_allocations", "booking_id = ?", hold.id); n != 0 {
+			t.Fatalf("reclaimed hold still owns %d rows", n)
+		}
+		if _, h, _ := f.usage(t, f.sunbeds.ID, "2027-07-13", calendar.AM); h != 0 {
+			t.Fatalf("held units still counted: %d", h)
+		}
+		// Even a confirmer that believes the hold is valid (no expiry on the
+		// booking row, as when its clock reading precedes the expiry) finds
+		// nothing to confirm and fails instead of confirming an empty booking.
+		_, err = db.NewUpdate().TableExpr("bookings").Set("hold_expires_at = NULL").Where("id = ?", hold.id).Exec(ctx)
+		must(t, err)
+		err = store.RunInTx(ctx, db, func(ctx context.Context, tx bun.Tx) error { return f.svc.Confirm(ctx, tx, f.es, hold.id) })
+		if !errors.Is(err, availability.ErrHoldExpired) {
+			t.Fatalf("confirm after reclaim: %v", err)
+		}
+		// Confirm is idempotent on a booking already confirmed (no hold rows).
+		_, err = db.NewUpdate().TableExpr("bookings").Set("status = 'confirmed'").Where("id = ?", hold.id).Exec(ctx)
+		must(t, err)
+		if err := store.RunInTx(ctx, db, func(ctx context.Context, tx bun.Tx) error { return f.svc.Confirm(ctx, tx, f.es, hold.id) }); err != nil {
+			t.Fatalf("confirm of a confirmed booking: %v", err)
+		}
+		f.checkInvariants(t)
+	})
+}
+
 func TestConvertHold_ToBooking(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		ctx := context.Background()

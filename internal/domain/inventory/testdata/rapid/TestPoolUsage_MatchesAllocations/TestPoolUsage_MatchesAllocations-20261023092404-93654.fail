@@ -1,0 +1,42 @@
+# 2026/10/23 09:24:04.158442 [TestPoolUsage_MatchesAllocations] [rapid] draw steps: 2
+# 2026/10/23 09:24:04.158449 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:24:04.158449 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:24:04.158450 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:24:04.158450 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:24:04.158453 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:24:04.158453 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:24:04.158453 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:24:04.158453 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:24:04.158454 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:24:04.158966 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 7
+# 2026/10/23 09:24:04.158966 [TestPoolUsage_MatchesAllocations] [rapid] draw confirm: "01a167a5-3abe-76fd-ba2e-420bc3df6d93"
+# 2026/10/23 09:24:04.159021 [TestPoolUsage_MatchesAllocations] confirm: availability: hold expired
+# 
+v0.4.8#13495834380751547753
+0x0
+0x0
+0x1
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x6b74f03291620
+0x7
+0x0
+0x0

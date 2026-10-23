@@ -89,7 +89,7 @@ func (s *Service) CreateSpotBlocks(ctx context.Context, p *auth.Principal, estab
 			return configerr.Invalid("spot_ids", "Postazione sconosciuta.")
 		}
 		now := s.d.Clock.Now()
-		if _, err := store.DeleteExpiredSpotHolds(ctx, tx, es, in.SpotIDs, in.StartsOn, in.EndsOn, now); err != nil {
+		if err := s.reclaimExpiredHolds(ctx, tx, es, in.SpotIDs, nil, in.StartsOn, in.EndsOn, now); err != nil {
 			return err
 		}
 		iv := availability.Interval{From: in.StartsOn, To: in.EndsOn, Slots: in.Slots}

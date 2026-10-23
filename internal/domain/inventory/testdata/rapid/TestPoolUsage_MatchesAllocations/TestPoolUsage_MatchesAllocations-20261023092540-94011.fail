@@ -1,0 +1,285 @@
+# 2026/10/23 09:25:40.043723 [TestPoolUsage_MatchesAllocations] [rapid] draw steps: 12
+# 2026/10/23 09:25:40.043726 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.043726 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.043727 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.043728 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.043729 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.043730 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.043730 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.043730 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.043730 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.044206 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 6
+# 2026/10/23 09:25:40.044206 [TestPoolUsage_MatchesAllocations] [rapid] draw release: "01a167a6-b14b-7b33-8278-44102a078621"
+# 2026/10/23 09:25:40.044383 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.044384 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.044384 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.044384 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.044384 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.044384 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.044386 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.044386 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.044386 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.044677 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.044678 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.044678 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.044678 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.044678 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.044678 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.044679 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.044679 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.044679 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.044966 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.044966 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.044967 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.044967 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.044967 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.044967 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.044968 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.044968 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.044969 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.045255 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.045255 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.045256 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.045256 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.045256 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.045256 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.045256 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: true
+# 2026/10/23 09:25:40.045257 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.045257 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.045569 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.045570 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.045570 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 1
+# 2026/10/23 09:25:40.045570 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.045570 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.045570 [TestPoolUsage_MatchesAllocations] [rapid] draw held: true
+# 2026/10/23 09:25:40.045571 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.045571 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.045571 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.045572 [TestPoolUsage_MatchesAllocations] [rapid] draw ttl: 1
+# 2026/10/23 09:25:40.045912 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.045913 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.045913 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.045913 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.045913 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.045914 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.045914 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.045914 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.045914 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.046220 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 6
+# 2026/10/23 09:25:40.046220 [TestPoolUsage_MatchesAllocations] [rapid] draw release: "01a167a6-b14b-7b33-8278-44102a078621"
+# 2026/10/23 09:25:40.046383 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.046383 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.046383 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.046384 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.046385 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.046385 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.046385 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.046385 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.046386 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.046684 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 8
+# 2026/10/23 09:25:40.046684 [TestPoolUsage_MatchesAllocations] [rapid] draw advance: 1
+# 2026/10/23 09:25:40.046833 [TestPoolUsage_MatchesAllocations] [rapid] draw op: 0
+# 2026/10/23 09:25:40.046834 [TestPoolUsage_MatchesAllocations] [rapid] draw from: 0
+# 2026/10/23 09:25:40.046835 [TestPoolUsage_MatchesAllocations] [rapid] draw to: 0
+# 2026/10/23 09:25:40.046835 [TestPoolUsage_MatchesAllocations] [rapid] draw slots: "AM"
+# 2026/10/23 09:25:40.046836 [TestPoolUsage_MatchesAllocations] [rapid] draw online: false
+# 2026/10/23 09:25:40.046836 [TestPoolUsage_MatchesAllocations] [rapid] draw held: false
+# 2026/10/23 09:25:40.046836 [TestPoolUsage_MatchesAllocations] [rapid] draw spot: false
+# 2026/10/23 09:25:40.046836 [TestPoolUsage_MatchesAllocations] [rapid] draw label: "A1"
+# 2026/10/23 09:25:40.046837 [TestPoolUsage_MatchesAllocations] [rapid] draw qty: 1
+# 2026/10/23 09:25:40.047164 [TestPoolUsage_MatchesAllocations] pool 2027-07-02 AM: db 0/0/0 model 0/1/0
+# 
+v0.4.8#15207695953328026819
+0x0
+0x9867f1f40f739
+0xb
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x6b74f03291620
+0x6
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x1
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x1
+0x0
+0x0
+0x0
+0x1
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x6b74f03291620
+0x6
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x9867f1f40f739
+0x8
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0

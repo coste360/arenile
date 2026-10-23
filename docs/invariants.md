@@ -47,8 +47,10 @@ Verificata da: `TestAvailabilityQuery_ReflectsAllocations`, `TestOperationsDay_S
 
 **INV-05 — Gli hold scaduti non bloccano mai le vendite.**
 Un hold con `expires_at <= now` viene ignorato e ripulito al momento del conflitto, anche se il job di
-rilascio non è ancora passato.
-Verificata da: `TestSpotHold_ExpiredHoldIsReclaimed` (con `clock.Fake`), `TestConcurrency_HoldSweeper`, `TestHolds_LifecycleAndSweeper` (`internal/domain/inventory`, tag `integration`). Stato: implemented.
+rilascio non è ancora passato. La pulizia blocca prima la prenotazione proprietaria (lo stesso lock sotto cui
+avviene la conferma) e rimuove l'hold per intero, mai una risorsa alla volta: una conferma concorrente trova
+tutte le righe dell'hold oppure nessuna e fallisce con `hold_expired` (ADR 0011 §3).
+Verificata da: `TestSpotHold_ExpiredHoldIsReclaimed` (con `clock.Fake`), `TestConcurrency_HoldSweeper`, `TestHolds_LifecycleAndSweeper`, `TestInventoryConfirm_ReclaimedHold`, `TestConcurrency_ConfirmVsReclaim` (120 hold confermati a cavallo della scadenza contro vendite concorrenti, `internal/domain/inventory`, tag `integration`). Stato: implemented.
 Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL) controllano questa invariante sul database dopo la giornata simulata di M3.
 
 **INV-06 — `expires_at` solo sugli hold.**
@@ -65,7 +67,7 @@ Verificata da: `TestSpotHold_FullDayAllocatesBothSlots` (`internal/domain/invent
 **INV-08 — Capacità delle zone `zone`.**
 Per ogni zona in modalità `zone`, data e fascia, le righe assegnate più quelle `pending` non superano il
 numero di postazioni attive della zona.
-Verificata da: `TestAutoAssign_NeverExceedsZoneCapacity` (property test `rapid`), `TestAutoAssign_PendingLines` (`internal/domain/inventory`) e `TestBookingAutoAssign_PendingZoneLines` (`internal/domain/booking`), tag `integration`. Stato: partial (le righe `pending` consumano il pool implicito della zona con l'`UPDATE` condizionale; un blocco su una postazione di una zona `zone` non riduce ancora quel pool, quindi una riga pending può restare senza posto assegnabile).
+Verificata da: `TestAutoAssign_NeverExceedsZoneCapacity` (property test `rapid`) e `TestBookingAutoAssign_PendingZoneLines` (`internal/domain/booking`, tag `integration`: solo `booking.Move`, sotto il lock della prenotazione, assegna una riga pending). Stato: partial (le righe `pending` consumano il pool implicito della zona con l'`UPDATE` condizionale; un blocco su una postazione di una zona `zone` non riduce ancora quel pool, quindi una riga pending può restare senza posto assegnabile).
 
 **INV-09 — Quota online rispettata.**
 Per le zone con `online_quota`, le vendite del canale `online` per data e fascia non superano la quota;

@@ -144,19 +144,39 @@ func (s *Service) Allocate(ctx context.Context, tx bun.IDB, es store.Establishme
 	return summarize(p), nil
 }
 
-// reclaimExpired deletes the expired hold rows on the spots and pools of p
-// and gives their units back (spec 7.2: local cleanup at conflict time).
+// reclaimExpired reclaims the expired holds found on the spots and pools of
+// p (spec 7.2: local cleanup at conflict time).
 func (s *Service) reclaimExpired(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, p *plan, from, to calendar.Date, now time.Time) error {
 	spotIDs := uniqueStrings(p.spotRows, func(r store.SpotAllocation) string { return r.SpotID })
-	if _, err := store.DeleteExpiredSpotHolds(ctx, tx, es, spotIDs, from, to, now); err != nil {
-		return err
-	}
 	poolIDs := uniqueStrings(p.demands, func(d poolDemand) string { return d.poolID })
-	expired, err := store.DeleteExpiredPoolHolds(ctx, tx, es, poolIDs, from, to, now)
+	return s.reclaimExpiredHolds(ctx, tx, es, spotIDs, poolIDs, from, to, now)
+}
+
+// reclaimExpiredHolds deletes the expired hold rows whose owners occupy
+// spotIDs or poolIDs between from and to, and gives the pool units back
+// (INV-05). Two rules keep this safe against a concurrent confirmation of
+// the same hold, which evaluates "expired" at its own instant:
+//   - the owning bookings are locked first (store.LockBookings), the same
+//     lock the booking service takes before Confirm, so the two serialize
+//     and the loser re-reads the committed rows;
+//   - an owner is reclaimed whole (every hold row, any resource), never one
+//     resource at a time, so a confirmation finds all of its rows or none.
+func (s *Service) reclaimExpiredHolds(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, spotIDs, poolIDs []string, from, to calendar.Date, now time.Time) error {
+	owners, err := store.ExpiredHoldOwners(ctx, tx, es, spotIDs, poolIDs, from, to, now)
 	if err != nil {
 		return err
 	}
-	return store.ApplyPoolDeltas(ctx, tx, es, poolDeltas(expired, -1), now)
+	if owners.Empty() {
+		return nil
+	}
+	if err := store.LockBookings(ctx, tx, es, owners.BookingIDs); err != nil {
+		return err
+	}
+	_, pools, err := store.DeleteExpiredHoldsOfOwners(ctx, tx, es, owners, now)
+	if err != nil {
+		return err
+	}
+	return store.ApplyPoolDeltas(ctx, tx, es, poolDeltas(pools, -1), now)
 }
 
 // insertSpotRows inserts rows relying on the unique index; when the
@@ -408,6 +428,14 @@ func (s *Service) releaseOwner(ctx context.Context, tx bun.IDB, es store.Establi
 // kind hold -> booking (season for passes), expires_at NULL; pool held ->
 // used. A hold already expired (rows or bookings.hold_expires_at) fails with
 // availability.ErrHoldExpired.
+//
+// The hold rows are locked first (store.LockHoldRows): a concurrent
+// allocation that evaluates "expired" at a later instant and reclaims them
+// (INV-05) either waits for this transaction and then skips the confirmed
+// rows, or has already deleted them, in which case nothing is left to lock
+// and the confirmation fails instead of producing a confirmed booking without
+// allocations (INV-20). For the same reason the number of rows confirmed must
+// equal the number of rows locked.
 func (s *Service) Confirm(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, bookingID string) error {
 	now := s.d.Clock.Now()
 	b, err := store.GetBookingHoldState(ctx, tx, es, bookingID)
@@ -415,6 +443,18 @@ func (s *Service) Confirm(ctx context.Context, tx bun.IDB, es store.Establishmen
 		return fmt.Errorf("inventory: confirm: %w", err)
 	}
 	if b.HoldExpiresAt != nil && !b.HoldExpiresAt.After(now) {
+		return availability.ErrHoldExpired
+	}
+	if !bookingHoldsResources(b.Status) {
+		return nil // nothing held (already confirmed): idempotent
+	}
+	locked, err := store.LockHoldRows(ctx, tx, es, bookingID)
+	if err != nil {
+		return fmt.Errorf("inventory: confirm: %w", err)
+	}
+	if locked == 0 {
+		// Reclaimed whole by a concurrent allocation (INV-05): a booking in
+		// a hold status always owns its hold rows until then.
 		return availability.ErrHoldExpired
 	}
 	n, err := store.CountExpiredHoldRows(ctx, tx, es, bookingID, now)
@@ -428,12 +468,16 @@ func (s *Service) Confirm(ctx context.Context, tx bun.IDB, es store.Establishmen
 	if b.IsSeasonPass {
 		kind = store.AllocationSeason
 	}
-	if _, err := store.ConfirmSpotHolds(ctx, tx, es, bookingID, kind, now); err != nil {
+	spots, err := store.ConfirmSpotHolds(ctx, tx, es, bookingID, kind, now)
+	if err != nil {
 		return fmt.Errorf("inventory: confirm: %w", err)
 	}
 	rows, err := store.ConfirmPoolHolds(ctx, tx, es, bookingID, now)
 	if err != nil {
 		return fmt.Errorf("inventory: confirm: %w", err)
+	}
+	if spots+len(rows) != locked {
+		return availability.ErrHoldExpired
 	}
 	deltas := poolDeltas(rows, 1) // as booking rows now: used += q
 	for i := range deltas {
@@ -444,6 +488,16 @@ func (s *Service) Confirm(ctx context.Context, tx bun.IDB, es store.Establishmen
 		return fmt.Errorf("inventory: confirm: %w", err)
 	}
 	return nil
+}
+
+// bookingHoldsResources reports whether a booking status holds resources
+// temporarily (booking.Status.IsHold, mirrored here: booking imports inventory).
+func bookingHoldsResources(status string) bool {
+	switch status {
+	case "held", "pending_payment", "awaiting_approval":
+		return true
+	}
+	return false
 }
 
 // ExtendHold moves expires_at of the hold allocations of a booking (payment
@@ -558,7 +612,7 @@ func (s *Service) RestoreSeasonDays(ctx context.Context, tx bun.IDB, es store.Es
 			from, to = minDate(from, d), maxDate(to, d)
 		}
 	}
-	if _, err := store.DeleteExpiredSpotHolds(ctx, tx, es, []string{days.SpotID}, from, to, now); err != nil {
+	if err := s.reclaimExpiredHolds(ctx, tx, es, []string{days.SpotID}, nil, from, to, now); err != nil {
 		return fmt.Errorf("inventory: restore season days: %w", err)
 	}
 	conflicts, err := s.insertSpotRows(ctx, tx, es, rows, from, to)

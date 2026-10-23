@@ -13,7 +13,9 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/availability"
+	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
@@ -248,6 +250,121 @@ func TestConcurrency_HoldSweeper(t *testing.T) {
 		}, func(error) bool { return false })
 		if total != 5 || f.count(t, "outbox_events", "type = 'hold.released'") != 5 {
 			t.Fatalf("released %d", total)
+		}
+		f.checkInvariants(t)
+	})
+}
+
+// boundaryClock straddles an instant: successive readings alternate between
+// just before and just after it, so that two transactions evaluating "the
+// hold is expired" at their own now disagree (what a real clock does around
+// the expiry of a hold).
+type boundaryClock struct {
+	at time.Time
+	n  atomic.Int64
+}
+
+func (c *boundaryClock) Now() time.Time {
+	if c.n.Add(1)%2 == 0 {
+		return c.at.Add(time.Second)
+	}
+	return c.at.Add(-time.Second)
+}
+
+// TestConcurrency_ConfirmVsReclaim (INV-01, INV-20): for 120 holds expiring
+// at the same instant, a confirmation races an allocation of the same spot
+// and day across the expiry boundary. Whatever the interleaving, a booking
+// confirmed has all its rows and no spot is sold twice: on PostgreSQL the
+// confirmation locks the hold rows before the reclaim can delete them (or
+// finds nothing left and fails), on SQLite the write lock serializes.
+func TestConcurrency_ConfirmVsReclaim(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		ctx := context.Background()
+		f := newFixture(t, db)
+		exp := f.clock.Now().Add(10 * time.Minute)
+		bc := &boundaryClock{at: exp}
+		svc := inventory.NewService(inventory.Deps{DB: db, Clock: bc, Audit: audit.NewWriter(bc), Outbox: event.NewOutbox(bc)})
+		spot := f.spots["A1"]
+		holds := make([]testBooking, attempts)
+		days := make([]string, attempts)
+		rows := make([]int, attempts) // hold rows of each booking (closure half-days skipped)
+		for i := range attempts {
+			days[i] = d("2027-06-01").AddDays(i).String()
+			tb, err := f.book(t, bookingSpec{status: "held", expires: &exp, from: days[i], to: days[i], lines: []lineSpec{{zone: f.seat, spot: spot}}}, nil)
+			must(t, err)
+			holds[i] = tb
+			rows[i] = f.count(t, "spot_allocations", "booking_id = ?", tb.id)
+		}
+		var wg sync.WaitGroup
+		start := make(chan struct{})
+		confirmed := make([]atomic.Bool, attempts)
+		sold := make([]atomic.Bool, attempts)
+		errs := make(chan error, 2*attempts)
+		for i := range attempts {
+			wg.Add(2)
+			go func() {
+				defer wg.Done()
+				<-start
+				err := store.RunInTx(ctx, db, func(ctx context.Context, tx bun.Tx) error {
+					if _, err := store.LockBooking(ctx, tx, f.es, holds[i].id); err != nil {
+						return err
+					}
+					if err := svc.Confirm(ctx, tx, f.es, holds[i].id); err != nil {
+						return err
+					}
+					_, err := tx.NewUpdate().TableExpr("bookings").Set("status = 'confirmed'").Set("hold_expires_at = NULL").Where("id = ?", holds[i].id).Exec(ctx)
+					return err
+				})
+				switch {
+				case err == nil:
+					confirmed[i].Store(true)
+				case errors.Is(err, availability.ErrHoldExpired):
+				default:
+					errs <- err
+				}
+			}()
+			go func() {
+				defer wg.Done()
+				<-start
+				err := store.RunInTx(ctx, db, func(ctx context.Context, tx bun.Tx) error {
+					spec := bookingSpec{from: days[i], to: days[i], lines: []lineSpec{{zone: f.seat, spot: spot}}}
+					tb := f.insertBooking(t, tx, spec)
+					_, err := svc.Allocate(ctx, tx, f.es, f.allocRequest(spec, tb, nil))
+					return err
+				})
+				switch {
+				case err == nil:
+					sold[i].Store(true)
+				case isAvailabilityConflict(err):
+				default:
+					errs <- err
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		close(errs)
+		for err := range errs {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		var nConfirmed, nSold int
+		for i := range attempts {
+			if confirmed[i].Load() && sold[i].Load() {
+				t.Fatalf("day %s: hold confirmed and spot sold to another booking", days[i])
+			}
+			if confirmed[i].Load() {
+				nConfirmed++
+				if n := f.count(t, "spot_allocations", "booking_id = ? AND kind = 'booking' AND expires_at IS NULL", holds[i].id); n != rows[i] {
+					t.Fatalf("day %s: confirmed booking has %d allocations, want %d", days[i], n, rows[i])
+				}
+			}
+			if sold[i].Load() {
+				nSold++
+			}
+		}
+		t.Logf("confirmed %d, reclaimed and sold %d, both refused %d", nConfirmed, nSold, attempts-nConfirmed-nSold)
+		if n := f.count(t, "bookings AS b", "b.status = 'confirmed' AND b.hold_expires_at IS NULL AND NOT EXISTS (SELECT 1 FROM spot_allocations AS sa WHERE sa.booking_id = b.id)"); n != 0 {
+			t.Fatalf("INV-20: %d confirmed bookings without allocations", n)
 		}
 		f.checkInvariants(t)
 	})

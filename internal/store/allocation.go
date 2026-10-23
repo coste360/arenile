@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -95,6 +96,118 @@ func DeleteExpiredSpotHolds(ctx context.Context, db bun.IDB, es EstablishmentSco
 		return nil, fmt.Errorf("store: delete expired spot holds: %w", err)
 	}
 	return rows, nil
+}
+
+// HoldOwners are the owners (held bookings, panel holds) of expired hold
+// rows found on some resources.
+type HoldOwners struct {
+	BookingIDs []string
+	HoldIDs    []string
+}
+
+// Empty reports whether no owner was found.
+func (o HoldOwners) Empty() bool { return len(o.BookingIDs) == 0 && len(o.HoldIDs) == 0 }
+
+// ExpiredHoldOwners lists, sorted and without duplicates, the owners of the
+// hold rows of spotIDs and poolIDs between from and to whose expires_at <=
+// now (the holds a sale on those resources may reclaim, INV-05).
+func ExpiredHoldOwners(ctx context.Context, db bun.IDB, es EstablishmentScope, spotIDs, poolIDs []string, from, to calendar.Date, now time.Time) (HoldOwners, error) {
+	var out HoldOwners
+	if err := es.mustBeValid(); err != nil {
+		return out, err
+	}
+	type owner struct {
+		BookingID *string `bun:"booking_id"`
+		HoldID    *string `bun:"hold_id"`
+	}
+	collect := func(table, column string, ids []string) error {
+		if len(ids) == 0 {
+			return nil
+		}
+		var rows []owner
+		err := db.NewSelect().TableExpr(table).ColumnExpr("DISTINCT booking_id, hold_id").
+			Where("establishment_id = ?", es.ID()).
+			Where("kind = ?", AllocationHold).Where("expires_at <= ?", now.UTC()).
+			Where(column+" IN (?)", bun.List(ids)).
+			Where("date >= ?", from).Where("date <= ?", to).Scan(ctx, &rows)
+		if err != nil && !isNoRows(err) {
+			return fmt.Errorf("store: expired hold owners: %w", err)
+		}
+		for _, r := range rows {
+			switch {
+			case r.BookingID != nil:
+				out.BookingIDs = append(out.BookingIDs, *r.BookingID)
+			case r.HoldID != nil:
+				out.HoldIDs = append(out.HoldIDs, *r.HoldID)
+			}
+		}
+		return nil
+	}
+	if err := collect("spot_allocations", "spot_id", spotIDs); err != nil {
+		return out, err
+	}
+	if err := collect("pool_allocations", "pool_id", poolIDs); err != nil {
+		return out, err
+	}
+	out.BookingIDs = sortedUnique(out.BookingIDs)
+	out.HoldIDs = sortedUnique(out.HoldIDs)
+	return out, nil
+}
+
+func sortedUnique(ids []string) []string {
+	slices.Sort(ids)
+	return slices.Compact(ids)
+}
+
+// LockBookings locks the rows of the given bookings of es, one at a time in
+// id order (a deterministic order never deadlocks two reclaims), with the
+// same no-op UPDATE as LockBooking. Unknown ids are ignored.
+func LockBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, ids []string) error {
+	if err := es.mustBeValid(); err != nil {
+		return err
+	}
+	for _, id := range sortedUnique(ids) {
+		if _, err := db.NewUpdate().Model((*Booking)(nil)).Set("version = version").
+			Where("id = ?", id).Where("establishment_id = ?", es.ID()).Exec(ctx); err != nil {
+			return fmt.Errorf("store: lock bookings: %w", err)
+		}
+	}
+	return nil
+}
+
+// DeleteExpiredHoldsOfOwners deletes every hold row (spot and pool, any
+// date or resource) of the given owners whose expires_at <= now and returns
+// the deleted rows: an expired hold is reclaimed whole, never one resource
+// at a time, so that a confirmation can never find a partial set of rows.
+func DeleteExpiredHoldsOfOwners(ctx context.Context, db bun.IDB, es EstablishmentScope, owners HoldOwners, now time.Time) ([]SpotAllocation, []PoolAllocation, error) {
+	if err := es.mustBeValid(); err != nil {
+		return nil, nil, err
+	}
+	if owners.Empty() {
+		return nil, nil, nil
+	}
+	ownerFilter := func(q *bun.DeleteQuery) *bun.DeleteQuery {
+		return q.Where("establishment_id = ?", es.ID()).
+			Where("kind = ?", AllocationHold).Where("expires_at <= ?", now.UTC()).
+			WhereGroup(" AND ", func(g *bun.DeleteQuery) *bun.DeleteQuery {
+				if len(owners.BookingIDs) > 0 {
+					g = g.WhereOr("booking_id IN (?)", bun.List(owners.BookingIDs))
+				}
+				if len(owners.HoldIDs) > 0 {
+					g = g.WhereOr("hold_id IN (?)", bun.List(owners.HoldIDs))
+				}
+				return g
+			})
+	}
+	var spots []SpotAllocation
+	if err := ownerFilter(db.NewDelete().Model(&spots)).Returning("*").Scan(ctx); err != nil && !isNoRows(err) {
+		return nil, nil, fmt.Errorf("store: reclaim spot holds: %w", err)
+	}
+	var pools []PoolAllocation
+	if err := ownerFilter(db.NewDelete().Model(&pools)).Returning("*").Scan(ctx); err != nil && !isNoRows(err) {
+		return nil, nil, fmt.Errorf("store: reclaim pool holds: %w", err)
+	}
+	return spots, pools, nil
 }
 
 // AllocationOwner selects allocation rows by owner. Exactly one of
@@ -215,6 +328,32 @@ func CountExpiredHoldRows(ctx context.Context, db bun.IDB, es EstablishmentScope
 		if err != nil {
 			return 0, fmt.Errorf("store: count expired holds: %w", err)
 		}
+		total += int(n)
+	}
+	return total, nil
+}
+
+// LockHoldRows locks the hold rows (spot and pool) of a booking for the rest
+// of the transaction with a no-op UPDATE and returns how many there are.
+// On PostgreSQL the row locks make a concurrent reclaim of the same rows
+// (DeleteExpiredSpotHolds / DeleteExpiredPoolHolds, which evaluate "expired"
+// at their own instant) wait and then skip rows that were confirmed
+// meanwhile; on SQLite the write lock of the transaction already serializes.
+// Zero rows means that the hold was reclaimed by somebody else.
+func LockHoldRows(ctx context.Context, db bun.IDB, es EstablishmentScope, bookingID string) (int, error) {
+	if err := es.mustBeValid(); err != nil {
+		return 0, err
+	}
+	total := 0
+	for _, table := range []string{"spot_allocations", "pool_allocations"} {
+		res, err := db.NewUpdate().TableExpr(table).
+			Set("expires_at = expires_at").
+			Where("establishment_id = ?", es.ID()).Where("booking_id = ?", bookingID).
+			Where("kind = ?", AllocationHold).Exec(ctx)
+		if err != nil {
+			return 0, wrapWrite("lock hold rows", err)
+		}
+		n, _ := res.RowsAffected()
 		total += int(n)
 	}
 	return total, nil

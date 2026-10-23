@@ -50,9 +50,6 @@ func TestInventoryService_PermissionsAndTenancy(t *testing.T) {
 		if _, err := f.svc.GetPlanning(ctx, f.ownerB, f.est.ID, inventory.PlanningQuery{From: d("2027-07-02"), To: d("2027-07-02")}); !errors.Is(err, store.ErrNotFound) {
 			t.Fatalf("cross tenant planning: %v", err)
 		}
-		if _, err := f.svc.AutoAssign(ctx, f.viewer, f.est.ID, inventory.AutoAssignInput{From: d("2027-07-02"), To: d("2027-07-02")}); !errors.Is(err, auth.ErrForbidden) {
-			t.Fatalf("viewer auto assign: %v", err)
-		}
 		// the other establishment sees nothing of A
 		res, err := f.svc.GetAvailability(ctx, f.ownerB, f.estB.ID, inventory.AvailabilityQuery{From: d("2027-07-02"), To: d("2027-07-02")})
 		must(t, err)
@@ -365,47 +362,3 @@ func TestPlanning_Grid(t *testing.T) {
 	})
 }
 
-func TestAutoAssign_PendingLines(t *testing.T) {
-	storetest.Each(t, func(t *testing.T, db *store.DB) {
-		ctx := context.Background()
-		f := newFixture(t, db)
-		var lines []string
-		for i := 0; i < 3; i++ {
-			tb, err := f.book(t, bookingSpec{from: "2027-07-02", to: "2027-07-03", lines: []lineSpec{{zone: f.zoneMode}}}, nil)
-			must(t, err)
-			lines = append(lines, tb.lineIDs[0])
-		}
-		// a block takes Z1: only two spots remain for three lines.
-		_, err := f.svc.CreateSpotBlocks(ctx, f.cashier, f.est.ID, inventory.SpotBlockInput{SpotIDs: []string{f.spots["Z1"].ID}, StartsOn: d("2027-07-03"), EndsOn: d("2027-07-03"), Slots: calendar.SlotsFull})
-		must(t, err)
-		dry, err := f.svc.AutoAssign(ctx, f.cashier, f.est.ID, inventory.AutoAssignInput{From: d("2027-07-02"), To: d("2027-07-02"), DryRun: true})
-		must(t, err)
-		if dry.Applied || len(dry.Assigned) != 2 || len(dry.Unassigned) != 1 || f.count(t, "spot_allocations", "kind = 'booking'") != 0 {
-			t.Fatalf("dry run = %+v", dry)
-		}
-		res, err := f.svc.AutoAssign(ctx, f.cashier, f.est.ID, inventory.AutoAssignInput{From: d("2027-07-02"), To: d("2027-07-02")})
-		must(t, err)
-		if !res.Applied || len(res.Assigned) != 2 || len(res.Unassigned) != 1 || res.Unassigned[0].Reason != string(availability.ReasonNoSpotForWholePeriod) {
-			t.Fatalf("result = %+v", res)
-		}
-		if n := f.count(t, "booking_lines", "assignment_status = 'assigned' AND spot_id IS NOT NULL"); n != 2 {
-			t.Fatalf("assigned lines = %d", n)
-		}
-		if n := f.count(t, "spot_allocations", "kind = 'booking' AND booking_line_id IN (?)", bun.List(lines)); n != 8 {
-			t.Fatalf("allocation rows = %d", n)
-		}
-		if n := f.count(t, "outbox_events", "type = 'allocation.assigned'"); n != 1 {
-			t.Fatalf("events = %d", n)
-		}
-		// pool untouched by assignment (still 3 pending/assigned units)
-		if u, _, _ := f.usage(t, f.zonePool.ID, "2027-07-02", calendar.AM); u != 3 {
-			t.Fatalf("zone pool used = %d", u)
-		}
-		again, err := f.svc.AutoAssign(ctx, f.cashier, f.est.ID, inventory.AutoAssignInput{From: d("2027-07-02"), To: d("2027-07-03")})
-		must(t, err)
-		if len(again.Assigned) != 0 || len(again.Unassigned) != 1 {
-			t.Fatalf("second run = %+v", again)
-		}
-		f.checkInvariants(t)
-	})
-}

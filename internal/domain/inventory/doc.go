@@ -17,8 +17,8 @@
 //     the configuration (zones, spots, pools, tracked components, closures)
 //     into spot rows and pool demands, sorted for a stable lock order;
 //   - allocate.go is the shell: it loads the snapshot, writes the plan and
-//     lets the database decide; holds.go, blocks.go and assign.go are the
-//     use cases with a principal; queries.go and operations.go are the read
+//     lets the database decide; holds.go and blocks.go are the use cases
+//     with a principal; queries.go and operations.go are the read
 //     side (availability, operations day, planning).
 //
 // Correctness rules (never replace them with application checks):
@@ -40,7 +40,9 @@
 //     a refused UPDATE is a conflict (pool_exhausted or quota_exceeded).
 //     Every counter change has its pool_allocations detail row (INV-03);
 //   - zone-mode zones consume their implicit system pool (ADR 0008 §3) and
-//     get a spot later (assignment_status pending, AutoAssign); quantity
+//     get a spot later (assignment_status pending; only booking.Move, under
+//     the booking lock, assigns a pending line: booking.Service.AutoAssign
+//     runs one Move per line); quantity
 //     zones consume their zone pool; tracked components consume the pool of
 //     the component (a component bound to the zone pool counts once);
 //   - online quota (spec 7.6) binds every channel but desk (online and api,
@@ -60,12 +62,17 @@
 //
 // Transactions: the methods that take tx (Allocate, Check, Release,
 // Confirm, ExtendHold, ConvertHold, RemoveSeasonDays, RestoreSeasonDays,
-// AssignPendingInTx, SpotsWithFutureAllocations) never open their own
+// SpotsWithFutureAllocations) never open their own
 // transaction: the booking service (or pass, mapping) opens one with
 // store.RunInTx and passes it, so allocation, booking rows, audit log and
 // outbox event commit together (INV-18). Use cases with a principal
-// (CreateHold, ReleaseHold, blocks, AutoAssign, availability, operations
-// day, planning) authorize and open their own transaction.
+// (CreateHold, ReleaseHold, blocks, availability, operations day, planning)
+// authorize and open their own transaction.
+//
+// Expired holds (INV-05) are reclaimed by the sale that needs the resource:
+// the owning bookings are locked first (the lock Confirm runs under) and an
+// owner is reclaimed whole, so a confirmation racing a reclaim either finds
+// every row of the hold or none (never a confirmed booking without rows).
 //
 // Permissions (spec 16.1, checked here): availability, operations day,
 // planning, hold and block reads require auth.PermBookingsRead; holds and

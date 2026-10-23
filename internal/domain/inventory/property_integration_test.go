@@ -140,20 +140,36 @@ func TestPoolUsage_MatchesAllocations(t *testing.T) {
 				}
 				m.bookings = append(m.bookings, tb.id)
 				m.expiries[tb.id] = exp
+				// The database reclaims, whole, every expired hold found on the
+				// resource over the range (spot rows and pool rows alike).
+				reclaimed := map[string]bool{}
 				if useSpot {
 					spotID := f.spots[label].ID
-					// the database reclaims the expired holds of the spot over the range
 					for k, r := range m.spots {
 						if k.spot == spotID && !m.valid(r.expires, now) && between(k.date, from, to) {
-							delete(m.spots, k)
+							reclaimed[r.booking] = true
 						}
 					}
+				} else {
+					for _, p := range m.pool {
+						if !m.valid(p.expires, now) && between(p.date, from, to) {
+							reclaimed[p.booking] = true
+						}
+					}
+				}
+				for k, r := range m.spots {
+					if reclaimed[r.booking] {
+						delete(m.spots, k)
+					}
+				}
+				m.pool = slices.DeleteFunc(m.pool, func(p modelPool) bool { return reclaimed[p.booking] })
+				if useSpot {
+					spotID := f.spots[label].ID
 					for _, k := range keys {
 						k.spot = spotID
 						m.spots[k] = modelRow{booking: tb.id, expires: exp}
 					}
 				} else {
-					m.pool = slices.DeleteFunc(m.pool, func(p modelPool) bool { return !m.valid(p.expires, now) && between(p.date, from, to) })
 					for _, k := range keys {
 						m.pool = append(m.pool, modelPool{booking: tb.id, date: k.date, slot: k.slot, qty: qty, online: online, expires: exp})
 					}
@@ -173,6 +189,13 @@ func TestPoolUsage_MatchesAllocations(t *testing.T) {
 					}
 				}
 				m.pool = slices.DeleteFunc(m.pool, func(p modelPool) bool { return p.booking == id })
+				// A released hold owns no rows any more: like a reclaimed one,
+				// it can no longer be confirmed (the booking service never
+				// leaves a booking held without rows).
+				if m.expiries[id] != nil {
+					m.bookings = slices.DeleteFunc(m.bookings, func(b string) bool { return b == id })
+					delete(m.expiries, id)
+				}
 			case 7: // confirm a held booking
 				if len(m.bookings) == 0 {
 					continue

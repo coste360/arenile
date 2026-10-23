@@ -265,23 +265,6 @@ func TestDisplayName_Scenarios(t *testing.T) {
 	}
 }
 
-func TestAllowSpotChange_Snapshot(t *testing.T) {
-	tests := []struct {
-		json string
-		want bool
-	}{
-		{`{}`, false},
-		{``, false},
-		{`{"rules":{"allow_spot_change_during_stay":true}}`, true},
-		{`{"rules":{"allow_spot_change_during_stay":false}}`, false},
-		{`not json`, false},
-	}
-	for _, tt := range tests {
-		if got := allowSpotChange(store.JSON(tt.json)); got != tt.want {
-			t.Errorf("%s: %v", tt.json, got)
-		}
-	}
-}
 
 func TestCombineStatus_FullDay(t *testing.T) {
 	got := combineStatus([]halfDayState{{status: SpotFree}, {status: SpotBooked}})

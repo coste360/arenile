@@ -441,6 +441,7 @@ func TestBookingList_FiltersAndCursor(t *testing.T) {
 		for i, day := range []string{"2027-07-01", "2027-07-02", "2027-07-03", "2027-07-04", "2027-07-05"} {
 			ids = append(ids, f.MustCreate(f.Input(f.Spots[i%4], day, day)).Booking.ID)
 		}
+		f.Clock.Advance(30 * 24 * time.Hour) // 2027-07-01: the first stay starts today
 		if _, err := f.Svc.CheckIn(f.Ctx, f.Owner, f.Est.ID, ids[0], booking.ActionInput{}); err != nil {
 			t.Fatal(err)
 		}
