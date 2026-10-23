@@ -480,7 +480,9 @@ anche con il precedente. I segreti sono cifrati con il portachiavi (AAD `<id>` e
 creazione e alla rotazione, mai nel registro attività né nei log; l'URL entra nel registro attività e nell'elenco del
 pannello senza query string (`webhook.RedactURL`, `redactWebhookUrl`), dove spesso viaggia un token del ricevitore;
 una risposta `Cache-Control: no-store` non viene mai salvata da `Idempotency-Key`
-(`TestIdempotency_NeverStoresNoStoreResponses`). Scostamento dichiarato (ADR 0016): la disattivazione automatica
+(`TestIdempotency_NeverStoresNoStoreResponses`), salvo la sessione di checkout dell'API pubblica, che resta
+ripetibile con la stessa chiave e lo stesso `X-Arenile-Checkout` (doppio tocco, M4:
+`TestIdempotency_PublicCheckoutNoStoreReplays`). Scostamento dichiarato (ADR 0016): la disattivazione automatica
 dopo 20 errori consecutivi scrive registro attività e log ma non invia ancora l'email al proprietario prevista da
 18.2.
 Verificata da: `TestConcurrency_WebhookDelivery` (100 worker, SQLite e PostgreSQL),

@@ -57,6 +57,14 @@ type IdempotencyOptions struct {
 	Skip []string
 	// MaxBody is the largest response stored for replay (default 1 MiB).
 	MaxBody int
+	// ReplayNoStore lists path prefixes whose Cache-Control: no-store
+	// responses are still stored for replay. The public checkout (M4) marks
+	// the session it creates no-store for browsers and proxies, yet a double
+	// tap with the same key must return the same session instead of a second
+	// hold (the replay also requires the same X-Arenile-Checkout header).
+	// Everywhere else a no-store response is a secret shown once and is
+	// never persisted.
+	ReplayNoStore []string
 }
 
 const maxIdempotencyKeyLen = 128
@@ -152,7 +160,7 @@ func Idempotency(o IdempotencyOptions) Middleware {
 			// A no-store response carries a credential shown once (API key,
 			// webhook secret, initial password): never persist it for replay.
 			// The key is released, so a retry executes the request again.
-			if status >= 500 || rec.overflow || noStore(rec.Header()) {
+			if status >= 500 || rec.overflow || (noStore(rec.Header()) && !skipped(r.URL.Path, o.ReplayNoStore)) {
 				return
 			}
 			if err := store.CompleteIdempotencyKey(context.WithoutCancel(ctx), o.DB, scope, key, status, rec.Header().Get("Content-Type"), rec.buf.Bytes()); err != nil {
