@@ -2,6 +2,7 @@ package mapping
 
 import (
 	"math"
+	"slices"
 	"testing"
 
 	"github.com/coste360/arenile/internal/calendar"
@@ -56,6 +57,22 @@ func TestValidateDocument_Cases(t *testing.T) {
 		{"repeated id", func(in *SaveInput) { in.Spots[0].ID = "s2" }, "spots[1].id"},
 		{"decoration kind", func(in *SaveInput) { in.Decorations[0].Kind = "pier" }, "decorations[0].kind"},
 		{"decoration out of bounds", func(in *SaveInput) { in.Decorations[0].Y = 601 }, "decorations[0].y"},
+		{"kit spot kinds", func(in *SaveInput) { in.Spots[0].Kind, in.Spots[1].Kind = "daybed", "cabana" }, ""},
+		{"spot asset", func(in *SaveInput) { in.Spots[0].Asset = "ombrellone_2_lettini" }, ""},
+		{"spot asset trimmed", func(in *SaveInput) { in.Spots[0].Asset = " gazebo_lettini " }, ""},
+		{"unknown spot asset", func(in *SaveInput) { in.Spots[0].Asset = "yacht" }, "spots[0].asset"},
+		{"non-bookable spot asset", func(in *SaveInput) { in.Spots[0].Asset = "bar" }, "spots[0].asset"},
+		{"decoration asset", func(in *SaveInput) { in.Decorations[0].Asset = "doccia_doppia" }, ""},
+		{"decoration bookable asset", func(in *SaveInput) { in.Decorations[0].Asset = "lettino" }, ""},
+		{"unknown decoration asset", func(in *SaveInput) { in.Decorations[0].Asset = "../x.svg" }, "decorations[0].asset"},
+		{"flag variant", func(in *SaveInput) {
+			in.Decorations[0].Kind, in.Decorations[0].Asset, in.Decorations[0].Variant = "custom", "bandiera_mare", "red"
+		}, ""},
+		{"unknown flag variant", func(in *SaveInput) {
+			in.Decorations[0].Asset, in.Decorations[0].Variant = "bandiera_mare", "purple"
+		}, "decorations[0].variant"},
+		{"variant without variants", func(in *SaveInput) { in.Decorations[0].Asset, in.Decorations[0].Variant = "bar", "red" }, "decorations[0].variant"},
+		{"variant without asset", func(in *SaveInput) { in.Decorations[0].Variant = "green" }, "decorations[0].variant"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -181,3 +198,21 @@ func TestValidatePoolInput_Overrides(t *testing.T) {
 }
 
 func strp2(v string) *string { return &v }
+
+func TestKitAssets_GeneratedListsAreSortedAndDisjoint(t *testing.T) {
+	for name, list := range map[string][]string{"bookable": KitBookableAssets, "decoration": KitDecorationAssets} {
+		if len(list) == 0 || !slices.IsSorted(list) {
+			t.Fatalf("%s list empty or not sorted (run make gen)", name)
+		}
+	}
+	for _, id := range KitBookableAssets {
+		if _, found := slices.BinarySearch(KitDecorationAssets, id); found {
+			t.Errorf("%s is both bookable and decoration", id)
+		}
+	}
+	for id := range KitAssetVariants {
+		if !IsKitAsset(id) {
+			t.Errorf("variants for unknown asset %s", id)
+		}
+	}
+}

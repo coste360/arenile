@@ -82,7 +82,8 @@ type Spot struct {
 	Label                 string         `bun:"label,notnull"`
 	RowLabel              string         `bun:"row_label,notnull"`
 	Number                int            `bun:"number,notnull"`
-	Kind                  string         `bun:"kind,notnull"` // umbrella | gazebo | tent | palm | custom
+	Kind                  string         `bun:"kind,notnull"` // umbrella | gazebo | tent | palm | custom | sunbed | daybed | cabana | hammock
+	Asset                 *string        `bun:"asset"`        // map kit illustration id (ADR 0012), NULL = default of the kind
 	X                     float64        `bun:"x,notnull"`
 	Y                     float64        `bun:"y,notnull"`
 	Rotation              float64        `bun:"rotation,notnull"`
@@ -109,6 +110,8 @@ type MapDecoration struct {
 	Rotation        float64   `bun:"rotation,notnull"`
 	Shape           Shape     `bun:"shape,type:json,notnull"`
 	Label           I18nText  `bun:"label,type:json,nullzero"`
+	Asset           *string   `bun:"asset"`   // map kit illustration id (ADR 0012), NULL = default of the kind
+	Variant         *string   `bun:"variant"` // colour variant of the illustration (e.g. sea flag)
 	CreatedAt       time.Time `bun:"created_at,notnull"`
 	UpdatedAt       time.Time `bun:"updated_at,notnull"`
 }

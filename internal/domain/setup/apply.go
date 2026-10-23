@@ -589,19 +589,23 @@ func (a *applier) layoutMap(ms MapSpec, sortOrder int) (*store.Map, map[string]*
 		}
 		k += b.rows
 	}
-	deco := func(kind string, x, y, w, h float64, label store.I18nText) store.MapDecoration {
-		return store.MapDecoration{
-			ID: store.NewID(), EstablishmentID: a.es.ID(), MapID: m.ID, Kind: kind, X: x, Y: y,
-			Shape: store.Shape{Type: "rect", W: w, H: h}, Label: label, CreatedAt: now, UpdatedAt: now,
+	var occupied []kitRect
+	for _, zs := range out {
+		shape := templateSpotShape(zs.kind)
+		for _, sp := range zs.spots {
+			occupied = append(occupied, kitSpotRect(sp.X, sp.Y, shape))
 		}
 	}
-	decos := []store.MapDecoration{
-		deco("entrance", layoutMargin/2, layoutMargin/2, 40, 20, i18n("Ingresso", "Entrance", "Eingang", "Entrée")),
-		deco("bar", width-layoutMargin/2, layoutMargin/2, 40, 30, i18n("Bar", "Bar", "Bar", "Bar")),
-		deco("shower", layoutMargin/2, height-layoutMargin, 20, 20, i18n("Docce", "Showers", "Duschen", "Douches")),
-		deco("lifeguard", width/2, height-layoutMargin/2, 30, 30, i18n("Bagnino", "Lifeguard", "Rettungsschwimmer", "Maître-nageur")),
-	}
+	decos := kitDecorations(a.es.ID(), m.ID, width, height, occupied, now)
 	return m, out, decos
+}
+
+// templateSpotShape is the footprint of a template spot of that kind.
+func templateSpotShape(kind string) store.Shape {
+	if kind == "gazebo" {
+		return store.Shape{Type: "rect", W: layoutGazeboSide, H: layoutGazeboSide}
+	}
+	return store.Shape{Type: "circle", W: layoutUmbrellaDia, H: layoutUmbrellaDia}
 }
 
 func newSpot(establishmentID, mapID, zoneID, kind string, g mapping.SpotInput, now time.Time) store.Spot {
@@ -610,12 +614,12 @@ func newSpot(establishmentID, mapID, zoneID, kind string, g mapping.SpotInput, n
 		Label: g.Label, RowLabel: g.RowLabel, Number: g.Number, Kind: kind, X: g.X, Y: g.Y,
 		Attributes: []string{}, Active: true, CreatedAt: now, UpdatedAt: now,
 	}
+	sp.Shape = templateSpotShape(kind)
+	sp.Asset = kitSpotAsset(kind)
 	if kind == "gazebo" {
-		sp.Shape = store.Shape{Type: "rect", W: layoutGazeboSide, H: layoutGazeboSide}
 		sp.Capacity = map[string]int{"sunbed": 2, "deckchair": 2}
 		sp.MaxExtra = map[string]int{"sunbed": 2}
 	} else {
-		sp.Shape = store.Shape{Type: "circle", W: layoutUmbrellaDia, H: layoutUmbrellaDia}
 		sp.Capacity = map[string]int{"umbrella": 1, "sunbed": 2}
 		sp.MaxExtra = map[string]int{"sunbed": 2}
 	}

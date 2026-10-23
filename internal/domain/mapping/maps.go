@@ -550,14 +550,15 @@ func (s *Service) currentInput(ctx context.Context, db bun.IDB, es store.Establi
 	in := SaveInput{Map: mapInputOf(&doc.Map)}
 	for _, sp := range doc.Spots {
 		in.Spots = append(in.Spots, SpotInput{
-			ID: sp.ID, ZoneID: sp.ZoneID, Label: sp.Label, RowLabel: sp.RowLabel, Number: sp.Number, Kind: sp.Kind,
+			ID: sp.ID, ZoneID: sp.ZoneID, Label: sp.Label, RowLabel: sp.RowLabel, Number: sp.Number, Kind: sp.Kind, Asset: deref(sp.Asset),
 			X: sp.X, Y: sp.Y, Rotation: sp.Rotation, Shape: sp.Shape, Capacity: sp.Capacity, MaxExtra: sp.MaxExtra,
 			PriceCategoryOverride: sp.PriceCategoryOverride, Attributes: sp.Attributes, Active: sp.Active,
 		})
 	}
 	for _, d := range doc.Decorations {
 		in.Decorations = append(in.Decorations, DecorationInput{
-			ID: d.ID, Kind: d.Kind, X: d.X, Y: d.Y, Rotation: d.Rotation, Shape: d.Shape, Label: d.Label,
+			ID: d.ID, Kind: d.Kind, Asset: deref(d.Asset), Variant: deref(d.Variant), X: d.X, Y: d.Y, Rotation: d.Rotation,
+			Shape: d.Shape, Label: d.Label,
 		})
 	}
 	return in, nil
@@ -605,7 +606,7 @@ func ParseBackground(raw store.JSON) *Background {
 func spotRow(in SpotInput, id, mapID string, now time.Time) store.Spot {
 	return store.Spot{
 		ID: id, MapID: mapID, ZoneID: in.ZoneID, Label: in.Label, RowLabel: in.RowLabel, Number: in.Number,
-		Kind: in.Kind, X: in.X, Y: in.Y, Rotation: in.Rotation, Shape: in.Shape,
+		Kind: in.Kind, Asset: optional(in.Asset), X: in.X, Y: in.Y, Rotation: in.Rotation, Shape: in.Shape,
 		Capacity: nonNilMap(in.Capacity), MaxExtra: nonNilMap(in.MaxExtra),
 		PriceCategoryOverride: in.PriceCategoryOverride, Attributes: nonNilSlice(in.Attributes),
 		Active: in.Active, UpdatedAt: now,
@@ -614,22 +615,30 @@ func spotRow(in SpotInput, id, mapID string, now time.Time) store.Spot {
 
 func spotEqual(a, b *store.Spot) bool {
 	return a.ZoneID == b.ZoneID && a.Label == b.Label && a.RowLabel == b.RowLabel && a.Number == b.Number &&
-		a.Kind == b.Kind && a.X == b.X && a.Y == b.Y && a.Rotation == b.Rotation && a.Shape == b.Shape &&
-		maps.Equal(a.Capacity, b.Capacity) && maps.Equal(a.MaxExtra, b.MaxExtra) &&
+		a.Kind == b.Kind && equalPtr(a.Asset, b.Asset) && a.X == b.X && a.Y == b.Y && a.Rotation == b.Rotation &&
+		a.Shape == b.Shape && maps.Equal(a.Capacity, b.Capacity) && maps.Equal(a.MaxExtra, b.MaxExtra) &&
 		equalPtr(a.PriceCategoryOverride, b.PriceCategoryOverride) && slices.Equal(a.Attributes, b.Attributes) &&
 		a.Active == b.Active
 }
 
 func decorationRow(in DecorationInput, id, mapID string, now time.Time) store.MapDecoration {
 	return store.MapDecoration{
-		ID: id, MapID: mapID, Kind: in.Kind, X: in.X, Y: in.Y, Rotation: in.Rotation, Shape: in.Shape,
-		Label: in.Label, UpdatedAt: now,
+		ID: id, MapID: mapID, Kind: in.Kind, Asset: optional(in.Asset), Variant: optional(in.Variant),
+		X: in.X, Y: in.Y, Rotation: in.Rotation, Shape: in.Shape, Label: in.Label, UpdatedAt: now,
 	}
 }
 
 func decorationEqual(a, b *store.MapDecoration) bool {
-	return a.Kind == b.Kind && a.X == b.X && a.Y == b.Y && a.Rotation == b.Rotation && a.Shape == b.Shape &&
-		maps.Equal(a.Label, b.Label)
+	return a.Kind == b.Kind && equalPtr(a.Asset, b.Asset) && equalPtr(a.Variant, b.Variant) &&
+		a.X == b.X && a.Y == b.Y && a.Rotation == b.Rotation && a.Shape == b.Shape && maps.Equal(a.Label, b.Label)
+}
+
+// optional is nil for an empty string (absent optional column).
+func optional(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
 func equalPtr[T comparable](a, b *T) bool {

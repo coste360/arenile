@@ -1433,9 +1433,13 @@ func (e SpotAvailabilityStatus) Valid() bool {
 
 // Defines values for SpotKind.
 const (
+	SpotKindCabana   SpotKind = "cabana"
 	SpotKindCustom   SpotKind = "custom"
+	SpotKindDaybed   SpotKind = "daybed"
 	SpotKindGazebo   SpotKind = "gazebo"
+	SpotKindHammock  SpotKind = "hammock"
 	SpotKindPalm     SpotKind = "palm"
+	SpotKindSunbed   SpotKind = "sunbed"
 	SpotKindTent     SpotKind = "tent"
 	SpotKindUmbrella SpotKind = "umbrella"
 )
@@ -1443,11 +1447,19 @@ const (
 // Valid indicates whether the value is a known member of the SpotKind enum.
 func (e SpotKind) Valid() bool {
 	switch e {
+	case SpotKindCabana:
+		return true
 	case SpotKindCustom:
+		return true
+	case SpotKindDaybed:
 		return true
 	case SpotKindGazebo:
 		return true
+	case SpotKindHammock:
+		return true
 	case SpotKindPalm:
+		return true
+	case SpotKindSunbed:
 		return true
 	case SpotKindTent:
 		return true
@@ -2601,20 +2613,28 @@ type Decimal = string
 
 // Decoration Elemento decorativo non prenotabile.
 type Decoration struct {
-	Id   string         `json:"id"`
-	Kind DecorationKind `json:"kind"`
+	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	Asset *KitAsset      `json:"asset,omitempty"`
+	Id    string         `json:"id"`
+	Kind  DecorationKind `json:"kind"`
 
 	// Label Testo localizzato lingua → testo (es. {"it": "Prima fila"}); si ricade sulla lingua predefinita.
 	Label    *I18nText `json:"label,omitempty"`
 	MapId    string    `json:"map_id"`
 	Rotation float64   `json:"rotation"`
 	Shape    Shape     `json:"shape"`
-	X        float64   `json:"x"`
-	Y        float64   `json:"y"`
+
+	// Variant Variante di colore dell'illustrazione, se l'illustrazione ne prevede (bandiera_mare: green, yellow, red).
+	Variant *DecorationVariant `json:"variant,omitempty"`
+	X       float64            `json:"x"`
+	Y       float64            `json:"y"`
 }
 
 // DecorationInput defines model for DecorationInput.
 type DecorationInput struct {
+	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	Asset *KitAsset `json:"asset,omitempty"`
+
 	// Id Assente = nuovo elemento.
 	Id   *string        `json:"id,omitempty"`
 	Kind DecorationKind `json:"kind"`
@@ -2623,12 +2643,18 @@ type DecorationInput struct {
 	Label    *I18nText `json:"label,omitempty"`
 	Rotation *float64  `json:"rotation,omitempty"`
 	Shape    Shape     `json:"shape"`
-	X        float64   `json:"x"`
-	Y        float64   `json:"y"`
+
+	// Variant Variante di colore dell'illustrazione, se l'illustrazione ne prevede (bandiera_mare: green, yellow, red).
+	Variant *DecorationVariant `json:"variant,omitempty"`
+	X       float64            `json:"x"`
+	Y       float64            `json:"y"`
 }
 
 // DecorationKind defines model for DecorationKind.
 type DecorationKind string
+
+// DecorationVariant Variante di colore dell'illustrazione, se l'illustrazione ne prevede (bandiera_mare: green, yellow, red).
+type DecorationVariant = string
 
 // DiscountBreakdown defines model for DiscountBreakdown.
 type DiscountBreakdown struct {
@@ -2973,6 +2999,9 @@ type IntRange struct {
 	Max *int `json:"max,omitempty"`
 	Min *int `json:"min,omitempty"`
 }
+
+// KitAsset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+type KitAsset = string
 
 // LineBreakdown defines model for LineBreakdown.
 type LineBreakdown struct {
@@ -4060,13 +4089,18 @@ type RowGeneratorRequest struct {
 	// Apply false = anteprima; true = aggiunge le postazioni alla mappa (richiede If-Match).
 	Apply *bool `json:"apply,omitempty"`
 
+	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	Asset *KitAsset `json:"asset,omitempty"`
+
 	// Capacity Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
 	Capacity  *ComponentQuantities          `json:"capacity,omitempty"`
 	Direction *RowGeneratorRequestDirection `json:"direction,omitempty"`
 
 	// FirstRowLabel Etichetta della prima fila (default A o 1).
-	FirstRowLabel *string   `json:"first_row_label,omitempty"`
-	Kind          *SpotKind `json:"kind,omitempty"`
+	FirstRowLabel *string `json:"first_row_label,omitempty"`
+
+	// Kind Famiglia della postazione (semantica: pacchetti e regole possono richiederla). I valori sunbed, daybed, cabana e hammock coprono le famiglie prenotabili del kit mappa (ADR 0012).
+	Kind *SpotKind `json:"kind,omitempty"`
 
 	// LabelFormat Default "{row}{number}".
 	LabelFormat *string `json:"label_format,omitempty"`
@@ -4449,15 +4483,20 @@ type Slots string
 
 // Spot Postazione prenotabile.
 type Spot struct {
-	Active     bool     `json:"active"`
-	Attributes []string `json:"attributes"`
+	Active bool `json:"active"`
+
+	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	Asset      *KitAsset `json:"asset,omitempty"`
+	Attributes []string  `json:"attributes"`
 
 	// Capacity Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
 	Capacity ComponentQuantities `json:"capacity"`
 	Id       string              `json:"id"`
-	Kind     SpotKind            `json:"kind"`
-	Label    string              `json:"label"`
-	MapId    string              `json:"map_id"`
+
+	// Kind Famiglia della postazione (semantica: pacchetti e regole possono richiederla). I valori sunbed, daybed, cabana e hammock coprono le famiglie prenotabili del kit mappa (ADR 0012).
+	Kind  SpotKind `json:"kind"`
+	Label string   `json:"label"`
+	MapId string   `json:"map_id"`
 
 	// MaxExtra Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
 	MaxExtra              ComponentQuantities `json:"max_extra"`
@@ -4522,14 +4561,19 @@ type SpotBlockList struct {
 
 // SpotInput defines model for SpotInput.
 type SpotInput struct {
-	Active     *bool     `json:"active,omitempty"`
+	Active *bool `json:"active,omitempty"`
+
+	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	Asset      *KitAsset `json:"asset,omitempty"`
 	Attributes *[]string `json:"attributes,omitempty"`
 
 	// Capacity Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
 	Capacity *ComponentQuantities `json:"capacity,omitempty"`
 
 	// Id ID di una postazione esistente da aggiornare; assente = nuova postazione.
-	Id    *string  `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
+
+	// Kind Famiglia della postazione (semantica: pacchetti e regole possono richiederla). I valori sunbed, daybed, cabana e hammock coprono le famiglie prenotabili del kit mappa (ADR 0012).
 	Kind  SpotKind `json:"kind"`
 	Label string   `json:"label"`
 
@@ -4545,7 +4589,7 @@ type SpotInput struct {
 	ZoneId                string               `json:"zone_id"`
 }
 
-// SpotKind defines model for SpotKind.
+// SpotKind Famiglia della postazione (semantica: pacchetti e regole possono richiederla). I valori sunbed, daybed, cabana e hammock coprono le famiglie prenotabili del kit mappa (ADR 0012).
 type SpotKind string
 
 // StreamMessage Messaggio leggero inviato sul flusso SSE (specifica 21.1), mai con dati personali.

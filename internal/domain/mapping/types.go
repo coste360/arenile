@@ -41,7 +41,7 @@ const (
 
 var (
 	// SpotKinds are the allowed spot kinds.
-	SpotKinds = []string{"umbrella", "gazebo", "tent", "palm", "custom"}
+	SpotKinds = []string{"umbrella", "gazebo", "tent", "palm", "custom", "sunbed", "daybed", "cabana", "hammock"}
 	// DecorationKinds are the allowed decoration kinds.
 	DecorationKinds = []string{"walkway", "shower", "lifeguard", "bar", "entrance", "cabin_block", "text", "custom"}
 	// AssignmentModes are the zone assignment modes (spec 5.2).
@@ -97,6 +97,7 @@ type SpotInput struct {
 	RowLabel              string
 	Number                int
 	Kind                  string
+	Asset                 string // map kit illustration id; empty = default of the kind
 	X, Y, Rotation        float64
 	Shape                 store.Shape
 	Capacity              map[string]int
@@ -110,6 +111,8 @@ type SpotInput struct {
 type DecorationInput struct {
 	ID             string
 	Kind           string
+	Asset          string // map kit illustration id; empty = default of the kind
+	Variant        string // colour variant of the illustration; empty = default
 	X, Y, Rotation float64
 	Shape          store.Shape
 	Label          store.I18nText

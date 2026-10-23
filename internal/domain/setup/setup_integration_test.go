@@ -18,6 +18,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/money"
@@ -682,7 +683,7 @@ func TestSeedDemo_IdempotentAndComplete(t *testing.T) {
 			t.Fatalf("first: %+v", first)
 		}
 		second, err := f.svc.SeedDemo(ctx, f.est.ID)
-		if err != nil || second.Applied {
+		if err != nil || second.Applied || second.MapsUpgraded != 0 {
 			t.Fatalf("second: %+v %v", second, err)
 		}
 		if n := count(t, db, (*store.Spot)(nil), "sp", f.est.ID); n != 124 {
@@ -776,3 +777,69 @@ func TestSeedDemo_IdempotentAndComplete(t *testing.T) {
 }
 
 func ptr[T any](v T) *T { return &v }
+
+// A demo seeded before the map kit (spots without asset, plain decorations)
+// gets the kit on the next seed, once.
+func TestSeedDemo_UpgradesPreKitMaps(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		ctx := context.Background()
+		f := newFixture(t, db, "lido-demo")
+		if _, err := f.svc.SeedDemo(ctx, f.est.ID); err != nil {
+			t.Fatal(err)
+		}
+		var m store.Map
+		if err := db.NewSelect().Model(&m).Where("m.establishment_id = ?", f.est.ID).Limit(1).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		// Back to the pre-kit state.
+		if _, err := db.NewUpdate().TableExpr("spots").Set("asset = NULL").Where("establishment_id = ?", f.est.ID).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := db.NewDelete().TableExpr("map_decorations").Where("establishment_id = ?", f.est.ID).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		old := store.MapDecoration{
+			ID: store.NewID(), EstablishmentID: f.est.ID, MapID: m.ID, Kind: "bar", X: 50, Y: 50,
+			Shape: store.Shape{Type: "rect", W: 40, H: 30}, CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		}
+		if _, err := db.NewInsert().Model(&old).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		up, err := f.svc.SeedDemo(ctx, f.est.ID)
+		if err != nil || up.Applied || up.MapsUpgraded != 1 {
+			t.Fatalf("upgrade: %+v %v", up, err)
+		}
+		var spots []store.Spot
+		if err := db.NewSelect().Model(&spots).Where("sp.establishment_id = ?", f.est.ID).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		for _, sp := range spots {
+			if sp.Asset == nil || !mapping.IsKitBookableAsset(*sp.Asset) {
+				t.Fatalf("spot %s without asset after upgrade", sp.Label)
+			}
+		}
+		var decos []store.MapDecoration
+		if err := db.NewSelect().Model(&decos).Where("md.establishment_id = ?", f.est.ID).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if len(decos) < 5 {
+			t.Fatalf("kit decorations: %d", len(decos))
+		}
+		for _, d := range decos {
+			if d.ID == old.ID || d.Asset == nil {
+				t.Fatalf("pre-kit decoration left: %+v", d)
+			}
+		}
+		var after store.Map
+		if err := db.NewSelect().Model(&after).Where("m.id = ?", m.ID).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if after.Version != m.Version+1 {
+			t.Fatalf("version %d -> %d", m.Version, after.Version)
+		}
+		again, err := f.svc.SeedDemo(ctx, f.est.ID)
+		if err != nil || again.MapsUpgraded != 0 {
+			t.Fatalf("again: %+v %v", again, err)
+		}
+	})
+}

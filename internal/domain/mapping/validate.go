@@ -179,6 +179,7 @@ func normalizeRotation(r float64) float64 {
 func normalizeSpotInput(s *SpotInput) {
 	s.Label = strings.TrimSpace(s.Label)
 	s.RowLabel = strings.TrimSpace(s.RowLabel)
+	s.Asset = strings.TrimSpace(s.Asset)
 	s.Rotation = normalizeRotation(s.Rotation)
 	if s.PriceCategoryOverride != nil && strings.TrimSpace(*s.PriceCategoryOverride) == "" {
 		s.PriceCategoryOverride = nil
@@ -208,6 +209,7 @@ func validateSpotFields(ve *configerr.ValidationError, field string, s SpotInput
 	if !slices.Contains(SpotKinds, s.Kind) {
 		ve.Add(field+".kind", "Tipo di postazione non valido.")
 	}
+	validateSpotAsset(ve, field+".asset", s.Asset)
 	if s.ZoneID == "" {
 		ve.Add(field+".zone_id", "Obbligatoria.")
 	}
@@ -232,6 +234,7 @@ func validateDecorationFields(ve *configerr.ValidationError, field string, d Dec
 	if !slices.Contains(DecorationKinds, d.Kind) {
 		ve.Add(field+".kind", "Tipo di elemento non valido.")
 	}
+	validateDecorationAsset(ve, field, d.Asset, d.Variant)
 	validatePosition(ve, field, d.X, d.Y, d.Rotation, m)
 	validateShape(ve, field+".shape", d.Shape, m)
 	validateI18n(ve, field+".label", d.Label, false)
@@ -276,6 +279,7 @@ func validateDocument(in *SaveInput) *configerr.ValidationError {
 		d := &in.Decorations[i]
 		d.Rotation = normalizeRotation(d.Rotation)
 		d.Label = cleanI18n(d.Label)
+		d.Asset, d.Variant = strings.TrimSpace(d.Asset), strings.TrimSpace(d.Variant)
 		field := fmt.Sprintf("decorations[%d]", i)
 		validateDecorationFields(ve, field, *d, in.Map)
 		if d.ID != "" {

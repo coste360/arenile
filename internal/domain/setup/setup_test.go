@@ -1,12 +1,14 @@
 package setup
 
 import (
+	"math"
 	"slices"
 	"testing"
 	"time"
 
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/clock"
+	"github.com/coste360/arenile/internal/domain/mapping"
 )
 
 func TestLayoutMap_ClassicGrid(t *testing.T) {
@@ -203,5 +205,66 @@ func TestUniqueCode_Suffix(t *testing.T) {
 	}
 	if got := uniqueCode("pool", taken); got != "pool" || !taken["pool"] {
 		t.Fatalf("got %s", got)
+	}
+}
+
+func TestLayoutMap_KitDecorations(t *testing.T) {
+	tpl, _ := TemplateByCode(CodeClassicRows)
+	a := &applier{s: &Service{d: Deps{Clock: clock.NewFake(time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC))}}, rows: 8, perRow: 15}
+	m, byZone, decos := a.layoutMap(tpl.Maps[0], 0)
+	var spots []kitRect
+	for _, zs := range byZone {
+		for _, sp := range zs.spots {
+			spots = append(spots, kitSpotRect(sp.X, sp.Y, templateSpotShape(zs.kind)))
+		}
+	}
+	assets := map[string]bool{}
+	for _, d := range decos {
+		if d.Asset == nil || !mapping.IsKitAsset(*d.Asset) {
+			t.Fatalf("decoration %s without a valid kit asset", d.Kind)
+		}
+		assets[*d.Asset] = true
+		r := kitRect{d.X - d.Shape.W/2, d.Y - d.Shape.H/2, d.X + d.Shape.W/2, d.Y + d.Shape.H/2}
+		if r.x0 < 0 || r.y0 < 0 || r.x1 > float64(m.Width) || r.y1 > float64(m.Height) {
+			t.Errorf("%s outside the map: %+v", *d.Asset, r)
+		}
+		if d.Kind == "walkway" {
+			if math.Mod(d.Shape.W, kitTile) != 0 || math.Mod(d.Shape.H, kitTile) != 0 || math.Mod(r.x0, kitTile) != 0 || math.Mod(r.y0, kitTile) != 0 {
+				t.Errorf("walkway %s not on the %v tile grid: %+v", *d.Asset, kitTile, r)
+			}
+			continue
+		}
+		for _, s := range spots {
+			if r.overlaps(s) {
+				t.Errorf("%s covers a spot", *d.Asset)
+			}
+		}
+	}
+	for _, want := range []string{"passerella_verticale", "bar", "doccia_doppia", "torretta_bagnino", "bandiera_mare", "dae", "rampa_accessibile", "sedia_job", "palma", "ingresso"} { //nolint:misspell // kit asset ids (Italian)
+		if !assets[want] {
+			t.Errorf("classic map without %s (got %v)", want, assets)
+		}
+	}
+	for _, zs := range byZone {
+		sp := newSpot("e", m.ID, "z", zs.kind, zs.spots[0], time.Now())
+		if sp.Asset == nil || !mapping.IsKitBookableAsset(*sp.Asset) {
+			t.Errorf("%s spot without a bookable kit asset", zs.kind)
+		}
+	}
+}
+
+func TestKitDecorations_SmallGridSkipsWhatDoesNotFit(t *testing.T) {
+	decos := kitDecorations("e", "m", 220, 290, nil, time.Now())
+	for i, a := range decos {
+		ra := kitRect{a.X - a.Shape.W/2, a.Y - a.Shape.H/2, a.X + a.Shape.W/2, a.Y + a.Shape.H/2}
+		for _, b := range decos[i+1:] {
+			rb := kitRect{b.X - b.Shape.W/2, b.Y - b.Shape.H/2, b.X + b.Shape.W/2, b.Y + b.Shape.H/2}
+			if a.Kind != "walkway" && b.Kind != "walkway" && ra.overlaps(rb) {
+				t.Errorf("%s overlaps %s", *a.Asset, *b.Asset)
+			}
+		}
+		if ra.x1 > 220 || ra.y1 > 290 || ra.x0 < 0 || ra.y0 < 0 {
+			t.Errorf("%s outside the map", *a.Asset)
+		}
 	}
 }

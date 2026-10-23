@@ -1982,8 +1982,15 @@ export interface components {
          * @enum {string}
          */
         AssignmentMode: "seat" | "zone" | "quantity";
-        /** @enum {string} */
-        SpotKind: "umbrella" | "gazebo" | "tent" | "palm" | "custom";
+        /**
+         * @description Famiglia della postazione (semantica: pacchetti e regole possono richiederla). I valori sunbed, daybed, cabana e hammock coprono le famiglie prenotabili del kit mappa (ADR 0012).
+         * @enum {string}
+         */
+        SpotKind: "umbrella" | "gazebo" | "tent" | "palm" | "custom" | "sunbed" | "daybed" | "cabana" | "hammock";
+        /** @description Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili. */
+        KitAsset: string;
+        /** @description Variante di colore dell'illustrazione, se l'illustrazione ne prevede (bandiera_mare: green, yellow, red). */
+        DecorationVariant: string;
         /** @enum {string} */
         DecorationKind: "walkway" | "shower" | "lifeguard" | "bar" | "entrance" | "cabin_block" | "text" | "custom";
         /** @enum {string} */
@@ -2830,6 +2837,7 @@ export interface components {
             row_label: string;
             number: number;
             kind: components["schemas"]["SpotKind"];
+            asset?: components["schemas"]["KitAsset"];
             /** Format: double */
             x: number;
             /** Format: double */
@@ -2855,6 +2863,7 @@ export interface components {
             row_label?: string;
             number?: number;
             kind: components["schemas"]["SpotKind"];
+            asset?: components["schemas"]["KitAsset"];
             /** Format: double */
             x: number;
             /** Format: double */
@@ -2875,6 +2884,8 @@ export interface components {
             /** Format: uuid */
             map_id: string;
             kind: components["schemas"]["DecorationKind"];
+            asset?: components["schemas"]["KitAsset"];
+            variant?: components["schemas"]["DecorationVariant"];
             /** Format: double */
             x: number;
             /** Format: double */
@@ -2891,6 +2902,8 @@ export interface components {
              */
             id?: string;
             kind: components["schemas"]["DecorationKind"];
+            asset?: components["schemas"]["KitAsset"];
+            variant?: components["schemas"]["DecorationVariant"];
             /** Format: double */
             x: number;
             /** Format: double */
@@ -2954,6 +2967,7 @@ export interface components {
             /** @description Default "{row}{number}". */
             label_format?: string;
             kind?: components["schemas"]["SpotKind"];
+            asset?: components["schemas"]["KitAsset"];
             shape?: components["schemas"]["Shape"];
             /** Format: double */
             rotation?: number;

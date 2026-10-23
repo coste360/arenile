@@ -381,13 +381,18 @@ func spotToAPI(s *store.Spot) api.Spot {
 		Kind: api.SpotKind(s.Kind), X: s.X, Y: s.Y, Rotation: s.Rotation, Shape: mapsShapeToAPI(s.Shape),
 		Capacity: api.ComponentQuantities(mapsNonNilQty(s.Capacity)), MaxExtra: api.ComponentQuantities(mapsNonNilQty(s.MaxExtra)),
 		PriceCategoryOverride: s.PriceCategoryOverride, Attributes: nonNil(s.Attributes), Active: s.Active,
+		Asset: mapsKitAsset(s.Asset),
 	}
 }
 
 func decorationToAPI(d *store.MapDecoration) api.Decoration {
 	out := api.Decoration{
 		Id: d.ID, MapId: d.MapID, Kind: api.DecorationKind(d.Kind), X: d.X, Y: d.Y, Rotation: d.Rotation,
-		Shape: mapsShapeToAPI(d.Shape),
+		Shape: mapsShapeToAPI(d.Shape), Asset: mapsKitAsset(d.Asset),
+	}
+	if d.Variant != nil && *d.Variant != "" {
+		v := api.DecorationVariant(*d.Variant)
+		out.Variant = &v
 	}
 	if len(d.Label) > 0 {
 		l := api.I18nText(d.Label)
@@ -401,7 +406,7 @@ func spotInputFromAPI(s api.SpotInput) mapping.SpotInput {
 		ID: mapsDerefOr(s.Id, ""), ZoneID: s.ZoneId, Label: s.Label, RowLabel: mapsDerefOr(s.RowLabel, ""),
 		Number: mapsDerefOr(s.Number, 0), Kind: string(s.Kind), X: s.X, Y: s.Y, Rotation: mapsDerefOr(s.Rotation, 0),
 		Shape: mapsShapeFromAPI(s.Shape), PriceCategoryOverride: s.PriceCategoryOverride,
-		Active: mapsDerefOr(s.Active, true),
+		Active: mapsDerefOr(s.Active, true), Asset: string(mapsDerefOr(s.Asset, "")),
 	}
 	if s.Capacity != nil {
 		out.Capacity = map[string]int(*s.Capacity)
@@ -423,6 +428,7 @@ func spotInputToAPI(s mapping.SpotInput) api.SpotInput {
 		ZoneId: s.ZoneID, Label: s.Label, RowLabel: &s.RowLabel, Number: &s.Number, Kind: api.SpotKind(s.Kind),
 		X: s.X, Y: s.Y, Rotation: &s.Rotation, Shape: mapsShapeToAPI(s.Shape), Capacity: &capacity, MaxExtra: &maxExtra,
 		PriceCategoryOverride: s.PriceCategoryOverride, Attributes: &attrs, Active: &s.Active,
+		Asset: mapsKitAssetString(s.Asset),
 	}
 	if s.ID != "" {
 		id := s.ID
@@ -434,7 +440,8 @@ func spotInputToAPI(s mapping.SpotInput) api.SpotInput {
 func decorationInputFromAPI(d api.DecorationInput) mapping.DecorationInput {
 	out := mapping.DecorationInput{
 		ID: mapsDerefOr(d.Id, ""), Kind: string(d.Kind), X: d.X, Y: d.Y, Rotation: mapsDerefOr(d.Rotation, 0),
-		Shape: mapsShapeFromAPI(d.Shape),
+		Shape: mapsShapeFromAPI(d.Shape), Asset: string(mapsDerefOr(d.Asset, "")),
+		Variant: string(mapsDerefOr(d.Variant, "")),
 	}
 	if d.Label != nil {
 		out.Label = store.I18nText(*d.Label)
@@ -461,6 +468,9 @@ func generateParamsFromAPI(req api.RowGeneratorRequest) mapping.GenerateParams {
 	}
 	if req.Kind != nil {
 		p.Kind = string(*req.Kind)
+	}
+	if req.Asset != nil {
+		p.Asset = string(*req.Asset)
 	}
 	if req.Shape != nil {
 		sh := mapsShapeFromAPI(*req.Shape)
@@ -552,4 +562,20 @@ func mapsNonNilQty(m map[string]int) map[string]int {
 		return map[string]int{}
 	}
 	return m
+}
+
+// mapsKitAsset is the API form of an optional kit illustration column.
+func mapsKitAsset(s *string) *api.KitAsset {
+	if s == nil || *s == "" {
+		return nil
+	}
+	return mapsKitAssetString(*s)
+}
+
+func mapsKitAssetString(s string) *api.KitAsset {
+	if s == "" {
+		return nil
+	}
+	a := api.KitAsset(s)
+	return &a
 }

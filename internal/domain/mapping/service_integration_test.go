@@ -112,12 +112,14 @@ func docInput(doc *Document) SaveInput {
 	for _, sp := range doc.Spots {
 		in.Spots = append(in.Spots, SpotInput{
 			ID: sp.ID, ZoneID: sp.ZoneID, Label: sp.Label, RowLabel: sp.RowLabel, Number: sp.Number,
-			Kind: sp.Kind, X: sp.X, Y: sp.Y, Rotation: sp.Rotation, Shape: sp.Shape, Capacity: sp.Capacity, MaxExtra: sp.MaxExtra,
+			Kind: sp.Kind, Asset: deref(sp.Asset), X: sp.X, Y: sp.Y, Rotation: sp.Rotation, Shape: sp.Shape, Capacity: sp.Capacity, MaxExtra: sp.MaxExtra,
 			PriceCategoryOverride: sp.PriceCategoryOverride, Attributes: sp.Attributes, Active: sp.Active,
 		})
 	}
 	for _, d := range doc.Decorations {
-		in.Decorations = append(in.Decorations, DecorationInput{ID: d.ID, Kind: d.Kind, X: d.X, Y: d.Y, Rotation: d.Rotation, Shape: d.Shape, Label: d.Label})
+		in.Decorations = append(in.Decorations, DecorationInput{
+			ID: d.ID, Kind: d.Kind, Asset: deref(d.Asset), Variant: deref(d.Variant), X: d.X, Y: d.Y, Rotation: d.Rotation, Shape: d.Shape, Label: d.Label,
+		})
 	}
 	return in
 }
@@ -240,6 +242,81 @@ func TestMappingIntegration_SaveDiffAndVersioning(t *testing.T) {
 		}
 		if n := e.count("outbox_events", "type = ?", event.ConfigMapChanged); n != 6 { // map created, zone created, 4 saves
 			t.Fatalf("outbox events: %d", n)
+		}
+	})
+}
+
+// Kit illustrations (ADR 0012): asset and variant round-trip, a change of
+// asset alone is a change, the new spot kinds pass the database CHECK.
+func TestMappingIntegration_KitAssets(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		doc := e.newMap(e.ownerA, e.estA.ID)
+		z := e.newZone(e.ownerA, e.estA.ID, doc.Map.ID, "row1", ModeSeat)
+		in := docInput(doc)
+		a1 := spot(z.Zone.ID, "A1", 10)
+		a1.Asset = "ombrellone_2_lettini"
+		d1 := spot(z.Zone.ID, "D1", 20)
+		d1.Kind, d1.Asset = "daybed", "daybed"
+		h1 := spot(z.Zone.ID, "H1", 30)
+		h1.Kind = "hammock"
+		in.Spots = []SpotInput{a1, d1, h1}
+		in.Decorations = []DecorationInput{
+			{Kind: "custom", Asset: "bandiera_mare", Variant: "yellow", X: 5, Y: 5, Shape: store.Shape{Type: ShapeRect, W: 6, H: 6}},
+			{Kind: "walkway", X: 9, Y: 9, Shape: store.Shape{Type: ShapeRect, W: 6, H: 6}},
+		}
+		v2, err := e.svc.SaveMap(e.ctx, e.ownerA, e.estA.ID, doc.Map.ID, 1, in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := spotByLabel(v2, "A1"); got.Asset == nil || *got.Asset != "ombrellone_2_lettini" {
+			t.Fatalf("A1 asset: %v", got.Asset)
+		}
+		if got := spotByLabel(v2, "H1"); got.Asset != nil || got.Kind != "hammock" {
+			t.Fatalf("H1: %v %s", got.Asset, got.Kind)
+		}
+		var flag *store.MapDecoration
+		for i := range v2.Decorations {
+			if v2.Decorations[i].Kind == "custom" {
+				flag = &v2.Decorations[i]
+			} else if v2.Decorations[i].Asset != nil || v2.Decorations[i].Variant != nil {
+				t.Fatal("empty asset/variant must be stored as NULL")
+			}
+		}
+		if flag == nil || deref(flag.Asset) != "bandiera_mare" || deref(flag.Variant) != "yellow" {
+			t.Fatalf("flag: %+v", flag)
+		}
+		// Changing only the illustration and the variant updates in place.
+		in = docInput(v2)
+		for i := range in.Spots {
+			if in.Spots[i].Label == "A1" {
+				in.Spots[i].Asset = "ombrellone_3_lettini"
+			}
+		}
+		for i := range in.Decorations {
+			if in.Decorations[i].Asset == "bandiera_mare" {
+				in.Decorations[i].Variant = "red"
+			}
+		}
+		v3, err := e.svc.SaveMap(e.ctx, e.ownerA, e.estA.ID, doc.Map.ID, 2, in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := spotByLabel(v3, "A1"); deref(got.Asset) != "ombrellone_3_lettini" || got.ID != spotByLabel(v2, "A1").ID {
+			t.Fatalf("A1 after asset change: %+v", got)
+		}
+		for _, d := range v3.Decorations {
+			if d.ID == flag.ID && deref(d.Variant) != "red" {
+				t.Fatalf("variant not updated: %+v", d)
+			}
+		}
+		// A non-bookable illustration on a spot is refused.
+		in = docInput(v3)
+		in.Spots[0].Asset = "bar"
+		_, err = e.svc.SaveMap(e.ctx, e.ownerA, e.estA.ID, doc.Map.ID, 3, in)
+		var ve *configerr.ValidationError
+		if !errors.As(err, &ve) {
+			t.Fatalf("bar on a spot: %v", err)
 		}
 	})
 }

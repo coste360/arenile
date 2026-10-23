@@ -65,6 +65,7 @@ type GenerateParams struct {
 	Direction     string
 	LabelFormat   string
 	Kind          string
+	Asset         string // map kit illustration of the generated spots; empty = default of the kind
 	Shape         *store.Shape
 	Rotation      *float64
 	Capacity      map[string]int
@@ -100,6 +101,7 @@ func Generate(p GenerateParams) ([]SpotInput, error) {
 	if !slices.Contains(SpotKinds, p.Kind) {
 		ve.Add("kind", "Tipo di postazione non valido.")
 	}
+	validateSpotAsset(ve, "asset", p.Asset)
 	if p.Numbering != NumberingPerRow && p.Numbering != NumberingContinuous {
 		ve.Add("numbering", "Valore non valido (per_row, continuous).")
 	}
@@ -186,6 +188,7 @@ func Generate(p GenerateParams) ([]SpotInput, error) {
 				RowLabel: rowLabel,
 				Number:   number,
 				Kind:     p.Kind,
+				Asset:    p.Asset,
 				X:        round2(p.OriginX + float64(k)*along[0] + float64(r)*across[0]),
 				Y:        round2(p.OriginY + float64(k)*along[1] + float64(r)*across[1]),
 				Rotation: rotation,

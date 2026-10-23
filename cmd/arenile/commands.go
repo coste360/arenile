@@ -259,10 +259,13 @@ func (c *cli) seed(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	if demo.Applied {
+	switch {
+	case demo.Applied:
 		fmt.Fprintf(c.stdout, "Configurazione dimostrativa creata: stagione %d, %d postazioni, %d regole di prezzo\n",
 			demo.SeasonYear, demo.SpotsCreated, demo.RulesCreated)
-	} else {
+	case demo.MapsUpgraded > 0:
+		fmt.Fprintf(c.stdout, "Configurazione dimostrativa già presente: %d mappe aggiornate con le illustrazioni del kit\n", demo.MapsUpgraded)
+	default:
 		fmt.Fprintln(c.stdout, "Configurazione dimostrativa già presente: nessuna modifica")
 	}
 	if err := c.seedDemoOwner(ctx, cfg, db, clk, aw, log); err != nil {

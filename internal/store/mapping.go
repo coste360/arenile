@@ -189,7 +189,7 @@ func UpdateSpot(ctx context.Context, db bun.IDB, es EstablishmentScope, s *Spot)
 	s.EstablishmentID = es.ID()
 	mappingNormalizeSpot(s)
 	res, err := db.NewUpdate().Model(s).
-		Column("zone_id", "label", "row_label", "number", "kind", "x", "y", "rotation", "shape", "capacity",
+		Column("zone_id", "label", "row_label", "number", "kind", "asset", "x", "y", "rotation", "shape", "capacity",
 			"max_extra", "price_category_override", "attributes", "active", "updated_at").
 		Where("sp.id = ?", s.ID).Where("sp.establishment_id = ?", es.ID()).Where("sp.map_id = ?", s.MapID).
 		Exec(ctx)
@@ -284,7 +284,7 @@ func UpdateDecoration(ctx context.Context, db bun.IDB, es EstablishmentScope, d 
 	}
 	d.EstablishmentID = es.ID()
 	res, err := db.NewUpdate().Model(d).
-		Column("kind", "x", "y", "rotation", "shape", "label", "updated_at").
+		Column("kind", "asset", "variant", "x", "y", "rotation", "shape", "label", "updated_at").
 		Where("md.id = ?", d.ID).Where("md.establishment_id = ?", es.ID()).Where("md.map_id = ?", d.MapID).
 		Exec(ctx)
 	if err != nil {
