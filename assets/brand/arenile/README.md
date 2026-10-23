@@ -1,33 +1,44 @@
-# Arenile — Coste360.it | Brand Kit v1.0
+# Arenile — Brand Kit v2.0 (rifinito)
 
-La dicitura ufficiale è **Arenile — Coste360.it**. Il font dei logotipi è **Titillium Web** (titoli: 700, byline: 600).
+Marchio **Arenile**: una "A" color sabbia la cui traversa è un'onda azzurra, sopra una duna di sabbia calda, su
+un riquadro navy. Nessun sottotitolo o byline nei logotipi. Font dei logotipi: **Titillium Web** 700.
 
-## Cosa contiene
-- `arenile-symbol-color.svg`: **A** a colori, trasparente, come tracciati vettoriali.
-- `arenile-symbol-navy.svg`, `arenile-symbol-white.svg`: varianti monocromatiche.
-- `arenile-app-icon.svg`, `arenile-app-icon-flat.svg`: icone quadrate con tile e angoli arrotondati.
-- `arenile-logo-horizontal.svg`, `arenile-logo-horizontal-dark.svg`: logo completo per light/dark.
-- `arenile-logo-stacked.svg`: logo verticale.
-- `arenile-logo-header.svg`: compatto per navigazione dell'app.
-- `arenile-wordmark.svg`: solo scritte.
-- `arenile-favicon.svg`: simbolo leggibile a dimensioni molto piccole.
-- `anteprima.html`: catalogo locale dei vari logo.
-- `manifest.json` e `arenile-tokens.css`: metadati e colori.
+## Palette
+- Navy `#0B2542` · Sabbia `#FFF0D1` · Sabbia calda `#F2C893` · Onda `#38BDF8` · Blu secondario `#0EA5E9`
+  (`arenile-tokens.css`).
 
-## Font Titillium Web
-I file SVG usano l'attributo `font-family="Titillium Web"` per il testo (non incorporano né distribuiscono file font). Per la resa precisa, nel progetto React/Next.js carica la famiglia con `next/font/google`:
+## Contenuto
+- **Icone app** (riquadro navy): `arenile-app-icon.svg` (principale), `-flat`, `-compact` (piccole dimensioni),
+  `-monochrome` (bianca su navy), `-light` (riquadro sabbia, A navy); `arenile-favicon.svg`.
+- **Simbolo** (trasparente): `arenile-symbol-color.svg` (sfondi chiari: A navy, onda azzurra, duna sabbia
+  calda), `arenile-symbol-color-dark.svg` (sfondi scuri: A sabbia, colori originali del kit),
+  monocromatici `-navy`, `-white`, `-sand`, `-outline` (tecnico).
+- **Logotipi** (simbolo + "Arenile"): `arenile-logo-horizontal`, `arenile-logo-header` (navigazione),
+  `arenile-logo-stacked` (verticale). Senza suffisso = sfondi chiari (A navy, testo navy); `-dark` = sfondi
+  scuri (A sabbia, testo bianco). `arenile-wordmark.svg` / `-white.svg`: solo scritta.
+- **PNG**: `arenile-app-icon-{16,32,64,128,180,192,256,512,1024}.png`, `arenile-app-icon-light-1024.png`,
+  `arenile-symbol-color{,-dark}-1024.png`.
+- `outlined/` e `png/`: file derivati (vedi `NOTICE.md`), generati da `scripts/brand/build-brand.mjs`.
 
-```tsx
-import { Titillium_Web } from 'next/font/google';
-const titillium = Titillium_Web({ subsets: ['latin'], weight: ['400', '600', '700'], display: 'swap' });
-// applica titillium.className alla root o al contenitore del logo
-```
+## Dove usare cosa
+- **Icona app a colori** (riquadro navy, A sabbia): è l'icona dell'app. App desktop (Dock, barra di Windows,
+  installer, Linux), icone PWA, apple-touch, favicon, schede social, icona nell'intestazione della
+  documentazione.
+- **Logo/simbolo a colori, variante chiara** (A navy): punti principali del marchio su fondo chiaro (login,
+  intestazione della barra laterale in tema chiaro, logo della documentazione in tema chiaro).
+- **Simbolo/logo bianco**: su fondi navy o blu Coste360 (intestazione scura del sito, piè di pagina navy,
+  barra laterale e login in tema scuro, fasce e hero navy). La template image della barra dei menu di macOS
+  è la stessa silhouette monocromatica (nera, colorata dal sistema).
+- **Simbolo/logo navy monocromatico**: su fondo chiaro dove serve un segno a un colore (marchi piccoli,
+  "powered by Arenile" della pagina pubblica, stampe e PDF).
+- Le varianti `-dark` a colori (A sabbia) restano nel kit per i fondi navy in cui serve il colore pieno.
 
-**Importante:** se l'SVG è usato come `<img src="...">`, il font esterno della pagina potrebbe non arrivare all'SVG. Per avere Titillium Web nel logo, usa l'SVG inline (SVGR) oppure converti il testo in contorni dopo il caricamento del font. L'anteprima HTML usa gli SVG inline.
+## Titillium Web
+Gli SVG dei logotipi in questa cartella hanno il testo vivo (`<text font-family="Titillium Web">`) per poterli
+modificare; non incorporano il font. Le app usano le copie in `outlined/`, con il testo convertito in tracciati.
 
-## Origine visiva
-Questa è una **reinterpretazione vettoriale** del concept generato con la A, la sabbia e un'onda. Non è una vettorializzazione pixel-per-pixel della precedente immagine raster; gradienti e forme sono modificabili in SVG.
-
-## PNG export pronti
-- `arenile-app-icon-{1024,512,192,180}.png` per store, PWA o anteprime.
-- `arenile-symbol-color-1024.png` con trasparenza.
+## Rifinitura (2026-10-23)
+Rispetto al kit v2.0 fornito: distanza uniforme (22 unità su 1024) tra onda e gambe della "A" (taglio della
+gamba sinistra che segue la curva dell'onda, taglio della gamba destra e piede uniformi), rimossa la tacca
+storta sul bordo interno del piede destro, simbolo centrato otticamente nel riquadro, varianti per sfondi chiari
+con la A navy, testo dei logotipi convertito in tracciati (`outlined/`). Il disegno resta lo stesso.

@@ -2,7 +2,8 @@
 /**
  * Hero of splash pages. Pages with the `home` frontmatter (the home in every
  * locale) get the product hero: the full Arenile logo (outlined copies of
- * assets/brand, light/dark), H1 (hero.title), one line of key facts
+ * assets/brand: colour logo with the navy A in light, white logo in dark,
+ * ADR 0018), H1 (hero.title), one line of key facts
  * (home.facts), subtitle (hero.tagline), actions (hero.actions), a text link
  * for technical readers and the real panel screenshot (light/dark,
  * <Screenshot>) with the public booking page on a phone. Any other splash page keeps
@@ -13,7 +14,7 @@ import { LinkButton } from '@astrojs/starlight/components';
 import Screenshot from '../Screenshot.astro';
 import HomeIcon from '../home/HomeIcon.astro';
 import logoLight from '../../assets/brand/arenile-logo-horizontal.svg';
-import logoDark from '../../assets/brand/arenile-logo-horizontal-dark.svg';
+import logoDark from '../../assets/brand/arenile-logo-horizontal-white.svg';
 
 const { data } = Astro.locals.starlightRoute.entry;
 const home = data.home;
@@ -25,8 +26,8 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
     <div class="home-hero">
       <div class="hh-copy">
         <div class="hh-logo">
-          <img src={logoLight.src} width="720" height="224" alt="Arenile — Coste360.it" class="dark:sl-hidden" />
-          <img src={logoDark.src} width="720" height="224" alt="Arenile — Coste360.it" class="light:sl-hidden" />
+          <img src={logoLight.src} width="720" height="228" alt="Arenile" class="dark:sl-hidden" />
+          <img src={logoDark.src} width="720" height="228" alt="Arenile" class="light:sl-hidden" />
         </div>
         <h1 id="_top" data-page-title set:html={title} />
         <p class="hh-facts">{home.facts}</p>

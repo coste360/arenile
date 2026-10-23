@@ -1,16 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 610" role="img" aria-label="Arenile Coste360.it — Logo stacked"><title>Arenile Coste360.it — Logo stacked</title><defs>
-    <linearGradient id="sandGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFDF5"/><stop offset=".56" stop-color="#FFF0D1"/><stop offset="1" stop-color="#F2C893"/></linearGradient>
-    <linearGradient id="sandShadowGradient" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#FFD9A7"/><stop offset="1" stop-color="#E3A25D"/></linearGradient>
-    <linearGradient id="upperWaveGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#12E2E9"/><stop offset=".55" stop-color="#10BFD9"/><stop offset="1" stop-color="#035183"/></linearGradient>
-    <linearGradient id="aquaWaveGradient" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#81F7F0"/><stop offset=".37" stop-color="#04CCE9"/><stop offset="1" stop-color="#0193CE"/></linearGradient>
-    <linearGradient id="deepWaveGradient" x1="0" y1="0" x2="1" y2=".9"><stop stop-color="#02CFEA"/><stop offset=".6" stop-color="#0079B8"/><stop offset="1" stop-color="#074477"/></linearGradient>
-    <linearGradient id="tileGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#155DA0"/><stop offset=".4" stop-color="#092F66"/><stop offset="1" stop-color="#031A3D"/></linearGradient>
-  </defs><g transform="translate(190 8) scale(.42)">
-  <path d="M191 752 C269 596 374 359 447 216 C474 160 492 134 518 134 C544 134 564 160 593 218 L930 816 C939 835 893 832 865 826 C792 812 764 788 737 735 L566 421 C544 380 524 352 493 370 C470 385 446 436 422 482 L337 658 Z" fill="url(#sandGradient)"/>
-  <path d="M646 537 C717 616 753 703 835 742 C857 754 885 765 921 773 L930 816 C906 826 871 817 838 802 C737 758 691 657 646 537 Z" fill="url(#sandShadowGradient)" opacity=".72"/>
-  <path d="M109 772 C165 779 199 729 239 664 C295 575 346 437 431 392 C506 346 563 365 603 424 C671 516 708 604 785 660 C830 693 870 704 916 723 C857 732 815 735 763 713 C670 673 614 581 536 550 C443 514 365 551 300 639 C222 743 167 794 109 772 Z" fill="url(#upperWaveGradient)"/>
-  <path d="M107 784 C218 789 252 667 337 598 C430 518 517 498 596 531 C714 580 791 717 932 806 C839 796 769 753 676 680 C559 588 487 588 418 619 C319 668 271 758 190 792 C159 805 122 797 107 784 Z" fill="url(#aquaWaveGradient)"/>
-  <path d="M107 793 C208 813 277 732 364 663 C465 584 551 603 643 680 C749 770 836 827 931 821 C857 829 796 797 724 774 C625 740 552 745 481 799 C386 869 296 878 218 857 C164 844 126 817 107 793 Z" fill="url(#deepWaveGradient)"/>
-</g>
-<text x="400" y="510" text-anchor="middle" font-family="'Titillium Web', 'Arial Narrow', Arial, sans-serif" font-size="116" font-weight="700" letter-spacing="-2" fill="#0B305F">Arenile</text>
-<text x="400" y="563" text-anchor="middle" font-family="'Titillium Web', 'Arial Narrow', Arial, sans-serif" font-size="38" font-weight="600" letter-spacing=".6" fill="#277D9F">Coste360.it</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 485" width="650" height="485" role="img" aria-label="Arenile — logo verticale">
+<title>Arenile — logo verticale</title>
+<g transform="translate(205 23) scale(0.3108108) translate(-143 -177)"><path d="M 282.8 528.6 L 460 186 L 582 186 L 784.9 637 C 765.6 644.2 748.6 641.7 730.4 632.6 C 683.4 607.5 645.4 572.3 603.5 539.9 L 509 349 L 451.2 476.7 C 388.2 473.4 332 494 282.8 528.6 Z" fill="#0B2542"/>
+<path d="M 694.5 723.7 C 736.4 726.6 776.1 715.3 807 686.1 L 870.4 827 L 745.6 827 Z" fill="#0B2542"/>
+<path d="M 151 827 C 236 717 353 677 445 680 C 555 678 635 748 700 827 Z" fill="#F2C893"/>
+<path d="M 182 701 C 211 620 277 545 345 519 C 411 488 473 495 526 518 C 598 550 648 616 711 647 C 746 668 773 669 807 651 C 772 707 697 717 632 682 C 577 651 538 613 491 601 C 418 572 360 594 306 631 C 260 659 214 692 182 701 Z" fill="#38BDF8"/></g><text x="111" y="415" font-family="'Titillium Web', 'Arial Narrow', Arial, sans-serif" font-size="125" font-weight="700" letter-spacing="-1.8" fill="#0B2542">Arenile</text>
+</svg>

@@ -9,8 +9,9 @@ import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { Separator } from '@arenile/shared/ui/separator';
 import { InfoIcon, MailIcon, MapPinIcon, PhoneIcon, RotateCwIcon } from 'lucide-react';
 import { useEffect } from 'react';
-// Icon only, not BrandLogo: that would bundle every logo variant into the budgeted page.
-import { ARENILE_URL, ArenileAppIcon } from '@arenile/shared/ui/patterns/Brand';
+// App icon and mono symbol only, not BrandLogo: that would bundle every logo variant into the
+// budgeted page.
+import { ARENILE_URL, ArenileAppIcon, ArenileMonoSymbol } from '@arenile/shared/ui/patterns/Brand';
 import { useTranslation } from 'react-i18next';
 import { BookingEnvProvider } from './flow/context';
 import { usePublicPage } from './flow/usePublicPage';
@@ -221,14 +222,15 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
       </main>
       <footer className="mx-auto w-full max-w-5xl px-4 pb-8">
         <Separator className="mb-4" />
-        <p className="text-center text-xs text-muted-foreground">
-          {t('booking.poweredBy')}{' '}
+        <p className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+          {t('booking.poweredBy')}
           <a
             href={ARENILE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium underline-offset-4 hover:text-foreground hover:underline"
+            className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:text-foreground hover:underline"
           >
+            <ArenileMonoSymbol alt="" className="h-3.5" />
             Arenile
           </a>
         </p>

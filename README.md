@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/arenile/outlined/arenile-logo-horizontal-dark.svg">
-  <img src="assets/brand/arenile/outlined/arenile-logo-horizontal.svg" alt="Arenile — Coste360.it" width="360">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/arenile/outlined/arenile-logo-horizontal-white.svg">
+  <img src="assets/brand/arenile/outlined/arenile-logo-horizontal.svg" alt="Arenile" width="360">
 </picture>
 
 # Arenile

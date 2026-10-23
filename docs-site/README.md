@@ -61,7 +61,8 @@ L'indirizzo canonico è `https://docs.arenile.app`; si cambia con la variabile d
 (origine, ad esempio `https://arenile.app`) e `ARENILE_DOCS_BASE` (percorso, ad esempio `/docs/`): canonical,
 sitemap, `robots.txt` (`src/pages/robots.txt.ts`) e immagine social (`public/og.png`, URL assoluto) li seguono.
 Logo dell'intestazione (icona dell'app `arenile-app-icon-flat.svg` e nome `arenile-name-{navy,white}.svg`, override
-`SiteTitle`), logo orizzontale della home (`arenile-logo-horizontal{,-dark}.svg`, testo convertito in tracciati),
+`SiteTitle`), logo orizzontale della home (`arenile-logo-horizontal.svg` con la A navy in chiaro, `arenile-logo-horizontal-white.svg`
+in scuro, testo convertito in tracciati; brand kit v2.0, regole d'uso nell'ADR 0018),
 favicon (`public/favicon.svg` con fallback PNG) e logo Coste360 dell'intestazione e del piè di pagina
 (`public/brand/`: PNG originali e simbolo per i telefoni) sono copie identiche dei file del kit in `assets/brand/` (© Coste360 SRL, fuori dalla licenza del codice, vedi
 `assets/brand/*/NOTICE.md` e `TRADEMARK.md`); i colori vengono dai token condivisi di `globals.css`.
