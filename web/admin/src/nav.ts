@@ -1,4 +1,5 @@
 import {
+  BanknoteIcon,
   BarChart3Icon,
   BuildingIcon,
   CalendarDaysIcon,
@@ -6,8 +7,10 @@ import {
   ClipboardListIcon,
   CreditCardIcon,
   EuroIcon,
+  GlobeIcon,
   LayersIcon,
   LayoutGridIcon,
+  MailIcon,
   MapIcon,
   PackageIcon,
   ShieldCheckIcon,
@@ -156,6 +159,17 @@ export const CONFIG_NAV_ITEMS = [
     labelKey: 'nav.config.policies',
     icon: ShieldCheckIcon,
   },
+  {
+    to: '/e/$establishmentId/config/online',
+    labelKey: 'nav.config.online',
+    icon: GlobeIcon,
+  },
+  {
+    to: '/e/$establishmentId/config/payments',
+    labelKey: 'nav.config.payments',
+    icon: BanknoteIcon,
+  },
+  { to: '/e/$establishmentId/config/email', labelKey: 'nav.config.email', icon: MailIcon },
   {
     to: '/e/$establishmentId/config/team',
     labelKey: 'nav.config.team',

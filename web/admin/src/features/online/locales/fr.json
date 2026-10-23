@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "title": "Page publique",
+    "description": "Thème, langues, formules en ligne, conditions et code pour intégrer le widget à votre site.",
+    "preview": "Aperçu en direct",
+    "embed": "Code d'intégration"
+  },
+  "payments": {
+    "title": "Paiements en ligne",
+    "description": "Connectez Stripe pour encaisser en ligne : les clés sont chiffrées et ne sont plus jamais affichées."
+  },
+  "email": {
+    "title": "E-mails et notifications",
+    "description": "Expéditeur, notifications au client et au gérant, e-mail de test et journal des envois."
+  }
+}

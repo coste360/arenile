@@ -275,7 +275,8 @@ Tutta la configurazione avviene tramite variabili d'ambiente, compatibili con Do
 | `ARENILE_AUTO_MIGRATE` | `true` | Applica le migrazioni all'avvio di `serve` |
 | `ARENILE_TLS_AUTOCERT_DOMAINS` | vuoto | Domini per i certificati TLS automatici |
 | `ARENILE_SMTP_URL` | vuoto | Server email, es. `smtp://user:pass@host:587` |
-| `ARENILE_MAIL_FROM` | — | Mittente delle email |
+| `ARENILE_MAIL_FROM` | `noreply@<host di ARENILE_BASE_URL>` | Mittente delle email |
+| `ARENILE_MAIL_DIR` | vuoto | Senza SMTP, cartella in cui scrivere le email come file `.eml` (sviluppo e test); vuota = solo log |
 | `ARENILE_HOLD_TTL` | `10m` | Durata del blocco temporaneo del posto durante il checkout |
 | `ARENILE_LOG_LEVEL` | `info` | Livello di log (`debug`, `info`, `warn`, `error`) |
 | `ARENILE_TRUSTED_PROXIES` | vuoto | CIDR dei reverse proxy fidati, per ricavare l'IP reale |

@@ -4,6 +4,7 @@ import cashIt from '../features/cash/locales/it.json';
 import configurationIt from '../features/configuration/locales/it.json';
 import customersIt from '../features/customers/locales/it.json';
 import mapEditorIt from '../features/map-editor/locales/it.json';
+import onlineIt from '../features/online/locales/it.json';
 import operationsIt from '../features/operations/locales/it.json';
 import passesIt from '../features/passes/locales/it.json';
 import planningIt from '../features/planning/locales/it.json';
@@ -24,7 +25,7 @@ export interface FeatureNamespace {
 }
 
 /**
- * One i18n namespace per admin feature (M1/M2, M3). Each feature owns its
+ * One i18n namespace per admin feature (M1/M2, M3, M4). Each feature owns its
  * `features/<folder>/locales/{it,en,de,fr}.json`; the shared `translation`
  * namespace keeps the shell strings (navigation, common errors, actions).
  */
@@ -126,6 +127,15 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/cash/locales/en.json'),
       de: () => import('../features/cash/locales/de.json'),
       fr: () => import('../features/cash/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'online',
+    it: onlineIt,
+    load: {
+      en: () => import('../features/online/locales/en.json'),
+      de: () => import('../features/online/locales/de.json'),
+      fr: () => import('../features/online/locales/fr.json'),
     },
   },
 ];

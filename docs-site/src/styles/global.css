@@ -1,0 +1,9 @@
+/* Tailwind v4 with the official Starlight integration: Starlight theme
+   tokens drive the utilities, and the shared components keep their own
+   shadcn tokens (web/shared/src/styles/globals.css is imported by the
+   component islands, not here). */
+@layer base, starlight, theme, components, utilities;
+
+@import '@astrojs/starlight-tailwind';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);

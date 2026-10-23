@@ -141,7 +141,10 @@
       "pricing": "Preise",
       "policies": "Regeln",
       "setup": "Geführte Einrichtung",
-      "team": "Benutzer"
+      "team": "Benutzer",
+      "online": "Öffentliche Seite",
+      "payments": "Online-Zahlungen",
+      "email": "E-Mail und Benachrichtigungen"
     },
     "operations": "Betrieb",
     "configGroup": "Konfiguration",

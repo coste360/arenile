@@ -80,16 +80,20 @@ type Booking struct {
 	HoldID             *string        `bun:"hold_id"`
 	ManageTokenHash    *string        `bun:"manage_token_hash"`
 	TermsVersion       *string        `bun:"terms_version"`
-	NotesCustomer      string         `bun:"notes_customer,notnull"`
-	NotesInternal      string         `bun:"notes_internal,notnull"`
-	CreatedByUserID    *string        `bun:"created_by_user_id"`
-	ConfirmedAt        *time.Time     `bun:"confirmed_at"`
-	CheckedInAt        *time.Time     `bun:"checked_in_at"`
-	CancelledAt        *time.Time     `bun:"cancelled_at"`
-	CancelReason       *string        `bun:"cancel_reason"`
-	Version            int64          `bun:"version,notnull"`
-	CreatedAt          time.Time      `bun:"created_at,notnull"`
-	UpdatedAt          time.Time      `bun:"updated_at,notnull"`
+	// TermsAcceptedAt is when the customer accepted TermsVersion (00005, spec 23).
+	TermsAcceptedAt *time.Time `bun:"terms_accepted_at"`
+	// Locale is the language of the customer communications (00005); nil = customer locale.
+	Locale          *string    `bun:"locale"`
+	NotesCustomer   string     `bun:"notes_customer,notnull"`
+	NotesInternal   string     `bun:"notes_internal,notnull"`
+	CreatedByUserID *string    `bun:"created_by_user_id"`
+	ConfirmedAt     *time.Time `bun:"confirmed_at"`
+	CheckedInAt     *time.Time `bun:"checked_in_at"`
+	CancelledAt     *time.Time `bun:"cancelled_at"`
+	CancelReason    *string    `bun:"cancel_reason"`
+	Version         int64      `bun:"version,notnull"`
+	CreatedAt       time.Time  `bun:"created_at,notnull"`
+	UpdatedAt       time.Time  `bun:"updated_at,notnull"`
 }
 
 // BalanceDue is what remains to be collected (never negative).

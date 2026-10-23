@@ -14,11 +14,15 @@ import (
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
+	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/notify"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
+	"github.com/coste360/arenile/pkg/ext"
 )
 
 func TestError_Mapping(t *testing.T) {
@@ -36,6 +40,12 @@ func TestError_Mapping(t *testing.T) {
 		{"conflict", store.ErrConflict, 409, "conflict"},
 		{"rate limited", &auth.RateLimitError{RetryAfter: 1500 * time.Millisecond}, 429, "rate_limited"},
 		{"unknown", errors.New("db exploded: secret detail"), 500, "internal_error"},
+		{"checkout not found", fmt.Errorf("x: %w", checkout.ErrSessionNotFound), 404, "checkout_not_found"},
+		{"provider unavailable", fmt.Errorf("x: %w", gateway.ErrProviderUnavailable), 503, "payment_provider_unavailable"},
+		{"webhook signature", gateway.ErrSignatureInvalid, 400, "webhook_signature_invalid"},
+		{"webhook signature ext", ext.ErrInvalidSignature, 400, "webhook_signature_invalid"},
+		{"terms outdated", checkout.ErrTermsOutdated, 409, "conflict"},
+		{"link not found", notify.ErrLinkNotFound, 404, "not_found"},
 		{"validation", configerr.Invalid("code", "obbligatorio"), 400, "validation_failed"},
 		{"config conflict", fmt.Errorf("%w: duplicate code", configerr.ErrConflict), 409, "conflict"},
 		{"config not found", configerr.ErrNotFound, 404, "not_found"},

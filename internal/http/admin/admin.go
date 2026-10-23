@@ -20,8 +20,11 @@ import (
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/notify"
+	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
@@ -41,7 +44,11 @@ import (
 // The M3 operations follow the same rule: customers.go (Customers),
 // bookings.go (Bookings), availability.go (Inventory: holds, availability,
 // operations day, planning, spot blocks), passes.go (Passes), payments.go
-// (Payments), cash.go (Cash) and fiscal.go (Fiscal).
+// (Payments), cash.go (Cash) and fiscal.go (Fiscal). M4: online.go
+// (Online: settings and terms; Notify: resend confirmation, magic link),
+// paymentsettings.go (Online), email.go (Online settings; Notify: test
+// email, message log), reconciliation.go (Gateway), and the via_provider
+// branch of payments.go (Gateway).
 type Handlers struct {
 	Auth           *auth.Service
 	Establishments *establishment.Service
@@ -60,8 +67,12 @@ type Handlers struct {
 	Payments  *payment.Service
 	Cash      *cash.Service
 	Fiscal    *fiscal.Service
-	Stream    *sse.Server
-	Log       *slog.Logger
+	// M4: public page settings, notifications and online payments.
+	Online  *online.Service
+	Notify  *notify.Service
+	Gateway *gateway.Service
+	Stream  *sse.Server
+	Log     *slog.Logger
 	// SecureCookies sets the Secure attribute on cookies (false only in dev over http).
 	SecureCookies bool
 }

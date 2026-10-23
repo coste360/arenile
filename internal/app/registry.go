@@ -6,6 +6,7 @@ import (
 
 	"github.com/coste360/arenile/internal/app/builtin"
 	"github.com/coste360/arenile/internal/clock"
+	"github.com/coste360/arenile/internal/domain/payment/stripe"
 	"github.com/coste360/arenile/pkg/ext"
 )
 
@@ -37,6 +38,9 @@ func NewRegistry(c clock.Clock, x ext.Extensions) *Registry {
 		UIPlugins:      slices.Clone(x.AdminUIPlugins),
 	}
 	r.payments[builtin.ManualCode] = builtin.Manual{}
+	// Stripe is a core driver (spec 13.2); an extension with the same code
+	// replaces it. Credentials are per establishment (online.Service).
+	r.payments[stripe.Code] = stripe.New(stripe.Options{Clock: c})
 	r.fiscal[builtin.NoneCode] = builtin.NoneFiscal{Clock: c}
 	for _, p := range x.PaymentProviders {
 		if p != nil && p.Code() != "" {

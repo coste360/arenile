@@ -1,0 +1,68 @@
+{
+  "where": {
+    "title": "Scegli dove",
+    "map": "Mappa",
+    "zones": "Zone",
+    "quantity": "Quantità",
+    "legend": "Legenda dei prezzi",
+    "fromPrice": "da {{price}}",
+    "lastUnits_one": "Ultimo posto",
+    "lastUnits_other": "Ultimi {{count}} posti",
+    "soldOut": "Esaurito",
+    "pickSpot": "Tocca una postazione libera sulla mappa."
+  },
+  "what": {
+    "packs": "Pacchetti",
+    "extras": "Extra",
+    "promo": "Codice promozionale",
+    "applyPromo": "Applica",
+    "promoInvalid": "Codice non valido per questa prenotazione."
+  },
+  "who": {
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "email": "Email",
+    "phone": "Telefono",
+    "terms": "Ho letto e accetto le condizioni di prenotazione",
+    "marketing": "Voglio ricevere offerte e novità (facoltativo)",
+    "countdown": "Posto riservato per {{time}}",
+    "pay": "Paga {{amount}}",
+    "confirm": "Conferma la prenotazione",
+    "redirecting": "Ti stiamo portando alla pagina di pagamento…"
+  },
+  "summary": {
+    "title": "Riepilogo",
+    "total": "Totale",
+    "dueNow": "Da pagare ora",
+    "balanceLater": "Saldo successivo",
+    "updating": "Aggiornamento del prezzo…"
+  },
+  "confirmation": {
+    "title": "Prenotazione confermata",
+    "code": "Codice prenotazione",
+    "addToCalendar": "Aggiungi al calendario",
+    "emailSent": "Ti abbiamo inviato il link per gestire la prenotazione a {{email}}.",
+    "waiting": "Stiamo aspettando la conferma del pagamento…",
+    "approval": "Richiesta inviata: lo stabilimento ti risponderà a breve."
+  },
+  "manage": {
+    "title": "La tua prenotazione",
+    "payBalance": "Paga il saldo",
+    "modify": "Modifica",
+    "cancel": "Cancella",
+    "releaseDays": "Rilascia giorni",
+    "requestLink": "Richiedi un nuovo link",
+    "requestLinkSent": "Se i dati corrispondono a una prenotazione, riceverai un nuovo link via email.",
+    "linkInvalid": "Il link non è valido o è scaduto."
+  },
+  "errors": {
+    "hold_expired": "Il tempo per completare la prenotazione è scaduto: scegli di nuovo.",
+    "spot_unavailable": "La postazione è appena stata prenotata da qualcun altro.",
+    "quota_exceeded": "Posti online esauriti per queste date.",
+    "pool_exhausted": "Quantità non disponibile per queste date.",
+    "policy_violation": "La richiesta non rispetta le regole di prenotazione dello stabilimento.",
+    "checkout_not_found": "Sessione di prenotazione non trovata: ricomincia dall'inizio.",
+    "payment_provider_unavailable": "Il servizio di pagamento non risponde: riprova tra poco.",
+    "rate_limited": "Troppe richieste: attendi qualche secondo."
+  }
+}

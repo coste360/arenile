@@ -206,6 +206,25 @@ const policiesRoute = createRoute({
   component: lazyRouteComponent(() => import('./features/policies'), 'PoliciesPage'),
 });
 
+// ---- M4 public page, online payments, email ---------------------------------
+// Configuration pages of the online feature (owned by the admin online builder).
+
+const onlineSettingsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/online',
+  component: lazyRouteComponent(() => import('./features/online'), 'OnlineSettingsPage'),
+});
+const paymentSettingsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/payments',
+  component: lazyRouteComponent(() => import('./features/online'), 'PaymentSettingsPage'),
+});
+const emailSettingsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/email',
+  component: lazyRouteComponent(() => import('./features/online'), 'EmailSettingsPage'),
+});
+
 // ---- M3 operations ---------------------------------------------------------
 // Establishment-scoped pages of spec 15.1 "Operatività", lazy-loaded from the
 // feature folders (owned by the feature builders).
@@ -318,6 +337,9 @@ const routeTree = rootRoute.addChildren([
       priceMatrixRoute,
       coverageRoute,
       policiesRoute,
+      onlineSettingsRoute,
+      paymentSettingsRoute,
+      emailSettingsRoute,
       todayRoute,
       operationalMapRoute,
       bookingsRoute,

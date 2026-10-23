@@ -66,6 +66,10 @@ tags:
     description: Eventi in tempo reale (SSE)
   - name: public
     description: API pubblica della pagina di prenotazione
+  - name: online
+    description: Pagina pubblica, condizioni, provider di pagamento ed email (impostazioni del gestore)
+  - name: webhooks
+    description: Webhook in ingresso dei provider di pagamento
 
 paths:
   /healthz:
@@ -5349,21 +5353,1329 @@ paths:
     get:
       operationId: getPublicEstablishment
       tags: [public]
-      summary: Dati pubblici dello stabilimento (tema, lingue, prenotazione attiva)
+      summary: Dati pubblici dello stabilimento (tema, lingue, configurazione del flusso)
+      description: >-
+        Spec 17.2: profilo, tema, lingue e configurazione del flusso online (`online`: zone e modalità, formule,
+        fasce, condizioni correnti, pagamento). Risposta con `ETag` (hash del contenuto) e
+        `Cache-Control: public, max-age=30`; `If-None-Match` risponde 304.
       security: []
       parameters:
         - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/IfNoneMatch"
       responses:
         "200":
           description: Stabilimento
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PublicEstablishment"
+        "304":
+          description: Non modificato
         "404":
           $ref: "#/components/responses/NotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+
+  /api/public/v1/{slug}/calendar:
+    get:
+      operationId: getPublicCalendar
+      tags: [public]
+      summary: Disponibilità sintetica per giorno di un mese (passo "Quando")
+      description: >-
+        Spec 12.3 passo 1. Per ogni giorno del mese: disponibile, ultimi posti, pieno, chiuso o non prenotabile
+        (fuori stagione o fuori dai limiti della policy online). La disponibilità considera il canale `online`
+        e la quota online (spec 7.6). I periodi tariffari sono inclusi solo se il gestore abilita
+        `flow.show_rate_periods`. Cache breve (`Cache-Control: public, max-age=30`).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - name: month
+          in: query
+          required: true
+          description: Mese `YYYY-MM`.
+          schema:
+            type: string
+            pattern: ^[0-9]{4}-(0[1-9]|1[0-2])$
+        - name: slots
+          in: query
+          required: false
+          description: Fascia richiesta (default FULL).
+          schema:
+            $ref: "#/components/schemas/Slots"
+        - name: zone_id
+          in: query
+          required: false
+          description: Limita il calcolo a una zona.
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: Calendario del mese
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCalendar"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/maps/{mapId}:
+    get:
+      operationId: getPublicMap
+      tags: [public]
+      summary: Geometria pubblica della mappa (senza dati sensibili)
+      description: >-
+        Mappa, postazioni attive delle zone visibili online (con `asset` del kit per l'illustrazione, ADR 0012)
+        e decorazioni. Nessuno stato di occupazione: si combina con `availability`. Risposta con `ETag`
+        (versione della mappa) e `Cache-Control: public, max-age=300`; `If-None-Match` risponde 304.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/MapID"
+        - $ref: "#/components/parameters/IfNoneMatch"
+      responses:
+        "200":
+          description: Mappa
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicMapDocument"
+        "304":
+          description: Non modificata
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/availability:
+    get:
+      operationId: getPublicAvailability
+      tags: [public]
+      summary: Disponibilità per il canale online in un intervallo (passo "Dove")
+      description: >-
+        Spec 7.8, 12.3 passo 2. Zone `seat`: postazioni libere con categoria di prezzo e legenda dei prezzi per
+        fila; zone `zone`: prezzo "da" e disponibilità indicativa (`indicator`); zone `quantity`: unità del pool.
+        Applica la quota online (spec 7.6, ADR 0011) e ignora gli hold scaduti. Nessun dato personale.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - name: from
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: slots
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Slots"
+        - name: formula
+          in: query
+          required: false
+          description: Formula scelta (default derivata dalle date).
+          schema:
+            $ref: "#/components/schemas/Formula"
+        - name: zone_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: Disponibilità
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicAvailability"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/catalog:
+    get:
+      operationId: getPublicCatalog
+      tags: [public]
+      summary: Pack ed extra vendibili online compatibili con la selezione (passo "Cosa")
+      description: >-
+        Solo pack ed extra attivi con canale `online`. Con `zone_id` / `spot_id` restituisce solo i pack
+        compatibili (zone ammesse, tipo di postazione) e le formule consentite per le date; `from_price` e
+        `unit_price` sono indicativi (il prezzo vincolante è quello di `quote`).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - name: from
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: slots
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Slots"
+        - name: formula
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Formula"
+        - name: zone_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: spot_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+      responses:
+        "200":
+          description: Catalogo online
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCatalog"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/quote:
+    post:
+      operationId: quotePublicBooking
+      tags: [public]
+      summary: Prezzo e policy di una selezione (nessuna scrittura)
+      description: >-
+        Chiamata dal riepilogo sempre visibile con debounce (spec 12.3 passo 3). Canale `online`: policy online,
+        quota online, pack ed extra con canale online. Un codice promozionale non valido non è un errore:
+        `promo.status = invalid`. Conta come lettura per i limiti (60/min per IP).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicSelection"
+      responses:
+        "200":
+          description: Preventivo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicQuote"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/bookings:
+    post:
+      operationId: createPublicBooking
+      tags: [public]
+      summary: Crea la prenotazione in stato held e la sessione di checkout
+      description: >-
+        Spec 10.1 passo 3. Occupa le risorse con un hold di `ARENILE_HOLD_TTL` (vincoli del database, quota
+        online inclusa) e crea la sessione di checkout. Il token restituito (`checkout_token`, 256 bit, salvato
+        solo come hash) va conservato dal client in `sessionStorage` (fallback in memoria) e inviato come header
+        `X-Arenile-Checkout` sulle chiamate successive: nessun cookie di terze parti (spec 12.2).
+        `Idempotency-Key` consigliata (doppio tocco su rete lenta). Limite creazioni: 10/min per IP.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicBookingCreate"
+      responses:
+        "201":
+          description: Prenotazione provvisoria creata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/bookings/{bookingId}:
+    get:
+      operationId: getPublicBooking
+      tags: [public]
+      summary: Stato della prenotazione e della sessione di checkout (polling)
+      description: >-
+        Spec 10.1 passo 7: la pagina interroga lo stato dopo il ritorno dal provider fino a `confirmed`.
+        Questa chiamata NON conferma mai (INV-19): la conferma arriva solo dal webhook o dal driver manuale.
+        Richiede `X-Arenile-Checkout`; token errato o di un'altra prenotazione → 404 `checkout_not_found`.
+        `Cache-Control: no-store`.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CheckoutToken"
+      responses:
+        "200":
+          description: Stato del checkout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutState"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    patch:
+      operationId: updatePublicBooking
+      tags: [public]
+      summary: Dati del cliente, consensi, extra e codice promozionale
+      description: >-
+        Spec 10.1 passo 4, 12.3 passo 4, 23. Valido solo mentre la prenotazione è `held`: salva il cliente
+        (riusato se email o telefono coincidono con un cliente dello stabilimento), la versione delle condizioni
+        accettata (`accept_terms_version` deve essere la versione corrente: altrimenti 409 `conflict`) con
+        l'istante, il consenso marketing separato con data, fonte `online` e versione del testo. Extra e codice
+        promozionale ricalcolano il prezzo. Hold scaduto → 410 `hold_expired`.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CheckoutToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutCustomerInput"
+      responses:
+        "200":
+          description: Stato aggiornato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutState"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: abandonPublicBooking
+      tags: [public]
+      summary: Abbandono del checkout, rilascia l'hold
+      description: >-
+        La prenotazione `held` passa a `expired` (stessa transizione della scadenza) e le risorse sono liberate
+        nella stessa transazione. Idempotente; su una prenotazione già confermata risponde 409 `invalid_transition`.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CheckoutToken"
+      responses:
+        "204":
+          description: Hold rilasciato
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/bookings/{bookingId}/pay:
+    post:
+      operationId: payPublicBooking
+      tags: [public]
+      summary: Avvia il pagamento (o conferma senza pagamento online)
+      description: >-
+        Spec 10.1 passo 5, 13.2. Richiede dati cliente e condizioni accettate (altrimenti 422 `validation_failed`).
+        Con il provider online attivo (Stripe Checkout) la prenotazione passa a `pending_payment`, l'hold è esteso
+        fino all'esito (max 30 minuti) e la risposta contiene `redirect_url` da aprire nella finestra principale
+        (`target=_top` dal widget, nuova scheda se il contenitore lo impedisce). Con policy `payment.mode = none`
+        o provider `manual` la prenotazione è confermata dal driver manuale (o va in `awaiting_approval`) e la
+        risposta ha `mode = none`. Provider non raggiungibile → 503 `payment_provider_unavailable` (l'hold resta).
+        `Idempotency-Key` consigliata; la chiave verso il provider è `booking_id + tentativo` (spec 13.2).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CheckoutToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutPayRequest"
+      responses:
+        "200":
+          description: Istruzioni per completare il pagamento
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/public/v1/{slug}/bookings/{bookingId}/qr:
+    get:
+      operationId: getPublicBookingQr
+      tags: [public]
+      summary: QR della prenotazione confermata (SVG o PNG)
+      description: >-
+        Il QR codifica `qr_payload` (codice prenotazione per il check-in in cassa). Richiede `X-Arenile-Checkout`:
+        il client lo scarica con fetch e mostra un blob URL. 404 finché la prenotazione non è confermata.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CheckoutToken"
+        - $ref: "#/components/parameters/QrFormat"
+      responses:
+        "200":
+          description: Immagine del QR
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/bookings/{bookingId}/ics:
+    get:
+      operationId: getPublicBookingIcs
+      tags: [public]
+      summary: Evento di calendario (.ics) della prenotazione confermata
+      description: >-
+        `text/calendar` (RFC 5545) con `Content-Disposition: attachment`; un evento per giorno o per periodo,
+        nel fuso dello stabilimento, con indirizzo e link di gestione solo se il cliente lo ha ricevuto per email.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CheckoutToken"
+      responses:
+        "200":
+          description: File .ics
+          content:
+            text/calendar:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}:
+    get:
+      operationId: getManagedBooking
+      tags: [public]
+      summary: Prenotazione dal link magico (area gestione del cliente)
+      description: >-
+        Spec 12.4. Il token (256 bit, salvato come hash, valido fino alla fine della prenotazione + 30 giorni,
+        revocabile) identifica una sola prenotazione. Token sconosciuto, scaduto o revocato → 404 senza
+        distinguere i casi. Il percorso contiene il token: i log di accesso lo mascherano. `Cache-Control: no-store`,
+        `Referrer-Policy: no-referrer`.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+      responses:
+        "200":
+          description: Prenotazione
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManageBooking"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/qr:
+    get:
+      operationId: getManagedBookingQr
+      tags: [public]
+      summary: QR della prenotazione dal link magico
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+        - $ref: "#/components/parameters/QrFormat"
+      responses:
+        "200":
+          description: Immagine del QR
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/ics:
+    get:
+      operationId: getManagedBookingIcs
+      tags: [public]
+      summary: Evento di calendario (.ics) dal link magico
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+      responses:
+        "200":
+          description: File .ics
+          content:
+            text/calendar:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/pay:
+    post:
+      operationId: payManagedBookingBalance
+      tags: [public]
+      summary: Paga il saldo dal link magico
+      description: >-
+        Avvia un pagamento del saldo (`balance_due`) con il provider online attivo; stesse regole di
+        `payPublicBooking` (redirect, nessuna conferma dal ritorno del browser). Nessun saldo → 409 `conflict`.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Istruzioni per completare il pagamento
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/public/v1/{slug}/manage/{token}/modify:
+    post:
+      operationId: modifyManagedBooking
+      tags: [public]
+      summary: Modifica entro i limiti della policy, con anteprima del nuovo prezzo
+      description: >-
+        Spec 10.3, 12.4. `dry_run = true` restituisce l'anteprima (nuovo totale, differenza da pagare o da
+        rimborsare, conflitti) senza scrivere; l'applicazione passa dal servizio prenotazioni (riallocazione
+        atomica, audit e outbox nella stessa transazione). Fuori dai limiti di `modification` della policy →
+        422 `policy_violation`. `If-Match` con la versione letta.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManageModifyRequest"
+      responses:
+        "200":
+          description: Anteprima o modifica applicata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManageModifyResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/cancel:
+    post:
+      operationId: cancelManagedBooking
+      tags: [public]
+      summary: Cancellazione secondo policy, con anteprima del rimborso o credito
+      description: >-
+        Spec 12.4, 13.4. `dry_run = true` mostra rimborso o credito calcolati sulla policy della prenotazione;
+        l'applicazione cancella dal servizio prenotazioni e, se il provider lo supporta, esegue il rimborso con
+        `Refund` (altrimenti resta un rimborso manuale da completare).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManageCancelRequest"
+      responses:
+        "200":
+          description: Anteprima o cancellazione applicata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManageCancelResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage/{token}/releases:
+    post:
+      operationId: releaseManagedSeasonDays
+      tags: [public]
+      summary: Rilascio di giorni dell'abbonamento (abbonati)
+      description: >-
+        Spec 7.7, 12.4. Solo per abbonamenti con `customer_can_release_season_days` nella policy; credito secondo
+        `season_release_credit`. `dry_run = true` mostra il credito senza scrivere.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+        - $ref: "#/components/parameters/ManageToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManageReleaseRequest"
+      responses:
+        "200":
+          description: Anteprima o rilascio applicato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManageReleaseResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/public/v1/{slug}/manage-links:
+    post:
+      operationId: requestManageLink
+      tags: [public]
+      summary: Richiesta di un nuovo link di gestione (email + codice prenotazione)
+      description: >-
+        Spec 12.4. Risponde sempre 202, anche se email e codice non corrispondono a nessuna prenotazione
+        (nessuna enumerazione); se corrispondono invia un nuovo link all'email della prenotazione. Limiti stretti
+        per IP e per prenotazione (429 `rate_limited`).
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManageLinkRequest"
+      responses:
+        "202":
+          description: Richiesta accettata
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
+  /webhooks/payments/{provider}/{establishmentId}:
+    post:
+      operationId: receivePaymentWebhook
+      tags: [webhooks]
+      summary: Webhook del provider di pagamento (firma obbligatoria)
+      description: >-
+        Spec 13.3, ADR 0006. Il corpo è letto grezzo (fino a 256 KB) e passato al driver con le credenziali
+        decifrate dello stabilimento della URL: firma assente o errata → 400 `webhook_signature_invalid`. Ogni
+        evento è registrato in `webhook_events` (deduplica per provider + id evento): un duplicato risponde 200
+        senza effetti. Pagamento, prenotazione e allocazioni sono aggiornati in un'unica transazione; la conferma
+        passa dal servizio prenotazioni (INV-19). Eventi non gestiti → 200. Nessun cookie, nessun CSRF, nessun
+        limite per IP condiviso con l'API pubblica.
+      security: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^[a-z][a-z0-9_-]{1,31}$
+        - $ref: "#/components/parameters/EstablishmentID"
+      requestBody:
+        required: true
+        description: "Corpo grezzo del provider (Stripe: JSON firmato con l'header `Stripe-Signature`)."
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Evento ricevuto (elaborato, duplicato o ignorato)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookAck"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /api/admin/v1/establishments/{establishmentId}/online-settings:
+    get:
+      operationId: getOnlineSettings
+      tags: [online]
+      summary: Impostazioni della pagina pubblica (tema, origini dell'incorporamento, flusso)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Impostazioni
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnlineSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateOnlineSettings
+      tags: [online]
+      summary: Aggiorna le impostazioni della pagina pubblica
+      description: >-
+        Permesso establishment.configure. Valida le origini (`https://host[:porta]`, niente percorsi né caratteri jolly),
+        i colori del tema (`#RRGGBB`) e le formule. `allowed_embed_origins` alimenta `frame-ancestors` (spec 12.2).
+        Audit e evento `config.online_changed` nella stessa transazione.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OnlineSettingsInput"
+      responses:
+        "200":
+          description: Impostazioni aggiornate
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnlineSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/terms-versions:
+    get:
+      operationId: listTermsVersions
+      tags: [online]
+      summary: Versioni delle condizioni e dell'informativa
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Versioni, la più recente per prima
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermsVersionList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: publishTermsVersion
+      tags: [online]
+      summary: Pubblica una nuova versione delle condizioni (immutabile)
+      description: >-
+        Spec 12.3, 23: le versioni non si modificano; ogni prenotazione salva la versione accettata. Con
+        `make_current` (default true) diventa la versione richiesta dal checkout.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TermsVersionInput"
+      responses:
+        "201":
+          description: Versione pubblicata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermsVersion"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/payment-settings:
+    get:
+      operationId: getPaymentSettings
+      tags: [online]
+      summary: Provider di pagamento attivo e stato delle credenziali
+      description: >-
+        Le chiavi segrete non sono mai restituite: solo `configured`, le ultime 4 cifre e la chiave pubblicabile.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Impostazioni dei pagamenti
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updatePaymentSettings
+      tags: [online]
+      summary: Imposta provider, modalità test/live e credenziali (cifrate)
+      description: >-
+        Permesso payments.configure. Le chiavi sono cifrate con il key ring
+        (`ARENILE_SECRET_KEY`, AES-256-GCM) prima di essere salvate; un campo segreto assente lascia invariato
+        il valore salvato, una stringa vuota lo cancella. Audit senza valori segreti.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentSettingsInput"
+      responses:
+        "200":
+          description: Impostazioni aggiornate
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/payment-settings/test:
+    post:
+      operationId: testPaymentSettings
+      tags: [online]
+      summary: Verifica le credenziali salvate presso il provider
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Esito della verifica
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentSettingsTestResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/email-settings:
+    get:
+      operationId: getEmailSettings
+      tags: [online]
+      summary: Impostazioni delle email transazionali
+      description: >-
+        Il trasporto viene dalla configurazione del server (`ARENILE_SMTP_URL`, `ARENILE_MAIL_FROM`; senza SMTP
+        le email sono scritte nel log o in `ARENILE_MAIL_DIR`) ed è in sola lettura; lo stabilimento sceglie
+        nome del mittente, indirizzo di risposta e notifiche.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Impostazioni email
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateEmailSettings
+      tags: [online]
+      summary: Aggiorna mittente e notifiche
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailSettingsInput"
+      responses:
+        "200":
+          description: Impostazioni aggiornate
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/email-settings/test:
+    post:
+      operationId: sendTestEmail
+      tags: [online]
+      summary: Invia un'email di prova
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTestRequest"
+      responses:
+        "202":
+          description: Email accodata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageQueued"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/messages:
+    get:
+      operationId: listMessages
+      tags: [online]
+      summary: Registro dei messaggi inviati (message_log)
+      description: Destinatari mascherati; nessun contenuto dei messaggi.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: booking_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/MessageStatus"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Pagina di messaggi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageLogList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/resend-confirmation:
+    post:
+      operationId: resendBookingConfirmation
+      tags: [bookings]
+      summary: Reinvia l'email di conferma (con un nuovo link di gestione)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "202":
+          description: Email accodata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageQueued"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/magic-link:
+    post:
+      operationId: regenerateMagicLink
+      tags: [bookings]
+      summary: Rigenera il link di gestione (revoca i precedenti)
+      description: >-
+        Permesso bookings.write. Il nuovo link è restituito una sola volta in `manage_url` (per condividerlo dal
+        banco) e, con `send_email`, inviato al cliente. Audit senza il token.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/BookingID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MagicLinkRequest"
+      responses:
+        "201":
+          description: Link rigenerato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MagicLinkResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/payments/reconciliation:
+    get:
+      operationId: getReconciliationReport
+      tags: [payments]
+      summary: Riconciliazione dei pagamenti online
+      description: >-
+        Spec 13.3. Pagamenti presso il provider confrontati con il registro: pendenti da più di 10 minuti, esito
+        del provider diverso da quello locale, incassi senza riga nel registro, importi diversi.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: from
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: issues_only
+          in: query
+          required: false
+          description: Solo le righe con un problema (default false).
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconciliationReport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: runReconciliation
+      tags: [payments]
+      summary: Esegue subito la riconciliazione (come il job ogni 15 minuti)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Esito
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconciliationRunResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
 
 components:
   securitySchemes:
@@ -5426,6 +6738,41 @@ components:
         type: string
         format: uuid
         x-go-type: string
+    CheckoutToken:
+      name: X-Arenile-Checkout
+      in: header
+      required: true
+      description: >-
+        Token della sessione di checkout restituito da createPublicBooking (salvato dal client in
+        sessionStorage, spec 12.2). Mai in un cookie o nella URL.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 128
+    ManageToken:
+      name: token
+      in: path
+      required: true
+      description: Token del link magico (256 bit, base64url).
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9_-]{32,128}$
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: ETag letto in precedenza; se coincide la risposta è 304.
+      schema:
+        type: string
+        maxLength: 128
+    QrFormat:
+      name: format
+      in: query
+      required: false
+      description: Formato dell'immagine (default svg).
+      schema:
+        type: string
+        enum: [svg, png]
     Slug:
       name: slug
       in: path
@@ -5699,6 +7046,17 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/Problem"
+    ServiceUnavailable:
+      description: Servizio esterno non disponibile (payment_provider_unavailable)
+      headers:
+        Retry-After:
+          description: Secondi da attendere
+          schema:
+            type: integer
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
     NotImplemented:
       description: Operazione non ancora disponibile (not_implemented)
       content:
@@ -5751,6 +7109,9 @@ components:
         - cash_session_closed
         - cash_session_already_open
         - booking_outside_period
+        - checkout_not_found
+        - payment_provider_unavailable
+        - webhook_signature_invalid
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -6142,6 +7503,8 @@ components:
           $ref: "#/components/schemas/Theme"
         season:
           $ref: "#/components/schemas/PublicSeason"
+        online:
+          $ref: "#/components/schemas/PublicOnlineConfig"
     PublicSeason:
       type: object
       description: Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva.
@@ -10938,6 +12301,12 @@ components:
           type: string
           enum: [refund, credit]
           description: refund (default) restituisce il denaro; credit lo accredita al cliente.
+        via_provider:
+          type: boolean
+          description: >-
+            Rimborso tramite il provider del pagamento `payment_id` (es. Stripe, spec 13.4): obbligatorio
+            payment_id di un pagamento online; il rimborso resta `pending` fino alla conferma del provider
+            (webhook `charge.refunded` o riconciliazione). Senza supporto del provider → 409 `conflict`.
         reason:
           type: string
           maxLength: 500
@@ -11201,3 +12570,1408 @@ components:
             $ref: "#/components/schemas/FiscalDocument"
         next_cursor:
           type: string
+
+    # ---- M4: public page, checkout, manage area -------------------------------
+    TermsTexts:
+      type: object
+      description: Testi di una lingua di una versione delle condizioni (spec 12.3, 23).
+      required: [terms]
+      properties:
+        terms:
+          type: string
+          maxLength: 50000
+        privacy:
+          type: string
+          maxLength: 50000
+        marketing:
+          type: string
+          maxLength: 2000
+          description: Testo del consenso marketing facoltativo.
+    PublicTerms:
+      type: object
+      description: Versione corrente delle condizioni da accettare nel checkout.
+      required: [version, texts]
+      properties:
+        version:
+          type: string
+        texts:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/TermsTexts"
+    PublicZone:
+      type: object
+      required: [id, code, name, assignment_mode, sort_order]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        assignment_mode:
+          $ref: "#/components/schemas/AssignmentMode"
+        map_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        sort_order:
+          type: integer
+    PublicMapRef:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+    PublicPaymentConfig:
+      type: object
+      required: [provider, online, embedded, test_mode]
+      properties:
+        provider:
+          type: string
+          description: Codice del provider attivo (`manual` se nessun provider online è configurato).
+        online:
+          type: boolean
+          description: Vero se il cliente può pagare online.
+        embedded:
+          type: boolean
+          description: Payment Element incorporato abilitato (altrimenti Checkout in redirect).
+        publishable_key:
+          type: string
+          description: Chiave pubblicabile, solo con `embedded`.
+        test_mode:
+          type: boolean
+    PublicOnlineConfig:
+      type: object
+      description: Configurazione del flusso pubblico (spec 12, 17.2).
+      required: [zones, maps, formulas, slots, hold_minutes, payment, show_prices_on_map, show_rate_periods, promo_codes_enabled, require_phone]
+      properties:
+        zones:
+          type: array
+          description: Zone visibili online, in ordine.
+          items:
+            $ref: "#/components/schemas/PublicZone"
+        maps:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicMapRef"
+        formulas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Formula"
+        slots:
+          type: array
+          description: Fasce prenotabili online.
+          items:
+            $ref: "#/components/schemas/Slots"
+        min_date:
+          $ref: "#/components/schemas/Date"
+        max_date:
+          $ref: "#/components/schemas/Date"
+        hold_minutes:
+          type: integer
+          description: Durata del blocco provvisorio (countdown).
+        payment:
+          $ref: "#/components/schemas/PublicPaymentConfig"
+        show_prices_on_map:
+          type: boolean
+        show_rate_periods:
+          type: boolean
+        promo_codes_enabled:
+          type: boolean
+        require_phone:
+          type: boolean
+        terms:
+          $ref: "#/components/schemas/PublicTerms"
+    PublicCalendarDay:
+      type: object
+      required: [date, status]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        status:
+          type: string
+          enum: [available, limited, full, closed, unavailable]
+          description: >-
+            available; limited (ultimi posti); full (nessuna disponibilità online); closed (chiusura);
+            unavailable (fuori stagione o fuori dai limiti della policy online).
+        rate_period_code:
+          type: string
+    PublicRatePeriod:
+      type: object
+      required: [code, name, starts_on, ends_on]
+      properties:
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        color:
+          type: string
+          pattern: ^#[0-9A-Fa-f]{6}$
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+    PublicCalendar:
+      type: object
+      required: [month, days]
+      properties:
+        month:
+          type: string
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicCalendarDay"
+        rate_periods:
+          type: array
+          description: Solo se il gestore abilita la visualizzazione dei periodi tariffari.
+          items:
+            $ref: "#/components/schemas/PublicRatePeriod"
+    PublicMap:
+      type: object
+      required: [id, name, width, height, grid_size, sea_side, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        width:
+          type: integer
+        height:
+          type: integer
+        grid_size:
+          type: integer
+        background:
+          $ref: "#/components/schemas/MapBackground"
+        sea_side:
+          $ref: "#/components/schemas/SeaSide"
+        version:
+          $ref: "#/components/schemas/Version"
+    PublicSpot:
+      type: object
+      required: [id, zone_id, label, row_label, kind, x, "y", rotation, shape, price_category]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        label:
+          type: string
+        row_label:
+          type: string
+        kind:
+          $ref: "#/components/schemas/SpotKind"
+        asset:
+          $ref: "#/components/schemas/KitAsset"
+        x:
+          type: number
+          format: double
+        "y":
+          type: number
+          format: double
+        rotation:
+          type: number
+          format: double
+        shape:
+          $ref: "#/components/schemas/Shape"
+        price_category:
+          type: string
+          description: Categoria di prezzo effettiva (override della postazione o categoria della zona).
+    PublicMapDocument:
+      type: object
+      required: [map, spots, decorations]
+      properties:
+        map:
+          $ref: "#/components/schemas/PublicMap"
+        spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicSpot"
+        decorations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Decoration"
+    AvailabilityIndicator:
+      type: string
+      enum: [plenty, few, last, none]
+      description: Disponibilità indicativa per le zone `zone` e `quantity` ("ultimi 3 posti" = last).
+    PublicSpotAvailability:
+      type: object
+      required: [spot_id, available, price_category]
+      properties:
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        available:
+          type: boolean
+        price_category:
+          type: string
+    PublicZoneAvailability:
+      type: object
+      required: [zone_id, assignment_mode, available, indicator]
+      properties:
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        assignment_mode:
+          $ref: "#/components/schemas/AssignmentMode"
+        available:
+          type: integer
+          description: Minimo disponibile online nell'intervallo (postazioni o unità), quota inclusa.
+        indicator:
+          $ref: "#/components/schemas/AvailabilityIndicator"
+        from_price:
+          $ref: "#/components/schemas/Money"
+        pool_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spots:
+          type: array
+          description: Solo zone `seat`.
+          items:
+            $ref: "#/components/schemas/PublicSpotAvailability"
+    PriceLegendEntry:
+      type: object
+      description: Voce della legenda dei prezzi per fila sulla mappa (spec 12.3 passo 2).
+      required: [price_category, from_price, tone]
+      properties:
+        price_category:
+          type: string
+        label:
+          $ref: "#/components/schemas/I18nText"
+        from_price:
+          $ref: "#/components/schemas/Money"
+        tone:
+          type: integer
+          minimum: 0
+          maximum: 7
+          description: Indice del colore della legenda (dal più economico al più caro).
+    PublicAvailability:
+      type: object
+      required: [from, to, slots, zones, price_legend]
+      properties:
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        closed_dates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Date"
+        zones:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicZoneAvailability"
+        price_legend:
+          type: array
+          description: Vuota se il tema nasconde i prezzi sulla mappa.
+          items:
+            $ref: "#/components/schemas/PriceLegendEntry"
+    PublicPackComponent:
+      type: object
+      required: [code, name, quantity]
+      properties:
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        quantity:
+          type: integer
+        icon:
+          type: string
+          description: Nome dell'icona del kit o di lucide per la composizione.
+    PublicPack:
+      type: object
+      required: [id, code, name, description, components, allowed_formulas, max_per_booking, requires_approval]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        image:
+          type: string
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicPackComponent"
+        allowed_formulas:
+          type: array
+          items:
+            $ref: "#/components/schemas/Formula"
+        max_per_booking:
+          type: integer
+        requires_approval:
+          type: boolean
+        from_price:
+          $ref: "#/components/schemas/Money"
+    PublicExtra:
+      type: object
+      required: [id, code, name, description, pricing_unit, max_quantity, attach_to]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        description:
+          $ref: "#/components/schemas/I18nText"
+        pricing_unit:
+          $ref: "#/components/schemas/PricingUnit"
+        max_quantity:
+          type: integer
+        attach_to:
+          $ref: "#/components/schemas/ExtraAttachTo"
+        allowed_pack_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+        unit_price:
+          $ref: "#/components/schemas/Money"
+    PublicCatalog:
+      type: object
+      required: [packs, extras]
+      properties:
+        packs:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicPack"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicExtra"
+    PublicExtraInput:
+      type: object
+      required: [extra_id, quantity]
+      properties:
+        extra_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+    PublicLineInput:
+      type: object
+      description: "Una riga della selezione. zone `seat`: spot_id; zone `zone`: zone_id; zone `quantity`: zone_id e quantity."
+      required: [pack_id]
+      properties:
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        spot_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Default 1 (unità per le zone `quantity`).
+        extras:
+          type: array
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/PublicExtraInput"
+    PublicSelection:
+      type: object
+      description: Selezione del cliente (date, fascia, formula, righe, extra, codice promozionale).
+      required: [starts_on, ends_on, slots, formula, lines]
+      properties:
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/PublicLineInput"
+        extras:
+          type: array
+          maxItems: 20
+          description: Extra della prenotazione (attach_to = booking).
+          items:
+            $ref: "#/components/schemas/PublicExtraInput"
+        promo_code:
+          type: string
+          maxLength: 40
+    PublicBookingCreate:
+      allOf:
+        - $ref: "#/components/schemas/PublicSelection"
+        - type: object
+          properties:
+            locale:
+              type: string
+              pattern: ^[a-z]{2}$
+              description: Lingua del cliente per le comunicazioni.
+    PublicQuoteItem:
+      type: object
+      required: [kind, label, amount]
+      properties:
+        kind:
+          type: string
+          enum: [line, extra, discount, rounding]
+        ref_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Pack, extra o codice promozionale di riferimento.
+        label:
+          $ref: "#/components/schemas/I18nText"
+        quantity:
+          type: integer
+        amount:
+          $ref: "#/components/schemas/Money"
+    PromoStatus:
+      type: object
+      required: [code, status]
+      properties:
+        code:
+          type: string
+        status:
+          type: string
+          enum: [applied, invalid, not_applicable]
+    PaymentPlan:
+      type: string
+      enum: [online_full, online_deposit, at_desk, approval]
+      description: >-
+        Come si paga secondo la policy online: tutto online, acconto online e saldo dopo, alla cassa (nessun
+        pagamento online), su approvazione del gestore.
+    PublicQuote:
+      type: object
+      required: [available, conflicts, currency, total, deposit_due, due_now, balance_later, items, violations, payment_plan]
+      properties:
+        available:
+          type: boolean
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+        currency:
+          type: string
+        total:
+          $ref: "#/components/schemas/Money"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+        due_now:
+          $ref: "#/components/schemas/Money"
+        balance_later:
+          $ref: "#/components/schemas/Money"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicQuoteItem"
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyViolation"
+        promo:
+          $ref: "#/components/schemas/PromoStatus"
+        payment_plan:
+          $ref: "#/components/schemas/PaymentPlan"
+    CheckoutSessionState:
+      type: string
+      enum: [open, paying, completed, expired, abandoned]
+    CheckoutSession:
+      type: object
+      required: [booking_id, checkout_token, status, hold_expires_at, quote]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        checkout_token:
+          type: string
+          description: Token della sessione (restituito solo qui); header `X-Arenile-Checkout`.
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        hold_expires_at:
+          type: string
+          format: date-time
+        quote:
+          $ref: "#/components/schemas/PublicQuote"
+    PublicBookingExtra:
+      type: object
+      required: [extra_id, name, quantity]
+      properties:
+        extra_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        name:
+          $ref: "#/components/schemas/I18nText"
+        quantity:
+          type: integer
+    PublicBookingLine:
+      type: object
+      required: [pack_id, pack_name, quantity, assignment, extras]
+      properties:
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        pack_name:
+          $ref: "#/components/schemas/I18nText"
+        zone_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        zone_name:
+          $ref: "#/components/schemas/I18nText"
+        spot_label:
+          type: string
+          description: Assente finché una riga di una zona `zone` non è assegnata (assegnazione automatica, spec 7.5).
+        quantity:
+          type: integer
+        assignment:
+          $ref: "#/components/schemas/AssignmentStatus"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicBookingExtra"
+    PublicBookingSummary:
+      type: object
+      required: [starts_on, ends_on, slots, formula, lines, extras, currency, total, paid, balance_due, deposit_due]
+      properties:
+        code:
+          type: string
+          description: Codice prenotazione (presente dalla conferma).
+        starts_on:
+          $ref: "#/components/schemas/Date"
+        ends_on:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+        formula:
+          $ref: "#/components/schemas/Formula"
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicBookingLine"
+        extras:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicBookingExtra"
+        currency:
+          type: string
+        total:
+          $ref: "#/components/schemas/Money"
+        paid:
+          $ref: "#/components/schemas/Money"
+        balance_due:
+          $ref: "#/components/schemas/Money"
+        deposit_due:
+          $ref: "#/components/schemas/Money"
+    CheckoutCustomer:
+      type: object
+      description: Dati inseriti dal cliente in questa sessione (solo con il token della sessione).
+      required: [first_name, last_name, email, marketing_consent]
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        accepted_terms_version:
+          type: string
+        marketing_consent:
+          type: boolean
+    PublicPaymentState:
+      type: object
+      required: [status, amount]
+      properties:
+        status:
+          type: string
+          enum: [none, pending, succeeded, failed]
+        amount:
+          $ref: "#/components/schemas/Money"
+        failure_reason:
+          type: string
+          description: Motivo breve e non personale (es. card_declined).
+    CheckoutNextAction:
+      type: string
+      enum: [details, pay, wait, done, expired, rejected]
+      description: >-
+        details: mancano dati cliente o condizioni; pay: pronto per il pagamento; wait: pagamento avviato o
+        approvazione in attesa, continuare il polling; done: confermata; expired: hold scaduto o abbandonato;
+        rejected: rifiutata dal gestore.
+    PublicConfirmation:
+      type: object
+      required: [code, qr_payload, manage_link_sent]
+      properties:
+        code:
+          type: string
+        qr_payload:
+          type: string
+          description: Testo codificato nel QR (check-in in cassa).
+        qr_svg:
+          type: string
+          description: QR in SVG in linea (evita una seconda richiesta).
+        manage_link_sent:
+          type: boolean
+        email_masked:
+          type: string
+          description: Email del cliente mascherata (m***o@e***.it).
+    CheckoutState:
+      type: object
+      required: [booking_id, status, checkout_state, next_action, summary]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        checkout_state:
+          $ref: "#/components/schemas/CheckoutSessionState"
+        hold_expires_at:
+          type: string
+          format: date-time
+        next_action:
+          $ref: "#/components/schemas/CheckoutNextAction"
+        summary:
+          $ref: "#/components/schemas/PublicBookingSummary"
+        quote:
+          $ref: "#/components/schemas/PublicQuote"
+        customer:
+          $ref: "#/components/schemas/CheckoutCustomer"
+        payment:
+          $ref: "#/components/schemas/PublicPaymentState"
+        confirmation:
+          $ref: "#/components/schemas/PublicConfirmation"
+    CheckoutCustomerInput:
+      type: object
+      required: [first_name, last_name, email, accept_terms_version, marketing_consent]
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 32
+          description: E.164 o numero italiano; obbligatorio se `require_phone`.
+        locale:
+          type: string
+          pattern: ^[a-z]{2}$
+        accept_terms_version:
+          type: string
+          maxLength: 40
+          description: Versione delle condizioni mostrata e accettata (deve essere la corrente).
+        marketing_consent:
+          type: boolean
+          description: Consenso marketing separato e facoltativo (spec 23).
+        notes:
+          type: string
+          maxLength: 500
+        promo_code:
+          type: string
+          maxLength: 40
+        extras:
+          type: array
+          maxItems: 20
+          description: Sostituisce gli extra della prenotazione (attach_to = booking) se presente.
+          items:
+            $ref: "#/components/schemas/PublicExtraInput"
+    CheckoutPayRequest:
+      type: object
+      properties:
+        settlement:
+          type: string
+          enum: [online, at_desk]
+          description: at_desk solo se la policy online consente il pagamento in cassa.
+    PayResult:
+      type: object
+      required: [mode, status]
+      properties:
+        mode:
+          type: string
+          enum: [redirect, embedded, none]
+          description: redirect → aprire redirect_url nella finestra principale; embedded → Payment Element; none → nessun passo online.
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        redirect_url:
+          type: string
+        client_secret:
+          type: string
+        publishable_key:
+          type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        hold_expires_at:
+          type: string
+          format: date-time
+    ManageActions:
+      type: object
+      required: [pay_balance, modify, cancel, release_days]
+      properties:
+        pay_balance:
+          type: boolean
+        modify:
+          type: boolean
+        cancel:
+          type: boolean
+        release_days:
+          type: boolean
+        modify_until:
+          $ref: "#/components/schemas/Date"
+        cancel_until_free:
+          $ref: "#/components/schemas/Date"
+          description: Ultimo giorno con rimborso pieno, se previsto dalla policy.
+    ManageCustomer:
+      type: object
+      required: [first_name, last_name]
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email_masked:
+          type: string
+        phone_masked:
+          type: string
+    ManageRelease:
+      type: object
+      required: [date, slot, credit_amount]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slot:
+          $ref: "#/components/schemas/Slot"
+        credit_amount:
+          $ref: "#/components/schemas/Money"
+        resold:
+          type: boolean
+    ManageBooking:
+      type: object
+      required: [booking_id, code, status, is_season_pass, summary, customer, allowed, qr_payload, link_expires_at, version]
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        is_season_pass:
+          type: boolean
+        summary:
+          $ref: "#/components/schemas/PublicBookingSummary"
+        customer:
+          $ref: "#/components/schemas/ManageCustomer"
+        allowed:
+          $ref: "#/components/schemas/ManageActions"
+        cancellation_preview:
+          $ref: "#/components/schemas/RefundPreview"
+        releases:
+          type: array
+          items:
+            $ref: "#/components/schemas/ManageRelease"
+        qr_payload:
+          type: string
+        qr_svg:
+          type: string
+        link_expires_at:
+          type: string
+          format: date-time
+        version:
+          $ref: "#/components/schemas/Version"
+    ManageModifyRequest:
+      allOf:
+        - $ref: "#/components/schemas/PublicSelection"
+        - type: object
+          properties:
+            dry_run:
+              type: boolean
+              description: Default true (solo anteprima); false applica la modifica.
+    ManageModifyResult:
+      type: object
+      required: [applied, previous_total, new_total, difference, conflicts, violations]
+      properties:
+        applied:
+          type: boolean
+        previous_total:
+          $ref: "#/components/schemas/Money"
+        new_total:
+          $ref: "#/components/schemas/Money"
+        difference:
+          $ref: "#/components/schemas/Money"
+          description: Positiva da pagare, negativa da rimborsare (spec 10.3); include la penale di modifica.
+        fee:
+          $ref: "#/components/schemas/Money"
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationConflict"
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PolicyViolation"
+        quote:
+          $ref: "#/components/schemas/PublicQuote"
+        booking:
+          $ref: "#/components/schemas/ManageBooking"
+    ManageCancelRequest:
+      type: object
+      properties:
+        dry_run:
+          type: boolean
+          description: Default true (solo anteprima); false cancella.
+        reason:
+          type: string
+          maxLength: 500
+        settlement:
+          type: string
+          enum: [refund, credit]
+          description: Preferenza del cliente quando la policy consente entrambe.
+    ManageCancelResult:
+      type: object
+      required: [applied, refund]
+      properties:
+        applied:
+          type: boolean
+        refund:
+          $ref: "#/components/schemas/RefundPreview"
+        refund_status:
+          type: string
+          enum: [none, provider_pending, provider_succeeded, manual_due, credited]
+        booking:
+          $ref: "#/components/schemas/ManageBooking"
+    ManageReleaseDay:
+      type: object
+      required: [date, slots]
+      properties:
+        date:
+          $ref: "#/components/schemas/Date"
+        slots:
+          $ref: "#/components/schemas/Slots"
+    ManageReleaseRequest:
+      type: object
+      required: [days]
+      properties:
+        days:
+          type: array
+          minItems: 1
+          maxItems: 120
+          items:
+            $ref: "#/components/schemas/ManageReleaseDay"
+        dry_run:
+          type: boolean
+          description: Default true (solo anteprima); false rilascia.
+    ManageReleaseResult:
+      type: object
+      required: [applied, released, credit_amount]
+      properties:
+        applied:
+          type: boolean
+        released:
+          type: array
+          items:
+            $ref: "#/components/schemas/ManageRelease"
+        credit_amount:
+          $ref: "#/components/schemas/Money"
+        booking:
+          $ref: "#/components/schemas/ManageBooking"
+    ManageLinkRequest:
+      type: object
+      required: [email, code]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        code:
+          type: string
+          minLength: 4
+          maxLength: 32
+    WebhookAck:
+      type: object
+      required: [received]
+      properties:
+        received:
+          type: boolean
+        duplicate:
+          type: boolean
+
+    # ---- M4: admin online settings, payments, email ---------------------------
+    OnlineFlowConfig:
+      type: object
+      description: Opzioni del flusso pubblico.
+      required: [formulas, slots, show_rate_periods, promo_codes_enabled, require_phone]
+      properties:
+        formulas:
+          type: array
+          description: Formule proposte online (vuoto = tutte quelle ammesse dai pack online).
+          items:
+            $ref: "#/components/schemas/Formula"
+        slots:
+          type: array
+          description: Fasce proposte online (default FULL, AM, PM).
+          items:
+            $ref: "#/components/schemas/Slots"
+        show_rate_periods:
+          type: boolean
+          description: Evidenzia i periodi tariffari nel calendario pubblico.
+        max_days_ahead:
+          type: integer
+          minimum: 0
+          maximum: 730
+          description: Limite di prenotabilità in giorni (oltre alla policy).
+        promo_codes_enabled:
+          type: boolean
+        require_phone:
+          type: boolean
+    EmbedSnippets:
+      type: object
+      required: [page_url, iframe, script]
+      properties:
+        page_url:
+          type: string
+          description: "`<ARENILE_BASE_URL>/b/<slug>`"
+        iframe:
+          type: string
+        script:
+          type: string
+    OnlineSettings:
+      type: object
+      required: [booking_enabled, allowed_embed_origins, theme, flow, embed, version]
+      properties:
+        booking_enabled:
+          type: boolean
+        allowed_embed_origins:
+          type: array
+          items:
+            type: string
+        theme:
+          $ref: "#/components/schemas/Theme"
+        flow:
+          $ref: "#/components/schemas/OnlineFlowConfig"
+        current_terms:
+          $ref: "#/components/schemas/TermsVersion"
+        embed:
+          $ref: "#/components/schemas/EmbedSnippets"
+        version:
+          $ref: "#/components/schemas/Version"
+    OnlineSettingsInput:
+      type: object
+      required: [booking_enabled, allowed_embed_origins, theme, flow]
+      properties:
+        booking_enabled:
+          type: boolean
+        allowed_embed_origins:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 255
+        theme:
+          $ref: "#/components/schemas/Theme"
+        flow:
+          $ref: "#/components/schemas/OnlineFlowConfig"
+    TermsVersion:
+      type: object
+      required: [id, version, texts, published_at, current]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        version:
+          type: string
+        texts:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/TermsTexts"
+        published_at:
+          type: string
+          format: date-time
+        current:
+          type: boolean
+    TermsVersionList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TermsVersion"
+    TermsVersionInput:
+      type: object
+      required: [version, texts]
+      properties:
+        version:
+          type: string
+          minLength: 1
+          maxLength: 40
+        texts:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/TermsTexts"
+        make_current:
+          type: boolean
+          description: Default true.
+    ProviderMode:
+      type: string
+      enum: [test, live]
+    StripeSettings:
+      type: object
+      required: [configured, webhook_secret_configured, embedded_mode]
+      properties:
+        configured:
+          type: boolean
+          description: Chiave segreta salvata.
+        publishable_key:
+          type: string
+        secret_key_last4:
+          type: string
+        webhook_secret_configured:
+          type: boolean
+        embedded_mode:
+          type: boolean
+        verified_at:
+          type: string
+          format: date-time
+    StripeSettingsInput:
+      type: object
+      properties:
+        publishable_key:
+          type: string
+          maxLength: 255
+          pattern: ^(pk_(test|live)_[A-Za-z0-9]+)?$
+        secret_key:
+          type: string
+          writeOnly: true
+          maxLength: 255
+          description: Assente = invariata; vuota = cancella. Mai restituita.
+        webhook_secret:
+          type: string
+          writeOnly: true
+          maxLength: 255
+          description: Assente = invariato; vuoto = cancella. Mai restituito.
+        embedded_mode:
+          type: boolean
+    PaymentSettings:
+      type: object
+      required: [provider, available_providers, mode, stripe, webhook_url, version]
+      properties:
+        provider:
+          type: string
+          description: Provider attivo per la pagina pubblica (`manual` = nessun pagamento online).
+        available_providers:
+          type: array
+          items:
+            type: string
+        mode:
+          $ref: "#/components/schemas/ProviderMode"
+        stripe:
+          $ref: "#/components/schemas/StripeSettings"
+        webhook_url:
+          type: string
+          description: "URL da configurare presso il provider: `<base>/webhooks/payments/<provider>/<establishment_id>`."
+        version:
+          $ref: "#/components/schemas/Version"
+    PaymentSettingsInput:
+      type: object
+      required: [provider, mode]
+      properties:
+        provider:
+          type: string
+          pattern: ^[a-z][a-z0-9_-]{1,31}$
+        mode:
+          $ref: "#/components/schemas/ProviderMode"
+        stripe:
+          $ref: "#/components/schemas/StripeSettingsInput"
+    PaymentSettingsTestResult:
+      type: object
+      required: [ok, provider, mode]
+      properties:
+        ok:
+          type: boolean
+        provider:
+          type: string
+        mode:
+          $ref: "#/components/schemas/ProviderMode"
+        message:
+          type: string
+        account_label:
+          type: string
+    ManagerNotifications:
+      type: object
+      required: [new_online_booking, approval_requested, payment_failed, webhook_error]
+      properties:
+        new_online_booking:
+          type: boolean
+        approval_requested:
+          type: boolean
+        payment_failed:
+          type: boolean
+        webhook_error:
+          type: boolean
+    CustomerNotifications:
+      type: object
+      required: [confirmation, balance_reminder, day_before_reminder, cancellation, refund]
+      properties:
+        confirmation:
+          type: boolean
+        balance_reminder:
+          type: boolean
+        day_before_reminder:
+          type: boolean
+        cancellation:
+          type: boolean
+        refund:
+          type: boolean
+    EmailSettings:
+      type: object
+      required: [transport, smtp_configured, mail_from, sender_name, manager_notifications, customer_notifications, version]
+      properties:
+        transport:
+          type: string
+          enum: [smtp, log, file]
+          readOnly: true
+          description: Dalla configurazione del server (ARENILE_SMTP_URL, ARENILE_MAIL_DIR).
+        smtp_configured:
+          type: boolean
+          readOnly: true
+        mail_from:
+          type: string
+          readOnly: true
+          description: Indirizzo del mittente (ARENILE_MAIL_FROM).
+        sender_name:
+          type: string
+        reply_to:
+          type: string
+        manager_email:
+          type: string
+        manager_notifications:
+          $ref: "#/components/schemas/ManagerNotifications"
+        customer_notifications:
+          $ref: "#/components/schemas/CustomerNotifications"
+        version:
+          $ref: "#/components/schemas/Version"
+    EmailSettingsInput:
+      type: object
+      required: [sender_name, manager_notifications, customer_notifications]
+      properties:
+        sender_name:
+          type: string
+          maxLength: 100
+        reply_to:
+          type: string
+          format: email
+          maxLength: 254
+        manager_email:
+          type: string
+          format: email
+          maxLength: 254
+        manager_notifications:
+          $ref: "#/components/schemas/ManagerNotifications"
+        customer_notifications:
+          $ref: "#/components/schemas/CustomerNotifications"
+    EmailTestRequest:
+      type: object
+      required: [to]
+      properties:
+        to:
+          type: string
+          format: email
+          maxLength: 254
+    MessageQueued:
+      type: object
+      required: [message_id]
+      properties:
+        message_id:
+          type: string
+          format: uuid
+          x-go-type: string
+    MessageStatus:
+      type: string
+      enum: [queued, sending, sent, failed, cancelled]
+    MessageLogEntry:
+      type: object
+      required: [id, channel, template, locale, status, attempts, recipient_masked, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        channel:
+          type: string
+        template:
+          type: string
+        locale:
+          type: string
+        status:
+          $ref: "#/components/schemas/MessageStatus"
+        attempts:
+          type: integer
+        last_error:
+          type: string
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_code:
+          type: string
+        recipient_masked:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        sent_at:
+          type: string
+          format: date-time
+    MessageLogList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageLogEntry"
+        next_cursor:
+          type: string
+    MagicLinkRequest:
+      type: object
+      properties:
+        send_email:
+          type: boolean
+          description: Default true.
+    MagicLinkResult:
+      type: object
+      required: [expires_at, sent]
+      properties:
+        manage_url:
+          type: string
+          description: Link completo, restituito una sola volta.
+        expires_at:
+          type: string
+          format: date-time
+        sent:
+          type: boolean
+    ReconciliationIssue:
+      type: string
+      enum: [none, pending_too_long, status_mismatch, missing_ledger_row, amount_mismatch, provider_unreachable]
+    ReconciliationItem:
+      type: object
+      required: [payment_intent_id, provider, external_id, kind, local_status, amount, issue]
+      properties:
+        payment_intent_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_code:
+          type: string
+        provider:
+          type: string
+        external_id:
+          type: string
+        kind:
+          type: string
+          enum: [payment, refund]
+        local_status:
+          type: string
+          enum: [created, pending, succeeded, failed, cancelled, expired]
+        provider_status:
+          type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        issue:
+          $ref: "#/components/schemas/ReconciliationIssue"
+        created_at:
+          type: string
+          format: date-time
+        last_checked_at:
+          type: string
+          format: date-time
+    ReconciliationReport:
+      type: object
+      required: [generated_at, items, checked, issues]
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        from:
+          $ref: "#/components/schemas/Date"
+        to:
+          $ref: "#/components/schemas/Date"
+        checked:
+          type: integer
+        issues:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReconciliationItem"
+    ReconciliationRunResult:
+      type: object
+      required: [checked, updated, failed, started_at, finished_at]
+      properties:
+        checked:
+          type: integer
+        updated:
+          type: integer
+        failed:
+          type: integer
+        started_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time

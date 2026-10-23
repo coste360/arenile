@@ -1,0 +1,68 @@
+{
+  "where": {
+    "title": "Choose where",
+    "map": "Map",
+    "zones": "Zones",
+    "quantity": "Quantity",
+    "legend": "Price legend",
+    "fromPrice": "from {{price}}",
+    "lastUnits_one": "Last spot",
+    "lastUnits_other": "Last {{count}} spots",
+    "soldOut": "Sold out",
+    "pickSpot": "Tap a free spot on the map."
+  },
+  "what": {
+    "packs": "Packages",
+    "extras": "Extras",
+    "promo": "Promo code",
+    "applyPromo": "Apply",
+    "promoInvalid": "This code is not valid for this booking."
+  },
+  "who": {
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "phone": "Phone",
+    "terms": "I have read and accept the booking terms",
+    "marketing": "I want to receive offers and news (optional)",
+    "countdown": "Spot reserved for {{time}}",
+    "pay": "Pay {{amount}}",
+    "confirm": "Confirm booking",
+    "redirecting": "Taking you to the payment page…"
+  },
+  "summary": {
+    "title": "Summary",
+    "total": "Total",
+    "dueNow": "Due now",
+    "balanceLater": "Balance later",
+    "updating": "Updating the price…"
+  },
+  "confirmation": {
+    "title": "Booking confirmed",
+    "code": "Booking code",
+    "addToCalendar": "Add to calendar",
+    "emailSent": "We sent the link to manage your booking to {{email}}.",
+    "waiting": "Waiting for the payment confirmation…",
+    "approval": "Request sent: the beach club will reply shortly."
+  },
+  "manage": {
+    "title": "Your booking",
+    "payBalance": "Pay the balance",
+    "modify": "Change",
+    "cancel": "Cancel",
+    "releaseDays": "Release days",
+    "requestLink": "Request a new link",
+    "requestLinkSent": "If the details match a booking, you will receive a new link by email.",
+    "linkInvalid": "The link is invalid or has expired."
+  },
+  "errors": {
+    "hold_expired": "The time to complete the booking has run out: please choose again.",
+    "spot_unavailable": "This spot has just been booked by someone else.",
+    "quota_exceeded": "No more online spots for these dates.",
+    "pool_exhausted": "Quantity not available for these dates.",
+    "policy_violation": "The request does not meet the booking rules of the beach club.",
+    "checkout_not_found": "Booking session not found: please start again.",
+    "payment_provider_unavailable": "The payment service is not responding: please try again shortly.",
+    "rate_limited": "Too many requests: wait a few seconds."
+  }
+}

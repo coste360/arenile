@@ -11,6 +11,17 @@ pannello e cassa** (completate, non rilasciate); prossima **M4 — Pagina pubbli
 
 ### Added
 
+- M4, contratto e scaffolding ([ADR 0013](docs/adr/0013-scelte-m4.md)): API pubblica completa in
+  `api/openapi.yaml` (profilo con configurazione del flusso ed `ETag`, calendario, mappa pubblica,
+  disponibilità online, catalogo, preventivo, prenotazione con sessione di checkout `X-Arenile-Checkout`,
+  pagamento, QR, `.ics`, area gestione via link magico, richiesta di un nuovo link), webhook
+  `POST /webhooks/payments/{provider}/{establishment_id}`, API del pannello per pagina pubblica, condizioni
+  versionate, provider di pagamento (chiavi cifrate), email, registro messaggi, riconciliazione, reinvio della
+  conferma e rigenerazione del link; nuovi tipi di errore `checkout_not_found`, `payment_provider_unavailable`,
+  `webhook_signature_invalid`. Migrazione `00005_online_payments_notifications` (SQLite e PostgreSQL). Nuova
+  variabile `ARENILE_MAIL_DIR`. Sito della documentazione `docs-site/` (Astro Starlight, italiano e inglese) con
+  `make docs-dev`, `make docs-build`, `make docs-screenshots`. Le operazioni M4 rispondono `501` finché i builder
+  non le completano.
 - Kit di illustrazioni della mappa ([ADR 0012](docs/adr/0012-kit-mappa.md)): le 107 illustrazioni originali di
   Coste360 (`assets/beach-map-kit`, provenienza in `NOTICE.md`) sostituiscono pallini e rettangoli in editor,
   mappa operativa e mini mappa delle prenotazioni. Un solo sprite `<symbol>` per pagina con i soli disegni usati,

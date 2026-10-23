@@ -96,6 +96,7 @@ linters:
       - ".*\\.gen\\.go$"
       - "web/"
       - "e2e/"
+      - "docs-site/"
       - "node_modules/"
     rules:
       - path: _test\.go
@@ -124,3 +125,4 @@ formatters:
       - ".*\\.gen\\.go$"
       - "web/"
       - "e2e/"
+      - "docs-site/"

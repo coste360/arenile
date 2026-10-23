@@ -40,4 +40,5 @@ internal/http/static/booking/*
 # docs and deploy recipes are not needed to build the binary
 # (BuildKit reads deploy/Dockerfile even though deploy/ is ignored)
 docs/
+docs-site/
 deploy/

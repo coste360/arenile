@@ -1,15 +1,26 @@
 // Package public implements the thin HTTP handlers of the public booking
-// API (/api/public/v1). It never returns customer data.
+// API (/api/public/v1): decode, call the domain service, encode. It never
+// returns customer data except to the holder of the checkout session token
+// (X-Arenile-Checkout) or of the magic link.
+//
+// Files and owners (M4):
+//   - profile.go: GET /{slug} (online settings builder: profile, theme,
+//     flow configuration, ETag);
+//   - availability.go: calendar, map, availability, catalog, quote
+//     (checkout builder);
+//   - checkout.go: bookings (create, state, customer, pay, abandon, QR,
+//     .ics) (checkout builder);
+//   - manage.go: manage area via magic link and new-link requests
+//     (checkout builder; QR/.ics rendering and links come from notify).
 package public
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
 
+	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/establishment"
-	"github.com/coste360/arenile/internal/http/admin"
-	"github.com/coste360/arenile/internal/http/api"
+	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/pkg/ext"
 )
@@ -17,49 +28,24 @@ import (
 // Handlers implements the public operations of api.ServerInterface.
 type Handlers struct {
 	Establishments *establishment.Service
+	// Online builds the flow configuration of the profile (M4); nil or not
+	// yet implemented = profile without `online`.
+	Online *online.Service
+	// Checkout serves the public flow and the manage area (M4).
+	Checkout *checkout.Service
 	// TenantResolver optionally maps a custom domain to a slug.
 	TenantResolver ext.TenantResolver
 	Log            *slog.Logger
 }
 
-// GetPublicEstablishment implements GET /api/public/v1/{slug}.
-func (h *Handlers) GetPublicEstablishment(w http.ResponseWriter, r *http.Request, slug api.Slug) {
-	if h.TenantResolver != nil {
-		if s, ok, err := h.TenantResolver.ResolveSlug(r); err != nil {
-			problem.Error(w, r, h.Log, err)
-			return
-		} else if ok && s != slug {
-			problem.Write(w, r, problem.NotFound)
-			return
-		}
-	}
-	e, err := h.Establishments.GetPublic(r.Context(), slug)
-	if err != nil {
-		problem.Error(w, r, h.Log, err)
-		return
-	}
-	out := api.PublicEstablishment{
-		Slug: e.Slug, Name: e.Name, Timezone: e.Timezone, Currency: e.Currency, DefaultLocale: e.DefaultLocale,
-		EnabledLocales: e.EnabledLocales, BookingEnabled: e.BookingEnabled, Theme: admin.ThemeToAPI(e.Theme),
-	}
-	if out.EnabledLocales == nil {
-		out.EnabledLocales = []string{}
-	}
-	if e.ContactEmail != "" {
-		out.ContactEmail = &e.ContactEmail
-	}
-	if e.ContactPhone != "" {
-		out.ContactPhone = &e.ContactPhone
-	}
-	addr := admin.AddressToAPI(e.Address)
-	if addr != (api.Address{}) {
-		out.Address = &addr
-	}
-	if e.Season != nil {
-		out.Season = &api.PublicSeason{Year: e.Season.Year, OpensOn: e.Season.OpensOn, ClosesOn: e.Season.ClosesOn}
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "public, max-age=30")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(out)
+// noStore marks responses that carry session or customer data.
+func noStore(w http.ResponseWriter) {
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Referrer-Policy", "no-referrer")
+}
+
+// notImplemented answers 501 for the M4 operations still being built.
+func notImplemented(w http.ResponseWriter, r *http.Request) {
+	noStore(w)
+	problem.Write(w, r, problem.NotImplemented)
 }

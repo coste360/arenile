@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/mail"
 	"net/netip"
 	"net/url"
 	"os"
@@ -21,15 +22,20 @@ import (
 // Environment variable names (spec 24.4). ARENILE_DEV is an Arenile
 // extension that relaxes production-only requirements for local development.
 const (
-	EnvAddr                 = "ARENILE_ADDR"
-	EnvBaseURL              = "ARENILE_BASE_URL"
-	EnvDataDir              = "ARENILE_DATA_DIR"
-	EnvDatabaseURL          = "DATABASE_URL"
-	EnvSecretKey            = "ARENILE_SECRET_KEY"
-	EnvAutoMigrate          = "ARENILE_AUTO_MIGRATE"
-	EnvTLSAutocertDomains   = "ARENILE_TLS_AUTOCERT_DOMAINS"
-	EnvSMTPURL              = "ARENILE_SMTP_URL"
-	EnvMailFrom             = "ARENILE_MAIL_FROM"
+	EnvAddr               = "ARENILE_ADDR"
+	EnvBaseURL            = "ARENILE_BASE_URL"
+	EnvDataDir            = "ARENILE_DATA_DIR"
+	EnvDatabaseURL        = "DATABASE_URL"
+	EnvSecretKey          = "ARENILE_SECRET_KEY"
+	EnvAutoMigrate        = "ARENILE_AUTO_MIGRATE"
+	EnvTLSAutocertDomains = "ARENILE_TLS_AUTOCERT_DOMAINS"
+	EnvSMTPURL            = "ARENILE_SMTP_URL"
+	EnvMailFrom           = "ARENILE_MAIL_FROM"
+	// EnvMailDir is an Arenile extension of spec 24.4 (M4): without
+	// ARENILE_SMTP_URL, emails are written as .eml files into this
+	// directory (local development, end-to-end tests) instead of only
+	// being logged.
+	EnvMailDir              = "ARENILE_MAIL_DIR"
 	EnvHoldTTL              = "ARENILE_HOLD_TTL"
 	EnvLogLevel             = "ARENILE_LOG_LEVEL"
 	EnvTrustedProxies       = "ARENILE_TRUSTED_PROXIES"
@@ -64,6 +70,7 @@ type Config struct {
 	TLSAutocertDomains   []string
 	SMTPURL              string
 	MailFrom             string
+	MailDir              string
 	HoldTTL              time.Duration
 	LogLevel             slog.Level
 	TrustedProxies       []netip.Prefix
@@ -120,6 +127,7 @@ func Parse(lookup Lookup) (Config, error) {
 		DatabaseURL: get(EnvDatabaseURL, ""),
 		SMTPURL:     get(EnvSMTPURL, ""),
 		MailFrom:    get(EnvMailFrom, ""),
+		MailDir:     get(EnvMailDir, ""),
 	}
 
 	var err error
@@ -175,6 +183,11 @@ func Parse(lookup Lookup) (Config, error) {
 		u, uerr := url.Parse(cfg.SMTPURL)
 		if uerr != nil || (u.Scheme != "smtp" && u.Scheme != "smtps") || u.Host == "" {
 			errs = append(errs, fmt.Errorf("%s: must look like smtp://user:pass@host:587", EnvSMTPURL))
+		}
+	}
+	if cfg.MailFrom != "" {
+		if _, aerr := mail.ParseAddress(cfg.MailFrom); aerr != nil {
+			errs = append(errs, fmt.Errorf("%s: must be an email address like prenotazioni@mio-lido.it", EnvMailFrom))
 		}
 	}
 	if v := get(EnvSecretKey, ""); v != "" {
@@ -243,6 +256,19 @@ func (c Config) SecureCookies() bool {
 		return true
 	}
 	return strings.HasPrefix(c.BaseURL, "https://")
+}
+
+// EffectiveMailFrom returns ARENILE_MAIL_FROM, or "noreply@<host of the
+// base URL>" when it is not set (M4 transactional emails).
+func (c Config) EffectiveMailFrom() string {
+	if c.MailFrom != "" {
+		return c.MailFrom
+	}
+	host := "localhost"
+	if u, err := url.Parse(c.EffectiveBaseURL()); err == nil && u.Hostname() != "" {
+		host = u.Hostname()
+	}
+	return "noreply@" + host
 }
 
 // EffectiveBaseURL returns BaseURL, or a localhost URL derived from Addr in dev.

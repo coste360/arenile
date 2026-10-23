@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"sync"
 	"syscall"
 	"time"
@@ -29,14 +30,18 @@ import (
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
+	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/notify"
+	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
@@ -106,8 +111,13 @@ type App struct {
 	Payments  *payment.Service
 	Cash      *cash.Service
 	Fiscal    *fiscal.Service
-	Outbox    *event.Outbox
-	Bus       ext.EventBus
+	// M4 services (wired by wireOnline, see m4.go).
+	Online   *online.Service
+	Notify   *notify.Service
+	Gateway  *gateway.Service
+	Checkout *checkout.Service
+	Outbox   *event.Outbox
+	Bus      ext.EventBus
 
 	mu    sync.Mutex
 	addr  string
@@ -213,6 +223,7 @@ func (a *App) wire() error {
 	a.wireConfiguration(aw)
 	a.registry = NewRegistry(c, x)
 	a.wireOperations(aw)
+	a.wireOnline(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -220,7 +231,8 @@ func (a *App) wire() error {
 		bus = x.EventBus
 	}
 	a.Bus = sse.NewReplayBus(bus, 0)
-	dispatcher := event.NewDispatcher(a.db, c, x.EventSinks, a.Bus, a.log)
+	sinks := append(slices.Clone(x.EventSinks), a.onlineSinks()...)
+	dispatcher := event.NewDispatcher(a.db, c, sinks, a.Bus, a.log)
 	deliverer := event.NewDeliverer(a.db, c, a.keys, nil, aw, a.log, event.DeliveryOptions{})
 
 	a.runner = jobs.NewRunner(a.log)
@@ -237,7 +249,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range a.operationJobs() {
+	for _, j := range append(a.operationJobs(), a.onlineJobs()...) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -250,6 +262,7 @@ func (a *App) wire() error {
 		Pricing: a.Pricing, Policies: a.Policies, Setup: a.Setup,
 		Customers: a.Customers, Bookings: a.Bookings, Inventory: a.Inventory, Passes: a.Passes,
 		Payments: a.Payments, Cash: a.Cash, Fiscal: a.Fiscal,
+		Online: a.Online, Checkout: a.Checkout, Notify: a.Notify, Gateway: a.Gateway,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

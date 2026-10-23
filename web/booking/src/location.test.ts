@@ -10,6 +10,9 @@ describe('parseBookingLocation', () => {
       ),
     ).toEqual({
       slug: 'lido-demo',
+      view: 'book',
+      manageToken: null,
+      checkoutBookingId: null,
       embed: true,
       lang: 'en',
       from: '2027-07-10',
@@ -28,6 +31,27 @@ describe('parseBookingLocation', () => {
     ['/admin/x', null],
   ])('slug of %s is %j', (path, slug) => {
     expect(parseBookingLocation(path, '').slug).toBe(slug);
+  });
+
+  it('recognises the manage area and validates the token', () => {
+    const token = 'a'.repeat(43);
+    expect(parseBookingLocation(`/b/lido/m/${token}`, '')).toMatchObject({
+      slug: 'lido',
+      view: 'manage',
+      manageToken: token,
+    });
+    expect(parseBookingLocation('/b/lido/m/short', '')).toMatchObject({
+      view: 'manage',
+      manageToken: null,
+    });
+  });
+
+  it('reads the checkout to resume after the payment return', () => {
+    const id = '0192F5A0-1C2B-7D3E-8F40-123456789ABC';
+    expect(parseBookingLocation('/b/lido', `?checkout=${id}`).checkoutBookingId).toBe(
+      id.toLowerCase(),
+    );
+    expect(parseBookingLocation('/b/lido', '?checkout=nope').checkoutBookingId).toBeNull();
   });
 
   it('drops malformed dates and defaults embed to false', () => {

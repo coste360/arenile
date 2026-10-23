@@ -1,0 +1,68 @@
+{
+  "where": {
+    "title": "Platz wählen",
+    "map": "Karte",
+    "zones": "Bereiche",
+    "quantity": "Anzahl",
+    "legend": "Preislegende",
+    "fromPrice": "ab {{price}}",
+    "lastUnits_one": "Letzter Platz",
+    "lastUnits_other": "Letzte {{count}} Plätze",
+    "soldOut": "Ausgebucht",
+    "pickSpot": "Tippe auf einen freien Platz auf der Karte."
+  },
+  "what": {
+    "packs": "Pakete",
+    "extras": "Extras",
+    "promo": "Gutscheincode",
+    "applyPromo": "Anwenden",
+    "promoInvalid": "Dieser Code gilt nicht für diese Buchung."
+  },
+  "who": {
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "terms": "Ich habe die Buchungsbedingungen gelesen und akzeptiere sie",
+    "marketing": "Ich möchte Angebote und Neuigkeiten erhalten (optional)",
+    "countdown": "Platz reserviert für {{time}}",
+    "pay": "{{amount}} bezahlen",
+    "confirm": "Buchung bestätigen",
+    "redirecting": "Weiterleitung zur Zahlungsseite…"
+  },
+  "summary": {
+    "title": "Übersicht",
+    "total": "Gesamt",
+    "dueNow": "Jetzt fällig",
+    "balanceLater": "Restbetrag später",
+    "updating": "Preis wird aktualisiert…"
+  },
+  "confirmation": {
+    "title": "Buchung bestätigt",
+    "code": "Buchungscode",
+    "addToCalendar": "Zum Kalender hinzufügen",
+    "emailSent": "Wir haben den Link zur Verwaltung deiner Buchung an {{email}} gesendet.",
+    "waiting": "Warten auf die Zahlungsbestätigung…",
+    "approval": "Anfrage gesendet: der Strandbetrieb antwortet in Kürze."
+  },
+  "manage": {
+    "title": "Deine Buchung",
+    "payBalance": "Restbetrag bezahlen",
+    "modify": "Ändern",
+    "cancel": "Stornieren",
+    "releaseDays": "Tage freigeben",
+    "requestLink": "Neuen Link anfordern",
+    "requestLinkSent": "Wenn die Angaben zu einer Buchung passen, erhältst du einen neuen Link per E-Mail.",
+    "linkInvalid": "Der Link ist ungültig oder abgelaufen."
+  },
+  "errors": {
+    "hold_expired": "Die Zeit für die Buchung ist abgelaufen: bitte erneut auswählen.",
+    "spot_unavailable": "Dieser Platz wurde gerade von jemand anderem gebucht.",
+    "quota_exceeded": "Keine Online-Plätze mehr für diese Tage.",
+    "pool_exhausted": "Anzahl für diese Tage nicht verfügbar.",
+    "policy_violation": "Die Anfrage entspricht nicht den Buchungsregeln des Strandbetriebs.",
+    "checkout_not_found": "Buchungssitzung nicht gefunden: bitte neu beginnen.",
+    "payment_provider_unavailable": "Der Zahlungsdienst antwortet nicht: bitte gleich erneut versuchen.",
+    "rate_limited": "Zu viele Anfragen: bitte einige Sekunden warten."
+  }
+}

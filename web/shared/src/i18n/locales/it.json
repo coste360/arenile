@@ -141,7 +141,10 @@
       "pricing": "Prezzi",
       "policies": "Policy",
       "setup": "Configurazione guidata",
-      "team": "Utenti"
+      "team": "Utenti",
+      "online": "Pagina pubblica",
+      "payments": "Pagamenti online",
+      "email": "Email e notifiche"
     },
     "operations": "Operatività",
     "configGroup": "Configurazione",

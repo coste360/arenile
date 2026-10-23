@@ -227,6 +227,15 @@ func TestPublicRateLimit_ReadsAndCreations(t *testing.T) {
 	if w := do(http.MethodPost, "1.1.1.1"); w.Code != 429 {
 		t.Fatal("11th creation must be limited")
 	}
+	quote := httptest.NewRequest(http.MethodPost, "/api/public/v1/lido/quote", strings.NewReader("{}"))
+	quote.RemoteAddr = "3.3.3.3:1"
+	for i := range 11 {
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, quote.Clone(quote.Context()))
+		if w.Code != 200 {
+			t.Fatalf("quote %d limited: quotes count as reads", i)
+		}
+	}
 	if w := do(http.MethodGet, "2.2.2.2"); w.Code != 200 {
 		t.Fatal("other IPs unaffected")
 	}

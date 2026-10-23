@@ -43,6 +43,8 @@ HAS_E2E     := $(wildcard e2e/package.json)
 HAS_E2E_LCK := $(wildcard e2e/package-lock.json)
 HAS_API     := $(wildcard api/openapi.yaml)
 HAS_KIT     := $(wildcard assets/beach-map-kit/manifest.json)
+HAS_DOCS    := $(wildcard docs-site/package.json)
+HAS_DOCS_LCK:= $(wildcard docs-site/package-lock.json)
 
 GO_GENERATED  := internal/http/api/api.gen.go internal/domain/mapping/kitassets_gen.go
 WEB_GENERATED := web/shared/api/generated web/shared/src/map/kit/generated
@@ -95,6 +97,13 @@ endif
 else
 	@echo "e2e/ not present yet: skipping Playwright"
 endif
+ifneq ($(HAS_DOCS),)
+ifneq ($(HAS_DOCS_LCK),)
+	npm --prefix docs-site ci
+else
+	npm --prefix docs-site install
+endif
+endif
 
 # ---------------------------------------------------------------------------
 # Development
@@ -111,7 +120,7 @@ dev: ## Avvia backend (ricarica automatica se c'e' air) e Vite per le due SPA
 			--build.cmd "go build -o ./tmp/bin/arenile ./cmd/arenile" \
 			--build.bin "./tmp/bin/arenile serve" \
 			--build.include_ext "go,sql,yaml,html,tmpl,json" \
-			--build.exclude_dir "web,e2e,node_modules,tmp,bin,docs,deploy,.git" \
+			--build.exclude_dir "web,e2e,docs-site,node_modules,tmp,bin,docs,deploy,.git" \
 			--build.exclude_regex "_test\\.go$$" & \
 	else \
 		echo "dev: air not found, running plain 'go run' (no auto-reload; install with: go install github.com/air-verse/air@latest)"; \
@@ -186,7 +195,7 @@ endif
 fmt: ## Formatta Go (gofumpt, goimports) e frontend (Prettier)
 	@set -euo pipefail; \
 	files="$$(find . -type f -name '*.go' ! -name '*.gen.go' ! -name '*_gen.go' \
-		! -path './web/*' ! -path './e2e/*' ! -path './bin/*' ! -path './tmp/*' ! -path '*/node_modules/*' ! -path './.git/*')"; \
+		! -path './web/*' ! -path './e2e/*' ! -path './docs-site/*' ! -path './bin/*' ! -path './tmp/*' ! -path '*/node_modules/*' ! -path './.git/*')"; \
 	if [ -n "$$files" ]; then \
 		echo "$$files" | xargs go tool gofumpt -w; \
 		echo "$$files" | xargs go tool goimports -local $(MODULE) -w; \
@@ -258,6 +267,36 @@ check: gen-check lint test ## gen + verifica codice generato + lint + test (< 2 
 check-full: check test-db test-race e2e ## check + test-db + test-race + e2e (prima della PR)
 
 # ---------------------------------------------------------------------------
+# Documentation site (docs-site/, Astro Starlight, own npm package)
+# ---------------------------------------------------------------------------
+
+DOCS_ENV := ASTRO_TELEMETRY_DISABLED=1
+
+.PHONY: docs-dev
+docs-dev: ## Sito della documentazione in sviluppo (Astro Starlight, http://localhost:4321)
+ifneq ($(HAS_DOCS),)
+	$(DOCS_ENV) npm --prefix docs-site run dev
+else
+	@echo "docs-site/ not present yet"
+endif
+
+.PHONY: docs-build
+docs-build: ## Build statica della documentazione in docs-site/dist (con indice di ricerca)
+ifneq ($(HAS_DOCS),)
+	$(DOCS_ENV) npm --prefix docs-site run build
+else
+	@echo "docs-site/ not present yet"
+endif
+
+.PHONY: docs-screenshots
+docs-screenshots: web-build ## Rigenera gli screenshot chiaro/scuro della documentazione con Playwright
+ifneq ($(HAS_DOCS),)
+	npm --prefix docs-site run screenshots
+else
+	@echo "docs-site/ not present yet"
+endif
+
+# ---------------------------------------------------------------------------
 # Build
 # ---------------------------------------------------------------------------
 
@@ -297,7 +336,7 @@ up: ## Avvia un'istanza locale vuota con docker compose (compose.yaml, build dai
 
 .PHONY: clean
 clean: ## Rimuove binario, build del frontend e file temporanei (conserva ./bin/golangci-lint)
-	rm -rf bin/arenile tmp dist coverage.out web/admin/dist web/booking/dist playwright-report test-results e2e/playwright-report e2e/test-results
+	rm -rf bin/arenile tmp dist coverage.out web/admin/dist web/booking/dist playwright-report test-results e2e/playwright-report e2e/test-results docs-site/dist docs-site/.astro
 	@for app in admin booking; do \
 		if [ -d "$(STATIC_DIR)/$$app" ]; then find "$(STATIC_DIR)/$$app" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +; fi; \
 	done

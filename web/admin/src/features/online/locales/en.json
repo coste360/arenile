@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "title": "Public page",
+    "description": "Theme, languages, online formulas, terms and the code to embed the widget in your website.",
+    "preview": "Live preview",
+    "embed": "Embed code"
+  },
+  "payments": {
+    "title": "Online payments",
+    "description": "Connect Stripe to take payments online: keys are encrypted and never shown again."
+  },
+  "email": {
+    "title": "Email and notifications",
+    "description": "Sender, customer and manager notifications, test email and delivery log."
+  }
+}

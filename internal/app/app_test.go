@@ -13,6 +13,7 @@ import (
 	"github.com/coste360/arenile/internal/app/builtin"
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/config"
+	"github.com/coste360/arenile/internal/domain/payment/stripe"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
 	"github.com/coste360/arenile/pkg/ext"
@@ -77,6 +78,8 @@ func TestSmoke_ServeHealthAndReady(t *testing.T) {
 		"outbox.dispatch", "webhooks.deliver", "sessions.cleanup", "idempotency.cleanup",
 		"inventory.sweep_expired_holds", "bookings.expire_holds", "bookings.complete",
 		"fiscal.issue_pending",
+		"payments.reconcile",
+		"notify.deliver",
 	}
 	if got := a.Jobs().Jobs(); !sameSet(got, wantJobs) {
 		t.Fatalf("registered jobs: got %v, want %v", got, wantJobs)
@@ -150,6 +153,20 @@ func TestNew_RequiresServeConfig(t *testing.T) {
 type fakeProvider struct{ builtin.Manual }
 
 func (fakeProvider) Code() string { return "stripe" }
+
+func TestRegistry_CoreStripe(t *testing.T) {
+	r := NewRegistry(clock.System{}, ext.Extensions{})
+	p, ok := r.PaymentProvider("stripe")
+	if !ok {
+		t.Fatal("stripe must be a core provider")
+	}
+	if _, isCore := p.(*stripe.Driver); !isCore || !p.Capabilities().Online {
+		t.Fatalf("stripe provider = %T", p)
+	}
+	if got := r.PaymentProviderCodes(); len(got) != 2 || got[0] != "manual" || got[1] != "stripe" {
+		t.Fatal(got)
+	}
+}
 
 func TestRegistry_BuiltinsAndExtensions(t *testing.T) {
 	r := NewRegistry(clock.System{}, ext.Extensions{PaymentProviders: []ext.PaymentProvider{fakeProvider{}}})

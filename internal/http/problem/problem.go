@@ -16,14 +16,17 @@ import (
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
+	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
+	"github.com/coste360/arenile/pkg/ext"
 )
 
 // ContentType is the media type of problem responses.
@@ -63,6 +66,9 @@ const (
 	CashSessionClosed     = api.ProblemType("cash_session_closed")
 	CashSessionOpen       = api.ProblemType("cash_session_already_open")
 	BookingOutsidePeriod  = api.ProblemType("booking_outside_period")
+	CheckoutNotFound      = api.ProblemType("checkout_not_found")
+	ProviderUnavailable   = api.ProblemType("payment_provider_unavailable")
+	SignatureInvalid      = api.ProblemType("webhook_signature_invalid")
 )
 
 type meta struct {
@@ -105,6 +111,9 @@ var catalog = map[api.ProblemType]meta{
 	CashSessionClosed:     {http.StatusConflict, "La sessione di cassa è chiusa"},
 	CashSessionOpen:       {http.StatusConflict, "C'è già una sessione di cassa aperta"},
 	BookingOutsidePeriod:  {http.StatusUnprocessableEntity, "Operazione ammessa solo nei giorni del soggiorno"},
+	CheckoutNotFound:      {http.StatusNotFound, "Sessione di prenotazione non trovata o scaduta"},
+	ProviderUnavailable:   {http.StatusServiceUnavailable, "Servizio di pagamento non raggiungibile, riprova tra poco"},
+	SignatureInvalid:      {http.StatusBadRequest, "Firma del webhook non valida"},
 }
 
 // Option customises a problem.
@@ -237,6 +246,12 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 	switch {
 	case errors.As(err, &rl):
 		Write(w, r, RateLimited, RetryAfter(rl.RetryAfter))
+	case errors.Is(err, checkout.ErrSessionNotFound):
+		Write(w, r, CheckoutNotFound)
+	case errors.Is(err, gateway.ErrProviderUnavailable):
+		Write(w, r, ProviderUnavailable, RetryAfter(30*time.Second))
+	case errors.Is(err, ext.ErrInvalidSignature):
+		Write(w, r, SignatureInvalid)
 	case errors.Is(err, auth.ErrUnauthenticated):
 		Write(w, r, Unauthorized)
 	case errors.Is(err, auth.ErrInvalidCredentials):

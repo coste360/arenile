@@ -1,0 +1,68 @@
+{
+  "where": {
+    "title": "Choisir où",
+    "map": "Plan",
+    "zones": "Zones",
+    "quantity": "Quantité",
+    "legend": "Légende des prix",
+    "fromPrice": "dès {{price}}",
+    "lastUnits_one": "Dernière place",
+    "lastUnits_other": "Dernières {{count}} places",
+    "soldOut": "Complet",
+    "pickSpot": "Touchez une place libre sur le plan."
+  },
+  "what": {
+    "packs": "Formules",
+    "extras": "Suppléments",
+    "promo": "Code promo",
+    "applyPromo": "Appliquer",
+    "promoInvalid": "Ce code n'est pas valable pour cette réservation."
+  },
+  "who": {
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "terms": "J'ai lu et j'accepte les conditions de réservation",
+    "marketing": "Je souhaite recevoir des offres et des nouveautés (facultatif)",
+    "countdown": "Place réservée pendant {{time}}",
+    "pay": "Payer {{amount}}",
+    "confirm": "Confirmer la réservation",
+    "redirecting": "Redirection vers la page de paiement…"
+  },
+  "summary": {
+    "title": "Récapitulatif",
+    "total": "Total",
+    "dueNow": "À payer maintenant",
+    "balanceLater": "Solde plus tard",
+    "updating": "Mise à jour du prix…"
+  },
+  "confirmation": {
+    "title": "Réservation confirmée",
+    "code": "Code de réservation",
+    "addToCalendar": "Ajouter au calendrier",
+    "emailSent": "Nous avons envoyé le lien pour gérer votre réservation à {{email}}.",
+    "waiting": "En attente de la confirmation du paiement…",
+    "approval": "Demande envoyée : la plage vous répondra rapidement."
+  },
+  "manage": {
+    "title": "Votre réservation",
+    "payBalance": "Payer le solde",
+    "modify": "Modifier",
+    "cancel": "Annuler",
+    "releaseDays": "Libérer des jours",
+    "requestLink": "Demander un nouveau lien",
+    "requestLinkSent": "Si les informations correspondent à une réservation, vous recevrez un nouveau lien par e-mail.",
+    "linkInvalid": "Le lien n'est pas valide ou a expiré."
+  },
+  "errors": {
+    "hold_expired": "Le délai pour terminer la réservation est écoulé : choisissez à nouveau.",
+    "spot_unavailable": "Cette place vient d'être réservée par quelqu'un d'autre.",
+    "quota_exceeded": "Plus de places en ligne pour ces dates.",
+    "pool_exhausted": "Quantité non disponible pour ces dates.",
+    "policy_violation": "La demande ne respecte pas les règles de réservation de la plage.",
+    "checkout_not_found": "Session de réservation introuvable : recommencez depuis le début.",
+    "payment_provider_unavailable": "Le service de paiement ne répond pas : réessayez dans un instant.",
+    "rate_limited": "Trop de requêtes : attendez quelques secondes."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "title": "Pagina pubblica",
+    "description": "Tema, lingue, formule online, condizioni e codice per incorporare il widget nel tuo sito.",
+    "preview": "Anteprima dal vivo",
+    "embed": "Codice da incorporare"
+  },
+  "payments": {
+    "title": "Pagamenti online",
+    "description": "Collega Stripe per incassare online: le chiavi sono cifrate e non vengono mai mostrate di nuovo."
+  },
+  "email": {
+    "title": "Email e notifiche",
+    "description": "Mittente, notifiche al cliente e al gestore, email di prova e registro degli invii."
+  }
+}

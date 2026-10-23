@@ -426,3 +426,28 @@ func TestHTTP_SSEStream(t *testing.T) {
 		t.Fatalf("event=%v ping=%v", sawEvent, sawPing)
 	}
 }
+
+// TestHTTP_M4Contract checks the M4 scaffolding wired in the router: the
+// public profile carries a content ETag honoured by If-None-Match, the M4
+// operations answer 501 not_implemented until built, and the payment
+// webhook route lives outside /api/ (no JSON content-type requirement).
+func TestHTTP_M4Contract(t *testing.T) {
+	e := newEnv(t, storetest.SQLite(t))
+	c := e.client()
+	resp, _ := c.do(http.MethodGet, "/api/public/v1/lido-a", nil, nil)
+	tag := resp.Header.Get("ETag")
+	if resp.StatusCode != 200 || !strings.HasPrefix(tag, `"`) {
+		t.Fatalf("profile etag: %d %q", resp.StatusCode, tag)
+	}
+	resp, _ = c.do(http.MethodGet, "/api/public/v1/lido-a", nil, map[string]string{"If-None-Match": "W/" + tag})
+	if resp.StatusCode != http.StatusNotModified {
+		t.Fatalf("If-None-Match: %d", resp.StatusCode)
+	}
+	resp, body := c.do(http.MethodGet, "/api/public/v1/lido-a/calendar?month=2027-07", nil, nil)
+	assertProblem(t, resp, body, 501, "not_implemented")
+	if resp.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("public M4 responses must not be cached: %q", resp.Header.Get("Cache-Control"))
+	}
+	resp, body = c.do(http.MethodPost, "/webhooks/payments/stripe/"+e.estA.ID, map[string]any{"id": "evt_1"}, nil)
+	assertProblem(t, resp, body, 501, "not_implemented")
+}

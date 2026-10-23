@@ -141,7 +141,10 @@
       "pricing": "Prices",
       "policies": "Policies",
       "setup": "Guided setup",
-      "team": "Users"
+      "team": "Users",
+      "online": "Public page",
+      "payments": "Online payments",
+      "email": "Email and notifications"
     },
     "operations": "Operations",
     "configGroup": "Configuration",

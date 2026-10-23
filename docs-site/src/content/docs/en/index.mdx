@@ -1,0 +1,31 @@
+---
+title: Arenile
+description: Source-available (BSL 1.1) management system for beach establishments, by Coste360 SRL.
+template: splash
+hero:
+  tagline: Umbrella map, bookings, pricing, online payments and cash desk in one program.
+  actions:
+    - text: Start with the manager guide
+      link: /en/gestore/
+      icon: right-arrow
+    - text: Install Arenile
+      link: /en/installazione/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Manager guide" icon="open-book">
+    Every feature of the panel, step by step, with screenshots that never go stale.
+  </Card>
+  <Card title="Installation and operations" icon="setting">
+    Docker, servers, backups, upgrades and configuration.
+  </Card>
+  <Card title="API and webhooks" icon="seti:json">
+    Complete reference generated from the OpenAPI contract, events and webhooks.
+  </Card>
+  <Card title="Development and extensions" icon="puzzle">
+    Architecture, extension points, payment drivers and contributions.
+  </Card>
+</CardGrid>

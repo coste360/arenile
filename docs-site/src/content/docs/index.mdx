@@ -1,0 +1,31 @@
+---
+title: Arenile
+description: Il gestionale per stabilimenti balneari con codice sorgente disponibile (BSL 1.1), di Coste360 SRL.
+template: splash
+hero:
+  tagline: Mappa degli ombrelloni, prenotazioni, prezzi, pagamenti online e cassa in un solo programma.
+  actions:
+    - text: Inizia dalla guida del gestore
+      link: /gestore/
+      icon: right-arrow
+    - text: Installa Arenile
+      link: /installazione/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Guida del gestore" icon="open-book">
+    Ogni funzione del pannello, passo per passo, con screenshot sempre aggiornati.
+  </Card>
+  <Card title="Installazione e operatività" icon="setting">
+    Docker, server, backup, aggiornamenti e configurazione.
+  </Card>
+  <Card title="API e webhook" icon="seti:json">
+    Riferimento completo generato dal contratto OpenAPI, eventi e webhook.
+  </Card>
+  <Card title="Sviluppo ed estensioni" icon="puzzle">
+    Architettura, punti di estensione, driver di pagamento e contributi.
+  </Card>
+</CardGrid>

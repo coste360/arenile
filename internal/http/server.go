@@ -22,13 +22,17 @@ import (
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/catalog"
+	"github.com/coste360/arenile/internal/domain/checkout"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
+	"github.com/coste360/arenile/internal/domain/notify"
+	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
@@ -40,6 +44,7 @@ import (
 	"github.com/coste360/arenile/internal/http/public"
 	"github.com/coste360/arenile/internal/http/sse"
 	"github.com/coste360/arenile/internal/http/static"
+	"github.com/coste360/arenile/internal/http/webhooks"
 	"github.com/coste360/arenile/pkg/ext"
 )
 
@@ -68,13 +73,18 @@ type Deps struct {
 	Policies *pricingconfig.PolicyService
 	Setup    *setup.Service
 	// M3 services (bookings from the panel and cash desk).
-	Customers      *customer.Service
-	Bookings       *booking.Service
-	Inventory      *inventory.Service
-	Passes         *pass.Service
-	Payments       *payment.Service
-	Cash           *cash.Service
-	Fiscal         *fiscal.Service
+	Customers *customer.Service
+	Bookings  *booking.Service
+	Inventory *inventory.Service
+	Passes    *pass.Service
+	Payments  *payment.Service
+	Cash      *cash.Service
+	Fiscal    *fiscal.Service
+	// M4 services (public page, online payments, notifications).
+	Online         *online.Service
+	Checkout       *checkout.Service
+	Notify         *notify.Service
+	Gateway        *gateway.Service
 	Bus            ext.EventBus
 	Readiness      ReadinessChecker
 	TrustedProxies []netip.Prefix
@@ -161,10 +171,15 @@ func New(d Deps) http.Handler {
 			Pricing: d.Pricing, Policies: d.Policies, Setup: d.Setup,
 			Customers: d.Customers, Bookings: d.Bookings, Inventory: d.Inventory, Passes: d.Passes,
 			Payments: d.Payments, Cash: d.Cash, Fiscal: d.Fiscal,
+			Online: d.Online, Notify: d.Notify, Gateway: d.Gateway,
 			Stream: &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
 		},
-		public: &public.Handlers{Establishments: d.Establishments, TenantResolver: d.Extensions.TenantResolver, Log: d.Log},
-		ops:    &ops{readiness: d.Readiness, version: d.Version},
+		publicHandlers: &public.Handlers{
+			Establishments: d.Establishments, Online: d.Online, Checkout: d.Checkout,
+			TenantResolver: d.Extensions.TenantResolver, Log: d.Log,
+		},
+		webhookHandlers: &webhooks.Handlers{Gateway: d.Gateway, Log: d.Log},
+		ops:             &ops{readiness: d.Readiness, version: d.Version},
 	}
 	api.HandlerWithOptions(srv, api.ChiServerOptions{
 		BaseRouter:       r,
@@ -198,18 +213,24 @@ func New(d Deps) http.Handler {
 	return r
 }
 
-// server composes the handler groups into api.ServerInterface.
+// server composes the handler groups into api.ServerInterface: admin
+// (/api/admin/v1), public (/api/public/v1), webhooks (/webhooks/payments)
+// and the ops endpoints. The groups have disjoint method sets.
 type server struct {
 	*admin.Handlers
-	public *public.Handlers
-	ops    *ops
+	*publicHandlers
+	*webhookHandlers
+	ops *ops
 }
+
+// Aliases give the embedded groups distinct field names.
+type (
+	publicHandlers  = public.Handlers
+	webhookHandlers = webhooks.Handlers
+)
 
 var _ api.ServerInterface = (*server)(nil)
 
-func (s *server) GetPublicEstablishment(w http.ResponseWriter, r *http.Request, slug api.Slug) {
-	s.public.GetPublicEstablishment(w, r, slug)
-}
 func (s *server) GetHealthz(w http.ResponseWriter, r *http.Request) { s.ops.healthz(w, r) }
 func (s *server) GetReadyz(w http.ResponseWriter, r *http.Request)  { s.ops.readyz(w, r) }
 

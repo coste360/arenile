@@ -95,6 +95,7 @@ func TestParse_Invalid(t *testing.T) {
 		{"bad base url", map[string]string{EnvBaseURL: "prenota.lido.it"}},
 		{"mysql url", map[string]string{EnvDatabaseURL: "mysql://x"}},
 		{"bad smtp", map[string]string{EnvSMTPURL: "http://x"}},
+		{"bad mail from", map[string]string{EnvMailFrom: "not an address"}},
 		{"short key", map[string]string{EnvSecretKey: base64.StdEncoding.EncodeToString([]byte("too short"))}},
 		{"non base64 key", map[string]string{EnvSecretKey: "%%%"}},
 		{"bootstrap owner without password", map[string]string{EnvBootstrapOwnerEmail: "a@b.it", EnvBootstrapOwnerName: "A", EnvBootstrapOwnerOrg: "Lido"}},
@@ -104,6 +105,33 @@ func TestParse_Invalid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := Parse(env(tt.env)); !errors.Is(err, ErrInvalid) {
 				t.Fatalf("want ErrInvalid, got %v", err)
+			}
+		})
+	}
+}
+
+func TestConfig_MailSettings(t *testing.T) {
+	tests := []struct {
+		name     string
+		env      map[string]string
+		wantFrom string
+		wantDir  string
+	}{
+		{"explicit", map[string]string{EnvMailFrom: "Lido <noreply@lido.it>", EnvMailDir: "/tmp/mail"}, "Lido <noreply@lido.it>", "/tmp/mail"},
+		{"from base url", map[string]string{EnvBaseURL: "https://prenota.lido.it"}, "noreply@prenota.lido.it", ""},
+		{"dev localhost", map[string]string{EnvAddr: ":9090"}, "noreply@localhost", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := Parse(env(tt.env))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := cfg.EffectiveMailFrom(); got != tt.wantFrom {
+				t.Fatalf("EffectiveMailFrom() = %q, want %q", got, tt.wantFrom)
+			}
+			if cfg.MailDir != tt.wantDir {
+				t.Fatalf("MailDir = %q, want %q", cfg.MailDir, tt.wantDir)
 			}
 		})
 	}

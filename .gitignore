@@ -20,6 +20,10 @@ web/**/dist/
 playwright-report/
 test-results/
 
+# docs site (Astro)
+docs-site/dist/
+docs-site/.astro/
+
 # env & personal
 .env
 .env.*

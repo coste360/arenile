@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "title": "Öffentliche Seite",
+    "description": "Design, Sprachen, Online-Tarife, Bedingungen und der Code, um das Widget in deine Website einzubetten.",
+    "preview": "Live-Vorschau",
+    "embed": "Einbettungscode"
+  },
+  "payments": {
+    "title": "Online-Zahlungen",
+    "description": "Verbinde Stripe, um online zu kassieren: Schlüssel werden verschlüsselt und nie wieder angezeigt."
+  },
+  "email": {
+    "title": "E-Mail und Benachrichtigungen",
+    "description": "Absender, Benachrichtigungen an Kunden und Betreiber, Test-E-Mail und Versandprotokoll."
+  }
+}

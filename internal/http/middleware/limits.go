@@ -21,13 +21,15 @@ import (
 )
 
 // PublicRateLimit limits public API calls per client IP: reads (GET/HEAD)
-// and creations (other methods) have separate budgets (spec 17.2).
+// and creations (other methods) have separate budgets (spec 17.2). POST
+// .../quote writes nothing (debounced price summary, spec 12.3) and counts
+// as a read.
 func PublicRateLimit(reads, creations *auth.RateLimiter) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ip := reqctx.From(r.Context()).ClientIP
 			l := reads
-			if isUnsafe(r.Method) {
+			if isUnsafe(r.Method) && !strings.HasSuffix(r.URL.Path, "/quote") {
 				l = creations
 			}
 			if ok, retry := l.Allow(ip); !ok {

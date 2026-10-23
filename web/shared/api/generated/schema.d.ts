@@ -1681,10 +1681,594 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dati pubblici dello stabilimento (tema, lingue, prenotazione attiva) */
+        /**
+         * Dati pubblici dello stabilimento (tema, lingue, configurazione del flusso)
+         * @description Spec 17.2: profilo, tema, lingue e configurazione del flusso online (`online`: zone e modalità, formule, fasce, condizioni correnti, pagamento). Risposta con `ETag` (hash del contenuto) e `Cache-Control: public, max-age=30`; `If-None-Match` risponde 304.
+         */
         get: operations["getPublicEstablishment"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Disponibilità sintetica per giorno di un mese (passo "Quando")
+         * @description Spec 12.3 passo 1. Per ogni giorno del mese: disponibile, ultimi posti, pieno, chiuso o non prenotabile (fuori stagione o fuori dai limiti della policy online). La disponibilità considera il canale `online` e la quota online (spec 7.6). I periodi tariffari sono inclusi solo se il gestore abilita `flow.show_rate_periods`. Cache breve (`Cache-Control: public, max-age=30`).
+         */
+        get: operations["getPublicCalendar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/maps/{mapId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Geometria pubblica della mappa (senza dati sensibili)
+         * @description Mappa, postazioni attive delle zone visibili online (con `asset` del kit per l'illustrazione, ADR 0012) e decorazioni. Nessuno stato di occupazione: si combina con `availability`. Risposta con `ETag` (versione della mappa) e `Cache-Control: public, max-age=300`; `If-None-Match` risponde 304.
+         */
+        get: operations["getPublicMap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Disponibilità per il canale online in un intervallo (passo "Dove")
+         * @description Spec 7.8, 12.3 passo 2. Zone `seat`: postazioni libere con categoria di prezzo e legenda dei prezzi per fila; zone `zone`: prezzo "da" e disponibilità indicativa (`indicator`); zone `quantity`: unità del pool. Applica la quota online (spec 7.6, ADR 0011) e ignora gli hold scaduti. Nessun dato personale.
+         */
+        get: operations["getPublicAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pack ed extra vendibili online compatibili con la selezione (passo "Cosa")
+         * @description Solo pack ed extra attivi con canale `online`. Con `zone_id` / `spot_id` restituisce solo i pack compatibili (zone ammesse, tipo di postazione) e le formule consentite per le date; `from_price` e `unit_price` sono indicativi (il prezzo vincolante è quello di `quote`).
+         */
+        get: operations["getPublicCatalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Prezzo e policy di una selezione (nessuna scrittura)
+         * @description Chiamata dal riepilogo sempre visibile con debounce (spec 12.3 passo 3). Canale `online`: policy online, quota online, pack ed extra con canale online. Un codice promozionale non valido non è un errore: `promo.status = invalid`. Conta come lettura per i limiti (60/min per IP).
+         */
+        post: operations["quotePublicBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Crea la prenotazione in stato held e la sessione di checkout
+         * @description Spec 10.1 passo 3. Occupa le risorse con un hold di `ARENILE_HOLD_TTL` (vincoli del database, quota online inclusa) e crea la sessione di checkout. Il token restituito (`checkout_token`, 256 bit, salvato solo come hash) va conservato dal client in `sessionStorage` (fallback in memoria) e inviato come header `X-Arenile-Checkout` sulle chiamate successive: nessun cookie di terze parti (spec 12.2). `Idempotency-Key` consigliata (doppio tocco su rete lenta). Limite creazioni: 10/min per IP.
+         */
+        post: operations["createPublicBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/bookings/{bookingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stato della prenotazione e della sessione di checkout (polling)
+         * @description Spec 10.1 passo 7: la pagina interroga lo stato dopo il ritorno dal provider fino a `confirmed`. Questa chiamata NON conferma mai (INV-19): la conferma arriva solo dal webhook o dal driver manuale. Richiede `X-Arenile-Checkout`; token errato o di un'altra prenotazione → 404 `checkout_not_found`. `Cache-Control: no-store`.
+         */
+        get: operations["getPublicBooking"];
+        put?: never;
+        post?: never;
+        /**
+         * Abbandono del checkout, rilascia l'hold
+         * @description La prenotazione `held` passa a `expired` (stessa transizione della scadenza) e le risorse sono liberate nella stessa transazione. Idempotente; su una prenotazione già confermata risponde 409 `invalid_transition`.
+         */
+        delete: operations["abandonPublicBooking"];
+        options?: never;
+        head?: never;
+        /**
+         * Dati del cliente, consensi, extra e codice promozionale
+         * @description Spec 10.1 passo 4, 12.3 passo 4, 23. Valido solo mentre la prenotazione è `held`: salva il cliente (riusato se email o telefono coincidono con un cliente dello stabilimento), la versione delle condizioni accettata (`accept_terms_version` deve essere la versione corrente: altrimenti 409 `conflict`) con l'istante, il consenso marketing separato con data, fonte `online` e versione del testo. Extra e codice promozionale ricalcolano il prezzo. Hold scaduto → 410 `hold_expired`.
+         */
+        patch: operations["updatePublicBooking"];
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/bookings/{bookingId}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Avvia il pagamento (o conferma senza pagamento online)
+         * @description Spec 10.1 passo 5, 13.2. Richiede dati cliente e condizioni accettate (altrimenti 422 `validation_failed`). Con il provider online attivo (Stripe Checkout) la prenotazione passa a `pending_payment`, l'hold è esteso fino all'esito (max 30 minuti) e la risposta contiene `redirect_url` da aprire nella finestra principale (`target=_top` dal widget, nuova scheda se il contenitore lo impedisce). Con policy `payment.mode = none` o provider `manual` la prenotazione è confermata dal driver manuale (o va in `awaiting_approval`) e la risposta ha `mode = none`. Provider non raggiungibile → 503 `payment_provider_unavailable` (l'hold resta). `Idempotency-Key` consigliata; la chiave verso il provider è `booking_id + tentativo` (spec 13.2).
+         */
+        post: operations["payPublicBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/bookings/{bookingId}/qr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * QR della prenotazione confermata (SVG o PNG)
+         * @description Il QR codifica `qr_payload` (codice prenotazione per il check-in in cassa). Richiede `X-Arenile-Checkout`: il client lo scarica con fetch e mostra un blob URL. 404 finché la prenotazione non è confermata.
+         */
+        get: operations["getPublicBookingQr"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/bookings/{bookingId}/ics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Evento di calendario (.ics) della prenotazione confermata
+         * @description `text/calendar` (RFC 5545) con `Content-Disposition: attachment`; un evento per giorno o per periodo, nel fuso dello stabilimento, con indirizzo e link di gestione solo se il cliente lo ha ricevuto per email.
+         */
+        get: operations["getPublicBookingIcs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Prenotazione dal link magico (area gestione del cliente)
+         * @description Spec 12.4. Il token (256 bit, salvato come hash, valido fino alla fine della prenotazione + 30 giorni, revocabile) identifica una sola prenotazione. Token sconosciuto, scaduto o revocato → 404 senza distinguere i casi. Il percorso contiene il token: i log di accesso lo mascherano. `Cache-Control: no-store`, `Referrer-Policy: no-referrer`.
+         */
+        get: operations["getManagedBooking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/qr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** QR della prenotazione dal link magico */
+        get: operations["getManagedBookingQr"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/ics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evento di calendario (.ics) dal link magico */
+        get: operations["getManagedBookingIcs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Paga il saldo dal link magico
+         * @description Avvia un pagamento del saldo (`balance_due`) con il provider online attivo; stesse regole di `payPublicBooking` (redirect, nessuna conferma dal ritorno del browser). Nessun saldo → 409 `conflict`.
+         */
+        post: operations["payManagedBookingBalance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/modify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Modifica entro i limiti della policy, con anteprima del nuovo prezzo
+         * @description Spec 10.3, 12.4. `dry_run = true` restituisce l'anteprima (nuovo totale, differenza da pagare o da rimborsare, conflitti) senza scrivere; l'applicazione passa dal servizio prenotazioni (riallocazione atomica, audit e outbox nella stessa transazione). Fuori dai limiti di `modification` della policy → 422 `policy_violation`. `If-Match` con la versione letta.
+         */
+        post: operations["modifyManagedBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancellazione secondo policy, con anteprima del rimborso o credito
+         * @description Spec 12.4, 13.4. `dry_run = true` mostra rimborso o credito calcolati sulla policy della prenotazione; l'applicazione cancella dal servizio prenotazioni e, se il provider lo supporta, esegue il rimborso con `Refund` (altrimenti resta un rimborso manuale da completare).
+         */
+        post: operations["cancelManagedBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage/{token}/releases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rilascio di giorni dell'abbonamento (abbonati)
+         * @description Spec 7.7, 12.4. Solo per abbonamenti con `customer_can_release_season_days` nella policy; credito secondo `season_release_credit`. `dry_run = true` mostra il credito senza scrivere.
+         */
+        post: operations["releaseManagedSeasonDays"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/v1/{slug}/manage-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Richiesta di un nuovo link di gestione (email + codice prenotazione)
+         * @description Spec 12.4. Risponde sempre 202, anche se email e codice non corrispondono a nessuna prenotazione (nessuna enumerazione); se corrispondono invia un nuovo link all'email della prenotazione. Limiti stretti per IP e per prenotazione (429 `rate_limited`).
+         */
+        post: operations["requestManageLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webhooks/payments/{provider}/{establishmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Webhook del provider di pagamento (firma obbligatoria)
+         * @description Spec 13.3, ADR 0006. Il corpo è letto grezzo (fino a 256 KB) e passato al driver con le credenziali decifrate dello stabilimento della URL: firma assente o errata → 400 `webhook_signature_invalid`. Ogni evento è registrato in `webhook_events` (deduplica per provider + id evento): un duplicato risponde 200 senza effetti. Pagamento, prenotazione e allocazioni sono aggiornati in un'unica transazione; la conferma passa dal servizio prenotazioni (INV-19). Eventi non gestiti → 200. Nessun cookie, nessun CSRF, nessun limite per IP condiviso con l'API pubblica.
+         */
+        post: operations["receivePaymentWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/online-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Impostazioni della pagina pubblica (tema, origini dell'incorporamento, flusso) */
+        get: operations["getOnlineSettings"];
+        /**
+         * Aggiorna le impostazioni della pagina pubblica
+         * @description Permesso establishment.configure. Valida le origini (`https://host[:porta]`, niente percorsi né caratteri jolly), i colori del tema (`#RRGGBB`) e le formule. `allowed_embed_origins` alimenta `frame-ancestors` (spec 12.2). Audit e evento `config.online_changed` nella stessa transazione.
+         */
+        put: operations["updateOnlineSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/terms-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Versioni delle condizioni e dell'informativa */
+        get: operations["listTermsVersions"];
+        put?: never;
+        /**
+         * Pubblica una nuova versione delle condizioni (immutabile)
+         * @description Spec 12.3, 23: le versioni non si modificano; ogni prenotazione salva la versione accettata. Con `make_current` (default true) diventa la versione richiesta dal checkout.
+         */
+        post: operations["publishTermsVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/payment-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Provider di pagamento attivo e stato delle credenziali
+         * @description Le chiavi segrete non sono mai restituite: solo `configured`, le ultime 4 cifre e la chiave pubblicabile.
+         */
+        get: operations["getPaymentSettings"];
+        /**
+         * Imposta provider, modalità test/live e credenziali (cifrate)
+         * @description Permesso payments.configure. Le chiavi sono cifrate con il key ring (`ARENILE_SECRET_KEY`, AES-256-GCM) prima di essere salvate; un campo segreto assente lascia invariato il valore salvato, una stringa vuota lo cancella. Audit senza valori segreti.
+         */
+        put: operations["updatePaymentSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/payment-settings/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verifica le credenziali salvate presso il provider */
+        post: operations["testPaymentSettings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/email-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Impostazioni delle email transazionali
+         * @description Il trasporto viene dalla configurazione del server (`ARENILE_SMTP_URL`, `ARENILE_MAIL_FROM`; senza SMTP le email sono scritte nel log o in `ARENILE_MAIL_DIR`) ed è in sola lettura; lo stabilimento sceglie nome del mittente, indirizzo di risposta e notifiche.
+         */
+        get: operations["getEmailSettings"];
+        /** Aggiorna mittente e notifiche */
+        put: operations["updateEmailSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/email-settings/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Invia un'email di prova */
+        post: operations["sendTestEmail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Registro dei messaggi inviati (message_log)
+         * @description Destinatari mascherati; nessun contenuto dei messaggi.
+         */
+        get: operations["listMessages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/resend-confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reinvia l'email di conferma (con un nuovo link di gestione) */
+        post: operations["resendBookingConfirmation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/magic-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rigenera il link di gestione (revoca i precedenti)
+         * @description Permesso bookings.write. Il nuovo link è restituito una sola volta in `manage_url` (per condividerlo dal banco) e, con `send_email`, inviato al cliente. Audit senza il token.
+         */
+        post: operations["regenerateMagicLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/payments/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Riconciliazione dei pagamenti online
+         * @description Spec 13.3. Pagamenti presso il provider confrontati con il registro: pendenti da più di 10 minuti, esito del provider diverso da quello locale, incassi senza riga nel registro, importi diversi.
+         */
+        get: operations["getReconciliationReport"];
+        put?: never;
+        /** Esegue subito la riconciliazione (come il job ogni 15 minuti) */
+        post: operations["runReconciliation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1700,7 +2284,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -1891,6 +2475,7 @@ export interface components {
             address?: components["schemas"]["Address"];
             theme: components["schemas"]["Theme"];
             season?: components["schemas"]["PublicSeason"];
+            online?: components["schemas"]["PublicOnlineConfig"];
         };
         /** @description Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva. */
         PublicSeason: {
@@ -4011,6 +4596,8 @@ export interface components {
              * @enum {string}
              */
             as?: "refund" | "credit";
+            /** @description Rimborso tramite il provider del pagamento `payment_id` (es. Stripe, spec 13.4): obbligatorio payment_id di un pagamento online; il rimborso resta `pending` fino alla conferma del provider (webhook `charge.refunded` o riconciliazione). Senza supporto del provider → 409 `conflict`. */
+            via_provider?: boolean;
             reason?: string;
             /** Format: uuid */
             cash_session_id?: string;
@@ -4139,6 +4726,710 @@ export interface components {
             items: components["schemas"]["FiscalDocument"][];
             next_cursor?: string;
         };
+        /** @description Testi di una lingua di una versione delle condizioni (spec 12.3, 23). */
+        TermsTexts: {
+            terms: string;
+            privacy?: string;
+            /** @description Testo del consenso marketing facoltativo. */
+            marketing?: string;
+        };
+        /** @description Versione corrente delle condizioni da accettare nel checkout. */
+        PublicTerms: {
+            version: string;
+            texts: {
+                [key: string]: components["schemas"]["TermsTexts"];
+            };
+        };
+        PublicZone: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            assignment_mode: components["schemas"]["AssignmentMode"];
+            /** Format: uuid */
+            map_id?: string;
+            sort_order: number;
+        };
+        PublicMapRef: {
+            /** Format: uuid */
+            id: string;
+            name: components["schemas"]["I18nText"];
+        };
+        PublicPaymentConfig: {
+            /** @description Codice del provider attivo (`manual` se nessun provider online è configurato). */
+            provider: string;
+            /** @description Vero se il cliente può pagare online. */
+            online: boolean;
+            /** @description Payment Element incorporato abilitato (altrimenti Checkout in redirect). */
+            embedded: boolean;
+            /** @description Chiave pubblicabile, solo con `embedded`. */
+            publishable_key?: string;
+            test_mode: boolean;
+        };
+        /** @description Configurazione del flusso pubblico (spec 12, 17.2). */
+        PublicOnlineConfig: {
+            /** @description Zone visibili online, in ordine. */
+            zones: components["schemas"]["PublicZone"][];
+            maps: components["schemas"]["PublicMapRef"][];
+            formulas: components["schemas"]["Formula"][];
+            /** @description Fasce prenotabili online. */
+            slots: components["schemas"]["Slots"][];
+            min_date?: components["schemas"]["Date"];
+            max_date?: components["schemas"]["Date"];
+            /** @description Durata del blocco provvisorio (countdown). */
+            hold_minutes: number;
+            payment: components["schemas"]["PublicPaymentConfig"];
+            show_prices_on_map: boolean;
+            show_rate_periods: boolean;
+            promo_codes_enabled: boolean;
+            require_phone: boolean;
+            terms?: components["schemas"]["PublicTerms"];
+        };
+        PublicCalendarDay: {
+            date: components["schemas"]["Date"];
+            /**
+             * @description available; limited (ultimi posti); full (nessuna disponibilità online); closed (chiusura); unavailable (fuori stagione o fuori dai limiti della policy online).
+             * @enum {string}
+             */
+            status: "available" | "limited" | "full" | "closed" | "unavailable";
+            rate_period_code?: string;
+        };
+        PublicRatePeriod: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            color?: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+        };
+        PublicCalendar: {
+            month: string;
+            days: components["schemas"]["PublicCalendarDay"][];
+            /** @description Solo se il gestore abilita la visualizzazione dei periodi tariffari. */
+            rate_periods?: components["schemas"]["PublicRatePeriod"][];
+        };
+        PublicMap: {
+            /** Format: uuid */
+            id: string;
+            name: components["schemas"]["I18nText"];
+            width: number;
+            height: number;
+            grid_size: number;
+            background?: components["schemas"]["MapBackground"];
+            sea_side: components["schemas"]["SeaSide"];
+            version: components["schemas"]["Version"];
+        };
+        PublicSpot: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            zone_id: string;
+            label: string;
+            row_label: string;
+            kind: components["schemas"]["SpotKind"];
+            asset?: components["schemas"]["KitAsset"];
+            /** Format: double */
+            x: number;
+            /** Format: double */
+            y: number;
+            /** Format: double */
+            rotation: number;
+            shape: components["schemas"]["Shape"];
+            /** @description Categoria di prezzo effettiva (override della postazione o categoria della zona). */
+            price_category: string;
+        };
+        PublicMapDocument: {
+            map: components["schemas"]["PublicMap"];
+            spots: components["schemas"]["PublicSpot"][];
+            decorations: components["schemas"]["Decoration"][];
+        };
+        /**
+         * @description Disponibilità indicativa per le zone `zone` e `quantity` ("ultimi 3 posti" = last).
+         * @enum {string}
+         */
+        AvailabilityIndicator: "plenty" | "few" | "last" | "none";
+        PublicSpotAvailability: {
+            /** Format: uuid */
+            spot_id: string;
+            available: boolean;
+            price_category: string;
+        };
+        PublicZoneAvailability: {
+            /** Format: uuid */
+            zone_id: string;
+            assignment_mode: components["schemas"]["AssignmentMode"];
+            /** @description Minimo disponibile online nell'intervallo (postazioni o unità), quota inclusa. */
+            available: number;
+            indicator: components["schemas"]["AvailabilityIndicator"];
+            from_price?: components["schemas"]["Money"];
+            /** Format: uuid */
+            pool_id?: string;
+            /** @description Solo zone `seat`. */
+            spots?: components["schemas"]["PublicSpotAvailability"][];
+        };
+        /** @description Voce della legenda dei prezzi per fila sulla mappa (spec 12.3 passo 2). */
+        PriceLegendEntry: {
+            price_category: string;
+            label?: components["schemas"]["I18nText"];
+            from_price: components["schemas"]["Money"];
+            /** @description Indice del colore della legenda (dal più economico al più caro). */
+            tone: number;
+        };
+        PublicAvailability: {
+            from: components["schemas"]["Date"];
+            to: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            formula?: components["schemas"]["Formula"];
+            closed_dates?: components["schemas"]["Date"][];
+            zones: components["schemas"]["PublicZoneAvailability"][];
+            /** @description Vuota se il tema nasconde i prezzi sulla mappa. */
+            price_legend: components["schemas"]["PriceLegendEntry"][];
+        };
+        PublicPackComponent: {
+            code: string;
+            name: components["schemas"]["I18nText"];
+            quantity: number;
+            /** @description Nome dell'icona del kit o di lucide per la composizione. */
+            icon?: string;
+        };
+        PublicPack: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description: components["schemas"]["I18nText"];
+            image?: string;
+            components: components["schemas"]["PublicPackComponent"][];
+            allowed_formulas: components["schemas"]["Formula"][];
+            max_per_booking: number;
+            requires_approval: boolean;
+            from_price?: components["schemas"]["Money"];
+        };
+        PublicExtra: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: components["schemas"]["I18nText"];
+            description: components["schemas"]["I18nText"];
+            pricing_unit: components["schemas"]["PricingUnit"];
+            max_quantity: number;
+            attach_to: components["schemas"]["ExtraAttachTo"];
+            allowed_pack_ids?: string[];
+            unit_price?: components["schemas"]["Money"];
+        };
+        PublicCatalog: {
+            packs: components["schemas"]["PublicPack"][];
+            extras: components["schemas"]["PublicExtra"][];
+        };
+        PublicExtraInput: {
+            /** Format: uuid */
+            extra_id: string;
+            quantity: number;
+        };
+        /** @description Una riga della selezione. zone `seat`: spot_id; zone `zone`: zone_id; zone `quantity`: zone_id e quantity. */
+        PublicLineInput: {
+            /** Format: uuid */
+            pack_id: string;
+            /** Format: uuid */
+            zone_id?: string;
+            /** Format: uuid */
+            spot_id?: string;
+            /** @description Default 1 (unità per le zone `quantity`). */
+            quantity?: number;
+            extras?: components["schemas"]["PublicExtraInput"][];
+        };
+        /** @description Selezione del cliente (date, fascia, formula, righe, extra, codice promozionale). */
+        PublicSelection: {
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            formula: components["schemas"]["Formula"];
+            lines: components["schemas"]["PublicLineInput"][];
+            /** @description Extra della prenotazione (attach_to = booking). */
+            extras?: components["schemas"]["PublicExtraInput"][];
+            promo_code?: string;
+        };
+        PublicBookingCreate: components["schemas"]["PublicSelection"] & {
+            /** @description Lingua del cliente per le comunicazioni. */
+            locale?: string;
+        };
+        PublicQuoteItem: {
+            /** @enum {string} */
+            kind: "line" | "extra" | "discount" | "rounding";
+            /**
+             * Format: uuid
+             * @description Pack, extra o codice promozionale di riferimento.
+             */
+            ref_id?: string;
+            label: components["schemas"]["I18nText"];
+            quantity?: number;
+            amount: components["schemas"]["Money"];
+        };
+        PromoStatus: {
+            code: string;
+            /** @enum {string} */
+            status: "applied" | "invalid" | "not_applicable";
+        };
+        /**
+         * @description Come si paga secondo la policy online: tutto online, acconto online e saldo dopo, alla cassa (nessun pagamento online), su approvazione del gestore.
+         * @enum {string}
+         */
+        PaymentPlan: "online_full" | "online_deposit" | "at_desk" | "approval";
+        PublicQuote: {
+            available: boolean;
+            conflicts: components["schemas"]["AllocationConflict"][];
+            currency: string;
+            total: components["schemas"]["Money"];
+            deposit_due: components["schemas"]["Money"];
+            due_now: components["schemas"]["Money"];
+            balance_later: components["schemas"]["Money"];
+            items: components["schemas"]["PublicQuoteItem"][];
+            violations: components["schemas"]["PolicyViolation"][];
+            promo?: components["schemas"]["PromoStatus"];
+            payment_plan: components["schemas"]["PaymentPlan"];
+        };
+        /** @enum {string} */
+        CheckoutSessionState: "open" | "paying" | "completed" | "expired" | "abandoned";
+        CheckoutSession: {
+            /** Format: uuid */
+            booking_id: string;
+            /** @description Token della sessione (restituito solo qui); header `X-Arenile-Checkout`. */
+            checkout_token: string;
+            status: components["schemas"]["BookingStatus"];
+            /** Format: date-time */
+            hold_expires_at: string;
+            quote: components["schemas"]["PublicQuote"];
+        };
+        PublicBookingExtra: {
+            /** Format: uuid */
+            extra_id: string;
+            name: components["schemas"]["I18nText"];
+            quantity: number;
+        };
+        PublicBookingLine: {
+            /** Format: uuid */
+            pack_id: string;
+            pack_name: components["schemas"]["I18nText"];
+            /** Format: uuid */
+            zone_id?: string;
+            zone_name?: components["schemas"]["I18nText"];
+            /** @description Assente finché una riga di una zona `zone` non è assegnata (assegnazione automatica, spec 7.5). */
+            spot_label?: string;
+            quantity: number;
+            assignment: components["schemas"]["AssignmentStatus"];
+            extras: components["schemas"]["PublicBookingExtra"][];
+        };
+        PublicBookingSummary: {
+            /** @description Codice prenotazione (presente dalla conferma). */
+            code?: string;
+            starts_on: components["schemas"]["Date"];
+            ends_on: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+            formula: components["schemas"]["Formula"];
+            lines: components["schemas"]["PublicBookingLine"][];
+            extras: components["schemas"]["PublicBookingExtra"][];
+            currency: string;
+            total: components["schemas"]["Money"];
+            paid: components["schemas"]["Money"];
+            balance_due: components["schemas"]["Money"];
+            deposit_due: components["schemas"]["Money"];
+        };
+        /** @description Dati inseriti dal cliente in questa sessione (solo con il token della sessione). */
+        CheckoutCustomer: {
+            first_name: string;
+            last_name: string;
+            email: string;
+            phone?: string;
+            accepted_terms_version?: string;
+            marketing_consent: boolean;
+        };
+        PublicPaymentState: {
+            /** @enum {string} */
+            status: "none" | "pending" | "succeeded" | "failed";
+            amount: components["schemas"]["Money"];
+            /** @description Motivo breve e non personale (es. card_declined). */
+            failure_reason?: string;
+        };
+        /**
+         * @description details: mancano dati cliente o condizioni; pay: pronto per il pagamento; wait: pagamento avviato o approvazione in attesa, continuare il polling; done: confermata; expired: hold scaduto o abbandonato; rejected: rifiutata dal gestore.
+         * @enum {string}
+         */
+        CheckoutNextAction: "details" | "pay" | "wait" | "done" | "expired" | "rejected";
+        PublicConfirmation: {
+            code: string;
+            /** @description Testo codificato nel QR (check-in in cassa). */
+            qr_payload: string;
+            /** @description QR in SVG in linea (evita una seconda richiesta). */
+            qr_svg?: string;
+            manage_link_sent: boolean;
+            /** @description Email del cliente mascherata (m***o@e***.it). */
+            email_masked?: string;
+        };
+        CheckoutState: {
+            /** Format: uuid */
+            booking_id: string;
+            status: components["schemas"]["BookingStatus"];
+            checkout_state: components["schemas"]["CheckoutSessionState"];
+            /** Format: date-time */
+            hold_expires_at?: string;
+            next_action: components["schemas"]["CheckoutNextAction"];
+            summary: components["schemas"]["PublicBookingSummary"];
+            quote?: components["schemas"]["PublicQuote"];
+            customer?: components["schemas"]["CheckoutCustomer"];
+            payment?: components["schemas"]["PublicPaymentState"];
+            confirmation?: components["schemas"]["PublicConfirmation"];
+        };
+        CheckoutCustomerInput: {
+            first_name: string;
+            last_name: string;
+            /** Format: email */
+            email: string;
+            /** @description E.164 o numero italiano; obbligatorio se `require_phone`. */
+            phone?: string;
+            locale?: string;
+            /** @description Versione delle condizioni mostrata e accettata (deve essere la corrente). */
+            accept_terms_version: string;
+            /** @description Consenso marketing separato e facoltativo (spec 23). */
+            marketing_consent: boolean;
+            notes?: string;
+            promo_code?: string;
+            /** @description Sostituisce gli extra della prenotazione (attach_to = booking) se presente. */
+            extras?: components["schemas"]["PublicExtraInput"][];
+        };
+        CheckoutPayRequest: {
+            /**
+             * @description at_desk solo se la policy online consente il pagamento in cassa.
+             * @enum {string}
+             */
+            settlement?: "online" | "at_desk";
+        };
+        PayResult: {
+            /**
+             * @description redirect → aprire redirect_url nella finestra principale; embedded → Payment Element; none → nessun passo online.
+             * @enum {string}
+             */
+            mode: "redirect" | "embedded" | "none";
+            status: components["schemas"]["BookingStatus"];
+            redirect_url?: string;
+            client_secret?: string;
+            publishable_key?: string;
+            amount?: components["schemas"]["Money"];
+            /** Format: date-time */
+            hold_expires_at?: string;
+        };
+        ManageActions: {
+            pay_balance: boolean;
+            modify: boolean;
+            cancel: boolean;
+            release_days: boolean;
+            modify_until?: components["schemas"]["Date"];
+            /** @description Ultimo giorno con rimborso pieno, se previsto dalla policy. */
+            cancel_until_free?: components["schemas"]["Date"];
+        };
+        ManageCustomer: {
+            first_name: string;
+            last_name: string;
+            email_masked?: string;
+            phone_masked?: string;
+        };
+        ManageRelease: {
+            date: components["schemas"]["Date"];
+            slot: components["schemas"]["Slot"];
+            credit_amount: components["schemas"]["Money"];
+            resold?: boolean;
+        };
+        ManageBooking: {
+            /** Format: uuid */
+            booking_id: string;
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            is_season_pass: boolean;
+            summary: components["schemas"]["PublicBookingSummary"];
+            customer: components["schemas"]["ManageCustomer"];
+            allowed: components["schemas"]["ManageActions"];
+            cancellation_preview?: components["schemas"]["RefundPreview"];
+            releases?: components["schemas"]["ManageRelease"][];
+            qr_payload: string;
+            qr_svg?: string;
+            /** Format: date-time */
+            link_expires_at: string;
+            version: components["schemas"]["Version"];
+        };
+        ManageModifyRequest: components["schemas"]["PublicSelection"] & {
+            /** @description Default true (solo anteprima); false applica la modifica. */
+            dry_run?: boolean;
+        };
+        ManageModifyResult: {
+            applied: boolean;
+            previous_total: components["schemas"]["Money"];
+            new_total: components["schemas"]["Money"];
+            /** @description Positiva da pagare, negativa da rimborsare (spec 10.3); include la penale di modifica. */
+            difference: components["schemas"]["Money"];
+            fee?: components["schemas"]["Money"];
+            conflicts: components["schemas"]["AllocationConflict"][];
+            violations: components["schemas"]["PolicyViolation"][];
+            quote?: components["schemas"]["PublicQuote"];
+            booking?: components["schemas"]["ManageBooking"];
+        };
+        ManageCancelRequest: {
+            /** @description Default true (solo anteprima); false cancella. */
+            dry_run?: boolean;
+            reason?: string;
+            /**
+             * @description Preferenza del cliente quando la policy consente entrambe.
+             * @enum {string}
+             */
+            settlement?: "refund" | "credit";
+        };
+        ManageCancelResult: {
+            applied: boolean;
+            refund: components["schemas"]["RefundPreview"];
+            /** @enum {string} */
+            refund_status?: "none" | "provider_pending" | "provider_succeeded" | "manual_due" | "credited";
+            booking?: components["schemas"]["ManageBooking"];
+        };
+        ManageReleaseDay: {
+            date: components["schemas"]["Date"];
+            slots: components["schemas"]["Slots"];
+        };
+        ManageReleaseRequest: {
+            days: components["schemas"]["ManageReleaseDay"][];
+            /** @description Default true (solo anteprima); false rilascia. */
+            dry_run?: boolean;
+        };
+        ManageReleaseResult: {
+            applied: boolean;
+            released: components["schemas"]["ManageRelease"][];
+            credit_amount: components["schemas"]["Money"];
+            booking?: components["schemas"]["ManageBooking"];
+        };
+        ManageLinkRequest: {
+            /** Format: email */
+            email: string;
+            code: string;
+        };
+        WebhookAck: {
+            received: boolean;
+            duplicate?: boolean;
+        };
+        /** @description Opzioni del flusso pubblico. */
+        OnlineFlowConfig: {
+            /** @description Formule proposte online (vuoto = tutte quelle ammesse dai pack online). */
+            formulas: components["schemas"]["Formula"][];
+            /** @description Fasce proposte online (default FULL, AM, PM). */
+            slots: components["schemas"]["Slots"][];
+            /** @description Evidenzia i periodi tariffari nel calendario pubblico. */
+            show_rate_periods: boolean;
+            /** @description Limite di prenotabilità in giorni (oltre alla policy). */
+            max_days_ahead?: number;
+            promo_codes_enabled: boolean;
+            require_phone: boolean;
+        };
+        EmbedSnippets: {
+            /** @description `<ARENILE_BASE_URL>/b/<slug>` */
+            page_url: string;
+            iframe: string;
+            script: string;
+        };
+        OnlineSettings: {
+            booking_enabled: boolean;
+            allowed_embed_origins: string[];
+            theme: components["schemas"]["Theme"];
+            flow: components["schemas"]["OnlineFlowConfig"];
+            current_terms?: components["schemas"]["TermsVersion"];
+            embed: components["schemas"]["EmbedSnippets"];
+            version: components["schemas"]["Version"];
+        };
+        OnlineSettingsInput: {
+            booking_enabled: boolean;
+            allowed_embed_origins: string[];
+            theme: components["schemas"]["Theme"];
+            flow: components["schemas"]["OnlineFlowConfig"];
+        };
+        TermsVersion: {
+            /** Format: uuid */
+            id: string;
+            version: string;
+            texts: {
+                [key: string]: components["schemas"]["TermsTexts"];
+            };
+            /** Format: date-time */
+            published_at: string;
+            current: boolean;
+        };
+        TermsVersionList: {
+            items: components["schemas"]["TermsVersion"][];
+        };
+        TermsVersionInput: {
+            version: string;
+            texts: {
+                [key: string]: components["schemas"]["TermsTexts"];
+            };
+            /** @description Default true. */
+            make_current?: boolean;
+        };
+        /** @enum {string} */
+        ProviderMode: "test" | "live";
+        StripeSettings: {
+            /** @description Chiave segreta salvata. */
+            configured: boolean;
+            publishable_key?: string;
+            secret_key_last4?: string;
+            webhook_secret_configured: boolean;
+            embedded_mode: boolean;
+            /** Format: date-time */
+            verified_at?: string;
+        };
+        StripeSettingsInput: {
+            publishable_key?: string;
+            /** @description Assente = invariata; vuota = cancella. Mai restituita. */
+            secret_key?: string;
+            /** @description Assente = invariato; vuoto = cancella. Mai restituito. */
+            webhook_secret?: string;
+            embedded_mode?: boolean;
+        };
+        PaymentSettings: {
+            /** @description Provider attivo per la pagina pubblica (`manual` = nessun pagamento online). */
+            provider: string;
+            available_providers: string[];
+            mode: components["schemas"]["ProviderMode"];
+            stripe: components["schemas"]["StripeSettings"];
+            /** @description URL da configurare presso il provider: `<base>/webhooks/payments/<provider>/<establishment_id>`. */
+            webhook_url: string;
+            version: components["schemas"]["Version"];
+        };
+        PaymentSettingsInput: {
+            provider: string;
+            mode: components["schemas"]["ProviderMode"];
+            stripe?: components["schemas"]["StripeSettingsInput"];
+        };
+        PaymentSettingsTestResult: {
+            ok: boolean;
+            provider: string;
+            mode: components["schemas"]["ProviderMode"];
+            message?: string;
+            account_label?: string;
+        };
+        ManagerNotifications: {
+            new_online_booking: boolean;
+            approval_requested: boolean;
+            payment_failed: boolean;
+            webhook_error: boolean;
+        };
+        CustomerNotifications: {
+            confirmation: boolean;
+            balance_reminder: boolean;
+            day_before_reminder: boolean;
+            cancellation: boolean;
+            refund: boolean;
+        };
+        EmailSettings: {
+            /**
+             * @description Dalla configurazione del server (ARENILE_SMTP_URL, ARENILE_MAIL_DIR).
+             * @enum {string}
+             */
+            readonly transport: "smtp" | "log" | "file";
+            readonly smtp_configured: boolean;
+            /** @description Indirizzo del mittente (ARENILE_MAIL_FROM). */
+            readonly mail_from: string;
+            sender_name: string;
+            reply_to?: string;
+            manager_email?: string;
+            manager_notifications: components["schemas"]["ManagerNotifications"];
+            customer_notifications: components["schemas"]["CustomerNotifications"];
+            version: components["schemas"]["Version"];
+        };
+        EmailSettingsInput: {
+            sender_name: string;
+            /** Format: email */
+            reply_to?: string;
+            /** Format: email */
+            manager_email?: string;
+            manager_notifications: components["schemas"]["ManagerNotifications"];
+            customer_notifications: components["schemas"]["CustomerNotifications"];
+        };
+        EmailTestRequest: {
+            /** Format: email */
+            to: string;
+        };
+        MessageQueued: {
+            /** Format: uuid */
+            message_id: string;
+        };
+        /** @enum {string} */
+        MessageStatus: "queued" | "sending" | "sent" | "failed" | "cancelled";
+        MessageLogEntry: {
+            /** Format: uuid */
+            id: string;
+            channel: string;
+            template: string;
+            locale: string;
+            status: components["schemas"]["MessageStatus"];
+            attempts: number;
+            last_error?: string;
+            /** Format: uuid */
+            booking_id?: string;
+            booking_code?: string;
+            recipient_masked: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            sent_at?: string;
+        };
+        MessageLogList: {
+            items: components["schemas"]["MessageLogEntry"][];
+            next_cursor?: string;
+        };
+        MagicLinkRequest: {
+            /** @description Default true. */
+            send_email?: boolean;
+        };
+        MagicLinkResult: {
+            /** @description Link completo, restituito una sola volta. */
+            manage_url?: string;
+            /** Format: date-time */
+            expires_at: string;
+            sent: boolean;
+        };
+        /** @enum {string} */
+        ReconciliationIssue: "none" | "pending_too_long" | "status_mismatch" | "missing_ledger_row" | "amount_mismatch" | "provider_unreachable";
+        ReconciliationItem: {
+            /** Format: uuid */
+            payment_intent_id: string;
+            /** Format: uuid */
+            booking_id?: string;
+            booking_code?: string;
+            provider: string;
+            external_id: string;
+            /** @enum {string} */
+            kind: "payment" | "refund";
+            /** @enum {string} */
+            local_status: "created" | "pending" | "succeeded" | "failed" | "cancelled" | "expired";
+            provider_status?: string;
+            amount: components["schemas"]["Money"];
+            issue: components["schemas"]["ReconciliationIssue"];
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            last_checked_at?: string;
+        };
+        ReconciliationReport: {
+            /** Format: date-time */
+            generated_at: string;
+            from?: components["schemas"]["Date"];
+            to?: components["schemas"]["Date"];
+            checked: number;
+            issues: number;
+            items: components["schemas"]["ReconciliationItem"][];
+        };
+        ReconciliationRunResult: {
+            checked: number;
+            updated: number;
+            failed: number;
+            /** Format: date-time */
+            started_at: string;
+            /** Format: date-time */
+            finished_at: string;
+        };
     };
     responses: {
         /** @description Richiesta non valida */
@@ -4233,6 +5524,17 @@ export interface components {
                 "application/problem+json": components["schemas"]["Problem"];
             };
         };
+        /** @description Servizio esterno non disponibile (payment_provider_unavailable) */
+        ServiceUnavailable: {
+            headers: {
+                /** @description Secondi da attendere */
+                "Retry-After"?: number;
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
         /** @description Operazione non ancora disponibile (not_implemented) */
         NotImplemented: {
             headers: {
@@ -4260,6 +5562,14 @@ export interface components {
          */
         CSRFToken: string;
         EstablishmentID: string;
+        /** @description Token della sessione di checkout restituito da createPublicBooking (salvato dal client in sessionStorage, spec 12.2). Mai in un cookie o nella URL. */
+        CheckoutToken: string;
+        /** @description Token del link magico (256 bit, base64url). */
+        ManageToken: string;
+        /** @description ETag letto in precedenza; se coincide la risposta è 304. */
+        IfNoneMatch: string;
+        /** @description Formato dell'immagine (default svg). */
+        QrFormat: "svg" | "png";
         Slug: string;
         /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
         IfMatch: string;
@@ -9543,7 +10853,10 @@ export interface operations {
     getPublicEstablishment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description ETag letto in precedenza; se coincide la risposta è 304. */
+                "If-None-Match"?: components["parameters"]["IfNoneMatch"];
+            };
             path: {
                 slug: components["parameters"]["Slug"];
             };
@@ -9554,14 +10867,1237 @@ export interface operations {
             /** @description Stabilimento */
             200: {
                 headers: {
+                    ETag: components["headers"]["ETag"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["PublicEstablishment"];
                 };
             };
+            /** @description Non modificato */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             404: components["responses"]["NotFound"];
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    getPublicCalendar: {
+        parameters: {
+            query: {
+                /** @description Mese `YYYY-MM`. */
+                month: string;
+                /** @description Fascia richiesta (default FULL). */
+                slots?: components["schemas"]["Slots"];
+                /** @description Limita il calcolo a una zona. */
+                zone_id?: string;
+            };
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Calendario del mese */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicCalendar"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPublicMap: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag letto in precedenza; se coincide la risposta è 304. */
+                "If-None-Match"?: components["parameters"]["IfNoneMatch"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                mapId: components["parameters"]["MapID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mappa */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicMapDocument"];
+                };
+            };
+            /** @description Non modificata */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPublicAvailability: {
+        parameters: {
+            query: {
+                from: components["schemas"]["Date"];
+                to: components["schemas"]["Date"];
+                slots: components["schemas"]["Slots"];
+                /** @description Formula scelta (default derivata dalle date). */
+                formula?: components["schemas"]["Formula"];
+                zone_id?: string;
+            };
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Disponibilità */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicAvailability"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPublicCatalog: {
+        parameters: {
+            query?: {
+                from?: components["schemas"]["Date"];
+                to?: components["schemas"]["Date"];
+                slots?: components["schemas"]["Slots"];
+                formula?: components["schemas"]["Formula"];
+                zone_id?: string;
+                spot_id?: string;
+            };
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Catalogo online */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicCatalog"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    quotePublicBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicSelection"];
+            };
+        };
+        responses: {
+            /** @description Preventivo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicQuote"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createPublicBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicBookingCreate"];
+            };
+        };
+        responses: {
+            /** @description Prenotazione provvisoria creata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutSession"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPublicBooking: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Token della sessione di checkout restituito da createPublicBooking (salvato dal client in sessionStorage, spec 12.2). Mai in un cookie o nella URL. */
+                "X-Arenile-Checkout": components["parameters"]["CheckoutToken"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato del checkout */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutState"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    abandonPublicBooking: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Token della sessione di checkout restituito da createPublicBooking (salvato dal client in sessionStorage, spec 12.2). Mai in un cookie o nella URL. */
+                "X-Arenile-Checkout": components["parameters"]["CheckoutToken"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hold rilasciato */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updatePublicBooking: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Token della sessione di checkout restituito da createPublicBooking (salvato dal client in sessionStorage, spec 12.2). Mai in un cookie o nella URL. */
+                "X-Arenile-Checkout": components["parameters"]["CheckoutToken"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutCustomerInput"];
+            };
+        };
+        responses: {
+            /** @description Stato aggiornato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutState"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    payPublicBooking: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Token della sessione di checkout restituito da createPublicBooking (salvato dal client in sessionStorage, spec 12.2). Mai in un cookie o nella URL. */
+                "X-Arenile-Checkout": components["parameters"]["CheckoutToken"];
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CheckoutPayRequest"];
+            };
+        };
+        responses: {
+            /** @description Istruzioni per completare il pagamento */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            410: components["responses"]["Gone"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getPublicBookingQr: {
+        parameters: {
+            query?: {
+                /** @description Formato dell'immagine (default svg). */
+                format?: components["parameters"]["QrFormat"];
+            };
+            header: {
+                /** @description Token della sessione di checkout restituito da createPublicBooking (salvato dal client in sessionStorage, spec 12.2). Mai in un cookie o nella URL. */
+                "X-Arenile-Checkout": components["parameters"]["CheckoutToken"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Immagine del QR */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/svg+xml": string;
+                    "image/png": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPublicBookingIcs: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Token della sessione di checkout restituito da createPublicBooking (salvato dal client in sessionStorage, spec 12.2). Mai in un cookie o nella URL. */
+                "X-Arenile-Checkout": components["parameters"]["CheckoutToken"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File .ics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/calendar": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getManagedBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prenotazione */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManageBooking"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getManagedBookingQr: {
+        parameters: {
+            query?: {
+                /** @description Formato dell'immagine (default svg). */
+                format?: components["parameters"]["QrFormat"];
+            };
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Immagine del QR */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/svg+xml": string;
+                    "image/png": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getManagedBookingIcs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File .ics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/calendar": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    payManagedBookingBalance: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Istruzioni per completare il pagamento */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayResult"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    modifyManagedBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManageModifyRequest"];
+            };
+        };
+        responses: {
+            /** @description Anteprima o modifica applicata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManageModifyResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    cancelManagedBooking: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+            };
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManageCancelRequest"];
+            };
+        };
+        responses: {
+            /** @description Anteprima o cancellazione applicata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManageCancelResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    releaseManagedSeasonDays: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+                /** @description Token del link magico (256 bit, base64url). */
+                token: components["parameters"]["ManageToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManageReleaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Anteprima o rilascio applicato */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManageReleaseResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    requestManageLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: components["parameters"]["Slug"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManageLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description Richiesta accettata */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    receivePaymentWebhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        /** @description Corpo grezzo del provider (Stripe: JSON firmato con l'header `Stripe-Signature`). */
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Evento ricevuto (elaborato, duplicato o ignorato) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookAck"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    getOnlineSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Impostazioni */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnlineSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateOnlineSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnlineSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Impostazioni aggiornate */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnlineSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listTermsVersions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Versioni, la più recente per prima */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsVersionList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    publishTermsVersion: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TermsVersionInput"];
+            };
+        };
+        responses: {
+            /** @description Versione pubblicata */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsVersion"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getPaymentSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Impostazioni dei pagamenti */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updatePaymentSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Impostazioni aggiornate */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    testPaymentSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Esito della verifica */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentSettingsTestResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getEmailSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Impostazioni email */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailSettings"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateEmailSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Impostazioni aggiornate */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailSettings"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    sendTestEmail: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailTestRequest"];
+            };
+        };
+        responses: {
+            /** @description Email accodata */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageQueued"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listMessages: {
+        parameters: {
+            query?: {
+                booking_id?: string;
+                status?: components["schemas"]["MessageStatus"];
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pagina di messaggi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageLogList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    resendBookingConfirmation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Email accodata */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageQueued"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    regenerateMagicLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                bookingId: components["parameters"]["BookingID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MagicLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description Link rigenerato */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MagicLinkResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getReconciliationReport: {
+        parameters: {
+            query?: {
+                from?: components["schemas"]["Date"];
+                to?: components["schemas"]["Date"];
+                /** @description Solo le righe con un problema (default false). */
+                issues_only?: boolean;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Report */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    runReconciliation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Esito */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationRunResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+            503: components["responses"]["ServiceUnavailable"];
         };
     };
 }
