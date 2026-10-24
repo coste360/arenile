@@ -381,7 +381,10 @@ offline).
   compensato in automatico lasciando valore di prova nell'incassato reale.
 - **Casse**: lo schema esige che ogni sessione di cassa appartenga a una cassa dello stesso stabilimento (`NOT NULL`
   e chiave esterna composta su PostgreSQL, trigger su SQLite).
-- **Importa dati**: nessuna importazione con la modalità prova accesa (409); i pacchetti che richiedono approvazione
+- **Importa dati**: limite di 2.000 righe per file (500 per gli abbonamenti) al posto di 20.000: anteprima e
+  applicazione girano in un'unica transazione dentro la richiesta (misurate ~1,6 ms per cliente e ~4,5 ms per
+  abbonamento su SQLite), così un file pieno resta ben sotto il timeout del server e non blocca a lungo la cassa.
+  Nessuna importazione con la modalità prova accesa (409); i pacchetti che richiedono approvazione
   sono rifiutati riga per riga; il contenuto del file è cancellato appena l'importazione è applicata, fallita o
   scartata. Le notifiche "Importazione completata / non riuscita" non esistono: l'esito è nello storico.
 - **Prezzo manuale degli abbonamenti**: spostare o modificare un abbonamento con prezzo manuale (anche dalla

@@ -14,10 +14,17 @@ import (
 
 // Pure CSV decoding (functional core): no I/O, no clock.
 
-// Limits of an uploaded file (api createImportJob).
+// Limits of an uploaded file (api createImportJob). Preview and apply run
+// the whole file in one transaction inside the request (60 s write
+// timeout, single writer on SQLite): measured on SQLite a customer row
+// costs about 1.6 ms and a season pass row about 4.5 ms (allocations,
+// pricing, audit), so the limits keep a full file well under 10 s.
 const (
 	MaxFileBytes = 5 << 20
-	MaxRows      = 20000
+	// MaxRows bounds a customer file.
+	MaxRows = 2000
+	// MaxPassRows bounds a season pass file.
+	MaxPassRows = 500
 	// maxIssues caps the errors and the warnings of a report (api ImportReport).
 	maxIssues = 500
 )
@@ -129,8 +136,8 @@ func decodeCSV(kind string, content []byte) (*table, error) {
 		if blank {
 			continue
 		}
-		if len(t.rows) == MaxRows {
-			return nil, &decodeError{"too_many_rows", "Il file supera le 20000 righe."}
+		if limit := MaxRowsFor(kind); len(t.rows) == limit {
+			return nil, &decodeError{"too_many_rows", "Il file supera le " + strconv.Itoa(limit) + " righe."}
 		}
 		t.rows = append(t.rows, row)
 	}

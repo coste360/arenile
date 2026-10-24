@@ -96,6 +96,14 @@ func TestDecodeCSV_Limits(t *testing.T) {
 	if _, err := decodeCSV(store.ImportKindCustomers, []byte(b.String())); err == nil || !strings.Contains(err.Error(), "too_many_rows") {
 		t.Fatalf("too many rows: %v", err)
 	}
+	b.Reset()
+	b.WriteString("cognome;posto\n")
+	for range MaxPassRows + 1 {
+		b.WriteString("R;A1\n")
+	}
+	if _, err := decodeCSV(store.ImportKindSeasonPasses, []byte(b.String())); err == nil || !strings.Contains(err.Error(), "too_many_rows") {
+		t.Fatalf("too many pass rows: %v", err)
+	}
 	big := make([]byte, MaxFileBytes+1)
 	if _, err := decodeCSV(store.ImportKindCustomers, big); err == nil || !strings.Contains(err.Error(), "file_too_large") {
 		t.Fatalf("too large: %v", err)

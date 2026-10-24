@@ -5,6 +5,8 @@ package importer_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -504,6 +506,37 @@ func TestConcurrency_ImportApplySameFile(t *testing.T) {
 		}
 		if n := e.Count((*store.ImportJob)(nil), "status = ?", store.ImportStatusApplied); n != 1 {
 			t.Fatalf("applied jobs %d", n)
+		}
+	})
+}
+
+// TestImport_Customers_AtMaxRows: a customer file at the row limit is
+// previewed and applied in one transaction each, well under the server
+// write timeout (measured about 1.6 ms per row on SQLite).
+func TestImport_Customers_AtMaxRows(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		var b strings.Builder
+		b.WriteString("cognome;nome;email;telefono\n")
+		for i := range importer.MaxRows {
+			fmt.Fprintf(&b, "Rossi%d;Mario;mario%d@example.org;+39333%07d\n", i, i, i)
+		}
+		j := e.upload(store.ImportKindCustomers, b.String())
+		const budget = 20 * time.Second
+		t0 := time.Now()
+		j, rep := e.preview(j, importer.Options{})
+		if d := time.Since(t0); d > budget || rep.ToCreate != importer.MaxRows {
+			t.Fatalf("preview of %d rows took %v (to_create %d)", importer.MaxRows, d, rep.ToCreate)
+		}
+		t1 := time.Now()
+		if _, err := e.svc.Apply(e.Ctx, e.Owner, "", e.Est.ID, j.ID, &j.Version); err != nil {
+			t.Fatal(err)
+		}
+		if d := time.Since(t1); d > budget {
+			t.Fatalf("apply of %d rows took %v", importer.MaxRows, d)
+		}
+		if n := e.Count((*store.Customer)(nil), "last_name LIKE ?", "Rossi%"); n != importer.MaxRows {
+			t.Fatalf("customers imported %d", n)
 		}
 	})
 }

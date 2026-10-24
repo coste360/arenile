@@ -17,7 +17,7 @@
   },
   "upload": {
     "title": "New import",
-    "description": "Upload a CSV file (UTF-8 or Windows, separator ; or ,), at most 5 MB and 20,000 rows. The file does not touch your data until you confirm.",
+    "description": "Upload a CSV file (UTF-8 or Windows, separator ; or ,), at most 5 MB and 2,000 rows (500 for season passes). The file does not touch your data until you confirm.",
     "kind": "What the file contains",
     "columns": {
       "customers": "Recognised columns: cognome (last name, required), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. English names and those of the most common programs are accepted too.",
