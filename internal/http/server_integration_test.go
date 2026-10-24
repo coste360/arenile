@@ -54,12 +54,37 @@ func TestHTTPIntegration_CrossTenant(t *testing.T) {
 			{http.MethodPost, "/customers/" + someID + "/credits"},
 			{http.MethodGet, "/season-rollovers"},
 			{http.MethodPost, "/seasons/" + someID + "/rollover"},
+			// Deferred features (ADR 0019): test mode, guaranteed refunds,
+			// cash registers, pass price override, notifications, webhook
+			// attempts, exports and imports of B are 404 for A's owner.
+			{http.MethodGet, "/test-mode"},
+			{http.MethodPut, "/test-mode"},
+			{http.MethodPost, "/test-mode/preview-link"},
+			{http.MethodPost, "/test-bookings/purge"},
+			{http.MethodGet, "/refund-requests"},
+			{http.MethodPost, "/refund-requests/" + someID + "/retry"},
+			{http.MethodGet, "/cash-registers"},
+			{http.MethodPost, "/cash-registers"},
+			{http.MethodGet, "/cash-registers/" + someID},
+			{http.MethodPut, "/season-passes/" + someID + "/price-override"},
+			{http.MethodDelete, "/season-passes/" + someID + "/price-override"},
+			{http.MethodGet, "/notifications"},
+			{http.MethodPost, "/notifications/" + someID + "/read"},
+			{http.MethodPost, "/notifications/read-all"},
+			{http.MethodGet, "/webhook-endpoints/" + someID + "/deliveries/" + someID + "/attempts"},
+			{http.MethodGet, "/exports/customers"},
+			{http.MethodGet, "/imports"},
+			{http.MethodGet, "/imports/" + someID},
+			{http.MethodGet, "/imports/templates/customers"},
+			{http.MethodPost, "/imports/" + someID + "/preview"},
+			{http.MethodPost, "/imports/" + someID + "/apply"},
+			{http.MethodDelete, "/imports/" + someID},
 		} {
 			var payload any
 			var headers map[string]string
-			if step.method == http.MethodPost {
+			if step.method != http.MethodGet {
 				payload = map[string]any{}
-				headers = map[string]string{"X-CSRF-Token": c.csrf()}
+				headers = map[string]string{"X-CSRF-Token": c.csrf(), "If-Match": "*"}
 			}
 			resp, body = c.do(step.method, "/api/admin/v1/establishments/"+e.estB.ID+step.path, payload, headers)
 			if resp.StatusCode != 404 {

@@ -18,14 +18,23 @@ import (
 
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/clock"
+	"github.com/coste360/arenile/internal/crypto"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/importer"
+	"github.com/coste360/arenile/internal/domain/notify"
+	"github.com/coste360/arenile/internal/domain/pass"
+	"github.com/coste360/arenile/internal/domain/refund"
 	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/report"
 	"github.com/coste360/arenile/internal/domain/rollover"
+	"github.com/coste360/arenile/internal/domain/testmode"
 	"github.com/coste360/arenile/internal/domain/waitlist"
+	"github.com/coste360/arenile/internal/domain/webhook"
 	httpserver "github.com/coste360/arenile/internal/http"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
@@ -84,6 +93,8 @@ func newEnv(t *testing.T, db *store.DB) *env {
 		t.Fatal(err)
 	}
 	broker := event.NewBroker(nil, 16)
+	ob := event.NewOutbox(c)
+	kr, _ := crypto.NewKeyRing(bytes.Repeat([]byte{7}, 32))
 	h := httpserver.New(httpserver.Deps{
 		DB: db, Clock: c, Version: "test", Auth: as, Establishments: establishment.NewService(db),
 		Bus: broker, Readiness: readiness{db}, SecureCookies: false, SSEHeartbeat: 50 * time.Millisecond,
@@ -93,6 +104,15 @@ func newEnv(t *testing.T, db *store.DB) *env {
 		Renewals: renewal.NewService(renewal.Deps{DB: db, Clock: c}),
 		Waitlist: waitlist.NewService(waitlist.Deps{DB: db, Clock: c}),
 		Credits:  credit.NewService(credit.Deps{DB: db, Clock: c}),
+		// Deferred features (ADR 0019), database only as above.
+		Cash:     cash.NewService(cash.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob}),
+		Passes:   pass.NewService(pass.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob}),
+		Notify:   notify.NewService(notify.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob}),
+		Reports:  report.NewService(report.Deps{DB: db, Clock: c}),
+		Webhooks: webhook.NewService(webhook.Deps{DB: db, Clock: c, Audit: aw, Keys: kr}),
+		TestMode: testmode.NewService(testmode.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob, Keys: kr}),
+		Refunds:  refund.NewService(refund.Deps{DB: db, Clock: c, Audit: aw}),
+		Imports:  importer.NewService(importer.Deps{DB: db, Clock: c}),
 	})
 	srv := httptest.NewServer(h)
 	t.Cleanup(srv.Close)
