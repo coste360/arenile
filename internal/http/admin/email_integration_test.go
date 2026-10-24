@@ -98,3 +98,82 @@ func TestEmailHTTP_TestEmailAndMessageLog(t *testing.T) {
 		}
 	})
 }
+
+// TestEmailTemplatesHTTP_ValidationAndETag: 422 email_template_invalid with
+// the field on an unknown placeholder, ETag/If-Match on save and restore,
+// 412 on a stale version, preview rendering.
+func TestEmailTemplatesHTTP_ValidationAndETag(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		ctx := context.Background()
+		now := time.Date(2027, 3, 1, 9, 0, 0, 0, time.UTC)
+		org, est, err := store.CreateOrganizationWithEstablishment(ctx, db, "Org A", "lido-a", "Lido A", now)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c := clock.NewFake(now)
+		keys, err := crypto.NewKeyRing(bytes.Repeat([]byte{3}, 32))
+		if err != nil {
+			t.Fatal(err)
+		}
+		svc := notify.NewService(notify.Deps{
+			DB: db, Clock: c, Audit: audit.NewWriter(c), Outbox: event.NewOutbox(c), Keys: keys,
+			Transport: &notify.MemoryTransport{}, MailFrom: "noreply@arenile.example", BaseURL: "https://arenile.example",
+		})
+		h := &admin.Handlers{Notify: svc, Log: slog.New(slog.DiscardHandler)}
+		manager := &auth.Principal{Kind: auth.PrincipalUser, UserID: store.NewID(), Grants: []auth.Grant{{OrganizationID: org.ID, Role: auth.RoleManager}}}
+		if _, err := db.NewInsert().Model(&store.User{ID: manager.UserID, Email: "m@lido.example", Name: "M", Locale: "it", Active: true, CreatedAt: now, UpdatedAt: now}).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		path := "/api/admin/v1/establishments/" + est.ID + "/email-templates/booking_confirmed/it"
+		kind, locale := api.EmailTemplateKind("booking_confirmed"), api.EmailLocale("it")
+		put := func(ifMatch string, body any) (int, http.Header, map[string]any) {
+			return callTarget(t, manager, http.MethodPut, path, body, func(w http.ResponseWriter, r *http.Request) {
+				h.UpdateEmailTemplate(w, r, est.ID, kind, locale, api.UpdateEmailTemplateParams{IfMatch: &ifMatch})
+			})
+		}
+		texts := map[string]string{"subject": "Ok {codice}", "opening": "Ciao {nome}", "closing": "", "signature": ""}
+		bad := map[string]string{"subject": "Ok {codice}", "opening": "Ciao {telefono}", "closing": "", "signature": ""}
+		code, _, out := put(`"0"`, bad)
+		if code != http.StatusUnprocessableEntity || out["type"] != "email_template_invalid" {
+			t.Fatalf("unknown placeholder: %d %v", code, out)
+		}
+		if errs, _ := out["errors"].([]any); len(errs) != 1 || errs[0].(map[string]any)["field"] != "opening" {
+			t.Fatalf("errors %v", out["errors"])
+		}
+		code, hdr, out := put(`"0"`, texts)
+		if code != http.StatusOK || hdr.Get("ETag") != `"1"` || out["customized"] != true {
+			t.Fatalf("save: %d %v %v", code, hdr, out)
+		}
+		if code, _, out := put(`"0"`, texts); code != http.StatusPreconditionFailed || out["type"] != "version_conflict" {
+			t.Fatalf("stale: %d %v", code, out)
+		}
+		code, hdr, _ = callTarget(t, manager, http.MethodGet, path, nil, func(w http.ResponseWriter, r *http.Request) {
+			h.GetEmailTemplate(w, r, est.ID, kind, locale)
+		})
+		if code != http.StatusOK || hdr.Get("ETag") != `"1"` {
+			t.Fatalf("get: %d %v", code, hdr)
+		}
+		code, _, out = callTarget(t, manager, http.MethodPost, path+"/preview", texts, func(w http.ResponseWriter, r *http.Request) {
+			h.PreviewEmailTemplate(w, r, est.ID, kind, locale, api.PreviewEmailTemplateParams{})
+		})
+		if subject, _ := out["subject"].(string); code != http.StatusOK || !strings.HasPrefix(subject, "Ok PROVA-") {
+			t.Fatalf("preview: %d %v", code, out)
+		}
+		if html, _ := out["html"].(string); !strings.Contains(html, "Ciao Mario") {
+			t.Fatal("preview html misses the sample name")
+		}
+		one := `"1"`
+		code, hdr, out = callTarget(t, manager, http.MethodDelete, path, nil, func(w http.ResponseWriter, r *http.Request) {
+			h.ResetEmailTemplate(w, r, est.ID, kind, locale, api.ResetEmailTemplateParams{IfMatch: &one})
+		})
+		if code != http.StatusOK || hdr.Get("ETag") != `"0"` || out["customized"] != false {
+			t.Fatalf("reset: %d %v %v", code, hdr, out)
+		}
+		code, _, out = callTarget(t, manager, http.MethodGet, "/api/admin/v1/establishments/"+est.ID+"/email-templates", nil, func(w http.ResponseWriter, r *http.Request) {
+			h.ListEmailTemplates(w, r, est.ID)
+		})
+		if items, _ := out["items"].([]any); code != http.StatusOK || len(items) != len(notify.EditableKinds)*len(notify.Locales) {
+			t.Fatalf("list: %d %d", code, len(items))
+		}
+	})
+}

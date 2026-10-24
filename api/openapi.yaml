@@ -7474,6 +7474,220 @@ paths:
           $ref: "#/components/responses/NotFound"
         "501":
           $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/email-templates:
+    get:
+      operationId: listEmailTemplates
+      tags: [online]
+      summary: Modelli delle email ai clienti (testi modificabili)
+      description: >-
+        Per ogni tipo di email al cliente e per ogni lingua: oggetto, testo iniziale, testo finale e firma
+        effettivi, i testi predefiniti e se lo stabilimento li ha personalizzati (ADR 0022). I blocchi fissi
+        (QR, riepilogo, importi, link di gestione, piè di pagina) non sono modificabili. Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: Modelli e segnaposto disponibili
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}:
+    get:
+      operationId: getEmailTemplate
+      tags: [online]
+      summary: Un modello di email (tipo e lingua)
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EmailTemplateKindParam"
+        - $ref: "#/components/parameters/EmailLocaleParam"
+      responses:
+        "200":
+          description: Modello; ETag = versione (0 se mai personalizzato)
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: updateEmailTemplate
+      tags: [online]
+      summary: Personalizza i testi di un modello
+      description: >-
+        Salva oggetto, testo iniziale, testo finale e firma. Testo semplice: righe vuote separano i paragrafi,
+        gli a capo restano, nessun HTML né Markdown. Segnaposto ammessi solo dall'elenco `placeholders`
+        (`{nome}`, `{codice}`, ...): un segnaposto sconosciuto o un testo troppo lungo rispondono 422
+        `email_template_invalid` con i campi in errore. Con If-Match "0" crea la personalizzazione.
+        Permesso establishment.configure; scrive il registro di audit.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EmailTemplateKindParam"
+        - $ref: "#/components/parameters/EmailLocaleParam"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTemplateTexts"
+      responses:
+        "200":
+          description: Modello salvato
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+    delete:
+      operationId: resetEmailTemplate
+      tags: [online]
+      summary: Ripristina i testi predefiniti di un modello
+      description: Elimina la personalizzazione (permesso establishment.configure, audit) e restituisce il modello predefinito.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EmailTemplateKindParam"
+        - $ref: "#/components/parameters/EmailLocaleParam"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Modello predefinito (versione 0)
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+  /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/preview:
+    post:
+      operationId: previewEmailTemplate
+      tags: [online]
+      summary: Anteprima di un modello con dati di esempio
+      description: >-
+        Rende i testi inviati (non salvati) con una prenotazione di esempio, il tema dello stabilimento e i
+        blocchi fissi; le immagini in linea sono incluse come data URI. Nessun dato reale dei clienti.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EmailTemplateKindParam"
+        - $ref: "#/components/parameters/EmailLocaleParam"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTemplateTexts"
+      responses:
+        "200":
+          description: Email resa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplatePreview"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+  /api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/test:
+    post:
+      operationId: sendEmailTemplateTest
+      tags: [online]
+      summary: Invia i testi in prova al proprio indirizzo
+      description: >-
+        Accoda un'email con i testi inviati e i dati di esempio all'indirizzo dell'utente collegato (oggetto
+        con prefisso "[PROVA]"). Permesso establishment.configure; 409 se l'utente non ha un indirizzo email.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/EmailTemplateKindParam"
+        - $ref: "#/components/parameters/EmailLocaleParam"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTemplateTexts"
+      responses:
+        "202":
+          description: Email accodata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageQueued"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
   /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/resend-confirmation:
     post:
       operationId: resendBookingConfirmation
@@ -12212,6 +12426,18 @@ components:
       schema:
         type: string
         maxLength: 64
+    EmailTemplateKindParam:
+      name: kind
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/EmailTemplateKind"
+    EmailLocaleParam:
+      name: locale
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/EmailLocale"
     IfMatchRequired:
       name: If-Match
       in: header
@@ -12525,7 +12751,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
     UnprocessableEntity:
-      description: Richiesta valida ma non elaborabile (no_price, policy_violation)
+      description: Richiesta valida ma non elaborabile (no_price, policy_violation, email_template_invalid)
       content:
         application/problem+json:
           schema:
@@ -12620,6 +12846,7 @@ components:
         - printing_unavailable
         - printer_address_not_allowed
         - print_route_missing
+        - email_template_invalid
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -20087,7 +20314,7 @@ components:
           type: boolean
     EmailSettings:
       type: object
-      required: [transport, smtp_configured, mail_from, sender_name, manager_notifications, customer_notifications, version]
+      required: [transport, smtp_configured, mail_from, sender_name, manager_notifications, customer_notifications, reminders, version]
       properties:
         transport:
           type: string
@@ -20111,6 +20338,8 @@ components:
           $ref: "#/components/schemas/ManagerNotifications"
         customer_notifications:
           $ref: "#/components/schemas/CustomerNotifications"
+        reminders:
+          $ref: "#/components/schemas/EmailReminderSchedule"
         version:
           $ref: "#/components/schemas/Version"
     EmailSettingsInput:
@@ -20132,6 +20361,8 @@ components:
           $ref: "#/components/schemas/ManagerNotifications"
         customer_notifications:
           $ref: "#/components/schemas/CustomerNotifications"
+        reminders:
+          $ref: "#/components/schemas/EmailReminderSchedule"
     EmailTestRequest:
       type: object
       required: [to]
@@ -20194,6 +20425,120 @@ components:
           items:
             $ref: "#/components/schemas/MessageLogEntry"
         next_cursor:
+          type: string
+    EmailReminderSchedule:
+      type: object
+      description: >-
+        Orari dei promemoria automatici nel fuso dello stabilimento (ADR 0022). Il promemoria del giorno prima
+        parte il giorno precedente l'inizio alle `day_before_time`; quello del saldo alle `balance_time`,
+        `balance_lead_days` giorni prima della scadenza del saldo indicata dalla policy (`balance_due`:
+        `days_before:N` o, se all'arrivo, il giorno di inizio).
+      required: [day_before_time, balance_time, balance_lead_days]
+      properties:
+        day_before_time:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          example: "18:00"
+        balance_time:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          example: "10:00"
+        balance_lead_days:
+          type: integer
+          minimum: 0
+          maximum: 30
+    EmailTemplateKind:
+      type: string
+      description: Tipo di email al cliente con testi modificabili.
+      enum:
+        - booking_confirmed
+        - booking_modified
+        - booking_cancelled
+        - booking_rejected
+        - booking_approval_pending
+        - refund_issued
+        - manage_link
+        - balance_reminder
+        - day_before_reminder
+    EmailLocale:
+      type: string
+      enum: [it, en, de, fr]
+    EmailTemplateTexts:
+      type: object
+      description: >-
+        Testi modificabili di un modello: testo semplice con segnaposto `{nome}` dall'elenco ammesso. L'oggetto
+        è una riga sola.
+      required: [subject, opening, closing, signature]
+      properties:
+        subject:
+          type: string
+          maxLength: 200
+        opening:
+          type: string
+          maxLength: 2000
+        closing:
+          type: string
+          maxLength: 2000
+        signature:
+          type: string
+          maxLength: 500
+    EmailTemplateFixedBlock:
+      type: string
+      enum: [summary, qr, manage_button, policy, ics_note, balance_notice]
+    EmailTemplate:
+      type: object
+      required: [kind, locale, subject, opening, closing, signature, customized, defaults, fixed_blocks, version]
+      properties:
+        kind:
+          $ref: "#/components/schemas/EmailTemplateKind"
+        locale:
+          $ref: "#/components/schemas/EmailLocale"
+        subject:
+          type: string
+        opening:
+          type: string
+        closing:
+          type: string
+        signature:
+          type: string
+        customized:
+          type: boolean
+          description: true se lo stabilimento ha salvato testi propri per questo tipo e lingua.
+        defaults:
+          $ref: "#/components/schemas/EmailTemplateTexts"
+        fixed_blocks:
+          type: array
+          description: Blocchi fissi inclusi tra testo iniziale e finale, nell'ordine.
+          items:
+            $ref: "#/components/schemas/EmailTemplateFixedBlock"
+        version:
+          $ref: "#/components/schemas/Version"
+        updated_at:
+          type: string
+          format: date-time
+    EmailTemplateList:
+      type: object
+      required: [placeholders, items]
+      properties:
+        placeholders:
+          type: array
+          description: Segnaposto ammessi, senza graffe (es. `nome` per `{nome}`).
+          items:
+            type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailTemplate"
+    EmailTemplatePreview:
+      type: object
+      required: [subject, html, text]
+      properties:
+        subject:
+          type: string
+        html:
+          type: string
+          description: Documento HTML completo, da mostrare in un iframe con sandbox.
+        text:
           type: string
     MagicLinkRequest:
       type: object

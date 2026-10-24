@@ -46,7 +46,7 @@ const (
 // Templates lists the templates shipped with built-in texts in every locale.
 var Templates = []string{
 	TemplateBookingConfirmed, TemplateBookingModified, TemplateBookingCancelled, TemplateBookingRejected,
-	TemplateApprovalPending, TemplateRefundIssued, TemplateManageLink, TemplateTest,
+	TemplateApprovalPending, TemplateRefundIssued, TemplateManageLink, TemplateBalanceReminder, TemplateDayBeforeReminder, TemplateTest,
 	TemplateManagerNewBooking, TemplateManagerApproval, TemplateManagerPaymentFailed, TemplateManagerDeliveryFailed,
 }
 
@@ -268,12 +268,19 @@ type MessageView struct {
 // Enqueue queues a message in tx (idempotent on DedupeKey: the existing row
 // is returned). Implements checkout.Notifier.
 func (s *Service) Enqueue(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, m Enqueue) (*store.Message, error) {
+	msg, _, err := s.enqueue(ctx, tx, es, m)
+	return msg, err
+}
+
+// enqueue is Enqueue that also reports whether a new row was inserted
+// (false: the dedupe key already existed).
+func (s *Service) enqueue(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, m Enqueue) (*store.Message, bool, error) {
 	addr, err := normalizeRecipient(m.Recipient)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if m.Template == "" || m.DedupeKey == "" {
-		return nil, fmt.Errorf("notify: enqueue: template and dedupe key are required")
+		return nil, false, fmt.Errorf("notify: enqueue: template and dedupe key are required")
 	}
 	now := s.now()
 	row := &store.Message{
@@ -284,7 +291,7 @@ func (s *Service) Enqueue(ctx context.Context, tx bun.IDB, es store.Establishmen
 	}
 	enc, err := s.d.Keys.Encrypt([]byte(addr), recipientAAD(es.ID()))
 	if err != nil {
-		return nil, fmt.Errorf("notify: encrypt recipient: %w", err)
+		return nil, false, fmt.Errorf("notify: encrypt recipient: %w", err)
 	}
 	row.RecipientEnc = &enc
 	if m.BookingID != "" {
@@ -293,11 +300,11 @@ func (s *Service) Enqueue(ctx context.Context, tx bun.IDB, es store.Establishmen
 	if m.CustomerID != "" {
 		row.CustomerID = &m.CustomerID
 	}
-	stored, _, err := store.InsertMessage(ctx, tx, es, row)
+	stored, created, err := store.InsertMessage(ctx, tx, es, row)
 	if err != nil {
-		return nil, fmt.Errorf("notify: enqueue: %w", err)
+		return nil, false, fmt.Errorf("notify: enqueue: %w", err)
 	}
-	return stored, nil
+	return stored, created, nil
 }
 
 // SendTest queues a test email (auth.PermEstablishmentConfigure).

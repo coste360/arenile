@@ -1,10 +1,13 @@
 ---
-subject: Buchung {{booking.code}} bestätigt – {{establishment.name}}
+subject: Buchung {codice} bestätigt – {stabilimento}
 preheader: Ihr Aufenthalt: {{booking.period}}. Wir freuen uns auf Sie!
+opening: Hallo {nome}, vielen Dank, dass Sie sich für {stabilimento} entschieden haben. Hier ist die Übersicht Ihrer Buchung.
+closing: Bis bald am Strand!
+signature:
 ---
 # Ihre Buchung ist bestätigt
 
-Hallo {{customer.first_name}}, vielen Dank, dass Sie sich für **{{establishment.name}}** entschieden haben. Hier ist die Übersicht Ihrer Buchung.
+{{> opening}}
 
 {{> summary}}
 
@@ -18,4 +21,6 @@ Auf der Buchungsseite sehen Sie alle Details, können den Restbetrag zahlen und 
 
 {{> policy}}
 
-Bis bald am Strand!
+{{> closing}}
+
+{{> signature}}

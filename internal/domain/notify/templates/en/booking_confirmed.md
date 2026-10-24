@@ -1,10 +1,13 @@
 ---
-subject: Booking {{booking.code}} confirmed – {{establishment.name}}
+subject: Booking {codice} confirmed – {stabilimento}
 preheader: See you {{booking.period}}.
+opening: Hi {nome}, thank you for choosing {stabilimento}. Here is the summary of your booking.
+closing: See you on the beach!
+signature:
 ---
 # Your booking is confirmed
 
-Hi {{customer.first_name}}, thank you for choosing **{{establishment.name}}**. Here is the summary of your booking.
+{{> opening}}
 
 {{> summary}}
 
@@ -18,4 +21,6 @@ From the booking page you can see the details, pay the balance and, within the t
 
 {{> policy}}
 
-See you on the beach!
+{{> closing}}
+
+{{> signature}}

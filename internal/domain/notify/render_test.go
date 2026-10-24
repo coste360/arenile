@@ -77,11 +77,24 @@ func fixtureContent(t *testing.T, tpl string, cat catalog) Content {
 		o.QR, o.ICS, o.Policy, o.ManageURL, o.LinkExpires = true, true, tpl == TemplateBookingConfirmed, fixtureManageURL, expires
 	case TemplateManageLink:
 		o.ManageURL, o.LinkExpires = fixtureManageURL, expires
+	case TemplateDayBeforeReminder:
+		o.QR, o.ManageURL, o.LinkExpires = true, fixtureManageURL, expires
+	case TemplateBalanceReminder:
+		o.BalanceNotice, o.ManageURL, o.LinkExpires = true, fixtureManageURL, expires
 	case TemplateRenewalProposal, TemplateRenewalReminder:
 		o.ManageURL, o.LinkExpires, o.Policy = fixtureManageURL, expires, tpl == TemplateRenewalProposal
 		o.Vars["renewal.deadline"] = formatDeadline(cat, time.Date(2027, 3, 31, 23, 59, 0, 0, time.UTC))
 	}
-	return bookingContent(cat, d, o)
+	c := bookingContent(cat, d, o)
+	if IsEditableKind(tpl) {
+		def, err := defaultTexts(tpl, cat.locale)
+		if err != nil {
+			t.Fatal(err)
+		}
+		r := ResolveTexts(def, placeholderValues(tpl, c.Vars))
+		c.Texts = &r
+	}
+	return c
 }
 
 func TestRender_Golden(t *testing.T) {
@@ -133,11 +146,11 @@ func checkRendered(t *testing.T, tpl string, r Rendered) {
 		!strings.Contains(r.HTML, `href="`+ProductURL+`"`) || !strings.Contains(r.Text, ProductLine+" · "+ProductURL) {
 		t.Fatal("missing the Arenile — Coste360.it footer signature")
 	}
-	wantQR := tpl == TemplateBookingConfirmed || tpl == TemplateBookingModified
+	wantQR := tpl == TemplateBookingConfirmed || tpl == TemplateBookingModified || tpl == TemplateDayBeforeReminder
 	if got := strings.Contains(r.HTML, "cid:"+QRContentID); got != wantQR {
 		t.Fatalf("QR image present = %v, want %v", got, wantQR)
 	}
-	wantLink := wantQR || tpl == TemplateManageLink || waitlistTemplates[tpl] || renewalTemplates[tpl]
+	wantLink := wantQR || tpl == TemplateManageLink || tpl == TemplateBalanceReminder || waitlistTemplates[tpl] || renewalTemplates[tpl]
 	if got := strings.Contains(r.HTML, fixtureManageURL) && strings.Contains(r.Text, fixtureManageURL); got != wantLink {
 		t.Fatalf("manage link present = %v, want %v", got, wantLink)
 	}
@@ -274,7 +287,10 @@ func TestTemplates_ParityAndVariables(t *testing.T) {
 	for _, v := range PanelVars {
 		known[v] = true
 	}
-	partials := map[string]bool{"summary": true, "qr": true, "manage_button": true, "policy": true, "ics_note": true}
+	partials := map[string]bool{
+		"summary": true, "qr": true, "manage_button": true, "policy": true, "ics_note": true,
+		"balance_notice": true, "opening": true, "closing": true, "signature": true,
+	}
 	for _, tpl := range Templates {
 		var srcParts []string
 		for _, l := range Locales {

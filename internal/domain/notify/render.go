@@ -21,6 +21,10 @@ import (
 //	{{> manage_button}}  button to the manage area (magic link)
 //	{{> policy}}         cancellation and modification terms
 //	{{> ics_note}}       note about the attached .ics file
+//	{{> balance_notice}} balance due and its due date (balance reminder)
+//	{{> opening}}        editable opening text (Content.Texts, ADR 0022)
+//	{{> closing}}        editable closing text
+//	{{> signature}}      editable signature
 //
 // A partial without data (no QR, no link, ...) renders nothing, so an
 // edited template can never show an empty button or a broken image.
@@ -84,6 +88,12 @@ type Content struct {
 	Contacts []string
 	// Manager selects the manager footer instead of the customer one.
 	Manager bool
+	// Texts are the editable texts of a customer kind (ADR 0022) with the
+	// placeholders already resolved: they feed the subject and {{> opening}},
+	// {{> closing}}, {{> signature}}. nil for the other templates.
+	Texts *Texts
+	// BalanceNotice feeds {{> balance_notice}} (amount and due date).
+	BalanceNotice string
 }
 
 // Rendered is a rendered message.
@@ -122,6 +132,10 @@ func Render(src templateSource, cat catalog, br Branding, c Content) (Rendered, 
 		footer = cat.t("footer_manager", map[string]string{"name": br.Name})
 	}
 	subject := headerSafe(substitute(src.Subject, c.Vars))
+	if c.Texts != nil {
+		// Editable subject: placeholders already resolved, plain text.
+		subject = headerSafe(c.Texts.Subject)
+	}
 	data := struct {
 		Lang, Subject, Preheader string
 		Brand                    Branding
@@ -221,6 +235,17 @@ func renderPartial(name string, cat catalog, br Branding, c Content) (string, st
 		}
 		h.WriteString(`</ul>`)
 		return h.String(), strings.Join(t, "\n")
+	case "opening", "closing", "signature":
+		if c.Texts == nil {
+			return "", ""
+		}
+		v := map[string]string{"opening": c.Texts.Opening, "closing": c.Texts.Closing, "signature": c.Texts.Signature}[name]
+		return plainTextHTML(v)
+	case "balance_notice":
+		if c.BalanceNotice == "" {
+			return "", ""
+		}
+		return `<p style="` + styleP + `"><strong>` + esc(c.BalanceNotice) + `</strong></p>`, c.BalanceNotice
 	case "ics_note":
 		if !c.ICS {
 			return "", ""

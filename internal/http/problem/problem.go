@@ -23,6 +23,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/notify"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
@@ -107,6 +108,11 @@ const (
 	PrintRouteMissing        = api.ProblemType("print_route_missing")
 )
 
+// Email template type slugs (ADR 0022).
+const (
+	EmailTemplateInvalid = api.ProblemType("email_template_invalid")
+)
+
 type meta struct {
 	status int
 	title  string
@@ -168,6 +174,7 @@ var catalog = map[api.ProblemType]meta{
 	// ESC/POS printing (ADR 0021).
 	PrintingUnavailable:      {http.StatusConflict, "La stampa ESC/POS è disponibile solo con l'app desktop"},
 	PrinterAddressNotAllowed: {http.StatusUnprocessableEntity, "L'indirizzo della stampante deve essere della rete locale"},
+	EmailTemplateInvalid:     {http.StatusUnprocessableEntity, "Il testo dell'email non è valido"},
 	PrintRouteMissing:        {http.StatusConflict, "Nessuna stampante configurata per questo documento"},
 }
 
@@ -297,11 +304,18 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		te  *booking.TransitionError
 		ope *booking.OutsidePeriodError
 		dup *customer.DuplicateError
+		tpl *notify.TemplateError
 	)
 	if writeTicketing(w, r, err) {
 		return
 	}
 	switch {
+	case errors.As(err, &tpl):
+		fields := make([]api.FieldError, len(tpl.Fields))
+		for i, f := range tpl.Fields {
+			fields[i] = api.FieldError{Field: f.Field, Message: f.Message}
+		}
+		Write(w, r, EmailTemplateInvalid, Fields(fields...))
 	case errors.As(err, &rl):
 		Write(w, r, RateLimited, RetryAfter(rl.RetryAfter))
 	case errors.Is(err, checkout.ErrSessionNotFound):

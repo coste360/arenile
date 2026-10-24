@@ -113,11 +113,22 @@ func (c catalog) t(key string, args map[string]string) string {
 func (c catalog) weekday(iso int) string { return c.t("weekday_"+strconv.Itoa(iso), nil) }
 func (c catalog) month(m int) string     { return c.t("month_"+strconv.Itoa(m), nil) }
 
-// templateSource is a parsed Markdown template: front matter + body.
+// templateSource is a parsed Markdown template: front matter + body. For
+// the editable customer kinds (ADR 0022) the front matter also carries the
+// default editable texts: subject, opening, closing and signature in the
+// plain-text placeholder syntax ({nome}); "\n" in a value is a newline.
 type templateSource struct {
 	Subject   string
 	Preheader string
 	Body      string
+	Opening   string
+	Closing   string
+	Signature string
+}
+
+// texts returns the editable texts of the front matter.
+func (t templateSource) texts() Texts {
+	return Texts{Subject: t.Subject, Opening: t.Opening, Closing: t.Closing, Signature: t.Signature}
 }
 
 // builtinTemplate loads the embedded template code in locale (Italian
@@ -155,6 +166,12 @@ func parseTemplate(raw string) (templateSource, error) {
 			t.Subject = strings.TrimSpace(v)
 		case "preheader":
 			t.Preheader = strings.TrimSpace(v)
+		case "opening":
+			t.Opening = frontMatterText(v)
+		case "closing":
+			t.Closing = frontMatterText(v)
+		case "signature":
+			t.Signature = frontMatterText(v)
 		}
 	}
 	if t.Subject == "" {
@@ -162,4 +179,9 @@ func parseTemplate(raw string) (templateSource, error) {
 	}
 	t.Body = strings.TrimSpace(body)
 	return t, nil
+}
+
+// frontMatterText decodes a multi-line front matter value ("\n" escapes).
+func frontMatterText(v string) string {
+	return strings.TrimSpace(strings.ReplaceAll(strings.TrimSpace(v), `\n`, "\n"))
 }

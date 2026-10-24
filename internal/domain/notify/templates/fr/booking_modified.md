@@ -1,10 +1,13 @@
 ---
-subject: Réservation {{booking.code}} modifiée – {{establishment.name}}
+subject: Réservation {codice} modifiée – {stabilimento}
 preheader: Voici le récapitulatif mis à jour.
+opening: Bonjour {nome}, nous avons mis à jour la réservation {codice}. Voici le nouveau récapitulatif.
+closing: 
+signature:
 ---
 # Votre réservation a été modifiée
 
-Bonjour {{customer.first_name}}, nous avons mis à jour la réservation **{{booking.code}}**. Voici le nouveau récapitulatif.
+{{> opening}}
 
 {{> summary}}
 
@@ -15,3 +18,7 @@ Bonjour {{customer.first_name}}, nous avons mis à jour la réservation **{{book
 {{link.expires}}
 
 {{> ics_note}}
+
+{{> closing}}
+
+{{> signature}}

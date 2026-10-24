@@ -48,6 +48,72 @@ type EmailConfig struct {
 	Manager    string                `json:"manager_email,omitempty"`
 	ToManager  ManagerNotifications  `json:"manager_notifications"`
 	ToCustomer CustomerNotifications `json:"customer_notifications"`
+	// Reminders is the schedule of the automatic reminders (ADR 0022); nil =
+	// defaults (see Schedule).
+	Reminders *ReminderSchedule `json:"reminders,omitempty"`
+}
+
+// ReminderSchedule is when the automatic reminders leave, in the
+// establishment timezone (ADR 0022). Times are "HH:MM".
+type ReminderSchedule struct {
+	// DayBeforeTime: the day before the start of the booking.
+	DayBeforeTime string `json:"day_before_time"`
+	// BalanceTime: BalanceLeadDays days before the balance due date of the
+	// booking policy (balance_due: days_before:N, or the start date).
+	BalanceTime     string `json:"balance_time"`
+	BalanceLeadDays int    `json:"balance_lead_days"`
+}
+
+// Default reminder schedule.
+const (
+	DefaultDayBeforeTime   = "18:00"
+	DefaultBalanceTime     = "10:00"
+	DefaultBalanceLeadDays = 2
+	MaxBalanceLeadDays     = 30
+)
+
+// DefaultReminderSchedule is the schedule of an establishment that never
+// set one.
+func DefaultReminderSchedule() ReminderSchedule {
+	return ReminderSchedule{DayBeforeTime: DefaultDayBeforeTime, BalanceTime: DefaultBalanceTime, BalanceLeadDays: DefaultBalanceLeadDays}
+}
+
+// Schedule returns the reminder schedule with defaults applied.
+func (c EmailConfig) Schedule() ReminderSchedule {
+	if c.Reminders == nil {
+		return DefaultReminderSchedule()
+	}
+	r := *c.Reminders
+	if _, _, ok := ParseClock(r.DayBeforeTime); !ok {
+		r.DayBeforeTime = DefaultDayBeforeTime
+	}
+	if _, _, ok := ParseClock(r.BalanceTime); !ok {
+		r.BalanceTime = DefaultBalanceTime
+	}
+	if r.BalanceLeadDays < 0 || r.BalanceLeadDays > MaxBalanceLeadDays {
+		r.BalanceLeadDays = DefaultBalanceLeadDays
+	}
+	return r
+}
+
+// ParseClock parses "HH:MM" (24 h).
+func ParseClock(s string) (hour, minute int, ok bool) {
+	if len(s) != 5 || s[2] != ':' {
+		return 0, 0, false
+	}
+	digit := func(b byte) (int, bool) { return int(b - '0'), b >= '0' && b <= '9' }
+	h1, ok1 := digit(s[0])
+	h2, ok2 := digit(s[1])
+	m1, ok3 := digit(s[3])
+	m2, ok4 := digit(s[4])
+	if !ok1 || !ok2 || !ok3 || !ok4 {
+		return 0, 0, false
+	}
+	hour, minute = h1*10+h2, m1*10+m2
+	if hour > 23 || minute > 59 {
+		return 0, 0, false
+	}
+	return hour, minute, true
 }
 
 // Transport describes the email transport chosen by the server

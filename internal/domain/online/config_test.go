@@ -148,6 +148,35 @@ func TestApplyStripe_SecretsWriteOnly(t *testing.T) {
 	}
 }
 
+func TestReminderSchedule_DefaultsAndValidation(t *testing.T) {
+	if got := (EmailConfig{}).Schedule(); got != DefaultReminderSchedule() {
+		t.Fatalf("defaults %+v", got)
+	}
+	bad := EmailConfig{Reminders: &ReminderSchedule{DayBeforeTime: "24:00", BalanceTime: "9:00", BalanceLeadDays: 31}}
+	if got := bad.Schedule(); got != DefaultReminderSchedule() {
+		t.Fatalf("invalid stored values must fall back: %+v", got)
+	}
+	_, err := ValidateEmailConfig(bad)
+	f := fieldsOf(t, err)
+	for _, k := range []string{"reminders.day_before_time", "reminders.balance_time", "reminders.balance_lead_days"} {
+		if !f[k] {
+			t.Errorf("missing error on %s", k)
+		}
+	}
+	ok := EmailConfig{Reminders: &ReminderSchedule{DayBeforeTime: "19:30", BalanceTime: "00:00", BalanceLeadDays: 0}}
+	if _, err := ValidateEmailConfig(ok); err != nil {
+		t.Fatal(err)
+	}
+	if ok.Schedule() != *ok.Reminders {
+		t.Fatalf("schedule %+v", ok.Schedule())
+	}
+	for in, want := range map[string]bool{"00:00": true, "23:59": true, "24:00": false, "7:30": false, "12:60": false, "ab:cd": false, "": false} {
+		if _, _, got := ParseClock(in); got != want {
+			t.Errorf("ParseClock(%q) = %v", in, got)
+		}
+	}
+}
+
 func TestAAD_Distinct(t *testing.T) {
 	if string(AAD("e1", "stripe", "test")) == string(AAD("e1", "stripe", "live")) || Last4("ab") != "ab" || Last4("abcdef") != "cdef" {
 		t.Fatal("aad/last4")

@@ -140,6 +140,8 @@ type contentOptions struct {
 	LinkExpires time.Time
 	Policy      bool
 	Manager     bool
+	// BalanceNotice adds the balance due and its due date (balance reminder).
+	BalanceNotice bool
 	// Extra variables (refund.amount, payment.amount, message.*).
 	Vars map[string]string
 }
@@ -211,6 +213,21 @@ func bookingContent(cat catalog, d *bookingData, o contentOptions) Content {
 	}
 	if spots != "" {
 		c.Summary = append(c.Summary, Row{cat.t("label_spots", nil), spots})
+	}
+	c.Vars["booking.spots"] = spots
+	if due, onArrival, ok := BalanceDueDate(b); ok {
+		dueText := cat.t("balance_due_on_arrival", nil)
+		if !onArrival {
+			dueText = formatDate(cat, due)
+		}
+		c.Vars["balance.due"] = dueText
+		if bal := b.BalanceDue(); o.BalanceNotice && bal > 0 {
+			key, args := "balance_notice", map[string]string{"amount": m(bal), "date": dueText}
+			if onArrival {
+				key = "balance_notice_on_arrival"
+			}
+			c.BalanceNotice = cat.t(key, args)
+		}
 	}
 	if len(packs) > 0 && !b.IsSeasonPass {
 		c.Summary = append(c.Summary, Row{cat.t("label_pack", nil), strings.Join(packs, ", ")})

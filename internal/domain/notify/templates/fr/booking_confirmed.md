@@ -1,10 +1,13 @@
 ---
-subject: Réservation {{booking.code}} confirmée – {{establishment.name}}
+subject: Réservation {codice} confirmée – {stabilimento}
 preheader: Rendez-vous {{booking.period}}.
+opening: Bonjour {nome}, merci d'avoir choisi {stabilimento}. Voici le récapitulatif de votre réservation.
+closing: À bientôt à la plage !
+signature:
 ---
 # Votre réservation est confirmée
 
-Bonjour {{customer.first_name}}, merci d'avoir choisi **{{establishment.name}}**. Voici le récapitulatif de votre réservation.
+{{> opening}}
 
 {{> summary}}
 
@@ -18,4 +21,6 @@ Depuis la page de gestion, vous pouvez consulter les détails, payer le solde et
 
 {{> policy}}
 
-À bientôt à la plage !
+{{> closing}}
+
+{{> signature}}
