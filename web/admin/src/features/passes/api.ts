@@ -12,7 +12,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { newIdempotencyKey } from '../configuration/lib/validation';
+import { ifMatch, newIdempotencyKey } from '../configuration/lib/validation';
 import { callBooking } from '../bookings/problem';
 
 export type SeasonPass = Schemas['SeasonPass'];
@@ -142,6 +142,34 @@ export function useRevokeRelease(establishmentId: string) {
         }),
       );
     },
+    onSuccess: () => invalidate(),
+  });
+}
+
+export type SeasonPassPriceOverrideInput = Schemas['SeasonPassPriceOverrideInput'];
+
+/**
+ * Manual price of a pass (ADR 0019 E): owner and manager only
+ * (establishment.configure), audited; `null` body = back to the price list.
+ */
+export function usePassPriceOverride(establishmentId: string) {
+  const client = useApiClient();
+  const invalidate = useInvalidate(establishmentId);
+  return useMutation<
+    SeasonPassDetail,
+    ApiProblem,
+    { passId: string; version: number; body: SeasonPassPriceOverrideInput | null }
+  >({
+    mutationFn: ({ passId, version, body }) =>
+      callBooking(() => {
+        const params = {
+          path: { establishmentId, passId },
+          header: { 'If-Match': ifMatch(version) },
+        };
+        return body
+          ? client.PUT(`${BASE}/season-passes/{passId}/price-override`, { params, body })
+          : client.DELETE(`${BASE}/season-passes/{passId}/price-override`, { params });
+      }),
     onSuccess: () => invalidate(),
   });
 }

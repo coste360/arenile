@@ -1,7 +1,15 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { baseRoutes, EST_ID, json, list, renderApp, type Handler } from '../configuration/testing';
+import {
+  baseRoutes,
+  callsTo,
+  EST_ID,
+  json,
+  list,
+  renderApp,
+  type Handler,
+} from '../configuration/testing';
 import { estPath } from '../bookings/testing';
 
 const ts = { version: 1, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' };
@@ -132,5 +140,101 @@ describe('SeasonPassesPage', () => {
     const sheet = await screen.findByRole('dialog', { name: 'A2 · Bianchi Luca' });
     expect(within(sheet).getByText('Credito maturato: 24,00 €')).toBeInTheDocument();
     expect(within(sheet).getByRole('link', { name: /Apri la prenotazione/ })).toBeInTheDocument();
+  });
+
+  it('sets a manual price with reason and If-Match (manager) and shows it in the detail', async () => {
+    const user = userEvent.setup();
+    let current = pass('1', 'a1', 'A1', 'Rossi Mario');
+    const bodies: unknown[] = [];
+    const routes: Record<string, Handler> = {
+      ...baseRoutes('manager'),
+      [`GET ${estPath('/seasons')}`]: () =>
+        list([
+          {
+            id: 's2026',
+            establishment_id: EST_ID,
+            year: 2026,
+            opens_on: '2026-05-15',
+            closes_on: '2026-09-20',
+            status: 'active',
+            ...ts,
+          },
+        ]),
+      [`GET ${estPath('/maps')}`]: () => list([MAP]),
+      [`GET ${estPath('/maps/m1')}`]: () =>
+        json(200, { map: MAP, spots: [spot('a1', 'A1', 'A', 1)], decorations: [] }),
+      [`GET ${estPath('/zones')}`]: () => list([ZONE]),
+      [`GET ${estPath('/season-passes')}`]: () => json(200, { items: [current] }),
+      [`GET ${estPath('/season-passes/1')}`]: () => json(200, { pass: current, releases: [] }),
+      [`PUT ${estPath('/season-passes/1/price-override')}`]: async (req) => {
+        const body = (await req.json()) as { amount: number; reason: string };
+        bodies.push(body);
+        current = pass('1', 'a1', 'A1', 'Rossi Mario', {
+          total_amount: body.amount,
+          version: 2,
+          price_override: {
+            amount: body.amount,
+            engine_amount: 150000,
+            reason: body.reason,
+            set_at: '2026-06-01T10:00:00Z',
+          },
+        });
+        return json(200, { pass: current, releases: [] }, { ETag: '"2"' });
+      },
+    };
+    const { fetchMock } = renderApp(`/e/${EST_ID}/abbonamenti`, routes);
+    const table = await screen.findByRole('table', { name: 'Abbonamenti' });
+    await user.click(within(table).getByRole('row', { name: /A1 di Rossi Mario/ }));
+    const sheet = await screen.findByRole('dialog', { name: 'A1 · Rossi Mario' });
+    await user.click(within(sheet).getByRole('button', { name: 'Imposta prezzo manuale' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Prezzo manuale' });
+    const amount = within(dialog).getByRole('textbox', { name: /Nuovo totale/ });
+    await user.clear(amount);
+    await user.type(amount, '1200');
+    await user.type(within(dialog).getByRole('textbox', { name: 'Motivo' }), 'Cliente storico');
+    await user.click(within(dialog).getByRole('button', { name: 'Salva prezzo' }));
+    await waitFor(() =>
+      expect(callsTo(fetchMock, 'PUT', estPath('/season-passes/1/price-override'))).toHaveLength(1),
+    );
+    expect(
+      callsTo(fetchMock, 'PUT', estPath('/season-passes/1/price-override'))[0]!.headers.get(
+        'If-Match',
+      ),
+    ).toBe('"1"');
+    expect(bodies).toEqual([{ amount: 120000, reason: 'Cliente storico' }]);
+    expect(await within(sheet).findByText('Prezzo manuale')).toBeInTheDocument();
+    expect(within(sheet).getByText('Cliente storico')).toBeInTheDocument();
+  });
+
+  it('hides the manual price actions from a cashier', async () => {
+    const current = pass('1', 'a1', 'A1', 'Rossi Mario');
+    renderApp(`/e/${EST_ID}/abbonamenti`, {
+      ...baseRoutes('cashier'),
+      [`GET ${estPath('/seasons')}`]: () =>
+        list([
+          {
+            id: 's2026',
+            establishment_id: EST_ID,
+            year: 2026,
+            opens_on: '2026-05-15',
+            closes_on: '2026-09-20',
+            status: 'active',
+            ...ts,
+          },
+        ]),
+      [`GET ${estPath('/maps')}`]: () => list([MAP]),
+      [`GET ${estPath('/maps/m1')}`]: () =>
+        json(200, { map: MAP, spots: [spot('a1', 'A1', 'A', 1)], decorations: [] }),
+      [`GET ${estPath('/zones')}`]: () => list([ZONE]),
+      [`GET ${estPath('/season-passes')}`]: () => json(200, { items: [current] }),
+      [`GET ${estPath('/season-passes/1')}`]: () => json(200, { pass: current, releases: [] }),
+    });
+    const table = await screen.findByRole('table', { name: 'Abbonamenti' });
+    await userEvent.click(within(table).getByRole('row', { name: /A1 di Rossi Mario/ }));
+    const sheet = await screen.findByRole('dialog', { name: 'A1 · Rossi Mario' });
+    expect(
+      within(sheet).getByText('Solo il titolare e il gestore possono cambiare il prezzo.'),
+    ).toBeInTheDocument();
+    expect(within(sheet).queryByRole('button', { name: 'Imposta prezzo manuale' })).toBeNull();
   });
 });

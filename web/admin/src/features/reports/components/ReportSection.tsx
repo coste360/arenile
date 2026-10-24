@@ -3,9 +3,10 @@ import { Button } from '@arenile/shared/ui/button';
 import { Label } from '@arenile/shared/ui/label';
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
 import { QueryState, SectionCard } from '@arenile/shared/ui/patterns';
-import { DownloadIcon } from 'lucide-react';
+import { DownloadIcon, FileSpreadsheetIcon } from 'lucide-react';
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toXlsx } from '../lib/exports';
 
 export interface ReportSectionProps {
   title: string;
@@ -38,16 +39,28 @@ export function ReportSection({
       description={description}
       actions={
         csv && (
-          <Button variant="outline" asChild>
-            <a
-              href={csv.href}
-              download={csv.fileName}
-              aria-label={t('csv.aria', { report: title })}
-            >
-              <DownloadIcon aria-hidden="true" />
-              {t('csv.label')}
-            </a>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <a
+                href={csv.href}
+                download={csv.fileName}
+                aria-label={t('csv.aria', { report: title })}
+              >
+                <DownloadIcon aria-hidden="true" />
+                {t('csv.label')}
+              </a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a
+                href={toXlsx(csv.href)}
+                download={csv.fileName.replace(/\.csv$/, '.xlsx')}
+                aria-label={t('xlsx.aria', { report: title })}
+              >
+                <FileSpreadsheetIcon aria-hidden="true" />
+                {t('xlsx.label')}
+              </a>
+            </Button>
+          </div>
         )
       }
     >

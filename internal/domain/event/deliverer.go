@@ -75,7 +75,19 @@ type Deliverer struct {
 	audit  *audit.Writer
 	log    *slog.Logger
 	opts   DeliveryOptions
+	// onDisabled is called in the transaction that auto-disables an
+	// endpoint (owner notification, ADR 0019 F); nil = none.
+	onDisabled EndpointDisabledFunc
 }
+
+// EndpointDisabledFunc is told, inside the transaction that disables it,
+// that ep was disabled after failures consecutive failed deliveries. An
+// error rolls the outcome back (the attempt is then retried).
+type EndpointDisabledFunc func(ctx context.Context, tx bun.IDB, ep *store.WebhookEndpoint, failures int, at time.Time) error
+
+// OnEndpointDisabled registers fn (wired by internal/app: the in-panel
+// notification and the email to the owners).
+func (d *Deliverer) OnEndpointDisabled(fn EndpointDisabledFunc) { d.onDisabled = fn }
 
 // NewDeliverer builds a Deliverer. client may be nil: the default client is
 // NewEgressClient(opts.Egress, opts.Resolver, opts.Timeout), which enforces
@@ -231,6 +243,7 @@ func (d *Deliverer) attempt(ctx context.Context, del *store.WebhookDelivery) err
 	}
 
 	status, excerpt, sendErr := d.send(ctx, ep.URL, secrets, body, row, now)
+	elapsed := d.clock.Now().Sub(now)
 	del.Attempt++
 	del.UpdatedAt = d.clock.Now()
 	del.StatusCode, del.ResponseExcerpt = nil, nil
@@ -266,6 +279,9 @@ func (d *Deliverer) attempt(ctx context.Context, del *store.WebhookDelivery) err
 		if err := store.SetWebhookEndpointLastDelivery(ctx, tx, ep.ID, del.UpdatedAt); err != nil {
 			return err
 		}
+		if err := store.InsertWebhookDeliveryAttempt(ctx, tx, attemptRow(ep, del, now, elapsed)); err != nil {
+			return err
+		}
 		if test {
 			return nil
 		}
@@ -281,6 +297,11 @@ func (d *Deliverer) attempt(ctx context.Context, del *store.WebhookDelivery) err
 			return err
 		}
 		d.log.WarnContext(ctx, "webhook endpoint disabled", slog.String("endpoint_id", ep.ID), slog.String("establishment_id", ep.EstablishmentID))
+		if d.onDisabled != nil {
+			if err := d.onDisabled(ctx, tx, ep, failures, del.UpdatedAt); err != nil {
+				return err
+			}
+		}
 		if d.audit == nil {
 			return nil
 		}
@@ -289,6 +310,20 @@ func (d *Deliverer) attempt(ctx context.Context, del *store.WebhookDelivery) err
 			EntityType: "webhook_endpoint", EntityID: ep.ID, Diff: map[string]any{"reason": reason},
 		})
 	})
+}
+
+// attemptRow is the history row of the attempt just made on del (the
+// counters of del already include it).
+func attemptRow(ep *store.WebhookEndpoint, del *store.WebhookDelivery, at time.Time, elapsed time.Duration) *store.WebhookDeliveryAttempt {
+	a := &store.WebhookDeliveryAttempt{
+		ID: store.NewID(), EstablishmentID: ep.EstablishmentID, EndpointID: ep.ID, DeliveryID: del.ID,
+		Attempt: del.Attempt, StatusCode: del.StatusCode, Error: del.LastError, ResponseExcerpt: del.ResponseExcerpt,
+		DurationMS: max(elapsed.Milliseconds(), 0), AttemptedAt: at,
+	}
+	if del.DeliveredAt != nil {
+		a.Error = nil
+	}
+	return a
 }
 
 // finishWithoutSending fails a delivery that cannot be sent at all (endpoint

@@ -1,0 +1,18 @@
+Subject: Webhook disattivato: hooks.example.com
+
+Webhook disattivato
+===================
+
+L'endpoint webhook verso hooks.example.com di Lido Delfino è stato disattivato automaticamente dopo 20 consegne consecutive non riuscite. Gli eventi successivi non vengono più inviati.
+
+Controlla il servizio che riceve i webhook, poi riattiva l'endpoint da Configurazione › Integrazioni: lo storico dei tentativi mostra la risposta di ogni invio.
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Notifica automatica di Arenile per Lido Delfino.
+
+Arenile — Coste360.it · https://arenile.app

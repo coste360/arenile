@@ -147,7 +147,24 @@ func SeasonPassToAPI(v *store.SeasonPassView) api.SeasonPass {
 	if b.SeasonID != nil {
 		out.SeasonId = *b.SeasonID
 	}
+	out.PriceOverride = seasonPassOverrideToAPI(b)
+	out.Test = testFlag(b.Test)
 	return out
+}
+
+// seasonPassOverrideToAPI maps the manual price of a pass (nil when none).
+func seasonPassOverrideToAPI(b *store.Booking) *api.SeasonPassPriceOverride {
+	if b.PriceOverrideAmount == nil || b.PriceOverrideAt == nil {
+		return nil
+	}
+	o := &api.SeasonPassPriceOverride{Amount: int64(*b.PriceOverrideAmount), SetAt: *b.PriceOverrideAt, SetByUserId: b.PriceOverrideByUserID}
+	if b.PriceOverrideEngineAmount != nil {
+		o.EngineAmount = int64(*b.PriceOverrideEngineAmount)
+	}
+	if b.PriceOverrideReason != nil {
+		o.Reason = *b.PriceOverrideReason
+	}
+	return o
 }
 
 func seasonPassDetailToAPI(d *pass.Detail) api.SeasonPassDetail {

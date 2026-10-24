@@ -86,5 +86,33 @@
     "revokeTitle": "Révoquer la libération du {{date}} ?",
     "revokeText": "L'emplacement revient à l'abonné. Impossible si le jour a déjà été revendu.",
     "revokeAria": "Révoquer la libération du {{date}} ({{slot}})"
+  },
+  "override": {
+    "title": "Prix",
+    "descriptionEngine": "Total calculé à partir de la grille tarifaire (formule saison).",
+    "descriptionManual": "Prix fixé par le gérant à la place de la grille tarifaire.",
+    "manual": "Prix manuel",
+    "current": "Total",
+    "engine": "Prix de la grille",
+    "reason": "Motif",
+    "reasonPlaceholder": "Ex. accord avec un client fidèle",
+    "setAt": "Modifié le",
+    "set": "Définir un prix manuel",
+    "edit": "Modifier le prix",
+    "clear": "Revenir à la grille",
+    "clearTitle": "Revenir au prix de la grille ?",
+    "clearDescription": "Le total est recalculé par le moteur de prix. La modification reste dans le journal d'activité.",
+    "dialogTitle": "Prix manuel",
+    "dialogDescription": "Remplace le total calculé à partir de la grille tarifaire. Le motif et le prix précédent restent dans le journal d'activité.",
+    "amount": "Nouveau total",
+    "amountHint": "Total de l'abonnement, extras compris. Les paiements déjà enregistrés restent.",
+    "submit": "Enregistrer le prix",
+    "saved": "Prix mis à jour.",
+    "cleared": "Prix de la grille rétabli.",
+    "onlyManagers": "Seuls le propriétaire et le gérant peuvent modifier le prix.",
+    "validation": {
+      "amount": "Indiquez un montant entre 0 et 1 000 000 €.",
+      "reason": "Indiquez le motif (de 3 à 500 caractères)."
+    }
   }
 }

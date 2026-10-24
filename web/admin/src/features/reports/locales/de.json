@@ -185,5 +185,19 @@
     "total": "Gesamt",
     "paid": "Bezahlt",
     "due": "Restbetrag"
+  },
+  "xlsx": {
+    "label": "Excel exportieren",
+    "aria": "Excel exportieren: {{report}}"
+  },
+  "exports": {
+    "label": "Listen exportieren",
+    "customers": "Kunden",
+    "bookings": "Buchungen im Zeitraum",
+    "season-passes": "Saisonabonnements",
+    "payments": "Zahlungen im Zeitraum",
+    "csv": "CSV",
+    "xlsx": "Excel",
+    "hint": "Dieselben Spalten wie die CSV-Datei, keine zusätzlichen Daten. Testbuchungen sind ausgeschlossen."
   }
 }

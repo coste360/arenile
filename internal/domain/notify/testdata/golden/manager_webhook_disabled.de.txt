@@ -1,0 +1,18 @@
+Subject: Webhook deaktiviert: hooks.example.com
+
+Webhook deaktiviert
+===================
+
+Der Webhook-Endpunkt zu hooks.example.com von Lido Delfino wurde nach 20 aufeinanderfolgenden fehlgeschlagenen Zustellungen automatisch deaktiviert. Weitere Ereignisse werden nicht mehr gesendet.
+
+Prüfen Sie den Dienst, der die Webhooks empfängt, und aktivieren Sie den Endpunkt dann unter Einstellungen › Integrationen wieder: Der Verlauf der Versuche zeigt die Antwort jeder Zustellung.
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Automatische Arenile-Benachrichtigung für Lido Delfino.
+
+Arenile — Coste360.it · https://arenile.app

@@ -1,6 +1,98 @@
 {
   "page": {
     "title": "Import data",
-    "description": "Import customers and season passes from a CSV file exported by other software: preview, validation report and all-or-nothing apply."
+    "description": "Import customers and season passes from a CSV file exported by another program: preview, validation report and all-or-nothing apply."
+  },
+  "kind": {
+    "customers": "Customers",
+    "season_passes": "Season passes"
+  },
+  "status": {
+    "uploaded": "Uploaded",
+    "validated": "Checked",
+    "applying": "Applying",
+    "applied": "Applied",
+    "failed": "Refused",
+    "discarded": "Discarded"
+  },
+  "upload": {
+    "title": "New import",
+    "description": "Upload a CSV file (UTF-8 or Windows, separator ; or ,), at most 5 MB and 20,000 rows. The file does not touch your data until you confirm.",
+    "kind": "What the file contains",
+    "columns": {
+      "customers": "Recognised columns: cognome (last name, required), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. English names and those of the most common programs are accepted too.",
+      "season_passes": "The customer columns plus posto (required, the spot label), pacchetto, dal, al, fascia. Each row creates a season pass on the chosen season, priced from the price list."
+    },
+    "template": "Download the CSV template",
+    "file": "CSV file",
+    "fileHint": "Marketing consent is never assumed: without the column the preview setting applies.",
+    "submit": "Upload and check"
+  },
+  "review": {
+    "title": "File “{{file}}”",
+    "noName": "unnamed",
+    "preview": "Preview",
+    "previewAgain": "Preview again",
+    "previewHint": "Choose the options and press “Preview”: no data is changed.",
+    "apply": "Apply",
+    "applyTitle": "Apply the import?",
+    "applyDescription": "{{create}} items will be created, {{update}} updated and {{skip}} skipped. All or nothing: at the first error nothing changes.",
+    "discard": "Discard",
+    "discardTitle": "Discard the import?",
+    "discardDescription": "The uploaded file is deleted. No data was changed."
+  },
+  "options": {
+    "matchBy": "Recognise existing customers by",
+    "matchEmail": "Email",
+    "matchPhone": "Phone",
+    "season": "Season",
+    "seasonPlaceholder": "Choose the season",
+    "pack": "Default pack",
+    "packPlaceholder": "From the file (pacchetto column)",
+    "updateExisting": "Update the customers found",
+    "updateExistingHint": "Off: existing customers stay as they are and the row is skipped.",
+    "createCustomers": "Create missing customers",
+    "createCustomersHint": "Off: rows whose customer is not found are errors.",
+    "consentDefault": "Marketing consent when the column is missing",
+    "consentDefaultHint": "Turn it on only if the consent is documented in the previous program."
+  },
+  "report": {
+    "rows": "Rows",
+    "invalid": "With errors",
+    "toCreate": "To create",
+    "toUpdateSkip": "To update / skip",
+    "fixAndRetry": "Fix the rows with errors in the file and upload it again: the import applies only without errors.",
+    "errors": "Errors",
+    "warnings": "Warnings",
+    "row": "Row",
+    "column": "Column",
+    "problem": "Problem"
+  },
+  "codes": {
+    "required": "Required value missing.",
+    "invalid_email": "Invalid email.",
+    "invalid_date": "Invalid date.",
+    "unknown_spot": "Unknown spot.",
+    "spot_unavailable": "Spot already taken in the period.",
+    "duplicate_in_file": "Row repeated in the file."
+  },
+  "applied": {
+    "title": "Import applied",
+    "description": "{{created}} created, {{updated}} updated, {{skipped}} skipped."
+  },
+  "failed": {
+    "title": "Import refused",
+    "description": "No data was changed. Check the errors, fix the file or the options and preview again."
+  },
+  "history": {
+    "title": "Import history",
+    "file": "File",
+    "status": "Status",
+    "result": "Result",
+    "when": "When",
+    "empty": "No imports.",
+    "appliedResult": "{{created}} created, {{updated}} updated, {{skipped}} skipped",
+    "previewResult": "{{rows}} rows, {{invalid}} with errors",
+    "openAria": "Open the import {{file}}"
   }
 }

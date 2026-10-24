@@ -55,6 +55,8 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 	var (
 		content   Content
 		onFailure func(context.Context)
+		// test: booking created in test mode (spec 15.4), subject prefixed.
+		test bool
 	)
 	switch {
 	case m.Template == TemplateTest:
@@ -62,6 +64,9 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 			Locale: cat.locale, Manager: true, Contacts: establishmentContacts(est),
 			Vars: map[string]string{"establishment.name": est.Name},
 		}
+	case panelTemplates[m.Template]:
+		// Owner emails without a booking (panel.go).
+		content = Content{Locale: cat.locale, Manager: true, Contacts: establishmentContacts(est), Vars: panelVars(m, est)}
 	case waitlistTemplates[m.Template]:
 		// M5B waitlist emails: no booking (waitlist.go).
 		if content, err = s.waitlistContent(ctx, es, m, est, cat); err != nil {
@@ -78,6 +83,7 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		if err != nil {
 			return Email{}, nil, err
 		}
+		test = d.Booking.Test
 		manager := managerTemplates[m.Template]
 		if !manager && !canReceive(d.Customer) {
 			return Email{}, nil, fmt.Errorf("%w: customer cannot receive messages", errSkip)
@@ -135,9 +141,15 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		return Email{}, nil, fmt.Errorf("%w: render: %w", ErrPermanent, err)
 	}
 	email.Subject, email.Text, email.HTML = r.Subject, r.Text, r.HTML
+	if test {
+		email.Subject = TestSubjectPrefix + email.Subject
+	}
 	email.Attach = append(email.Attach, BrandMarkAttachment())
 	return email, onFailure, nil
 }
+
+// TestSubjectPrefix marks the emails of test-mode bookings (spec 15.4).
+const TestSubjectPrefix = "[PROVA] "
 
 // issueForEmail issues a link in its own transaction. For the manage_link
 // and renewal templates (revokePrevious != nil) the previous links are

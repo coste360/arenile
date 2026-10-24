@@ -29,7 +29,9 @@ import {
   useRedeliverWebhook,
   useWebhookDeliveries,
   useWebhookDelivery,
+  useWebhookDeliveryAttempts,
   type WebhookDelivery,
+  type WebhookDeliveryAttempt,
   type WebhookDeliveryStatus,
   type WebhookEndpoint,
 } from '../api';
@@ -308,6 +310,11 @@ function DeliveryDetailDialog({
                 {d.last_error}
               </p>
             )}
+            <AttemptsHistory
+              establishmentId={establishmentId}
+              endpointId={endpoint.id}
+              deliveryId={d.id}
+            />
             <div className="space-y-1">
               <p className="font-medium">{t('deliveries.body')}</p>
               <pre className="max-h-64 overflow-auto rounded-md border bg-muted/50 p-3 font-mono text-xs">
@@ -338,5 +345,88 @@ function DeliveryDetailDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Every attempt of a delivery (ADR 0019 F), not only the last one. */
+function AttemptsHistory({
+  establishmentId,
+  endpointId,
+  deliveryId,
+}: {
+  establishmentId: string;
+  endpointId: string;
+  deliveryId: string;
+}) {
+  const { t } = useTranslation('integrations');
+  const fmt = useInstantFormat();
+  const q = useWebhookDeliveryAttempts(establishmentId, endpointId, deliveryId);
+  const rows = q.data?.pages.flatMap((p) => p.items) ?? [];
+  const columns: ColumnDef<WebhookDeliveryAttempt>[] = [
+    {
+      accessorKey: 'attempt',
+      meta: { label: t('deliveries.attempt'), align: 'right' },
+      header: t('deliveries.attempt'),
+    },
+    {
+      id: 'at',
+      accessorFn: (a) => a.attempted_at,
+      meta: { label: t('deliveries.attemptAt') },
+      header: t('deliveries.attemptAt'),
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">{fmt.dateTime(row.original.attempted_at)}</span>
+      ),
+    },
+    {
+      id: 'code',
+      accessorFn: (a) => a.status_code ?? 0,
+      meta: { label: t('deliveries.code'), align: 'right' },
+      header: t('deliveries.code'),
+      cell: ({ row }) => row.original.status_code ?? '—',
+    },
+    {
+      accessorKey: 'duration_ms',
+      meta: { label: t('deliveries.duration'), align: 'right' },
+      header: t('deliveries.duration'),
+      cell: ({ row }) => t('deliveries.durationValue', { ms: row.original.duration_ms }),
+    },
+    {
+      id: 'error',
+      accessorFn: (a) => a.error ?? '',
+      meta: { label: t('deliveries.error') },
+      header: t('deliveries.error'),
+      cell: ({ row }) => (
+        <span className="break-words text-muted-foreground">{row.original.error || '—'}</span>
+      ),
+    },
+  ];
+  return (
+    <div className="min-w-0 space-y-2">
+      <p className="font-medium">{t('deliveries.attemptsTitle')}</p>
+      {q.error ? (
+        <QueryState isLoading={false} error={q.error} onRetry={() => void q.refetch()} />
+      ) : (
+        <DataTable
+          caption={t('deliveries.attemptsTitle')}
+          columns={columns}
+          data={rows}
+          loading={q.isPending}
+          getRowId={(a) => a.id}
+          pageSize={0}
+          columnToggle={false}
+          empty={<EmptyState title={t('deliveries.noAttempts')} bordered={false} />}
+        />
+      )}
+      {q.hasNextPage && (
+        <Button
+          variant="outline"
+          disabled={q.isFetchingNextPage}
+          onClick={() => void q.fetchNextPage()}
+        >
+          {q.isFetchingNextPage && <Spinner />}
+          {t('deliveries.moreAttempts')}
+        </Button>
+      )}
+    </div>
   );
 }

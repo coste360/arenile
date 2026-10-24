@@ -265,6 +265,14 @@
     "lastError": "Ultimo errore",
     "body": "Corpo inviato",
     "response": "Risposta (estratto)",
-    "noResponse": "Nessuna risposta"
+    "noResponse": "Nessuna risposta",
+    "attemptsTitle": "Storico dei tentativi",
+    "attempt": "N.",
+    "attemptAt": "Quando",
+    "duration": "Durata",
+    "durationValue": "{{ms}} ms",
+    "error": "Errore",
+    "noAttempts": "Nessun tentativo ancora.",
+    "moreAttempts": "Carica altri tentativi"
   }
 }

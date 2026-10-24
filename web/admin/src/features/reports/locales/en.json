@@ -185,5 +185,19 @@
     "total": "Total",
     "paid": "Paid",
     "due": "Balance"
+  },
+  "xlsx": {
+    "label": "Export Excel",
+    "aria": "Export Excel: {{report}}"
+  },
+  "exports": {
+    "label": "Export lists",
+    "customers": "Customers",
+    "bookings": "Bookings in the period",
+    "season-passes": "Season passes",
+    "payments": "Payments in the period",
+    "csv": "CSV",
+    "xlsx": "Excel",
+    "hint": "Same columns as the CSV, no extra data. Test bookings are excluded."
   }
 }

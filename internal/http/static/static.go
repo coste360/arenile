@@ -31,6 +31,8 @@ type Handler struct {
 	// must stay under its weight budget on the wire (spec 12.6), with no
 	// build-time step and no dependency.
 	gz sync.Map // app + "/" + rel -> []byte
+	// bookingMeta renders the social preview of /b/{slug} (meta.go).
+	bookingMeta PageMetaFunc
 }
 
 // New returns a Handler over the embedded files.
@@ -76,6 +78,9 @@ func (h *Handler) Booking(w http.ResponseWriter, r *http.Request) {
 	// reserved slug).
 	if strings.HasPrefix(rest, "assets/") {
 		http.NotFound(w, r)
+		return
+	}
+	if h.serveBookingIndex(w, r, slugOf(rest)) {
 		return
 	}
 	h.serveIndex(w, r, h.booking, "booking")

@@ -1,0 +1,18 @@
+Subject: Webhook disabled: hooks.example.com
+
+Webhook disabled
+================
+
+The webhook endpoint to hooks.example.com of Lido Delfino was disabled automatically after 20 consecutive failed deliveries. Later events are no longer sent.
+
+Check the service receiving the webhooks, then reactivate the endpoint in Settings › Integrations: the attempt history shows the response of every delivery.
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Automatic Arenile notification for Lido Delfino.
+
+Arenile — Coste360.it · https://arenile.app

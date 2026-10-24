@@ -2,5 +2,97 @@
   "page": {
     "title": "Importa dati",
     "description": "Importa clienti e abbonamenti da un file CSV esportato da un altro gestionale: anteprima, rapporto di validazione e applicazione tutto o niente."
+  },
+  "kind": {
+    "customers": "Clienti",
+    "season_passes": "Abbonamenti stagionali"
+  },
+  "status": {
+    "uploaded": "Caricato",
+    "validated": "Verificato",
+    "applying": "In applicazione",
+    "applied": "Applicato",
+    "failed": "Rifiutato",
+    "discarded": "Scartato"
+  },
+  "upload": {
+    "title": "Nuova importazione",
+    "description": "Carica un file CSV (UTF-8 o Windows, separatore ; o ,), al massimo 5 MB e 20.000 righe. Il file non tocca i dati finché non confermi.",
+    "kind": "Cosa contiene il file",
+    "columns": {
+      "customers": "Colonne riconosciute: cognome (obbligatoria), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. Sono accettati anche i nomi inglesi e quelli dei gestionali più diffusi.",
+      "season_passes": "Colonne dei clienti più posto (obbligatoria, l'etichetta della postazione), pacchetto, dal, al, fascia. Ogni riga crea un abbonamento sulla stagione scelta, con il prezzo del listino."
+    },
+    "template": "Scarica il modello CSV",
+    "file": "File CSV",
+    "fileHint": "Il consenso marketing non è mai presunto: senza la colonna vale l'impostazione dell'anteprima.",
+    "submit": "Carica e verifica"
+  },
+  "review": {
+    "title": "File «{{file}}»",
+    "noName": "senza nome",
+    "preview": "Anteprima",
+    "previewAgain": "Ripeti l'anteprima",
+    "previewHint": "Scegli le opzioni e premi «Anteprima»: nessun dato viene modificato.",
+    "apply": "Applica",
+    "applyTitle": "Applicare l'importazione?",
+    "applyDescription": "Saranno creati {{create}} elementi, aggiornati {{update}} e saltati {{skip}}. Tutto o niente: al primo errore non cambia nulla.",
+    "discard": "Scarta",
+    "discardTitle": "Scartare l'importazione?",
+    "discardDescription": "Il file caricato viene cancellato. Nessun dato è stato modificato."
+  },
+  "options": {
+    "matchBy": "Riconosci i clienti già presenti per",
+    "matchEmail": "Email",
+    "matchPhone": "Telefono",
+    "season": "Stagione",
+    "seasonPlaceholder": "Scegli la stagione",
+    "pack": "Pacchetto predefinito",
+    "packPlaceholder": "Dal file (colonna pacchetto)",
+    "updateExisting": "Aggiorna i clienti trovati",
+    "updateExistingHint": "Spento: i clienti già presenti restano come sono e la riga viene saltata.",
+    "createCustomers": "Crea i clienti mancanti",
+    "createCustomersHint": "Spento: le righe con un cliente non trovato sono errori.",
+    "consentDefault": "Consenso marketing quando manca la colonna",
+    "consentDefaultHint": "Attivalo solo se il consenso è documentato nel gestionale di provenienza."
+  },
+  "report": {
+    "rows": "Righe",
+    "invalid": "Con errori",
+    "toCreate": "Da creare",
+    "toUpdateSkip": "Da aggiornare / saltare",
+    "fixAndRetry": "Correggi le righe con errori nel file e caricalo di nuovo: l'importazione si applica solo senza errori.",
+    "errors": "Errori",
+    "warnings": "Avvisi",
+    "row": "Riga",
+    "column": "Colonna",
+    "problem": "Problema"
+  },
+  "codes": {
+    "required": "Dato obbligatorio mancante.",
+    "invalid_email": "Email non valida.",
+    "invalid_date": "Data non valida.",
+    "unknown_spot": "Postazione inesistente.",
+    "spot_unavailable": "Postazione già occupata nel periodo.",
+    "duplicate_in_file": "Riga ripetuta nel file."
+  },
+  "applied": {
+    "title": "Importazione applicata",
+    "description": "Creati {{created}}, aggiornati {{updated}}, saltati {{skipped}}."
+  },
+  "failed": {
+    "title": "Importazione rifiutata",
+    "description": "Nessun dato è stato modificato. Controlla gli errori, correggi il file o le opzioni e ripeti l'anteprima."
+  },
+  "history": {
+    "title": "Storico importazioni",
+    "file": "File",
+    "status": "Stato",
+    "result": "Risultato",
+    "when": "Quando",
+    "empty": "Nessuna importazione.",
+    "appliedResult": "{{created}} creati, {{updated}} aggiornati, {{skipped}} saltati",
+    "previewResult": "{{rows}} righe, {{invalid}} con errori",
+    "openAria": "Apri l'importazione {{file}}"
   }
 }

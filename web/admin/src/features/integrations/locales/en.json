@@ -265,6 +265,14 @@
     "lastError": "Last error",
     "body": "Body sent",
     "response": "Response (excerpt)",
-    "noResponse": "No response"
+    "noResponse": "No response",
+    "attemptsTitle": "Attempt history",
+    "attempt": "No.",
+    "attemptAt": "When",
+    "duration": "Duration",
+    "durationValue": "{{ms}} ms",
+    "error": "Error",
+    "noAttempts": "No attempts yet.",
+    "moreAttempts": "Load more attempts"
   }
 }
