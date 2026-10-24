@@ -15,7 +15,9 @@ import {
   EXPECTED_CASH,
   booking,
   closedSession,
+  barRegister,
   eur,
+  mainRegister,
   norm,
   openDetail,
   openSession,
@@ -29,6 +31,7 @@ function routes(role: CashRole, extra: Record<string, Handler> = {}) {
   return {
     ...roleRoutes(role),
     [`GET ${API}/cash-sessions`]: () => list([]),
+    [`GET ${API}/cash-registers`]: () => list([mainRegister]),
     ...extra,
   };
 }
@@ -63,7 +66,7 @@ describe('CashPage', () => {
     expect(await within(card).findByText('Inserisci un importo valido.')).toBeInTheDocument();
     await user.type(within(card).getByLabelText('Fondo cassa'), '150,50');
     await user.click(within(card).getByRole('button', { name: 'Apri sessione' }));
-    await waitFor(() => expect(body).toEqual({ register: 'main', opening_float: 15050 }));
+    await waitFor(() => expect(body).toEqual({ register_id: 'r-main', opening_float: 15050 }));
     const [post] = callsTo(fetchMock, 'POST', `${API}/cash-sessions`);
     expect(post?.headers.get('Idempotency-Key')).toBeTruthy();
     expect(norm((await screen.findByTestId('stat-expected-cash')).textContent)).toBe(
@@ -213,6 +216,8 @@ describe('CashPage', () => {
       }),
     );
     const table = await screen.findByRole('table', { name: 'Storico sessioni' });
+    // Settle the registers and the current-session queries first (rows re-render).
+    await screen.findByRole('form', { name: 'Apri la cassa' });
     const row = (await within(table).findByText('Chiusa')).closest('tr') as HTMLElement;
     expect(norm(within(row).getByTestId('difference-amount').textContent)).toBe(
       norm(`-${eur(10)}`),
@@ -232,6 +237,55 @@ describe('CashPage', () => {
         hidden: true,
       }),
     ).toBeInTheDocument();
+  });
+
+  it('picks the register of this device and opens a session on it', async () => {
+    const user = userEvent.setup();
+    window.localStorage.removeItem(`arenile.cash.register.${EST_ID}`);
+    let body: Record<string, unknown> | undefined;
+    const { fetchMock } = renderApp(
+      PATH,
+      routes('cashier', {
+        [`GET ${API}/cash-registers`]: () =>
+          list([{ ...mainRegister, open_session_id: 's1' }, barRegister]),
+        [`GET ${API}/cash-sessions/current`]: (req) =>
+          new URL(req.url).searchParams.get('register_id') === 'r-main'
+            ? json(200, openDetail)
+            : problem(404, 'not_found'),
+        [`POST ${API}/cash-sessions`]: async (req) => {
+          body = (await req.json()) as Record<string, unknown>;
+          return json(201, { ...openSession, id: 's2', register: 'bar', register_id: 'r-bar' });
+        },
+      }),
+    );
+    // Default register first: its open session is shown.
+    await screen.findByTestId('stat-expected-cash');
+    const picker = screen.getByRole('combobox', { name: 'Cassa' });
+    expect(picker).toHaveTextContent('Cassa principale · aperta');
+    await user.click(picker);
+    await user.click(await screen.findByRole('option', { name: 'Bar spiaggia · chiusa' }));
+    const card = await screen.findByRole('form', { name: 'Apri Bar spiaggia' });
+    expect(window.localStorage.getItem(`arenile.cash.register.${EST_ID}`)).toBe('r-bar');
+    const currents = callsTo(fetchMock, 'GET', `${API}/cash-sessions/current`);
+    expect(currents.map((r) => new URL(r.url).searchParams.get('register_id'))).toContain('r-bar');
+    await user.type(within(card).getByLabelText('Fondo cassa'), '20');
+    await user.click(within(card).getByRole('button', { name: 'Apri sessione' }));
+    await waitFor(() => expect(body).toEqual({ register_id: 'r-bar', opening_float: 2000 }));
+    window.localStorage.removeItem(`arenile.cash.register.${EST_ID}`);
+  });
+
+  it('prints the server Z closing (PDF) through a hidden iframe', async () => {
+    const user = userEvent.setup();
+    renderApp(
+      PATH,
+      routes('cashier', { [`GET ${API}/cash-sessions/current`]: () => json(200, openDetail) }),
+    );
+    await screen.findByTestId('stat-expected-cash');
+    await user.click(screen.getByRole('button', { name: 'PDF chiusura Z' }));
+    const frame = document.querySelector('iframe[title="z-report"]') as HTMLIFrameElement;
+    expect(frame).not.toBeNull();
+    expect(frame.getAttribute('src')).toBe(`${API}/cash-sessions/s1/z-report?paper=a4`);
+    frame.remove();
   });
 
   it('is read-only for the viewer', async () => {

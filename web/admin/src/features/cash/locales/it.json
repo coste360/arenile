@@ -13,6 +13,7 @@
     "monthLabel": "Mese",
     "year": "Anno",
     "downloadCsv": "Scarica CSV",
+    "downloadXlsx": "Scarica Excel",
     "downloadJson": "Scarica JSON",
     "disclaimer": "Importi IVA inclusa, scorporati per aliquota dallo snapshot del prezzo; i rimborsi sono in negativo. La conformità fiscale della configurazione resta responsabilità del gestore e del suo consulente.",
     "empty": "Nessun incasso nel periodo selezionato.",
@@ -26,7 +27,10 @@
     "byMethod": "Per metodo di pagamento",
     "count": "Operazioni",
     "detail": "Dettaglio",
-    "periodColumn": "Periodo"
+    "periodColumn": "Periodo",
+    "register": "Cassa",
+    "allRegisters": "Tutte le casse",
+    "registerNote": "Solo gli incassi registrati nelle sessioni di questa cassa: i pagamenti online senza sessione sono nel totale di tutte le casse."
   },
   "method": {
     "cash": "Contanti",
@@ -63,7 +67,8 @@
     "floatHint": "Contanti presenti nel cassetto all'apertura.",
     "submit": "Apri sessione",
     "opened": "Sessione di cassa aperta",
-    "noneReadOnly": "Nessuna sessione di cassa aperta."
+    "noneReadOnly": "Nessuna sessione di cassa aperta.",
+    "titleRegister": "Apri {{name}}"
   },
   "current": {
     "badge": "{{register}} aperta dal {{time}}",
@@ -175,13 +180,58 @@
     "amountPositive": "L'importo deve essere maggiore di zero.",
     "reasonRequired": "Indica la causale.",
     "countedRequired": "Inserisci i contanti contati.",
-    "tooLong": "Testo troppo lungo."
+    "tooLong": "Testo troppo lungo.",
+    "nameRequired": "Indica il nome della cassa.",
+    "codeFormat": "Lettere minuscole, cifre, - e _ (massimo 40).",
+    "sortOrder": "Un numero intero tra 0 e 10000."
   },
   "registers": {
     "main": "Cassa principale"
   },
   "registersPage": {
     "title": "Casse",
-    "description": "Casse dello stabilimento: una sessione aperta per cassa, chiusura Z e report per cassa."
+    "description": "Casse dello stabilimento: una sessione aperta per cassa, chiusura Z e report per cassa.",
+    "fields": {
+      "name": "Nome",
+      "code": "Codice",
+      "status": "Stato",
+      "sortOrder": "Ordine",
+      "active": "Attiva"
+    },
+    "default": "Predefinita",
+    "inactive": "Disattivata",
+    "sessionOpen": "Sessione aperta",
+    "sessionClosed": "Chiusa",
+    "actions": "Azioni",
+    "editAria": "Modifica {{name}}",
+    "deleteAria": "Elimina {{name}}",
+    "deleteConfirm": "Eliminare la cassa «{{name}}»? Si può eliminare solo una cassa mai usata.",
+    "deleted": "Cassa eliminata",
+    "deleteInUse": "La cassa ha sessioni nello storico: puoi solo disattivarla.",
+    "add": "Nuova cassa",
+    "readOnly": "Sola lettura: solo titolare e responsabile gestiscono le casse.",
+    "empty": "Nessuna cassa.",
+    "editTitle": "Modifica cassa",
+    "formDescription": "Ogni cassa ha la sua sessione, il suo fondo e la sua chiusura Z.",
+    "saved": "Cassa salvata",
+    "deactivateOpen": "Chiudi prima la sessione aperta di questa cassa.",
+    "codeFixed": "Il codice non si può cambiare.",
+    "codeHint": "Facoltativo: se vuoto viene ricavato dal nome.",
+    "defaultAlwaysActive": "La cassa predefinita resta sempre attiva."
+  },
+  "zpdf": {
+    "group": "Chiusura Z in PDF",
+    "button": "PDF chiusura Z",
+    "more": "Altri formati della chiusura Z",
+    "a4": "PDF A4",
+    "receipt": "Scontrino 80 mm",
+    "openTab": "Apri in una nuova scheda",
+    "failed": "Impossibile preparare la stampa della chiusura Z."
+  },
+  "registerPicker": {
+    "label": "Cassa",
+    "open": "{{name}} · aperta",
+    "closed": "{{name}} · chiusa",
+    "manage": "Gestisci casse"
   }
 }

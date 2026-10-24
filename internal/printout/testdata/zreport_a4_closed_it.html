@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Chiusura Z · Bar &lt;spiaggia&gt; · Lido Azzurro</title>
+<style>
+@page { size: A4; margin: 14mm 14mm 16mm; }
+:root { color-scheme: light; --ink: #0f172a; --muted: #475569; --rule: #cbd5e1; --navy: #0b2542; --neg: #b91c1c; --pos: #15803d; }
+* { box-sizing: border-box; }
+html { background: #f8fafc; }
+body { margin: 0 auto; padding: 24px 16px; max-width: 210mm; color: var(--ink); background: #fff;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body.receipt { max-width: 80mm; padding: 12px 8px; font-size: 11px; }
+.hint { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; color: var(--muted); font-size: 12px; }
+header.doc { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--navy); }
+.receipt header.doc { flex-direction: column-reverse; align-items: center; text-align: center; gap: 6px; }
+.est h1 { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+.receipt .est h1 { font-size: 14px; }
+.est p { margin: 0; color: var(--muted); }
+.logo { height: 34px; width: auto; flex: none; }
+.receipt .logo { height: 22px; }
+h2.title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin: 16px 0 8px; font-size: 20px; }
+.receipt h2.title { font-size: 15px; justify-content: center; text-align: center; }
+.badge { display: inline-block; padding: 1px 8px; border: 1px solid var(--neg); border-radius: 999px; color: var(--neg); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.draft-notice { margin: 0 0 12px; color: var(--neg); }
+dl.meta { display: grid; grid-template-columns: repeat(4, auto 1fr); gap: 2px 10px; margin: 0 0 12px; }
+.receipt dl.meta, dl.kpi.receipt { grid-template-columns: auto 1fr; }
+dl.meta dt, dl.kpi dt { color: var(--muted); }
+dl.meta dd, dl.kpi dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+dl.kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 12px; margin: 0 0 12px; padding: 8px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.receipt dl.kpi { grid-template-columns: 1fr auto; }
+dl.kpi div { display: contents; }
+.receipt dl.kpi dd { text-align: right; }
+section { break-inside: avoid; margin: 0 0 14px; }
+h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--navy); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 6px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.receipt th, .receipt td { padding: 2px 2px; }
+th { font-weight: 600; color: var(--muted); font-size: 11px; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tfoot td { font-weight: 700; border-top: 2px solid var(--ink); border-bottom: 0; }
+.neg { color: var(--neg); }
+.pos { color: var(--pos); }
+.diff { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 10px; border: 2px solid var(--ink); border-radius: 6px; font-size: 15px; font-weight: 700; }
+.receipt .diff { font-size: 13px; }
+.notes { white-space: pre-wrap; margin: 0; }
+.sign { display: flex; gap: 24px; margin-top: 28px; }
+.sign div { flex: 1; border-top: 1px solid var(--ink); padding-top: 4px; color: var(--muted); font-size: 11px; }
+footer.doc { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.receipt footer.doc { flex-direction: column; text-align: center; }
+.empty { color: var(--muted); margin: 0; }
+.receipt .wide { display: none; }
+@media print {
+  html, body { background: #fff; }
+  body { padding: 0; max-width: none; }
+  .hint { display: none; }
+}
+@media screen and (max-width: 640px) {
+  dl.meta { grid-template-columns: auto 1fr; }
+  dl.kpi { grid-template-columns: 1fr auto; }
+  dl.kpi dd { text-align: right; }
+  header.doc { flex-direction: column-reverse; }
+  .wide { display: none; }
+}
+</style>
+</head>
+<body class="a4">
+<p class="hint">Per salvare in PDF usa Stampa (Ctrl&#43;P / Cmd&#43;P) e scegli &#34;Salva come PDF&#34;.</p>
+<header class="doc">
+  <div class="est">
+    <h1>Lido Azzurro</h1>
+    <p>Lungomare Caboto 12</p><p>04024 Gaeta (LT)</p>
+    <p>Azzurro S.r.l.</p>
+    <p>P. IVA IT01234567890</p>
+    <p>Concessione CDM 12/2020</p>
+  </div>
+  <img class="logo" src="data:image/svg&#43;xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NTAgMjM4IiB3aWR0aD0iNzUwIiBoZWlnaHQ9IjIzOCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJBcmVuaWxlIOKAlCBsb2dvIG9yaXp6b250YWxlIG5hdnkiPgo8dGl0bGU&#43;QXJlbmlsZSDigJQgbG9nbyBvcml6em9udGFsZSBuYXZ5PC90aXRsZT4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzQgMzgpIHNjYWxlKDAuMjI0MzI0MykgdHJhbnNsYXRlKC0xNDMgLTE3NykiPjxwYXRoIGQ9Ik0gMjgyLjggNTI4LjYgTCA0NjAgMTg2IEwgNTgyIDE4NiBMIDc4NC45IDYzNyBDIDc2NS42IDY0NC4yIDc0OC42IDY0MS43IDczMC40IDYzMi42IEMgNjgzLjQgNjA3LjUgNjQ1LjQgNTcyLjMgNjAzLjUgNTM5LjkgTCA1MDkgMzQ5IEwgNDUxLjIgNDc2LjcgQyAzODguMiA0NzMuNCAzMzIgNDk0IDI4Mi44IDUyOC42IFoiIGZpbGw9IiMwQjI1NDIiLz4KPHBhdGggZD0iTSA2OTQuNSA3MjMuNyBDIDczNi40IDcyNi42IDc3Ni4xIDcxNS4zIDgwNyA2ODYuMSBMIDg3MC40IDgyNyBMIDc0NS42IDgyNyBaIiBmaWxsPSIjMEIyNTQyIi8&#43;CjxwYXRoIGQ9Ik0gMTUxIDgyNyBDIDIzNiA3MTcgMzUzIDY3NyA0NDUgNjgwIEMgNTU1IDY3OCA2MzUgNzQ4IDcwMCA4MjcgWiIgZmlsbD0iIzBCMjU0MiIvPgo8cGF0aCBkPSJNIDE4MiA3MDEgQyAyMTEgNjIwIDI3NyA1NDUgMzQ1IDUxOSBDIDQxMSA0ODggNDczIDQ5NSA1MjYgNTE4IEMgNTk4IDU1MCA2NDggNjE2IDcxMSA2NDcgQyA3NDYgNjY4IDc3MyA2NjkgODA3IDY1MSBDIDc3MiA3MDcgNjk3IDcxNyA2MzIgNjgyIEMgNTc3IDY1MSA1MzggNjEzIDQ5MSA2MDEgQyA0MTggNTcyIDM2MCA1OTQgMzA2IDYzMSBDIDI2MCA2NTkgMjE0IDY5MiAxODIgNzAxIFoiIGZpbGw9IiMwQjI1NDIiLz48L2c&#43;PHBhdGggZmlsbD0iIzBCMjU0MiIgZD0iTTI1MS4wNiAxNTlMMjM0LjA5IDE1OUwyNTIuOTEgNzUuMzZMMjg1LjE0IDc1LjM2TDMwMy45NSAxNTlMMjg2Ljk4IDE1OUwyODMuNjYgMTQzLjg3TDI1NC4zOSAxNDMuODdMMjUxLjA2IDE1OU0yNzEuOTggODkuMzhMMjY2LjA3IDg5LjM4TDI1Ny41OCAxMjkuMTFMMjgwLjQ2IDEyOS4xMU0zMjguMTUgMTU5TDMxMS42NyAxNTlMMzExLjY3IDk3LjUwTDMyOC4wMyA5Ny41MEwzMjguMDMgMTA0LjAyUTMzOC4zNiA5Ny44NyAzNDcuNzEgOTYuMDJMMzQ3LjcxIDExMi42M1EzMzcuNzUgMTE0LjcyIDMzMC42MSAxMTYuOTNMMzI4LjE1IDExNy44ME0zNjguOTYgMTM1LjI2UTM2OS4wOCAxNDAuOTIgMzcxLjk3IDE0My40NFEzNzQuODYgMTQ1Ljk2IDM4MC4yNyAxNDUuOTZRMzkxLjcxIDE0NS45NiA0MDAuNjkgMTQ1LjIyTDQwNC4xNCAxNDQuODVMNDA0LjM4IDE1Ny4wM1EzOTAuMjQgMTYwLjQ4IDM3OC44MCAxNjAuNDhRMzY0LjkwIDE2MC40OCAzNTguNjMgMTUzLjEwUTM1Mi4zNSAxNDUuNzIgMzUyLjM1IDEyOS4xMVEzNTIuMzUgOTYuMDIgMzc5LjU0IDk2LjAyUTQwNi4zNSA5Ni4wMiA0MDYuMzUgMTIzLjgyTDQwNS4xMiAxMzUuMjZMMzY4Ljk2IDEzNS4yNk0zNjguODQgMTIyLjcyTDM5MC4xMSAxMjIuNzJRMzkwLjExIDExNS4zNCAzODcuNzggMTEyLjQ0UTM4NS40NCAxMDkuNTUgMzc5LjYwIDEwOS41NVEzNzMuNzUgMTA5LjU1IDM3MS4zNiAxMTIuNTdRMzY4Ljk2IDExNS41OCAzNjguODQgMTIyLjcyTTQzMi42NCAxMTNMNDMyLjY0IDE1OUw0MTYuMTYgMTU5TDQxNi4xNiA5Ny41MEw0MzIuNTIgOTcuNTBMNDMyLjUyIDEwMC45NFE0NDAuODggOTYuMDIgNDQ3Ljg5IDk2LjAyUTQ2MC4xOSA5Ni4wMiA0NjQuODcgMTAzLjI4UTQ2OS41NCAxMTAuNTQgNDY5LjU0IDEyNS42N0w0NjkuNTQgMTU5TDQ1My4wNiAxNTlMNDUzLjA2IDEyNi4xNlE0NTMuMDYgMTE4LjI5IDQ1MS4yMSAxMTQuNTRRNDQ5LjM3IDExMC43OCA0NDMuODMgMTEwLjc4UTQzOC43OSAxMTAuNzggNDM0LjEyIDExMi41MU00OTguNjYgMTU5TDQ4Mi4xOCAxNTlMNDgyLjE4IDk3LjUwTDQ5OC42NiA5Ny41MEw0OTguNjYgMTU5TTQ5OC42NiA4OS42M0w0ODIuMTggODkuNjNMNDgyLjE4IDcyLjkwTDQ5OC42NiA3Mi45ME01MjkuMTMgMTU5TDUxMi42NSAxNTlMNTEyLjY1IDcyLjkwTDUyOS4xMyA3Mi45ME01NTYuNjUgMTM1LjI2UTU1Ni43NyAxNDAuOTIgNTU5LjY2IDE0My40NFE1NjIuNTUgMTQ1Ljk2IDU2Ny45NyAxNDUuOTZRNTc5LjQxIDE0NS45NiA1ODguMzggMTQ1LjIyTDU5MS44MyAxNDQuODVMNTkyLjA4IDE1Ny4wM1E1NzcuOTMgMTYwLjQ4IDU2Ni40OSAxNjAuNDhRNTUyLjU5IDE2MC40OCA1NDYuMzIgMTUzLjEwUTU0MC4wNSAxNDUuNzIgNTQwLjA1IDEyOS4xMVE1NDAuMDUgOTYuMDIgNTY3LjIzIDk2LjAyUTU5NC4wNCA5Ni4wMiA1OTQuMDQgMTIzLjgyTDU5Mi44MSAxMzUuMjZMNTU2LjY1IDEzNS4yNk01NTYuNTMgMTIyLjcyTDU3Ny44MSAxMjIuNzJRNTc3LjgxIDExNS4zNCA1NzUuNDcgMTEyLjQ0UTU3My4xMyAxMDkuNTUgNTY3LjI5IDEwOS41NVE1NjEuNDUgMTA5LjU1IDU1OS4wNSAxMTIuNTdRNTU2LjY1IDExNS41OCA1NTYuNTMgMTIyLjcyIi8&#43;Cjwvc3ZnPgo=" alt="Arenile" width="107" height="34">
+</header>
+
+<h2 class="title"><span>Chiusura Z — Bar &lt;spiaggia&gt;</span></h2>
+
+
+<dl class="meta">
+  <dt>Apertura</dt><dd>15/07/2027 08:30</dd>
+  <dt>Aperta da</dt><dd>Giulia</dd>
+  <dt>Chiusura</dt><dd>15/07/2027 17:30</dd>
+  <dt>Chiusa da</dt><dd>Marco</dd>
+</dl>
+
+<dl class="kpi">
+  <div><dt>Fondo cassa</dt><dd>100,00 €</dd></div>
+  <div><dt>Versamenti</dt><dd>20,00 €</dd></div>
+  <div><dt>Prelievi</dt><dd>50,00 €</dd></div>
+  <div><dt>Incassi</dt><dd>3</dd></div>
+  <div><dt>Rimborsi</dt><dd>1</dd></div>
+</dl>
+
+<section aria-labelledby="by-method">
+  <h3 id="by-method">Totali per metodo</h3>
+  
+  <table data-testid="methods">
+    <thead><tr>
+      <th scope="col">Metodo</th>
+      <th scope="col" class="num wide">Incassi</th>
+      <th scope="col" class="num">Atteso</th>
+      <th scope="col" class="num">Contato</th>
+      <th scope="col" class="num">Differenza</th>
+    </tr></thead>
+    <tbody>
+    <tr>
+      <th scope="row">Contanti</th>
+      <td class="num wide">30,00 €</td>
+      <td class="num">100,00 €</td>
+      <td class="num">98,00 €</td>
+      <td class="num neg">−2,00 €</td>
+    </tr>
+    <tr>
+      <th scope="row">Carta</th>
+      <td class="num wide">60,00 €</td>
+      <td class="num">60,00 €</td>
+      <td class="num">60,00 €</td>
+      <td class="num ">0,00 €</td>
+    </tr>
+    </tbody>
+    <tfoot><tr>
+      <td>Totale</td>
+      <td class="num wide">90,00 €</td>
+      <td class="num">160,00 €</td>
+      <td class="num">158,00 €</td>
+      <td class="num neg">−2,00 €</td>
+    </tr></tfoot>
+  </table>
+  
+</section>
+
+<section><div class="diff neg" data-testid="difference"><span>Differenza</span><span>−2,00 €</span></div></section>
+
+
+<section aria-labelledby="by-vat">
+  <h3 id="by-vat">Incassi per aliquota IVA</h3>
+  <table data-testid="vat">
+    <thead><tr>
+      <th scope="col">Aliquota</th>
+      <th scope="col" class="num">Imponibile</th>
+      <th scope="col" class="num">Imposta</th>
+      <th scope="col" class="num">Lordo</th>
+    </tr></thead>
+    <tbody>
+    <tr><th scope="row">10%</th><td class="num">10,00 €</td><td class="num">1,00 €</td><td class="num">11,00 €</td></tr>
+    <tr><th scope="row">22%</th><td class="num">64,75 €</td><td class="num">14,25 €</td><td class="num">79,00 €</td></tr>
+    </tbody>
+    <tfoot><tr><td>Totale</td><td class="num">74,75 €</td><td class="num">15,25 €</td><td class="num">90,00 €</td></tr></tfoot>
+  </table>
+</section>
+
+
+<section aria-labelledby="movements">
+  <h3 id="movements">Movimenti di cassa</h3>
+  
+  <table data-testid="movements">
+    <thead><tr>
+      <th scope="col">Ora</th>
+      <th scope="col">Tipo</th>
+      <th scope="col" class="num">Importo</th>
+      <th scope="col" class="wide">Causale</th>
+    </tr></thead>
+    <tbody>
+    <tr><td>09:30</td><td>Versamento</td><td class="num">20,00 €</td><td class="wide">cambio</td></tr>
+    <tr><td>13:30</td><td>Prelievo</td><td class="num">50,00 €</td><td class="wide">versamento &lt;banca&gt;</td></tr>
+    </tbody>
+  </table>
+  
+</section>
+
+<section aria-labelledby="notes"><h3 id="notes">Note</h3><p class="notes">turno mattina</p></section>
+
+<div class="sign"><div>Firma dell&#39;operatore</div></div>
+
+<footer class="doc">
+  <span>Documento non fiscale. Riepilogo di chiusura generato da Arenile.</span>
+  <span>Stampato il 15/07/2027 18:30 · Sessione 0190f1e2-0000-7000-8000-000000000001</span>
+</footer>
+</body>
+</html>

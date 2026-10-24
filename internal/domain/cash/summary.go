@@ -48,7 +48,8 @@ func (s Summary) Difference() money.Cents {
 }
 
 // Summarize computes the summary of a session from its float, payments and
-// movements; counted may be nil (session still open). Pure function.
+// movements; counted may be nil (session still open). Payments flagged as
+// test (test mode, INV-74) are left out. Pure function.
 func Summarize(openingFloat money.Cents, payments []store.Payment, movements []store.CashMovement, counted store.MethodTotals) Summary {
 	s := Summary{
 		Takings:  store.MethodTotals{},
@@ -62,7 +63,8 @@ func Summarize(openingFloat money.Cents, payments []store.Payment, movements []s
 	vat := map[vatKey]money.Cents{}
 	for i := range payments {
 		pm := &payments[i]
-		if pm.Status != store.PaymentSucceeded {
+		// Test-mode payments (INV-74) move no real money: never in the Z.
+		if pm.Status != store.PaymentSucceeded || pm.Test {
 			continue
 		}
 		signed := pm.Signed()

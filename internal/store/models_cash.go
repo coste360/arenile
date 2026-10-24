@@ -52,6 +52,10 @@ type CashSession struct {
 	Version        int64        `bun:"version,notnull"`
 	CreatedAt      time.Time    `bun:"created_at,notnull"`
 	UpdatedAt      time.Time    `bun:"updated_at,notnull"`
+
+	// RegisterName is the name of the register, filled by the cash service
+	// for the API (not a column).
+	RegisterName string `bun:"-"`
 }
 
 // Cash movement kinds.

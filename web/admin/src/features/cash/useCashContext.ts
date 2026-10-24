@@ -7,6 +7,8 @@ import { cashPermissionsFor, type CashPermissions } from './lib/permissions';
 
 export interface CashContext extends CashPermissions {
   establishmentId: string;
+  /** Name of the establishment (print header). */
+  establishmentName: string;
   /** True until the principal and the establishment are known. */
   loading: boolean;
   /** Currency formatting of integer cents ("1.234,50 €"). */
@@ -29,6 +31,7 @@ export function useCashContext(): CashContext {
   return {
     ...perms,
     establishmentId,
+    establishmentName: est?.name ?? '',
     loading: me.isPending || current.isLoading,
     money: (cents) => formatCents(cents, est?.currency ?? 'EUR'),
     dateTime: (iso) => formatInstant(iso, fmt),

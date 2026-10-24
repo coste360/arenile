@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{.Title}} · {{.Register}} · {{.Header.Name}}</title>
+<style>
+{{.PageCSS}}
+:root { color-scheme: light; --ink: #0f172a; --muted: #475569; --rule: #cbd5e1; --navy: #0b2542; --neg: #b91c1c; --pos: #15803d; }
+* { box-sizing: border-box; }
+html { background: #f8fafc; }
+body { margin: 0 auto; padding: 24px 16px; max-width: 210mm; color: var(--ink); background: #fff;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body.receipt { max-width: 80mm; padding: 12px 8px; font-size: 11px; }
+.hint { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 6px; color: var(--muted); font-size: 12px; }
+header.doc { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--navy); }
+.receipt header.doc { flex-direction: column-reverse; align-items: center; text-align: center; gap: 6px; }
+.est h1 { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+.receipt .est h1 { font-size: 14px; }
+.est p { margin: 0; color: var(--muted); }
+.logo { height: 34px; width: auto; flex: none; }
+.receipt .logo { height: 22px; }
+h2.title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin: 16px 0 8px; font-size: 20px; }
+.receipt h2.title { font-size: 15px; justify-content: center; text-align: center; }
+.badge { display: inline-block; padding: 1px 8px; border: 1px solid var(--neg); border-radius: 999px; color: var(--neg); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.draft-notice { margin: 0 0 12px; color: var(--neg); }
+dl.meta { display: grid; grid-template-columns: repeat(4, auto 1fr); gap: 2px 10px; margin: 0 0 12px; }
+.receipt dl.meta, dl.kpi.receipt { grid-template-columns: auto 1fr; }
+dl.meta dt, dl.kpi dt { color: var(--muted); }
+dl.meta dd, dl.kpi dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+dl.kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 12px; margin: 0 0 12px; padding: 8px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.receipt dl.kpi { grid-template-columns: 1fr auto; }
+dl.kpi div { display: contents; }
+.receipt dl.kpi dd { text-align: right; }
+section { break-inside: avoid; margin: 0 0 14px; }
+h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--navy); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 6px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.receipt th, .receipt td { padding: 2px 2px; }
+th { font-weight: 600; color: var(--muted); font-size: 11px; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tfoot td { font-weight: 700; border-top: 2px solid var(--ink); border-bottom: 0; }
+.neg { color: var(--neg); }
+.pos { color: var(--pos); }
+.diff { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 10px; border: 2px solid var(--ink); border-radius: 6px; font-size: 15px; font-weight: 700; }
+.receipt .diff { font-size: 13px; }
+.notes { white-space: pre-wrap; margin: 0; }
+.sign { display: flex; gap: 24px; margin-top: 28px; }
+.sign div { flex: 1; border-top: 1px solid var(--ink); padding-top: 4px; color: var(--muted); font-size: 11px; }
+footer.doc { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.receipt footer.doc { flex-direction: column; text-align: center; }
+.empty { color: var(--muted); margin: 0; }
+.receipt .wide { display: none; }
+@media print {
+  html, body { background: #fff; }
+  body { padding: 0; max-width: none; }
+  .hint { display: none; }
+}
+@media screen and (max-width: 640px) {
+  dl.meta { grid-template-columns: auto 1fr; }
+  dl.kpi { grid-template-columns: 1fr auto; }
+  dl.kpi dd { text-align: right; }
+  header.doc { flex-direction: column-reverse; }
+  .wide { display: none; }
+}
+</style>
+</head>
+<body class="{{.Paper}}{{if .Receipt}} receipt{{end}}">
+<p class="hint">{{call .T "z.printHint"}}</p>
+<header class="doc">
+  <div class="est">
+    <h1>{{.Header.Name}}</h1>
+    {{range .Header.AddressLines}}<p>{{.}}</p>{{end}}
+    {{if .Header.LegalName}}<p>{{.Header.LegalName}}</p>{{end}}
+    {{if or .Header.VATNumber .Header.FiscalCode}}<p>{{if .Header.VATNumber}}{{call .T "z.vat"}} {{.Header.VATNumber}}{{end}}{{if and .Header.VATNumber .Header.FiscalCode}} · {{end}}{{if .Header.FiscalCode}}{{call .T "z.fiscalCode"}} {{.Header.FiscalCode}}{{end}}</p>{{end}}
+    {{if .Header.ConcessionRef}}<p>{{call .T "z.concession"}} {{.Header.ConcessionRef}}</p>{{end}}
+  </div>
+  <img class="logo" src="{{.Logo}}" alt="Arenile" width="107" height="34">
+</header>
+
+<h2 class="title"><span>{{.Title}} — {{.Register}}</span>{{if not .Closed}}<span class="badge" data-testid="draft">{{call .T "z.draft"}}</span>{{end}}</h2>
+{{if not .Closed}}<p class="draft-notice">{{call .T "z.draftNotice"}}</p>{{end}}
+
+<dl class="meta">
+  <dt>{{call .T "z.openedAt"}}</dt><dd>{{.OpenedAt}}</dd>
+  <dt>{{call .T "z.openedBy"}}</dt><dd>{{if .OpenedBy}}{{.OpenedBy}}{{else}}—{{end}}</dd>
+  <dt>{{call .T "z.closedAt"}}</dt><dd>{{if .ClosedAt}}{{.ClosedAt}}{{else}}—{{end}}</dd>
+  <dt>{{call .T "z.closedBy"}}</dt><dd>{{if .ClosedBy}}{{.ClosedBy}}{{else}}—{{end}}</dd>
+</dl>
+
+<dl class="kpi">
+  <div><dt>{{call .T "z.float"}}</dt><dd>{{.Float}}</dd></div>
+  <div><dt>{{call .T "z.movementsIn"}}</dt><dd>{{.MovIn}}</dd></div>
+  <div><dt>{{call .T "z.movementsOut"}}</dt><dd>{{.MovOut}}</dd></div>
+  <div><dt>{{call .T "z.payments"}}</dt><dd>{{.Payments}}</dd></div>
+  <div><dt>{{call .T "z.refunds"}}</dt><dd>{{.Refunds}}</dd></div>
+</dl>
+
+<section aria-labelledby="by-method">
+  <h3 id="by-method">{{call .T "z.byMethod"}}</h3>
+  {{if .HasPay}}
+  <table data-testid="methods">
+    <thead><tr>
+      <th scope="col">{{call .T "z.method"}}</th>
+      <th scope="col" class="num wide">{{call .T "z.takings"}}</th>
+      <th scope="col" class="num">{{call .T "z.expected"}}</th>
+      {{if .Closed}}<th scope="col" class="num">{{call .T "z.counted"}}</th>
+      <th scope="col" class="num">{{call .T "z.difference"}}</th>{{end}}
+    </tr></thead>
+    <tbody>
+    {{range .Methods}}<tr>
+      <th scope="row">{{.Label}}</th>
+      <td class="num wide">{{.Takings}}</td>
+      <td class="num">{{.Expected}}</td>
+      {{if $.Closed}}<td class="num">{{.Counted}}</td>
+      <td class="num {{.Tone}}">{{.Difference}}</td>{{end}}
+    </tr>
+    {{end}}</tbody>
+    <tfoot><tr>
+      <td>{{.Totals.Label}}</td>
+      <td class="num wide">{{.Totals.Takings}}</td>
+      <td class="num">{{.Totals.Expected}}</td>
+      {{if .Closed}}<td class="num">{{.Totals.Counted}}</td>
+      <td class="num {{.Totals.Tone}}">{{.Totals.Difference}}</td>{{end}}
+    </tr></tfoot>
+  </table>
+  {{else}}<p class="empty">{{call .T "z.noTakings"}}</p>{{end}}
+</section>
+
+{{if .Closed}}<section><div class="diff {{.DifferenceTone}}" data-testid="difference"><span>{{call .T "z.difference"}}</span><span>{{.Difference}}</span></div></section>{{end}}
+
+{{if .HasVAT}}
+<section aria-labelledby="by-vat">
+  <h3 id="by-vat">{{call .T "z.byVAT"}}</h3>
+  <table data-testid="vat">
+    <thead><tr>
+      <th scope="col">{{call .T "z.rate"}}</th>
+      <th scope="col" class="num">{{call .T "z.taxable"}}</th>
+      <th scope="col" class="num">{{call .T "z.tax"}}</th>
+      <th scope="col" class="num">{{call .T "z.gross"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range .VAT}}<tr><th scope="row">{{.Rate}}</th><td class="num">{{.Taxable}}</td><td class="num">{{.Tax}}</td><td class="num">{{.Gross}}</td></tr>
+    {{end}}</tbody>
+    <tfoot><tr><td>{{.VATTotal.Rate}}</td><td class="num">{{.VATTotal.Taxable}}</td><td class="num">{{.VATTotal.Tax}}</td><td class="num">{{.VATTotal.Gross}}</td></tr></tfoot>
+  </table>
+</section>
+{{end}}
+
+<section aria-labelledby="movements">
+  <h3 id="movements">{{call .T "z.movements"}}</h3>
+  {{if .HasMovements}}
+  <table data-testid="movements">
+    <thead><tr>
+      <th scope="col">{{call .T "z.time"}}</th>
+      <th scope="col">{{call .T "z.kind"}}</th>
+      <th scope="col" class="num">{{call .T "z.amount"}}</th>
+      <th scope="col" class="wide">{{call .T "z.reason"}}</th>
+    </tr></thead>
+    <tbody>
+    {{range .Movements}}<tr><td>{{.Time}}</td><td>{{.Kind}}</td><td class="num">{{.Amount}}</td><td class="wide">{{.Reason}}</td></tr>
+    {{end}}</tbody>
+  </table>
+  {{else}}<p class="empty">{{call .T "z.noMovements"}}</p>{{end}}
+</section>
+
+{{if .Notes}}<section aria-labelledby="notes"><h3 id="notes">{{call .T "z.notes"}}</h3><p class="notes">{{.Notes}}</p></section>{{end}}
+
+<div class="sign"><div>{{call .T "z.signature"}}</div></div>
+
+<footer class="doc">
+  <span>{{call .T "z.footer"}}</span>
+  <span>{{call .T "z.generatedAt"}} {{.GeneratedAt}} · {{call .T "z.session"}} {{.SessionID}}</span>
+</footer>
+</body>
+</html>

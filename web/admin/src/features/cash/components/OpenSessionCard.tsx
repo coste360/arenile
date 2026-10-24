@@ -14,8 +14,20 @@ import { openSessionSchema, type OpenSessionValues } from '../schemas';
 import { fieldAria } from '../lib/aria';
 import { CashField } from './fields';
 
-/** Shown when the register has no open session: count the float and open. */
-export function OpenSessionCard({ establishmentId }: { establishmentId: string }) {
+/**
+ * Shown when the register has no open session: count the float and open.
+ * registerId picks the register (default register when absent); registerName
+ * is shown in the title when the establishment has several registers.
+ */
+export function OpenSessionCard({
+  establishmentId,
+  registerId,
+  registerName,
+}: {
+  establishmentId: string;
+  registerId?: string;
+  registerName?: string;
+}) {
   const { t } = useTranslation('cash');
   const open = useOpenSession(establishmentId);
   const form = useForm<OpenSessionValues>({
@@ -25,7 +37,7 @@ export function OpenSessionCard({ establishmentId }: { establishmentId: string }
   const submit = form.handleSubmit(async (v) => {
     try {
       await open.mutateAsync({
-        register: MAIN_REGISTER,
+        ...(registerId ? { register_id: registerId } : { register: MAIN_REGISTER }),
         opening_float: v.opening_float as number,
         ...(v.notes.trim() ? { notes: v.notes.trim() } : {}),
       });
@@ -43,7 +55,7 @@ export function OpenSessionCard({ establishmentId }: { establishmentId: string }
       className="max-w-xl min-w-0"
     >
       <SectionCard
-        title={t('open.title')}
+        title={registerName ? t('open.titleRegister', { name: registerName }) : t('open.title')}
         titleId="open-session-title"
         description={t('open.description')}
         icon={LockOpenIcon}

@@ -13,6 +13,7 @@
     "monthLabel": "Month",
     "year": "Year",
     "downloadCsv": "Download CSV",
+    "downloadXlsx": "Download Excel",
     "downloadJson": "Download JSON",
     "disclaimer": "Amounts include VAT, split by rate from the price snapshot; refunds are negative. Fiscal compliance of the setup remains the responsibility of the operator and their accountant.",
     "empty": "No takings in the selected period.",
@@ -26,7 +27,10 @@
     "byMethod": "By payment method",
     "count": "Transactions",
     "detail": "Detail",
-    "periodColumn": "Period"
+    "periodColumn": "Period",
+    "register": "Register",
+    "allRegisters": "All registers",
+    "registerNote": "Only takings recorded in the sessions of this register: online payments without a session are in the total of all registers."
   },
   "method": {
     "cash": "Cash",
@@ -63,7 +67,8 @@
     "floatHint": "Cash in the drawer at opening.",
     "submit": "Open session",
     "opened": "Cash session opened",
-    "noneReadOnly": "No open cash session."
+    "noneReadOnly": "No open cash session.",
+    "titleRegister": "Open {{name}}"
   },
   "current": {
     "badge": "{{register}} open since {{time}}",
@@ -175,13 +180,58 @@
     "amountPositive": "The amount must be greater than zero.",
     "reasonRequired": "Enter a reason.",
     "countedRequired": "Enter the counted cash.",
-    "tooLong": "Text too long."
+    "tooLong": "Text too long.",
+    "nameRequired": "Enter the register name.",
+    "codeFormat": "Lower-case letters, digits, - and _ (up to 40).",
+    "sortOrder": "A whole number between 0 and 10000."
   },
   "registers": {
     "main": "Main register"
   },
   "registersPage": {
     "title": "Cash registers",
-    "description": "Cash registers of the establishment: one open session per register, Z closing and reports per register."
+    "description": "Cash registers of the establishment: one open session per register, Z closing and reports per register.",
+    "fields": {
+      "name": "Name",
+      "code": "Code",
+      "status": "Status",
+      "sortOrder": "Order",
+      "active": "Active"
+    },
+    "default": "Default",
+    "inactive": "Inactive",
+    "sessionOpen": "Session open",
+    "sessionClosed": "Closed",
+    "actions": "Actions",
+    "editAria": "Edit {{name}}",
+    "deleteAria": "Delete {{name}}",
+    "deleteConfirm": "Delete the register “{{name}}”? Only a register that was never used can be deleted.",
+    "deleted": "Register deleted",
+    "deleteInUse": "The register has sessions in its history: you can only deactivate it.",
+    "add": "New register",
+    "readOnly": "Read only: only owner and manager manage registers.",
+    "empty": "No registers.",
+    "editTitle": "Edit register",
+    "formDescription": "Each register has its own session, float and Z closing.",
+    "saved": "Register saved",
+    "deactivateOpen": "Close the open session of this register first.",
+    "codeFixed": "The code cannot be changed.",
+    "codeHint": "Optional: derived from the name when empty.",
+    "defaultAlwaysActive": "The default register always stays active."
+  },
+  "zpdf": {
+    "group": "Z closing as PDF",
+    "button": "Z closing PDF",
+    "more": "Other Z closing formats",
+    "a4": "A4 PDF",
+    "receipt": "80 mm receipt",
+    "openTab": "Open in a new tab",
+    "failed": "Could not prepare the Z closing for printing."
+  },
+  "registerPicker": {
+    "label": "Register",
+    "open": "{{name}} · open",
+    "closed": "{{name}} · closed",
+    "manage": "Manage registers"
   }
 }

@@ -21,7 +21,9 @@ func (h *Handlers) ListCashSessions(w http.ResponseWriter, r *http.Request, esta
 		problem.Error(w, r, h.Log, err)
 		return
 	}
-	f := cash.ListFilter{Register: paymentDeref(params.Register), From: params.From, To: params.To}
+	f := cash.ListFilter{
+		Register: paymentDeref(params.Register), RegisterID: paymentDeref(params.RegisterId), From: params.From, To: params.To,
+	}
 	if params.Status != nil {
 		f.Status = string(*params.Status)
 	}
@@ -43,7 +45,9 @@ func (h *Handlers) OpenCashSession(w http.ResponseWriter, r *http.Request, estab
 	if !decode(w, r, &req) {
 		return
 	}
-	in := cash.OpenInput{Register: paymentDeref(req.Register), OpeningFloat: money.Cents(req.OpeningFloat), Notes: paymentDeref(req.Notes)}
+	in := cash.OpenInput{
+		RegisterID: paymentDeref(req.RegisterId), Register: paymentDeref(req.Register), OpeningFloat: money.Cents(req.OpeningFloat), Notes: paymentDeref(req.Notes),
+	}
 	cs, err := h.Cash.Open(r.Context(), principalOf(r), paymentClientIP(r), establishmentID, in)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
@@ -54,7 +58,15 @@ func (h *Handlers) OpenCashSession(w http.ResponseWriter, r *http.Request, estab
 
 // GetCurrentCashSession implements GET /api/admin/v1/establishments/{establishmentId}/cash-sessions/current.
 func (h *Handlers) GetCurrentCashSession(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, params api.GetCurrentCashSessionParams) {
-	d, err := h.Cash.Current(r.Context(), principalOf(r), establishmentID, paymentDeref(params.Register))
+	var (
+		d   *cash.Detail
+		err error
+	)
+	if id := paymentDeref(params.RegisterId); id != "" {
+		d, err = h.Cash.CurrentOfRegister(r.Context(), principalOf(r), establishmentID, id)
+	} else {
+		d, err = h.Cash.Current(r.Context(), principalOf(r), establishmentID, paymentDeref(params.Register))
+	}
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
@@ -117,6 +129,11 @@ func CashSessionToAPI(cs *store.CashSession) api.CashSession {
 		Id: cs.ID, Register: cs.Register, OpenedAt: cs.OpenedAt.UTC(), ClosedAt: utcPtr(cs.ClosedAt),
 		ClosedBy: cs.ClosedBy, OpeningFloat: int64(cs.OpeningFloat), ExpectedTotals: methodTotalsToAPI(cs.ExpectedTotals),
 		Notes: cs.Notes, Status: api.CashSessionStatus(cash.StatusOf(cs)), Version: max(cs.Version, 1),
+		RegisterId: cs.RegisterID,
+	}
+	if cs.RegisterName != "" {
+		name := cs.RegisterName
+		out.RegisterName = &name
 	}
 	if cs.OpenedBy != nil {
 		out.OpenedBy = *cs.OpenedBy

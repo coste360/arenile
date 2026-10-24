@@ -46,8 +46,13 @@ function SchemePair({
 }) {
   return (
     <>
-      <img src={light} alt={alt} className={cn('w-auto dark:hidden', className)} />
-      <img src={dark} alt={alt} className={cn('hidden w-auto dark:block', className)} />
+      {/* Paper is always light: the print uses the light-surface mark also in dark mode. */}
+      <img src={light} alt={alt} className={cn('w-auto dark:hidden print:block', className)} />
+      <img
+        src={dark}
+        alt={alt}
+        className={cn('hidden w-auto dark:block print:hidden', className)}
+      />
     </>
   );
 }

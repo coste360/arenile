@@ -169,20 +169,26 @@ func (s *Service) lockOpen(ctx context.Context, tx bun.IDB, es store.Establishme
 
 // OpenInput opens a session.
 type OpenInput struct {
+	// RegisterID is the register to open; when empty, Register (code,
+	// deprecated) and then the default register are used.
+	RegisterID   string
 	Register     string // default store.DefaultCashRegister
 	OpeningFloat money.Cents
 	Notes        string
 }
 
 // Open opens a session on a register with its float (auth.PermCashOperate).
-// A second open session on the same register is ErrSessionAlreadyOpen, also
-// under concurrency (unique partial index cash_sessions_open_uidx).
+// The register must exist and be active (validation error otherwise). A
+// second open session on the same register is ErrSessionAlreadyOpen, also
+// under concurrency (unique partial index cash_sessions_register_open_uidx,
+// INV-73); sessions of different registers are independent.
 func (s *Service) Open(ctx context.Context, p *auth.Principal, ip, establishmentID string, in OpenInput) (*store.CashSession, error) {
 	es, err := s.authorize(ctx, p, establishmentID, auth.PermCashOperate)
 	if err != nil {
 		return nil, err
 	}
 	in.Register = strings.TrimSpace(in.Register)
+	in.RegisterID = strings.TrimSpace(in.RegisterID)
 	if in.Register == "" {
 		in.Register = store.DefaultCashRegister
 	}
@@ -200,14 +206,30 @@ func (s *Service) Open(ctx context.Context, p *auth.Principal, ip, establishment
 	if err := ve.OrNil(); err != nil {
 		return nil, err
 	}
+	reg, err := s.resolveRegister(ctx, s.d.DB, es, in.RegisterID, in.Register)
+	if err != nil {
+		return nil, err
+	}
+	if !reg.Active {
+		return nil, configerr.Invalid("register_id", "La cassa è disattivata.")
+	}
+	in.Register = reg.Code
 	now := s.now()
+	regID := reg.ID
 	cs := &store.CashSession{
-		ID: store.NewID(), Register: in.Register, OpenedBy: userIDOf(p), OpenedAt: now,
+		ID: store.NewID(), Register: reg.Code, RegisterID: &regID, RegisterName: reg.Name, OpenedBy: userIDOf(p), OpenedAt: now,
 		OpeningFloat: in.OpeningFloat, ExpectedTotals: store.MethodTotals{store.PaymentMethodCash: in.OpeningFloat},
 		Notes: in.Notes, Version: 1, CreatedAt: now, UpdatedAt: now,
 	}
 	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
-		if _, err := store.GetOpenCashSession(ctx, tx, es, in.Register); err == nil {
+		// Row lock of the register: a concurrent deactivation waits (or has
+		// already made the register inactive).
+		if ok, err := store.LockActiveCashRegister(ctx, tx, es, regID); err != nil {
+			return fmt.Errorf("cash: %w", err)
+		} else if !ok {
+			return configerr.Invalid("register_id", "La cassa è disattivata.")
+		}
+		if _, err := store.GetOpenCashSessionOfRegister(ctx, tx, es, regID); err == nil {
 			return ErrSessionAlreadyOpen
 		} else if !errors.Is(err, store.ErrNotFound) {
 			return fmt.Errorf("cash: %w", err)
@@ -221,7 +243,7 @@ func (s *Service) Open(ctx context.Context, p *auth.Principal, ip, establishment
 		if err := s.d.Audit.Record(ctx, tx, audit.Entry{
 			EstablishmentID: es.ID(), Actor: p.Actor(ip), Action: event.CashSessionOpened,
 			EntityType: "cash_session", EntityID: cs.ID,
-			Diff: map[string]any{"register": cs.Register, "opening_float": int64(cs.OpeningFloat)},
+			Diff: map[string]any{"register": cs.Register, "register_id": regID, "opening_float": int64(cs.OpeningFloat)},
 		}); err != nil {
 			return fmt.Errorf("cash: %w", err)
 		}
@@ -286,6 +308,24 @@ func (s *Service) Current(ctx context.Context, p *auth.Principal, establishmentI
 	return s.detail(ctx, s.d.DB, es, cs)
 }
 
+// CurrentOfRegister returns the open session of the register with id
+// registerID, or ErrNotFound (also for an unknown register). Same
+// permissions as Current.
+func (s *Service) CurrentOfRegister(ctx context.Context, p *auth.Principal, establishmentID, registerID string) (*Detail, error) {
+	es, err := s.authorize(ctx, p, establishmentID, auth.PermCashOperate, auth.PermReportsRead)
+	if err != nil {
+		return nil, err
+	}
+	cs, err := store.GetOpenCashSessionOfRegister(ctx, s.d.DB, es, registerID)
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("cash: %w", err)
+	}
+	return s.detail(ctx, s.d.DB, es, cs)
+}
+
 // Get returns a session with its summary. Requires auth.PermCashOperate or
 // auth.PermReportsRead.
 func (s *Service) Get(ctx context.Context, p *auth.Principal, establishmentID, id string) (*Detail, error) {
@@ -319,15 +359,23 @@ func (s *Service) detail(ctx context.Context, db bun.IDB, es store.Establishment
 	if cs.ClosedAt == nil {
 		cs.ExpectedTotals = sum.Expected
 	}
+	if cs.RegisterID != nil && cs.RegisterName == "" {
+		if r, err := store.GetCashRegister(ctx, db, es, *cs.RegisterID); err == nil {
+			cs.RegisterName = r.Name
+		} else if !errors.Is(err, store.ErrNotFound) {
+			return nil, fmt.Errorf("cash: %w", err)
+		}
+	}
 	return &Detail{Session: *cs, Movements: movs, Payments: pays, Summary: sum}, nil
 }
 
 // ListFilter narrows List.
 type ListFilter struct {
-	Status   string // "", StatusOpen, StatusClosed
-	Register string
-	From     *calendar.Date // opened on or after (establishment timezone)
-	To       *calendar.Date // opened on or before
+	Status     string // "", StatusOpen, StatusClosed
+	Register   string
+	RegisterID string
+	From       *calendar.Date // opened on or after (establishment timezone)
+	To         *calendar.Date // opened on or before
 }
 
 // List returns the session history, newest first. Open sessions carry their
@@ -347,6 +395,7 @@ func (s *Service) List(ctx context.Context, p *auth.Principal, establishmentID s
 		return store.Page[store.CashSession]{}, configerr.Invalid("status", "Valori ammessi: open, closed.")
 	}
 	sf.Register = f.Register
+	sf.RegisterID = f.RegisterID
 	if f.From != nil || f.To != nil {
 		loc, err := s.location(ctx, es)
 		if err != nil {
@@ -365,8 +414,13 @@ func (s *Service) List(ctx context.Context, p *auth.Principal, establishmentID s
 	if err != nil {
 		return page, fmt.Errorf("cash: %w", err)
 	}
+	names, err := s.registerNames(ctx, s.d.DB, es)
+	if err != nil {
+		return page, err
+	}
 	for i := range page.Items {
 		cs := &page.Items[i]
+		nameSession(cs, names)
 		if cs.ClosedAt != nil {
 			continue
 		}
