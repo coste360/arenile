@@ -448,14 +448,14 @@ test.describe("daily sale", () => {
       page.getByRole("heading", { name: "Varco", level: 1 }),
     ).toBeVisible();
     await page.getByLabel("Codice del biglietto").fill(code);
-    await page.getByRole("button", { name: "Verifica" }).click();
+    await page.getByRole("button", { name: "Conferma ingresso" }).click();
     await expect(page.getByText("Ingresso valido")).toBeVisible();
     await expect(page.getByText("3 persone")).toBeVisible();
     await expect(page.getByLabel("Codice del biglietto")).toHaveValue("");
     // Same QR again: refused.
     await page.waitForTimeout(4_100);
     await page.getByLabel("Codice del biglietto").fill(code);
-    await page.getByRole("button", { name: "Verifica" }).click();
+    await page.getByRole("button", { name: "Conferma ingresso" }).click();
     await expect(page.getByText("Già entrato")).toBeVisible();
   });
 });

@@ -75,13 +75,16 @@ export function EntryGatePage() {
   const locale = i18n.language || 'it';
   const defaultLocale = establishment?.default_locale ?? 'it';
 
+  // A scan sends the QR token as is; a typed code is a manual entry the
+  // staff confirms: only then the server accepts the printed number or the
+  // booking code (the QR token is the only thing that admits on its own).
   const submit = useCallback(
-    async (raw: string) => {
+    async (raw: string, manualEntry: boolean) => {
       const code = extractTicketCode(raw);
       if (!code || busy.current) return;
       busy.current = true;
       try {
-        const res = await checkIn.mutateAsync(code);
+        const res = await checkIn.mutateAsync({ code, manual: manualEntry });
         setResult({ outcome: res.outcome, code, ticket: res.ticket });
         vibrate(res.outcome);
       } catch (err) {
@@ -99,14 +102,14 @@ export function EntryGatePage() {
   const onScan = useCallback(
     (raw: string) => {
       const code = extractTicketCode(raw);
-      if (code && dedupe(code, Date.now())) void submit(code);
+      if (code && dedupe(code, Date.now())) void submit(code, false);
     },
     [dedupe, submit],
   );
 
   const onManual = (e: FormEvent) => {
     e.preventDefault();
-    void submit(manual).then(() => setManual(''));
+    void submit(manual, true).then(() => setManual(''));
   };
 
   return (
@@ -128,7 +131,11 @@ export function EntryGatePage() {
               }}
             />
           </SectionCard>
-          <SectionCard title={t('gate.manualTitle')} icon={KeyboardIcon}>
+          <SectionCard
+            title={t('gate.manualTitle')}
+            description={t('gate.manualDescription')}
+            icon={KeyboardIcon}
+          >
             <form noValidate onSubmit={onManual} className="space-y-2">
               <Label htmlFor={inputId}>{t('gate.code')}</Label>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -139,7 +146,10 @@ export function EntryGatePage() {
                   autoComplete="off"
                   autoCapitalize="characters"
                   spellCheck={false}
+                  inputMode="text"
                   maxLength={200}
+                  placeholder={t('gate.codePlaceholder')}
+                  aria-describedby={`${inputId}-hint`}
                   className="font-mono"
                 />
                 <Button
@@ -150,6 +160,9 @@ export function EntryGatePage() {
                   {t('gate.check')}
                 </Button>
               </div>
+              <p id={`${inputId}-hint`} className="text-xs text-muted-foreground">
+                {t('gate.manualHint')}
+              </p>
             </form>
           </SectionCard>
         </div>

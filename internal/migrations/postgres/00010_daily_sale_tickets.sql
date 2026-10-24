@@ -59,16 +59,21 @@ CREATE TABLE tickets (
     refund_payment_id   uuid REFERENCES payments (id) ON DELETE SET NULL,
     entered_at          timestamptz,
     entered_by_user_id  uuid REFERENCES users (id) ON DELETE SET NULL,
+    -- Random, unguessable QR payload (128 bit, base32): the gate admits by
+    -- this token, never by the sequential booking code alone.
+    gate_token          text NOT NULL,
     version             integer NOT NULL DEFAULT 1,
     created_at          timestamptz NOT NULL,
     updated_at          timestamptz NOT NULL,
     CHECK ((status = 'voided') = (voided_at IS NOT NULL)),
     CHECK (provisional_spot_id IS NULL OR needs_assignment),
-    CHECK (kind = 'sale' OR NOT needs_assignment)
+    CHECK (kind = 'sale' OR NOT needs_assignment),
+    CHECK (length(gate_token) >= 20)
 );
 -- No duplicate numbers per establishment and day, across registers and devices.
 CREATE UNIQUE INDEX tickets_establishment_date_number_uidx ON tickets (establishment_id, ticket_date, ticket_number);
 CREATE UNIQUE INDEX tickets_booking_id_uidx ON tickets (booking_id);
+CREATE UNIQUE INDEX tickets_gate_token_uidx ON tickets (gate_token);
 CREATE INDEX tickets_establishment_date_status_idx ON tickets (establishment_id, ticket_date, status);
 CREATE INDEX tickets_unassigned_idx ON tickets (establishment_id, ticket_date, zone_id) WHERE needs_assignment AND status = 'valid';
 CREATE INDEX tickets_cash_session_id_idx ON tickets (cash_session_id);

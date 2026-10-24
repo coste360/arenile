@@ -120,7 +120,13 @@ export function TicketsPage() {
           <DataTableColumnHeader column={column} title={t('tickets.col.number')} />
         ),
         cell: ({ row }) => (
-          <span className="font-semibold tabular-nums">{row.original.number_label}</span>
+          <span className="flex flex-col items-start gap-1">
+            <span className="font-semibold tabular-nums">{row.original.number_label}</span>
+            {/* Phones: the state column scrolls off-screen, so it rides with the number. */}
+            <StatusBadge tone={STATE_TONE[row.original.state]} className="sm:hidden">
+              {t(`state.${row.original.state}`)}
+            </StatusBadge>
+          </span>
         ),
       },
       {
@@ -331,7 +337,7 @@ export function TicketsPage() {
             label={t('state.unassigned')}
             value={summary.unassigned}
             icon={MapPinIcon}
-            tone={summary.unassigned > 0 ? 'danger' : 'default'}
+            tone={summary.unassigned > 0 ? 'warning' : 'default'}
           />
           <StatCard label={t('tickets.voided')} value={summary.voided} icon={TicketXIcon} />
         </section>

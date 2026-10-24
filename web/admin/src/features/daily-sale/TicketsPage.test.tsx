@@ -70,13 +70,14 @@ describe('TicketsPage (Ticket del giorno)', () => {
     const table = await screen.findByRole('table', { name: 'Ticket del giorno' });
     await within(table).findByText('#038');
     const rows = within(table).getAllByRole('row').slice(1);
-    // Newest number first.
+    // Newest number first; the state rides with the number on phones (the
+    // badge is hidden from sm up), so the cell carries both.
     expect(rows.map((r) => within(r).getAllByRole('cell')[0]?.textContent)).toEqual([
-      '#038',
-      '#037',
-      '#036',
+      '#038Da assegnare',
+      '#037Assegnato',
+      '#036Annullato',
     ]);
-    expect(within(rows[0] as HTMLElement).getByText('Da assegnare')).toBeInTheDocument();
+    expect(within(rows[0] as HTMLElement).getAllByText('Da assegnare')).toHaveLength(2);
     expect(within(rows[1] as HTMLElement).getByText('10:05')).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).getByText('A1')).toBeInTheDocument();
     expect(within(rows[2] as HTMLElement).getByText('Annullato')).toBeInTheDocument();
@@ -109,10 +110,11 @@ describe('TicketsPage (Ticket del giorno)', () => {
     );
     const req = callsTo(fetchMock, 'POST', `${API}/tickets/t37/void`)[0] as Request;
     expect(req.headers.get('Idempotency-Key')).toBeTruthy();
+    // The ticket version travels in If-Match (428 without it, INV-80).
+    expect(req.headers.get('If-Match')).toBe('"1"');
     expect(await req.clone().json()).toEqual({
       reason: 'Cliente andato via',
       refund: 'none',
-      version: 1,
     });
   });
 

@@ -29,7 +29,16 @@ import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
 import { Toggle } from '@arenile/shared/ui/toggle';
 import { ResponsiveTabsList, SegmentedControl } from '@arenile/shared/ui/patterns';
 import { ArrowRightLeftIcon, ListChecksIcon, SearchIcon, XIcon } from 'lucide-react';
-import { lazy, Suspense, useCallback, useDeferredValue, useMemo, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { occupantCaptions, occupantFullName, useLabelMode } from '../lib/occupant';
 import type { OperationsPermissions } from '../lib/permissions';
@@ -151,6 +160,14 @@ export function OperationalMapView({
     spots,
     canWrite: permissions.canWriteBookings,
   });
+  // While a ticket is picked the drawing is the work surface: bring it into
+  // view (on a phone the panel and the legend sit above it) and let a tap on
+  // a small spot zoom in first (44 px targets) instead of taking the wrong one.
+  const mapRef = useRef<HTMLDivElement>(null);
+  const pickedTicketId = assignment.picked?.id;
+  useEffect(() => {
+    if (pickedTicketId) mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [pickedTicketId]);
   const selectedIds = useMemo(
     () =>
       selecting
@@ -359,36 +376,47 @@ export function OperationalMapView({
           ]}
         />
         <TabsContent value="map" className="space-y-2">
-          {/* Legend first: readable before scrolling past the drawing (spec 11.3). */}
-          <div className="flex flex-wrap items-start gap-x-6 gap-y-2">
-            <MapLegend statuses={OPERATIONAL_LEGEND} />
-            <div className="space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground">{t('indicator.legend')}</p>
-              <ul className="flex flex-wrap gap-3 text-xs">
-                {SPOT_INDICATORS.map((kind) => (
-                  <li key={kind} className="flex items-center gap-1.5" data-indicator-legend={kind}>
-                    <span
-                      aria-hidden="true"
-                      className={cn('size-2.5 rounded-full', INDICATOR_CLASSES[kind].bg)}
-                    />
-                    {t(`indicator.${kind}`)}
-                  </li>
-                ))}
-              </ul>
+          {/* Legend first: readable before scrolling past the drawing (spec 11.3);
+              folded away while a ticket is being placed, so the drawing is next. */}
+          {!assignment.active && (
+            <div className="flex flex-wrap items-start gap-x-6 gap-y-2">
+              <MapLegend statuses={OPERATIONAL_LEGEND} />
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {t('indicator.legend')}
+                </p>
+                <ul className="flex flex-wrap gap-3 text-xs">
+                  {SPOT_INDICATORS.map((kind) => (
+                    <li
+                      key={kind}
+                      className="flex items-center gap-1.5"
+                      data-indicator-legend={kind}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={cn('size-2.5 rounded-full', INDICATOR_CLASSES[kind].bg)}
+                      />
+                      {t(`indicator.${kind}`)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-          <BeachMap
-            geometry={geometry}
-            statuses={statuses}
-            selectedIds={selectedIds}
-            highlightedIds={assignment.active ? assignment.highlightIds : matches}
-            spotIndicators={indicators}
-            onSpotActivate={activate}
-            lasso={selecting}
-            onLassoSelect={onLassoSelect}
-            spotDescription={spotDescription}
-            spotCaptions={canSeeCustomers ? captions : undefined}
-            labelMode={labelMode}
+          )}
+          <div ref={mapRef} className="scroll-mt-4">
+            <BeachMap
+              geometry={geometry}
+              statuses={statuses}
+              selectedIds={selectedIds}
+              highlightedIds={assignment.active ? assignment.highlightIds : matches}
+              spotIndicators={indicators}
+              onSpotActivate={activate}
+              lasso={selecting}
+              onLassoSelect={onLassoSelect}
+              minTapTargetPx={assignment.active ? 44 : undefined}
+              spotDescription={spotDescription}
+              spotCaptions={canSeeCustomers ? captions : undefined}
+              labelMode={labelMode}
             toolbar={
               canSeeCustomers ? (
                 <div className="flex min-w-0 items-center gap-2">
@@ -411,6 +439,7 @@ export function OperationalMapView({
             title={t('map.aria', { name: geometry.name ?? '', date, slot: t(`slot.${slot}`) })}
             height={height}
           />
+          </div>
         </TabsContent>
         <TabsContent value="list">
           <SpotList

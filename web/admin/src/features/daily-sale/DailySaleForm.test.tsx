@@ -179,4 +179,32 @@ describe('DailySaleForm (Vendita rapida)', () => {
       'Nessun posto libero nella zona per la fascia scelta.',
     );
   });
+
+  it('charges with C or K only from inside the form and with no other dialog open', async () => {
+    const user = userEvent.setup();
+    const { fetchMock } = setup();
+    await user.click(await screen.findByRole('combobox', { name: 'Postazione' }));
+    await user.click(await screen.findByRole('option', { name: 'A1 · Prima fila' }));
+    const card = screen.getByRole('button', { name: /Carta/ });
+    await waitFor(() => expect(card).toBeEnabled());
+    // Focus on the page body (outside the form): a stray key sells nothing.
+    (document.activeElement as HTMLElement | null)?.blur();
+    await user.keyboard('k');
+    expect(callsTo(fetchMock, 'POST', `${API}/daily-sales`)).toHaveLength(0);
+    // Inside the form, but another dialog is open on top: still nothing.
+    card.focus();
+    const layer = document.createElement('div');
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('data-state', 'open');
+    document.body.appendChild(layer);
+    await user.keyboard('k');
+    expect(callsTo(fetchMock, 'POST', `${API}/daily-sales`)).toHaveLength(0);
+    layer.remove();
+    // Inside the form and nothing on top: K sells by card.
+    card.focus();
+    await user.keyboard('k');
+    await waitFor(() =>
+      expect(callsTo(fetchMock, 'POST', `${API}/daily-sales`)).toHaveLength(1),
+    );
+  });
 });

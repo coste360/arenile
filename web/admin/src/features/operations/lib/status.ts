@@ -79,7 +79,11 @@ export function statusesBySpot(
   return out;
 }
 
-/** Overlay indicators (extra, note, VIP) per spot id; spots without any are omitted. */
+/**
+ * Overlay indicators (extra, note, VIP, ticket still to assign) per spot
+ * id; spots without any are omitted. `to_assign` marks a daily ticket parked
+ * on a provisional spot of a seat zone (ADR 0020): the guest is not there.
+ */
 export function indicatorsBySpot(
   spots: readonly OperationalSpot[],
 ): Record<string, readonly SpotIndicator[]> {
@@ -88,6 +92,7 @@ export function indicatorsBySpot(
     const b = s.booking;
     if (!b) continue;
     const list: SpotIndicator[] = [];
+    if (b.ticket?.needs_assignment) list.push('to_assign');
     if (b.has_extras) list.push('extra');
     if (b.has_notes) list.push('note');
     if (b.customer_tags.some((tag) => tag.toLowerCase() === VIP_TAG)) list.push('vip');

@@ -10,8 +10,8 @@ func TestOpTicketToAPI_NilAndSet(t *testing.T) {
 	if opTicketToAPI(nil) != nil {
 		t.Fatal("nil ticket mapped")
 	}
-	got := opTicketToAPI(&inventory.OperationalTicket{Number: 3, Label: "#003", NeedsAssignment: true})
-	if got.Number != 3 || got.Label != "#003" || !got.NeedsAssignment {
+	got := opTicketToAPI(&inventory.OperationalTicket{ID: "t3", Number: 3, Label: "#003", NeedsAssignment: true, Version: 2})
+	if got.Id != "t3" || got.Number != 3 || got.Label != "#003" || !got.NeedsAssignment || got.Version != 2 {
 		t.Fatalf("%+v", got)
 	}
 }

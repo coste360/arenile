@@ -80,18 +80,18 @@
   },
   "gate": {
     "title": "Einlass",
-    "description": "Scannen Sie den QR-Code der Karte: ein Eintritt pro Karte.",
+    "description": "Scanne den QR-Code des Tickets mit der Kamera oder gib die Nummer ein: ein Eintritt pro Ticket.",
     "scanTitle": "Scannen",
     "manualTitle": "Code eingeben",
     "start": "Kamera starten",
     "stop": "Kamera stoppen",
     "preview": "Kameravorschau",
     "scanning": "Richten Sie die Kamera auf den QR-Code der Karte",
-    "unsupported": "Dieser Browser kann QR-Codes nicht mit der Kamera lesen: Geben Sie den Code von Hand ein.",
+    "unsupported": "Dieser Browser liest QR-Codes nicht mit der Kamera (auch iPhone und Firefox): gib unten die Ticketnummer ein.",
     "denied": "Kamerazugriff verweigert: Erlauben Sie ihn in den Browsereinstellungen oder geben Sie den Code ein.",
     "cameraError": "Kamera nicht verfügbar: Geben Sie den Code von Hand ein.",
     "code": "Kartencode",
-    "check": "Prüfen",
+    "check": "Eintritt bestätigen",
     "waiting": "Warten auf eine Karte.",
     "people_one": "{{count}} Person",
     "people_other": "{{count}} Personen",
@@ -103,6 +103,9 @@
       "wrong_date": "Karte für einen anderen Tag",
       "not_found": "Karte nicht gefunden",
       "failed": "Prüfung fehlgeschlagen"
-    }
+    },
+    "manualDescription": "Ohne Kamera (iPhone, Firefox) oder bei unlesbarem QR-Code: gib die groß gedruckte Nummer des Tickets oder den Buchungscode ein.",
+    "manualHint": "Die Tagesnummer genügt (z. B. 37). Eine manuelle Eingabe bestätigen Sie selbst; sie wird im Verlauf festgehalten.",
+    "codePlaceholder": "37 oder LD-2027-000098"
   }
 }

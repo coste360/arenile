@@ -44,7 +44,8 @@
       "label": "Verkaufsart",
       "spots": "Schirme",
       "entries": "Eintritte"
-    }
+    },
+    "zoneNoneFree": "Kein freier Platz"
   },
   "where": {
     "spot": "Platz",
@@ -104,7 +105,8 @@
     "payment": "Zahlung",
     "qr": "QR-Code des Tickets {{code}}",
     "validOn": "Gültig am {{date}}",
-    "issuedAt": "Ausgestellt {{time}}"
+    "issuedAt": "Ausgestellt {{time}}",
+    "nonFiscal": "Kein steuerlicher Beleg"
   },
   "tickets": {
     "title": "Tickets des Tages",
@@ -172,14 +174,17 @@
     "auto": "Automatisch zuweisen",
     "listLabel": "Zuzuweisende Tickets",
     "ticketAria": "Ticket {{number}}, {{zone}}, {{slots}}",
-    "pick": "Tippen Sie auf einen freien Platz in {{zone}} für Ticket {{number}}.",
+    "pick": "Tippe auf einen markierten Platz von {{zone}} (auf der Karte oder unten) für Ticket {{number}}.",
     "notFree": "Dieser Platz ist nicht frei: Wählen Sie einen hervorgehobenen.",
     "wrongZone": "Wählen Sie einen Platz der Zone {{zone}}.",
     "done": "Ticket {{number}} dem Platz {{label}} zugewiesen",
     "autoDone_one": "{{count}} Ticket zugewiesen",
     "autoDone_other": "{{count}} Tickets zugewiesen",
     "autoPartial_one": "{{count}} Ticket zugewiesen, {{left}} ohne freien Platz",
-    "autoPartial_other": "{{count}} Tickets zugewiesen, {{left}} ohne freien Platz"
+    "autoPartial_other": "{{count}} Tickets zugewiesen, {{left}} ohne freien Platz",
+    "targetsLabel": "Freie Plätze für Ticket {{number}}",
+    "targetAria": "Platz {{label}} zuweisen",
+    "noTargets": "Kein freier Platz in der Zone: automatisch zuweisen oder ein anderes Ticket verschieben."
   },
   "problems": {
     "zone_full": "Kein freier Platz in der Zone für den gewählten Zeitraum.",
@@ -189,7 +194,8 @@
     "ticket_already_entered": "Das Ticket wurde bereits für den Eintritt verwendet.",
     "price_changed": "Der Preis hat sich geändert: Prüfen Sie die neue Summe und kassieren Sie erneut.",
     "spot_unavailable": "Der Platz ist nicht mehr frei: Bitte wählen Sie einen anderen.",
-    "cash_session_closed": "Die Kasse ist geschlossen: Öffnen Sie sie, um bar zu kassieren."
+    "cash_session_closed": "Die Kasse ist geschlossen: Öffnen Sie sie, um bar zu kassieren.",
+    "ticket_owned": "Die Buchung gehört zu einem Ticket: nutze die Ticket-Aktionen (Tickets des Tages)."
   },
   "settings": {
     "open": "Einstellungen",

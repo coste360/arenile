@@ -144,6 +144,11 @@ type CancelInput struct {
 	RefundMethod string
 	Weather      bool
 	DryRun       bool
+	// FromTicket marks the cancellation run by the void of a daily ticket
+	// (internal/domain/ticketing), the only caller allowed to cancel a
+	// booking owned by a ticket (ErrTicketOwned otherwise, ADR 0020). HTTP
+	// handlers never set it.
+	FromTicket bool
 }
 
 // CancelResult is the outcome of a cancellation.
@@ -171,6 +176,11 @@ type MoveInput struct {
 	// From is the first day on the new spot (nil = the whole stay).
 	From   *calendar.Date
 	DryRun bool
+	// KeepPrice keeps the total of the booking as it is (the engine total of
+	// the new spot is only recorded in the audit diff): the placement of a
+	// daily ticket already paid at the desk never changes what the guest
+	// owes (ADR 0020). Set by internal/domain/ticketassign through MoveThen.
+	KeepPrice bool
 }
 
 // NoteInput appends a note to the booking.

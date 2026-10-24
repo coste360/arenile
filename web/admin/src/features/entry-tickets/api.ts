@@ -147,16 +147,21 @@ export function useCreateEntrySale(establishmentId: string) {
   });
 }
 
-/** One scan at the gate: admitted, already_entered, voided or wrong_date. */
+/**
+ * One scan at the gate: admitted, already_entered, voided or wrong_date.
+ * `code` is the QR token; `manual` marks a code typed and confirmed by the
+ * staff, the only case where the server also resolves the printed number
+ * or the booking code.
+ */
 export function useGateCheckIn(establishmentId: string) {
   const client = useApiClient();
   const qc = useQueryClient();
-  return useMutation<GateCheckInResult, ApiProblem, string>({
-    mutationFn: (code) =>
+  return useMutation<GateCheckInResult, ApiProblem, { code: string; manual: boolean }>({
+    mutationFn: ({ code, manual }) =>
       call(() =>
         client.POST(`${BASE}/entry-gate/check-in`, {
           params: { path: { establishmentId } },
-          body: { code },
+          body: { code, manual },
         }),
       ),
     onSettled: () =>

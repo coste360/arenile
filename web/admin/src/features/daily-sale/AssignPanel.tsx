@@ -15,12 +15,19 @@ export interface AssignPanelProps {
   autoAssigning?: boolean;
   /** Assignments are a write: read-only users see the list only. */
   canWrite: boolean;
+  /**
+   * Spots the picked ticket can take, as large buttons next to the map
+   * (phones: the spots drawn on the map are too small to tap safely).
+   */
+  targets?: readonly { id: string; label: string }[];
+  onPickSpot?: (spotId: string) => void;
 }
 
 /**
  * "Da assegnare" panel of the day map (desktop and phone): the zone-first
  * tickets (#037 ...) as large toggles; pick one, then tap a free spot of its
- * zone on the map. "Assegna automaticamente" fills free spots in order.
+ * zone on the map or one of the spot buttons. "Assegna automaticamente"
+ * fills free spots in order.
  */
 export function AssignPanel({
   tickets,
@@ -29,6 +36,8 @@ export function AssignPanel({
   onAutoAssign,
   autoAssigning,
   canWrite,
+  targets = [],
+  onPickSpot,
 }: AssignPanelProps) {
   const { t, i18n } = useTranslation('dailySale');
   const locale = i18n.language || 'it';
@@ -101,6 +110,29 @@ export function AssignPanel({
           <span className="text-muted-foreground">{t('assign.description')}</span>
         ) : null}
       </p>
+      {selected &&
+        (targets.length > 0 ? (
+          <ul
+            className="flex flex-wrap gap-2"
+            aria-label={t('assign.targetsLabel', { number: selected.number_label })}
+            data-testid="assign-targets"
+          >
+            {targets.map((s) => (
+              <li key={s.id}>
+                <Button
+                  variant="outline"
+                  className="min-h-11 min-w-16 font-semibold tabular-nums"
+                  onClick={() => onPickSpot?.(s.id)}
+                  aria-label={t('assign.targetAria', { label: s.label })}
+                >
+                  {s.label}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('assign.noTargets')}</p>
+        ))}
     </section>
   );
 }

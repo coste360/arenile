@@ -10,6 +10,9 @@ import (
 // OperationalTicket is the daily-sale ticket of a booking on the day map
 // (spec 14.3, ADR 0020). Admin API only: SSE events never carry it.
 type OperationalTicket struct {
+	// ID and Version let the map move the ticket with the ticket actions
+	// (If-Match on the ticket version) instead of the generic booking move.
+	ID     string
 	Number int64
 	// Label is the number label ("#037"), same format as
 	// ticketing.NumberLabel.
@@ -17,6 +20,7 @@ type OperationalTicket struct {
 	// NeedsAssignment: zone-first ticket not yet placed (a seat-mode zone
 	// shows it on its provisional spot).
 	NeedsAssignment bool
+	Version         int64
 }
 
 // TicketNumberLabel formats a daily ticket number ("#007", "#037", "#1204").
@@ -68,7 +72,7 @@ func (s *Service) applyTicketMarks(ctx context.Context, es store.EstablishmentSc
 		byBooking[m.BookingID] = m
 	}
 	ticket := func(m store.TicketMapMark) *OperationalTicket {
-		return &OperationalTicket{Number: m.TicketNumber, Label: TicketNumberLabel(m.TicketNumber), NeedsAssignment: m.NeedsAssignment}
+		return &OperationalTicket{ID: m.ID, Number: m.TicketNumber, Label: TicketNumberLabel(m.TicketNumber), NeedsAssignment: m.NeedsAssignment, Version: m.Version}
 	}
 	for i := range day.Spots {
 		b := day.Spots[i].Booking

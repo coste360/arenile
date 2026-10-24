@@ -3,11 +3,13 @@ import type { ReactNode } from 'react';
 import { Card } from '@arenile/shared/ui/card';
 import { cn } from '@arenile/shared/lib/utils';
 
-export type StatTone = 'default' | 'danger' | 'success';
+/** `warning` is for ordinary work left to do (e.g. tickets to assign), `danger` for problems. */
+export type StatTone = 'default' | 'danger' | 'warning' | 'success';
 
 const TONE: Record<StatTone, string> = {
   default: 'text-foreground',
   danger: 'text-destructive',
+  warning: 'text-warning',
   success: 'text-success',
 };
 

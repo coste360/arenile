@@ -160,7 +160,6 @@ func TestConcurrency_EntryCheckInOnce(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		v, _ := e.tickets.Get(ctx, f.Viewer, est, r.Ticket.ID)
 		var (
 			wg       sync.WaitGroup
 			mu       sync.Mutex
@@ -173,7 +172,7 @@ func TestConcurrency_EntryCheckInOnce(t *testing.T) {
 			go func() {
 				defer wg.Done()
 				<-start
-				g, err := e.tickets.CheckIn(ctx, f.Staff, est, v.BookingCode)
+				g, err := e.tickets.CheckIn(ctx, f.Staff, est, r.Ticket.GateToken, false)
 				mu.Lock()
 				defer mu.Unlock()
 				if err != nil {

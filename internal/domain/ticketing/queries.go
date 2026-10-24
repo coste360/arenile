@@ -2,6 +2,7 @@ package ticketing
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"strconv"
 	"strings"
@@ -168,23 +169,29 @@ func (s *Service) Get(ctx context.Context, p *auth.Principal, establishmentID, i
 	return view(ctx, s.d.DB, es, t)
 }
 
-// GetByCode returns the ticket whose QR carries the booking code
-// (auth.PermBookingsRead).
+// GetByCode returns the ticket of a scanned QR (gate token) or of a booking
+// code printed under it, for the staff checks from the map
+// (auth.PermBookingsRead). Reading is not admitting: the gate (CheckIn)
+// accepts the booking code only as a confirmed manual entry.
 func (s *Service) GetByCode(ctx context.Context, p *auth.Principal, establishmentID, code string) (*View, error) {
 	es, err := s.authorize(ctx, p, establishmentID, auth.PermBookingsRead)
 	if err != nil {
 		return nil, err
 	}
-	t, err := store.GetTicketByBookingCode(ctx, s.d.DB, es, NormalizeCode(code))
+	code = NormalizeCode(code)
+	t, err := store.GetTicketByGateToken(ctx, s.d.DB, es, code)
+	if errors.Is(err, store.ErrNotFound) {
+		t, err = store.GetTicketByBookingCode(ctx, s.d.DB, es, code)
+	}
 	if err != nil {
 		return nil, notFound(err)
 	}
 	return view(ctx, s.d.DB, es, t)
 }
 
-// NormalizeCode extracts the booking code from a scanned QR payload: the
-// payload is the code itself, possibly with spaces or a URL around it
-// (the last path segment).
+// NormalizeCode extracts the gate token or booking code from a scanned QR
+// payload: the payload is the code itself, possibly with spaces or a URL
+// around it (the last path segment).
 func NormalizeCode(raw string) string {
 	c := strings.TrimSpace(raw)
 	if i := strings.LastIndex(c, "/"); i >= 0 {

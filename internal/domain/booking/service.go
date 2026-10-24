@@ -1128,6 +1128,13 @@ func (s *Service) Cancel(ctx context.Context, p *auth.Principal, establishmentID
 		return res, nil
 	}
 	d, err := s.mutate(ctx, p, establishmentID, id, auth.PermBookingsWrite, in.ExpectedVersion, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
+		// A ticket booking is cancelled only by the void of its ticket
+		// (ADR 0020), which marks the ticket in the same transaction.
+		if !in.FromTicket {
+			if err := refuseTicketOwned(ctx, tx, es, b); err != nil {
+				return nil, err
+			}
+		}
 		if err := compute(ctx, tx, es, b); err != nil {
 			return nil, err
 		}

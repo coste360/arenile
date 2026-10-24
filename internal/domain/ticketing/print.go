@@ -101,7 +101,7 @@ func (s *Service) printData(ctx context.Context, db bun.IDB, es store.Establishm
 		return nil, err
 	}
 	out := &PrintData{
-		Format: format, View: *v, QRPayload: v.BookingCode, Reprint: reprint, IssuedAt: t.CreatedAt,
+		Format: format, View: *v, QRPayload: t.GateToken, Reprint: reprint, IssuedAt: t.CreatedAt,
 		Establishment: PrintEstablishment{Name: est.Name, Address: formatAddress(est.Address), LogoURL: est.Theme.LogoURL},
 	}
 	if org, err := store.GetOrganization(ctx, db, est.OrganizationID); err == nil {

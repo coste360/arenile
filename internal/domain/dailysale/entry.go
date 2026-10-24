@@ -99,6 +99,11 @@ func entryLines(ctx context.Context, db bun.IDB, es store.EstablishmentScope, in
 			zones = append(zones, t.ZoneID)
 		}
 	}
+	// One ticket, one QR, one gate: a sale is a group entering together
+	// through one zone (INV-84). Types of different zones are sold apart.
+	if len(zones) > 1 {
+		return nil, nil, configerr.Invalid("items", "I tipi scelti appartengono a zone diverse: vendili in biglietti separati.")
+	}
 	return lines, zones, nil
 }
 

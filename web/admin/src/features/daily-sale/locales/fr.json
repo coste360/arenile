@@ -44,7 +44,8 @@
       "label": "Type de vente",
       "spots": "Parasols",
       "entries": "Entrées"
-    }
+    },
+    "zoneNoneFree": "Aucune place libre"
   },
   "where": {
     "spot": "Emplacement",
@@ -104,7 +105,8 @@
     "payment": "Paiement",
     "qr": "Code QR du billet {{code}}",
     "validOn": "Valable le {{date}}",
-    "issuedAt": "Émis le {{time}}"
+    "issuedAt": "Émis le {{time}}",
+    "nonFiscal": "Sans valeur fiscale"
   },
   "tickets": {
     "title": "Billets du jour",
@@ -172,14 +174,17 @@
     "auto": "Attribuer automatiquement",
     "listLabel": "Billets à attribuer",
     "ticketAria": "Billet {{number}}, {{zone}}, {{slots}}",
-    "pick": "Touchez un emplacement libre de {{zone}} pour le billet {{number}}.",
+    "pick": "Touchez un emplacement en évidence de {{zone}} (sur le plan ou ci-dessous) pour le billet {{number}}.",
     "notFree": "Cet emplacement n'est pas libre : choisissez-en un en surbrillance.",
     "wrongZone": "Choisissez un emplacement de la zone {{zone}}.",
     "done": "Billet {{number}} attribué à l'emplacement {{label}}",
     "autoDone_one": "{{count}} billet attribué",
     "autoDone_other": "{{count}} billets attribués",
     "autoPartial_one": "{{count}} billet attribué, {{left}} sans emplacement libre",
-    "autoPartial_other": "{{count}} billets attribués, {{left}} sans emplacement libre"
+    "autoPartial_other": "{{count}} billets attribués, {{left}} sans emplacement libre",
+    "targetsLabel": "Emplacements libres pour le billet {{number}}",
+    "targetAria": "Attribuer à l'emplacement {{label}}",
+    "noTargets": "Aucun emplacement libre dans la zone : utilisez Attribuer automatiquement ou déplacez un autre billet."
   },
   "problems": {
     "zone_full": "Aucune place libre dans la zone pour la tranche choisie.",
@@ -189,7 +194,8 @@
     "ticket_already_entered": "Le billet a déjà été utilisé pour entrer.",
     "price_changed": "Le prix a changé : vérifiez le nouveau total et encaissez à nouveau.",
     "spot_unavailable": "L'emplacement n'est plus libre : choisissez-en un autre.",
-    "cash_session_closed": "La caisse est fermée : ouvrez-la pour encaisser en espèces."
+    "cash_session_closed": "La caisse est fermée : ouvrez-la pour encaisser en espèces.",
+    "ticket_owned": "La réservation appartient à un billet : utilisez les actions du billet (Billets du jour)."
   },
   "settings": {
     "open": "Paramètres",

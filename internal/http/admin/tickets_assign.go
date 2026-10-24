@@ -65,23 +65,35 @@ func (h *Handlers) AutoAssignTickets(w http.ResponseWriter, r *http.Request, est
 }
 
 // AssignTicket implements POST .../tickets/{ticketId}/assign.
-func (h *Handlers) AssignTicket(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, ticketID api.TicketID, _ api.AssignTicketParams) {
-	h.placeTicket(w, r, establishmentID, ticketID, h.TicketAssign.Assign)
+func (h *Handlers) AssignTicket(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, ticketID api.TicketID, params api.AssignTicketParams) {
+	h.placeTicket(w, r, establishmentID, ticketID, &params.IfMatch, h.TicketAssign.Assign)
 }
 
 // MoveTicket implements POST .../tickets/{ticketId}/move.
-func (h *Handlers) MoveTicket(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, ticketID api.TicketID, _ api.MoveTicketParams) {
-	h.placeTicket(w, r, establishmentID, ticketID, h.TicketAssign.Move)
+func (h *Handlers) MoveTicket(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, ticketID api.TicketID, params api.MoveTicketParams) {
+	h.placeTicket(w, r, establishmentID, ticketID, &params.IfMatch, h.TicketAssign.Move)
 }
 
 type placeFunc func(ctx context.Context, p *auth.Principal, establishmentID, ticketID string, in ticketassign.Input) (*ticketing.View, error)
 
-func (h *Handlers) placeTicket(w http.ResponseWriter, r *http.Request, establishmentID, ticketID string, place placeFunc) {
+// placeTicket runs an assignment or a move with the ticket version read by
+// the client: If-Match is mandatory (428 precondition_required, "*" = any
+// version, 412 when stale), the same precondition as the booking actions
+// of the map (INV-80), so a stale tab never moves a ticket that changed in
+// the meantime. The automatic assignment has no header: it reads the
+// tickets itself in the same request and every placement is a conditional
+// update of the ticket row (needs_assignment still true, status valid).
+func (h *Handlers) placeTicket(w http.ResponseWriter, r *http.Request, establishmentID, ticketID string, ifMatch *string, place placeFunc) {
+	expected, err := bkRequireIfMatch(ifMatch, false)
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
 	var req api.TicketAssignRequest
 	if !decode(w, r, &req) {
 		return
 	}
-	v, err := place(r.Context(), principalOf(r), establishmentID, ticketID, ticketassign.Input{SpotID: req.SpotId, ExpectedVersion: req.Version})
+	v, err := place(r.Context(), principalOf(r), establishmentID, ticketID, ticketassign.Input{SpotID: req.SpotId, ExpectedVersion: expected})
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
@@ -94,5 +106,5 @@ func opTicketToAPI(t *inventory.OperationalTicket) *api.OperationalTicket {
 	if t == nil {
 		return nil
 	}
-	return &api.OperationalTicket{Number: t.Number, Label: t.Label, NeedsAssignment: t.NeedsAssignment}
+	return &api.OperationalTicket{Id: t.ID, Number: t.Number, Label: t.Label, NeedsAssignment: t.NeedsAssignment, Version: t.Version}
 }

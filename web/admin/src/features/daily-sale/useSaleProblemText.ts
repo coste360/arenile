@@ -11,6 +11,7 @@ const OWN = new Set([
   'price_changed',
   'spot_unavailable',
   'cash_session_closed',
+  'ticket_owned',
 ]);
 
 /**

@@ -25,7 +25,7 @@ const day = opDay([
       code: 'AR-7K3Q9',
       customer_display_name: '',
       occupant_label: '#037',
-      ticket: { number: 37, label: '#037', needs_assignment: false },
+      ticket: { id: 't37', number: 37, label: '#037', needs_assignment: false, version: 1 },
     }),
   }),
   opSpot('s3', 'A3', 'booked', {
@@ -34,7 +34,7 @@ const day = opDay([
       code: 'AR-8Z',
       customer_display_name: 'Bianchi',
       occupant_label: 'Bianchi',
-      ticket: { number: 38, label: '#038', needs_assignment: false },
+      ticket: { id: 't38', number: 38, label: '#038', needs_assignment: false, version: 1 },
     }),
   }),
   opSpot('s4', 'A4', 'free', { zone_id: 'z2' }),
@@ -111,6 +111,48 @@ describe('daily sale on the day map', () => {
     expect(await req.clone().json()).toEqual({ spot_id: 's1' });
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(await screen.findByText('Biglietto #041 assegnato alla postazione A1')).toBeVisible();
+  });
+
+  it('offers the ticket its own provisional spot when the seat zone is full', async () => {
+    const user = userEvent.setup();
+    // Zone z1 full: A1 taken by a guest, A2 is the spot the sale parked #041 on.
+    const full = opDay([
+      opSpot('s1', 'A1', 'booked', { booking: opBooking({ booking_id: 'b1' }) }),
+      opSpot('s2', 'A2', 'booked', {
+        booking: opBooking({
+          booking_id: 'b41',
+          customer_display_name: '',
+          occupant_label: '#041',
+          ticket: { id: 't41', number: 41, label: '#041', needs_assignment: true, version: 1 },
+        }),
+      }),
+      opSpot('s4', 'A4', 'free', { zone_id: 'z2' }),
+    ]);
+    const { fetchMock } = renderApp(PATH, {
+      ...baseRoutes('cashier'),
+      ...saleRoutes(),
+      ...operationsRoutes(full, {
+        [`GET ${API}/tickets/unassigned`]: () => list([unassigned]),
+        [`POST ${API}/tickets/t41/assign`]: () =>
+          json(200, { ...unassigned, spot_id: 's2', needs_assignment: false }),
+      }),
+    });
+    // The parked ticket is drawn as "da assegnare", not as a guest on A2.
+    expect(await screen.findByRole('button', { name: /Postazione A2/ })).toHaveAccessibleName(
+      /Da assegnare/,
+    );
+    const panel = await screen.findByTestId('assign-panel');
+    await user.click(within(panel).getByRole('button', { name: /Biglietto #041/ }));
+    // Its own spot is the one target, offered as a large button next to the map.
+    const targets = within(panel).getByTestId('assign-targets');
+    expect(within(targets).getAllByRole('button')).toHaveLength(1);
+    await user.click(within(targets).getByRole('button', { name: 'Assegna alla postazione A2' }));
+    await waitFor(() =>
+      expect(callsTo(fetchMock, 'POST', `${API}/tickets/t41/assign`)).toHaveLength(1),
+    );
+    const req = callsTo(fetchMock, 'POST', `${API}/tickets/t41/assign`)[0] as Request;
+    expect(req.headers.get('If-Match')).toBe('"1"');
+    expect(await req.clone().json()).toEqual({ spot_id: 's2' });
   });
 
   it('reports a spot taken in the meantime (409) and auto-assigns the rest', async () => {

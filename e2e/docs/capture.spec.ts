@@ -179,7 +179,7 @@ const PREPARE: Record<string, Prepare> = {
     const items = ((await res.json()) as { items: { booking_code: string }[] }).items;
     if (!items[0]) throw new Error("no entry ticket on the demo day");
     await page.getByLabel("Codice del biglietto").fill(items[0].booking_code);
-    await expect(page.getByRole("button", { name: "Verifica" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Conferma ingresso" })).toBeEnabled();
   },
 };
 

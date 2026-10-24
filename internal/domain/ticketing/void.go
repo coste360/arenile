@@ -65,18 +65,19 @@ func (s *Service) Void(ctx context.Context, p *auth.Principal, establishmentID, 
 	}
 	var out *View
 	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
-		t, err := store.LockTicket(ctx, tx, es, id)
+		// Lock order (same as the assignment path, MoveThen then the ticket
+		// hook): the booking row first, through Cancel, then the ticket row.
+		// The ticket is read without a lock for the early checks and
+		// re-checked once locked.
+		t, err := store.GetTicket(ctx, tx, es, id)
 		if err != nil {
 			return notFound(err)
 		}
 		if err := configerr.CheckVersion(in.ExpectedVersion, t.Version); err != nil {
 			return err
 		}
-		switch {
-		case t.Status == store.TicketVoided:
-			return ErrVoided
-		case t.EnteredAt != nil:
-			return ErrAlreadyEntered
+		if err := voidable(t); err != nil {
+			return err
 		}
 		if in.Refund == VoidCredit {
 			if err := s.checkCreditable(ctx, tx, es, t); err != nil {
@@ -84,7 +85,7 @@ func (s *Service) Void(ctx context.Context, p *auth.Principal, establishmentID, 
 			}
 		}
 		amount := t.TotalAmount
-		cin := booking.CancelInput{Reason: "Biglietto annullato: " + in.Reason, RefundAmount: &amount}
+		cin := booking.CancelInput{Reason: "Biglietto annullato: " + in.Reason, RefundAmount: &amount, FromTicket: true}
 		switch in.Refund {
 		case VoidRefund:
 			cin.Settlement, cin.RefundMethod = booking.SettleRefund, t.PaymentMethod
@@ -96,6 +97,16 @@ func (s *Service) Void(ctx context.Context, p *auth.Principal, establishmentID, 
 		res, err := s.d.BookingsIn(tx).Cancel(ctx, p, establishmentID, t.BookingID, cin)
 		if err != nil {
 			return err
+		}
+		seen := t.Version
+		if t, err = store.LockTicket(ctx, tx, es, id); err != nil {
+			return notFound(err)
+		}
+		if err := voidable(t); err != nil {
+			return err
+		}
+		if t.Version != seen {
+			return &configerr.VersionConflictError{Current: t.Version}
 		}
 		now := s.now()
 		version := t.Version
@@ -126,6 +137,17 @@ func (s *Service) Void(ctx context.Context, p *auth.Principal, establishmentID, 
 		return nil, err
 	}
 	return out, nil
+}
+
+// voidable is ErrVoided or ErrAlreadyEntered when t cannot be voided.
+func voidable(t *store.Ticket) error {
+	switch {
+	case t.Status == store.TicketVoided:
+		return ErrVoided
+	case t.EnteredAt != nil:
+		return ErrAlreadyEntered
+	}
+	return nil
 }
 
 // checkCreditable refuses a credit refund to the walk-in customer (the

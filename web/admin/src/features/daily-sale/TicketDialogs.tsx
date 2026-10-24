@@ -60,8 +60,9 @@ export function MoveTicketDialog({ establishmentId, ticket, onOpenChange }: Tick
       toast.success(t('move.done', { number: ticket.number_label, label }));
       close(false);
     };
-    if (toAssign) assign.mutate({ ticketId: ticket.id, spotId }, { onSuccess: done });
-    else move.mutate({ ticketId: ticket.id, spotId, version: ticket.version }, { onSuccess: done });
+    const vars = { ticketId: ticket.id, spotId, version: ticket.version };
+    if (toAssign) assign.mutate(vars, { onSuccess: done });
+    else move.mutate(vars, { onSuccess: done });
   };
 
   return (
@@ -137,9 +138,14 @@ export function VoidTicketDialog({ establishmentId, ticket, onOpenChange }: Tick
   const submit = () => {
     setTouched(true);
     if (!reason.trim()) return;
-    const body = { reason: reason.trim(), refund, version: ticket.version };
+    const body = { reason: reason.trim(), refund };
     voidTicket.mutate(
-      { ticketId: ticket.id, body, idempotencyKey: keyRef.current.for({ id: ticket.id, ...body }) },
+      {
+        ticketId: ticket.id,
+        version: ticket.version,
+        body,
+        idempotencyKey: keyRef.current.for({ id: ticket.id, version: ticket.version, ...body }),
+      },
       {
         onSuccess: () => {
           keyRef.current.reset();

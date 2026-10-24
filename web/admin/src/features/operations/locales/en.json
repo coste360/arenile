@@ -83,7 +83,8 @@
     "legend": "Indicators",
     "extra": "Extras",
     "note": "Note",
-    "vip": "VIP"
+    "vip": "VIP",
+    "to_assign": "To assign"
   },
   "sheet": {
     "empty": "Spot",
@@ -142,7 +143,8 @@
     "toCollect": "Difference to collect: {{amount}}",
     "toRefund": "Difference to refund: {{amount}}",
     "done": "{{code}} moved to {{to}}.",
-    "blocked": "Move not possible."
+    "blocked": "Move not possible.",
+    "ticketPriceKept": "Ticket {{number}}: the total already collected does not change."
   },
   "conflict": {
     "spot_unavailable": "spot taken",

@@ -26,6 +26,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { OnlineOnlyNotice } from '../../../offline/OnlineOnlyNotice';
+import { useMoveTicket } from '../../daily-sale';
 import { moveLine, useMoveLine } from '../api/operations';
 import type { OperationalSpot } from '../lib/status';
 
@@ -61,7 +62,12 @@ export function MoveDialog({
   const client = useApiClient();
   const problemText = useProblemText();
   const move = useMoveLine(establishmentId);
+  const moveTicket = useMoveTicket(establishmentId);
   const booking = source.booking;
+  // A daily ticket (ADR 0020) moves through the ticket actions: the generic
+  // booking move is refused for it (ticket_owned) and its price never
+  // changes, so there is no preview to run.
+  const ticket = booking?.ticket;
   const vars = {
     bookingId: booking?.booking_id ?? '',
     lineId: booking?.line_id ?? '',
@@ -73,30 +79,33 @@ export function MoveDialog({
     // Outside the SSE-invalidated areas: applying the move must not re-run the preview.
     queryKey: ['move-preview', establishmentId, vars],
     queryFn: () => moveLine(client, establishmentId, { ...vars, dryRun: true }),
-    enabled: open && !!vars.bookingId && !!vars.lineId && vars.version > 0,
+    enabled: open && !ticket && !!vars.bookingId && !!vars.lineId && vars.version > 0,
     retry: shouldRetry,
     gcTime: 0,
   });
   const conflicts = preview.data?.conflicts ?? [];
   const blocked = conflicts.length > 0 || !!preview.error;
+  const pending = move.isPending || moveTicket.isPending;
 
   const [error, setError] = useState<string | null>(null);
   const confirm = () => {
     setError(null);
-    move.mutate(
-      { ...vars, dryRun: false },
-      {
-        onSuccess: () => {
-          toast.success(t('move.done', { code: booking?.code ?? '', to: target.label }));
-          onDone();
-        },
-        onError: (e) => setError(problemText(e)),
+    const callbacks = {
+      onSuccess: () => {
+        toast.success(t('move.done', { code: booking?.code ?? '', to: target.label }));
+        onDone();
       },
-    );
+      onError: (e: ApiProblem) => setError(problemText(e)),
+    };
+    if (ticket) {
+      moveTicket.mutate({ ticketId: ticket.id, spotId: target.spotId, version: ticket.version }, callbacks);
+      return;
+    }
+    move.mutate({ ...vars, dryRun: false }, callbacks);
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={(v) => !move.isPending && onOpenChange(v)}>
+    <AlertDialog open={open} onOpenChange={(v) => !pending && onOpenChange(v)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
@@ -141,6 +150,11 @@ export function MoveDialog({
               </AlertDescription>
             </Alert>
           )}
+          {ticket && (
+            <p className="text-sm" data-testid="move-price">
+              {t('move.ticketPriceKept', { number: ticket.label })}
+            </p>
+          )}
           {preview.data && conflicts.length === 0 && (
             <p className="text-sm tabular-nums" data-testid="move-price">
               {preview.data.price_difference === 0
@@ -158,9 +172,9 @@ export function MoveDialog({
           )}
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={move.isPending}>{t('actions.cancel')}</AlertDialogCancel>
-          <Button disabled={blocked || !preview.data || move.isPending} onClick={confirm}>
-            {move.isPending && <Spinner />}
+          <AlertDialogCancel disabled={pending}>{t('actions.cancel')}</AlertDialogCancel>
+          <Button disabled={blocked || (!ticket && !preview.data) || pending} onClick={confirm}>
+            {pending && <Spinner />}
             {t('move.confirm')}
           </Button>
         </AlertDialogFooter>

@@ -2,15 +2,15 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { localize } from '../configuration/lib/i18nText';
+import type { OperationalSpot, SlotChoice } from '../operations/lib/status';
 import {
-  isBookable,
-  slotStatus,
-  type OperationalSpot,
-  type SlotChoice,
-} from '../operations/lib/status';
-import { useAssignTicket, useAutoAssignTickets, useUnassignedTickets } from './api';
+  useAssignTicket,
+  useAutoAssignTickets,
+  useUnassignedTickets,
+  type Ticket,
+} from './api';
 import { AssignPanel } from './AssignPanel';
-import { autoAssignSummary } from './lib';
+import { assignmentTargets, autoAssignSummary } from './lib';
 import { useSaleProblemText } from './useSaleProblemText';
 
 export interface TicketAssignment {
@@ -18,7 +18,9 @@ export interface TicketAssignment {
   panel: ReactNode;
   /** True while a ticket is picked: taps on the map assign it. */
   active: boolean;
-  /** Free spots of the picked ticket's zone, to highlight on the map. */
+  /** The picked ticket (the map scrolls to and zooms on its zone). */
+  picked?: Ticket;
+  /** Spots the picked ticket can take (free in its zone, or its own provisional spot). */
   highlightIds: string[];
   /** Handles a tap on a spot while assigning; returns false when not assigning. */
   handleSpot: (spotId: string) => boolean;
@@ -52,32 +54,27 @@ export function useTicketAssignment({
   const picked = tickets.find((x) => x.id === pickedId);
   const byId = useMemo(() => new Map(spots.map((s) => [s.spot_id, s])), [spots]);
 
-  const highlightIds = useMemo(
-    () =>
-      picked
-        ? spots
-            .filter((s) => s.zone_id === picked.zone_id && isBookable(slotStatus(s, slot)))
-            .map((s) => s.spot_id)
-        : [],
+  // Spots the picked ticket can take: the free ones of its zone and the
+  // spot its own booking holds provisionally (seat zones: the sale parked
+  // the ticket on the last free spot, so a full zone still has this target).
+  const targets = useMemo(
+    () => (picked ? assignmentTargets(spots, picked, slot) : []),
     [picked, spots, slot],
   );
+  const highlightIds = useMemo(() => targets.map((s) => s.spot_id), [targets]);
 
   const handleSpot = (spotId: string): boolean => {
     if (!picked) return false;
     const spot = byId.get(spotId);
     const zone = localize(picked.zone_name, i18n.language || 'it', 'it');
-    if (!spot || !isBookable(slotStatus(spot, slot))) {
-      toast.error(t('assign.notFree'));
-      return true;
-    }
-    if (spot.zone_id !== picked.zone_id) {
-      toast.error(t('assign.wrongZone', { zone }));
+    if (!spot || !targets.some((s) => s.spot_id === spotId)) {
+      toast.error(spot && spot.zone_id !== picked.zone_id ? t('assign.wrongZone', { zone }) : t('assign.notFree'));
       return true;
     }
     const ticket = picked;
     setPickedId(undefined);
     assign.mutate(
-      { ticketId: ticket.id, spotId },
+      { ticketId: ticket.id, spotId, version: ticket.version },
       {
         onSuccess: () =>
           toast.success(t('assign.done', { number: ticket.number_label, label: spot.label })),
@@ -111,8 +108,10 @@ export function useTicketAssignment({
         onAutoAssign={runAuto}
         autoAssigning={auto.isPending}
         canWrite={canWrite}
+        targets={targets.map((s) => ({ id: s.spot_id, label: s.label }))}
+        onPickSpot={handleSpot}
       />
     ) : null;
 
-  return { panel, active: !!picked, highlightIds, handleSpot };
+  return { panel, active: !!picked, picked, highlightIds, handleSpot };
 }

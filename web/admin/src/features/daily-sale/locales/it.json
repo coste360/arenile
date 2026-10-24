@@ -44,7 +44,8 @@
       "label": "Tipo di vendita",
       "spots": "Ombrelloni",
       "entries": "Ingressi"
-    }
+    },
+    "zoneNoneFree": "Nessun posto libero"
   },
   "where": {
     "spot": "Postazione",
@@ -104,7 +105,8 @@
     "payment": "Pagamento",
     "qr": "Codice QR del biglietto {{code}}",
     "validOn": "Valido il {{date}}",
-    "issuedAt": "Emesso {{time}}"
+    "issuedAt": "Emesso {{time}}",
+    "nonFiscal": "Non valido ai fini fiscali"
   },
   "tickets": {
     "title": "Ticket del giorno",
@@ -172,14 +174,17 @@
     "auto": "Assegna automaticamente",
     "listLabel": "Biglietti da assegnare",
     "ticketAria": "Biglietto {{number}}, {{zone}}, {{slots}}",
-    "pick": "Tocca una postazione libera di {{zone}} per il biglietto {{number}}.",
+    "pick": "Tocca una postazione evidenziata di {{zone}} (sulla mappa o qui sotto) per il biglietto {{number}}.",
     "notFree": "Questa postazione non è libera: scegline una evidenziata.",
     "wrongZone": "Scegli una postazione della zona {{zone}}.",
     "done": "Biglietto {{number}} assegnato alla postazione {{label}}",
     "autoDone_one": "{{count}} biglietto assegnato",
     "autoDone_other": "{{count}} biglietti assegnati",
     "autoPartial_one": "{{count}} biglietto assegnato, {{left}} senza posto libero",
-    "autoPartial_other": "{{count}} biglietti assegnati, {{left}} senza posto libero"
+    "autoPartial_other": "{{count}} biglietti assegnati, {{left}} senza posto libero",
+    "targetsLabel": "Postazioni libere per il biglietto {{number}}",
+    "targetAria": "Assegna alla postazione {{label}}",
+    "noTargets": "Nessuna postazione libera nella zona: usa Assegna automaticamente o sposta un altro biglietto."
   },
   "problems": {
     "zone_full": "Nessun posto libero nella zona per la fascia scelta.",
@@ -189,7 +194,8 @@
     "ticket_already_entered": "Il biglietto è già stato usato per entrare.",
     "price_changed": "Il prezzo è cambiato: controlla il nuovo totale e incassa di nuovo.",
     "spot_unavailable": "La postazione non è più libera: scegline un'altra.",
-    "cash_session_closed": "La cassa è chiusa: aprila per incassare in contanti."
+    "cash_session_closed": "La cassa è chiusa: aprila per incassare in contanti.",
+    "ticket_owned": "La prenotazione appartiene a un biglietto: usa le azioni del biglietto (Ticket del giorno)."
   },
   "settings": {
     "open": "Impostazioni",

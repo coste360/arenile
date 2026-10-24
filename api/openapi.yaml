@@ -4576,6 +4576,7 @@ paths:
         Annulla la prenotazione tramite internal/domain/booking (audit e outbox nella stessa transazione), libera la
         postazione o la capacità di zona e rimborsa con il driver manuale (refund) o in credito. Il biglietto mantiene il
         numero ed è marcato annullato. 409 ticket_voided se già annullato, ticket_already_entered se già entrato.
+        Richiede If-Match con la versione del biglietto letta (428 se assente, 412 se superata; INV-80).
         Permessi bookings.write e refunds.issue (per il rimborso).
       security:
         - cookieAuth: []
@@ -4585,6 +4586,7 @@ paths:
         - $ref: "#/components/parameters/TicketID"
         - $ref: "#/components/parameters/CSRFToken"
         - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/IfMatchRequired"
       requestBody:
         required: true
         content:
@@ -4594,6 +4596,9 @@ paths:
       responses:
         "200":
           description: "Biglietto annullato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
           content:
             application/json:
               schema:
@@ -4608,6 +4613,10 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/assign:
@@ -4617,7 +4626,9 @@ paths:
       summary: "Assegna un biglietto da assegnare a una postazione libera della sua zona"
       description: >-
         Allocazione atomica (vincolo unico di spot_allocations): 409 assignment_conflict se la postazione è stata presa
-        nel frattempo, spot_unavailable se non è libera. Permesso bookings.write.
+        nel frattempo, spot_unavailable se non è libera. Il totale del biglietto non cambia (il prezzo della nuova
+        postazione resta solo nell'audit). Richiede If-Match con la versione del biglietto letta (428 se assente,
+        412 se superata; INV-80). Permesso bookings.write.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -4625,6 +4636,7 @@ paths:
         - $ref: "#/components/parameters/EstablishmentID"
         - $ref: "#/components/parameters/TicketID"
         - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/IfMatchRequired"
       requestBody:
         required: true
         content:
@@ -4634,6 +4646,9 @@ paths:
       responses:
         "200":
           description: "Biglietto assegnato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
           content:
             application/json:
               schema:
@@ -4648,6 +4663,10 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/tickets/{ticketId}/move:
@@ -4657,7 +4676,8 @@ paths:
       summary: "Sposta il biglietto su un'altra postazione"
       description: >-
         Spostamento (o riassegnazione) tramite la Move della prenotazione: atomico, 409 se la postazione è occupata.
-        Permesso bookings.write.
+        Il totale del biglietto non cambia (il prezzo della nuova postazione resta solo nell'audit). Richiede If-Match
+        con la versione del biglietto letta (428 se assente, 412 se superata; INV-80). Permesso bookings.write.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -4665,6 +4685,7 @@ paths:
         - $ref: "#/components/parameters/EstablishmentID"
         - $ref: "#/components/parameters/TicketID"
         - $ref: "#/components/parameters/CSRFToken"
+        - $ref: "#/components/parameters/IfMatchRequired"
       requestBody:
         required: true
         content:
@@ -4674,6 +4695,9 @@ paths:
       responses:
         "200":
           description: "Biglietto spostato"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
           content:
             application/json:
               schema:
@@ -4688,6 +4712,10 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/entry-gate/check-in:
@@ -4698,7 +4726,10 @@ paths:
       description: >-
         Un ingresso per biglietto: il primo passaggio registra entered_at (condizionale, mai due volte anche da due
         telefoni), i successivi rispondono already_entered. outcome descrive l'esito per lo scanner (voided,
-        wrong_date). 404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
+        wrong_date). Il codice è il token casuale del QR (gate token): il codice della prenotazione, sequenziale, o il
+        numero del giorno da soli non fanno entrare (404); li accetta solo un inserimento manuale confermato dallo
+        staff (manual = true), registrato nell'audit. Un biglietto la cui prenotazione non è più confermata non entra.
+        404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
       security:
         - cookieAuth: []
         - bearerAuth: []
@@ -12035,6 +12066,7 @@ components:
         - ticket_voided
         - ticket_already_entered
         - price_changed
+        - ticket_owned
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -16661,7 +16693,7 @@ components:
           x-go-type: string
         booking_code:
           type: string
-          description: Codice della prenotazione, contenuto del QR.
+          description: Codice della prenotazione, stampato in chiaro sotto il QR (il QR porta il gate token).
         zone_id:
           type: string
           format: uuid
@@ -16753,7 +16785,10 @@ components:
           $ref: "#/components/schemas/Money"
     TicketDaySummary:
       type: object
-      description: Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso).
+      description: >-
+        Riepilogo dei biglietti per giorno di validità (ticket_date), non per data di incasso: una vendita anticipata
+        compare nel giorno di utilizzo, gli annullati sono contati ma non sommati. Non è una riconciliazione di cassa:
+        incassi, rimborsi e corrispettivi seguono la data contabile dei pagamenti (sessione di cassa, corrispettivi).
       required: [issued, voided, unassigned, entered, total_amount, by_method, vat]
       properties:
         issued:
@@ -16807,7 +16842,10 @@ components:
           format: uuid
           x-go-type: string
         version:
-          $ref: "#/components/schemas/Version"
+          allOf:
+            - $ref: "#/components/schemas/Version"
+          deprecated: true
+          description: Ignorato; la versione viaggia nell'header If-Match (obbligatorio).
     TicketAutoAssignRequest:
       type: object
       required: [date]
@@ -16881,7 +16919,10 @@ components:
             refund (default) restituisce l'importo con il metodo del biglietto tramite i pagamenti; credit lo accredita
             al cliente (solo se il biglietto ha un cliente con nome); none annulla senza rimborso.
         version:
-          $ref: "#/components/schemas/Version"
+          allOf:
+            - $ref: "#/components/schemas/Version"
+          deprecated: true
+          description: Ignorato; la versione viaggia nell'header If-Match (obbligatorio).
     TicketReprintRequest:
       type: object
       properties:
@@ -16913,7 +16954,9 @@ components:
           $ref: "#/components/schemas/TicketPrintEstablishment"
         qr_payload:
           type: string
-          description: Contenuto del QR (codice della prenotazione).
+          description: >-
+            Contenuto del QR: il gate token casuale del biglietto (128 bit, base32), mai il codice della prenotazione,
+            che è sequenziale e resta stampato in chiaro sotto il QR.
         reprint:
           type: boolean
           description: Stampa successiva alla prima (dicitura "Ristampa").
@@ -16958,7 +17001,14 @@ components:
           type: string
           minLength: 1
           maxLength: 200
-          description: Contenuto del QR scansionato (codice della prenotazione).
+          description: >-
+            Contenuto del QR scansionato (gate token). Con manual = true anche il numero del giorno (es. "37") o il
+            codice della prenotazione stampato sotto il QR.
+        manual:
+          type: boolean
+          description: >-
+            Inserimento manuale confermato dallo staff (telefono senza fotocamera, QR illeggibile): abilita la ricerca
+            per numero del giorno o codice della prenotazione e viene registrato nell'audit. Default false.
     GateCheckInResult:
       type: object
       required: [outcome]
@@ -17382,8 +17432,13 @@ components:
       description: >-
         Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il
         nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE.
-      required: [number, label, needs_assignment]
+      required: [id, number, label, needs_assignment, version]
       properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Id del biglietto (per spostarlo con le azioni dei biglietti, If-Match con version).
         number:
           type: integer
           format: int64
@@ -17395,6 +17450,8 @@ components:
         needs_assignment:
           type: boolean
           description: Vendita per zona non ancora collocata (nelle zone seat occupa una postazione provvisoria).
+        version:
+          $ref: "#/components/schemas/Version"
     OperationalSpot:
       type: object
       required: [spot_id, map_id, zone_id, label, status]

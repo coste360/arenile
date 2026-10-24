@@ -47,13 +47,13 @@ describe('EntryGatePage', () => {
     expect(screen.queryByRole('button', { name: 'Avvia fotocamera' })).not.toBeInTheDocument();
 
     await user.type(screen.getByLabelText('Codice del biglietto'), ' AR-7KQ2M9 ');
-    await user.click(screen.getByRole('button', { name: 'Verifica' }));
+    await user.click(screen.getByRole('button', { name: 'Conferma ingresso' }));
 
     expect(await screen.findByText('Ingresso valido')).toBeInTheDocument();
     expect(screen.getByText('#037')).toBeInTheDocument();
     expect(screen.getByText('3 persone')).toBeInTheDocument();
     const [req] = callsTo(fetchMock, 'POST', `${API}/entry-gate/check-in`);
-    expect(await bodyOf(req as Request)).toEqual({ code: 'AR-7KQ2M9' });
+    expect(await bodyOf(req as Request)).toEqual({ code: 'AR-7KQ2M9', manual: true });
     await waitFor(() => expect(screen.getByLabelText('Codice del biglietto')).toHaveValue(''));
   });
 

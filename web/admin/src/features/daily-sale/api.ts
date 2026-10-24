@@ -199,14 +199,19 @@ export function useCreateDailySale(establishmentId: string) {
   });
 }
 
+/**
+ * Places a "da assegnare" ticket on a free spot of its zone. If-Match
+ * carries the ticket version read (428 without it, 412 when stale, INV-80):
+ * a stale tab never moves a ticket that changed in the meantime.
+ */
 export function useAssignTicket(establishmentId: string) {
   const client = useApiClient();
   const invalidate = useInvalidateTickets(establishmentId);
-  return useMutation<Ticket, ApiProblem, { ticketId: string; spotId: string }>({
-    mutationFn: ({ ticketId, spotId }) =>
+  return useMutation<Ticket, ApiProblem, { ticketId: string; spotId: string; version: number }>({
+    mutationFn: ({ ticketId, spotId, version }) =>
       call(() =>
         client.POST(`${BASE}/tickets/{ticketId}/assign`, {
-          params: { path: { establishmentId, ticketId } },
+          params: { path: { establishmentId, ticketId }, header: { 'If-Match': ifMatch(version) } },
           body: { spot_id: spotId },
         }),
       ),
@@ -235,14 +240,14 @@ export function useVoidTicket(establishmentId: string) {
   return useMutation<
     Ticket,
     ApiProblem,
-    { ticketId: string; body: TicketVoidRequest; idempotencyKey: string }
+    { ticketId: string; version: number; body: TicketVoidRequest; idempotencyKey: string }
   >({
-    mutationFn: ({ ticketId, body, idempotencyKey }) =>
+    mutationFn: ({ ticketId, version, body, idempotencyKey }) =>
       call(() =>
         client.POST(`${BASE}/tickets/{ticketId}/void`, {
           params: {
             path: { establishmentId, ticketId },
-            header: { 'Idempotency-Key': idempotencyKey },
+            header: { 'Idempotency-Key': idempotencyKey, 'If-Match': ifMatch(version) },
           },
           body,
         }),
@@ -273,12 +278,12 @@ export function useReprintTicket(establishmentId: string) {
 export function useMoveTicket(establishmentId: string) {
   const client = useApiClient();
   const invalidate = useInvalidateTickets(establishmentId);
-  return useMutation<Ticket, ApiProblem, { ticketId: string; spotId: string; version?: number }>({
+  return useMutation<Ticket, ApiProblem, { ticketId: string; spotId: string; version: number }>({
     mutationFn: ({ ticketId, spotId, version }) =>
       call(() =>
         client.POST(`${BASE}/tickets/{ticketId}/move`, {
-          params: { path: { establishmentId, ticketId } },
-          body: { spot_id: spotId, version },
+          params: { path: { establishmentId, ticketId }, header: { 'If-Match': ifMatch(version) } },
+          body: { spot_id: spotId },
         }),
       ),
     onSettled: invalidate,

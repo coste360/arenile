@@ -117,8 +117,53 @@ func allocationKind(b *store.Booking) inventory.Kind {
 // or refund. expected is the If-Match version. Requires auth.PermBookingsWrite.
 func (s *Service) Update(ctx context.Context, p *auth.Principal, establishmentID, id string, expected *int64, in PatchInput) (*ChangeResult, error) {
 	return s.changeInTx(ctx, p, establishmentID, id, expected, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
+		if err := refuseTicketOwned(ctx, tx, es, b); err != nil {
+			return nil, err
+		}
 		return s.modifyLocked(ctx, tx, p, es, b, in, res)
 	})
+}
+
+// refuseTicketOwned is ErrTicketOwned when a daily ticket owns b (ADR 0020):
+// the generic cancel, modify and move would leave the ticket row (status,
+// date, zone, needs_assignment) out of step, so they are refused and the
+// ticket endpoints, which change both in one transaction, are the only
+// way. Called with the booking row locked.
+func refuseTicketOwned(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) error {
+	owned, err := store.TicketOwnsBooking(ctx, tx, es, b.ID)
+	if err != nil {
+		return err
+	}
+	if owned {
+		return ErrTicketOwned
+	}
+	return nil
+}
+
+// withoutTicketLines drops the pending lines whose booking is owned by a
+// daily ticket (see refuseTicketOwned).
+func withoutTicketLines(ctx context.Context, db bun.IDB, es store.EstablishmentScope, lines []store.PendingLine) ([]store.PendingLine, error) {
+	if len(lines) == 0 {
+		return lines, nil
+	}
+	ids := make([]string, 0, len(lines))
+	for _, l := range lines {
+		ids = append(ids, l.BookingID)
+	}
+	owned, err := store.TicketOwnedBookingIDs(ctx, db, es, ids)
+	if err != nil {
+		return nil, err
+	}
+	if len(owned) == 0 {
+		return lines, nil
+	}
+	out := lines[:0]
+	for _, l := range lines {
+		if !owned[l.BookingID] {
+			out = append(out, l)
+		}
+	}
+	return out, nil
 }
 
 func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, b *store.Booking, in PatchInput, res *ChangeResult) (*outcome, error) {
@@ -410,6 +455,11 @@ func (s *Service) Move(ctx context.Context, p *auth.Principal, establishmentID, 
 		return nil, configerr.Invalid("spot_id", "Campo obbligatorio.")
 	}
 	return s.changeInTx(ctx, p, establishmentID, id, in.ExpectedVersion, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
+		// A ticket booking is placed only through MoveThen (ticket update in
+		// the same transaction).
+		if err := refuseTicketOwned(ctx, tx, es, b); err != nil {
+			return nil, err
+		}
 		return s.moveLocked(ctx, tx, p, es, b, in, res)
 	})
 }
@@ -508,10 +558,18 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 		}
 	}
 	diff := map[string]any{"line_id": in.LineID, "from_spot_id": prevSpot, "to_spot_id": in.SpotID, "from": from.String()}
+	prevTotal, prevCurrent, prevDeposit := b.TotalAmount, b.PriceCurrent, b.DepositDue
 	if err := s.applyTotals(b, pr, now, diff); err != nil {
 		return nil, err
 	}
-	res.NewTotal = b.TotalAmount // a kept manual price (ADR 0019 E)
+	if in.KeepPrice && b.PriceOverrideAmount == nil {
+		// Daily ticket (ADR 0020): the guest paid the ticket at the desk, so
+		// the placement never changes the total; the engine price of the
+		// new spot stays in the audit diff only.
+		diff["price_kept"], diff["engine_total"] = true, int64(pr.res.Breakdown.Total)
+		b.TotalAmount, b.PriceCurrent, b.DepositDue = prevTotal, prevCurrent, prevDeposit
+	}
+	res.NewTotal = b.TotalAmount // a kept manual price (ADR 0019 E) or a kept ticket price
 	diff["previous_total"], diff["new_total"] = int64(res.PreviousTotal), int64(res.NewTotal)
 	for k, v := range approvedDiff {
 		diff[k] = v
@@ -681,6 +739,12 @@ func (s *Service) autoAssignPlan(ctx context.Context, es store.EstablishmentScop
 	db := s.d.DB
 	pending, err := store.ListPendingLines(ctx, db, es, in.From, in.To, in.ZoneID, occupyingStatuses)
 	if err != nil {
+		return nil, nil, err
+	}
+	// Zone-first daily tickets are pending lines too, but they are placed
+	// by their own auto-assignment (internal/domain/ticketassign), which
+	// updates the ticket row in the same transaction: leave them out here.
+	if pending, err = withoutTicketLines(ctx, db, es, pending); err != nil {
 		return nil, nil, err
 	}
 	plan := &autoPlan{unassigned: []AutoUnassigned{}}

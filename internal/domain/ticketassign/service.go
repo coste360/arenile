@@ -264,7 +264,10 @@ func (s *Service) checkFree(ctx context.Context, tg *target, spotID string) erro
 // apply runs the Move with the ticket update in the same transaction.
 func (s *Service) apply(ctx context.Context, p *auth.Principal, establishmentID string, tg *target, sp *store.Spot) error {
 	wasUnassigned := tg.ticket.NeedsAssignment
-	_, err := s.d.Bookings.MoveThen(ctx, p, establishmentID, tg.bk.ID, booking.MoveInput{LineID: tg.line.ID, SpotID: sp.ID},
+	// KeepPrice: the ticket was paid at the desk, so the placement never
+	// changes the booking total (the engine price of the new spot is only
+	// recorded in the audit diff, ADR 0020).
+	_, err := s.d.Bookings.MoveThen(ctx, p, establishmentID, tg.bk.ID, booking.MoveInput{LineID: tg.line.ID, SpotID: sp.ID, KeepPrice: true},
 		func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, _ *store.Booking) error {
 			mark := store.MarkTicketMoved
 			if wasUnassigned {
@@ -295,6 +298,11 @@ func classify(err error) error {
 	var ce *availability.ConflictError
 	if errors.As(err, &ce) || errors.Is(err, availability.ErrSpotUnavailable) {
 		return fmt.Errorf("%w: %w", ticketing.ErrAssignmentConflict, err)
+	}
+	// The booking was cancelled between the ticket read and the Move: the
+	// ticket was voided meanwhile (the only cancellation of a ticket booking).
+	if errors.Is(err, booking.ErrNotModifiable) {
+		return fmt.Errorf("%w: %w", ticketing.ErrVoided, err)
 	}
 	return err
 }

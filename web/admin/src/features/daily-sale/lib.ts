@@ -1,8 +1,15 @@
 import type { StatusTone } from '@arenile/shared/ui/patterns';
 import { newIdempotencyKey } from '../configuration/lib/validation';
+import {
+  isBookable,
+  slotStatus,
+  type OperationalSpot,
+  type SlotChoice,
+} from '../operations/lib/status';
 import type {
   DailySaleCreate,
   DailySaleQuoteRequest,
+  Ticket,
   TicketAutoAssignResult,
   TicketPaymentMethod,
   TicketPrintFormat,
@@ -170,6 +177,16 @@ export function shortcutFor(e: {
   return SHORTCUT_KEYS[e.key.toLowerCase()] ?? null;
 }
 
+/**
+ * True when a dialog is open that does not contain `root` (the sale form):
+ * the print preview, the settings or any other layer on top owns the keys.
+ */
+export function dialogOpenOutside(root: Element, doc: Document = document): boolean {
+  return [...doc.querySelectorAll('[role="dialog"][data-state="open"], [role="alertdialog"]')].some(
+    (d) => !d.contains(root),
+  );
+}
+
 /** True when keys typed into `el` belong to a field (inputs, text areas, editable, listboxes). */
 export function isTypingTarget(el: EventTarget | null): boolean {
   if (!el || !(el instanceof HTMLElement)) return false;
@@ -187,6 +204,25 @@ export function isTypingTarget(el: EventTarget | null): boolean {
 /** Counts of an auto-assign run for the toast. */
 export function autoAssignSummary(r: TicketAutoAssignResult): { assigned: number; left: number } {
   return { assigned: r.assigned.length, left: r.unassigned.length };
+}
+
+/**
+ * Spots a "da assegnare" ticket can take, in map order: the free spots of
+ * its zone plus the spot its own booking holds provisionally (seat zones
+ * park the sale on the last free spot, so a zone full except for those
+ * placeholders still offers the ticket its own spot). The server accepts
+ * the move onto the spot the booking already holds.
+ */
+export function assignmentTargets(
+  spots: readonly OperationalSpot[],
+  ticket: Pick<Ticket, 'zone_id' | 'booking_id'>,
+  slot: SlotChoice,
+): OperationalSpot[] {
+  return spots.filter(
+    (s) =>
+      s.zone_id === ticket.zone_id &&
+      (isBookable(slotStatus(s, slot)) || s.booking?.booking_id === ticket.booking_id),
+  );
 }
 
 /** Idempotency key that stays the same while the request body does not change. */

@@ -1446,7 +1446,7 @@ export interface paths {
         put?: never;
         /**
          * Annulla il biglietto (mantiene il numero, rimborso tramite pagamenti)
-         * @description Annulla la prenotazione tramite internal/domain/booking (audit e outbox nella stessa transazione), libera la postazione o la capacità di zona e rimborsa con il driver manuale (refund) o in credito. Il biglietto mantiene il numero ed è marcato annullato. 409 ticket_voided se già annullato, ticket_already_entered se già entrato. Permessi bookings.write e refunds.issue (per il rimborso).
+         * @description Annulla la prenotazione tramite internal/domain/booking (audit e outbox nella stessa transazione), libera la postazione o la capacità di zona e rimborsa con il driver manuale (refund) o in credito. Il biglietto mantiene il numero ed è marcato annullato. 409 ticket_voided se già annullato, ticket_already_entered se già entrato. Richiede If-Match con la versione del biglietto letta (428 se assente, 412 se superata; INV-80). Permessi bookings.write e refunds.issue (per il rimborso).
          */
         post: operations["voidTicket"];
         delete?: never;
@@ -1466,7 +1466,7 @@ export interface paths {
         put?: never;
         /**
          * Assegna un biglietto da assegnare a una postazione libera della sua zona
-         * @description Allocazione atomica (vincolo unico di spot_allocations): 409 assignment_conflict se la postazione è stata presa nel frattempo, spot_unavailable se non è libera. Permesso bookings.write.
+         * @description Allocazione atomica (vincolo unico di spot_allocations): 409 assignment_conflict se la postazione è stata presa nel frattempo, spot_unavailable se non è libera. Il totale del biglietto non cambia (il prezzo della nuova postazione resta solo nell'audit). Richiede If-Match con la versione del biglietto letta (428 se assente, 412 se superata; INV-80). Permesso bookings.write.
          */
         post: operations["assignTicket"];
         delete?: never;
@@ -1486,7 +1486,7 @@ export interface paths {
         put?: never;
         /**
          * Sposta il biglietto su un'altra postazione
-         * @description Spostamento (o riassegnazione) tramite la Move della prenotazione: atomico, 409 se la postazione è occupata. Permesso bookings.write.
+         * @description Spostamento (o riassegnazione) tramite la Move della prenotazione: atomico, 409 se la postazione è occupata. Il totale del biglietto non cambia (il prezzo della nuova postazione resta solo nell'audit). Richiede If-Match con la versione del biglietto letta (428 se assente, 412 se superata; INV-80). Permesso bookings.write.
          */
         post: operations["moveTicket"];
         delete?: never;
@@ -1506,7 +1506,7 @@ export interface paths {
         put?: never;
         /**
          * Ingresso al varco: scansione del QR del biglietto
-         * @description Un ingresso per biglietto: il primo passaggio registra entered_at (condizionale, mai due volte anche da due telefoni), i successivi rispondono already_entered. outcome descrive l'esito per lo scanner (voided, wrong_date). 404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
+         * @description Un ingresso per biglietto: il primo passaggio registra entered_at (condizionale, mai due volte anche da due telefoni), i successivi rispondono already_entered. outcome descrive l'esito per lo scanner (voided, wrong_date). Il codice è il token casuale del QR (gate token): il codice della prenotazione, sequenziale, o il numero del giorno da soli non fanno entrare (404); li accetta solo un inserimento manuale confermato dallo staff (manual = true), registrato nell'audit. Un biglietto la cui prenotazione non è più confermata non entra. 404 se il codice non è un biglietto dello stabilimento. Permesso operations.run.
          */
         post: operations["checkInEntryTicket"];
         delete?: never;
@@ -4213,7 +4213,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed" | "ticket_owned";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -6265,7 +6265,7 @@ export interface components {
             number_label: string;
             /** Format: uuid */
             booking_id: string;
-            /** @description Codice della prenotazione, contenuto del QR. */
+            /** @description Codice della prenotazione, stampato in chiaro sotto il QR (il QR porta il gate token). */
             booking_code: string;
             /** Format: uuid */
             zone_id: string;
@@ -6314,7 +6314,7 @@ export interface components {
             count: number;
             amount: components["schemas"]["Money"];
         };
-        /** @description Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso). */
+        /** @description Riepilogo dei biglietti per giorno di validità (ticket_date), non per data di incasso: una vendita anticipata compare nel giorno di utilizzo, gli annullati sono contati ma non sommati. Non è una riconciliazione di cassa: incassi, rimborsi e corrispettivi seguono la data contabile dei pagamenti (sessione di cassa, corrispettivi). */
         TicketDaySummary: {
             issued: number;
             voided: number;
@@ -6335,6 +6335,10 @@ export interface components {
         TicketAssignRequest: {
             /** Format: uuid */
             spot_id: string;
+            /**
+             * @deprecated
+             * @description Ignorato; la versione viaggia nell'header If-Match (obbligatorio).
+             */
             version?: components["schemas"]["Version"];
         };
         TicketAutoAssignRequest: {
@@ -6375,6 +6379,10 @@ export interface components {
              * @enum {string}
              */
             refund?: "refund" | "credit" | "none";
+            /**
+             * @deprecated
+             * @description Ignorato; la versione viaggia nell'header If-Match (obbligatorio).
+             */
             version?: components["schemas"]["Version"];
         };
         TicketReprintRequest: {
@@ -6391,7 +6399,7 @@ export interface components {
             format: components["schemas"]["TicketPrintFormat"];
             ticket: components["schemas"]["Ticket"];
             establishment: components["schemas"]["TicketPrintEstablishment"];
-            /** @description Contenuto del QR (codice della prenotazione). */
+            /** @description Contenuto del QR: il gate token casuale del biglietto (128 bit, base32), mai il codice della prenotazione, che è sequenziale e resta stampato in chiaro sotto il QR. */
             qr_payload: string;
             /** @description Stampa successiva alla prima (dicitura "Ristampa"). */
             reprint: boolean;
@@ -6415,8 +6423,10 @@ export interface components {
             footer_text: components["schemas"]["I18nText"];
         };
         GateCheckInRequest: {
-            /** @description Contenuto del QR scansionato (codice della prenotazione). */
+            /** @description Contenuto del QR scansionato (gate token). Con manual = true anche il numero del giorno (es. "37") o il codice della prenotazione stampato sotto il QR. */
             code: string;
+            /** @description Inserimento manuale confermato dallo staff (telefono senza fotocamera, QR illeggibile): abilita la ricerca per numero del giorno o codice della prenotazione e viene registrato nell'audit. Default false. */
+            manual?: boolean;
         };
         GateCheckInResult: {
             /** @enum {string} */
@@ -6623,6 +6633,11 @@ export interface components {
         /** @description Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE. */
         OperationalTicket: {
             /**
+             * Format: uuid
+             * @description Id del biglietto (per spostarlo con le azioni dei biglietti, If-Match con version).
+             */
+            id: string;
+            /**
              * Format: int64
              * @description Progressivo del giorno.
              */
@@ -6631,6 +6646,7 @@ export interface components {
             label: string;
             /** @description Vendita per zona non ancora collocata (nelle zone seat occupa una postazione provvisoria). */
             needs_assignment: boolean;
+            version: components["schemas"]["Version"];
         };
         OperationalSpot: {
             /** Format: uuid */
@@ -14076,7 +14092,7 @@ export interface operations {
     voidTicket: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
                  *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
@@ -14088,6 +14104,8 @@ export interface operations {
                  *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
+                "If-Match": components["parameters"]["IfMatchRequired"];
             };
             path: {
                 establishmentId: components["parameters"]["EstablishmentID"];
@@ -14104,6 +14122,7 @@ export interface operations {
             /** @description Biglietto annullato */
             200: {
                 headers: {
+                    ETag: components["headers"]["ETag"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14115,18 +14134,22 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
             501: components["responses"]["NotImplemented"];
         };
     };
     assignTicket: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
                  *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
                  */
                 "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
+                "If-Match": components["parameters"]["IfMatchRequired"];
             };
             path: {
                 establishmentId: components["parameters"]["EstablishmentID"];
@@ -14143,6 +14166,7 @@ export interface operations {
             /** @description Biglietto assegnato */
             200: {
                 headers: {
+                    ETag: components["headers"]["ETag"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14154,18 +14178,22 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
             501: components["responses"]["NotImplemented"];
         };
     };
     moveTicket: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
                 /**
                  * @description Obbligatorio per le richieste autenticate via cookie che modificano
                  *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
                  */
                 "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
+                "If-Match": components["parameters"]["IfMatchRequired"];
             };
             path: {
                 establishmentId: components["parameters"]["EstablishmentID"];
@@ -14182,6 +14210,7 @@ export interface operations {
             /** @description Biglietto spostato */
             200: {
                 headers: {
+                    ETag: components["headers"]["ETag"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14193,6 +14222,8 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
             501: components["responses"]["NotImplemented"];
         };
     };

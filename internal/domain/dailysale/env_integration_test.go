@@ -156,7 +156,17 @@ func (e *env) entryTypes() {
 // openSession opens a cash session on register as the cashier.
 func (e *env) openSession(register string) *store.CashSession {
 	e.f.T.Helper()
-	cs, err := e.cash.Open(e.f.Ctx, e.f.Cashier, "", e.f.Est.ID, cash.OpenInput{Register: register, OpeningFloat: 10000})
+	in := cash.OpenInput{OpeningFloat: 10000}
+	if register != "" {
+		// Registers other than the default must exist (ADR 0019 D).
+		code := register
+		r, err := e.cash.CreateRegister(e.f.Ctx, e.f.Owner, "", e.f.Est.ID, cash.RegisterInput{Code: &code, Name: register})
+		if err != nil {
+			e.f.T.Fatalf("register %s: %v", register, err)
+		}
+		in.RegisterID = r.ID
+	}
+	cs, err := e.cash.Open(e.f.Ctx, e.f.Cashier, "", e.f.Est.ID, in)
 	if err != nil {
 		e.f.T.Fatalf("open %s: %v", register, err)
 	}

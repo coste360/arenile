@@ -27,6 +27,10 @@ var (
 	// ErrOutsidePeriod: a check-in or no-show requested on a day outside the
 	// stay (establishment timezone); see OutsidePeriodError.
 	ErrOutsidePeriod = errors.New("booking: outside the stay period")
+	// ErrTicketOwned: the booking belongs to a daily ticket (ADR 0020), so
+	// its cancellation, modification and placement go through the ticket
+	// endpoints, which keep the ticket row in step (409 ticket_owned).
+	ErrTicketOwned = errors.New("booking: owned by a ticket, use the ticket endpoints")
 )
 
 // OutsidePeriodError reports a check-in (or no-show) refused because today,

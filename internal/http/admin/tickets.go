@@ -114,12 +114,19 @@ func (h *Handlers) ReprintTicket(w http.ResponseWriter, r *http.Request, establi
 }
 
 // VoidTicket implements POST .../tickets/{ticketId}/void.
-func (h *Handlers) VoidTicket(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, id api.TicketID, _ api.VoidTicketParams) {
+// If-Match with the ticket version is mandatory (428 / 412, INV-80), like
+// the booking cancellation from the map.
+func (h *Handlers) VoidTicket(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, id api.TicketID, params api.VoidTicketParams) {
+	expected, err := bkRequireIfMatch(&params.IfMatch, false)
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
+		return
+	}
 	var req api.TicketVoidRequest
 	if !decode(w, r, &req) {
 		return
 	}
-	in := ticketing.VoidInput{Reason: req.Reason, ExpectedVersion: req.Version}
+	in := ticketing.VoidInput{Reason: req.Reason, ExpectedVersion: expected}
 	if req.Refund != nil {
 		in.Refund = string(*req.Refund)
 	}
@@ -128,7 +135,7 @@ func (h *Handlers) VoidTicket(w http.ResponseWriter, r *http.Request, establishm
 		problem.Error(w, r, h.Log, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, TicketToAPI(v))
+	writeVersioned(w, http.StatusOK, v.Ticket.Version, TicketToAPI(v))
 }
 
 // CheckInEntryTicket implements POST .../entry-gate/check-in.
@@ -137,7 +144,7 @@ func (h *Handlers) CheckInEntryTicket(w http.ResponseWriter, r *http.Request, es
 	if !decode(w, r, &req) {
 		return
 	}
-	res, err := h.Tickets.CheckIn(r.Context(), principalOf(r), establishmentID, req.Code)
+	res, err := h.Tickets.CheckIn(r.Context(), principalOf(r), establishmentID, req.Code, pcBoolOr(req.Manual, false))
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return

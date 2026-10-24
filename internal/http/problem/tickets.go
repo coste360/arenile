@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/http/api"
 )
@@ -16,6 +17,7 @@ const (
 	TicketVoided         = api.ProblemType("ticket_voided")
 	TicketAlreadyEntered = api.ProblemType("ticket_already_entered")
 	PriceChanged         = api.ProblemType("price_changed")
+	TicketOwned          = api.ProblemType("ticket_owned")
 )
 
 // Registered in their own file so the main catalog stays untouched.
@@ -26,6 +28,7 @@ func init() {
 	catalog[TicketVoided] = meta{http.StatusConflict, "Il biglietto è annullato"}
 	catalog[TicketAlreadyEntered] = meta{http.StatusConflict, "Il biglietto è già stato usato per entrare"}
 	catalog[PriceChanged] = meta{http.StatusConflict, "Il prezzo è cambiato: controlla il nuovo totale"}
+	catalog[TicketOwned] = meta{http.StatusConflict, "La prenotazione appartiene a un biglietto: usa le azioni del biglietto"}
 }
 
 // writeTicketing writes the problem of a ticketing error and reports
@@ -45,6 +48,8 @@ func writeTicketing(w http.ResponseWriter, r *http.Request, err error) bool {
 		typ = TicketAlreadyEntered
 	case errors.Is(err, ticketing.ErrPriceChanged):
 		typ = PriceChanged
+	case errors.Is(err, booking.ErrTicketOwned):
+		typ = TicketOwned
 	default:
 		return false
 	}

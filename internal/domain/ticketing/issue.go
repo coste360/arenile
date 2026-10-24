@@ -48,6 +48,10 @@ func (s *Service) Issue(ctx context.Context, tx bun.IDB, p *auth.Principal, es s
 		return nil, fmt.Errorf("ticketing: issue: entry tickets are never assigned")
 	}
 	now := s.now()
+	token, err := NewGateToken()
+	if err != nil {
+		return nil, err
+	}
 	n, err := store.NextTicketNumber(ctx, tx, es, in.Date, now)
 	if err != nil {
 		return nil, err
@@ -57,7 +61,7 @@ func (s *Service) Issue(ctx context.Context, tx bun.IDB, p *auth.Principal, es s
 		Kind: in.Kind, Status: store.TicketValid, ZoneID: in.ZoneID, NeedsAssignment: in.NeedsAssignment,
 		ProvisionalSpotID: in.ProvisionalSpotID, HolderName: strings.TrimSpace(in.HolderName), TotalAmount: in.TotalAmount,
 		PaymentMethod: in.PaymentMethod, PaymentID: in.PaymentID, CashSessionID: in.CashSessionID,
-		CreatedByUserID: userIDOf(p), Version: 1, CreatedAt: now, UpdatedAt: now,
+		GateToken: token, CreatedByUserID: userIDOf(p), Version: 1, CreatedAt: now, UpdatedAt: now,
 	}
 	if err := store.InsertTicket(ctx, tx, es, t); err != nil {
 		if store.IsUniqueViolation(err) {

@@ -330,35 +330,56 @@ func TestEntrySale_GateAndCapacity(t *testing.T) {
 		if _, err := e.sales.CreateEntry(ctx, f.Cashier, est, entry(1, 0)); !errors.Is(err, availability.ErrPoolExhausted) {
 			t.Fatalf("pool full: %v", err)
 		}
-		// Gate: admitted once, then already entered.
-		g, err := e.tickets.CheckIn(ctx, f.Staff, est, v.BookingCode)
+		// The QR carries a random gate token (INV-84): the sequential booking
+		// code or the printed number alone never admit, not even a valid one.
+		token := res.Ticket.GateToken
+		if len(token) < 20 || v.BookingCode == "" {
+			t.Fatalf("gate token %q, code %q", token, v.BookingCode)
+		}
+		pd, err := e.tickets.Print(ctx, f.Viewer, est, res.Ticket.ID, "")
+		if err != nil || pd.QRPayload != token {
+			t.Fatalf("print QR %v %+v", err, pd)
+		}
+		for _, guess := range []string{v.BookingCode, "2", "#002"} {
+			if _, err := e.tickets.CheckIn(ctx, f.Staff, est, guess, false); !errors.Is(err, ticketing.ErrNotFound) {
+				t.Fatalf("admitted by %q alone: %v", guess, err)
+			}
+		}
+		// Gate: admitted once, then already entered (also by a confirmed
+		// manual entry of the printed number).
+		g, err := e.tickets.CheckIn(ctx, f.Staff, est, token, false)
 		if err != nil || g.Outcome != ticketing.GateAdmitted || g.View.State != ticketing.StateEntered {
 			t.Fatalf("gate: %v %+v", err, g)
 		}
-		g, _ = e.tickets.CheckIn(ctx, f.Staff, est, v.BookingCode)
+		g, _ = e.tickets.CheckIn(ctx, f.Staff, est, token, false)
 		if g.Outcome != ticketing.GateAlreadyEntered {
 			t.Fatalf("second scan %+v", g)
+		}
+		if g, err = e.tickets.CheckIn(ctx, f.Staff, est, "#002", true); err != nil || g.Outcome != ticketing.GateAlreadyEntered {
+			t.Fatalf("manual number %v %+v", err, g)
+		}
+		if g, err = e.tickets.CheckIn(ctx, f.Staff, est, v.BookingCode, true); err != nil || g.Outcome != ticketing.GateAlreadyEntered {
+			t.Fatalf("manual booking code %v %+v", err, g)
 		}
 		if _, err := e.tickets.Void(ctx, f.Manager, est, res.Ticket.ID, ticketing.VoidInput{Reason: "x"}); !errors.Is(err, ticketing.ErrAlreadyEntered) {
 			t.Fatalf("void entered: %v", err)
 		}
 		// Sale tickets are not entry tickets; unknown codes are not found.
 		var ve *configerr.ValidationError
-		sv, _ := e.tickets.Get(ctx, f.Viewer, est, spot.Ticket.ID)
-		if _, err := e.tickets.CheckIn(ctx, f.Staff, est, sv.BookingCode); !errors.As(err, &ve) {
+		if _, err := e.tickets.CheckIn(ctx, f.Staff, est, spot.Ticket.GateToken, false); !errors.As(err, &ve) {
 			t.Fatalf("sale ticket at the gate: %v", err)
 		}
-		if _, err := e.tickets.CheckIn(ctx, f.Staff, est, "XX-2027-999999"); !errors.Is(err, ticketing.ErrNotFound) {
+		if _, err := e.tickets.CheckIn(ctx, f.Staff, est, "XX-2027-999999", true); !errors.Is(err, ticketing.ErrNotFound) {
 			t.Fatalf("unknown code: %v", err)
 		}
 		// A voided entry ticket (sold for another day: today is full) is refused.
 		later := entry(0, 1)
 		later.Date = bookingtest.D("2027-07-12")
-		v2, err := e.tickets.Void(ctx, f.Manager, est, mustEntry(t, e, later).Ticket.ID, ticketing.VoidInput{Reason: "x", Refund: ticketing.VoidNone})
-		if err != nil {
+		lt := mustEntry(t, e, later)
+		if _, err := e.tickets.Void(ctx, f.Manager, est, lt.Ticket.ID, ticketing.VoidInput{Reason: "x", Refund: ticketing.VoidNone}); err != nil {
 			t.Fatal(err)
 		}
-		g, _ = e.tickets.CheckIn(ctx, f.Staff, est, v2.BookingCode)
+		g, _ = e.tickets.CheckIn(ctx, f.Staff, est, lt.Ticket.GateToken, false)
 		if g.Outcome != ticketing.GateVoided {
 			t.Fatalf("voided at gate %+v", g)
 		}
@@ -369,11 +390,24 @@ func TestEntrySale_GateAndCapacity(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		vt, _ := e.tickets.Get(ctx, f.Viewer, est, rt.Ticket.ID)
-		if g, _ = e.tickets.CheckIn(ctx, f.Staff, est, vt.BookingCode); g.Outcome != ticketing.GateWrongDate {
+		if g, _ = e.tickets.CheckIn(ctx, f.Staff, est, rt.Ticket.GateToken, false); g.Outcome != ticketing.GateWrongDate {
 			t.Fatalf("tomorrow at gate %+v", g)
 		}
+		// The booking behind a ticket is cancelled only by the void: the
+		// generic cancellation is refused (ticket_owned), so the ticket and
+		// its gate never drift apart (INV-84, INV-18).
+		if _, err := e.bk.Cancel(ctx, f.Manager, est, rt.BookingID, booking.CancelInput{Reason: "fuori dal biglietto"}); !errors.Is(err, booking.ErrTicketOwned) {
+			t.Fatalf("generic cancel of a ticket booking: %v", err)
+		}
+		if _, err := e.bk.Update(ctx, f.Manager, est, rt.BookingID, nil, booking.PatchInput{StartsOn: ptrDate("2027-07-12")}); !errors.Is(err, booking.ErrTicketOwned) {
+			t.Fatalf("generic modify of a ticket booking: %v", err)
+		}
 	})
+}
+
+func ptrDate(s string) *calendar.Date {
+	d := bookingtest.D(s)
+	return &d
 }
 
 func mustEntry(t *testing.T, e *env, in dailysale.EntryInput) *dailysale.Result {

@@ -48,11 +48,14 @@ Sul computer della cassa le scorciatoie velocizzano il banco: **1**, **2**, **3*
 
 ## Il numero del biglietto
 
-- Riparte da **#001** ogni mattina (fuso orario dello stabilimento) ed è unico per lo stabilimento: più casse e più
-  dispositivi non producono mai due volte lo stesso numero.
+- È un **numero progressivo per giorno di validità** (fuso orario dello stabilimento), condiviso tra ombrelloni e
+  ingressi: il primo biglietto valido per oggi è **#001** e la sequenza è unica per lo stabilimento, su tutte le casse
+  e i dispositivi. Vendere per un altro giorno usa la numerazione di quel giorno (domani riparte da #001 mentre oggi
+  continua).
 - Un biglietto **annullato** conserva il suo numero, segnato come *Annullato*: è l'unico caso in cui la sequenza ha
   un buco visibile.
-- Il QR contiene il codice della prenotazione: si controlla dal telefono del personale.
+- Il QR contiene un **codice casuale** del biglietto, non il codice della prenotazione (che è progressivo e resta
+  stampato sotto il QR): si controlla dal telefono del personale e non si indovina.
 
 ## Stampa
 

@@ -83,7 +83,8 @@
     "legend": "Hinweise",
     "extra": "Extras",
     "note": "Notiz",
-    "vip": "VIP"
+    "vip": "VIP",
+    "to_assign": "Zuzuweisen"
   },
   "sheet": {
     "empty": "Platz",
@@ -142,7 +143,8 @@
     "toCollect": "Zu kassierende Differenz: {{amount}}",
     "toRefund": "Zu erstattende Differenz: {{amount}}",
     "done": "{{code}} nach {{to}} verschoben.",
-    "blocked": "Verschieben nicht möglich."
+    "blocked": "Verschieben nicht möglich.",
+    "ticketPriceKept": "Ticket {{number}}: der bereits kassierte Betrag ändert sich nicht."
   },
   "conflict": {
     "spot_unavailable": "Platz belegt",

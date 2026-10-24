@@ -80,18 +80,18 @@
   },
   "gate": {
     "title": "Contrôle d'accès",
-    "description": "Scannez le QR du billet : une seule entrée par billet.",
+    "description": "Scannez le QR du billet avec l'appareil photo ou saisissez son numéro : une seule entrée par billet.",
     "scanTitle": "Scanner",
     "manualTitle": "Saisir le code",
     "start": "Démarrer la caméra",
     "stop": "Arrêter la caméra",
     "preview": "Aperçu de la caméra",
     "scanning": "Cadrez le QR du billet",
-    "unsupported": "Ce navigateur ne lit pas les QR avec la caméra : saisissez le code à la main.",
+    "unsupported": "Ce navigateur ne lit pas les QR avec l'appareil photo (iPhone et Firefox compris) : saisissez le numéro du billet ci-dessous.",
     "denied": "Accès à la caméra refusé : autorisez-le dans les réglages du navigateur ou saisissez le code.",
     "cameraError": "Caméra indisponible : saisissez le code à la main.",
     "code": "Code du billet",
-    "check": "Vérifier",
+    "check": "Confirmer l'entrée",
     "waiting": "En attente d'un billet.",
     "people_one": "{{count}} personne",
     "people_other": "{{count}} personnes",
@@ -103,6 +103,9 @@
       "wrong_date": "Billet d'un autre jour",
       "not_found": "Billet introuvable",
       "failed": "Vérification échouée"
-    }
+    },
+    "manualDescription": "Sans appareil photo (iPhone, Firefox) ou avec un QR illisible : saisissez le numéro imprimé en grand sur le billet, ou le code de la réservation.",
+    "manualHint": "Le numéro du jour suffit (ex. 37). La saisie manuelle est confirmée par vous et enregistrée dans l'historique.",
+    "codePlaceholder": "37 ou LD-2027-000098"
   }
 }

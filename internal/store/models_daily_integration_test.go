@@ -105,7 +105,7 @@ func TestMigration00010_ModelsRoundtrip(t *testing.T) {
 		tk := &store.Ticket{
 			ID: store.NewID(), EstablishmentID: est.ID, BookingID: b1.ID, TicketDate: day, TicketNumber: n1, Kind: store.TicketKindSale,
 			Status: store.TicketValid, ZoneID: zone.ID, NeedsAssignment: true, ProvisionalSpotID: &spot.ID, HolderName: "Rossi",
-			TotalAmount: 2500, PaymentMethod: store.TicketPaymentCash, Version: 1, CreatedAt: t0, UpdatedAt: t0,
+			TotalAmount: 2500, PaymentMethod: store.TicketPaymentCash, GateToken: store.NewID(), Version: 1, CreatedAt: t0, UpdatedAt: t0,
 		}
 		insert(tk)
 		var got store.Ticket

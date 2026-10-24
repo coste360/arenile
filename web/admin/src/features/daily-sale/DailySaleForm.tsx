@@ -65,6 +65,7 @@ import {
   SALE_SLOTS,
   StableKey,
   changeDue,
+  dialogOpenOutside,
   packsForSale,
   saleDefaults,
   shortcutFor,
@@ -255,7 +256,12 @@ export function DailySaleForm({
     setValues(saleDefaults(values.date, { slots: values.slots }));
   }, [values.date, values.slots]);
 
-  // Desktop shortcuts (outside text fields; the sheet/page is the active surface).
+  // Desktop shortcuts, scoped to the form: they fire only while the focus is
+  // inside it (never from the page body or another panel) and never while
+  // another dialog (print preview, settings) is open on top. C and K charge
+  // a sale, so the scope is the guard against a stray key or a barcode
+  // scanner typing into the wrong place.
+  const rootRef = useRef<HTMLDivElement>(null);
   const onShortcut = useEffectEvent((sc: SaleShortcut) => {
     if (sold) return;
     if (sc === 'FULL' || sc === 'AM' || sc === 'PM') patch({ slots: sc });
@@ -265,15 +271,17 @@ export function DailySaleForm({
     } else void sell(sc);
   });
   useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
     const onKey = (e: KeyboardEvent) => {
       const sc = shortcutFor(e);
-      if (!sc) return;
+      if (!sc || dialogOpenOutside(root)) return;
       e.preventDefault();
       onShortcut(sc);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+    root.addEventListener('keydown', onKey);
+    return () => root.removeEventListener('keydown', onKey);
+  }, [sold]);
 
   if (sold) {
     return (
@@ -301,27 +309,11 @@ export function DailySaleForm({
   const where: SaleWhere = zoneFirst ? values.where : 'spot';
   const loading = packList.isPending || inventory.isLoading;
 
-  const summary = (
-    <section
-      aria-label={t('sale.summary')}
-      className={cn(
-        'space-y-3',
-        layout === 'sheet'
-          ? 'sticky bottom-0 -mx-4 border-t bg-background p-4 sm:-mx-6 sm:px-6'
-          : // Phones: total and payment stay in view at the bottom of the screen.
-            'sticky bottom-0 z-10 rounded-lg border bg-card p-4 shadow-md lg:top-4 lg:bottom-auto lg:shadow-none',
-      )}
-    >
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">{t('sale.total')}</p>
-        <p
-          className={cn('text-3xl font-bold tabular-nums', stale && 'opacity-60')}
-          aria-live="polite"
-          data-testid="sale-total"
-        >
-          {total !== undefined ? formatCents(total) : '—'}
-        </p>
-      </div>
+  // Figures and alerts of the sale: on a phone they sit in the body (the
+  // sticky bar keeps only the total and the two pay buttons, about one row),
+  // on a wide screen in the summary column next to the form.
+  const details = (
+    <>
       {quote.data && quote.data.breakdown.vat.length > 0 && (
         <p className="text-right text-xs text-muted-foreground">
           {quote.data.breakdown.vat
@@ -398,6 +390,31 @@ export function DailySaleForm({
           </p>
         </div>
       )}
+    </>
+  );
+
+  const summary = (
+    <section
+      aria-label={t('sale.summary')}
+      className={cn(
+        'space-y-3',
+        layout === 'sheet'
+          ? 'sticky bottom-0 -mx-4 border-t bg-background p-3 sm:-mx-6 sm:px-6 lg:p-4'
+          : // Phones: total and payment stay in view at the bottom of the screen.
+            'sticky bottom-0 z-10 rounded-lg border bg-card p-3 shadow-md lg:top-4 lg:bottom-auto lg:p-4 lg:shadow-none',
+      )}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-sm font-medium text-muted-foreground">{t('sale.total')}</p>
+        <p
+          className={cn('text-3xl font-bold tabular-nums', stale && 'opacity-60')}
+          aria-live="polite"
+          data-testid="sale-total"
+        >
+          {total !== undefined ? formatCents(total) : '—'}
+        </p>
+      </div>
+      <div className="hidden space-y-3 lg:block">{details}</div>
       <div className="grid grid-cols-2 gap-3">
         <PayButton
           method="cash"
@@ -422,6 +439,8 @@ export function DailySaleForm({
 
   return (
     <div
+      ref={rootRef}
+      data-daily-sale-form=""
       className={cn(
         layout === 'page' && 'grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]',
         layout === 'sheet' && 'space-y-6',
@@ -484,20 +503,27 @@ export function DailySaleForm({
               {zones.map((z) => {
                 const free = freeByZone.get(z.id) ?? 0;
                 const checked = values.zoneId === z.id;
+                // A full zone stays readable (why it cannot be picked) but
+                // is not selectable: the quote would only say "zone full".
+                const full = free === 0 && day.isSuccess && !checked;
                 return (
                   <Button
                     key={z.id}
                     role="radio"
                     aria-checked={checked}
+                    aria-disabled={full || undefined}
                     variant={checked ? 'default' : 'outline'}
-                    className="h-auto min-h-14 flex-col items-start gap-0.5 whitespace-normal py-2 text-left"
-                    onClick={() => patch({ zoneId: z.id })}
+                    className={cn(
+                      'h-auto min-h-14 flex-col items-start gap-0.5 whitespace-normal py-2 text-left',
+                      full && 'opacity-60',
+                    )}
+                    onClick={() => !full && patch({ zoneId: z.id })}
                   >
                     <span className="font-semibold">{name(z.name) || z.code}</span>
                     <span
                       className={cn('text-xs', checked ? 'opacity-90' : 'text-muted-foreground')}
                     >
-                      {t('sale.freeCount', { count: free })}
+                      {full ? t('sale.zoneNoneFree') : t('sale.freeCount', { count: free })}
                     </span>
                   </Button>
                 );
@@ -583,6 +609,7 @@ export function DailySaleForm({
           </div>
           <p className="text-xs text-muted-foreground">{t('sale.holderHint')}</p>
         </fieldset>
+        <div className="space-y-3 lg:hidden">{details}</div>
       </div>
       {summary}
       {printer.area}

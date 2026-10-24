@@ -80,18 +80,18 @@
   },
   "gate": {
     "title": "Gate",
-    "description": "Scan the ticket QR code: one entry per ticket.",
+    "description": "Scan the ticket's QR code with the camera or type its number: one entry per ticket.",
     "scanTitle": "Scan",
     "manualTitle": "Enter the code",
     "start": "Start camera",
     "stop": "Stop camera",
     "preview": "Camera preview",
     "scanning": "Frame the ticket QR code",
-    "unsupported": "This browser cannot read QR codes with the camera: enter the code by hand.",
+    "unsupported": "This browser cannot read QR codes with the camera (iPhone and Firefox included): type the ticket number below.",
     "denied": "Camera access denied: allow it in the browser settings or enter the code.",
     "cameraError": "Camera not available: enter the code by hand.",
     "code": "Ticket code",
-    "check": "Check",
+    "check": "Confirm entry",
     "waiting": "Waiting for a ticket.",
     "people_one": "{{count}} person",
     "people_other": "{{count}} people",
@@ -103,6 +103,9 @@
       "wrong_date": "Ticket for another day",
       "not_found": "Ticket not found",
       "failed": "Check failed"
-    }
+    },
+    "manualDescription": "Without a camera (iPhone, Firefox) or with an unreadable QR code: type the number printed large on the ticket, or the booking code.",
+    "manualHint": "The day number is enough (e.g. 37). A manual entry is confirmed by you and recorded in the history.",
+    "codePlaceholder": "37 or LD-2027-000098"
   }
 }

@@ -8,6 +8,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/uptrace/bun"
+
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/availability"
@@ -28,12 +30,13 @@ const day = "2027-07-10"
 // env is the booking fixture on the real inventory (DB constraints) with the
 // assignment service on top.
 type env struct {
-	f   *bookingtest.Fixture
-	es  store.EstablishmentScope
-	bk  *booking.Service
-	inv *inventory.Service
-	svc *ticketassign.Service
-	n   int64
+	f       *bookingtest.Fixture
+	es      store.EstablishmentScope
+	bk      *booking.Service
+	inv     *inventory.Service
+	svc     *ticketassign.Service
+	tickets *ticketing.Service
+	n       int64
 }
 
 func newEnv(t *testing.T, db *store.DB) *env {
@@ -50,9 +53,32 @@ func newEnv(t *testing.T, db *store.DB) *env {
 	if err != nil {
 		t.Fatal(err)
 	}
-	e := &env{f: f, es: es, bk: bk, inv: inv, svc: ticketassign.NewService(ticketassign.Deps{DB: db, Clock: c, Bookings: bk})}
+	tk := ticketing.NewService(ticketing.Deps{
+		DB: db, Clock: c, Audit: aw, Bookings: bk, BookingsIn: func(db bun.IDB) ticketing.Bookings { return bk.WithDB(db) },
+	})
+	e := &env{f: f, es: es, bk: bk, inv: inv, tickets: tk, svc: ticketassign.NewService(ticketassign.Deps{DB: db, Clock: c, Bookings: bk})}
 	e.zonePool(f.FreeZone.ID, len(f.FreeSpots))
 	return e
+}
+
+// poolUsed is the places taken on the implicit pool of a zone-mode zone on
+// day (the counter of a half-day; both halves move together here).
+func (e *env) poolUsed(zoneID string) int {
+	e.f.T.Helper()
+	var pools []store.Pool
+	if err := e.f.DB.NewSelect().Model(&pools).Where("zone_id = ?", zoneID).Scan(e.f.Ctx); err != nil || len(pools) != 1 {
+		e.f.T.Fatalf("zone pool: %v (%d)", err, len(pools))
+	}
+	var rows []store.PoolUsage
+	if err := e.f.DB.NewSelect().Model(&rows).Where("pool_id = ?", pools[0].ID).Where("date = ?", bookingtest.D(day)).Scan(e.f.Ctx); err != nil {
+		e.f.T.Fatal(err)
+	}
+	// One row per half-day: the places taken are the same in each.
+	used := 0
+	for _, r := range rows {
+		used = max(used, r.Used)
+	}
+	return used
 }
 
 // zonePool creates the implicit system pool of a zone-mode zone.
@@ -85,7 +111,7 @@ func (e *env) sale(line booking.LineInput, needsAssignment bool, holder string) 
 	t := &store.Ticket{
 		ID: store.NewID(), EstablishmentID: e.f.Est.ID, BookingID: d.Booking.ID, TicketDate: bookingtest.D(day), TicketNumber: e.n,
 		Kind: store.TicketKindSale, Status: store.TicketValid, ZoneID: d.Lines[0].ZoneID, NeedsAssignment: needsAssignment,
-		HolderName: holder, TotalAmount: d.Booking.TotalAmount, PaymentMethod: store.TicketPaymentCash, Version: 1, CreatedAt: now, UpdatedAt: now,
+		HolderName: holder, TotalAmount: d.Booking.TotalAmount, PaymentMethod: store.TicketPaymentCash, GateToken: store.NewID(), Version: 1, CreatedAt: now, UpdatedAt: now,
 	}
 	if needsAssignment && line.SpotID != "" {
 		t.ProvisionalSpotID = &line.SpotID
@@ -403,6 +429,27 @@ func TestConcurrency_AssignSameSpot(t *testing.T) {
 		left, err := e.svc.ListUnassigned(ctx, f.Viewer, est, bookingtest.D(day), zone.ID)
 		if err != nil || len(left) != parallel-1 {
 			t.Fatalf("still to assign: %d %v", len(left), err)
+		}
+		// The zone capacity is intact: the losers still hold their pending
+		// places and the winner now holds a spot of the zone (the implicit pool
+		// counts both), so nothing was lost or doubled; the losers' ticket rows
+		// are untouched.
+		if used := e.poolUsed(zone.ID); used != parallel {
+			t.Fatalf("zone pool used after the run: %d, want %d", used, parallel)
+		}
+		winners := 0
+		for _, tk := range tickets {
+			cur := e.ticket(tk.ID)
+			if !cur.NeedsAssignment {
+				winners++
+				continue
+			}
+			if cur.Version != 1 || cur.Status != store.TicketValid || len(e.spotsOf(tk.BookingID)) != 0 {
+				t.Fatalf("loser ticket changed: %+v", cur)
+			}
+		}
+		if winners != 1 {
+			t.Fatalf("winners: %d", winners)
 		}
 	})
 }

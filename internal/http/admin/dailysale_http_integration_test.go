@@ -24,6 +24,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/payment"
+	"github.com/coste360/arenile/internal/domain/ticketassign"
 	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/http/admin"
 	"github.com/coste360/arenile/internal/http/api"
@@ -58,7 +59,11 @@ func newDailySaleHandlers(t *testing.T, db *store.DB) (*admin.Handlers, *booking
 		DB: db, Clock: c, Audit: aw, Bookings: bk, Payments: dailysale.PaymentRecorder{Svc: pay}, Tickets: tk, Customers: cust,
 		AvailabilityIn: func(db bun.IDB) dailysale.Availability { return inv.WithDB(db) },
 	})
-	h := &admin.Handlers{Bookings: bk, Payments: pay, Cash: cs, Fiscal: fs, Tickets: tk, DailySale: sales, Log: slog.New(slog.DiscardHandler)}
+	h := &admin.Handlers{
+		Bookings: bk, Payments: pay, Cash: cs, Fiscal: fs, Tickets: tk, DailySale: sales,
+		TicketAssign: ticketassign.NewService(ticketassign.Deps{DB: db, Clock: c, Bookings: bk}),
+		Log:          slog.New(slog.DiscardHandler),
+	}
 	return h, f
 }
 
@@ -111,7 +116,9 @@ func TestDailySaleHTTP_SaleListPrintVoid(t *testing.T) {
 		status, _, body = call(t, f.Viewer, http.MethodGet, nil, func(w http.ResponseWriter, r *http.Request) {
 			h.GetTicketPrint(w, r, est, id, api.GetTicketPrintParams{})
 		})
-		if status != 200 || body["format"] != "thermal_80" || body["reprint"] != false || body["qr_payload"] != ticket["booking_code"] {
+		// The QR carries the random gate token, never the sequential booking code.
+		qr, _ := body["qr_payload"].(string)
+		if status != 200 || body["format"] != "thermal_80" || body["reprint"] != false || len(qr) < 20 || qr == ticket["booking_code"] {
 			t.Fatalf("print: %d %v", status, body)
 		}
 		// Day list as JSON and CSV.
@@ -122,16 +129,26 @@ func TestDailySaleHTTP_SaleListPrintVoid(t *testing.T) {
 		if status != 200 || len(body["items"].([]any)) != 1 || summary["issued"] != float64(1) || summary["total_amount"] != float64(bookingtest.BasePerDay) {
 			t.Fatalf("list: %d %v", status, body)
 		}
-		// Void with a cash refund (manager), then 409 ticket_voided.
-		status, _, body = call(t, f.Manager, http.MethodPost, api.TicketVoidRequest{Reason: "errore"}, func(w http.ResponseWriter, r *http.Request) {
-			h.VoidTicket(w, r, est, id, api.VoidTicketParams{})
-		})
+		// Void: If-Match with the ticket version is mandatory (428), a stale
+		// version is 412 (INV-80), then a cash refund (manager) and 409
+		// ticket_voided on the second attempt.
+		voidWith := func(ifMatch string, reason string) (int, map[string]any) {
+			status, _, body := call(t, f.Manager, http.MethodPost, api.TicketVoidRequest{Reason: reason}, func(w http.ResponseWriter, r *http.Request) {
+				h.VoidTicket(w, r, est, id, api.VoidTicketParams{IfMatch: ifMatch})
+			})
+			return status, body
+		}
+		if status, body := voidWith("", "errore"); status != 428 || body["type"] != "precondition_required" {
+			t.Fatalf("void without If-Match: %d %v", status, body)
+		}
+		if status, body := voidWith(`"9"`, "errore"); status != 412 || body["type"] != "version_conflict" {
+			t.Fatalf("void with a stale version: %d %v", status, body)
+		}
+		status, body = voidWith(`"1"`, "errore")
 		if status != 200 || body["state"] != "voided" || body["ticket_number"] != float64(1) || body["refund_payment_id"] == nil {
 			t.Fatalf("void: %d %v", status, body)
 		}
-		if status, _, body := call(t, f.Manager, http.MethodPost, api.TicketVoidRequest{Reason: "ancora"}, func(w http.ResponseWriter, r *http.Request) {
-			h.VoidTicket(w, r, est, id, api.VoidTicketParams{})
-		}); status != 409 || body["type"] != "ticket_voided" {
+		if status, body := voidWith("*", "ancora"); status != 409 || body["type"] != "ticket_voided" {
 			t.Fatalf("second void: %d %v", status, body)
 		}
 		format := api.ReportFormatCSV

@@ -24,6 +24,11 @@ const (
 	TicketKindEntry = "entry"
 )
 
+// WalkInCustomerTag tags the shared customer of the quick sales without a
+// name ("Cliente al banco", internal/domain/dailysale): a system row that
+// the customer rankings leave out.
+const WalkInCustomerTag = "walk-in"
+
 // Ticket statuses (tickets.status). A voided ticket keeps its number.
 const (
 	TicketValid  = "valid"
@@ -85,9 +90,12 @@ type Ticket struct {
 	RefundPaymentID   *string       `bun:"refund_payment_id"`
 	EnteredAt         *time.Time    `bun:"entered_at"`
 	EnteredByUserID   *string       `bun:"entered_by_user_id"`
-	Version           int64         `bun:"version,notnull"`
-	CreatedAt         time.Time     `bun:"created_at,notnull"`
-	UpdatedAt         time.Time     `bun:"updated_at,notnull"`
+	// GateToken is the random QR payload (ticketing.NewGateToken); the gate
+	// admits by it, never by the sequential booking code alone.
+	GateToken string    `bun:"gate_token,notnull"`
+	Version   int64     `bun:"version,notnull"`
+	CreatedAt time.Time `bun:"created_at,notnull"`
+	UpdatedAt time.Time `bun:"updated_at,notnull"`
 }
 
 // EntryTicketType is an entry-only ticket type (Adulto, Ridotto, ...): a

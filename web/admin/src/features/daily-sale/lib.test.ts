@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { opBooking, opSpot } from '../operations/testing/fixtures';
 import {
+  assignmentTargets,
+  dialogOpenOutside,
   packsForSale,
   StableKey,
   changeDue,
@@ -18,6 +21,40 @@ describe('ticketNumberLabel', () => {
     expect(ticketNumberLabel(1)).toBe('#001');
     expect(ticketNumberLabel(37)).toBe('#037');
     expect(ticketNumberLabel(1204)).toBe('#1204');
+  });
+});
+
+describe('assignmentTargets', () => {
+  const ticket = { zone_id: 'z1', booking_id: 'b41' };
+  it('offers the free spots of the zone and the ticket its own provisional spot', () => {
+    const spots = [
+      opSpot('s1', 'A1', 'free'),
+      opSpot('s2', 'A2', 'booked', { booking: opBooking({ booking_id: 'other' }) }),
+      // Seat zone: the sale parked ticket #041 here until it is placed.
+      opSpot('s3', 'A3', 'booked', { booking: opBooking({ booking_id: 'b41' }) }),
+      opSpot('s4', 'A4', 'free', { zone_id: 'z2' }),
+    ];
+    expect(assignmentTargets(spots, ticket, 'FULL').map((s) => s.spot_id)).toEqual(['s1', 's3']);
+  });
+  it('still offers the own spot when the zone is full', () => {
+    const spots = [
+      opSpot('s2', 'A2', 'booked', { booking: opBooking({ booking_id: 'other' }) }),
+      opSpot('s3', 'A3', 'booked', { booking: opBooking({ booking_id: 'b41' }) }),
+    ];
+    expect(assignmentTargets(spots, ticket, 'FULL').map((s) => s.spot_id)).toEqual(['s3']);
+  });
+});
+
+describe('dialogOpenOutside', () => {
+  it('is true only for an open dialog that does not contain the form', () => {
+    const doc = document.implementation.createHTMLDocument('');
+    doc.body.innerHTML = `
+      <div role="dialog" data-state="open"><div id="form"></div></div>
+      <div role="dialog" data-state="closed"></div>`;
+    const form = doc.getElementById('form') as HTMLElement;
+    expect(dialogOpenOutside(form, doc)).toBe(false);
+    doc.body.insertAdjacentHTML('beforeend', '<div role="dialog" data-state="open"></div>');
+    expect(dialogOpenOutside(form, doc)).toBe(true);
   });
 });
 

@@ -464,6 +464,9 @@ func ReportTopCustomers(ctx context.Context, db bun.IDB, es EstablishmentScope, 
 		Where("bk.test = ?", false).
 		Where("bk.status NOT IN (?)", bun.List(ReportNotSoldStatuses)).
 		Where("bk.starts_on >= ?", from).Where("bk.starts_on <= ?", to).
+		// The shared walk-in customer of the daily sales (tag walk-in, ADR
+		// 0020) is a system row, not a guest: never in the ranking.
+		Where(`cu.search_text NOT LIKE ? ESCAPE '\'`, "%|"+WalkInCustomerTag+"|%").
 		GroupExpr("bk.customer_id, cu.first_name, cu.last_name, cu.anonymized_at").
 		Having("SUM(CASE WHEN bk.status = ? THEN 0 ELSE 1 END) > 0 OR SUM(bk.paid_amount) <> 0", reportStatusCancelled).
 		OrderExpr(order).

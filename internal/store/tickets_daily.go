@@ -80,8 +80,37 @@ func GetTicketByBooking(ctx context.Context, db bun.IDB, es EstablishmentScope, 
 	return t, nil
 }
 
-// GetTicketByBookingCode returns the ticket whose booking has code (the QR
-// payload of the ticket).
+// GetTicketByGateToken returns the ticket whose QR carries token (the
+// random gate token, ADR 0020).
+func GetTicketByGateToken(ctx context.Context, db bun.IDB, es EstablishmentScope, token string) (*Ticket, error) {
+	if err := es.mustBeValid(); err != nil {
+		return nil, err
+	}
+	t := new(Ticket)
+	err := db.NewSelect().Model(t).Where("tk.gate_token = ?", token).Where("tk.establishment_id = ?", es.ID()).Scan(ctx)
+	if err != nil {
+		return nil, wrapRead("get ticket by gate token", err)
+	}
+	return t, nil
+}
+
+// GetTicketByNumber returns the ticket of es with the daily number on date
+// (the number printed large on the ticket).
+func GetTicketByNumber(ctx context.Context, db bun.IDB, es EstablishmentScope, date calendar.Date, number int64) (*Ticket, error) {
+	if err := es.mustBeValid(); err != nil {
+		return nil, err
+	}
+	t := new(Ticket)
+	err := db.NewSelect().Model(t).Where("tk.establishment_id = ?", es.ID()).
+		Where("tk.ticket_date = ?", date).Where("tk.ticket_number = ?", number).Scan(ctx)
+	if err != nil {
+		return nil, wrapRead("get ticket by number", err)
+	}
+	return t, nil
+}
+
+// GetTicketByBookingCode returns the ticket whose booking has code (printed
+// under the QR of the ticket).
 func GetTicketByBookingCode(ctx context.Context, db bun.IDB, es EstablishmentScope, code string) (*Ticket, error) {
 	if err := es.mustBeValid(); err != nil {
 		return nil, err

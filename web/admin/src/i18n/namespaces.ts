@@ -283,6 +283,8 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/notifications/locales/en.json'),
       de: () => import('../features/notifications/locales/de.json'),
       fr: () => import('../features/notifications/locales/fr.json'),
+    },
+  },
   // Daily sale, tickets and entry tickets (ADR 0020).
   {
     ns: 'dailySale',

@@ -44,7 +44,8 @@
       "label": "Sale type",
       "spots": "Umbrellas",
       "entries": "Entries"
-    }
+    },
+    "zoneNoneFree": "No free place"
   },
   "where": {
     "spot": "Spot",
@@ -104,7 +105,8 @@
     "payment": "Payment",
     "qr": "QR code of ticket {{code}}",
     "validOn": "Valid on {{date}}",
-    "issuedAt": "Issued {{time}}"
+    "issuedAt": "Issued {{time}}",
+    "nonFiscal": "Not valid for tax purposes"
   },
   "tickets": {
     "title": "Today's tickets",
@@ -172,14 +174,17 @@
     "auto": "Assign automatically",
     "listLabel": "Tickets to assign",
     "ticketAria": "Ticket {{number}}, {{zone}}, {{slots}}",
-    "pick": "Tap a free spot in {{zone}} for ticket {{number}}.",
+    "pick": "Tap a highlighted spot of {{zone}} (on the map or below) for ticket {{number}}.",
     "notFree": "This spot is not free: choose a highlighted one.",
     "wrongZone": "Choose a spot in the {{zone}} zone.",
     "done": "Ticket {{number}} assigned to spot {{label}}",
     "autoDone_one": "{{count}} ticket assigned",
     "autoDone_other": "{{count}} tickets assigned",
     "autoPartial_one": "{{count}} ticket assigned, {{left}} without a free spot",
-    "autoPartial_other": "{{count}} tickets assigned, {{left}} without a free spot"
+    "autoPartial_other": "{{count}} tickets assigned, {{left}} without a free spot",
+    "targetsLabel": "Free spots for ticket {{number}}",
+    "targetAria": "Assign to spot {{label}}",
+    "noTargets": "No free spot in the zone: use Assign automatically or move another ticket."
   },
   "problems": {
     "zone_full": "No free place in the zone for the chosen slot.",
@@ -189,7 +194,8 @@
     "ticket_already_entered": "The ticket has already been used to enter.",
     "price_changed": "The price has changed: check the new total and take the payment again.",
     "spot_unavailable": "The spot is no longer free: choose another one.",
-    "cash_session_closed": "The cash register is closed: open it to take cash."
+    "cash_session_closed": "The cash register is closed: open it to take cash.",
+    "ticket_owned": "The booking belongs to a ticket: use the ticket actions (Today's tickets)."
   },
   "settings": {
     "open": "Settings",

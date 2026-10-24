@@ -80,18 +80,18 @@
   },
   "gate": {
     "title": "Varco",
-    "description": "Scansiona il QR del biglietto: un solo ingresso per biglietto.",
+    "description": "Scansiona il QR del biglietto con la fotocamera oppure scrivi il numero: un solo ingresso per biglietto.",
     "scanTitle": "Scansiona",
     "manualTitle": "Inserisci il codice",
     "start": "Avvia fotocamera",
     "stop": "Ferma fotocamera",
     "preview": "Anteprima della fotocamera",
     "scanning": "Inquadra il QR del biglietto",
-    "unsupported": "Questo browser non legge i QR con la fotocamera: inserisci il codice a mano.",
+    "unsupported": "Questo browser non legge i QR con la fotocamera (iPhone e Firefox compresi): scrivi il numero del biglietto qui sotto.",
     "denied": "Accesso alla fotocamera negato: consentilo nelle impostazioni del browser o inserisci il codice.",
     "cameraError": "Fotocamera non disponibile: inserisci il codice a mano.",
     "code": "Codice del biglietto",
-    "check": "Verifica",
+    "check": "Conferma ingresso",
     "waiting": "In attesa di un biglietto.",
     "people_one": "{{count}} persona",
     "people_other": "{{count}} persone",
@@ -103,6 +103,9 @@
       "wrong_date": "Biglietto di un altro giorno",
       "not_found": "Biglietto non trovato",
       "failed": "Verifica non riuscita"
-    }
+    },
+    "manualDescription": "Senza fotocamera (iPhone, Firefox) o con un QR illeggibile: scrivi il numero stampato in grande sul biglietto, oppure il codice della prenotazione.",
+    "manualHint": "Basta il numero del giorno (es. 37). L'inserimento manuale è confermato da te e registrato nello storico.",
+    "codePlaceholder": "37 oppure LD-2027-000098"
   }
 }

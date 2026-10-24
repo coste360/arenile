@@ -112,6 +112,13 @@ export function TicketPrint({ data, locale, timeZone, className }: TicketPrintPr
         <p className={cn('font-bold tabular-nums', sheet ? 'text-4xl' : 'text-3xl')}>
           {ticket.number_label}
         </p>
+        {ticket.kind === 'sale' && (
+          // The line the guest and the staff read on the sand: as large as
+          // the number, under it.
+          <p className={cn('font-bold', sheet ? 'text-2xl' : 'text-xl')} data-testid="print-place">
+            {place}
+          </p>
+        )}
         <p className="font-bold">
           {t('print.validOn', { date: formatIsoDate(ticket.ticket_date) })}
         </p>
@@ -136,7 +143,6 @@ export function TicketPrint({ data, locale, timeZone, className }: TicketPrintPr
       <dl className="space-y-0.5">
         {ticket.kind === 'sale' && (
           <>
-            <Line label={t('print.where')}>{place}</Line>
             <Line label={t('print.slots')}>{t(`slots.${ticket.slots}`)}</Line>
             {ticket.pack_name && <Line label={t('print.pack')}>{name(ticket.pack_name)}</Line>}
           </>
@@ -177,6 +183,10 @@ export function TicketPrint({ data, locale, timeZone, className }: TicketPrintPr
         ))}
         <Line label={t('print.payment')}>{t(`method.${ticket.payment_method}`)}</Line>
       </dl>
+      {/* The receipt of the sale is the fiscal document: this ticket is not one. */}
+      <p className="mt-1 text-center font-bold uppercase" data-testid="print-non-fiscal">
+        {t('print.nonFiscal')}
+      </p>
 
       <Rule />
 

@@ -83,7 +83,8 @@
     "legend": "Indicateurs",
     "extra": "Suppléments",
     "note": "Note",
-    "vip": "VIP"
+    "vip": "VIP",
+    "to_assign": "À attribuer"
   },
   "sheet": {
     "empty": "Emplacement",
@@ -142,7 +143,8 @@
     "toCollect": "Différence à encaisser : {{amount}}",
     "toRefund": "Différence à rembourser : {{amount}}",
     "done": "{{code}} déplacée vers {{to}}.",
-    "blocked": "Déplacement impossible."
+    "blocked": "Déplacement impossible.",
+    "ticketPriceKept": "Billet {{number}} : le total déjà encaissé ne change pas."
   },
   "conflict": {
     "spot_unavailable": "emplacement occupé",

@@ -27,7 +27,7 @@ import (
 const WalkInLastName = "Cliente al banco"
 
 // WalkInTag tags the walk-in customer.
-const WalkInTag = "walk-in"
+const WalkInTag = store.WalkInCustomerTag
 
 // Deps are the dependencies of the daily sale service; every field is
 // required except Log.

@@ -1920,6 +1920,7 @@ const (
 	ProblemTypeTestModePreviewRequired    ProblemType = "test_mode_preview_required"
 	ProblemTypeTicketAlreadyEntered       ProblemType = "ticket_already_entered"
 	ProblemTypeTicketNumberConflict       ProblemType = "ticket_number_conflict"
+	ProblemTypeTicketOwned                ProblemType = "ticket_owned"
 	ProblemTypeTicketVoided               ProblemType = "ticket_voided"
 	ProblemTypeTotpAlreadyEnabled         ProblemType = "totp_already_enabled"
 	ProblemTypeTotpEnrolmentRequired      ProblemType = "totp_enrolment_required"
@@ -2022,6 +2023,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeTicketAlreadyEntered:
 		return true
 	case ProblemTypeTicketNumberConflict:
+		return true
+	case ProblemTypeTicketOwned:
 		return true
 	case ProblemTypeTicketVoided:
 		return true
@@ -5770,8 +5773,11 @@ type Formula string
 
 // GateCheckInRequest defines model for GateCheckInRequest.
 type GateCheckInRequest struct {
-	// Code Contenuto del QR scansionato (codice della prenotazione).
+	// Code Contenuto del QR scansionato (gate token). Con manual = true anche il numero del giorno (es. "37") o il codice della prenotazione stampato sotto il QR.
 	Code string `json:"code"`
+
+	// Manual Inserimento manuale confermato dallo staff (telefono senza fotocamera, QR illeggibile): abilita la ricerca per numero del giorno o codice della prenotazione e viene registrato nell'audit. Default false.
+	Manual *bool `json:"manual,omitempty"`
 }
 
 // GateCheckInResult defines model for GateCheckInResult.
@@ -6654,6 +6660,9 @@ type OperationalSpotStatus string
 
 // OperationalTicket Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE.
 type OperationalTicket struct {
+	// Id Id del biglietto (per spostarlo con le azioni dei biglietti, If-Match con version).
+	Id string `json:"id"`
+
 	// Label Numero formattato ("#037").
 	Label string `json:"label"`
 
@@ -6662,6 +6671,9 @@ type OperationalTicket struct {
 
 	// Number Progressivo del giorno.
 	Number int64 `json:"number"`
+
+	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	Version Version `json:"version"`
 }
 
 // OperationsDay defines model for OperationsDay.
@@ -9538,7 +9550,7 @@ type ThemeRadius string
 
 // Ticket defines model for Ticket.
 type Ticket struct {
-	// BookingCode Codice della prenotazione, contenuto del QR.
+	// BookingCode Codice della prenotazione, stampato in chiaro sotto il QR (il QR porta il gate token).
 	BookingCode     string     `json:"booking_code"`
 	BookingId       string     `json:"booking_id"`
 	CashSessionId   *string    `json:"cash_session_id,omitempty"`
@@ -9613,7 +9625,8 @@ type Ticket struct {
 type TicketAssignRequest struct {
 	SpotId string `json:"spot_id"`
 
-	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	// Version Ignorato; la versione viaggia nell'header If-Match (obbligatorio).
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	Version *Version `json:"version,omitempty"`
 }
 
@@ -9652,7 +9665,7 @@ type TicketAutoUnassigned struct {
 // TicketAutoUnassignedReason defines model for TicketAutoUnassigned.Reason.
 type TicketAutoUnassignedReason string
 
-// TicketDaySummary Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso).
+// TicketDaySummary Riepilogo dei biglietti per giorno di validità (ticket_date), non per data di incasso: una vendita anticipata compare nel giorno di utilizzo, gli annullati sono contati ma non sommati. Non è una riconciliazione di cassa: incassi, rimborsi e corrispettivi seguono la data contabile dei pagamenti (sessione di cassa, corrispettivi).
 type TicketDaySummary struct {
 	ByMethod []TicketMethodTotal `json:"by_method"`
 	Entered  int                 `json:"entered"`
@@ -9697,7 +9710,7 @@ type TicketList struct {
 	Items      []Ticket `json:"items"`
 	NextCursor *string  `json:"next_cursor,omitempty"`
 
-	// Summary Riepilogo del giorno; gli annullati non entrano nei totali (il rimborso compensa l'incasso).
+	// Summary Riepilogo dei biglietti per giorno di validità (ticket_date), non per data di incasso: una vendita anticipata compare nel giorno di utilizzo, gli annullati sono contati ma non sommati. Non è una riconciliazione di cassa: incassi, rimborsi e corrispettivi seguono la data contabile dei pagamenti (sessione di cassa, corrispettivi).
 	Summary TicketDaySummary `json:"summary"`
 }
 
@@ -9723,7 +9736,7 @@ type TicketPrintData struct {
 	Format   TicketPrintFormat `json:"format"`
 	IssuedAt time.Time         `json:"issued_at"`
 
-	// QrPayload Contenuto del QR (codice della prenotazione).
+	// QrPayload Contenuto del QR: il gate token casuale del biglietto (128 bit, base32), mai il codice della prenotazione, che è sequenziale e resta stampato in chiaro sotto il QR.
 	QrPayload string `json:"qr_payload"`
 
 	// Reprint Stampa successiva alla prima (dicitura "Ristampa").
@@ -9762,7 +9775,8 @@ type TicketVoidRequest struct {
 	// Refund refund (default) restituisce l'importo con il metodo del biglietto tramite i pagamenti; credit lo accredita al cliente (solo se il biglietto ha un cliente con nome); none annulla senza rimborso.
 	Refund *TicketVoidRequestRefund `json:"refund,omitempty"`
 
-	// Version Versione per la concorrenza ottimistica; coincide con l'ETag.
+	// Version Ignorato; la versione viaggia nell'header If-Match (obbligatorio).
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	Version *Version `json:"version,omitempty"`
 }
 
@@ -12531,6 +12545,9 @@ type AssignTicketParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
+	IfMatch IfMatchRequired `json:"If-Match"`
 }
 
 // MoveTicketParams defines parameters for MoveTicket.
@@ -12538,6 +12555,9 @@ type MoveTicketParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
 	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
 	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
+	IfMatch IfMatchRequired `json:"If-Match"`
 }
 
 // GetTicketPrintParams defines parameters for GetTicketPrint.
@@ -12563,6 +12583,9 @@ type VoidTicketParams struct {
 	// richiesta ripetuta con la stessa chiave restituisce la risposta
 	// originale; con un corpo diverso risponde `422 idempotency_key_reused`.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// IfMatch ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008).
+	IfMatch IfMatchRequired `json:"If-Match"`
 }
 
 // ListWaitlistEntriesParams defines parameters for ListWaitlistEntries.
@@ -30876,6 +30899,29 @@ func (siw *ServerInterfaceWrapper) AssignTicket(w http.ResponseWriter, r *http.R
 
 	}
 
+	// ------------- Required header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatchRequired
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = IfMatch
+
+	} else {
+		err := fmt.Errorf("Header parameter If-Match is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.AssignTicket(w, r, establishmentId, ticketId, params)
 	}))
@@ -30933,6 +30979,29 @@ func (siw *ServerInterfaceWrapper) MoveTicket(w http.ResponseWriter, r *http.Req
 
 		params.XCSRFToken = &XCSRFToken
 
+	}
+
+	// ------------- Required header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatchRequired
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = IfMatch
+
+	} else {
+		err := fmt.Errorf("Header parameter If-Match is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
+		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31121,6 +31190,29 @@ func (siw *ServerInterfaceWrapper) VoidTicket(w http.ResponseWriter, r *http.Req
 
 		params.IdempotencyKey = &IdempotencyKey
 
+	}
+
+	// ------------- Required header parameter "If-Match" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("If-Match")]; found {
+		var IfMatch IfMatchRequired
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "If-Match", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "If-Match", valueList[0], &IfMatch, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "If-Match", Err: err})
+			return
+		}
+
+		params.IfMatch = IfMatch
+
+	} else {
+		err := fmt.Errorf("Header parameter If-Match is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "If-Match", Err: err})
+		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
