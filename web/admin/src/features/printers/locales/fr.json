@@ -1,6 +1,191 @@
 {
   "page": {
     "title": "Imprimantes",
-    "description": "Imprimantes thermiques ESC/POS en réseau (Wi-Fi ou Ethernet) pour billets, reçus non fiscaux et clôtures de caisse : adresse, largeur du papier, coupe, tiroir-caisse, routage par caisse et impression de test. Disponible avec l'application de bureau."
+    "description": "Imprimantes thermiques ESC/POS réseau (Wi-Fi ou Ethernet) pour billets, reçus non fiscaux et clôtures de caisse : adresse, largeur du papier, coupe, tiroir-caisse, routage par caisse et impression de test. Disponible avec l'application de bureau."
+  },
+  "add": "Ajouter une imprimante",
+  "actions": "Actions",
+  "inactive": "Désactivée",
+  "editAria": "Modifier l'imprimante {{name}}",
+  "unavailable": {
+    "title": "Impression ESC/POS disponible avec l'application de bureau",
+    "description": "Les imprimantes thermiques réseau fonctionnent quand Arenile tourne sur l'ordinateur de l'établissement (application de bureau, mode réseau local compris), car il doit joindre l'imprimante sur le réseau de la plage. Sur cette installation, billets, reçus et clôtures s'impriment depuis le navigateur."
+  },
+  "list": {
+    "title": "Imprimantes configurées",
+    "description": "Imprimantes ESC/POS joignables sur le réseau local (port TCP 9100). Vérifier teste la connexion sans imprimer.",
+    "empty": "Aucune imprimante",
+    "emptyHint": "Ajoutez l'imprimante avec son adresse IP : elle figure sur le ticket d'autotest (maintenez FEED à l'allumage) ou dans la liste des appareils du routeur.",
+    "emptyServer": "Avec l'application de bureau, vous pouvez connecter des imprimantes thermiques Wi-Fi ou Ethernet."
+  },
+  "form": {
+    "addTitle": "Nouvelle imprimante",
+    "editTitle": "Modifier l'imprimante",
+    "description": "Imprimante thermique ESC/POS sur le réseau de la plage (Wi-Fi ou Ethernet)."
+  },
+  "sections": {
+    "paper": "Papier et caractères",
+    "extras": "Logo et tiroir-caisse"
+  },
+  "fields": {
+    "name": "Nom",
+    "namePlaceholder": "Ex. Caisse bar",
+    "host": "Adresse IP ou nom d'hôte",
+    "hostHint": "Adresses du réseau local uniquement (ex. 192.168.1.50). Conseil : attribuez une IP fixe à l'imprimante dans le routeur.",
+    "port": "Port",
+    "portHint": "Presque toujours 9100 (RAW / JetDirect).",
+    "paperWidth": "Largeur du papier",
+    "charsPerLine": "Caractères par ligne",
+    "charsPerLineHint": "32 pour le papier de 58 mm, 48 pour le papier de 80 mm (police A).",
+    "codepage": "Table de caractères",
+    "codepageHint": "CP858 imprime € et les lettres accentuées sur presque toutes les imprimantes.",
+    "codepageTable": "Numéro de table (ESC t)",
+    "codepageTableHint": "Laissez vide pour la valeur Epson standard ; certaines imprimantes utilisent d'autres numéros (voir le manuel).",
+    "codepageTableAuto": "Automatique",
+    "cutMode": "Coupe du papier",
+    "feedLines": "Lignes d'avance",
+    "feedLinesHint": "Lignes vides avant la coupe (0-10).",
+    "drawer": "Tiroir-caisse",
+    "drawerHint": "Relié à l'imprimante par le câble RJ11 : s'ouvre à la fin de l'impression quand la règle le prévoit.",
+    "printLogo": "Imprimer le logo",
+    "printLogoHint": "Le logo de l'établissement, converti en noir et blanc pour le papier thermique.",
+    "active": "Active",
+    "activeHint": "Une imprimante désactivée ne reçoit aucune impression : les documents vont au navigateur.",
+    "status": "État"
+  },
+  "paper": {
+    "58": "58 mm",
+    "80": "80 mm"
+  },
+  "codepage": {
+    "cp858": "CP858 (Europe occidentale avec €)",
+    "cp437": "CP437 (États-Unis, sans €)",
+    "cp850": "CP850 (Europe occidentale)",
+    "cp852": "CP852 (Europe centrale)",
+    "cp1252": "Windows-1252"
+  },
+  "cut": {
+    "full": "Coupe complète",
+    "partial": "Coupe partielle",
+    "none": "Pas de coupe"
+  },
+  "drawer": {
+    "none": "Pas de tiroir",
+    "pin2": "Broche 2 (standard)",
+    "pin5": "Broche 5"
+  },
+  "status": {
+    "unknown": "Non vérifiée",
+    "reachable": "Joignable",
+    "unreachable": "Injoignable",
+    "checkedAt": "Vérifiée {{time}}"
+  },
+  "check": {
+    "action": "Vérifier",
+    "aria": "Vérifier la connexion avec {{name}}",
+    "reachable": "{{name}} est joignable",
+    "unreachable": "{{name}} ne répond pas",
+    "latency": "Réponse en {{ms}} ms"
+  },
+  "test": {
+    "action": "Impression de test",
+    "aria": "Impression de test sur {{name}}",
+    "queued": "Impression de test envoyée à {{name}}"
+  },
+  "delete": {
+    "aria": "Supprimer l'imprimante {{name}}",
+    "message": "L'imprimante {{name}} et ses règles de routage seront supprimées ; les impressions en attente seront annulées."
+  },
+  "toast": {
+    "created": "Imprimante {{name}} ajoutée",
+    "saved": "Imprimante {{name}} enregistrée"
+  },
+  "validation": {
+    "required": "Champ obligatoire",
+    "host": "Adresse non valide",
+    "hostPublic": "Seules les adresses du réseau local sont autorisées (ex. 192.168.x.x, 10.x.x.x)",
+    "port": "Port entre 1 et 65535",
+    "chars": "Entre 24 et 64 caractères",
+    "feed": "Entre 0 et 10 lignes",
+    "table": "Nombre entre 0 et 255",
+    "nameTaken": "Une imprimante porte déjà ce nom",
+    "printerRequired": "Choisissez une imprimante",
+    "duplicateRoute": "Une règle existe déjà pour ce document et cette caisse"
+  },
+  "kind": {
+    "daily_ticket": "Billet journalier",
+    "cash_z": "Clôture de caisse (Z)",
+    "payment_receipt": "Reçu de paiement",
+    "test_page": "Page de test"
+  },
+  "routing": {
+    "title": "Routage",
+    "description": "Quelle imprimante imprime chaque document. Une règle pour une caisse prime sur celle pour toutes les caisses ; sans règle, le document s'imprime depuis le navigateur.",
+    "add": "Ajouter une règle",
+    "empty": "Aucune règle",
+    "emptyHint": "Ajoutez une règle pour imprimer billets, reçus et clôtures sur l'imprimante thermique.",
+    "emptyNoPrinter": "Ajoutez d'abord une imprimante.",
+    "document": "Document",
+    "register": "Caisse",
+    "allRegisters": "Toutes les caisses",
+    "printer": "Imprimante",
+    "choosePrinter": "Choisissez une imprimante",
+    "inactivePrinter": "{{name}} (désactivée)",
+    "copies": "Copies",
+    "kickDrawer": "Ouvrir le tiroir",
+    "remove": "Supprimer la règle {{index}}",
+    "rowAria": "Règle {{index}} : {{document}}",
+    "save": "Enregistrer le routage",
+    "discard": "Annuler les modifications",
+    "saved": "Routage enregistré"
+  },
+  "jobs": {
+    "title": "Dernières impressions",
+    "description": "Les impressions échouées sont relancées automatiquement (5 s, 15 s, 1 min, 5 min) ; ensuite vous pouvez réessayer à la main.",
+    "empty": "Aucune impression pour l'instant",
+    "when": "Quand",
+    "document": "Document",
+    "printer": "Imprimante",
+    "printerDeleted": "Imprimante supprimée",
+    "status": "Résultat",
+    "copies_one": "{{count}} copie",
+    "copies_other": "{{count}} copies",
+    "attempts": "Tentative {{attempts}} sur {{max}}",
+    "retry": "Réessayer",
+    "retryAria": "Réessayer l'impression : {{document}}",
+    "retried": "Impression remise en file"
+  },
+  "jobStatus": {
+    "queued": "En attente",
+    "printing": "En impression",
+    "printed": "Imprimé",
+    "failed": "Échoué",
+    "cancelled": "Annulé"
+  },
+  "problem": {
+    "printing_unavailable": "L'impression ESC/POS n'est disponible qu'avec l'application de bureau.",
+    "printer_address_not_allowed": "L'adresse de l'imprimante n'est pas sur le réseau local.",
+    "print_route_missing": "Aucune imprimante n'est configurée pour ce document."
+  },
+  "fallback": {
+    "title": "Impression depuis le navigateur",
+    "server_edition": "L'imprimante thermique s'utilise avec l'application de bureau.",
+    "no_route": "Aucune imprimante thermique n'est configurée pour ce document.",
+    "printer_inactive": "L'imprimante thermique est désactivée.",
+    "printer_unreachable": "L'imprimante thermique ne répond pas : vérifiez qu'elle est allumée et connectée.",
+    "error": "Impossible de joindre l'imprimante thermique."
+  },
+  "print": {
+    "sent": "Envoyé à {{name}}",
+    "failed": "Échec de l'impression sur {{name}}",
+    "browser": "Imprimer depuis le navigateur"
+  },
+  "receipt": {
+    "action": "Imprimer le reçu"
+  },
+  "hint": {
+    "title": "Imprimantes thermiques",
+    "description": "Avec l'application de bureau, Arenile imprime billets, reçus et clôtures de caisse sur les imprimantes ESC/POS Wi-Fi ou Ethernet de la plage.",
+    "action": "Configurer les imprimantes"
   }
 }

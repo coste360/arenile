@@ -2,5 +2,190 @@
   "page": {
     "title": "Printers",
     "description": "Network ESC/POS thermal printers (Wi-Fi or Ethernet) for tickets, non-fiscal receipts and cash closings: address, paper width, cut, cash drawer, routing per cash register and test print. Available with the desktop app."
+  },
+  "add": "Add printer",
+  "actions": "Actions",
+  "inactive": "Inactive",
+  "editAria": "Edit printer {{name}}",
+  "unavailable": {
+    "title": "ESC/POS printing is available with the desktop app",
+    "description": "Network thermal printers work when Arenile runs on the establishment's computer (desktop app, LAN mode included), because it must reach the printer on the beach network. On this installation tickets, receipts and cash closings print from the browser."
+  },
+  "list": {
+    "title": "Configured printers",
+    "description": "ESC/POS printers reachable on the local network (TCP port 9100). Check tests the connection without printing.",
+    "empty": "No printers",
+    "emptyHint": "Add the printer with its IP address: you find it on the self-test slip (hold FEED while switching on) or in the router's device list.",
+    "emptyServer": "With the desktop app you can connect Wi-Fi or Ethernet thermal printers."
+  },
+  "form": {
+    "addTitle": "New printer",
+    "editTitle": "Edit printer",
+    "description": "ESC/POS thermal printer on the beach network (Wi-Fi or Ethernet)."
+  },
+  "sections": {
+    "paper": "Paper and characters",
+    "extras": "Logo and cash drawer"
+  },
+  "fields": {
+    "name": "Name",
+    "namePlaceholder": "E.g. Bar till",
+    "host": "IP address or host name",
+    "hostHint": "Local network addresses only (e.g. 192.168.1.50). Tip: give the printer a fixed IP in the router.",
+    "port": "Port",
+    "portHint": "Almost always 9100 (RAW / JetDirect).",
+    "paperWidth": "Paper width",
+    "charsPerLine": "Characters per line",
+    "charsPerLineHint": "32 for 58 mm paper, 48 for 80 mm paper (font A).",
+    "codepage": "Character table",
+    "codepageHint": "CP858 prints € and accented letters on almost every printer.",
+    "codepageTable": "Table number (ESC t)",
+    "codepageTableHint": "Leave empty for the standard Epson value; some printers use different numbers (see the manual).",
+    "codepageTableAuto": "Automatic",
+    "cutMode": "Paper cut",
+    "feedLines": "Feed lines",
+    "feedLinesHint": "Blank lines before the cut (0-10).",
+    "drawer": "Cash drawer",
+    "drawerHint": "Connected to the printer with the RJ11 cable: opens at the end of the print when the rule says so.",
+    "printLogo": "Print the logo",
+    "printLogoHint": "The establishment logo, converted to black and white for thermal paper.",
+    "active": "Active",
+    "activeHint": "An inactive printer receives no prints: documents go to the browser.",
+    "status": "Status"
+  },
+  "paper": {
+    "58": "58 mm",
+    "80": "80 mm"
+  },
+  "codepage": {
+    "cp858": "CP858 (Western Europe with €)",
+    "cp437": "CP437 (US, no €)",
+    "cp850": "CP850 (Western Europe)",
+    "cp852": "CP852 (Central Europe)",
+    "cp1252": "Windows-1252"
+  },
+  "cut": {
+    "full": "Full cut",
+    "partial": "Partial cut",
+    "none": "No cut"
+  },
+  "drawer": {
+    "none": "No drawer",
+    "pin2": "Pin 2 (standard)",
+    "pin5": "Pin 5"
+  },
+  "status": {
+    "unknown": "Not checked",
+    "reachable": "Reachable",
+    "unreachable": "Unreachable",
+    "checkedAt": "Checked {{time}}"
+  },
+  "check": {
+    "action": "Check",
+    "aria": "Check the connection to {{name}}",
+    "reachable": "{{name}} is reachable",
+    "unreachable": "{{name}} does not answer",
+    "latency": "Answered in {{ms}} ms"
+  },
+  "test": {
+    "action": "Test print",
+    "aria": "Test print on {{name}}",
+    "queued": "Test print sent to {{name}}"
+  },
+  "delete": {
+    "aria": "Delete printer {{name}}",
+    "message": "Printer {{name}} and its routing rules will be deleted; queued prints will be cancelled."
+  },
+  "toast": {
+    "created": "Printer {{name}} added",
+    "saved": "Printer {{name}} saved"
+  },
+  "validation": {
+    "required": "Required field",
+    "host": "Invalid address",
+    "hostPublic": "Only local network addresses are allowed (e.g. 192.168.x.x, 10.x.x.x)",
+    "port": "Port between 1 and 65535",
+    "chars": "Between 24 and 64 characters",
+    "feed": "Between 0 and 10 lines",
+    "table": "Number between 0 and 255",
+    "nameTaken": "A printer with this name already exists",
+    "printerRequired": "Choose a printer",
+    "duplicateRoute": "There is already a rule for this document and register"
+  },
+  "kind": {
+    "daily_ticket": "Daily ticket",
+    "cash_z": "Cash closing (Z)",
+    "payment_receipt": "Payment receipt",
+    "test_page": "Test page"
+  },
+  "routing": {
+    "title": "Routing",
+    "description": "Which printer prints each document. A rule for one register wins over the rule for all registers; without a rule the document prints from the browser.",
+    "add": "Add rule",
+    "empty": "No rules",
+    "emptyHint": "Add a rule to print tickets, receipts and closings on the thermal printer.",
+    "emptyNoPrinter": "Add a printer first.",
+    "document": "Document",
+    "register": "Register",
+    "allRegisters": "All registers",
+    "printer": "Printer",
+    "choosePrinter": "Choose a printer",
+    "inactivePrinter": "{{name}} (inactive)",
+    "copies": "Copies",
+    "kickDrawer": "Open drawer",
+    "remove": "Remove rule {{index}}",
+    "rowAria": "Rule {{index}}: {{document}}",
+    "save": "Save routing",
+    "discard": "Discard changes",
+    "saved": "Routing saved"
+  },
+  "jobs": {
+    "title": "Latest prints",
+    "description": "Failed prints are retried automatically (5 s, 15 s, 1 min, 5 min); then you can retry by hand.",
+    "empty": "No prints yet",
+    "when": "When",
+    "document": "Document",
+    "printer": "Printer",
+    "printerDeleted": "Printer deleted",
+    "status": "Outcome",
+    "copies_one": "{{count}} copy",
+    "copies_other": "{{count}} copies",
+    "attempts": "Attempt {{attempts}} of {{max}}",
+    "retry": "Retry",
+    "retryAria": "Retry the print: {{document}}",
+    "retried": "Print queued again"
+  },
+  "jobStatus": {
+    "queued": "Queued",
+    "printing": "Printing",
+    "printed": "Printed",
+    "failed": "Failed",
+    "cancelled": "Cancelled"
+  },
+  "problem": {
+    "printing_unavailable": "ESC/POS printing is available only with the desktop app.",
+    "printer_address_not_allowed": "The printer address is not on the local network.",
+    "print_route_missing": "No printer is configured for this document."
+  },
+  "fallback": {
+    "title": "Printing from the browser",
+    "server_edition": "The thermal printer is used with the desktop app.",
+    "no_route": "No thermal printer is configured for this document.",
+    "printer_inactive": "The thermal printer is inactive.",
+    "printer_unreachable": "The thermal printer does not answer: check that it is on and connected.",
+    "error": "The thermal printer could not be contacted."
+  },
+  "print": {
+    "sent": "Sent to {{name}}",
+    "failed": "Print failed on {{name}}",
+    "browser": "Print from the browser"
+  },
+  "receipt": {
+    "action": "Print receipt"
+  },
+  "hint": {
+    "title": "Thermal printers",
+    "description": "With the desktop app Arenile prints tickets, receipts and cash closings on the beach's Wi-Fi or Ethernet ESC/POS printers.",
+    "action": "Configure printers"
   }
 }
