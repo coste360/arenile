@@ -64,6 +64,8 @@
     "zoomOut": "Verkleinern",
     "legend": "Legende",
     "spotAria": "Platz {{label}}: {{status}}",
+    "spotAriaPlaced": "Platz {{label}}, {{place}}: {{status}}",
+    "spotAriaRow": "Reihe {{row}}",
     "listTitle": "Liste der Plätze",
     "row": "Reihe {{row}}",
     "noRow": "Weitere Plätze",

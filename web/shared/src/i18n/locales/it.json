@@ -64,6 +64,8 @@
     "zoomOut": "Riduci",
     "legend": "Legenda",
     "spotAria": "Postazione {{label}}: {{status}}",
+    "spotAriaPlaced": "Postazione {{label}}, {{place}}: {{status}}",
+    "spotAriaRow": "fila {{row}}",
     "listTitle": "Elenco delle postazioni",
     "row": "Fila {{row}}",
     "noRow": "Altre postazioni",

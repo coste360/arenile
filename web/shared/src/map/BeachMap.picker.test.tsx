@@ -61,13 +61,13 @@ describe('BeachMap public picker', () => {
         onSpotActivate={onSpotActivate}
       />,
     );
-    const taken = screen.getByRole('button', { name: 'Postazione A2: Non disponibile' });
+    const taken = screen.getByRole('button', { name: 'Postazione A2, fila A: Non disponibile' });
     expect(taken).toHaveAttribute('aria-disabled', 'true');
     await userEvent.click(taken);
     fireEvent.keyDown(taken, { key: 'Enter' });
     expect(onSpotActivate).not.toHaveBeenCalled();
 
-    const free = screen.getByRole('button', { name: 'Postazione A1: Libero' });
+    const free = screen.getByRole('button', { name: 'Postazione A1, fila A: Libero' });
     expect(free).not.toHaveAttribute('aria-disabled');
     fireEvent.keyDown(free, { key: ' ' });
     expect(onSpotActivate).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }));

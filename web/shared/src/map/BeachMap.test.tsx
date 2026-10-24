@@ -81,34 +81,74 @@ describe('BeachMap', () => {
     renderWithI18n(<BeachMap geometry={geometry} statuses={{ s2: 'booked_online' }} />);
     const buttons = screen.getAllByRole('button', { name: /^Postazione/ });
     expect(buttons).toHaveLength(4);
-    expect(screen.getByRole('button', { name: 'Postazione A1: Libero' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Postazione A1, fila A: Libero' })).toHaveAttribute(
       'tabindex',
       '0',
     );
     expect(
-      screen.getByRole('button', { name: 'Postazione A2: Prenotato online' }),
+      screen.getByRole('button', { name: 'Postazione A2, fila A: Prenotato online' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Postazione B2: Non disponibile' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
+    expect(
+      screen.getByRole('button', { name: 'Postazione B2, fila B: Non disponibile' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('names the row and zone of a spot when known', () => {
+    const spots = geometry.spots.map((sp) => ({ ...sp, zone_id: 'z1' }));
+    renderWithI18n(
+      <BeachMap
+        geometry={{
+          ...geometry,
+          spots: [...spots, { ...spots[0]!, id: 'x', label: 'X1', row_label: null, zone_id: null }],
+        }}
+        zoneNames={{ z1: 'Prima fila' }}
+        spotDescription={(sp) => (sp.id === 's1' ? 'da 30,00 €' : undefined)}
+      />,
     );
+    expect(
+      screen.getByRole('button', { name: 'Postazione A1, fila A, Prima fila: Libero, da 30,00 €' }),
+    ).toBeInTheDocument();
+    // Neither row nor zone: the short form.
+    expect(screen.getByRole('button', { name: 'Postazione X1: Libero' })).toBeInTheDocument();
+  });
+
+  it('marks unavailable spots with a lock badge and names the legend list', () => {
+    renderWithI18n(<BeachMap geometry={geometry} legendStatuses={['free', 'unavailable']} />);
+    const b2 = screen.getByRole('button', { name: /^Postazione B2/ });
+    expect(b2.querySelector('[data-badge="unavailable"] use')).toHaveAttribute(
+      'href',
+      '#ark-badge-lock',
+    );
+    expect(
+      screen.getByRole('button', { name: /^Postazione A1/ }).querySelector('[data-badge]'),
+    ).toBeNull();
+    const legend = screen.getByRole('list', { name: 'Legenda' });
+    expect(
+      within(legend)
+        .getByText('Non disponibile')
+        .closest('li')
+        ?.querySelector('[data-legend-glyph="lock"]'),
+    ).not.toBeNull();
+    expect(
+      within(legend).getByText('Libero').closest('li')?.querySelector('[data-legend-glyph]'),
+    ).toBeNull();
   });
 
   it('activates spots with click, Enter and Space but not inactive ones', async () => {
     const user = userEvent.setup();
     const onActivate = vi.fn();
     renderWithI18n(<BeachMap geometry={geometry} onSpotActivate={onActivate} />);
-    await user.click(screen.getByRole('button', { name: 'Postazione A1: Libero' }));
+    await user.click(screen.getByRole('button', { name: 'Postazione A1, fila A: Libero' }));
     expect(onActivate).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's1' }));
 
-    const b1 = screen.getByRole('button', { name: 'Postazione B1: Libero' });
+    const b1 = screen.getByRole('button', { name: 'Postazione B1, fila B: Libero' });
     b1.focus();
     await user.keyboard('{Enter}');
     expect(onActivate).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's3' }));
     await user.keyboard(' ');
     expect(onActivate).toHaveBeenCalledTimes(3);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Postazione B2: Non disponibile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Postazione B2, fila B: Non disponibile' }));
     expect(onActivate).toHaveBeenCalledTimes(3);
   });
 
@@ -116,7 +156,7 @@ describe('BeachMap', () => {
     const user = userEvent.setup();
     const onActivate = vi.fn();
     renderWithI18n(<BeachMap geometry={geometry} onSpotActivate={onActivate} />);
-    const a2 = screen.getByRole('button', { name: 'Postazione A2: Libero' });
+    const a2 = screen.getByRole('button', { name: 'Postazione A2, fila A: Libero' });
     fireEvent.click(a2, { shiftKey: true });
     expect(onActivate).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's2' }), {
       shiftKey: true,
@@ -145,10 +185,10 @@ describe('BeachMap', () => {
   it('is one tab stop: a roving tabindex moved with arrows, PageUp/PageDown and Home/End', () => {
     const { container } = renderWithI18n(<BeachMap geometry={geometry} selectedIds={['s2']} />);
     const svg = container.querySelector('svg[role="group"]') as SVGSVGElement;
-    const a1 = screen.getByRole('button', { name: 'Postazione A1: Libero' });
-    const a2 = screen.getByRole('button', { name: 'Postazione A2: Libero' });
-    const b1 = screen.getByRole('button', { name: 'Postazione B1: Libero' });
-    const b2 = screen.getByRole('button', { name: 'Postazione B2: Non disponibile' });
+    const a1 = screen.getByRole('button', { name: 'Postazione A1, fila A: Libero' });
+    const a2 = screen.getByRole('button', { name: 'Postazione A2, fila A: Libero' });
+    const b1 = screen.getByRole('button', { name: 'Postazione B1, fila B: Libero' });
+    const b2 = screen.getByRole('button', { name: 'Postazione B2, fila B: Non disponibile' });
     // Only the first selected spot is reachable with Tab; the others follow with the keys.
     expect(svg.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
     expect(a2).toHaveAttribute('tabindex', '0');
@@ -177,10 +217,9 @@ describe('BeachMap', () => {
         spotDescription={(s) => (s.id === 's1' ? '25,00 €' : undefined)}
       />,
     );
-    expect(screen.getByRole('button', { name: 'Postazione A1: Libero, 25,00 €' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(
+      screen.getByRole('button', { name: 'Postazione A1, fila A: Libero, 25,00 €' }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows a legend of the statuses on the map', () => {
@@ -226,9 +265,81 @@ describe('SpotList', () => {
     );
     expect(screen.getByRole('heading', { name: 'Fila A' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Fila B' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /A2 – Prenotato in cassa/ })).toBeDisabled();
-    await user.click(screen.getByRole('button', { name: /A1 – Libero/ }));
+    const a2 = screen.getByRole('button', { name: 'A2 Prenotato in cassa' });
+    expect(a2).toHaveAttribute('aria-disabled', 'true');
+    await user.click(a2);
+    expect(onActivate).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'A1 Libero' }));
     expect(onActivate).toHaveBeenCalledWith(expect.objectContaining({ id: 's1' }));
+  });
+
+  it('names each spot by its visible text (label in name)', () => {
+    renderWithI18n(
+      <SpotList
+        spots={geometry.spots}
+        onSpotActivate={() => undefined}
+        spotDescription={(s) => (s.id === 's1' ? 'da 30,00 €' : undefined)}
+      />,
+    );
+    for (const button of screen.getAllByRole('button')) {
+      expect(button).not.toHaveAttribute('aria-label');
+    }
+    const a1 = screen.getByRole('button', { name: 'A1 Libero – da 30,00 €' });
+    expect(a1).toHaveTextContent('A1 Libero – da 30,00 €');
+  });
+
+  it('is one tab stop per row: arrows move within it, Home/End jump, Tab leaves the row', async () => {
+    const user = userEvent.setup();
+    const spots = [
+      ...geometry.spots,
+      { ...geometry.spots[0]!, id: 's5', label: 'A3', number: 3 },
+    ].map((s, i) => ({ ...s, number: s.number ?? i + 1 }));
+    renderWithI18n(
+      <>
+        <SpotList
+          spots={spots}
+          statuses={{ s1: 'booked_online' }}
+          selectedIds={['s4']}
+          onSpotActivate={() => undefined}
+        />
+        <button type="button">Avanti</button>
+      </>,
+    );
+    const rowA = screen.getByRole('toolbar', { name: 'Fila A' });
+    const rowB = screen.getByRole('toolbar', { name: 'Fila B' });
+    const tabStops = (el: HTMLElement) =>
+      within(el)
+        .getAllByRole('button')
+        .filter((b) => b.tabIndex === 0)
+        .map((b) => b.textContent);
+    // Row A: the first activatable spot (A1 is booked); row B: the selected one.
+    expect(tabStops(rowA)).toEqual(['A2 Libero']);
+    expect(tabStops(rowB)).toEqual(['B2 Non disponibile']);
+
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'A2 Libero' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    // Unavailable spots stay reachable, so their status can be read.
+    expect(screen.getByRole('button', { name: 'A1 Prenotato online' })).toHaveFocus();
+    await user.keyboard('{End}');
+    expect(screen.getByRole('button', { name: 'A3 Libero' })).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'A3 Libero' })).toHaveFocus();
+    await user.keyboard('{Home}');
+    expect(screen.getByRole('button', { name: 'A1 Prenotato online' })).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('button', { name: 'A2 Libero' })).toHaveFocus();
+    expect(tabStops(rowA)).toEqual(['A2 Libero']);
+
+    // Tab goes to the next row, then out of the list.
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'B2 Non disponibile' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Avanti' })).toHaveFocus();
+    // Back into row A: the last focused spot is its tab stop.
+    await user.tab({ shift: true });
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'A2 Libero' })).toHaveFocus();
   });
 
   it('sorts rows naturally and puts spots without a row last', () => {
@@ -400,6 +511,6 @@ describe('operational overlays (additive props)', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: /A1/ }));
     expect(onActivate).toHaveBeenCalledWith(expect.objectContaining({ id: 's1' }));
-    expect(screen.getByRole('button', { name: /B2/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /B2/ })).toHaveAttribute('aria-disabled', 'true');
   });
 });

@@ -58,6 +58,14 @@ export default function WhereStep({ state, dispatch }: WhereStepProps) {
     }
     return m;
   }, [zones]);
+  // Zone names in the spots' accessible names ("Postazione A1, fila A, Prima fila").
+  const zoneNames = useMemo(
+    () =>
+      Object.fromEntries(
+        zones.map((z) => [z.id, localize(z.name, lang, establishment.default_locale)]),
+      ),
+    [zones, lang, establishment.default_locale],
+  );
   const zoneZones = zones.filter((z) => z.assignment_mode === 'zone');
   const qtyZones = zones.filter((z) => z.assignment_mode === 'quantity');
 
@@ -136,6 +144,7 @@ export default function WhereStep({ state, dispatch }: WhereStepProps) {
             <SeatMapPicker
               mapId={mapId}
               zoneIds={zoneIds}
+              zoneNames={zoneNames}
               availability={data}
               showPrices={showPrices}
               selected={selectedSpots}

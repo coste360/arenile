@@ -3,7 +3,7 @@ import { Badge } from '@arenile/shared/ui/badge';
 import { Button } from '@arenile/shared/ui/button';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { ListIcon, MapIcon } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePublicMap, type PublicAvailability } from '../../api/public';
 import { useBookingEnv } from '../../flow/context';
@@ -15,6 +15,8 @@ export interface SeatMapPickerProps {
   mapId: string;
   /** Seat zones of this map shown online. */
   zoneIds: readonly string[];
+  /** Localised zone name per zone id (spot accessible names). */
+  zoneNames?: Readonly<Record<string, string>>;
   availability: PublicAvailability;
   showPrices: boolean;
   /** Selected spot ids. */
@@ -34,6 +36,7 @@ const PICKABLE = ['free'] as const;
 export default function SeatMapPicker({
   mapId,
   zoneIds,
+  zoneNames,
   availability,
   showPrices,
   selected,
@@ -42,6 +45,7 @@ export default function SeatMapPicker({
   const { t, i18n } = useTranslation(PUBLIC_NS);
   const { slug, establishment } = useBookingEnv();
   const [asList, setAsList] = useState(false);
+  const legendId = useId();
   const map = usePublicMap(slug, mapId);
   const lang = i18n.language;
   const currency = establishment.currency;
@@ -87,8 +91,10 @@ export default function SeatMapPicker({
     <div className="space-y-3">
       {legend.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground">{t('where.legend')}</p>
-          <ul className="flex flex-wrap gap-1.5" aria-label={t('where.legend')}>
+          <p id={legendId} className="text-xs font-medium text-muted-foreground">
+            {t('where.legend')}
+          </p>
+          <ul className="flex flex-wrap gap-1.5" aria-labelledby={legendId}>
             {legend.map((r) => (
               <li key={`${r.row ?? '-'}-${r.toRow ?? ''}`}>
                 <Badge variant="outline" className="gap-1.5 font-normal" data-tone={r.tone}>
@@ -146,6 +152,7 @@ export default function SeatMapPicker({
           legendStatuses={['free', 'unavailable']}
           onSpotActivate={activate}
           spotDescription={priceOf}
+          zoneNames={zoneNames}
           height="65vh"
         />
       )}

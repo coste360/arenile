@@ -25,7 +25,7 @@ async function openMap(page: Page): Promise<void> {
 
 function spot(page: Page, label: string) {
   return page.getByRole("button", {
-    name: new RegExp(`^Postazione ${label}:`),
+    name: new RegExp(`^Postazione ${label}[,:]`),
   });
 }
 
@@ -99,7 +99,7 @@ test.describe("desktop", () => {
     await openMap(page);
     await page.getByRole("tab", { name: "Elenco" }).click();
     await expect(
-      page.getByRole("button", { name: /^A1 – .* – occupato da Rossi/ }),
+      page.getByRole("button", { name: /^A1 .* – occupato da Rossi/ }),
     ).toBeVisible();
   });
 });

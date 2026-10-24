@@ -254,7 +254,7 @@ test("renewal accepted from the magic link, paid on Stripe, on the new season's 
   const day = p.starts_on.slice(0, 4) + "-07-01";
   await page.goto(`/admin/e/${admin.est}/mappa?date=${day}`);
   await expect(
-    page.getByRole("button", { name: new RegExp(`^Postazione ${p.spot_label}: Abbonato`) }),
+    page.getByRole("button", { name: new RegExp(`^Postazione ${p.spot_label}(?:, [^:]*)?: Abbonato`) }),
   ).toBeVisible();
 });
 

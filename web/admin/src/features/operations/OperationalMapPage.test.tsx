@@ -41,15 +41,17 @@ describe('OperationalMapPage', () => {
 
   it('colours spots by status with the full legend and accessible names', async () => {
     const { fetchMock } = setup();
-    const a2 = await screen.findByRole('button', { name: /Postazione A2: Prenotato in cassa/ });
+    const a2 = await screen.findByRole('button', {
+      name: /Postazione A2, fila A: Prenotato in cassa/,
+    });
     expect(a2).toHaveAttribute('data-status', 'booked_desk');
     expect(a2).toHaveAccessibleName(/Rossi M\., Nota, VIP/);
     expect(a2.querySelector('[data-indicator="vip"]')).not.toBeNull();
-    expect(screen.getByRole('button', { name: /Postazione A1: Libero/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Postazione A1, fila A: Libero/ })).toHaveAttribute(
       'data-status',
       'free',
     );
-    expect(screen.getByRole('button', { name: /Postazione A3: Abbonato/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Postazione A3, fila A: Abbonato/ })).toHaveAttribute(
       'data-status',
       'season',
     );
@@ -209,10 +211,10 @@ describe('OperationalMapPage', () => {
     const user = userEvent.setup();
     setup();
     const a2 = await screen.findByRole('button', {
-      name: 'Postazione A2: Prenotato in cassa, occupato da Rossi M., Nota, VIP',
+      name: 'Postazione A2, fila A: Prenotato in cassa, occupato da Rossi M., Nota, VIP',
     });
     const a3 = screen.getByRole('button', {
-      name: /Postazione A3: Abbonato, occupato da Verdi L\./,
+      name: /Postazione A3, fila A: Abbonato, occupato da Verdi L\./,
     });
     const text = (el: HTMLElement, kind: string) => {
       const root =
@@ -228,7 +230,7 @@ describe('OperationalMapPage', () => {
     expect(text(a2, 'caption')).toEqual(['Rossi']);
     expect(text(a3, 'caption')).toEqual(['Verdi']);
     expect(a2.querySelector('title')).toHaveTextContent('occupato da Rossi M.');
-    const a1 = screen.getByRole('button', { name: /Postazione A1: Libero$/ });
+    const a1 = screen.getByRole('button', { name: /Postazione A1, fila A: Libero$/ });
     expect(text(a1, 'caption')).toEqual([]);
 
     const toggle = screen.getByRole('radiogroup', { name: 'Etichette' });
@@ -245,7 +247,7 @@ describe('OperationalMapPage', () => {
     await user.click(screen.getByRole('tab', { name: 'Elenco' }));
     expect(
       await screen.findByRole('button', {
-        name: /A2 – Prenotato in cassa – occupato da Rossi M\./,
+        name: /^A2 Prenotato in cassa – occupato da Rossi M\./,
       }),
     ).toBeInTheDocument();
     localStorage.clear();
@@ -270,7 +272,9 @@ describe('OperationalMapPage', () => {
           },
         }),
     });
-    const a2 = await screen.findByRole('button', { name: /^Postazione A2: Prenotato in cassa/ });
+    const a2 = await screen.findByRole('button', {
+      name: /^Postazione A2, fila A: Prenotato in cassa/,
+    });
     expect(a2).not.toHaveAccessibleName(/Rossi/);
     expect(document.querySelector('[data-map-label="caption"]')).toBeNull();
     expect(screen.queryByRole('radiogroup', { name: 'Etichette' })).toBeNull();

@@ -42,6 +42,9 @@ a usare.
 - **Mappa:** la mappa è un solo punto di tabulazione; le frecce passano da una postazione all'altra, Home e Fine
   vanno alla prima e all'ultima, Invio o Spazio scelgono. Il pulsante **Mostra come elenco** offre la stessa scelta
   come elenco di pulsanti.
+- **Elenco delle postazioni:** ogni fila è un solo punto di tabulazione; le frecce passano da una postazione
+  all'altra della fila, Home e Fine vanno alla prima e all'ultima, Tab passa alla fila successiva. Così si arriva ad
+  "Avanti" con pochi Tab anche in un lido con molte postazioni.
 - Pacchetti e fasce orarie sono gruppi di opzioni: Tab entra nel gruppo, le frecce cambiano scelta.
 - Il **focus è sempre visibile** (un anello attorno all'elemento attivo) e, a ogni cambio di passo, si sposta sul
   titolo del nuovo passo; dopo la conferma va sul titolo dell'esito.
@@ -52,10 +55,13 @@ a usare.
 
 - La pagina ha regioni (intestazione, contenuto, piè di pagina), titoli in ordine e l'attributo di **lingua** che
   segue la lingua scelta (italiano, inglese, tedesco o francese).
-- Ogni postazione della mappa ha un nome completo, per esempio "Postazione A1: Libero, da 30,00 €"; le postazioni
+- Ogni postazione della mappa ha un nome completo, con fila e zona, per esempio "Postazione A1, fila A, Prima fila:
+  Libero, da 30,00 €"; le postazioni
   non disponibili sono annunciate come tali e non si possono scegliere.
-- L'**elenco delle postazioni**, raggruppato per fila, è l'alternativa non visiva alla mappa: ogni pulsante dice
-  postazione, stato ed eventuale prezzo "da".
+- L'**elenco delle postazioni**, raggruppato per fila, è l'alternativa non visiva alla mappa: ogni fila è un gruppo
+  con il proprio nome ("Fila A") e ogni pulsante dice postazione, stato ed eventuale prezzo "da" con le stesse
+  parole che si leggono sullo schermo, così chi usa il controllo vocale può pronunciarle.
+- La **legenda** della mappa è un elenco con il proprio nome ("Legenda").
 - I giorni del calendario dicono se sono pieni, chiusi, non prenotabili online o con gli ultimi posti.
 - Gli aggiornamenti arrivano da soli, senza spostare il cursore: il prezzo ricalcolato, il tempo rimasto per
   completare la prenotazione (annunciato a intervalli, non ogni secondo), l'esito del pagamento quando passa da
@@ -71,9 +77,10 @@ a usare.
   del focus, in tema **chiaro e scuro**; un test automatico lo verifica per ogni coppia di colori.
 - Quando scegli il colore principale del tuo lido, Arenile calcola da solo il colore del testo sopra (bianco o
   scuro) perché resti leggibile, qualunque colore tu scelga.
-- Nel calendario e nell'elenco delle postazioni il colore non è mai l'unico segnale: i giorni pieni o chiusi sono
-  **barrati** oltre che attenuati, i giorni con gli ultimi posti hanno un **punto** e nell'elenco lo stato di ogni
-  postazione è scritto per esteso. Sulla mappa vedi i [limiti noti](#limiti-noti).
+- Nel calendario, sulla mappa e nell'elenco delle postazioni il colore non è mai l'unico segnale: i giorni pieni o
+  chiusi sono **barrati** oltre che attenuati, i giorni con gli ultimi posti hanno un **punto**, sulla mappa le
+  postazioni non disponibili hanno un **lucchetto** nell'angolo (spiegato nella legenda) e nell'elenco lo stato di
+  ogni postazione è scritto per esteso.
 
 ### Movimento, zoom e schermi piccoli
 
@@ -105,15 +112,8 @@ traduzione il cliente vede la tua lingua predefinita.
 
 Diciamo con franchezza cosa non è ancora come vorremmo:
 
-- **La mappa è un disegno.** Con un lettore di schermo si usa, ma l'elenco delle postazioni è più comodo; sulla
-  mappa la differenza tra postazioni libere e non disponibili è data soprattutto dal tono (le non disponibili sono
-  attenuate). Lo stato completo è nel nome di ogni postazione e nell'elenco.
-- **Nome dei pulsanti dell'elenco.** Il nome letto dei pulsanti dell'elenco unisce postazione e stato con un
-  trattino che il testo visibile non ha ("A1 – Libero" contro "A1 Libero"): chi usa il controllo vocale può non
-  essere riconosciuto pronunciando il testo visibile. È l'unico controllo automatico escluso, su quella vista, in
-  attesa della correzione.
-- **Elenchi lunghi.** Nell'elenco ogni postazione libera è un punto di tabulazione: in un lido con molte postazioni
-  servono parecchi Tab per arrivare ad "Avanti" (Maiusc+Tab torna indietro).
+- **La mappa è un disegno.** Con un lettore di schermo si usa, ma l'elenco delle postazioni è più comodo: dà le
+  stesse informazioni in un ordine lineare, fila per fila.
 - **Pagamento online.** La pagina di pagamento è di Stripe, non di Arenile: la sua accessibilità dipende da Stripe.
 - **Contenuti del lido.** Logo, testi di presentazione, condizioni ed email li scrivi tu: usa frasi chiare, non
   mettere informazioni importanti solo in un'immagine e controlla il contrasto del logo sullo sfondo.
@@ -154,14 +154,12 @@ Come si usa
 - Tutta la prenotazione si completa con la sola tastiera.
 - È compatibile con i lettori di schermo; in alternativa alla mappa delle postazioni è
   disponibile un elenco, con il pulsante "Mostra come elenco".
-- Il testo rispetta il contrasto minimo, nel calendario e nell'elenco delle postazioni il
+- Il testo rispetta il contrasto minimo, nel calendario, sulla mappa e nell'elenco delle postazioni il
   colore non è l'unico modo per indicare lo stato, la pagina si adatta allo zoom fino al 200 % e rispetta la
   preferenza "riduci movimento" del dispositivo.
 - È disponibile in italiano, inglese, tedesco e francese.
 
 Contenuti non accessibili
-- Sulla mappa delle postazioni la differenza tra posti liberi e non disponibili è indicata
-  soprattutto dal colore; l'elenco delle postazioni riporta lo stato per esteso.
 - Il pagamento online avviene sulla pagina di Stripe, la cui accessibilità dipende da Stripe.
 - [Altri contenuti del lido non accessibili, per esempio: "Il listino in PDF non è
   accessibile; i prezzi sono comunque mostrati durante la prenotazione."]

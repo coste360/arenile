@@ -35,6 +35,7 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -118,6 +119,7 @@ export function OperationalMapView({
 }: OperationalMapViewProps) {
   const { t } = useTranslation('operations');
   const [view, setView] = useState('map');
+  const indicatorLegendId = useId();
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -384,8 +386,10 @@ export function OperationalMapView({
             <div className="flex flex-wrap items-start gap-x-6 gap-y-2">
               <MapLegend statuses={OPERATIONAL_LEGEND} />
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground">{t('indicator.legend')}</p>
-                <ul className="flex flex-wrap gap-3 text-xs">
+                <p id={indicatorLegendId} className="text-xs font-medium text-muted-foreground">
+                  {t('indicator.legend')}
+                </p>
+                <ul className="flex flex-wrap gap-3 text-xs" aria-labelledby={indicatorLegendId}>
                   {SPOT_INDICATORS.map((kind) => (
                     <li
                       key={kind}

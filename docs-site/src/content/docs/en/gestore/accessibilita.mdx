@@ -40,6 +40,9 @@ is still a page more customers can use.
   same day picks a single day. Escape closes it and focus returns to the dates field.
 - **Map:** the map is a single tab stop; the arrows move from spot to spot, Home and End go to the first and last,
   Enter or Space choose. The **Show as a list** button offers the same choice as a list of buttons.
+- **List of spots:** each row is a single tab stop; the arrows move from spot to spot within the row, Home and End
+  go to the first and last, Tab moves to the next row. "Next" is a few Tab presses away even on a beach with many
+  spots.
 - Packages and time slots are option groups: Tab enters the group, the arrows change the choice.
 - **Focus is always visible** (a ring around the active element) and, on every step change, it moves to the title
   of the new step; after the confirmation it goes to the title of the outcome.
@@ -50,10 +53,13 @@ is still a page more customers can use.
 
 - The page has landmarks (header, main content, footer), headings in order and a **language** attribute that
   follows the chosen language (Italian, English, German or French).
-- Every spot on the map has a full name, for example "Spot A1: Free, from €30.00"; unavailable spots are announced
+- Every spot on the map has a full name, with row and zone, for example "Spot A1, row A, Front row: Free, from
+  €30.00"; unavailable spots are announced
   as such and cannot be chosen.
-- The **list of spots**, grouped by row, is the non-visual alternative to the map: each button says spot, status
-  and the "from" price when shown.
+- The **list of spots**, grouped by row, is the non-visual alternative to the map: each row is a group with its
+  own name ("Row A") and each button says spot, status and the "from" price when shown, in the same words shown on
+  screen, so voice control users can say them.
+- The map **legend** is a list with its own name ("Legend").
 - Calendar days say whether they are full, closed, not bookable online or have the last spots.
 - Updates are announced without moving the cursor: the recalculated price, the time left to complete the booking
   (announced at intervals, not every second), the payment outcome when it goes from "pending" to "confirmed".
@@ -68,9 +74,9 @@ is still a page more customers can use.
   and dark** theme; an automated test checks every colour pair.
 - When you choose your beach's main colour, Arenile works out the text colour on top of it (white or dark) so it
   stays readable, whatever colour you pick.
-- In the calendar and in the list of spots colour is never the only cue: full or closed days are **struck
-  through** as well as dimmed, days with the last spots have a **dot** and the list writes each spot's status out.
-  For the map see the [known limits](#known-limits).
+- In the calendar, on the map and in the list of spots colour is never the only cue: full or closed days are
+  **struck through** as well as dimmed, days with the last spots have a **dot**, unavailable spots on the map have
+  a **lock** in their corner (explained in the legend) and the list writes each spot's status out.
 
 ### Motion, zoom and small screens
 
@@ -100,14 +106,8 @@ translation the customer sees your default language.
 
 Plainly, what is not yet as we would like:
 
-- **The map is a drawing.** It works with a screen reader, but the list of spots is easier; on the map the
-  difference between free and unavailable spots is mostly given by tone (unavailable spots are dimmed). The full
-  status is in each spot's name and in the list.
-- **Names of the list buttons.** The spoken name of the list buttons joins spot and status with a dash the
-  visible text lacks ("A1 – Free" against "A1 Free"): voice control users saying the visible text may not be
-  recognised. It is the only automated check turned off, on that view, until it is fixed.
-- **Long lists.** In the list every free spot is a tab stop: on a beach with many spots it takes several Tab
-  presses to reach "Next" (Shift+Tab goes back).
+- **The map is a drawing.** It works with a screen reader, but the list of spots is easier: it gives the same
+  information in a linear order, row by row.
 - **Online payment.** The payment page is Stripe's, not Arenile's: its accessibility depends on Stripe.
 - **Your content.** You write the logo, introduction, terms and emails: use clear sentences, do not put important
   information only in an image and check the contrast of your logo on its background.
@@ -146,14 +146,12 @@ How to use it
 - The whole booking can be completed with the keyboard only.
 - It works with screen readers; as an alternative to the map of spots there is a list,
   opened with the "Show as a list" button.
-- Text meets minimum contrast, in the calendar and in the list of spots colour is not the
+- Text meets minimum contrast, in the calendar, on the map and in the list of spots colour is not the
   only way to show status, the page adapts to zoom up to 200 % and follows the device's "reduce motion"
   preference.
 - It is available in Italian, English, German and French.
 
 Content that is not accessible
-- On the map of spots the difference between free and unavailable spots is shown mainly by
-  colour; the list of spots writes the status out.
 - Online payment happens on Stripe's page, whose accessibility depends on Stripe.
 - [Other content of the beach that is not accessible, for example: "The PDF price list is
   not accessible; prices are shown during the booking anyway."]

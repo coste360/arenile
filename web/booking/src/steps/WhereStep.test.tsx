@@ -60,10 +60,21 @@ describe('WhereStep', () => {
     expect(within(legend).getByText('Fila A')).toBeInTheDocument();
     expect(legend).toHaveTextContent('da 35,00 €');
     expect(legend).toHaveTextContent('da 25,00 €');
-    const taken = screen.getByRole('button', { name: /Postazione A2: Non disponibile/ });
+    const taken = screen.getByRole('button', {
+      name: /^Postazione A2, fila A, Prima fila: Non disponibile/,
+    });
     expect(taken).toHaveAttribute('aria-disabled', 'true');
+    // Unavailable spots carry a lock badge, not only a grey tone, explained in the legend.
+    expect(taken.querySelector('[data-badge="unavailable"]')).not.toBeNull();
+    expect(
+      within(screen.getByRole('list', { name: 'Legenda' })).getByText('Non disponibile'),
+    ).toBeInTheDocument();
     // Spots are 60 units (≥ 44 px in jsdom): a tap selects directly.
-    await user.click(screen.getByRole('button', { name: /Postazione A1: Libero, da 35,00\s€/ }));
+    await user.click(
+      screen.getByRole('button', {
+        name: /^Postazione A1, fila A, Prima fila: Libero, da 35,00\s€$/,
+      }),
+    );
     expect(lines()).toBe(`${SPOT_A1}:1`);
     expect(screen.getByText(/^1 postazione scelta: \w+/)).toBeInTheDocument();
     expect(screen.queryByText('Zone')).not.toBeInTheDocument();
@@ -81,9 +92,17 @@ describe('WhereStep', () => {
     renderWhere(['seat']);
     await user.click(await screen.findByRole('button', { name: 'Mostra come elenco' }));
     const list = screen.getByRole('region', { name: 'Elenco delle postazioni' });
-    await user.click(within(list).getByRole('button', { name: /B1 – Libero – da 25,00\s€/ }));
+    // The accessible name is the visible text (WCAG 2.5.3).
+    const b1 = within(list).getByRole('button', { name: /^B1 Libero – da 25,00\s€$/ });
+    expect(b1).toHaveTextContent(/^B1 Libero – da 25,00\s€$/);
+    await user.click(b1);
     expect(lines()).toContain(':1');
-    expect(within(list).getByRole('button', { name: /A2/ })).toBeDisabled();
+    expect(within(list).getByRole('button', { name: /^A2 Non disponibile/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    // One tab stop per row, named by the row heading.
+    expect(within(list).getByRole('toolbar', { name: 'Fila A' })).toBeInTheDocument();
   });
 
   it('zone zones: cards with "da" price and "ultimi N posti", no map', async () => {

@@ -22,6 +22,12 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
   **Configurazione → Stabilimento → Mappa**, con l'anteprima dei due kit; vale per pannello e pagina pubblica.
   Contratto: `Theme.map_kit` (`modern` | `classic`, assente = `modern`), nessuna migrazione.
 - Barra diagonale sulle postazioni **bloccate** in entrambi i kit, oltre al badge: lo stato non dipende dal colore.
+- **Accessibilità della mappa**: lucchetto nell'angolo delle postazioni non disponibili (anche nella legenda, che
+  ripete i simboli dei badge) così libero e non disponibile non differiscono solo per il tono; il nome di ogni
+  postazione dice fila e zona ("Postazione A1, fila A, Prima fila: Libero, da 30,00 €"); le legende sono elenchi con
+  nome. Nell'elenco delle postazioni ogni fila è un solo punto di tabulazione (frecce, Home e Fine al suo interno,
+  pattern WAI-ARIA toolbar), le postazioni non sceglibili restano raggiungibili e il nome letto di ogni pulsante è il
+  testo visibile: tolta l'ultima eccezione axe (`label-content-name-mismatch`) dai test end-to-end.
 - **Accessibilità (WCAG 2.1 AA, European Accessibility Act)**: nuova pagina della guida
   [Accessibilità](https://docs.arenile.app/gestore/accessibilita/) (it/en) con cosa è supportato, limiti noti e un
   modello di dichiarazione di accessibilità per il lido; sezione dedicata nel README. Correzioni: il calendario della

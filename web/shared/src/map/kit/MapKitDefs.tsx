@@ -4,7 +4,7 @@ import { KIT_VIEWBOX, MAP_KIT_KEYS, type MapKitKey } from './generated/manifest'
 import { kitSymbolId } from './assets';
 import { useMapKit } from './context';
 import { kitIdsSnapshot, registerKitIds, subscribeKitIds, unregisterKitIds } from './registry';
-import { badgeSymbolId, type BadgeGlyph } from './status';
+import { BADGE_GLYPHS, badgeGlyphStroke, badgeSymbolId, type BadgeGlyph } from './status';
 import { loadKitSymbols, loadedKitSymbols, type KitSymbolBodies } from './symbols';
 
 export interface MapKitDefsProps {
@@ -13,20 +13,6 @@ export interface MapKitDefsProps {
   /** Kit the ids are drawn with (default: the kit of the nearest MapKitProvider). */
   kit?: MapKitKey;
 }
-
-/** Paths of the status badge glyphs, on a 24-unit grid, drawn with currentColor. */
-const BADGE_GLYPHS: Record<BadgeGlyph, string> = {
-  globe:
-    'M12 4.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 1 0 0-15M4.5 12h15M12 4.5c-3 2.6-3 12.4 0 15M12 4.5c3 2.6 3 12.4 0 15',
-  desk: 'M4.5 10.5h15M4.5 10.5l2.5-5h10l2.5 5M6 10.5V19h12v-8.5M9.5 15h5',
-  check: 'M5.5 12.5l4.2 4.2L18.5 8',
-  star: 'M12 4.2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8z',
-  released: 'M7.5 16.5l9-9M9.5 7.5h7v7',
-  clock: 'M12 4.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 1 0 0-15M12 8.5v4l2.8 1.8',
-  cross: 'M7.5 7.5l9 9M16.5 7.5l-9 9',
-  euro: 'M16.5 7.6a5.6 5.6 0 1 0 0 8.8M5.5 10.6h8M5.5 13.4h7',
-  renew: 'M18.5 12a6.5 6.5 0 1 1-1.9-4.6M18.5 5v3.8h-3.8',
-};
 
 const KitSymbol = memo(function KitSymbol({
   kit,
@@ -58,7 +44,7 @@ const BadgeSymbols = memo(function BadgeSymbols() {
             d={BADGE_GLYPHS[g]}
             fill={g === 'star' ? 'currentColor' : 'none'}
             stroke="currentColor"
-            strokeWidth={g === 'star' ? 1 : 2.6}
+            strokeWidth={badgeGlyphStroke(g)}
             strokeLinecap="round"
             strokeLinejoin="round"
           />

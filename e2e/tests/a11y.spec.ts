@@ -123,15 +123,11 @@ test.describe("public booking page", () => {
     // List view: the non-visual alternative to the map, grouped by row.
     await page.getByRole("button", { name: "Mostra come elenco" }).click();
     await expect(page.getByRole("region", { name: "Elenco delle postazioni" })).toBeVisible();
-    // label-content-name-mismatch: the list buttons' names join label and
-    // status with a dash the visible text lacks; fixed in the map package
-    // (web/shared/src/map/SpotList.tsx), owned by the map kit branch.
-    expect(
-      await seriousViolations(page, { disable: ["label-content-name-mismatch"] }),
-      "2 Dove (list)",
-    ).toEqual([]);
+    // Each row is a named toolbar; a spot's name is its visible text.
+    await expect(page.getByRole("toolbar", { name: /^Fila / }).first()).toBeVisible();
+    expect(await seriousViolations(page), "2 Dove (list)").toEqual([]);
     await page
-      .getByRole("button", { name: /^(?!.*(?:Gazebo|GZ)).* – Libero/ })
+      .getByRole("button", { name: /^(?!.*(?:Gazebo|GZ))\S+ Libero/ })
       .first()
       .click();
     await page.getByRole("button", { name: "Avanti" }).click();
@@ -328,12 +324,20 @@ test("a public booking can be completed with the keyboard only", async ({ page }
   await page.keyboard.press("Enter");
   await expect(page.getByRole("region", { name: "Elenco delle postazioni" })).toBeVisible();
   // Gazebos (GZ*) only sell the "Gazebo" package (no "Base" below): umbrellas only.
-  await tabTo(page, /^(?!.*(?:Gazebo|GZ)).* – Libero/, 200);
+  await tabTo(page, /^(?!.*(?:Gazebo|GZ))\S+ Libero/, 200);
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: /– Libero/, pressed: true })).toBeFocused();
-  // Every free spot of the list is a tab stop: "Avanti" comes after the
-  // rest of the list (a roving tabindex per row is up to the map package).
-  await tabTo(page, /^Avanti$/, 300);
+  const chosen = page.getByRole("button", { name: /^\S+ Libero/, pressed: true });
+  await expect(chosen).toBeFocused();
+  // Roving tabindex per row: arrows move within the row and back.
+  await page.keyboard.press("End");
+  await page.keyboard.press("Home");
+  for (let i = 0; i < 40; i++) {
+    if (await chosen.evaluate((el) => el === document.activeElement)) break;
+    await page.keyboard.press("ArrowRight");
+  }
+  await expect(chosen).toBeFocused();
+  // One tab stop per row: "Avanti" is a handful of Tabs away, not one per spot.
+  await tabTo(page, /^Avanti$/, 60);
   await page.keyboard.press("Enter");
 
   // 3. Cosa: the packages are a radio group (one tab stop, arrows select).

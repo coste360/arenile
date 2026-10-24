@@ -64,6 +64,8 @@
     "zoomOut": "Zoom out",
     "legend": "Legend",
     "spotAria": "Spot {{label}}: {{status}}",
+    "spotAriaPlaced": "Spot {{label}}, {{place}}: {{status}}",
+    "spotAriaRow": "row {{row}}",
     "listTitle": "List of spots",
     "row": "Row {{row}}",
     "noRow": "Other spots",

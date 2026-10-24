@@ -173,13 +173,13 @@ test("offline after a reload: the map and today's booking are readable, a cash p
 
   await page.goto(`${base}/oggi`);
   await expect(page.getByRole("heading", { name: "Oggi", level: 1 })).toBeVisible();
-  await expect(page.getByRole("button", { name: /^Postazione B3:/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Postazione B3[,:]/ })).toBeVisible();
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
   await page.reload();
   await expect
     .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
     .toBe(true);
-  await expect(page.getByRole("button", { name: /^Postazione B3:/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Postazione B3[,:]/ })).toBeVisible();
   // The throttled snapshot (1 s) must hold the day before the network goes.
   await expect
     .poll(
@@ -216,12 +216,12 @@ test("offline after a reload: the map and today's booking are readable, a cash p
   await expect(page.getByText("Sei offline")).toBeVisible();
   // Readable from the saved copy: the map with its spots and the booking of today.
   await expect(page.getByTestId("beach-map")).toBeVisible();
-  await expect(page.getByRole("button", { name: /^Postazione B3:/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Postazione B3[,:]/ })).toBeVisible();
   const checkInRow = page.getByRole("button", { name: `Registra il check-in di ${seeded.customer}` });
   await expect(checkInRow).toBeVisible();
 
   // The arrival: the balance in cash, then the check-in, from the spot sheet.
-  await page.getByRole("button", { name: /^Postazione B3:/ }).click();
+  await page.getByRole("button", { name: /^Postazione B3[,:]/ }).click();
   const sheet = page.getByRole("dialog", { name: /Postazione B3/ });
   await sheet.getByRole("button", { name: "Incasso in contanti" }).click();
   const cash = page.getByRole("dialog", { name: "Incasso in contanti offline" });

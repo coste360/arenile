@@ -21,7 +21,7 @@ async function openPanel(page: Page): Promise<string> {
 }
 
 function spot(page: Page, label: string) {
-  return page.getByRole("button", { name: new RegExp(`^Postazione ${label}:`) });
+  return page.getByRole("button", { name: new RegExp(`^Postazione ${label}[,:]`) });
 }
 
 test("three spots selected on the map become one group booking", async ({ page }, info) => {

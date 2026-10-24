@@ -96,7 +96,7 @@ test("starts offline from the saved copy and clears it on logout", async ({ page
   // the cached map must be readable), with its spots; the takings, never
   // kept on the device, say so instead of showing a placeholder.
   await expect(page.getByTestId("beach-map")).toBeVisible();
-  await expect(page.getByRole("button", { name: /^Postazione A1:/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Postazione A1[,:]/ })).toBeVisible();
   await expect(page.getByText("Non disponibile offline")).toBeVisible();
 
   // Client-side navigation works offline too (lazy chunks are precached).

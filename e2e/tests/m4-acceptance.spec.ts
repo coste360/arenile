@@ -108,7 +108,7 @@ async function bookUntilPay(
   // 2. Dove: the first free spot (list view, big tap targets).
   await widget.getByRole("button", { name: "Mostra come elenco" }).click();
   await widget
-    .getByRole("button", { name: / – Libero/ })
+    .getByRole("button", { name: /^\S+ Libero/ })
     .first()
     .click();
   await widget.getByRole("button", { name: "Avanti" }).click();

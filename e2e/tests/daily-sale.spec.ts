@@ -167,7 +167,7 @@ async function apiSale(
 
 function spot(page: Page, label: string) {
   return page.getByRole("button", {
-    name: new RegExp(`^Postazione ${label}:`),
+    name: new RegExp(`^Postazione ${label}[,:]`),
   });
 }
 
@@ -523,7 +523,7 @@ test.describe("phone optional on the public page (ADR 0020)", () => {
 
     await page.getByRole("button", { name: "Mostra come elenco" }).click();
     const free = page.getByRole("button", {
-      name: /^(?!.*(?:Gazebo|GZ)).* – Libero/,
+      name: /^(?!.*(?:Gazebo|GZ))\S+ Libero/,
     });
     await expect(free.first()).toBeVisible();
     await free.nth(Math.floor(Math.random() * (await free.count()))).click();

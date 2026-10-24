@@ -78,7 +78,9 @@ describe('daily sale on the day map', () => {
 
   it('labels sold spots with the ticket number, or the surname when given', async () => {
     setup();
-    const a2 = await screen.findByRole('button', { name: /Postazione A2: .*occupato da #037/ });
+    const a2 = await screen.findByRole('button', {
+      name: /Postazione A2, fila A: .*occupato da #037/,
+    });
     expect(a2).toBeInTheDocument();
     expect(captionOf('s2')).toEqual(['#037']);
     expect(captionOf('s3')).toEqual(['Bianchi']);
@@ -187,7 +189,7 @@ describe('daily sale on the day map', () => {
   it('opens "Vendi giornata" from a free spot with the spot preselected', async () => {
     const user = userEvent.setup();
     const { fetchMock } = setup();
-    await user.click(await screen.findByRole('button', { name: /Postazione A1: Libero/ }));
+    await user.click(await screen.findByRole('button', { name: /Postazione A1, fila A: Libero/ }));
     const sheet = await screen.findByRole('dialog');
     await user.click(within(sheet).getByRole('button', { name: 'Vendi giornata' }));
     const sale = await screen.findByRole('dialog', { name: 'Vendi giornata' });

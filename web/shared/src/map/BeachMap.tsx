@@ -119,6 +119,11 @@ export interface BeachMapProps {
   labelMode?: MapLabelMode;
   /** Extra controls in the toolbar above the drawing, left of the zoom controls. */
   toolbar?: ReactNode;
+  /**
+   * Localised zone name per zone id: the spot's accessible name says where
+   * it is ("Postazione A1, fila A, Prima fila: Libero"). Row from `row_label`.
+   */
+  zoneNames?: Readonly<Record<string, string>>;
   /** Optional extra text per spot (e.g. a price), appended to the aria-label. */
   spotDescription?: (spot: MapSpot) => string | undefined;
   /** Colour overrides (hex), e.g. from the panel theme; default: the --status-* theme tokens. */
@@ -499,6 +504,7 @@ export function BeachMap({
   minTapTargetPx,
   zoomSlider = true,
   spotDescription,
+  zoneNames,
   spotCaptions,
   labelMode = 'both',
   toolbar,
@@ -788,8 +794,15 @@ export function BeachMap({
             {geometry.spots.map((spot) => {
               const status = statusOf(spot);
               const extra = spotDescription?.(spot);
-              const aria = t('map.spotAria', {
+              const place = [
+                spot.row_label ? t('map.spotAriaRow', { row: spot.row_label }) : '',
+                (spot.zone_id && zoneNames?.[spot.zone_id]) || '',
+              ]
+                .filter(Boolean)
+                .join(', ');
+              const aria = t(place ? 'map.spotAriaPlaced' : 'map.spotAria', {
                 label: spot.label,
+                place,
                 status: t(`map.status.${status}`),
               });
               const caption = showCaptions ? captions.out.get(spot.id) : undefined;

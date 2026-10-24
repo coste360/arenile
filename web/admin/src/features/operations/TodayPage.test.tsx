@@ -84,7 +84,7 @@ describe('TodayPage', () => {
 
     // The map of the day is on the page too, sharing the same day request.
     expect(
-      await screen.findByRole('button', { name: /Postazione A4: Abbonato assente oggi/ }),
+      await screen.findByRole('button', { name: /Postazione A4, fila A: Abbonato assente oggi/ }),
     ).toBeInTheDocument();
     await waitFor(() => expect(callsTo(fetchMock, 'GET', `${API}/operations/day`)).toHaveLength(1));
   });
