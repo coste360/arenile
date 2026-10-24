@@ -58,7 +58,8 @@
     "quickPay": "Incassa",
     "close": "Chiudi cassa",
     "print": "Stampa riepilogo",
-    "printZ": "Stampa chiusura Z"
+    "printZ": "Stampa chiusura Z",
+    "more": "Altro"
   },
   "open": {
     "title": "Apri la cassa",

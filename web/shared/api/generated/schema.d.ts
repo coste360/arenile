@@ -3656,7 +3656,7 @@ export interface paths {
         };
         /**
          * Notifiche del pannello
-         * @description Avvisi per il gestore (endpoint webhook disattivato, rimborso fallito, importazione completata...). Lo stato letto è condiviso dallo staff dello stabilimento. Permesso bookings.read; le notifiche con audience owner solo a chi ha users.manage.
+         * @description Avvisi per il gestore (endpoint webhook disattivato, rimborso fallito, importazione completata...). Lo stato letto è condiviso dallo staff dello stabilimento. Permesso bookings.read; le notifiche con audience owner solo a chi ha users.manage, quelle con audience manager (rimborso garantito non riuscito) solo a chi ha refunds.issue.
          */
         get: operations["listNotifications"];
         put?: never;
@@ -3756,7 +3756,7 @@ export interface paths {
         put?: never;
         /**
          * Carica un file CSV da importare
-         * @description Corpo text/csv (UTF-8, con o senza BOM, separatore ; o , rilevato), massimo 5 MB e 20000 righe. Crea un'importazione in stato uploaded senza toccare i dati. Permesso establishment.configure. Il contenuto è conservato solo fino ad apply/discard (al massimo 7 giorni).
+         * @description Corpo text/csv (UTF-8, con o senza BOM, separatore ; o , rilevato), massimo 5 MB e 2000 righe (500 per gli abbonamenti). Crea un'importazione in stato uploaded senza toccare i dati. Permesso establishment.configure. Il contenuto è conservato solo fino ad apply/discard (al massimo 7 giorni).
          */
         post: operations["createImportJob"];
         delete?: never;

@@ -2,6 +2,13 @@ import { ApiProblem } from '@arenile/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@arenile/shared/ui/dropdown-menu';
+import {
   EmptyState,
   OptionSelectMenu,
   Page,
@@ -14,10 +21,13 @@ import { Link } from '@tanstack/react-router';
 import {
   ArrowLeftRightIcon,
   EyeIcon,
+  FileDownIcon,
   FileSpreadsheetIcon,
   HandCoinsIcon,
   LockIcon,
+  MoreHorizontalIcon,
   PrinterIcon,
+  ReceiptTextIcon,
   SettingsIcon,
   WalletIcon,
 } from 'lucide-react';
@@ -33,6 +43,7 @@ import { SessionHistory } from './components/SessionHistory';
 import { SessionView } from './components/SessionView';
 import { ZPdfButton } from './components/ZPdfButton';
 import { ZReport } from './components/ZReport';
+import { printZReport, zReportUrl } from './lib/zreport';
 import { useCashContext, type CashContext } from './useCashContext';
 import {
   pickRegister,
@@ -101,32 +112,67 @@ export function CashPage() {
   const detail = current.data ?? null;
   const operate = ctx.canOperate && !!detail;
 
+  // Primary actions stay as buttons (Incassa, Chiudi cassa); the secondary
+  // ones (corrispettivi, printouts, Z PDF, movement) live in one overflow
+  // menu so that the header never squeezes the description on wide screens
+  // nor wraps into a wall of buttons on phones.
+  const printZ = (paper: 'a4' | 'receipt80') => {
+    if (!detail) return;
+    void printZReport(zReportUrl(ctx.establishmentId, detail.session.id, paper)).catch(() => {
+      window.open(zReportUrl(ctx.establishmentId, detail.session.id, paper), '_blank', 'noopener');
+    });
+  };
+  const hasMore = ctx.canReport || !!detail || operate;
   const actions = (
     <>
-      {ctx.canReport && (
-        <Button variant="outline" asChild>
-          <Link
-            to="/e/$establishmentId/cassa/corrispettivi"
-            params={{ establishmentId: ctx.establishmentId }}
-          >
-            <FileSpreadsheetIcon aria-hidden="true" />
-            {t('corrispettivi.title')}
-          </Link>
-        </Button>
+      {hasMore && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <MoreHorizontalIcon aria-hidden="true" />
+              {t('actions.more')}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {ctx.canReport && (
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/e/$establishmentId/cassa/corrispettivi"
+                  params={{ establishmentId: ctx.establishmentId }}
+                >
+                  <FileSpreadsheetIcon aria-hidden="true" />
+                  {t('corrispettivi.title')}
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {operate && (
+              <DropdownMenuItem onSelect={() => setDialog('movement')}>
+                <ArrowLeftRightIcon aria-hidden="true" />
+                {t('actions.movement')}
+              </DropdownMenuItem>
+            )}
+            {detail && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => print(detail)}>
+                  <PrinterIcon aria-hidden="true" />
+                  {t('actions.print')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => printZ('a4')}>
+                  <FileDownIcon aria-hidden="true" />
+                  {t('zpdf.a4')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => printZ('receipt80')}>
+                  <ReceiptTextIcon aria-hidden="true" />
+                  {t('zpdf.receipt')}
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
-      {detail && (
-        <Button variant="outline" onClick={() => print(detail)}>
-          <PrinterIcon aria-hidden="true" />
-          {t('actions.print')}
-        </Button>
-      )}
-      {detail && <ZPdfButton establishmentId={ctx.establishmentId} sessionId={detail.session.id} />}
       {operate && (
         <>
-          <Button variant="outline" onClick={() => setDialog('movement')}>
-            <ArrowLeftRightIcon aria-hidden="true" />
-            {t('actions.movement')}
-          </Button>
           <Button variant="outline" onClick={() => setDialog('close')}>
             <LockIcon aria-hidden="true" />
             {t('actions.close')}

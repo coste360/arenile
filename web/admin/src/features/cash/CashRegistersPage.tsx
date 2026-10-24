@@ -66,17 +66,22 @@ export function CashRegistersPage() {
       meta: { label: t('registersPage.fields.name') },
       header: t('registersPage.fields.name'),
       cell: ({ row }) => (
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{row.original.name}</span>
-          {row.original.is_default && (
-            <StatusBadge tone="neutral">{t('registersPage.default')}</StatusBadge>
-          )}
+        <span className="flex flex-col gap-0.5">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="font-medium">{row.original.name}</span>
+            {row.original.is_default && (
+              <StatusBadge tone="neutral">{t('registersPage.default')}</StatusBadge>
+            )}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground sm:hidden">
+            {row.original.code}
+          </span>
         </span>
       ),
     },
     {
       accessorKey: 'code',
-      meta: { label: t('registersPage.fields.code') },
+      meta: { label: t('registersPage.fields.code'), hideBelow: 'sm' },
       header: t('registersPage.fields.code'),
       cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span>,
     },
@@ -95,7 +100,7 @@ export function CashRegistersPage() {
     },
     {
       accessorKey: 'sort_order',
-      meta: { label: t('registersPage.fields.sortOrder'), align: 'right' },
+      meta: { label: t('registersPage.fields.sortOrder'), align: 'right', hideBelow: 'md' },
       header: t('registersPage.fields.sortOrder'),
     },
     {

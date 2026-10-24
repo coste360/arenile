@@ -68,6 +68,12 @@ export interface DataTableColumnMeta {
   /** Name in the column visibility menu. */
   label?: string;
   align?: 'left' | 'right' | 'center';
+  /**
+   * Hide the column below a breakpoint (secondary data on phones), so the
+   * row actions stay on screen instead of behind a horizontal scroll. Show
+   * the hidden value elsewhere on small screens when it matters.
+   */
+  hideBelow?: 'sm' | 'md' | 'lg';
 }
 
 function columnMeta<TData>(column: Column<TData, unknown>): DataTableColumnMeta {
@@ -80,8 +86,15 @@ const ALIGN_CLASS = {
   center: 'text-center',
 } as const;
 
+const HIDE_CLASS = {
+  sm: 'hidden sm:table-cell',
+  md: 'hidden md:table-cell',
+  lg: 'hidden lg:table-cell',
+} as const;
+
 function alignClass<TData>(column: Column<TData, unknown>): string {
-  return ALIGN_CLASS[columnMeta(column).align ?? 'left'];
+  const meta = columnMeta(column);
+  return cn(ALIGN_CLASS[meta.align ?? 'left'], meta.hideBelow && HIDE_CLASS[meta.hideBelow]);
 }
 
 /** Server-side "load more" under the table (cursor-paginated lists). */
