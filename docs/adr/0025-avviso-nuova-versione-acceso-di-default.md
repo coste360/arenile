@@ -28,8 +28,11 @@ Alternative scartate:
 
 1. Il controllo della nuova versione è **acceso di default** su tutte le edizioni e si può spegnere:
    `ARENILE_UPDATE_CHECK=false` sui server (Docker o binario); nell'app desktop l'impostazione *Controlla se
-   esiste una nuova versione* (`update_check`, ora vera di default; un file di impostazioni salvato prima di
-   questo ADR senza il campo vale vero, un `false` esplicito resta).
+   esiste una nuova versione* (`update_check`, ora vera di default). Le versioni precedenti scrivevano sempre
+   `"update_check": false` (il vecchio predefinito) appena si salvava una qualsiasi impostazione, quindi un file
+   senza `settings_version` vale vero; dopo questo ADR il file porta `settings_version: 2` e un `false` salvato
+   resta spento. Nell'app desktop `ARENILE_UPDATE_CHECK=false` nell'ambiente del launcher spegne comunque il
+   controllo (collaudi); un `ARENILE_UPDATE_URL` non valido torna al predefinito senza bloccare l'avvio.
 2. La fonte è un file JSON pubblico su un server di Coste360, `https://updates.coste360.it/arenile/latest.json`
    (costante unica `updates.DefaultURL`, sostituibile con `ARENILE_UPDATE_URL` su server e desktop), scritto
    dalla pipeline di build con la forma `{version, tag, published_at, release_notes, checksums, files[]}`. Il
@@ -56,6 +59,9 @@ Alternative scartate:
    una notifica di sistema una volta per versione.
 
 ## Conseguenze
+
+- Accettato: dopo un ripristino dell'app desktop il server interno riparte e il controllo si ripete dopo 30
+  secondi (fino ad allora l'avviso non compare); la notifica di sistema non si ripete per la stessa versione.
 
 - Positive: i lidi scoprono le versioni nuove senza fare nulla; un solo codice (`internal/updates`) per server e
   desktop; Coste360 ha numeri aggregati sull'adozione senza raccogliere dati dei lidi.

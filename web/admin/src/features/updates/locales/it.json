@@ -12,6 +12,7 @@
     "enabled": "Controllo aggiornamenti: attivo",
     "disabled": "Controllo aggiornamenti: disattivato",
     "unavailable": "Impossibile cercare automaticamente gli aggiornamenti.",
-    "upToDate": "Arenile è aggiornato."
+    "upToDate": "Arenile è aggiornato.",
+    "devBuild": "Versione di sviluppo: nessun controllo degli aggiornamenti."
   }
 }

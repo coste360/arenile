@@ -1,7 +1,6 @@
 package desktop
 
 import (
-	"cmp"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -10,10 +9,12 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	goruntime "runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -143,6 +144,9 @@ type Options struct {
 	// to ARENILE_UPDATE_URL, then updates.DefaultURL.
 	UpdateURL  string
 	HTTPClient *http.Client
+	// UpdateCheckEnvOff turns the update check off whatever the setting
+	// (ARENILE_UPDATE_CHECK=false in the environment: acceptance runs).
+	UpdateCheckEnvOff bool
 	// ScheduleTick drives the backup scheduler (tests).
 	ScheduleTick <-chan time.Time
 	// OnReady is called once the local server listens (tests).
@@ -201,7 +205,11 @@ func NewLauncher(o Options) *Launcher {
 		o.Version = "dev"
 	}
 	if o.UpdateURL == "" {
-		o.UpdateURL = cmp.Or(os.Getenv(config.EnvUpdateURL), updates.DefaultURL)
+		o.UpdateURL = os.Getenv(config.EnvUpdateURL)
+	}
+	o.UpdateURL = UpdateURL(o.UpdateURL)
+	if !o.UpdateCheckEnvOff {
+		o.UpdateCheckEnvOff = UpdateCheckOff(os.Getenv(config.EnvUpdateCheck))
 	}
 	return &Launcher{o: o}
 }
@@ -323,6 +331,26 @@ func DesktopConfig(dataDir string, port int, secretKey []byte, updateURL string)
 	return config.Parse(func(k string) (string, bool) { v, ok := env[k]; return v, ok })
 }
 
+// UpdateURL returns u when it is an absolute http(s) URL, otherwise the
+// default (pure): a wrong ARENILE_UPDATE_URL must never stop the app.
+func UpdateURL(u string) string {
+	p, err := url.Parse(strings.TrimSpace(u))
+	if err != nil || (p.Scheme != "http" && p.Scheme != "https") || p.Host == "" {
+		return updates.DefaultURL
+	}
+	return strings.TrimSpace(u)
+}
+
+// UpdateCheckOff reports whether an ARENILE_UPDATE_CHECK value turns the
+// update check off (pure; unset or unparsable keeps the setting in charge).
+func UpdateCheckOff(v string) bool {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "0", "false", "no", "off":
+		return true
+	}
+	return false
+}
+
 func (l *Launcher) secretStores() []SecretStore {
 	if l.o.SecretStores != nil {
 		return l.o.SecretStores
@@ -380,6 +408,8 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 	if l.cfg, err = DesktopConfig(l.dataDir, port, key, l.o.UpdateURL); err != nil {
 		return err
 	}
+	// The update_check setting decides; the environment can only turn it off.
+	l.cfg.UpdateCheck = !l.o.UpdateCheckEnvOff
 
 	deps := RuntimeDeps{
 		DataDir:           l.dataDir,

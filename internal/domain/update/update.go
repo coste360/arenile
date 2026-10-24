@@ -81,8 +81,9 @@ type Deps struct {
 	// GOOS and GOARCH pick the package for download_url.
 	GOOS, GOARCH string
 	Clock        clock.Clock
-	// Enabled reports whether the check is on; read before every check.
-	Enabled func() bool
+	// Enabled reports whether the check is on. It is read only when a
+	// check is due and by Status (on desktop it reads the settings file).
+	Enabled func(ctx context.Context) bool
 	// OnNewer, optional, is called once per newer version found (desktop
 	// native notification).
 	OnNewer func(latest string)
@@ -125,7 +126,7 @@ func NewService(d Deps) *Service {
 		d.Log = slog.New(slog.DiscardHandler)
 	}
 	if d.Enabled == nil {
-		d.Enabled = func() bool { return false }
+		d.Enabled = func(context.Context) bool { return false }
 	}
 	if d.HowTo == "" {
 		d.HowTo = HowBinary
@@ -141,21 +142,19 @@ func (s *Service) Jobs() []jobs.Job {
 // Refresh checks for a new version when a check is due. It never returns
 // network errors (logged at debug): the job must not report them.
 func (s *Service) Refresh(ctx context.Context) error {
-	if s.d.Fetcher == nil || !updates.IsRelease(s.d.Current) || !s.d.Enabled() {
+	if s.d.Fetcher == nil || !updates.IsRelease(s.d.Current) {
 		return nil
 	}
 	now := s.d.Clock.Now()
 	s.mu.Lock()
-	due := false
-	switch {
-	case s.lastAttempt.IsZero():
-		due = now.Sub(s.started) >= StartDelay
-	case s.lastFailed:
-		due = now.Sub(s.lastAttempt) >= RetryAfter
-	default:
-		due = now.Sub(s.lastAttempt) >= Interval
+	due := s.dueLocked(now)
+	s.mu.Unlock()
+	// The switch is read only when a check is due: no settings I/O every tick.
+	if !due || !s.d.Enabled(ctx) {
+		return nil
 	}
-	if due {
+	s.mu.Lock()
+	if due = s.dueLocked(now); due {
 		s.lastAttempt = now
 	}
 	s.mu.Unlock()
@@ -190,14 +189,25 @@ func (s *Service) Refresh(ctx context.Context) error {
 	return nil
 }
 
+func (s *Service) dueLocked(now time.Time) bool {
+	switch {
+	case s.lastAttempt.IsZero():
+		return now.Sub(s.started) >= StartDelay
+	case s.lastFailed:
+		return now.Sub(s.lastAttempt) >= RetryAfter
+	default:
+		return now.Sub(s.lastAttempt) >= Interval
+	}
+}
+
 // Status returns the update notice. Owners and managers may read it (a
 // grant with establishment.configure); API keys and other roles get
 // auth.ErrForbidden.
-func (s *Service) Status(_ context.Context, p *auth.Principal) (Status, error) {
+func (s *Service) Status(ctx context.Context, p *auth.Principal) (Status, error) {
 	if err := authorize(p); err != nil {
 		return Status{}, err
 	}
-	st := Status{Current: s.d.Current, State: StateOK, HowTo: s.d.HowTo, CheckEnabled: s.d.Enabled()}
+	st := Status{Current: s.d.Current, State: StateOK, HowTo: s.d.HowTo, CheckEnabled: s.d.Enabled(ctx)}
 	if !st.CheckEnabled || !updates.IsRelease(s.d.Current) {
 		st.State = StateDisabled
 		return st, nil

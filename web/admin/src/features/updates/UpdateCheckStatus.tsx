@@ -21,6 +21,8 @@ export function UpdateCheckStatus({ showSwitchSource = true }: { showSwitchSourc
           {server && ' (ARENILE_UPDATE_CHECK)'}
         </span>
       )}
+      {/* Switch on but no check: a development build ("dev", "-dev."). */}
+      {u.check_enabled && u.status === 'disabled' && <span>{t('status.devBuild')}</span>}
       {u.status === 'unavailable' && <span>{t('status.unavailable')}</span>}
       {u.status === 'ok' && u.latest && !u.update_available && <span>{t('status.upToDate')}</span>}
     </div>

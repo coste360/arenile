@@ -12,6 +12,7 @@
     "enabled": "Vérification des mises à jour : activée",
     "disabled": "Vérification des mises à jour : désactivée",
     "unavailable": "Impossible de rechercher automatiquement les mises à jour.",
-    "upToDate": "Arenile est à jour."
+    "upToDate": "Arenile est à jour.",
+    "devBuild": "Version de développement : aucune vérification des mises à jour."
   }
 }

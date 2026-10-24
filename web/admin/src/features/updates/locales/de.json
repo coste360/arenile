@@ -12,6 +12,7 @@
     "enabled": "Update-Prüfung: aktiv",
     "disabled": "Update-Prüfung: deaktiviert",
     "unavailable": "Updates konnten nicht automatisch gesucht werden.",
-    "upToDate": "Arenile ist auf dem neuesten Stand."
+    "upToDate": "Arenile ist auf dem neuesten Stand.",
+    "devBuild": "Entwicklungsversion: keine Update-Prüfung."
   }
 }

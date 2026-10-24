@@ -129,6 +129,26 @@ describe('UpdateCheckStatus', () => {
   });
 });
 
+describe('UpdateCheckStatus on a development build', () => {
+  it('says that no check runs', async () => {
+    render(
+      status({
+        current: 'dev',
+        status: 'disabled',
+        latest: undefined,
+        update_available: false,
+        how_to_update: 'binary',
+      }),
+    );
+    await screen.findByRole('switch', { name: 'Modalità prova attiva' });
+    await userEvent.click(screen.getByRole('button', { name: /Mario Rossi/ }));
+    const info = await screen.findByTestId('update-check-status');
+    expect(
+      within(info).getByText('Versione di sviluppo: nessun controllo degli aggiornamenti.'),
+    ).toBeTruthy();
+  });
+});
+
 describe('update notice helpers', () => {
   it('survives a storage that throws', () => {
     const broken = {

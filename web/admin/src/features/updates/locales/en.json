@@ -12,6 +12,7 @@
     "enabled": "Update check: on",
     "disabled": "Update check: off",
     "unavailable": "Couldn't check for updates automatically.",
-    "upToDate": "Arenile is up to date."
+    "upToDate": "Arenile is up to date.",
+    "devBuild": "Development build: no update check."
   }
 }

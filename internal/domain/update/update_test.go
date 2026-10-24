@@ -52,7 +52,7 @@ func newService(f *fakeServer, c *clock.Fake, current string, how HowTo, enabled
 	return NewService(Deps{
 		Fetcher: updates.Checker{URL: f.URL, Current: current, Edition: "server", GOOS: "linux", GOARCH: "amd64", Client: f.Client()},
 		Current: current, HowTo: how, GOOS: "windows", GOARCH: "amd64", Clock: c,
-		Enabled: enabled.Load, OnNewer: onNewer,
+		Enabled: func(context.Context) bool { return enabled.Load() }, OnNewer: onNewer,
 	})
 }
 
@@ -172,7 +172,7 @@ func TestStatus_DownloadURL(t *testing.T) {
 		s := NewService(Deps{
 			Fetcher: updates.Checker{URL: f.URL, Current: "1.1.0", Client: f.Client()},
 			Current: "1.1.0", HowTo: tt.how, GOOS: tt.goos, GOARCH: "amd64", Clock: c,
-			Enabled: func() bool { return true },
+			Enabled: func(context.Context) bool { return true },
 		})
 		c.Advance(StartDelay)
 		_ = s.Refresh(context.Background())
@@ -235,6 +235,33 @@ func TestStatus_Permissions(t *testing.T) {
 	}
 }
 
+// The switch (a settings file read on desktop) is read only when a check
+// is due, not at every tick of the job.
+func TestRefresh_ReadsSwitchOnlyWhenDue(t *testing.T) {
+	f := newFakeServer(t)
+	c := clock.NewFake(time.Date(2026, 10, 24, 9, 0, 0, 0, time.UTC))
+	var reads atomic.Int32
+	s := NewService(Deps{
+		Fetcher: updates.Checker{URL: f.URL, Current: "1.1.0", Client: f.Client()},
+		Current: "1.1.0", Clock: c,
+		Enabled: func(context.Context) bool { reads.Add(1); return true },
+	})
+	for range 10 { // ticks before StartDelay and between daily checks
+		c.Advance(Tick / 4)
+		_ = s.Refresh(context.Background())
+	}
+	if reads.Load() != 1 || f.hits.Load() != 1 {
+		t.Fatalf("reads=%d hits=%d, want 1 and 1", reads.Load(), f.hits.Load())
+	}
+	for range 30 {
+		c.Advance(Tick)
+		_ = s.Refresh(context.Background())
+	}
+	if reads.Load() != 1 {
+		t.Fatalf("switch read %d times between checks", reads.Load())
+	}
+}
+
 // A failed check is never an error: status "unavailable", and the last
 // successful result is kept for MaxAge, then dropped.
 func TestStatus_States(t *testing.T) {
@@ -275,7 +302,7 @@ func TestStatus_States(t *testing.T) {
 	if st := state(); st.State != StateDisabled {
 		t.Fatalf("disabled: %+v", st)
 	}
-	dev := NewService(Deps{Current: "dev", Enabled: func() bool { return true }})
+	dev := NewService(Deps{Current: "dev", Enabled: func(context.Context) bool { return true }})
 	if st, _ := dev.Status(ctx, owner); st.State != StateDisabled || !st.CheckEnabled {
 		t.Fatalf("dev build: %+v", st)
 	}

@@ -4,7 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
  * M6 acceptance against a running desktop app (spec 28, "Edizione desktop"):
  * not part of `make e2e`, because it needs a fresh desktop data folder.
  *
- *   arenile-desktop -data-dir "$TMP/arenile" -no-browser &
+ *   ARENILE_UPDATE_CHECK=false arenile-desktop -data-dir "$TMP/arenile" -no-browser &
  *   DESKTOP_OPEN_URL="$(jq -r .open_url "$TMP/arenile/instance.json")" \
  *     npx playwright test -c playwright.desktop.config.ts
  *

@@ -148,15 +148,6 @@ func Parse(r io.Reader) (Release, error) {
 	return rel, nil
 }
 
-// Check returns the latest version and whether it is newer than Current.
-func (c Checker) Check(ctx context.Context) (latest string, newer bool, err error) {
-	rel, err := c.Fetch(ctx)
-	if err != nil {
-		return "", false, err
-	}
-	return rel.Version, CompareVersions(rel.Version, c.Current) > 0, nil
-}
-
 // IsRelease reports whether v is a release build: not "dev" nor a
 // development build of scripts/version.sh ("1.1.0-dev.12+abc"). Only
 // releases check for updates, so developers are never nagged.

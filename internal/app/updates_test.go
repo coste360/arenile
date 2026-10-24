@@ -44,7 +44,8 @@ func TestUpdates_WiringAndNoNetworkWhenDisabled(t *testing.T) {
 		{"server on", true, "", nil, 1, update.HowBinary, "(server; "},
 		{"docker on", true, "docker", nil, 1, update.HowDocker, "(server; "},
 		{"desktop setting off", true, "", desktopSettings{updateCheck: false}, 0, update.HowDesktop, ""},
-		{"desktop setting on", false, "", desktopSettings{updateCheck: true}, 1, update.HowDesktop, "(desktop; "},
+		{"desktop setting on", true, "", desktopSettings{updateCheck: true}, 1, update.HowDesktop, "(desktop; "},
+		{"desktop setting on, env off", false, "", desktopSettings{updateCheck: true}, 0, update.HowDesktop, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

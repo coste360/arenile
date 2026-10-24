@@ -162,9 +162,9 @@ func TestChecker_RequestCarriesOnlyTheUserAgent(t *testing.T) {
 	}))
 	defer srv.Close()
 	c := Checker{URL: srv.URL, Current: "v1.0.1", Edition: "desktop", GOOS: "windows", GOARCH: "arm64", Client: srv.Client()}
-	latest, newer, err := c.Check(context.Background())
-	if err != nil || latest != "1.2.0" || !newer {
-		t.Fatalf("Check = %q %v %v", latest, newer, err)
+	rel, err := c.Fetch(context.Background())
+	if err != nil || rel.Version != "1.2.0" || CompareVersions(rel.Version, c.Current) <= 0 {
+		t.Fatalf("Fetch = %+v %v", rel, err)
 	}
 }
 

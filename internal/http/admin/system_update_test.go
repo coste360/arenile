@@ -25,7 +25,7 @@ func TestGetSystemUpdate_Scenarios(t *testing.T) {
 	svc := update.NewService(update.Deps{
 		Fetcher: updates.Checker{URL: srv.URL, Current: "1.1.0", Client: srv.Client()},
 		Current: "1.1.0", HowTo: update.HowDesktop, GOOS: "linux", GOARCH: "amd64", Clock: c,
-		Enabled: func() bool { return true },
+		Enabled: func(context.Context) bool { return true },
 	})
 	c.Advance(update.StartDelay)
 	if err := svc.Refresh(context.Background()); err != nil {
