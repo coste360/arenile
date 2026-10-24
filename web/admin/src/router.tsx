@@ -232,6 +232,12 @@ const emailSettingsRoute = createRoute({
   path: 'config/email',
   component: lazyRouteComponent(() => import('./features/online'), 'EmailSettingsPage'),
 });
+// Editable customer email texts and automatic reminders (ADR 0022).
+const customerEmailsRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/customer-emails',
+  component: lazyRouteComponent(() => import('./features/online'), 'CustomerEmailsPage'),
+});
 
 // ---- M6/M7 devices and desktop edition ----------------------------------------
 // Devices (pairing QR, revoke) and the desktop app settings (desktop edition
@@ -461,6 +467,7 @@ const routeTree = rootRoute.addChildren([
       onlineSettingsRoute,
       paymentSettingsRoute,
       emailSettingsRoute,
+      customerEmailsRoute,
       devicesRoute,
       lanInfoRoute,
       desktopSettingsRoute,

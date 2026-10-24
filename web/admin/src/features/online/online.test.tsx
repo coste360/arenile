@@ -89,6 +89,7 @@ function emailSettings(overrides: Record<string, unknown> = {}) {
       cancellation: true,
       refund: true,
     },
+    reminders: { day_before_time: '18:00', balance_time: '10:00', balance_lead_days: 2 },
     version: 1,
     ...overrides,
   };
@@ -348,8 +349,12 @@ describe('EmailSettingsPage', () => {
     );
     const reply = await screen.findByLabelText('Rispondi a');
     await user.type(reply, 'info@lido.it');
-    // Reminders are not sent yet: their switches are disabled.
-    expect(screen.getByRole('switch', { name: 'Promemoria il giorno prima' })).toBeDisabled();
+    // Reminders live in "Email ai clienti": no switch here, a link instead.
+    expect(screen.queryByRole('switch', { name: 'Promemoria il giorno prima' })).toBeNull();
+    expect(screen.getByRole('link', { name: /si configurano/ })).toHaveAttribute(
+      'href',
+      `/admin/e/${EST_ID}/config/customer-emails`,
+    );
     await user.click(screen.getByRole('switch', { name: 'Cancellazione' }));
     await user.click(screen.getByRole('button', { name: 'Salva' }));
     await waitFor(() => expect(callsTo(fetchMock, 'PUT', `${API}/email-settings`)).toHaveLength(1));

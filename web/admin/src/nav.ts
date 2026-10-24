@@ -17,6 +17,7 @@ import {
   LayersIcon,
   LayoutGridIcon,
   MailIcon,
+  MailPlusIcon,
   MapIcon,
   MonitorIcon,
   PackageIcon,
@@ -225,6 +226,12 @@ export const CONFIG_NAV_ITEMS = [
     icon: BanknoteIcon,
   },
   { to: '/e/$establishmentId/config/email', labelKey: 'nav.config.email', icon: MailIcon },
+  // Editable customer email texts and automatic reminders (ADR 0022).
+  {
+    to: '/e/$establishmentId/config/customer-emails',
+    labelKey: 'nav.config.customerEmails',
+    icon: MailPlusIcon,
+  },
   // Deferred features (ADR 0019): cash registers, test mode, CSV imports.
   {
     to: '/e/$establishmentId/config/cash-registers',

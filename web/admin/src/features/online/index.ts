@@ -4,3 +4,4 @@
 export { OnlineSettingsPage } from './OnlineSettingsPage';
 export { PaymentSettingsPage } from './PaymentSettingsPage';
 export { EmailSettingsPage } from './EmailSettingsPage';
+export { CustomerEmailsPage } from './CustomerEmailsPage';

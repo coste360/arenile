@@ -181,7 +181,7 @@
       "day_before_reminder": "Reminder the day before",
       "cancellation": "Cancellation",
       "refund": "Refund or credit",
-      "upcoming": "Coming in a future version: not sent yet."
+      "remindersMoved": "Balance and day-before reminders are set in \"Customer emails\"."
     },
     "manager": {
       "new_online_booking": "New online booking",
@@ -234,6 +234,84 @@
       "manager_approval_requested": "Request to approve",
       "manager_payment_failed": "Payment failed",
       "manager_delivery_failed": "Email not delivered"
+    }
+  },
+  "customerEmails": {
+    "title": "Customer emails",
+    "description": "Automatic reminders and the texts of the emails your customers receive, in every language.",
+    "reminders": {
+      "title": "Automatic reminders",
+      "description": "Arenile sends them on its own, once per booking, in the establishment timezone.",
+      "dayBefore": "Day-before reminder",
+      "dayBeforeHint": "The day before arrival at {{time}}, with QR and summary.",
+      "dayBeforeTime": "Send time of the day-before reminder",
+      "balance": "Balance reminder",
+      "balanceHint": "At {{time}}, before the balance due date set by the policy.",
+      "balanceTime": "Send time of the balance reminder",
+      "leadDays": "When, compared to the balance due date",
+      "leadOption_one": "{{count}} day before",
+      "leadOption_other": "{{count}} days before",
+      "leadOption_zero": "On the due date",
+      "rules": "Not sent for test, cancelled or expired bookings, customers without email and, for the balance, when nothing is left to pay. The balance due date comes from the booking policy (\"N days before\" or on arrival)."
+    },
+    "editor": {
+      "title": "Email texts",
+      "description": "Subject, opening text, closing text and signature of every email. QR, summary, amounts, manage link and footer stay fixed; logo and colours come from the theme.",
+      "kind": "Email",
+      "locale": "Language",
+      "customized": "Customised",
+      "default": "Default text",
+      "subject": "Subject",
+      "opening": "Opening text",
+      "closing": "Closing text",
+      "signature": "Signature",
+      "counter": "{{count}} of {{max}} characters. Plain text: an empty line separates paragraphs.",
+      "insert": "Insert placeholder",
+      "insertHint": "Into the selected field",
+      "fixed": "Fixed blocks between opening and closing text: {{blocks}}.",
+      "sendTest": "Send a test to me",
+      "testQueued": "Test email queued for {{to}}.",
+      "restore": "Restore default",
+      "restoreTitle": "Restore the default text?",
+      "restoreDescription": "The customised texts of this email and language will be deleted.",
+      "restored": "Default text restored."
+    },
+    "preview": {
+      "title": "Preview",
+      "subject": "Subject",
+      "frame": "Email preview",
+      "sample": "With a sample booking: no real customer data.",
+      "invalid": "Fix the texts to update the preview."
+    },
+    "placeholders": {
+      "nome": "Customer first name",
+      "cognome": "Customer last name",
+      "codice": "Booking code",
+      "data": "Dates of the stay",
+      "postazione": "Spots",
+      "stabilimento": "Establishment name",
+      "importo": "Amount (total or refund)",
+      "saldo": "Balance due",
+      "scadenza": "Balance due date"
+    },
+    "blocks": {
+      "summary": "summary and amounts",
+      "qr": "QR code",
+      "manage_button": "manage link",
+      "policy": "cancellation terms",
+      "ics_note": "calendar note",
+      "balance_notice": "balance and due date"
+    },
+    "locales": {
+      "it": "Italian",
+      "en": "English",
+      "de": "German",
+      "fr": "French"
+    },
+    "validation": {
+      "tooLong": "Text too long.",
+      "placeholder": "Unknown placeholder: use only those in the list.",
+      "oneLine": "The subject must fit on one line."
     }
   }
 }

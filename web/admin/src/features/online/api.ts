@@ -26,6 +26,12 @@ export type EmailSettings = Schemas['EmailSettings'];
 export type EmailSettingsInput = Schemas['EmailSettingsInput'];
 export type MessageLogEntry = Schemas['MessageLogEntry'];
 export type MessageStatus = Schemas['MessageStatus'];
+export type EmailTemplate = Schemas['EmailTemplate'];
+export type EmailTemplateTexts = Schemas['EmailTemplateTexts'];
+export type EmailTemplateKind = Schemas['EmailTemplateKind'];
+export type EmailLocale = Schemas['EmailLocale'];
+export type EmailTemplateList = Schemas['EmailTemplateList'];
+export type EmailTemplatePreview = Schemas['EmailTemplatePreview'];
 
 export const onlineKeys = {
   settings: (id: string) => ['online', id, 'settings'] as const,
@@ -33,6 +39,7 @@ export const onlineKeys = {
   payments: (id: string) => ['online', id, 'payments'] as const,
   email: (id: string) => ['online', id, 'email'] as const,
   messages: (id: string, status?: string) => ['online', id, 'messages', status ?? ''] as const,
+  templates: (id: string) => ['online', id, 'email-templates'] as const,
 };
 
 const path = (establishmentId: string) => ({ path: { establishmentId } });
@@ -206,5 +213,128 @@ export function useMessages(establishmentId: string, status?: MessageStatus) {
       ),
     retry: shouldRetry,
     refetchInterval: 15_000,
+  });
+}
+
+// ---- editable customer email texts (ADR 0022) ---------------------------------
+
+const templatePath = (establishmentId: string, kind: EmailTemplateKind, locale: EmailLocale) => ({
+  path: { establishmentId, kind, locale },
+});
+
+export function useEmailTemplates(establishmentId: string) {
+  const client = useApiClient();
+  return useQuery<EmailTemplateList, ApiProblem>({
+    queryKey: onlineKeys.templates(establishmentId),
+    queryFn: () =>
+      call(() =>
+        client.GET('/api/admin/v1/establishments/{establishmentId}/email-templates', {
+          params: path(establishmentId),
+        }),
+      ),
+    retry: shouldRetry,
+  });
+}
+
+interface TemplateTarget {
+  kind: EmailTemplateKind;
+  locale: EmailLocale;
+}
+
+/** Replaces one template in the cached list (save and restore answers). */
+function storeTemplate(
+  qc: ReturnType<typeof useQueryClient>,
+  establishmentId: string,
+  t: EmailTemplate,
+) {
+  qc.setQueryData<EmailTemplateList>(onlineKeys.templates(establishmentId), (old) =>
+    old
+      ? {
+          ...old,
+          items: old.items.map((i) => (i.kind === t.kind && i.locale === t.locale ? t : i)),
+        }
+      : old,
+  );
+}
+
+export function useUpdateEmailTemplate(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<
+    EmailTemplate,
+    ApiProblem,
+    TemplateTarget & { version: number; body: EmailTemplateTexts }
+  >({
+    mutationFn: ({ kind, locale, version, body }) =>
+      call(() =>
+        client.PUT(
+          '/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}',
+          {
+            params: {
+              ...templatePath(establishmentId, kind, locale),
+              header: { 'If-Match': ifMatch(version) },
+            },
+            body,
+          },
+        ),
+      ),
+    onSuccess: (t) => storeTemplate(qc, establishmentId, t),
+  });
+}
+
+export function useResetEmailTemplate(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<EmailTemplate, ApiProblem, TemplateTarget & { version: number }>({
+    mutationFn: ({ kind, locale, version }) =>
+      call(() =>
+        client.DELETE(
+          '/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}',
+          {
+            params: {
+              ...templatePath(establishmentId, kind, locale),
+              header: { 'If-Match': ifMatch(version) },
+            },
+          },
+        ),
+      ),
+    onSuccess: (t) => storeTemplate(qc, establishmentId, t),
+  });
+}
+
+export function usePreviewEmailTemplate(establishmentId: string) {
+  const client = useApiClient();
+  return useMutation<
+    EmailTemplatePreview,
+    ApiProblem,
+    TemplateTarget & { body: EmailTemplateTexts }
+  >({
+    mutationFn: ({ kind, locale, body }) =>
+      call(() =>
+        client.POST(
+          '/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/preview',
+          { params: templatePath(establishmentId, kind, locale), body },
+        ),
+      ),
+  });
+}
+
+export function useSendEmailTemplateTest(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<
+    Schemas['MessageQueued'],
+    ApiProblem,
+    TemplateTarget & { body: EmailTemplateTexts }
+  >({
+    mutationFn: ({ kind, locale, body }) =>
+      call(() =>
+        client.POST(
+          '/api/admin/v1/establishments/{establishmentId}/email-templates/{kind}/{locale}/test',
+          { params: templatePath(establishmentId, kind, locale), body },
+        ),
+      ),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: ['online', establishmentId, 'messages'] }),
   });
 }
