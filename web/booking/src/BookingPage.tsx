@@ -76,13 +76,14 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
     });
   }, [establishment, location.embed, t, theme, i18n.language]);
 
-  if (!location.slug) return <Message role="alert">{t('booking.notFound')}</Message>;
+  if (!location.slug) return <Message>{t('booking.notFound')}</Message>;
   if (query.isPending) return <Loading label={t('common.loading')} />;
   if (query.isError) {
     const notFound = query.error instanceof ApiProblem && query.error.status === 404;
     return (
       <main className="mx-auto max-w-xl space-y-4 px-4 py-12 text-center">
-        <div role="alert">
+        {/* Not found is the page's static content; a failed load is an alert. */}
+        <div role={notFound ? 'status' : 'alert'}>
           <h1 className="text-base font-normal text-muted-foreground">
             {notFound
               ? t('booking.notFound')

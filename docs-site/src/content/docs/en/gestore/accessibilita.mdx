@@ -68,8 +68,9 @@ is still a page more customers can use.
   and dark** theme; an automated test checks every colour pair.
 - When you choose your beach's main colour, Arenile works out the text colour on top of it (white or dark) so it
   stays readable, whatever colour you pick.
-- Colour is never the only cue: in the calendar full or closed days are **struck through** as well as dimmed and
-  days with the last spots have a **dot**; on the map and in the list the status is written out.
+- In the calendar and in the list of spots colour is never the only cue: full or closed days are **struck
+  through** as well as dimmed, days with the last spots have a **dot** and the list writes each spot's status out.
+  For the map see the [known limits](#known-limits).
 
 ### Motion, zoom and small screens
 
@@ -102,6 +103,9 @@ Plainly, what is not yet as we would like:
 - **The map is a drawing.** It works with a screen reader, but the list of spots is easier; on the map the
   difference between free and unavailable spots is mostly given by tone (unavailable spots are dimmed). The full
   status is in each spot's name and in the list.
+- **Names of the list buttons.** The spoken name of the list buttons joins spot and status with a dash the
+  visible text lacks ("A1 – Free" against "A1 Free"): voice control users saying the visible text may not be
+  recognised. It is the only automated check turned off, on that view, until it is fixed.
 - **Long lists.** In the list every free spot is a tab stop: on a beach with many spots it takes several Tab
   presses to reach "Next" (Shift+Tab goes back).
 - **Online payment.** The payment page is Stripe's, not Arenile's: its accessibility depends on Stripe.
@@ -142,8 +146,8 @@ How to use it
 - The whole booking can be completed with the keyboard only.
 - It works with screen readers; as an alternative to the map of spots there is a list,
   opened with the "Show as a list" button.
-- Text meets minimum contrast, colour is not the only way to show the status of spots and
-  days, the page adapts to zoom up to 200 % and follows the device's "reduce motion"
+- Text meets minimum contrast, in the calendar and in the list of spots colour is not the
+  only way to show status, the page adapts to zoom up to 200 % and follows the device's "reduce motion"
   preference.
 - It is available in Italian, English, German and French.
 

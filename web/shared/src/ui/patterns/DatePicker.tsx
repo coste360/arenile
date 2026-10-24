@@ -1,5 +1,5 @@
 import { CalendarIcon, XIcon } from 'lucide-react';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@arenile/shared/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@arenile/shared/ui/popover';
@@ -37,12 +37,25 @@ const triggerClass =
   'w-full min-w-0 justify-start gap-2 overflow-hidden bg-transparent px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-56 sm:max-w-full dark:bg-input/30';
 
 /**
- * Accessible name of a trigger labelled with `aria-label`: the label plus the
- * visible text, so the name contains what is on screen (WCAG 2.5.3 Label in
- * Name; speech users say what they see).
+ * Naming of the trigger so the name contains what is on screen (WCAG 2.5.3
+ * Label in Name; speech users say what they see): `aria-label` becomes
+ * "label: visible text", `aria-labelledby` also references the visible text
+ * (unless it already points at the trigger itself).
  */
-function nameWithValue(label: string | undefined, visible: string): string | undefined {
-  return label ? `${label}: ${visible}` : undefined;
+function triggerName(
+  props: { id?: string; 'aria-label'?: string; 'aria-labelledby'?: string },
+  visible: string,
+  valueId: string,
+): { 'aria-label'?: string; 'aria-labelledby'?: string } {
+  const labelledBy = props['aria-labelledby'];
+  if (labelledBy) {
+    const ids = labelledBy.split(/\s+/);
+    return {
+      'aria-labelledby':
+        props.id && ids.includes(props.id) ? labelledBy : `${labelledBy} ${valueId}`,
+    };
+  }
+  return props['aria-label'] ? { 'aria-label': `${props['aria-label']}: ${visible}` } : {};
 }
 
 function CalendarLoading({ label, wide }: { label: string; wide?: boolean }) {
@@ -76,9 +89,11 @@ export function DatePicker({
   className,
   disabled,
   'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
   ...aria
 }: DatePickerProps) {
   const { t } = useTranslation();
+  const valueId = useId();
   const [open, setOpen] = useState(false);
   const selected = isoToDate(value);
   const visible =
@@ -92,11 +107,15 @@ export function DatePicker({
             disabled={disabled}
             data-empty={!selected}
             className={triggerClass}
-            aria-label={nameWithValue(ariaLabel, visible)}
             {...aria}
+            {...triggerName(
+              { id: aria.id, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy },
+              visible,
+              valueId,
+            )}
           >
             <CalendarIcon aria-hidden="true" className="text-muted-foreground" />
-            {visible}
+            <span id={valueId}>{visible}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -152,9 +171,11 @@ export function DateRangePicker({
   className,
   disabled,
   'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
   ...aria
 }: DateRangePickerProps) {
   const { t } = useTranslation();
+  const valueId = useId();
   const from = isoToDate(value?.from);
   const label =
     from && value
@@ -169,11 +190,15 @@ export function DateRangePicker({
             disabled={disabled}
             data-empty={!from}
             className={cn(triggerClass, 'sm:w-72 sm:max-w-full')}
-            aria-label={nameWithValue(ariaLabel, label)}
             {...aria}
+            {...triggerName(
+              { id: aria.id, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy },
+              label,
+              valueId,
+            )}
           >
             <CalendarIcon aria-hidden="true" className="text-muted-foreground" />
-            {label}
+            <span id={valueId}>{label}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

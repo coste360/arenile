@@ -123,6 +123,16 @@ describe('DatePicker', () => {
     expect(onChange).toHaveBeenCalledWith(`${year}-06-12`);
   });
 
+  it('adds the visible date to an aria-labelledby name', () => {
+    renderWithI18n(
+      <>
+        <span id="lbl">Scadenza</span>
+        <DatePicker aria-labelledby="lbl" value="2026-07-14" onChange={vi.fn()} />
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Scadenza 14/07/2026' })).toBeInTheDocument();
+  });
+
   it('names an empty field with its label and the placeholder shown', () => {
     renderWithI18n(<DatePicker aria-label="Scadenza" value={undefined} onChange={vi.fn()} />);
     const trigger = screen.getByRole('button', { name: /^Scadenza: / });

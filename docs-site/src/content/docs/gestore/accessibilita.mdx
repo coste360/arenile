@@ -71,8 +71,9 @@ a usare.
   del focus, in tema **chiaro e scuro**; un test automatico lo verifica per ogni coppia di colori.
 - Quando scegli il colore principale del tuo lido, Arenile calcola da solo il colore del testo sopra (bianco o
   scuro) perché resti leggibile, qualunque colore tu scelga.
-- Il colore non è mai l'unico segnale: nel calendario i giorni pieni o chiusi sono **barrati** oltre che attenuati
-  e i giorni con gli ultimi posti hanno un **punto**; nella mappa e nell'elenco lo stato è scritto per esteso.
+- Nel calendario e nell'elenco delle postazioni il colore non è mai l'unico segnale: i giorni pieni o chiusi sono
+  **barrati** oltre che attenuati, i giorni con gli ultimi posti hanno un **punto** e nell'elenco lo stato di ogni
+  postazione è scritto per esteso. Sulla mappa vedi i [limiti noti](#limiti-noti).
 
 ### Movimento, zoom e schermi piccoli
 
@@ -107,6 +108,10 @@ Diciamo con franchezza cosa non è ancora come vorremmo:
 - **La mappa è un disegno.** Con un lettore di schermo si usa, ma l'elenco delle postazioni è più comodo; sulla
   mappa la differenza tra postazioni libere e non disponibili è data soprattutto dal tono (le non disponibili sono
   attenuate). Lo stato completo è nel nome di ogni postazione e nell'elenco.
+- **Nome dei pulsanti dell'elenco.** Il nome letto dei pulsanti dell'elenco unisce postazione e stato con un
+  trattino che il testo visibile non ha ("A1 – Libero" contro "A1 Libero"): chi usa il controllo vocale può non
+  essere riconosciuto pronunciando il testo visibile. È l'unico controllo automatico escluso, su quella vista, in
+  attesa della correzione.
 - **Elenchi lunghi.** Nell'elenco ogni postazione libera è un punto di tabulazione: in un lido con molte postazioni
   servono parecchi Tab per arrivare ad "Avanti" (Maiusc+Tab torna indietro).
 - **Pagamento online.** La pagina di pagamento è di Stripe, non di Arenile: la sua accessibilità dipende da Stripe.
@@ -149,8 +154,8 @@ Come si usa
 - Tutta la prenotazione si completa con la sola tastiera.
 - È compatibile con i lettori di schermo; in alternativa alla mappa delle postazioni è
   disponibile un elenco, con il pulsante "Mostra come elenco".
-- Il testo rispetta il contrasto minimo, il colore non è l'unico modo per indicare lo stato
-  delle postazioni e dei giorni, la pagina si adatta allo zoom fino al 200 % e rispetta la
+- Il testo rispetta il contrasto minimo, nel calendario e nell'elenco delle postazioni il
+  colore non è l'unico modo per indicare lo stato, la pagina si adatta allo zoom fino al 200 % e rispetta la
   preferenza "riduci movimento" del dispositivo.
 - È disponibile in italiano, inglese, tedesco e francese.
 

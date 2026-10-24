@@ -164,12 +164,14 @@ describe('BookingPage', () => {
           headers: { 'Content-Type': 'application/problem+json' },
         }),
     );
-    expect(await screen.findByRole('alert')).toHaveTextContent('Stabilimento non trovato.');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Stabilimento non trovato.' }),
+    ).toBeInTheDocument();
   });
 
   it('rejects invalid slugs without calling the API', () => {
     renderPage('/b/', ok());
-    expect(screen.getByRole('alert')).toHaveTextContent('Stabilimento non trovato.');
+    expect(screen.getByRole('status')).toHaveTextContent('Stabilimento non trovato.');
   });
 });
 

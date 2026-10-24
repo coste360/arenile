@@ -24,9 +24,14 @@ async function seriousViolations(
   page: Page,
   opts: { disable?: string[]; exclude?: string } = {},
 ): Promise<string[]> {
-  // axe samples colours mid-transition otherwise.
+  // axe samples colours mid-transition otherwise; endless animations
+  // (spinners, skeletons) never settle and are ignored.
   await page.waitForFunction(() =>
-    document.getAnimations().every((a) => a.playState !== "running"),
+    document
+      .getAnimations()
+      .every(
+        (a) => a.playState !== "running" || a.effect?.getComputedTiming().iterations === Infinity,
+      ),
   );
   let builder = new AxeBuilder({ page }).withTags(AXE_TAGS);
   if (opts.disable?.length) builder = builder.disableRules(opts.disable);
@@ -102,6 +107,7 @@ test.describe("public booking page", () => {
     await expect(page.getByRole("list", { name: "Disponibilità" })).toBeVisible();
     expect(await seriousViolations(page), "1 Quando (calendar)").toEqual([]);
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("button", { name: /Date del soggiorno/ })).toBeFocused();
 
     await pickJuneDay(page, 9);
     expect(await seriousViolations(page), "1 Quando (dates chosen)").toEqual([]);
@@ -165,12 +171,14 @@ test.describe("public booking page", () => {
     await page.goto(await manageLink(email));
     await expect(page.getByRole("heading", { level: 1, name: "La tua prenotazione" })).toBeVisible();
     expect(await seriousViolations(page), "manage").toEqual([]);
+    // The demo policy lets a booking far in the future be modified and cancelled.
     for (const name of ["Cambia date", "Cancella la prenotazione"]) {
       const trigger = page.getByRole("button", { name, exact: true }).first();
-      if ((await trigger.count()) === 0) continue;
+      await expect(trigger).toBeVisible();
       await trigger.click();
       await expect(trigger).toHaveAttribute("aria-expanded", "true");
     }
+    // The refund preview button only shows when something was paid.
     const refund = page.getByRole("button", { name: "Vedi rimborso" });
     if ((await refund.count()) > 0) {
       await refund.click();
@@ -181,16 +189,14 @@ test.describe("public booking page", () => {
     // The cancel confirmation: a focus-trapped alert dialog (the second
     // "Cancella la prenotazione" button, inside its panel).
     const cancel = page.getByRole("button", { name: "Cancella la prenotazione", exact: true }).nth(1);
-    if ((await cancel.count()) > 0) {
-      await cancel.click();
-      const dialog = page.getByRole("alertdialog");
-      await expect(dialog).toBeVisible();
-      await expect(dialog.locator(":focus")).toHaveCount(1);
-      expect(await seriousViolations(page), "manage (cancel dialog)").toEqual([]);
-      await page.keyboard.press("Escape");
-      await expect(dialog).toBeHidden();
-      await expect(cancel).toBeFocused();
-    }
+    await cancel.click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator(":focus")).toHaveCount(1);
+    expect(await seriousViolations(page), "manage (cancel dialog)").toEqual([]);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(cancel).toBeFocused();
   });
 
   test("invalid manage link and unknown establishment have no serious violations", async ({
