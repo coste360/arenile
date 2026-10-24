@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { statusesBySpot } from "../../web/admin/src/features/operations/lib/status";
 import { AdminApi, ApiError, type Schemas } from "./support/api";
 import { DATA_DIR, DEMO_SLUG, runFile } from "./support/env";
+import { seedDailySale } from "./support/tickets";
 import type { RunContext } from "./support/context";
 
 /**
@@ -104,6 +105,8 @@ setup("demo context and data snapshots", async ({ playwright, baseURL }) => {
   mkdirSync(DATA_DIR, { recursive: true });
   await writeMapSnapshot(api, E, ctx, est);
   await writePricingSnapshot(api, E, ctx, est, season);
+  // After the snapshots: the live components keep the plain demo day.
+  await seedDailySale(api, E, ctx);
   await request.dispose();
 });
 

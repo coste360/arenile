@@ -99,6 +99,51 @@ const PREPARE: Record<string, Prepare> = {
   "public-who-desktop": (page, _c, _e, seat) => publicStep(page, "who", seat),
   "public-embed": embedReady,
   "public-embed-mobile": embedReady,
+  // Daily sale and tickets (ADR 0020): data from support/tickets.ts.
+  "admin-daily-sale": async (page) => {
+    await page.getByRole("radio", { name: /Solo zona/ }).click();
+    await page.getByRole("radiogroup", { name: "Zona" }).getByRole("radio", { name: /File successive/ }).click();
+    await expect(page.getByTestId("sale-total")).toHaveText(/€/);
+  },
+  "admin-daily-sale-map": async (page) => {
+    await page.getByRole("button", { name: /^Postazione .*: Libero/ }).first().click();
+    await page.getByRole("dialog").getByRole("button", { name: "Vendi giornata" }).click();
+    const sale = page.getByRole("dialog", { name: "Vendi giornata" });
+    await expect(sale.getByTestId("sale-total")).toHaveText(/€/);
+  },
+  "admin-ticket-print": async (page) => {
+    await page.getByRole("button", { name: "Stampa il biglietto #001" }).click();
+    const dialog = page.getByRole("dialog", { name: "Stampa del biglietto #001" });
+    await expect(dialog.getByRole("article", { name: "Biglietto #001" })).toBeVisible();
+  },
+  "admin-tickets": async (page) => {
+    await expect(page.getByRole("table", { name: "Ticket del giorno" }).getByText("#006")).toBeVisible();
+  },
+  "admin-assign-panel": async (page) => {
+    const panel = page.getByTestId("assign-panel");
+    await panel.getByRole("button", { name: /^Biglietto #/ }).first().click();
+    await expect(panel.getByRole("status")).toBeVisible();
+  },
+  "admin-entry-types": async (page) => {
+    await expect(page.getByText("Ridotto").first()).toBeVisible();
+  },
+  "admin-entry-sale": async (page) => {
+    await page.getByRole("button", { name: "Aumenta Adulto" }).click();
+    await page.getByRole("button", { name: "Aumenta Adulto" }).click();
+    await page.getByRole("button", { name: "Aumenta Bambino" }).click();
+    await expect(page.getByText(/posti rimasti/)).toBeVisible();
+  },
+  "admin-entry-gate-mobile": async (page, ctx) => {
+    // The gate admits only today's tickets (server clock) and the demo day is
+    // in the future: the shot shows the page ready with a code typed in.
+    const res = await page.request.get(
+      `/api/admin/v1/establishments/${ctx.est}/tickets?date=${ctx.date}&kind=entry`,
+    );
+    const items = ((await res.json()) as { items: { booking_code: string }[] }).items;
+    if (!items[0]) throw new Error("no entry ticket on the demo day");
+    await page.getByLabel("Codice del biglietto").fill(items[0].booking_code);
+    await expect(page.getByRole("button", { name: "Verifica" })).toBeEnabled();
+  },
 };
 
 async function embedReady(page: Page, ctx: RunContext) {
