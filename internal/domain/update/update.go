@@ -11,6 +11,10 @@
 //     "-dev." builds of scripts/version.sh): developers are never nagged;
 //   - first check StartDelay after start-up, then every Interval with the
 //     injected clock; a failed check is retried after RetryAfter;
+//   - a manual check ("Verifica aggiornamenti", CheckNow and Check) runs
+//     at once, but at most once every ManualMinInterval (any earlier
+//     attempt counts) and never two at a time: a caller that finds a check
+//     running waits for its result;
 //   - network errors are logged at debug level and never reach users: the
 //     status becomes StateUnavailable (a neutral line in the panel, never
 //     an error) and the last successful result is kept for MaxAge.
@@ -38,6 +42,9 @@ const (
 	Tick = time.Minute
 	// MaxAge is how long a successful result is kept when later checks fail.
 	MaxAge = 7 * 24 * time.Hour
+	// ManualMinInterval is the shortest time between two network checks
+	// started by hand: repeated clicks never hammer the update server.
+	ManualMinInterval = time.Minute
 )
 
 // State is the outcome of the check (api.SystemUpdate.status).
@@ -102,6 +109,12 @@ type Status struct {
 	HowTo           HowTo
 	CheckEnabled    bool
 	CheckedAt       time.Time
+	// Pending: the check is on but its first attempt has not run yet.
+	Pending bool
+	// LastAttemptAt is the last check attempt, successful or not.
+	LastAttemptAt time.Time
+	// GOOS and GOARCH of the installation (label of the download).
+	GOOS, GOARCH string
 }
 
 // Service caches the latest release.
@@ -115,6 +128,9 @@ type Service struct {
 	lastAttempt time.Time
 	lastFailed  bool
 	notified    string
+	// inflight is closed when the running network check ends (nil when
+	// none runs): a manual check waits for it instead of starting another.
+	inflight chan struct{}
 }
 
 // NewService returns a Service. A nil Enabled means disabled.
@@ -154,39 +170,90 @@ func (s *Service) Refresh(ctx context.Context) error {
 		return nil
 	}
 	s.mu.Lock()
-	if due = s.dueLocked(now); due {
-		s.lastAttempt = now
+	if due = s.inflight == nil && s.dueLocked(now); due {
+		s.startLocked(now)
 	}
 	s.mu.Unlock()
-	if !due {
-		return nil
+	if due {
+		s.fetch(ctx, now)
 	}
+	return nil
+}
 
-	rel, err := s.d.Fetcher.Fetch(ctx)
-	if err != nil {
+// CheckNow runs the check at once ("Verifica aggiornamenti" of the panel)
+// and returns the fresh status. Same permissions as Status. With the check
+// off or a development version it makes no network call (StateDisabled).
+// Within ManualMinInterval of the last attempt it answers from memory; a
+// check already running is waited for. A failed check is not an error
+// (StateUnavailable).
+func (s *Service) CheckNow(ctx context.Context, p *auth.Principal) (Status, error) {
+	if err := authorize(p); err != nil {
+		return Status{}, err
+	}
+	return s.Check(ctx), nil
+}
+
+// Check is CheckNow for the desktop launcher (menu "Verifica
+// aggiornamenti", in-process, no principal: the operator of the machine).
+func (s *Service) Check(ctx context.Context) Status {
+	if s.d.Fetcher != nil && updates.IsRelease(s.d.Current) && s.d.Enabled(ctx) {
+		now := s.d.Clock.Now()
 		s.mu.Lock()
+		wait := s.inflight
+		start := wait == nil && (s.lastAttempt.IsZero() || now.Sub(s.lastAttempt) >= ManualMinInterval)
+		if start {
+			s.startLocked(now)
+		}
+		s.mu.Unlock()
+		switch {
+		case start:
+			s.fetch(ctx, now)
+		case wait != nil:
+			select {
+			case <-wait:
+			case <-ctx.Done():
+			}
+		}
+	}
+	return s.status(ctx)
+}
+
+// startLocked records the start of a network check (s.mu held).
+func (s *Service) startLocked(now time.Time) {
+	s.lastAttempt = now
+	s.inflight = make(chan struct{})
+}
+
+// fetch runs the network check started by startLocked and records its
+// outcome. Network errors are logged at debug level only.
+func (s *Service) fetch(ctx context.Context, now time.Time) {
+	rel, err := s.d.Fetcher.Fetch(ctx)
+	s.mu.Lock()
+	done := s.inflight
+	s.inflight = nil
+	if err != nil {
 		s.lastFailed = true
 		s.mu.Unlock()
+		close(done)
 		if ctx.Err() == nil {
 			s.d.Log.DebugContext(ctx, "update check failed", slog.String("error", err.Error()))
 		}
-		return nil
+		return
 	}
 	newer := updates.CompareVersions(rel.Version, s.d.Current) > 0
-	s.mu.Lock()
 	s.release, s.checkedAt, s.lastFailed = &rel, now, false
 	notify := newer && s.notified != rel.Version
 	if notify {
 		s.notified = rel.Version
 	}
 	s.mu.Unlock()
+	close(done)
 	if newer {
 		s.d.Log.InfoContext(ctx, "a new Arenile version is available", slog.String("current", s.d.Current), slog.String("latest", rel.Version))
 	}
 	if notify && s.d.OnNewer != nil {
 		s.d.OnNewer(rel.Version)
 	}
-	return nil
 }
 
 func (s *Service) dueLocked(now time.Time) bool {
@@ -207,19 +274,30 @@ func (s *Service) Status(ctx context.Context, p *auth.Principal) (Status, error)
 	if err := authorize(p); err != nil {
 		return Status{}, err
 	}
-	st := Status{Current: s.d.Current, State: StateOK, HowTo: s.d.HowTo, CheckEnabled: s.d.Enabled(ctx)}
+	return s.status(ctx), nil
+}
+
+func (s *Service) status(ctx context.Context) Status {
+	st := Status{
+		Current: s.d.Current, State: StateOK, HowTo: s.d.HowTo, CheckEnabled: s.d.Enabled(ctx),
+		GOOS: s.d.GOOS, GOARCH: s.d.GOARCH,
+	}
 	if !st.CheckEnabled || !updates.IsRelease(s.d.Current) {
 		st.State = StateDisabled
-		return st, nil
+		return st
 	}
 	s.mu.Lock()
-	rel, checkedAt, failed := s.release, s.checkedAt, s.lastFailed
+	rel, checkedAt, failed, attempt := s.release, s.checkedAt, s.lastFailed, s.lastAttempt
 	s.mu.Unlock()
+	st.LastAttemptAt = attempt
+	// Before the first check ends (not run yet, or running). No Fetcher:
+	// nothing will ever be checked, so nothing is pending.
+	st.Pending = s.d.Fetcher != nil && rel == nil && !failed
 	if failed {
 		st.State = StateUnavailable
 	}
 	if rel == nil || s.d.Clock.Now().Sub(checkedAt) > MaxAge {
-		return st, nil
+		return st
 	}
 	st.Latest, st.PublishedAt, st.ReleaseNotesURL, st.CheckedAt = rel.Version, rel.PublishedAt, rel.ReleaseNotes, checkedAt
 	st.UpdateAvailable = updates.CompareVersions(rel.Version, s.d.Current) > 0
@@ -235,7 +313,7 @@ func (s *Service) Status(ctx context.Context, p *auth.Principal) (Status, error)
 		}
 	case HowDocker:
 	}
-	return st, nil
+	return st
 }
 
 func authorize(p *auth.Principal) error {

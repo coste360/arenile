@@ -8878,6 +8878,36 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
+  /api/admin/v1/system/update/check:
+    post:
+      operationId: checkSystemUpdate
+      tags: [meta]
+      summary: Verifica subito se c'è una nuova versione di Arenile
+      description: >-
+        ADR 0025. Esegue subito il controllo degli aggiornamenti ("Verifica aggiornamenti") e restituisce lo
+        stato aggiornato, come `getSystemUpdate`. Il server limita i controlli: se ne è già avvenuto uno (automatico
+        o manuale) nell'ultimo minuto, o uno è in corso, risponde con lo stato in memoria senza chiamate di rete.
+        Con il controllo spento (`ARENILE_UPDATE_CHECK=false`, impostazione `update_check` dell'app desktop) o
+        con una versione di sviluppo non fa chiamate di rete e risponde `status: disabled`. Un controllo non
+        riuscito non è un errore: risponde `200` con `status: unavailable`. Solo titolari e gestori (permesso
+        `establishment.configure` su almeno uno stabilimento); le chiavi API non hanno accesso.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: Stato degli aggiornamenti dopo il controllo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemUpdate"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
   /api/admin/v1/establishments/{establishmentId}/devices/pairing-codes:
     post:
       operationId: createDevicePairingCode
@@ -22012,7 +22042,7 @@ components:
       description: >-
         Stato dell'avviso di nuova versione (ADR 0025). `latest`, `published_at`, `release_notes_url` e
         `download_url` sono presenti solo dopo un controllo riuscito negli ultimi 7 giorni.
-      required: [current, status, update_available, how_to_update, check_enabled]
+      required: [current, status, update_available, how_to_update, check_enabled, pending]
       properties:
         current:
           type: string
@@ -22021,7 +22051,7 @@ components:
           type: string
           enum: [ok, unavailable, disabled]
           description: >-
-            `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo
+            `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto, vedi `pending`); `unavailable`: l'ultimo
             controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per
             l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli
             ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
@@ -22055,6 +22085,21 @@ components:
           type: string
           format: date-time
           description: Ultimo controllo riuscito (UTC).
+        pending:
+          type: boolean
+          description: >-
+            Vero finché il primo controllo dopo l'avvio non è avvenuto (controllo attivo, versione di release): il
+            pannello rilegge lo stato a breve invece di attendere il prossimo aggiornamento orario.
+        last_attempt_at:
+          type: string
+          format: date-time
+          description: Ultimo tentativo di controllo, riuscito o no (UTC).
+        os:
+          type: string
+          description: Sistema operativo dell'installazione (`darwin`, `windows`, `linux`), per l'etichetta del download.
+        arch:
+          type: string
+          description: Architettura dell'installazione (`amd64`, `arm64`), per l'etichetta del download.
     DesktopSettings:
       type: object
       required: [backup_dir, backup_retention, backup_daily, backup_on_exit, update_check, autostart, lan_enabled]

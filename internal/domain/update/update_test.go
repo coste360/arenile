@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -305,5 +306,101 @@ func TestStatus_States(t *testing.T) {
 	dev := NewService(Deps{Current: "dev", Enabled: func(context.Context) bool { return true }})
 	if st, _ := dev.Status(ctx, owner); st.State != StateDisabled || !st.CheckEnabled {
 		t.Fatalf("dev build: %+v", st)
+	}
+}
+
+// "Verifica aggiornamenti": the manual check runs at once (also before
+// StartDelay), at most once per ManualMinInterval, and never on the
+// network when the check is off or the version is a development build.
+func TestCheckNow_Scenarios(t *testing.T) {
+	f := newFakeServer(t)
+	c := clock.NewFake(time.Date(2026, 10, 24, 9, 0, 0, 0, time.UTC))
+	var on atomic.Bool
+	on.Store(true)
+	var notified []string
+	s := newService(f, c, "1.1.0", HowDesktop, &on, func(v string) { notified = append(notified, v) })
+	ctx := context.Background()
+
+	if st, _ := s.Status(ctx, owner); !st.Pending || !st.LastAttemptAt.IsZero() || st.GOOS != "windows" || st.GOARCH != "amd64" {
+		t.Fatalf("before any check: %+v", st)
+	}
+	st, err := s.CheckNow(ctx, owner)
+	if err != nil || f.hits.Load() != 1 || !st.UpdateAvailable || st.Latest != "1.2.0" || st.Pending || st.LastAttemptAt.IsZero() {
+		t.Fatalf("first manual check: hits %d %+v %v", f.hits.Load(), st, err)
+	}
+	// Repeated clicks within ManualMinInterval answer from memory.
+	for range 5 {
+		c.Advance(ManualMinInterval / 10)
+		if _, err := s.CheckNow(ctx, owner); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if f.hits.Load() != 1 {
+		t.Fatalf("debounce: hits %d", f.hits.Load())
+	}
+	c.Advance(ManualMinInterval)
+	if st := s.Check(ctx); f.hits.Load() != 2 || st.State != StateOK {
+		t.Fatalf("after the interval: hits %d %+v", f.hits.Load(), st)
+	}
+	// The automatic schedule counts from the last attempt: no extra call.
+	c.Advance(StartDelay)
+	_ = s.Refresh(ctx)
+	if f.hits.Load() != 2 {
+		t.Fatalf("refresh right after a manual check: hits %d", f.hits.Load())
+	}
+	if len(notified) != 1 {
+		t.Fatalf("notified %v, want once", notified)
+	}
+	// A failure is a status, not an error.
+	f.status.Store(http.StatusBadGateway)
+	c.Advance(ManualMinInterval)
+	if st, err := s.CheckNow(ctx, owner); err != nil || st.State != StateUnavailable || st.Latest != "1.2.0" {
+		t.Fatalf("failed manual check: %+v %v", st, err)
+	}
+	// Off: disabled, no network.
+	on.Store(false)
+	c.Advance(ManualMinInterval)
+	hits := f.hits.Load()
+	if st, err := s.CheckNow(ctx, owner); err != nil || st.State != StateDisabled || f.hits.Load() != hits {
+		t.Fatalf("disabled: %+v %v hits %d", st, err, f.hits.Load())
+	}
+	cashier := &auth.Principal{Kind: auth.PrincipalUser, UserID: "c", Grants: []auth.Grant{{OrganizationID: "o", Role: auth.RoleCashier}}}
+	if _, err := s.CheckNow(ctx, cashier); !errors.Is(err, auth.ErrForbidden) {
+		t.Fatalf("cashier: %v", err)
+	}
+	if _, err := s.CheckNow(ctx, nil); !errors.Is(err, auth.ErrUnauthenticated) {
+		t.Fatalf("anonymous: %v", err)
+	}
+}
+
+func TestCheckNow_DevBuildNoNetwork(t *testing.T) {
+	f := newFakeServer(t)
+	var on atomic.Bool
+	on.Store(true)
+	s := newService(f, clock.NewFake(time.Date(2026, 10, 24, 9, 0, 0, 0, time.UTC)), "dev", HowBinary, &on, nil)
+	if st := s.Check(context.Background()); st.State != StateDisabled || st.Pending || f.hits.Load() != 0 {
+		t.Fatalf("%+v hits %d", st, f.hits.Load())
+	}
+}
+
+// TestConcurrency_CheckNow: 100 simultaneous clicks make one network call
+// and every caller gets the fresh result.
+func TestConcurrency_CheckNow(t *testing.T) {
+	f := newFakeServer(t)
+	var on atomic.Bool
+	on.Store(true)
+	s := newService(f, clock.NewFake(time.Date(2026, 10, 24, 9, 0, 0, 0, time.UTC)), "1.1.0", HowDesktop, &on, nil)
+	var wg sync.WaitGroup
+	var fresh atomic.Int32
+	for range 100 {
+		wg.Go(func() {
+			if st, err := s.CheckNow(context.Background(), owner); err == nil && st.Latest == "1.2.0" {
+				fresh.Add(1)
+			}
+		})
+	}
+	wg.Wait()
+	if f.hits.Load() != 1 || fresh.Load() != 100 {
+		t.Fatalf("hits %d, fresh %d", f.hits.Load(), fresh.Load())
 	}
 }

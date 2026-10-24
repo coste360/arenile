@@ -10060,6 +10060,9 @@ type StripeSettingsInput struct {
 
 // SystemUpdate Stato dell'avviso di nuova versione (ADR 0025). `latest`, `published_at`, `release_notes_url` e `download_url` sono presenti solo dopo un controllo riuscito negli ultimi 7 giorni.
 type SystemUpdate struct {
+	// Arch Architettura dell'installazione (`amd64`, `arm64`), per l'etichetta del download.
+	Arch *string `json:"arch,omitempty"`
+
 	// CheckEnabled Vero se il controllo degli aggiornamenti è attivo.
 	CheckEnabled bool `json:"check_enabled"`
 
@@ -10075,14 +10078,23 @@ type SystemUpdate struct {
 	// HowToUpdate Come si aggiorna questa installazione (sceglie l'azione proposta dal pannello).
 	HowToUpdate SystemUpdateHowToUpdate `json:"how_to_update"`
 
+	// LastAttemptAt Ultimo tentativo di controllo, riuscito o no (UTC).
+	LastAttemptAt *time.Time `json:"last_attempt_at,omitempty"`
+
 	// Latest Ultima versione pubblicata.
-	Latest      *string    `json:"latest,omitempty"`
+	Latest *string `json:"latest,omitempty"`
+
+	// Os Sistema operativo dell'installazione (`darwin`, `windows`, `linux`), per l'etichetta del download.
+	Os *string `json:"os,omitempty"`
+
+	// Pending Vero finché il primo controllo dopo l'avvio non è avvenuto (controllo attivo, versione di release): il pannello rilegge lo stato a breve invece di attendere il prossimo aggiornamento orario.
+	Pending     bool       `json:"pending"`
 	PublishedAt *time.Time `json:"published_at,omitempty"`
 
 	// ReleaseNotesUrl Pagina con le novità della versione.
 	ReleaseNotesUrl *string `json:"release_notes_url,omitempty"`
 
-	// Status `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
+	// Status `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto, vedi `pending`); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
 	Status SystemUpdateStatus `json:"status"`
 
 	// UpdateAvailable Vero se `latest` è più recente di `current` e il controllo è attivo.
@@ -10092,7 +10104,7 @@ type SystemUpdate struct {
 // SystemUpdateHowToUpdate Come si aggiorna questa installazione (sceglie l'azione proposta dal pannello).
 type SystemUpdateHowToUpdate string
 
-// SystemUpdateStatus `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
+// SystemUpdateStatus `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto, vedi `pending`); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
 type SystemUpdateStatus string
 
 // TeamMember Utente con accesso allo stabilimento; role è il ruolo efficace qui.
@@ -13664,6 +13676,13 @@ type StreamEventsParams struct {
 	Establishment string `form:"establishment" json:"establishment"`
 }
 
+// CheckSystemUpdateParams defines parameters for CheckSystemUpdate.
+type CheckSystemUpdateParams struct {
+	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
+	// dati: deve coincidere con il valore del cookie `arenile_csrf`.
+	XCSRFToken *CSRFToken `json:"X-CSRF-Token,omitempty"`
+}
+
 // CreateDesktopBackupParams defines parameters for CreateDesktopBackup.
 type CreateDesktopBackupParams struct {
 	// XCSRFToken Obbligatorio per le richieste autenticate via cookie che modificano
@@ -15105,6 +15124,9 @@ type ServerInterface interface {
 	// GetSystemUpdate Avviso di nuova versione di Arenile
 	// (GET /api/admin/v1/system/update)
 	GetSystemUpdate(w http.ResponseWriter, r *http.Request)
+	// CheckSystemUpdate Verifica subito se c'è una nuova versione di Arenile
+	// (POST /api/admin/v1/system/update/check)
+	CheckSystemUpdate(w http.ResponseWriter, r *http.Request, params CheckSystemUpdateParams)
 	// ListDesktopBackups Backup presenti nella cartella dei backup
 	// (GET /api/desktop/v1/backups)
 	ListDesktopBackups(w http.ResponseWriter, r *http.Request)
@@ -16932,6 +16954,12 @@ func (_ Unimplemented) StreamEvents(w http.ResponseWriter, r *http.Request, para
 // GetSystemUpdate Avviso di nuova versione di Arenile
 // (GET /api/admin/v1/system/update)
 func (_ Unimplemented) GetSystemUpdate(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// CheckSystemUpdate Verifica subito se c'è una nuova versione di Arenile
+// (POST /api/admin/v1/system/update/check)
+func (_ Unimplemented) CheckSystemUpdate(w http.ResponseWriter, r *http.Request, params CheckSystemUpdateParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -35199,6 +35227,47 @@ func (siw *ServerInterfaceWrapper) GetSystemUpdate(w http.ResponseWriter, r *htt
 	handler.ServeHTTP(w, r)
 }
 
+// CheckSystemUpdate operation middleware
+func (siw *ServerInterfaceWrapper) CheckSystemUpdate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CheckSystemUpdateParams
+
+	headers := r.Header
+
+	// ------------- Optional header parameter "X-CSRF-Token" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-CSRF-Token")]; found {
+		var XCSRFToken CSRFToken
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-CSRF-Token", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-CSRF-Token", valueList[0], &XCSRFToken, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-CSRF-Token", Err: err})
+			return
+		}
+
+		params.XCSRFToken = &XCSRFToken
+
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CheckSystemUpdate(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListDesktopBackups operation middleware
 func (siw *ServerInterfaceWrapper) ListDesktopBackups(w http.ResponseWriter, r *http.Request) {
 
@@ -38091,6 +38160,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/system/update", wrapper.GetSystemUpdate)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/admin/v1/system/update/check", wrapper.CheckSystemUpdate)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/devices/pairing-codes", wrapper.CreateDevicePairingCode)

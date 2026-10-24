@@ -3144,6 +3144,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/system/update/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verifica subito se c'è una nuova versione di Arenile
+         * @description ADR 0025. Esegue subito il controllo degli aggiornamenti ("Verifica aggiornamenti") e restituisce lo stato aggiornato, come `getSystemUpdate`. Il server limita i controlli: se ne è già avvenuto uno (automatico o manuale) nell'ultimo minuto, o uno è in corso, risponde con lo stato in memoria senza chiamate di rete. Con il controllo spento (`ARENILE_UPDATE_CHECK=false`, impostazione `update_check` dell'app desktop) o con una versione di sviluppo non fa chiamate di rete e risponde `status: disabled`. Un controllo non riuscito non è un errore: risponde `200` con `status: unavailable`. Solo titolari e gestori (permesso `establishment.configure` su almeno uno stabilimento); le chiavi API non hanno accesso.
+         */
+        post: operations["checkSystemUpdate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/v1/establishments/{establishmentId}/devices/pairing-codes": {
         parameters: {
             query?: never;
@@ -8899,7 +8919,7 @@ export interface components {
             /** @description Versione in esecuzione (tag di release, `dev` in sviluppo). */
             current: string;
             /**
-             * @description `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
+             * @description `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto, vedi `pending`); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
              * @enum {string}
              */
             status: "ok" | "unavailable" | "disabled";
@@ -8931,6 +8951,17 @@ export interface components {
              * @description Ultimo controllo riuscito (UTC).
              */
             checked_at?: string;
+            /** @description Vero finché il primo controllo dopo l'avvio non è avvenuto (controllo attivo, versione di release): il pannello rilegge lo stato a breve invece di attendere il prossimo aggiornamento orario. */
+            pending: boolean;
+            /**
+             * Format: date-time
+             * @description Ultimo tentativo di controllo, riuscito o no (UTC).
+             */
+            last_attempt_at?: string;
+            /** @description Sistema operativo dell'installazione (`darwin`, `windows`, `linux`), per l'etichetta del download. */
+            os?: string;
+            /** @description Architettura dell'installazione (`amd64`, `arm64`), per l'etichetta del download. */
+            arch?: string;
         };
         DesktopSettings: {
             /** @description Cartella dei backup (default `<cartella dati>/backups`). */
@@ -18618,6 +18649,34 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Stato degli aggiornamenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemUpdate"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    checkSystemUpdate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato degli aggiornamenti dopo il controllo */
             200: {
                 headers: {
                     [name: string]: unknown;
