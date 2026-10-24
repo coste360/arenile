@@ -58,7 +58,7 @@ A regime un solo programma comprenderà il **pannello del gestore** (mappa opera
 
 Perché scegliere Arenile come software di gestione dello stabilimento balneare, al posto di un gestionale lido a canone o di un portale che trattiene una percentuale su ogni prenotazione:
 
-| | |
+| Perché | In pratica |
 |---|---|
 | **Gratuito, davvero** | Gratuito per gli stabilimenti che lo usano per sé: nessun canone, nessuna versione "Pro" a pagamento, nessun limite di postazioni, prenotazioni o utenti. Codice sorgente disponibile con licenza BSL 1.1, che diventa AGPL-3.0 dopo 3 anni. |
 | **Zero commissioni sulle prenotazioni** | A differenza dei portali di prenotazione a commissione, Arenile non trattiene nulla. I pagamenti online passano dal **tuo account Stripe**: paghi solo le commissioni del circuito di pagamento, nessuna percentuale alla piattaforma. |
