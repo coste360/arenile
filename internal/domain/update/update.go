@@ -207,7 +207,11 @@ func (s *Service) Check(ctx context.Context) Status {
 		s.mu.Unlock()
 		switch {
 		case start:
-			s.fetch(ctx, now)
+			// Not cancelled with the HTTP request: an operator who leaves the
+			// page must not turn the check into a failure (retried after an
+			// hour) for the callers waiting on it. The Fetcher has its own
+			// timeout.
+			s.fetch(context.WithoutCancel(ctx), now)
 		case wait != nil:
 			select {
 			case <-wait:
