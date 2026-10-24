@@ -13,13 +13,19 @@ offline).
 
 ### Added
 
-- Contratto della stampa ESC/POS su stampanti di rete (ADR 0021), endpoint ancora `501 not_implemented`: stampanti
-  (`/printers`, verifica raggiungibilità, stampa di prova), instradamento dei documenti per cassa (`/print-routes`,
-  `/print-routes/resolve`) e lavori di stampa (`/print-jobs`, stato e riprova). Solo edizione desktop (sul server
-  `409 printing_unavailable`, ripiego sulla stampa del browser); indirizzi solo di rete locale. Migrazione 00011
-  (entrambi i dialetti): `printers`, `printer_routes`, `print_jobs` con chiave di idempotenza unica. Pacchetti
-  `internal/escpos`, `internal/printing/templates` (`TicketDoc`), `internal/domain/printing` (interfaccia `Driver`).
-  Pannello: pagina segnaposto Configurazione → Stampanti.
+- Stampa ESC/POS su stampanti termiche di rete (Wi-Fi/Ethernet, TCP 9100) nell'edizione desktop (ADR 0021):
+  Configurazione → **Stampanti** (indirizzo solo di rete locale, carta 58/80 mm, codepage CP858 predefinita,
+  taglio, avanzamento, logo retinato in cache, cassetto pin 2/5, verifica raggiungibilità, **Stampa di prova**),
+  instradamento per documento e cassa (biglietto giornaliero, chiusura Z, ricevuta di pagamento non fiscale) e
+  ultime stampe con riprova. Lavori accodati già composti con chiave di idempotenza, consegna con lease, timeout e
+  nuovi tentativi (5 s, 15 s, 1 min, 5 min), nessun dato personale nei log. In Cassa **Stampa riepilogo** e
+  **Stampa chiusura Z** usano la stampante termica quando è pronta, altrimenti la stampa del browser con un avviso;
+  dopo un incasso si può stampare la ricevuta. Sull'edizione server la pagina spiega che serve l'app desktop
+  (`409 printing_unavailable`). Codificatore `internal/escpos` (puro Go, fixture di byte), modelli
+  `internal/printing/templates` (ricevuta, riepilogo Z, pagina di prova, biglietto `TicketDoc` per la vendita
+  giornaliera), servizio `internal/domain/printing` (interfaccia `Driver`, driver `network`), migrazione 00011
+  (entrambi i dialetti). Guida "Stampanti e ESC/POS" (it/en), invarianti INV-75 e INV-76. USB, Bluetooth e ponte
+  per il VPS non sono inclusi.
 - Contratto delle funzioni rinviate (ADR 0019), endpoint ancora `501 not_implemented`: modalità prova
   (`/test-mode`, anteprima, eliminazione in blocco), rimborsi garantiti (`/refund-requests`), casse multiple
   (`/cash-registers`, `register_id` sulle sessioni) e chiusura Z stampabile (`/cash-sessions/{id}/z-report`), prezzo

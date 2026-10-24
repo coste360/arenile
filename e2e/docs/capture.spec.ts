@@ -99,7 +99,89 @@ const PREPARE: Record<string, Prepare> = {
   "public-who-desktop": (page, _c, _e, seat) => publicStep(page, "who", seat),
   "public-embed": embedReady,
   "public-embed-mobile": embedReady,
+  "admin-printers-desktop": printersDesktop,
 };
+
+/**
+ * ESC/POS printing runs on the desktop edition only (ADR 0021), and the
+ * docs instance is a server edition: the desktop view of the Printers page
+ * is shown on simulated data (desktop /meta, one reachable network printer,
+ * a routing rule and a printed test page).
+ */
+async function printersDesktop(page: Page) {
+  const at = "2027-07-15T08:30:00Z";
+  const printer = {
+    id: "00000000-0000-4000-8000-0000000000a1",
+    name: "Banco bar",
+    driver: "network",
+    host: "192.168.1.50",
+    port: 9100,
+    paper_width_mm: 80,
+    chars_per_line: 48,
+    codepage: "cp858",
+    cut_mode: "partial",
+    feed_lines: 4,
+    print_logo: true,
+    logo_cached: true,
+    drawer_pin: 2,
+    active: true,
+    status: "reachable",
+    last_checked_at: at,
+    last_success_at: at,
+    version: 1,
+    created_at: at,
+    updated_at: at,
+  };
+  const json = (body: unknown, headers: Record<string, string> = {}) => ({
+    status: 200,
+    contentType: "application/json",
+    headers,
+    body: JSON.stringify(body),
+  });
+  await page.route("**/api/admin/v1/meta", async (route) => {
+    const res = await route.fetch();
+    const meta = (await res.json()) as Record<string, unknown>;
+    await route.fulfill({ response: res, json: { ...meta, edition: "desktop", desktop: { mode: "local" } } });
+  });
+  await page.route("**/printers?*", (r) => r.fulfill(json({ items: [printer], escpos_available: true })));
+  await page.route("**/print-routes", (r) =>
+    r.fulfill(
+      json(
+        {
+          items: [
+            { document_kind: "cash_z", printer_id: printer.id, copies: 1, kick_drawer: false },
+            { document_kind: "payment_receipt", printer_id: printer.id, copies: 1, kick_drawer: true },
+          ],
+        },
+        { ETag: '"docs"' },
+      ),
+    ),
+  );
+  await page.route("**/print-jobs?*", (r) =>
+    r.fulfill(
+      json({
+        items: [
+          {
+            id: "00000000-0000-4000-8000-0000000000b1",
+            printer_id: printer.id,
+            printer_name: printer.name,
+            document_kind: "test_page",
+            copies: 1,
+            status: "printed",
+            attempts: 1,
+            max_attempts: 5,
+            created_at: at,
+            updated_at: at,
+          },
+        ],
+      }),
+    ),
+  );
+  await page.route("**/cash-registers", (r) => r.fulfill(json({ items: [] })));
+  await page.reload();
+  await expect(page.getByRole("listitem", { name: "Banco bar" })).toBeVisible();
+  await expect(page.getByText("Stampato", { exact: true })).toBeVisible();
+}
 
 async function embedReady(page: Page, ctx: RunContext) {
   const frame = page.frameLocator(`[data-arenile="${ctx.slug}"] iframe`);

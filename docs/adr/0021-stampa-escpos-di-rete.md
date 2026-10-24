@@ -1,6 +1,6 @@
 # 0021 — Stampa ESC/POS su stampanti di rete (solo edizione desktop in v1)
 
-- **Stato:** accettato (contratto e schema; la realizzazione segue)
+- **Stato:** accettato (realizzato)
 - **Data:** 2026-10-24
 - **Sezioni della specifica:** `docs/spec/14-cassa-e-modulo-fiscale.md`, `docs/spec/29-app-desktop-e-mobile.md`
 
