@@ -186,14 +186,16 @@ describe('brand defaults', () => {
 /**
  * Map status colours on the sand (ADR 0024): the modern kit fills the spot
  * body with --status-*, so the body itself must stand out from the beach
- * (WCAG 1.4.11, 3:1 for graphical objects) in both schemes. Hold, season
- * pass released and unavailable are tints by design (and carry a badge or
- * the greyed art); every other status reaches 3:1. "Booked online" and
- * "present" are both blue: they also differ in lightness (2:1), so they stay
- * apart for colour-blind users.
+ * (WCAG 1.4.11, 3:1 for graphical objects) in both schemes. Season pass
+ * released and unavailable are faint on purpose (absent or unavailable: they
+ * carry a badge or the greyed art); every other status reaches 3:1. Free is a
+ * neutral grey, apart from blocked, unavailable and present by 2:1 in
+ * lightness. "Booked online" and "present" are both blue: they also differ in
+ * lightness (2:1), so they stay apart for colour-blind users.
  */
 const STRONG_STATUSES = [
   'free',
+  'hold',
   'booked-online',
   'booked-desk',
   'season',
@@ -213,9 +215,19 @@ describe.each([
     expect(contrastRatio(color(vars, `status-${status}`), sand)).toBeGreaterThanOrEqual(3);
   });
 
-  it('free (Libero) reaches 3:1 on the sand and on the map backdrop', () => {
-    for (const bg of ['beach-sand-soft', 'map-sand']) {
+  it('free (Libero) reaches 3:1 on every sand and on the map backdrop', () => {
+    for (const bg of ['beach-sand-soft', 'beach-sand', 'map-sand']) {
       expect(contrastRatio(color(vars, 'status-free'), color(vars, bg))).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('free is a grey apart from blocked, unavailable and present by 2:1', () => {
+    const free = color(vars, 'status-free');
+    const { r, g, b } = free;
+    // Neutral: no channel more than 12% away from the others (a grey, not a hue).
+    expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThanOrEqual(0.12 * 255);
+    for (const other of ['status-blocked', 'status-unavailable', 'status-present']) {
+      expect(contrastRatio(free, color(vars, other))).toBeGreaterThanOrEqual(2);
     }
   });
 

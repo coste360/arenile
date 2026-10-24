@@ -9,33 +9,36 @@ import type { SpotStatus } from './types';
  * legend and a badge glyph on the map, never conveyed by colour alone.
  */
 export const DEFAULT_STATUS_COLORS: Record<SpotStatus, string> = {
-  free: '#15803d',
+  free: '#71717a',
   booked_online: '#0284c7',
   booked_desk: '#7c3aed',
   season: '#0f766e',
   season_released: '#5eead4',
-  hold: '#f59e0b',
+  hold: '#b45309',
   to_collect: '#dc2626',
   present: '#1e3a8a',
-  blocked: '#6b7280',
+  blocked: '#374151',
   renewal_hold: '#db2777',
   unavailable: '#d1d5db',
 };
 
 /**
  * Dark-scheme palette: the light values lifted where they would not reach
- * 3:1 on the dark sand (the modern kit fills the spot body with them).
+ * 3:1 on the dark sand (the modern kit fills the spot body with them); free
+ * stays a neutral grey, unavailable a faint one.
  */
 export const DARK_STATUS_COLORS: Record<SpotStatus, string> = {
   ...DEFAULT_STATUS_COLORS,
-  free: '#22c55e',
-  booked_online: '#3b82f6',
+  free: '#d4d4d8',
+  booked_online: '#bae6fd',
   booked_desk: '#a78bfa',
   season: '#14b8a6',
+  hold: '#f59e0b',
   to_collect: '#f87171',
-  present: '#c7d2fe',
-  blocked: '#9ca3af',
+  present: '#818cf8',
+  blocked: '#8e8e96',
   renewal_hold: '#f472b6',
+  unavailable: '#52525b',
 };
 
 export interface StatusClasses {

@@ -9,7 +9,8 @@
 //      `element.style.*` / `cssText` / `setProperty` / `insertRule` in .ts/.tsx/.js;
 //   4. Tailwind arbitrary values that bypass the theme: raw colours (`bg-[#…]`,
 //      `text-[oklch(…)]`), custom typography (`text-[10px]`, `tracking-[0.3em]`),
-//      pixel lengths (`w-[2px]`) and arbitrary properties (`[mask:…]`). Layout
+//      pixel lengths (`w-[2px]`), arbitrary properties (`[mask:…]`) and custom
+//      properties (`[--x:…]`) except the map kit's `[--beach-state|flag:var(--token)]`. Layout
 //      values (`h-[65vh]`, `max-w-[32rem]`, `grid-cols-[…]`), `data-[…]` variants,
 //      `[&…]` selectors and `w-(--var)` stay allowed;
 //   5. `<style>`, `style=""` and stylesheet links in .html files;
@@ -91,6 +92,14 @@ const ARBITRARY = [
   [
     'arbitrary CSS property (use a utility or a component variant)',
     /(?<![&\w-])\[[a-z][a-z-]*:[^\]]*\]/g,
+  ],
+  [
+    // The one allowed custom property: the beach map kit reads --beach-state
+    // (status colour of the spot, ADR 0024) and --beach-flag (sea flag, ADR
+    // 0012) inside its <use> art, and an element can only set them with a
+    // class; the value must be a status or flag theme token, never a colour.
+    'arbitrary custom property (only [--beach-state|flag:var(--status-*|--beach-flag-*)] for the map kit)',
+    /(?<![&\w-])\[--(?!beach-(?:state|flag):var\(--(?:status|beach-flag)-[a-z-]+\)\])[a-z][a-z0-9-]*:[^\]]*\]/g,
   ],
 ];
 

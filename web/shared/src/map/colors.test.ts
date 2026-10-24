@@ -33,7 +33,8 @@ describe('status colours', () => {
 
   it('every status sets --beach-state to its own token (modern kit)', () => {
     for (const [status, c] of Object.entries(STATUS_CLASSES)) {
-      expect(c.state, status).toBe(`[--beach-state:var(${c.cssVar})]`);
+      // Built from parts: the CSS guard and Tailwind scan for literal class names.
+      expect(c.state, status).toBe(['[', '--beach-state:var(', c.cssVar, ')]'].join(''));
     }
   });
 });

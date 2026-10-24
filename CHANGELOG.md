@@ -456,9 +456,11 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
   applica regole per profilo (v3: solo `g/path/rect/circle/ellipse`, colori solo `var(--beach-*, fallback)`,
   angolo degli indicatori vuoto tranne mare e sabbia, stato con `--beach-state`); simboli `ark-<kit>-<id>` in un
   chunk pigro per kit (ADR 0024).
-- Colori degli stati della mappa per tema (ADR 0024): **Libero** `#15803d` nel chiaro (3:1 sulla sabbia, prima
-  2,1:1) e **Prenotato online** `#0284c7`, distinguibile da **Presente** anche in luminosità; nel tema scuro gli
-  stati da gestire hanno valori propri che arrivano a 3:1 sulla sabbia scura. Legenda, planning e grafici seguono.
+- Colori degli stati della mappa per tema (ADR 0024): **Libero** diventa un **grigio neutro** (`#71717a` nel chiaro,
+  `#d4d4d8` nello scuro, prima il verde `#22c55e`), a 3:1 su ogni sabbia e distinto da Bloccato (ora `#374151` nel
+  chiaro) e Non disponibile; **In attesa** `#b45309` nel chiaro (3:1, prima 2,0:1); **Prenotato online** `#0284c7`,
+  distinguibile da **Presente** anche in luminosità; nel tema scuro gli stati da gestire hanno valori propri che
+  arrivano a 3:1 sulla sabbia scura. Legenda, planning e grafici seguono.
 - **Aggiornamento:** gli stabilimenti esistenti non hanno ancora scelto un kit e passano al **Moderno**; le mappe
   salvate non cambiano (stessi id delle illustrazioni). Per tornare al disegno precedente scegliete **Classico** in
   Configurazione → Stabilimento → Mappa.

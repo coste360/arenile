@@ -95,7 +95,9 @@
    * Beach map (spec 11.1). Status colours always come with a text label and,
    * on the map, a badge glyph. The modern kit paints the spot body with them
    * (--beach-state, ADR 0024), so the statuses that must stand out reach 3:1
-   * on the sand (--beach-sand-soft) in both schemes, and "booked online" and
+   * on the sand (--beach-sand-soft) in both schemes; "free" is a neutral grey
+   * (the kit's intent: a free beach is not a field of colour) at 3:1 on every
+   * sand, apart from "blocked" and "unavailable" by 2:1; "booked online" and
    * "present" differ in lightness by 2:1, not by hue alone (brand.test.ts).
    */
   --map-sand: #f8edd3;
@@ -106,7 +108,7 @@
   --map-decoration-label: #5b4a2a;
   --map-spot-stroke: rgb(17 24 39 / 0.35);
   --map-spot-selected: #111827;
-  --status-free: #15803d;
+  --status-free: #71717a;
   --status-free-foreground: #ffffff;
   --status-booked-online: #0284c7;
   --status-booked-online-foreground: #000000;
@@ -116,13 +118,13 @@
   --status-season-foreground: #ffffff;
   --status-season-released: #5eead4;
   --status-season-released-foreground: #111827;
-  --status-hold: #f59e0b;
-  --status-hold-foreground: #111827;
+  --status-hold: #b45309;
+  --status-hold-foreground: #ffffff;
   --status-to-collect: #dc2626;
   --status-to-collect-foreground: #ffffff;
   --status-present: #1e3a8a;
   --status-present-foreground: #ffffff;
-  --status-blocked: #6b7280;
+  --status-blocked: #374151;
   --status-blocked-foreground: #ffffff;
   --status-renewal-hold: #db2777;
   --status-renewal-hold-foreground: #ffffff;
@@ -240,22 +242,26 @@
   --beach-state-free: #8a96a2;
 
   /* Status colours lifted for the dark sand (3:1, see :root). */
-  --status-free: #22c55e;
+  --status-free: #d4d4d8;
   --status-free-foreground: #111827;
-  --status-booked-online: #3b82f6;
+  --status-booked-online: #bae6fd;
   --status-booked-online-foreground: #111827;
   --status-booked-desk: #a78bfa;
   --status-booked-desk-foreground: #111827;
   --status-season: #14b8a6;
   --status-season-foreground: #111827;
+  --status-hold: #f59e0b;
+  --status-hold-foreground: #111827;
   --status-to-collect: #f87171;
   --status-to-collect-foreground: #111827;
-  --status-present: #c7d2fe;
+  --status-present: #818cf8;
   --status-present-foreground: #111827;
-  --status-blocked: #9ca3af;
+  --status-blocked: #8e8e96;
   --status-blocked-foreground: #111827;
   --status-renewal-hold: #f472b6;
   --status-renewal-hold-foreground: #111827;
+  --status-unavailable: #52525b;
+  --status-unavailable-foreground: #ffffff;
 }
 
 /* Elements themed by applyTheme() outside <html> (the theme preview of the panel). */

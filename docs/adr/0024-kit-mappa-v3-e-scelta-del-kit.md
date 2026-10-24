@@ -75,12 +75,18 @@ Alternative scartate:
    riquadro, contro 0,34 del classico). Un colore letterale (colori delle zone nell'editor, override del pannello)
    non può arrivare a una variabile CSS senza stili inline: in quel caso la postazione si disegna come nel classico.
    Il classico non cambia.
-6. **Colori degli stati per il corpo pieno.** I token `--status-*` diventano per tema: nel chiaro **Libero** passa
-   a `#15803d` (≥ 3:1 sulla sabbia, prima 2,1:1) e **Prenotato online** a `#0284c7`; lo scuro ha valori propri per
-   gli stati che sulla sabbia scura non arrivavano a 3:1. Prenotato online e Presente, entrambi blu, differiscono
-   anche in luminosità (≥ 2:1, prima 2,0:1 nel chiaro e invisibile nello scuro). Tutti gli stati da gestire
-   arrivano a 3:1 sulla sabbia in entrambi i temi; In attesa, Abbonato assente oggi e Non disponibile restano tinte
-   leggere per scelta (hanno badge o disegno spento).
+6. **Colori degli stati per il corpo pieno.** I token `--status-*` diventano per tema.
+   - **Libero è un grigio neutro**, come vuole il kit (il suo "libero" predefinito è grigio): il verde si legge
+     come "occupato/presente" e una spiaggia libera non deve essere un campo di ombrelloni colorati. Chiaro
+     `#71717a` (prima il verde `#22c55e`, 2,1:1), scuro `#d4d4d8`; ≥ 3:1 su tutte le sabbie (`--beach-sand-soft`,
+     `--beach-sand`, `--map-sand`) nei due temi, ed è lontano almeno 2:1 in luminosità da Bloccato (chiaro
+     `#374151`, scuro `#8e8e96`), da Non disponibile (scuro `#52525b`) e da Presente.
+   - **Prenotato online** `#0284c7` nel chiaro e `#bae6fd` nello scuro, **Presente** `#1e3a8a` e `#818cf8`: entrambi
+     blu, differiscono anche in luminosità (≥ 2:1; prima 2,0:1 nel chiaro e invisibile nello scuro).
+   - **In attesa** `#b45309` nel chiaro (era `#f59e0b`, 2,0:1), `#f59e0b` nello scuro: resta arancione e arriva a 3:1.
+   - Gli altri stati da gestire hanno nello scuro valori propri dove non arrivavano a 3:1. **Abbonato assente oggi**
+     e **Non disponibile** restano tinte leggere **per scelta**: sono stati di assenza o indisponibilità, e hanno
+     il badge (freccia) o il disegno spento e tratteggiato.
 7. **Bloccato senza colore.** Una barra diagonale disegnata dall'app sopra il disegno (fascia del colore di fondo
    sotto una linea del colore del testo), in entrambi i kit, oltre alla croce del badge: il grigio del bloccato si
    confonde con il libero o il non disponibile per molti daltonici e sui tablet in scala di grigi.
@@ -93,11 +99,12 @@ Alternative scartate:
 - Negative: due kit da mantenere (ogni nuovo asset va disegnato in entrambi, il generatore lo impone); due chunk
   di simboli invece di uno (si scarica solo quello dello stabilimento, tranne nella pagina di scelta); i token
   `--status-*` hanno ora valori per tema, quindi chi li legge come esadecimali usa `DEFAULT_STATUS_COLORS` (chiaro)
-  o `DARK_STATUS_COLORS` (scuro); con il kit moderno una mappa quasi vuota è quasi tutta verde.
+  o `DARK_STATUS_COLORS` (scuro); Libero grigio cambia anche il colore di legenda, planning e grafici.
 - Verifiche: `web/scripts/gen-map-kit.test.mjs` (profili, colori, angolo con i casi limite, catalogo uguale tra i
   kit, file generati allineati), `web/shared/src/map/kit/kit.test.tsx` (kit predefinito, `--beach-state` per
   stato, anello, posizione del badge, barra del bloccato, due kit nello stesso sprite, provider e valori
-  sconosciuti), `web/shared/src/theme/brand.test.ts` (stati sulla sabbia a 3:1 nei due temi, Prenotato
-  online/Presente a 2:1, contorno di selezione), `web/shared/src/map/colors.test.ts` (token chiari e scuri
+  sconosciuti), `web/shared/src/theme/brand.test.ts` (stati sulla sabbia a 3:1 nei due temi, Libero
+  grigio a 3:1 su tutte le sabbie e lontano da Bloccato, Non disponibile e Presente, Prenotato online/Presente a
+  2:1, contorno di selezione), `web/shared/src/map/colors.test.ts` (token chiari e scuri
   allineati alle palette), `internal/domain/establishment/validate_test.go` e il test di integrazione della PATCH
   dello stabilimento (`theme.map_kit`), test della sezione Mappa nel pannello, e2e della mappa operativa.
