@@ -196,7 +196,12 @@
     "price_changed": "Le prix a changé : vérifiez le nouveau total et encaissez à nouveau.",
     "spot_unavailable": "L'emplacement n'est plus libre : choisissez-en un autre.",
     "cash_session_closed": "La caisse est fermée : ouvrez-la pour encaisser en espèces.",
-    "ticket_owned": "La réservation appartient à un billet : utilisez les actions du billet (Billets du jour)."
+    "ticket_owned": "La réservation appartient à un billet : utilisez les actions du billet (Billets du jour).",
+    "sameDay": {
+      "time": "L'heure limite de la journée entière est passée pour aujourd'hui : choisissez Après-midi. L'heure se règle dans les Politiques de réservation.",
+      "slot": "Aujourd'hui les règles n'autorisent qu'une autre tranche : changez de tranche. Réglable dans les Politiques de réservation.",
+      "disabled": "Les règles n'autorisent pas de ventes aujourd'hui. Réglable dans les Politiques de réservation."
+    }
   },
   "settings": {
     "open": "Paramètres",

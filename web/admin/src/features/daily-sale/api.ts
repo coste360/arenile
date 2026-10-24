@@ -13,6 +13,7 @@ import {
   type Schemas,
 } from '@arenile/shared/api';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { callBooking } from '../bookings/problem';
 import { ifMatch } from '../configuration/lib/validation';
 
 export type Ticket = Schemas['Ticket'];
@@ -144,8 +145,9 @@ export function useDailySaleQuote(establishmentId: string, body: DailySaleQuoteR
   return useQuery<DailySaleQuote, ApiProblem>({
     queryKey: [...ticketKeys.all(establishmentId), 'quote', body] as const,
     enabled: !!body,
+    // callBooking keeps the policy violations of the problem (same-day cutoff...).
     queryFn: () =>
-      call(() =>
+      callBooking(() =>
         client.POST(`${BASE}/daily-sales/quote`, {
           params: { path: { establishmentId } },
           body: body as DailySaleQuoteRequest,
@@ -189,7 +191,7 @@ export function useCreateDailySale(establishmentId: string) {
     { body: DailySaleCreate; idempotencyKey: string }
   >({
     mutationFn: ({ body, idempotencyKey }) =>
-      call(() =>
+      callBooking(() =>
         client.POST(`${BASE}/daily-sales`, {
           params: { path: { establishmentId }, header: { 'Idempotency-Key': idempotencyKey } },
           body,

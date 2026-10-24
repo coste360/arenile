@@ -180,6 +180,22 @@ describe('DailySaleForm (Vendita rapida)', () => {
     );
   });
 
+  it('says to pick the afternoon after the same-day cutoff instead of a generic rule error', async () => {
+    const user = userEvent.setup();
+    setup({
+      extra: {
+        [`POST ${API}/daily-sales/quote`]: () =>
+          problem(422, 'policy_violation', {
+            violations: [{ code: 'same_day_closed', params: { reason: 'time' } }],
+          }),
+      },
+    });
+    await user.click(await screen.findByRole('combobox', { name: 'Postazione' }));
+    await user.click(await screen.findByRole('option', { name: 'A1 · Prima fila' }));
+    expect(await screen.findByText(/scegli Pomeriggio/)).toBeInTheDocument();
+    expect(screen.queryByText(/non rispetta le regole/)).not.toBeInTheDocument();
+  });
+
   it('charges with C or K only from inside the form and with no other dialog open', async () => {
     const user = userEvent.setup();
     const { fetchMock } = setup();

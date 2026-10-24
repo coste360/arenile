@@ -196,7 +196,12 @@
     "price_changed": "Der Preis hat sich geändert: Prüfen Sie die neue Summe und kassieren Sie erneut.",
     "spot_unavailable": "Der Platz ist nicht mehr frei: Bitte wählen Sie einen anderen.",
     "cash_session_closed": "Die Kasse ist geschlossen: Öffnen Sie sie, um bar zu kassieren.",
-    "ticket_owned": "Die Buchung gehört zu einem Ticket: nutze die Ticket-Aktionen (Tickets des Tages)."
+    "ticket_owned": "Die Buchung gehört zu einem Ticket: nutze die Ticket-Aktionen (Tickets des Tages).",
+    "sameDay": {
+      "time": "Die Uhrzeit für ganztägige Buchungen heute ist vorbei: wählen Sie Nachmittag. Die Uhrzeit wird in den Buchungsrichtlinien eingestellt.",
+      "slot": "Heute erlauben die Regeln nur einen anderen Zeitraum: ändern Sie den Zeitraum. Einstellbar in den Buchungsrichtlinien.",
+      "disabled": "Die Regeln erlauben heute keine Verkäufe. Einstellbar in den Buchungsrichtlinien."
+    }
   },
   "settings": {
     "open": "Einstellungen",

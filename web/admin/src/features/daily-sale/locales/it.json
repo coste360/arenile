@@ -196,7 +196,12 @@
     "price_changed": "Il prezzo è cambiato: controlla il nuovo totale e incassa di nuovo.",
     "spot_unavailable": "La postazione non è più libera: scegline un'altra.",
     "cash_session_closed": "La cassa è chiusa: aprila per incassare in contanti.",
-    "ticket_owned": "La prenotazione appartiene a un biglietto: usa le azioni del biglietto (Ticket del giorno)."
+    "ticket_owned": "La prenotazione appartiene a un biglietto: usa le azioni del biglietto (Ticket del giorno).",
+    "sameDay": {
+      "time": "Per oggi è passato l'orario della giornata intera: scegli Pomeriggio. L'orario si cambia in Policy di prenotazione.",
+      "slot": "Per oggi le regole permettono solo un'altra fascia: cambia fascia. Si modifica in Policy di prenotazione.",
+      "disabled": "Le regole non permettono vendite per oggi. Si modifica in Policy di prenotazione."
+    }
   },
   "settings": {
     "open": "Impostazioni",

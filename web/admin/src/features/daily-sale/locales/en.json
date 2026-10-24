@@ -196,7 +196,12 @@
     "price_changed": "The price has changed: check the new total and take the payment again.",
     "spot_unavailable": "The spot is no longer free: choose another one.",
     "cash_session_closed": "The cash register is closed: open it to take cash.",
-    "ticket_owned": "The booking belongs to a ticket: use the ticket actions (Today's tickets)."
+    "ticket_owned": "The booking belongs to a ticket: use the ticket actions (Today's tickets).",
+    "sameDay": {
+      "time": "Today's full-day cutoff has passed: choose Afternoon. The cutoff is set in Booking policies.",
+      "slot": "Today the rules only allow another slot: change slot. It is set in Booking policies.",
+      "disabled": "The rules do not allow sales for today. It is set in Booking policies."
+    }
   },
   "settings": {
     "open": "Settings",
