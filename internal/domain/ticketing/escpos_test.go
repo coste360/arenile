@@ -51,6 +51,11 @@ func TestTicketDoc_Scenarios(t *testing.T) {
 				t.Fatalf("vat %+v", d.VAT)
 			}
 		}},
+		{"holder name printed", "it", func(p *PrintData) { p.View.Ticket.HolderName = "Rossi" }, func(t *testing.T, d templates.TicketDoc) {
+			if d.Holder != "Rossi" {
+				t.Fatalf("holder %q", d.Holder)
+			}
+		}},
 		{"zone first to assign", "it", func(p *PrintData) { p.View.SpotLabel, p.View.State = "", StateUnassigned }, func(t *testing.T, d templates.TicketDoc) {
 			if d.Spot != "" || d.Zone != "Prima fila" {
 				t.Fatalf("doc %+v", d)

@@ -76,6 +76,7 @@ type TicketDoc struct {
 	Location      *time.Location
 	Zone          string // zone name
 	Spot          string // spot label; empty = "da assegnare"
+	Holder        string // optional name the desk typed (surname only, never email or phone)
 	Formula       string // e.g. "Giornata intera", "Mezza giornata"
 	Pack          string // pack name
 	PackAmount    money.Cents
@@ -158,6 +159,9 @@ func Ticket(d TicketDoc, l Layout) ([]byte, error) {
 				spot = label(lang, lblToAssign)
 			}
 			e.Bold(true).Columns(label(lang, lblSpot), spot).Bold(false)
+		}
+		if d.Holder != "" {
+			e.Columns(label(lang, lblHolder), d.Holder)
 		}
 		if d.Formula != "" {
 			e.Columns(label(lang, lblFormula), d.Formula)

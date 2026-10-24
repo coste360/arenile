@@ -83,6 +83,7 @@ func TestTemplates_Golden(t *testing.T) {
 			{"ticket_unassigned_logo_kick_en", func() ([]byte, error) {
 				d := ticketDoc()
 				d.Spot, d.QRPayload, d.Notes = "", "https://lido.example/b/ARN-7F3K", "Grazie e buona giornata!"
+				d.Holder = "Rossi"
 				l := layout(w)
 				l.Logo, l.KickDrawerPin, l.Lang, l.Cut = &logo, 2, "en", escpos.CutFull
 				return Ticket(d, l)

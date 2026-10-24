@@ -29,7 +29,7 @@ USB, ponte dall'app desktop per il VPS e Bluetooth dall'app mobile sono stati ri
 - Il biglietto della vendita giornaliera (ADR 0020) arriva da `printing.TicketSource`, implementata dal servizio
   `ticketing` (`PrintableTicket`): stessi dati della stampa dal browser (numero #NNN, giorno, zona e postazione o "da
   assegnare", formula, pack ed extra o tipi d'ingresso, totale con IVA, metodo, QR del codice del varco, "Non valido
-  ai fini fiscali", "RISTAMPA" dopo la prima stampa), senza il nome del cliente; cassetto solo per i contanti. Il
+  ai fini fiscali", "RISTAMPA" dopo la prima stampa) e il nome facoltativo come sul biglietto del browser (solo il cognome, mai telefono o email); cassetto solo per i contanti. Il
   pannello manda il biglietto alla stampante termica quando l'instradamento di `daily_ticket` è pronto (vendita
   rapida e ristampa dal Ticket del giorno), altrimenti usa la stampa del browser come prima.
 - Instradamento in `printer_routes`: regola della cassa, altrimenti regola predefinita del documento; `printer_id`

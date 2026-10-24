@@ -119,8 +119,8 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
   dopo un incasso si può stampare la ricevuta (solo termica). La **Vendita rapida** (stampa automatica) e il **Ticket
   del giorno** (ristampa) mandano il biglietto alla stampante termica quando l'instradamento del biglietto giornaliero
   è pronto, altrimenti la stampa del browser: numero #NNN, giorno, zona e postazione o "da assegnare", pacchetto,
-  importo, QR (lo stesso del biglietto stampato dal browser: il codice del varco per gli ingressi) e la riga "Non
-  valido ai fini fiscali". Sull'edizione server la pagina spiega che serve l'app desktop, non si aggiungono stampanti
+  importo, nome facoltativo (solo il cognome, come sul biglietto del browser), QR (lo stesso del biglietto stampato
+  dal browser: il codice del varco per gli ingressi) e la riga "Non valido ai fini fiscali". Sull'edizione server la pagina spiega che serve l'app desktop, non si aggiungono stampanti
   (`409 printing_unavailable`) e la chiusura si stampa dal browser. Codificatore `internal/escpos` (puro Go, fixture
   di byte), modelli `internal/printing/templates` (ricevuta, riepilogo Z, pagina di prova, biglietto `TicketDoc`
   alimentato dai biglietti della vendita giornaliera), servizio `internal/domain/printing` (interfaccia `Driver`,

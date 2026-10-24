@@ -7,6 +7,7 @@ const (
 	lblIssued          = "issued"
 	lblZone            = "zone"
 	lblSpot            = "spot"
+	lblHolder          = "holder"
 	lblToAssign        = "to_assign"
 	lblFormula         = "formula"
 	lblTotal           = "total"
@@ -60,7 +61,7 @@ const (
 var labels = map[string]map[string]string{
 	"it": {
 		lblTicket: "BIGLIETTO", lblServiceDay: "Giorno", lblIssued: "Emesso", lblZone: "Zona",
-		lblSpot: "Postazione", lblToAssign: "da assegnare", lblFormula: "Formula", lblTotal: "TOTALE",
+		lblSpot: "Postazione", lblHolder: "Nome", lblToAssign: "da assegnare", lblFormula: "Formula", lblTotal: "TOTALE",
 		lblVAT: "IVA", lblVATOn: "su", lblPayment: "Pagamento", lblBookingCode: "Codice",
 		lblNonFiscal: "Documento non fiscale", lblReceipt: "RICEVUTA NON FISCALE", lblNumber: "N.",
 		lblDate: "Data", lblOperator: "Operatore", lblZTitle: "CHIUSURA DI CASSA (Z)", lblZDraft: "NON CHIUSA",
@@ -78,7 +79,7 @@ var labels = map[string]map[string]string{
 	},
 	"en": {
 		lblTicket: "TICKET", lblServiceDay: "Day", lblIssued: "Issued", lblZone: "Zone",
-		lblSpot: "Spot", lblToAssign: "to be assigned", lblFormula: "Option", lblTotal: "TOTAL",
+		lblSpot: "Spot", lblHolder: "Name", lblToAssign: "to be assigned", lblFormula: "Option", lblTotal: "TOTAL",
 		lblVAT: "VAT", lblVATOn: "on", lblPayment: "Payment", lblBookingCode: "Code",
 		lblNonFiscal: "Not a fiscal document", lblReceipt: "NON-FISCAL RECEIPT", lblNumber: "No.",
 		lblDate: "Date", lblOperator: "Operator", lblZTitle: "CASH CLOSING (Z)", lblZDraft: "NOT CLOSED",
@@ -96,7 +97,7 @@ var labels = map[string]map[string]string{
 	},
 	"de": {
 		lblTicket: "TICKET", lblServiceDay: "Tag", lblIssued: "Ausgestellt", lblZone: "Zone",
-		lblSpot: "Platz", lblToAssign: "wird zugewiesen", lblFormula: "Option", lblTotal: "GESAMT",
+		lblSpot: "Platz", lblHolder: "Name", lblToAssign: "wird zugewiesen", lblFormula: "Option", lblTotal: "GESAMT",
 		lblVAT: "MwSt.", lblVATOn: "auf", lblPayment: "Zahlung", lblBookingCode: "Code",
 		lblNonFiscal: "Kein Steuerbeleg", lblReceipt: "QUITTUNG (KEIN STEUERBELEG)", lblNumber: "Nr.",
 		lblDate: "Datum", lblOperator: "Bediener", lblZTitle: "KASSENABSCHLUSS (Z)", lblZDraft: "NICHT ABGESCHLOSSEN",
@@ -114,7 +115,7 @@ var labels = map[string]map[string]string{
 	},
 	"fr": {
 		lblTicket: "BILLET", lblServiceDay: "Jour", lblIssued: "Émis", lblZone: "Zone",
-		lblSpot: "Emplacement", lblToAssign: "à attribuer", lblFormula: "Formule", lblTotal: "TOTAL",
+		lblSpot: "Emplacement", lblHolder: "Nom", lblToAssign: "à attribuer", lblFormula: "Formule", lblTotal: "TOTAL",
 		lblVAT: "TVA", lblVATOn: "sur", lblPayment: "Paiement", lblBookingCode: "Code",
 		lblNonFiscal: "Document non fiscal", lblReceipt: "REÇU NON FISCAL", lblNumber: "N°",
 		lblDate: "Date", lblOperator: "Opérateur", lblZTitle: "CLÔTURE DE CAISSE (Z)", lblZDraft: "NON CLÔTURÉE",

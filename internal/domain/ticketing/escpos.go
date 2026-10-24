@@ -13,8 +13,9 @@ import (
 // assegnare"), slot, pack and extras (the ticket types of an entry ticket),
 // total with the VAT split, payment method, the QR of the gate token and
 // the footer text of the daily sale settings, marked as a reprint once the
-// ticket was printed. The holder name is left out: printed documents carry
-// no customer personal data. cash reports the first print of a valid cash
+// ticket was printed. The holder name is printed like on the browser
+// ticket: it is the optional surname the desk typed, never an email or
+// phone. cash reports the first print of a valid cash
 // ticket (drawer kick): reprints and voided tickets never open the drawer.
 // The header and time zone are filled by the printing service. Unknown
 // tickets return store.ErrNotFound. No write: the print count belongs to
@@ -44,7 +45,7 @@ func ticketDoc(pd *PrintData, lang string) templates.TicketDoc {
 	d := templates.TicketDoc{
 		Number: v.NumberLabel, Entry: v.Ticket.Kind == store.TicketKindEntry, Reprint: pd.Reprint,
 		Voided: v.State == StateVoided, Date: v.Ticket.TicketDate, IssuedAt: pd.IssuedAt,
-		Zone: name(v.ZoneName), Spot: v.SpotLabel, Total: v.Ticket.TotalAmount,
+		Zone: name(v.ZoneName), Spot: v.SpotLabel, Holder: v.Ticket.HolderName, Total: v.Ticket.TotalAmount,
 		PaymentMethod: templates.MethodLabel(lang, v.Ticket.PaymentMethod),
 		BookingCode:   v.BookingCode, QRPayload: pd.QRPayload, Notes: pd.FooterText,
 	}

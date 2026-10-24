@@ -9,7 +9,8 @@ Issued                          14/08/2026 09:35<0a>
 ------------------------------------------------<0a>
 Zone                                  Prima fila<0a>
 <1b>E<01>Spot                              to be assigned<0a>
-<1b>E<00>Option                           Giornata intera<0a>
+<1b>E<00>Name                                       Rossi<0a>
+Option                           Giornata intera<0a>
 ------------------------------------------------<0a>
 Ombrellone + 2 lettini                   <d5> 25,00<0a>
 2 x Lettino extra                        <d5> 10,00<0a>
