@@ -64,7 +64,7 @@ func TestOnlineHTTP_SettingsAndTerms(t *testing.T) {
 
 		in := map[string]any{
 			"booking_enabled": true, "allowed_embed_origins": []string{"https://www.lido-a.it/"},
-			"theme": map[string]any{"primary_color": "#0E6BA8", "show_prices_on_map": true},
+			"theme": map[string]any{"primary_color": "#0E6BA8", "show_prices_on_map": true, "map_kit": "classic"},
 			"flow":  map[string]any{"formulas": []string{"day", "week"}, "slots": []string{"FULL"}, "show_rate_periods": true, "promo_codes_enabled": true, "require_phone": true},
 		}
 		resp, body = cashier.do(http.MethodPut, base+"/online-settings", in, map[string]string{"If-Match": `"1"`})
@@ -80,6 +80,14 @@ func TestOnlineHTTP_SettingsAndTerms(t *testing.T) {
 		in["allowed_embed_origins"] = []string{"http://insecure.example"}
 		resp, body = manager.do(http.MethodPut, base+"/online-settings", in, map[string]string{"If-Match": `W/"2"`})
 		stExpect(t, resp, body, 400, "validation_failed")
+		// A theme without map_kit keeps the kit chosen in the establishment settings (ADR 0024).
+		in["allowed_embed_origins"] = []string{"https://www.lido-a.it"}
+		in["theme"] = map[string]any{"primary_color": "#0E6BA8"}
+		resp, body = manager.do(http.MethodPut, base+"/online-settings", in, map[string]string{"If-Match": `"2"`})
+		stExpect(t, resp, body, 200, "")
+		if body["theme"].(map[string]any)["map_kit"] != "classic" {
+			t.Fatalf("map kit lost: %v", body["theme"])
+		}
 
 		terms := map[string]any{"version": "2027.1", "texts": map[string]any{"it": map[string]any{"terms": "Condizioni", "marketing": "Newsletter"}}}
 		resp, body = manager.do(http.MethodPost, base+"/terms-versions", terms, nil)
@@ -95,7 +103,7 @@ func TestOnlineHTTP_SettingsAndTerms(t *testing.T) {
 			t.Fatalf("terms list %v", body)
 		}
 		resp, body = viewer.do(http.MethodGet, base+"/online-settings", nil, nil)
-		if body["current_terms"].(map[string]any)["version"] != "2027.1" || resp.Header.Get("ETag") != `"3"` {
+		if body["current_terms"].(map[string]any)["version"] != "2027.1" || resp.Header.Get("ETag") != `"4"` {
 			t.Fatalf("current terms %v %v", resp.Header, body)
 		}
 		// The public profile publishes the online configuration.

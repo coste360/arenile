@@ -246,6 +246,11 @@ func (s *Service) Update(ctx context.Context, p *auth.Principal, establishmentID
 			return fmt.Errorf("online: %w", err)
 		}
 		oldFlow := ParseConfig(row.Config)
+		// The map kit is chosen in the establishment settings (ADR 0024), not on
+		// this resource: a theme without one keeps the stored choice.
+		if in.Theme.MapKit == "" {
+			in.Theme.MapKit = before.Theme.MapKit
+		}
 		if row.Config, err = store.MarshalJSONValue(in.Flow); err != nil {
 			return fmt.Errorf("online: %w", err)
 		}

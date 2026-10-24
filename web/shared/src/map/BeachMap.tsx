@@ -288,7 +288,10 @@ const Spot = memo(function Spot({
       data-status={status}
       data-highlighted={highlighted === undefined ? undefined : String(highlighted)}
       className={cn(
-        'outline-none focus-visible:[&>:first-child]:stroke-ring focus-visible:[&>:first-child]:stroke-4',
+        // Focus ring on the halo (classic) or the outline ring (modern), by
+        // attribute: a <title> may come first.
+        'outline-none focus-visible:[&>[data-halo]]:stroke-ring focus-visible:[&>[data-halo]]:stroke-4',
+        'focus-visible:[&>[data-ring]]:stroke-ring focus-visible:[&>[data-ring]]:stroke-4',
         disabled
           ? 'cursor-default'
           : // Modern kit: the outline ring appears on hover over the filled art.

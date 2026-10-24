@@ -253,6 +253,9 @@ describe('modern kit (fill style, ADR 0024)', () => {
     );
     expect(x1.firstElementChild).toHaveAttribute('data-ring');
     expect(x1.firstElementChild).toHaveClass('stroke-transparent');
+    // The ring is the hit area: the art and badges let pointer events through.
+    expect(x1.firstElementChild).toHaveAttribute('fill', 'transparent');
+    expect(x1.firstElementChild).not.toHaveAttribute('pointer-events');
     // Badges keep their glyphs and sit in the indicator corner the kit leaves empty.
     const badge = a1.querySelector('[data-badge="present"] circle') as Element;
     const S = 40 * 1.3;
@@ -268,6 +271,22 @@ describe('modern kit (fill style, ADR 0024)', () => {
     expect(
       screen.getByRole('button', { name: /A1/ }).querySelector('[data-blocked-bar]'),
     ).toBeNull();
+  });
+
+  it('targets the focus ring by attribute, so a tooltip <title> first does not steal it', () => {
+    renderWithI18n(
+      <BeachMap
+        geometry={geometry}
+        statuses={statuses}
+        spotCaptions={{ A1: 'Rossi' }}
+        spotDescription={(s) => (s.id === 'A1' ? 'Rossi Mario' : undefined)}
+        onSpotActivate={() => undefined}
+      />,
+    );
+    const a1 = screen.getByRole('button', { name: /A1/ });
+    expect(a1.firstElementChild?.tagName.toLowerCase()).toBe('title');
+    expect(a1.getAttribute('class')).toContain('focus-visible:[&>[data-ring]]:stroke-ring');
+    expect(a1.querySelector(':scope > [data-ring]')).not.toBeNull();
   });
 
   it('outlines a selected spot with a band and a dark ring visible on any fill', () => {

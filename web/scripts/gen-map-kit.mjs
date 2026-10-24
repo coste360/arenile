@@ -175,6 +175,26 @@ const HEX = '#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?';
 const FILL_COLOUR_RE = new RegExp(
   `^(?:none|var\\(--beach-[a-z-]+,\\s*(?:${HEX}|var\\(--beach-[a-z-]+,\\s*${HEX}\\))\\))$`,
 );
+const NUMERIC_ATTRS = new Set([
+  'x',
+  'y',
+  'width',
+  'height',
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'stroke-width',
+  'opacity',
+  'fill-opacity',
+  'stroke-opacity',
+]);
+const PLAIN_NUMBER = '[-+]?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][-+]?\\d+)?';
+const PLAIN_NUMBER_RE = new RegExp(`^${PLAIN_NUMBER}$`);
+const NUMBER_LIST_RE = new RegExp(
+  `^[\\s,]*(?:${PLAIN_NUMBER}(?:[\\s,]+${PLAIN_NUMBER})*)?[\\s,]*$`,
+);
 const STATE_COLOUR = new RegExp(`var\\(${STATE_VARIABLE}[,)]`);
 
 export class KitError extends Error {}
@@ -185,6 +205,7 @@ function fail(file, msg) {
 
 function parseAttrs(file, tag, text) {
   const attrs = [];
+  const seen = new Set();
   const re = /\s*([^\s=/>]+)\s*=\s*"([^"]*)"|\s*([^\s=/>]+)\s*=\s*'([^']*)'|\s*(\S+)/gy;
   let m;
   while ((m = re.exec(text)) !== null) {
@@ -192,7 +213,11 @@ function parseAttrs(file, tag, text) {
       if (m[5] === '/') continue;
       fail(file, `<${tag}>: malformed attribute "${m[5]}"`);
     }
-    attrs.push([m[1] ?? m[3], m[2] ?? m[4]]);
+    const name = m[1] ?? m[3];
+    // Browsers keep the first of two equal names, a Map the last: refuse the ambiguity.
+    if (seen.has(name.toLowerCase())) fail(file, `<${tag}>: duplicate attribute "${name}"`);
+    seen.add(name.toLowerCase());
+    attrs.push([name, m[2] ?? m[4]]);
   }
   return attrs;
 }
@@ -213,6 +238,13 @@ function checkAttr(file, tag, name, value, profile) {
     if (TEXT_ATTRS.has(lower)) fail(file, `<${tag}>: attribute "${name}" not allowed in a v3 kit`);
     if ((lower === 'fill' || lower === 'stroke') && !FILL_COLOUR_RE.test(value.trim())) {
       fail(file, `<${tag}>: ${name}="${value}" must be none or var(--beach-*, fallback)`);
+    }
+    // Plain numbers only (no units or percentages), so the corner check measures what is drawn.
+    if (NUMERIC_ATTRS.has(lower) && !PLAIN_NUMBER_RE.test(value.trim())) {
+      fail(file, `<${tag}>: ${name}="${value}" must be a plain number`);
+    }
+    if (lower === 'fill-rule' && !['nonzero', 'evenodd'].includes(value.trim())) {
+      fail(file, `<${tag}>: fill-rule="${value}" must be nonzero or evenodd`);
     }
   }
 }
@@ -244,6 +276,7 @@ export function parseTransform(file, text) {
   let t;
   while ((t = re.exec(text)) !== null) {
     pos = re.lastIndex;
+    if (!NUMBER_LIST_RE.test(t[2])) fail(file, `unsupported transform "${text}"`);
     const v = nums(t[2]);
     let next;
     switch (t[1]) {
@@ -277,10 +310,9 @@ const apply = (m, x, y) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[
  * in the path's own coordinates.
  */
 export function pathOutlines(file, d) {
-  const tokens = d.match(/[MmLlHhVvCcSsQqTtAaZz]|-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gi) ?? [];
   const subpaths = [];
   let pts = [];
-  let i = 0;
+  let i = 0; // scanner position in d
   let cmd = '';
   let x = 0;
   let y = 0;
@@ -289,10 +321,25 @@ export function pathOutlines(file, d) {
   let cx = 0;
   let cy = 0; // last control point (for S/T)
   let prev = '';
+  const malformed = () => fail(file, `malformed path data "${d}"`);
+  const read = (re) => {
+    re.lastIndex = i;
+    const m = re.exec(d);
+    if (!m) malformed();
+    i = re.lastIndex;
+    return m[1];
+  };
+  const NUMBER = /[\s,]*([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)/y;
+  // Arc flags are single characters: "a5 5 0 0110 10" is flags 0 and 1, then 10.
+  const FLAG = /[\s,]*([01])/y;
   const num = () => {
-    const v = Number(tokens[i++]);
-    if (!Number.isFinite(v)) fail(file, `malformed path data "${d}"`);
+    const v = Number(read(NUMBER));
+    if (!Number.isFinite(v)) malformed();
     return v;
+  };
+  const flag = () => read(FLAG) === '1';
+  const skip = () => {
+    while (i < d.length && /[\s,]/.test(d[i])) i++;
   };
   const STEPS = 24;
   const bezier = (p0, p1, p2, p3) => {
@@ -349,9 +396,11 @@ export function pathOutlines(file, d) {
       pts.push([c * ex - s * ey + ccx, s * ex + c * ey + ccy]);
     }
   };
-  while (i < tokens.length) {
-    if (/[a-z]/i.test(tokens[i])) cmd = tokens[i++];
+  for (skip(); i < d.length; skip()) {
+    if (/[a-z]/i.test(d[i])) cmd = d[i++];
     else if (!cmd) fail(file, `path data must start with a command: "${d}"`);
+    else if (/z/i.test(cmd)) malformed(); // numbers after Z: no implicit command
+    const start = i;
     const rel = cmd === cmd.toLowerCase();
     const ox = rel ? x : 0;
     const oy = rel ? y : 0;
@@ -416,8 +465,8 @@ export function pathOutlines(file, d) {
         const rx = Math.abs(num());
         const ry = Math.abs(num());
         const phi = num();
-        const large = num() !== 0;
-        const sweep = num() !== 0;
+        const large = flag();
+        const sweep = flag();
         const nx = ox + num();
         const ny = oy + num();
         arc(x, y, rx, ry, phi, large, sweep, nx, ny);
@@ -433,6 +482,8 @@ export function pathOutlines(file, d) {
       default:
         fail(file, `unsupported path command "${cmd}"`);
     }
+    // Every command but Z consumes numbers, so the loop always ends.
+    if (i === start && !/z/i.test(cmd)) malformed();
     prev = cmd;
   }
   if (pts.length) subpaths.push(pts);
@@ -491,17 +542,21 @@ function shapeOutlines(file, tag, attrs) {
   return null;
 }
 
-/** Even-odd point in polygon over every subpath (implicitly closed). */
-function insideFill(px, py, polys) {
-  let inside = false;
+/** Point in the fill of every subpath (implicitly closed), with the SVG fill rule. */
+function insideFill(px, py, polys, rule = 'nonzero') {
+  let winding = 0;
+  let crossings = 0;
   for (const poly of polys) {
     for (let a = 0, b = poly.length - 1; a < poly.length; b = a++) {
-      const [xa, ya] = poly[a];
-      const [xb, yb] = poly[b];
-      if (ya > py !== yb > py && px < ((xb - xa) * (py - ya)) / (yb - ya) + xa) inside = !inside;
+      const [xa, ya] = poly[b];
+      const [xb, yb] = poly[a];
+      if (ya > py !== yb > py && px < ((xb - xa) * (py - ya)) / (yb - ya) + xa) {
+        crossings++;
+        winding += yb > ya ? 1 : -1;
+      }
     }
   }
-  return inside;
+  return rule === 'evenodd' ? crossings % 2 === 1 : winding !== 0;
 }
 
 /** Whether point p lies in the indicator corner grown by `pad` (minus a hair for anti-aliasing). */
@@ -521,11 +576,23 @@ function inSlot([px, py], pad, eps = 0.05) {
  * as padding) inside the corner, or (filled shapes) the corner covered by
  * the fill. Returns the element's bounding box when it does, else null.
  */
-export function cornerHit(file, tag, attrs, matrix, { filled, strokeWidth }) {
+export function cornerHit(
+  file,
+  tag,
+  attrs,
+  matrix,
+  { filled, strokeWidth, fillRule = 'nonzero', roundJoins = true },
+) {
   const local = shapeOutlines(file, tag, attrs);
   if (!local) return null;
-  const scale = Math.sqrt(Math.abs(matrix[0] * matrix[3] - matrix[1] * matrix[2]));
-  const pad = (strokeWidth * scale) / 2;
+  // Largest stretch of the transform (largest singular value of its 2x2 part):
+  // a non-uniform scale widens the stroke by its larger factor.
+  const [a, b, c, d] = matrix;
+  const p = (a * a + b * b + c * c + d * d) / 2;
+  const q = Math.sqrt(((a * a + b * b - c * c - d * d) / 2) ** 2 + (a * c + b * d) ** 2);
+  const scale = Math.sqrt(p + q);
+  // Miter joins and square caps reach past the half width: be generous.
+  const pad = ((strokeWidth * scale) / 2) * (roundJoins ? 1 : 2);
   const polys = local.map((poly) => poly.map(([x, y]) => apply(matrix, x, y)));
   let box = [Infinity, Infinity, -Infinity, -Infinity];
   let hit = false;
@@ -551,7 +618,7 @@ export function cornerHit(file, tag, attrs, matrix, { filled, strokeWidth }) {
       [s.x + 1, s.y + s.height - 1],
       [s.x + s.width - 1, s.y + s.height - 1],
     ];
-    hit = probes.some(([px, py]) => insideFill(px, py, polys));
+    hit = probes.some(([px, py]) => insideFill(px, py, polys, fillRule));
   }
   return hit ? box.map((v) => +v.toFixed(2)) : null;
 }
@@ -586,7 +653,17 @@ export function sanitise(file, source, { transform, profile = 'halo' } = {}) {
   const out = [];
   const stack = [];
   // Inherited state for the geometry check: matrix, stroke paint and width.
-  const ctx = [{ matrix: IDENTITY, fill: 'black', stroke: 'none', strokeWidth: 1 }];
+  const ctx = [
+    {
+      matrix: IDENTITY,
+      fill: 'black',
+      fillRule: 'nonzero',
+      stroke: 'none',
+      strokeWidth: 1,
+      join: 'miter',
+      cap: 'butt',
+    },
+  ];
   const corner = [];
   let usesState = false;
   const tagRe = /<(\/?)([a-zA-Z][\w:-]*)([^>]*?)(\/?)>|([^<]+)/g;
@@ -630,14 +707,23 @@ export function sanitise(file, source, { transform, profile = 'halo' } = {}) {
           ? multiply(parent.matrix, parseTransform(file, map.get('transform')))
           : parent.matrix,
         fill: map.get('fill') ?? parent.fill,
+        fillRule: map.get('fill-rule') ?? parent.fillRule,
         stroke: map.get('stroke') ?? parent.stroke,
         strokeWidth: map.has('stroke-width') ? Number(map.get('stroke-width')) : parent.strokeWidth,
+        join: map.get('stroke-linejoin') ?? parent.join,
+        cap: map.get('stroke-linecap') ?? parent.cap,
       };
       const fillNone = here.fill === 'none';
-      const painted = !(fillNone && here.stroke === 'none') && map.get('opacity') !== '0';
+      const painted =
+        !(fillNone && here.stroke === 'none') && Number(map.get('opacity') ?? 1) !== 0;
       if (painted && tag !== 'g') {
         const sw = here.stroke === 'none' ? 0 : here.strokeWidth;
-        const box = cornerHit(file, tag, map, here.matrix, { filled: !fillNone, strokeWidth: sw });
+        const box = cornerHit(file, tag, map, here.matrix, {
+          filled: !fillNone,
+          strokeWidth: sw,
+          fillRule: here.fillRule,
+          roundJoins: here.join === 'round' && here.cap !== 'square',
+        });
         if (box) corner.push({ tag, box });
       }
       if (!selfClosing) ctx.push(here);

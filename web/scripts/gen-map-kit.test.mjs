@@ -188,6 +188,50 @@ describe('fill profile (v3 kits)', () => {
     expect(poly.at(-1)).toEqual([10, 10]);
     expect(Math.max(...poly.map((p) => p[0]))).toBeCloseTo(50);
   });
+
+  it('reads compact arc flags and refuses numbers after Z (no endless loop)', () => {
+    const [poly] = pathOutlines('a.svg', 'M0 0a5 5 0 0110 10');
+    expect(poly.at(-1)?.[0]).toBeCloseTo(10);
+    expect(poly.at(-1)?.[1]).toBeCloseTo(10);
+    expect(() => pathOutlines('z.svg', 'M0 0 L10 10 Z 5 5')).toThrow(KitError);
+  });
+
+  // Ways to slip art into the corner past a naive check (review of ADR 0024).
+  it.each([
+    [
+      'duplicate attributes (browsers keep the first)',
+      '<rect x="95" y="2" width="20" height="20" fill="var(--beach-ink, #000)" fill="none"/>',
+    ],
+    [
+      'a length with units',
+      '<path d="M60 14H118" fill="none" stroke="var(--beach-ink, #000)" stroke-width="2px"/>',
+    ],
+    ['a percentage size', '<rect width="100%" height="100%" fill="var(--beach-ink, #000)"/>'],
+    ['a transform with units', '<g transform="translate(10px 0)"><rect/></g>'],
+    ['an unknown fill rule', '<rect x="1" y="1" width="2" height="2" fill-rule="inherit"/>'],
+  ])('rejects %s', (_name, body) => {
+    expect(() => fill(body)).toThrow(KitError);
+  });
+
+  it('applies the nonzero fill rule (two coincident squares still cover the corner)', () => {
+    const square = 'M0 0H120V120H0Z';
+    expect(
+      fill(`<path d="${square} ${square}" fill="var(--beach-ink, #000)"/>`).corner.length,
+    ).toBe(1);
+    // With evenodd the two squares cancel out.
+    expect(
+      fill(`<path d="${square} ${square}" fill-rule="evenodd" fill="var(--beach-ink, #000)"/>`)
+        .corner,
+    ).toEqual([]);
+  });
+
+  it('grows the stroke by the larger factor of a non-uniform scale', () => {
+    // A line at y 40 drawn with stroke 2 under scale(1 10): 20 units thick, reaching y 30.
+    // Moved up to y 3.7 it reaches into the corner only through its vertical stretch.
+    const body =
+      '<g transform="scale(1 10)"><path d="M93 3.7H118" fill="none" stroke="var(--beach-ink, #000)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></g>';
+    expect(fill(body).corner.length).toBe(1);
+  });
 });
 
 describe('catalogue check across kits', () => {

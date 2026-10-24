@@ -87,7 +87,11 @@ function useKitBodies(kits: readonly MapKitKey[]): BodiesByKit {
     if (!missing) return;
     let alive = true;
     for (const k of missing.split(' ') as MapKitKey[]) {
-      void loadKitSymbols(k).then((b) => alive && setBodies((prev) => ({ ...prev, [k]: b })));
+      void loadKitSymbols(k).then(
+        (b) => alive && setBodies((prev) => ({ ...prev, [k]: b })),
+        // Drawings stay missing until the next map mounts and retries the chunk.
+        () => undefined,
+      );
     }
     return () => {
       alive = false;

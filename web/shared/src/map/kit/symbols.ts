@@ -23,10 +23,17 @@ export function loadKitSymbols(kit: MapKitKey): Promise<KitSymbolBodies> {
   if (done) return Promise.resolve(done);
   let p = pending.get(kit);
   if (!p) {
-    p = IMPORTERS[kit]().then((m) => {
-      loaded.set(kit, m.KIT_SYMBOLS);
-      return m.KIT_SYMBOLS;
-    });
+    p = IMPORTERS[kit]().then(
+      (m) => {
+        loaded.set(kit, m.KIT_SYMBOLS);
+        return m.KIT_SYMBOLS;
+      },
+      (err: unknown) => {
+        // A failed chunk (flaky connection) is not cached: the next map retries.
+        pending.delete(kit);
+        throw err;
+      },
+    );
     pending.set(kit, p);
   }
   return p;

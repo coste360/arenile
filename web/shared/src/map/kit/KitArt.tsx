@@ -101,7 +101,7 @@ export function badgeOffset(kit: MapKitKey): number {
 /**
  * The art of a spot with its booking status.
  *
- * Classic kit (`halo` style, ADR 0012): the halo (first child, so focus
+ * Classic kit (`halo` style, ADR 0012): the halo (`data-halo`, so focus
  * styles of the parent can target it) is a tinted disc or rounded square
  * larger than the art (HALO_SCALE x the art box, which is already
  * SPOT_ART_SCALE x the footprint); the status lives in this ring and tint,
@@ -109,7 +109,7 @@ export function badgeOffset(kit: MapKitKey): number {
  *
  * Modern kit (`fill` style, ADR 0024): the art paints its status part with
  * `--beach-state`, set here to the status token, so the umbrella itself is
- * the status colour. The first child is an outline ring with no fill that
+ * the status colour. An outline ring (`data-ring`, transparent fill: the hit area)
  * appears for selection, search matches, hover and keyboard focus (a
  * background-coloured band under a dark ring, visible on any fill). A
  * literal `color` (editor zone colours, panel overrides) cannot reach a CSS
@@ -213,16 +213,16 @@ function FilledSpotArt({
   const classes = STATUS_CLASSES[status];
   const isRect = shape.type === 'rect';
   const ring = S * RING_SCALE;
-  const ringProps = {
-    fill: 'none',
-    pointerEvents: 'none' as const,
-    strokeDasharray: muted && !emphasis ? `${S * 0.05} ${S * 0.04}` : undefined,
-  };
-  const ringShape = (className: string, strokeWidth: number, extra?: Record<string, string>) =>
+  const dash = muted && !emphasis ? `${S * 0.05} ${S * 0.04}` : undefined;
+  // The first ring is also the hit area (transparent fill, like the classic
+  // halo): the art and the badges let pointer events through.
+  const ringShape = (className: string, strokeWidth: number, target: boolean) =>
     isRect ? (
       <rect
-        {...extra}
-        {...ringProps}
+        data-ring={target ? '' : undefined}
+        fill={target ? 'transparent' : 'none'}
+        pointerEvents={target ? undefined : 'none'}
+        strokeDasharray={dash}
         x={x - ring / 2}
         y={y - ring / 2}
         width={ring}
@@ -234,8 +234,10 @@ function FilledSpotArt({
       />
     ) : (
       <circle
-        {...extra}
-        {...ringProps}
+        data-ring={target ? '' : undefined}
+        fill={target ? 'transparent' : 'none'}
+        pointerEvents={target ? undefined : 'none'}
+        strokeDasharray={dash}
         cx={x}
         cy={y}
         r={ring / 2}
@@ -245,13 +247,13 @@ function FilledSpotArt({
     );
   return (
     <>
-      {/* First child: the outline band the parent's hover and focus styles target. */}
+      {/* The outline band the parent's hover and focus styles target ([data-ring]). */}
       {ringShape(
         cn(emphasis ? 'stroke-background' : 'stroke-transparent', haloClassName),
         emphasis ? S * 0.12 : S * 0.08,
-        { 'data-ring': '' },
+        true,
       )}
-      {emphasis && ringShape('stroke-map-spot-selected', S * 0.055)}
+      {emphasis && ringShape('stroke-map-spot-selected', S * 0.055, false)}
       <g
         transform={rotate(rotation, x, y)}
         data-state={status}

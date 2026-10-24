@@ -15,7 +15,7 @@ for previews (`MapKitPreview`). `useMapKit()` reads it; unknown values fall back
 1. `kit/MapBackdrop` — sand, sea band and shoreline in the soft look of the kit (`--beach-*` tokens).
 2. Decorations — `kit/DecorationArt`: one `<use>` per element; modular walkway tiles repeated at a fixed scale.
 3. Spots — `kit/SpotArt`, then the `StatusBadge` glyph in the top-right corner, indicator dots (extra, note,
-   VIP) in the other corner, `MapLabel` pill under the art. The first child is the focus/hover target:
+   VIP) in the other corner, `MapLabel` pill under the art. The focus/hover target is `[data-halo]` or `[data-ring]`:
    - classic (`halo` style): a status halo under the art (`STATUS_CLASSES`, `--status-*`);
    - modern (`fill` style): an outline ring, invisible at rest; the art paints its status part with
      `--beach-state`, set on its group by `STATUS_CLASSES[status].state`. The badge sits in the corner the kit

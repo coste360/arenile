@@ -117,6 +117,8 @@ export function themeOf(
     radius: v.radius,
     show_prices_on_map: v.show_prices_on_map,
     hide_header_in_embed: v.hide_header_in_embed,
+    // Chosen in Stabilimento → Mappa (ADR 0024): the theme is replaced as a whole, so keep it.
+    ...(current?.map_kit ? { map_kit: current.map_kit } : {}),
     custom_texts: customTexts,
   };
 }

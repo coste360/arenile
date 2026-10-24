@@ -47,14 +47,17 @@ Alternative scartate:
    - `fill` (v3): elementi solo `g/path/rect/circle/ellipse` (più `svg` e `title`, tolti); `fill` e `stroke` solo
      `none` o `var(--beach-*, #hex)` (anche annidata); **angolo degli indicatori vuoto** tranne `mare` e `sabbia`,
      verificato sulla geometria vera (contorni con trasformazioni, curve e archi campionati, rettangoli
-     arrotondati, mezzo spessore del tratto, riempimento che coprisse l'angolo), non sul riquadro; ogni asset
+     arrotondati, mezzo spessore del tratto anche sotto scale non uniformi, regola di riempimento `nonzero`/`evenodd`,
+     riempimento che coprisse l'angolo), non sul riquadro, con lunghezze solo numeriche (niente unità o
+     percentuali) e trasformazioni solo numeriche perché la verifica misuri ciò che il browser disegna; ogni asset
      prenotabile deve dipingere il suo stato con `--beach-state`; `stateful`, `cornerFree`, `indicatorSlot` e
      `stateVariable` del manifest devono corrispondere a ciò che il disegno fa. Un errore nomina file e regola.
 3. **Scelta per stabilimento.** Il tema ha `map_kit` (`modern` | `classic`, OpenAPI `Theme.map_kit`, validato da
    `ValidateTheme` contro `mapping.MapKits`); assente vale `modern`. Si sceglie in **Configurazione →
    Stabilimento → Mappa** con l'anteprima di ciascun kit (`MapKitPreview`: la stessa fila di postazioni nei
    principali stati, con badge, passerella e bar). Il tema è sostituito per intero in scrittura, quindi la sezione
-   Mappa reinvia il resto del tema e la sezione del tema reinvia `map_kit`. **Nessuna migrazione**: il campo vive
+   Mappa reinvia il resto del tema, la sezione del tema e la pagina Online reinviano `map_kit`, e il backend delle
+   impostazioni online conserva il kit salvato quando il tema ricevuto non lo indica. **Nessuna migrazione**: il campo vive
    nel JSON del tema già esistente. **Stabilimenti esistenti**: nessuno ha un valore, quindi passano tutti al kit
    moderno al primo avvio della versione; gli id sono gli stessi, le mappe non cambiano, e chi preferisce il
    disegno di prima sceglie Classico.

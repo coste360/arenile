@@ -445,6 +445,13 @@ describe('online schemas', () => {
     expect(input.theme.custom_texts).toEqual({ it: { terms: 'legacy' }, en: { intro: 'Welcome' } });
   });
 
+  it('keeps the map kit chosen in the establishment settings (ADR 0024)', () => {
+    const base = onlineSettings() as unknown as { theme: Record<string, unknown> };
+    const s = { ...base, theme: { ...base.theme, map_kit: 'classic' } } as never;
+    const input = toOnlineInput(toOnlineValues(s, ['it']), s);
+    expect(input.theme.map_kit).toBe('classic');
+  });
+
   it('builds terms versions without empty optional texts', () => {
     expect(
       toTermsInput({
