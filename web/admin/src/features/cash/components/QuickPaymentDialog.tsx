@@ -220,11 +220,13 @@ function PaymentForm({
           ? {
               action: {
                 label: t('receipt.action', { ns: 'printers' }),
+                // No browser layout for the receipt: errors are reported, nothing else prints.
                 onClick: () =>
-                  void printDocument(
-                    { kind: 'payment_receipt', documentId: payment.id, registerId },
-                    () => undefined,
-                  ),
+                  void printDocument({
+                    kind: 'payment_receipt',
+                    documentId: payment.id,
+                    registerId,
+                  }),
               },
             }
           : undefined,

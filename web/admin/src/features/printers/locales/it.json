@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Stampanti",
-    "description": "Stampanti termiche ESC/POS di rete (Wi-Fi o Ethernet) per biglietti, ricevute non fiscali e chiusure di cassa: indirizzo, larghezza carta, taglio, cassetto, instradamento per cassa e stampa di prova. Disponibile con l'app desktop."
+    "description": "Stampanti termiche ESC/POS di rete (Wi-Fi o Ethernet) per ricevute non fiscali e chiusure di cassa, e per i biglietti giornalieri quando la vendita giornaliera sarà attiva: indirizzo, larghezza carta, taglio, cassetto, instradamento per cassa e stampa di prova. Disponibile con l'app desktop."
   },
   "add": "Aggiungi stampante",
   "actions": "Azioni",
@@ -9,7 +9,7 @@
   "editAria": "Modifica la stampante {{name}}",
   "unavailable": {
     "title": "Stampa ESC/POS disponibile con l'app desktop",
-    "description": "Le stampanti termiche di rete si usano quando Arenile gira sul computer dello stabilimento (app desktop, anche in modalità rete locale), perché deve raggiungere la stampante sulla rete del lido. Su questa installazione biglietti, ricevute e chiusure di cassa si stampano dal browser."
+    "description": "Le stampanti termiche di rete si usano quando Arenile gira sul computer dello stabilimento (app desktop, anche in modalità rete locale), perché deve raggiungere la stampante sulla rete del lido. Su questa installazione la chiusura di cassa si stampa dal browser; le ricevute non fiscali richiedono l'app desktop con una stampante termica."
   },
   "list": {
     "title": "Stampanti configurate",
@@ -123,7 +123,7 @@
     "description": "Quale stampante stampa ogni documento. Una regola per una cassa vale prima di quella per tutte le casse; senza regola il documento si stampa dal browser.",
     "add": "Aggiungi regola",
     "empty": "Nessuna regola",
-    "emptyHint": "Aggiungi una regola per stampare biglietti, ricevute e chiusure sulla stampante termica.",
+    "emptyHint": "Aggiungi una regola per stampare chiusure di cassa e ricevute sulla stampante termica.",
     "emptyNoPrinter": "Aggiungi prima una stampante.",
     "document": "Documento",
     "register": "Cassa",
@@ -178,14 +178,15 @@
   "print": {
     "sent": "Inviato a {{name}}",
     "failed": "Stampa non riuscita su {{name}}",
-    "browser": "Stampa dal browser"
+    "browser": "Stampa dal browser",
+    "notPrinted": "{{document}} non stampato"
   },
   "receipt": {
     "action": "Stampa ricevuta"
   },
   "hint": {
     "title": "Stampanti termiche",
-    "description": "Con l'app desktop Arenile stampa biglietti, ricevute e chiusure di cassa sulle stampanti ESC/POS Wi-Fi o Ethernet del lido.",
+    "description": "Con l'app desktop Arenile stampa ricevute non fiscali e chiusure di cassa (e, quando sarà attiva la vendita giornaliera, i biglietti) sulle stampanti ESC/POS Wi-Fi o Ethernet del lido.",
     "action": "Configura le stampanti"
   }
 }

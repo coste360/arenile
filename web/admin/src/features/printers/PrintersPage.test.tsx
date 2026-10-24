@@ -100,7 +100,7 @@ describe('PrintersPage', () => {
     expect(
       await screen.findByText("Stampa ESC/POS disponibile con l'app desktop"),
     ).toBeInTheDocument();
-    expect(screen.getByText(/si stampano dal browser/)).toBeInTheDocument();
+    expect(screen.getByText(/la chiusura di cassa si stampa dal browser/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Aggiungi stampante' })).toBeNull();
     expect(screen.queryByText('Instradamento')).toBeNull();
   });
@@ -161,7 +161,7 @@ describe('PrintersPage', () => {
       chars_per_line: 48,
       codepage: 'cp858',
       cut_mode: 'partial',
-      feed_lines: 4,
+      feed_lines: 3,
       print_logo: true,
       active: true,
     });

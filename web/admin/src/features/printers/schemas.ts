@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import type { Printer, PrinterCodepage, PrinterCutMode, PrinterInput } from './api';
-import { checkHost, DEFAULT_PORT, defaultCharsPerLine, type PaperWidth } from './lib';
+import {
+  checkHost,
+  DEFAULT_FEED_LINES,
+  DEFAULT_PORT,
+  defaultCharsPerLine,
+  type PaperWidth,
+} from './lib';
 
 /** Codepages offered in the form; cp858 has € and the Italian accented vowels. */
 export const CODEPAGES = [
@@ -69,7 +75,7 @@ export function toPrinterValues(p?: Printer): PrinterValues {
     codepage: p?.codepage ?? 'cp858',
     codepage_table: p?.codepage_table === undefined ? '' : String(p.codepage_table),
     cut_mode: p?.cut_mode ?? 'partial',
-    feed_lines: String(p?.feed_lines ?? 4),
+    feed_lines: String(p?.feed_lines ?? DEFAULT_FEED_LINES),
     print_logo: p?.print_logo ?? true,
     drawer_pin: p?.drawer_pin === undefined ? 'none' : (String(p.drawer_pin) as '2' | '5'),
     active: p?.active ?? true,

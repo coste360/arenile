@@ -17,7 +17,15 @@ import {
   type Printer,
   type VersionedRouteSet,
 } from './api';
-import { ROUTABLE_KINDS, compareRows, toRoutes, toRows, type RouteRow } from './lib';
+import {
+  ROUTABLE_KINDS,
+  compareRows,
+  routableKinds,
+  toRoutes,
+  toRows,
+  type RoutableKind,
+  type RouteRow,
+} from './lib';
 
 const rowSchema = z.object({
   kind: z.enum(ROUTABLE_KINDS),
@@ -62,6 +70,8 @@ export interface RoutingCardProps {
   routes: VersionedRouteSet;
   printers: Printer[];
   registers: CashRegister[];
+  /** Whether daily tickets can be printed (`PrinterList.tickets_available`). */
+  ticketsAvailable: boolean;
   readOnly: boolean;
   /** Reloads the set after a 412 version_conflict. */
   onReload: () => void;
@@ -78,6 +88,7 @@ export function RoutingCard({
   routes,
   printers,
   registers,
+  ticketsAvailable,
   readOnly,
   onReload,
 }: RoutingCardProps) {
@@ -105,9 +116,10 @@ export function RoutingCard({
   });
 
   const firstPrinter = printers.find((p) => p.active)?.id ?? '';
+  const kinds = routableKinds(ticketsAvailable);
   const addRow = () => {
     const used = new Set(form.getValues('rows').map((r) => `${r.kind}|${r.registerId}`));
-    const kind = ROUTABLE_KINDS.find((k) => !used.has(`${k}|`)) ?? ROUTABLE_KINDS[0];
+    const kind = kinds.find((k) => !used.has(`${k}|`)) ?? kinds[0] ?? ROUTABLE_KINDS[0];
     const registerId = used.has(`${kind}|`)
       ? (registers.find((r) => !used.has(`${kind}|${r.id}`))?.id ?? '')
       : '';
@@ -162,6 +174,7 @@ export function RoutingCard({
                 <RouteRowFields
                   control={form.control}
                   index={i}
+                  kinds={kinds}
                   printers={printers}
                   printerOptions={printerOptions}
                   registerOptions={registerOptions}
@@ -198,6 +211,7 @@ export function RoutingCard({
 function RouteRowFields({
   control,
   index,
+  kinds,
   printers,
   printerOptions,
   registerOptions,
@@ -206,6 +220,7 @@ function RouteRowFields({
 }: {
   control: Control<RoutesValues>;
   index: number;
+  kinds: RoutableKind[];
   printers: Printer[];
   printerOptions: { value: string; label: string }[];
   registerOptions: { value: string; label: string }[];
@@ -216,6 +231,11 @@ function RouteRowFields({
   const printerId = useWatch({ control, name: `rows.${index}.printerId` });
   const kind = useWatch({ control, name: `rows.${index}.kind` });
   const hasDrawer = printers.find((p) => p.id === printerId)?.drawer_pin !== undefined;
+  // A saved rule keeps its kind selectable even when it is no longer offered.
+  const kindOptions = (kinds.includes(kind) ? kinds : [...kinds, kind]).map((k) => ({
+    value: k,
+    label: t(`kind.${k}`),
+  }));
   const id = `route-${index}`;
   return (
     <fieldset
@@ -229,7 +249,7 @@ function RouteRowFields({
         label={t('routing.document')}
         disabled={readOnly}
         className="lg:col-span-3"
-        options={ROUTABLE_KINDS.map((k) => ({ value: k, label: t(`kind.${k}`) }))}
+        options={kindOptions}
       />
       <SelectField
         control={control}

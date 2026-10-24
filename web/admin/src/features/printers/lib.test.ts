@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkHost, printerAddress, toRoutes, toRows } from './lib';
+import { checkHost, printerAddress, routableKinds, toRoutes, toRows } from './lib';
 
 describe('checkHost', () => {
   it.each([
@@ -9,6 +9,7 @@ describe('checkHost', () => {
     ['172.31.255.255', 'ok'],
     ['127.0.0.1', 'ok'],
     ['169.254.10.20', 'ok'],
+    ['169.254.169.254', 'public'],
     ['100.64.1.2', 'ok'],
     ['100.128.0.1', 'public'],
     ['fe80::1', 'ok'],
@@ -23,6 +24,13 @@ describe('checkHost', () => {
     ['bad host', 'invalid'],
   ])('%s → %s', (host, want) => {
     expect(checkHost(host)).toBe(want);
+  });
+});
+
+describe('routableKinds', () => {
+  it('offers cash documents first and tickets only when the server prints them', () => {
+    expect(routableKinds(false)).toEqual(['cash_z', 'payment_receipt']);
+    expect(routableKinds(true)).toEqual(['cash_z', 'payment_receipt', 'daily_ticket']);
   });
 });
 

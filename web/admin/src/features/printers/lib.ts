@@ -13,12 +13,26 @@ export function defaultCharsPerLine(width: PaperWidth): number {
 /** Raw TCP port of ESC/POS network printers (JetDirect / AppSocket). */
 export const DEFAULT_PORT = 9100;
 
-/** Documents a route can be defined for (the test page ignores routing). */
+/** Feed lines before the cut (the server default when the field is omitted). */
+export const DEFAULT_FEED_LINES = 3;
+
+/**
+ * Documents a route can be defined for, in the order offered to the manager
+ * (the test page ignores routing). Daily tickets come last and are offered
+ * only when the server can print them (`PrinterList.tickets_available`).
+ */
 export const ROUTABLE_KINDS = [
-  'daily_ticket',
   'cash_z',
   'payment_receipt',
+  'daily_ticket',
 ] as const satisfies readonly PrintDocumentKind[];
+
+export type RoutableKind = (typeof ROUTABLE_KINDS)[number];
+
+/** The kinds a new rule may pick, given what the server can print. */
+export function routableKinds(ticketsAvailable: boolean): RoutableKind[] {
+  return ROUTABLE_KINDS.filter((k) => k !== 'daily_ticket' || ticketsAvailable);
+}
 
 export const PRINTER_STATUS_TONE: Record<PrinterStatus, StatusTone> = {
   unknown: 'neutral',
@@ -48,7 +62,14 @@ function ipv4Octets(host: string): number[] | null {
   return octets.every((o) => o <= 255) ? octets : null;
 }
 
-/** RFC 1918, RFC 6598 (100.64/10), loopback and link-local IPv4 ranges (same as the server). */
+/** Cloud metadata endpoint: link-local, but never a printer (refused by the server too). */
+const METADATA_IPV4 = '169.254.169.254';
+
+/**
+ * RFC 1918, RFC 6598 (100.64/10), loopback and link-local IPv4 ranges. Loopback
+ * is accepted here and decided by the server (allowed only with
+ * ARENILE_PRINTERS_ALLOW_LOOPBACK, for development and tests).
+ */
 function isPrivateIPv4([a, b]: number[]): boolean {
   if (a === undefined || b === undefined) return false;
   return (
@@ -79,7 +100,7 @@ export function checkHost(raw: string): HostCheck {
   const host = raw.trim();
   if (host === '') return 'invalid';
   const v4 = ipv4Octets(host);
-  if (v4) return isPrivateIPv4(v4) ? 'ok' : 'public';
+  if (v4) return host !== METADATA_IPV4 && isPrivateIPv4(v4) ? 'ok' : 'public';
   if (IPV4_RE.test(host)) return 'invalid';
   if (host.includes(':')) {
     if (!/^\[?[0-9a-f:.]+\]?$/i.test(host)) return 'invalid';
@@ -99,7 +120,7 @@ export function printerAddress(p: Pick<Printer, 'host' | 'port'>): string {
 
 /** One editable routing rule; registerId '' is the default rule of the document. */
 export interface RouteRow {
-  kind: (typeof ROUTABLE_KINDS)[number];
+  kind: RoutableKind;
   registerId: string;
   printerId: string;
   copies: number;

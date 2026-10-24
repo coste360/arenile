@@ -18,7 +18,9 @@ import { JOB_STATUS_TONE } from './lib';
 /**
  * Ultime stampe: the latest print jobs with their state (queued, printing,
  * printed, failed after the retries, cancelled) and "Riprova" on a failed
- * one. Polls while a job is still in progress.
+ * one. Polls while a job is still in progress. Three columns only (when,
+ * document with its printer underneath, outcome) so the outcome stays on
+ * screen at 390 px.
  */
 export function JobsCard({
   establishmentId,
@@ -51,19 +53,12 @@ export function JobsCard({
       cell: ({ row }) => (
         <span className="flex min-w-0 flex-col">
           <span className="font-medium">{t(`kind.${row.original.document_kind}`)}</span>
-          {row.original.copies > 1 && (
-            <span className="text-xs text-muted-foreground">
-              {t('jobs.copies', { count: row.original.copies })}
-            </span>
-          )}
+          <span className="text-xs text-muted-foreground">
+            {row.original.printer_name ?? t('jobs.printerDeleted')}
+            {row.original.copies > 1 && ` · ${t('jobs.copies', { count: row.original.copies })}`}
+          </span>
         </span>
       ),
-    },
-    {
-      id: 'printer',
-      meta: { label: t('jobs.printer') },
-      header: t('jobs.printer'),
-      cell: ({ row }) => row.original.printer_name ?? t('jobs.printerDeleted'),
     },
     {
       id: 'status',

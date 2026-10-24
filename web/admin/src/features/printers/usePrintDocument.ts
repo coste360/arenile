@@ -78,11 +78,14 @@ export type FallbackReason = PrintRouteUnreadyReason | 'error';
 /**
  * Print-or-fallback for the cash buttons (ADR 0021). On the desktop edition
  * it resolves the route of the document; when a printer is configured and
- * reachable it queues an ESC/POS job (Idempotency-Key per click) and reports
- * the outcome, offering the browser print if the job fails. Otherwise (server
- * edition, no route, printer inactive or unreachable, API error) it runs the
- * browser print `fallback` and says why in a notice (silently on the server
- * edition, where the browser is the only way to print).
+ * reachable it queues an ESC/POS job (Idempotency-Key per click, so a double
+ * click is one job) and reports the outcome, offering the browser print if
+ * the job fails. Otherwise (server edition, no route, printer inactive or
+ * unreachable, API error) it runs the browser print `fallback` and says why
+ * in a notice (silently on the server edition, where the browser is the only
+ * way to print). A document without a browser layout (the payment receipt)
+ * passes no fallback: it then reports an error with the reason and no
+ * browser action.
  */
 export function usePrintDocument(watch?: WatchOptions) {
   const { t } = useTranslation('printers');
@@ -94,8 +97,14 @@ export function usePrintDocument(watch?: WatchOptions) {
   const inFlight = useRef(false);
 
   return useCallback(
-    async (req: PrintRequest, fallback: () => void): Promise<'escpos' | 'browser'> => {
+    async (req: PrintRequest, fallback?: () => void): Promise<'escpos' | 'browser' | 'none'> => {
       const browser = (reason: FallbackReason) => {
+        if (!fallback) {
+          toast.error(t('print.notPrinted', { document: t(`kind.${req.kind}`) }), {
+            description: t(`fallback.${reason}`),
+          });
+          return 'none' as const;
+        }
         fallback();
         // The server edition always prints from the browser: no notice there.
         if (reason !== 'server_edition') {
@@ -103,6 +112,7 @@ export function usePrintDocument(watch?: WatchOptions) {
         }
         return 'browser' as const;
       };
+      const browserAction = fallback ? { label: t('print.browser'), onClick: fallback } : undefined;
       if (!desktop) return browser('server_edition');
       if (inFlight.current) return 'escpos';
       inFlight.current = true;
@@ -130,7 +140,7 @@ export function usePrintDocument(watch?: WatchOptions) {
         } catch (err) {
           toast.error(t('print.failed', { name: printerName }), {
             description: problemText(err),
-            action: { label: t('print.browser'), onClick: fallback },
+            action: browserAction,
           });
           return 'escpos';
         }
@@ -139,7 +149,7 @@ export function usePrintDocument(watch?: WatchOptions) {
           if (last?.status === 'failed') {
             toast.error(t('print.failed', { name: printerName }), {
               description: last.last_error,
-              action: { label: t('print.browser'), onClick: fallback },
+              action: browserAction,
             });
           }
         });

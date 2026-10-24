@@ -215,11 +215,13 @@ export const CONFIG_NAV_ITEMS = [
     labelKey: 'nav.config.imports',
     icon: UploadIcon,
   },
-  // ESC/POS network printers (ADR 0021).
+  // ESC/POS network printers (ADR 0021): desktop edition only; the page
+  // stays reachable by deep link on the server edition and explains why.
   {
     to: '/e/$establishmentId/config/printers',
     labelKey: 'nav.config.printers',
     icon: PrinterIcon,
+    desktopOnly: true,
   },
   {
     to: '/e/$establishmentId/config/team',

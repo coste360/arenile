@@ -101,6 +101,7 @@ export function PrintersPage() {
           routes={routes.data}
           printers={list}
           registers={registers.data ?? []}
+          ticketsAvailable={printers.data?.tickets_available ?? false}
           readOnly={!canConfigure}
           onReload={() => void routes.refetch()}
         />

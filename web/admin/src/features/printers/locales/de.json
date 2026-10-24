@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Drucker",
-    "description": "ESC/POS-Thermodrucker im Netzwerk (WLAN oder Ethernet) für Tickets, nicht-fiskalische Belege und Kassenabschlüsse: Adresse, Papierbreite, Schnitt, Kassenlade, Zuordnung pro Kasse und Testdruck. Verfügbar mit der Desktop-App."
+    "description": "ESC/POS-Thermodrucker im Netzwerk (WLAN oder Ethernet) für nicht-fiskalische Belege und Kassenabschlüsse sowie für Tagestickets, sobald der Tagesverkauf aktiv ist: Adresse, Papierbreite, Schnitt, Kassenlade, Zuordnung pro Kasse und Testdruck. Verfügbar mit der Desktop-App."
   },
   "add": "Drucker hinzufügen",
   "actions": "Aktionen",
@@ -9,7 +9,7 @@
   "editAria": "Drucker {{name}} bearbeiten",
   "unavailable": {
     "title": "ESC/POS-Druck ist mit der Desktop-App verfügbar",
-    "description": "Netzwerk-Thermodrucker funktionieren, wenn Arenile auf dem Computer des Betriebs läuft (Desktop-App, auch im LAN-Modus), weil der Drucker im Strandnetz erreichbar sein muss. Auf dieser Installation werden Tickets, Belege und Kassenabschlüsse über den Browser gedruckt."
+    "description": "Netzwerk-Thermodrucker funktionieren, wenn Arenile auf dem Computer des Betriebs läuft (Desktop-App, auch im LAN-Modus), weil der Drucker im Strandnetz erreichbar sein muss. Auf dieser Installation wird der Kassenabschluss über den Browser gedruckt; nicht-fiskalische Belege benötigen die Desktop-App mit einem Thermodrucker."
   },
   "list": {
     "title": "Eingerichtete Drucker",
@@ -123,7 +123,7 @@
     "description": "Welcher Drucker welches Dokument druckt. Eine Regel für eine Kasse geht der Regel für alle Kassen vor; ohne Regel wird über den Browser gedruckt.",
     "add": "Regel hinzufügen",
     "empty": "Keine Regeln",
-    "emptyHint": "Fügen Sie eine Regel hinzu, um Tickets, Belege und Abschlüsse auf dem Thermodrucker zu drucken.",
+    "emptyHint": "Fügen Sie eine Regel hinzu, um Kassenabschlüsse und Belege auf dem Thermodrucker zu drucken.",
     "emptyNoPrinter": "Fügen Sie zuerst einen Drucker hinzu.",
     "document": "Dokument",
     "register": "Kasse",
@@ -178,14 +178,15 @@
   "print": {
     "sent": "An {{name}} gesendet",
     "failed": "Druck auf {{name}} fehlgeschlagen",
-    "browser": "Über den Browser drucken"
+    "browser": "Über den Browser drucken",
+    "notPrinted": "{{document}} nicht gedruckt"
   },
   "receipt": {
     "action": "Beleg drucken"
   },
   "hint": {
     "title": "Thermodrucker",
-    "description": "Mit der Desktop-App druckt Arenile Tickets, Belege und Kassenabschlüsse auf den WLAN- oder Ethernet-ESC/POS-Druckern des Strandbads.",
+    "description": "Mit der Desktop-App druckt Arenile nicht-fiskalische Belege und Kassenabschlüsse (und Tagestickets, sobald der Tagesverkauf aktiv ist) auf den WLAN- oder Ethernet-ESC/POS-Druckern des Strandbads.",
     "action": "Drucker einrichten"
   }
 }
