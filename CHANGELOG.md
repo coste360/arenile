@@ -6,6 +6,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-24
+
 ### Aggiunto
 - Avviso di nuova versione (ADR 0025): titolari e gestori vedono in cima al pannello "È disponibile Arenile X" con
   **Novità** e **Scarica** (app desktop, il pacchetto per il proprio sistema) o **Come aggiornare** (Docker), chiudibile
@@ -20,6 +22,9 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
   quando è vuoto (prima si raggiungeva solo dal selettore in alto).
 - Configurazione guidata, passo Pagamenti: Stripe non è più mostrato disattivato con "In arrivo · Disponibile a breve";
   il passo spiega che in cassa è tutto pronto e porta con **Configura i pagamenti online** alla pagina di Stripe.
+- Vendita rapida dopo l'orario limite della giornata: invece di "La richiesta non rispetta le regole di prenotazione"
+  la cassa dice di scegliere **Pomeriggio** (o un'altra fascia) e dove si cambia la regola.
+- Test end-to-end della vendita rapida indipendenti dall'ora in cui girano.
 
 ### Modificato
 - Repository pubblico: le GitHub Actions non conservano più binari o pacchetti desktop come artefatti (sarebbero
@@ -828,5 +833,6 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.0...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.1...main
+[1.0.1]: https://github.com/coste360/arenile/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/coste360/arenile/releases/tag/v1.0.0
