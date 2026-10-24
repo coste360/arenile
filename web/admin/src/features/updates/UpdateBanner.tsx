@@ -1,23 +1,31 @@
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
-import { DownloadIcon, ExternalLinkIcon, SparklesIcon, XIcon } from 'lucide-react';
+import { Link, useRouterState } from '@tanstack/react-router';
+import { SparklesIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSystemUpdate } from './api';
-import { browserStorage, readDismissed, upgradeDocsUrl, writeDismissed } from './lib';
+import { browserStorage, readDismissed, writeDismissed } from './lib';
+import { UpdateActions } from './UpdateActions';
 
 /**
  * "New version available" notice of the shell (ADR 0025), for owners and
  * managers only. A polite status region (not a modal, not an alert): it
  * never interrupts the cash desk. Dismissing it remembers that version, so
  * it comes back for the next one. A failed check never shows anything here.
+ * Its actions are the ones of "Informazioni su Arenile" (UpdateActions),
+ * which it links for the details.
  */
 export function UpdateBanner({ storage = browserStorage() }: { storage?: Storage }) {
-  const { t, i18n } = useTranslation('updates');
+  const { t } = useTranslation('updates');
   const query = useSystemUpdate();
   const [dismissed, setDismissed] = useState(() => readDismissed(storage));
+  // "Informazioni su Arenile" shows the same actions in full.
+  const onAbout = useRouterState({
+    select: (s) => /\/informazioni\/?$/.test(s.location.pathname),
+  });
   const u = query.data;
-  if (!u?.update_available || !u.latest || dismissed === u.latest) return null;
+  if (!u?.update_available || !u.latest || dismissed === u.latest || onAbout) return null;
   const latest = u.latest;
 
   const dismiss = () => {
@@ -33,30 +41,10 @@ export function UpdateBanner({ storage = browserStorage() }: { storage?: Storage
         <AlertDescription>
           <p>{t('banner.current', { current: u.current })}</p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            {u.how_to_update === 'docker' ? (
-              <Button asChild size="sm">
-                <a href={upgradeDocsUrl(i18n.language)} target="_blank" rel="noreferrer">
-                  <ExternalLinkIcon aria-hidden="true" />
-                  {t('banner.howTo')}
-                </a>
-              </Button>
-            ) : (
-              u.download_url && (
-                <Button asChild size="sm">
-                  <a href={u.download_url} target="_blank" rel="noreferrer">
-                    <DownloadIcon aria-hidden="true" />
-                    {t('banner.download')}
-                  </a>
-                </Button>
-              )
-            )}
-            {u.release_notes_url && (
-              <Button asChild size="sm" variant="outline">
-                <a href={u.release_notes_url} target="_blank" rel="noreferrer">
-                  {t('banner.notes')}
-                </a>
-              </Button>
-            )}
+            <UpdateActions u={u} size="sm" />
+            <Button asChild size="sm" variant="ghost">
+              <Link to="/informazioni">{t('banner.details')}</Link>
+            </Button>
           </div>
         </AlertDescription>
         <Button

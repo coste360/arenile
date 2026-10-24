@@ -16,7 +16,7 @@ import {
 } from '@arenile/shared/ui/sidebar';
 import { ThemeRadioItems } from '@arenile/shared/ui/patterns';
 import { useNavigate } from '@tanstack/react-router';
-import { ChevronsUpDownIcon, LogOutIcon } from 'lucide-react';
+import { ChevronsUpDownIcon, InfoIcon, LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useOfflineLogout } from '../offline/useOfflineLogout';
 import { UpdateCheckStatus } from '../features/updates/UpdateCheckStatus';
@@ -30,6 +30,7 @@ function initials(name: string): string {
 /** User menu in the sidebar footer: identity, theme choice and logout. */
 export function NavUser() {
   const { t } = useTranslation();
+  const { t: tu } = useTranslation('updates');
   const me = useMe();
   const logout = useLogout();
   const offline = useOfflineLogout();
@@ -94,13 +95,16 @@ export function NavUser() {
             <DropdownMenuSeparator />
             {/* Version and update check (ADR 0025): owners and managers only. */}
             {updates.data && (
-              <>
-                <DropdownMenuLabel className="font-normal">
-                  <UpdateCheckStatus />
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-              </>
+              <DropdownMenuLabel className="font-normal">
+                <UpdateCheckStatus />
+              </DropdownMenuLabel>
             )}
+            {/* Version and updates page, for everybody (the actions are for owners and managers). */}
+            <DropdownMenuItem onSelect={() => void navigate({ to: '/informazioni' })}>
+              <InfoIcon aria-hidden="true" />
+              {tu('about.menu')}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={onLogout} disabled={logout.isPending}>
               <LogOutIcon aria-hidden="true" />
               {t('auth.logout')}

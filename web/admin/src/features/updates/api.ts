@@ -7,7 +7,8 @@ import {
   type Me,
   type Schemas,
 } from '@arenile/shared/api';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { STATUS_REFETCH_MS, updateRefetchInterval } from './lib';
 
 /**
  * Update notice (ADR 0025): GET /api/admin/v1/system/update, readable by
@@ -29,7 +30,12 @@ export function canSeeUpdates(me: Me | undefined): boolean {
   return me.memberships.some((m) => m.permissions.includes('establishment.configure'));
 }
 
-/** The update status for owners and managers; disabled for everyone else. */
+/**
+ * The update status for owners and managers; disabled for everyone else.
+ * The server runs its first check shortly after start-up (`pending` until
+ * then): meanwhile the status is read again every 15 s, so the banner shows
+ * up without a reload; then hourly (the server checks once a day).
+ */
 export function useSystemUpdate() {
   const client = useApiClient();
   const me = useMe();
@@ -38,8 +44,22 @@ export function useSystemUpdate() {
     queryFn: () => call(() => client.GET('/api/admin/v1/system/update')),
     enabled: canSeeUpdates(me.data),
     retry: shouldRetry,
-    // The server checks once a day: an hourly refresh is plenty.
-    staleTime: 60 * 60_000,
+    staleTime: STATUS_REFETCH_MS,
+    refetchInterval: (query) => updateRefetchInterval(query.state.data),
     refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * "Verifica aggiornamenti": POST /api/admin/v1/system/update/check runs the
+ * check now (the server debounces it) and answers with the fresh status,
+ * which replaces the cached one.
+ */
+export function useCheckSystemUpdate() {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<SystemUpdate, ApiProblem, void>({
+    mutationFn: () => call(() => client.POST('/api/admin/v1/system/update/check')),
+    onSuccess: (s) => qc.setQueryData(updateKeys.status, s),
   });
 }

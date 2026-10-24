@@ -3,9 +3,13 @@
     "title": "È disponibile Arenile {{latest}}",
     "current": "Stai usando la versione {{current}}. Prima di aggiornare fai un backup.",
     "notes": "Novità",
-    "download": "Scarica",
     "howTo": "Come aggiornare",
+    "details": "Dettagli",
     "dismiss": "Nascondi l'avviso per questa versione"
+  },
+  "actions": {
+    "download": "Scarica Arenile {{latest}}",
+    "downloadFor": "Scarica Arenile {{latest}} per {{platform}}"
   },
   "status": {
     "version": "Versione {{current}}",
@@ -14,5 +18,37 @@
     "unavailable": "Impossibile cercare automaticamente gli aggiornamenti.",
     "upToDate": "Arenile è aggiornato.",
     "devBuild": "Versione di sviluppo: nessun controllo degli aggiornamenti."
+  },
+  "about": {
+    "menu": "Informazioni su Arenile",
+    "title": "Informazioni su Arenile",
+    "description": "Versione in uso, controllo degli aggiornamenti e download della nuova versione.",
+    "versionTitle": "Versione e aggiornamenti",
+    "current": "Versione in uso",
+    "edition": "Edizione",
+    "editionDesktop": "App desktop",
+    "editionDocker": "Server (Docker)",
+    "editionServer": "Server",
+    "check": "Controllo aggiornamenti",
+    "checkOn": "Attivo",
+    "checkOff": "Disattivato",
+    "checkOffDesktop": "Si attiva in Configurazione → App desktop.",
+    "checkOffServer": "Si attiva con la variabile ARENILE_UPDATE_CHECK.",
+    "lastCheck": "Ultimo controllo",
+    "never": "Non ancora eseguito",
+    "pending": "Primo controllo in corso…",
+    "latest": "Ultima versione pubblicata",
+    "published": "Pubblicata il {{date}}",
+    "checkNow": "Verifica aggiornamenti",
+    "checking": "Verifica in corso…",
+    "backupFirst": "Prima di aggiornare fai un backup.",
+    "opensInBrowser": "Il download si apre nel browser predefinito.",
+    "allVersions": "Tutte le versioni e i sistemi",
+    "ownersOnly": "Lo stato degli aggiornamenti è visibile solo a titolari e gestori."
+  },
+  "check": {
+    "available": "È disponibile la versione {{latest}}.",
+    "disabled": "Il controllo degli aggiornamenti è disattivato.",
+    "failed": "Verifica non riuscita: riprova tra poco."
   }
 }

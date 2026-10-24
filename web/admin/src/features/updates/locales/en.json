@@ -3,9 +3,13 @@
     "title": "Arenile {{latest}} is available",
     "current": "You are using version {{current}}. Make a backup before updating.",
     "notes": "What's new",
-    "download": "Download",
     "howTo": "How to update",
+    "details": "Details",
     "dismiss": "Hide the notice for this version"
+  },
+  "actions": {
+    "download": "Download Arenile {{latest}}",
+    "downloadFor": "Download Arenile {{latest}} for {{platform}}"
   },
   "status": {
     "version": "Version {{current}}",
@@ -14,5 +18,37 @@
     "unavailable": "Couldn't check for updates automatically.",
     "upToDate": "Arenile is up to date.",
     "devBuild": "Development build: no update check."
+  },
+  "about": {
+    "menu": "About Arenile",
+    "title": "About Arenile",
+    "description": "Version in use, update check and download of the new version.",
+    "versionTitle": "Version and updates",
+    "current": "Version in use",
+    "edition": "Edition",
+    "editionDesktop": "Desktop app",
+    "editionDocker": "Server (Docker)",
+    "editionServer": "Server",
+    "check": "Update check",
+    "checkOn": "On",
+    "checkOff": "Off",
+    "checkOffDesktop": "Turn it on in Settings → Desktop app.",
+    "checkOffServer": "Turn it on with the ARENILE_UPDATE_CHECK variable.",
+    "lastCheck": "Last check",
+    "never": "Not run yet",
+    "pending": "First check in progress…",
+    "latest": "Latest published version",
+    "published": "Published on {{date}}",
+    "checkNow": "Check for updates",
+    "checking": "Checking…",
+    "backupFirst": "Make a backup before updating.",
+    "opensInBrowser": "The download opens in the default browser.",
+    "allVersions": "All versions and systems",
+    "ownersOnly": "Only owners and managers can see the update status."
+  },
+  "check": {
+    "available": "Version {{latest}} is available.",
+    "disabled": "The update check is off.",
+    "failed": "Check failed: try again shortly."
   }
 }

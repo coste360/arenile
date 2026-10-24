@@ -3,9 +3,13 @@
     "title": "Arenile {{latest}} est disponible",
     "current": "Vous utilisez la version {{current}}. Faites une sauvegarde avant de mettre à jour.",
     "notes": "Nouveautés",
-    "download": "Télécharger",
     "howTo": "Comment mettre à jour",
+    "details": "Détails",
     "dismiss": "Masquer l'avis pour cette version"
+  },
+  "actions": {
+    "download": "Télécharger Arenile {{latest}}",
+    "downloadFor": "Télécharger Arenile {{latest}} pour {{platform}}"
   },
   "status": {
     "version": "Version {{current}}",
@@ -14,5 +18,37 @@
     "unavailable": "Impossible de rechercher automatiquement les mises à jour.",
     "upToDate": "Arenile est à jour.",
     "devBuild": "Version de développement : aucune vérification des mises à jour."
+  },
+  "about": {
+    "menu": "À propos d'Arenile",
+    "title": "À propos d'Arenile",
+    "description": "Version utilisée, vérification des mises à jour et téléchargement de la nouvelle version.",
+    "versionTitle": "Version et mises à jour",
+    "current": "Version utilisée",
+    "edition": "Édition",
+    "editionDesktop": "Application de bureau",
+    "editionDocker": "Serveur (Docker)",
+    "editionServer": "Serveur",
+    "check": "Vérification des mises à jour",
+    "checkOn": "Activée",
+    "checkOff": "Désactivée",
+    "checkOffDesktop": "À activer dans Configuration → Application de bureau.",
+    "checkOffServer": "À activer avec la variable ARENILE_UPDATE_CHECK.",
+    "lastCheck": "Dernière vérification",
+    "never": "Pas encore effectuée",
+    "pending": "Première vérification en cours…",
+    "latest": "Dernière version publiée",
+    "published": "Publiée le {{date}}",
+    "checkNow": "Rechercher des mises à jour",
+    "checking": "Vérification en cours…",
+    "backupFirst": "Faites une sauvegarde avant de mettre à jour.",
+    "opensInBrowser": "Le téléchargement s'ouvre dans le navigateur par défaut.",
+    "allVersions": "Toutes les versions et tous les systèmes",
+    "ownersOnly": "Seuls les propriétaires et les gérants voient l'état des mises à jour."
+  },
+  "check": {
+    "available": "La version {{latest}} est disponible.",
+    "disabled": "La vérification des mises à jour est désactivée.",
+    "failed": "Échec de la vérification : réessayez dans un instant."
   }
 }

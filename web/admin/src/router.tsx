@@ -272,6 +272,16 @@ const desktopShortcutRoute = createRoute({
   path: 'desktop',
   component: () => <EstablishmentSectionRedirect section="config/desktop" />,
 });
+/**
+ * /admin/informazioni: "Informazioni su Arenile", version and updates
+ * (ADR 0025). Establishment-less: linked by the user menu, the update
+ * banner, the desktop app menu and the "new version" notification.
+ */
+const aboutRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: 'informazioni',
+  component: lazyRouteComponent(() => import('./features/updates'), 'AboutPage'),
+});
 const firstRunRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'first-run',
@@ -444,6 +454,7 @@ const routeTree = rootRoute.addChildren([
     indexRoute,
     settingsRoute,
     desktopShortcutRoute,
+    aboutRoute,
     ...legacySectionRoutes,
     lanShortcutRoute,
     newEstablishmentRoute,

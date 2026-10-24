@@ -3,9 +3,13 @@
     "title": "Arenile {{latest}} ist verfügbar",
     "current": "Sie verwenden Version {{current}}. Erstellen Sie vor dem Update eine Sicherung.",
     "notes": "Neuigkeiten",
-    "download": "Herunterladen",
     "howTo": "So aktualisieren Sie",
+    "details": "Details",
     "dismiss": "Hinweis für diese Version ausblenden"
+  },
+  "actions": {
+    "download": "Arenile {{latest}} herunterladen",
+    "downloadFor": "Arenile {{latest}} für {{platform}} herunterladen"
   },
   "status": {
     "version": "Version {{current}}",
@@ -14,5 +18,37 @@
     "unavailable": "Updates konnten nicht automatisch gesucht werden.",
     "upToDate": "Arenile ist auf dem neuesten Stand.",
     "devBuild": "Entwicklungsversion: keine Update-Prüfung."
+  },
+  "about": {
+    "menu": "Über Arenile",
+    "title": "Über Arenile",
+    "description": "Verwendete Version, Update-Prüfung und Download der neuen Version.",
+    "versionTitle": "Version und Updates",
+    "current": "Verwendete Version",
+    "edition": "Edition",
+    "editionDesktop": "Desktop-App",
+    "editionDocker": "Server (Docker)",
+    "editionServer": "Server",
+    "check": "Update-Prüfung",
+    "checkOn": "Aktiv",
+    "checkOff": "Deaktiviert",
+    "checkOffDesktop": "Aktivieren unter Einstellungen → Desktop-App.",
+    "checkOffServer": "Aktivieren mit der Variable ARENILE_UPDATE_CHECK.",
+    "lastCheck": "Letzte Prüfung",
+    "never": "Noch nicht ausgeführt",
+    "pending": "Erste Prüfung läuft…",
+    "latest": "Neueste veröffentlichte Version",
+    "published": "Veröffentlicht am {{date}}",
+    "checkNow": "Nach Updates suchen",
+    "checking": "Prüfung läuft…",
+    "backupFirst": "Erstellen Sie vor dem Update eine Sicherung.",
+    "opensInBrowser": "Der Download öffnet sich im Standardbrowser.",
+    "allVersions": "Alle Versionen und Systeme",
+    "ownersOnly": "Den Update-Status sehen nur Inhaber und Manager."
+  },
+  "check": {
+    "available": "Version {{latest}} ist verfügbar.",
+    "disabled": "Die Update-Prüfung ist deaktiviert.",
+    "failed": "Prüfung fehlgeschlagen: versuchen Sie es gleich noch einmal."
   }
 }

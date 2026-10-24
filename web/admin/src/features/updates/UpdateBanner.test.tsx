@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EST_ID,
   baseRoutes,
@@ -9,7 +9,17 @@ import {
   renderApp,
   type TestRole,
 } from '../configuration/testing';
-import { DISMISSED_KEY, readDismissed, upgradeDocsUrl, writeDismissed } from './lib';
+import {
+  DISMISSED_KEY,
+  PENDING_REFETCH_MS,
+  STATUS_REFETCH_MS,
+  isPackageUrl,
+  platformLabel,
+  readDismissed,
+  updateRefetchInterval,
+  upgradeDocsUrl,
+  writeDismissed,
+} from './lib';
 
 const PATH = `/e/${EST_ID}/config/test-mode`;
 const UPDATE = '/api/admin/v1/system/update';
@@ -26,6 +36,10 @@ function status(overrides: Record<string, unknown> = {}) {
     how_to_update: 'desktop',
     check_enabled: true,
     checked_at: '2026-10-24T09:00:00Z',
+    last_attempt_at: '2026-10-24T09:00:00Z',
+    pending: false,
+    os: 'windows',
+    arch: 'amd64',
     ...overrides,
   };
 }
@@ -48,7 +62,9 @@ describe('UpdateBanner', () => {
     const banner = await screen.findByTestId('update-banner');
     expect(within(banner).getByRole('status')).toBeTruthy();
     expect(within(banner).getByText('È disponibile Arenile 1.2.0')).toBeTruthy();
-    const download = within(banner).getByRole('link', { name: 'Scarica' });
+    const download = within(banner).getByRole('link', {
+      name: 'Scarica Arenile 1.2.0 per Windows',
+    });
     expect(download.getAttribute('href')).toBe(
       'https://arenile.app/download/1.2.0/Arenile-1.2.0_setup.exe',
     );
@@ -60,7 +76,7 @@ describe('UpdateBanner', () => {
   it('links Docker installs to the upgrade guide', async () => {
     render(status({ how_to_update: 'docker', download_url: undefined }));
     const banner = await screen.findByTestId('update-banner');
-    expect(within(banner).queryByRole('link', { name: 'Scarica' })).toBeNull();
+    expect(within(banner).queryByRole('link', { name: /Scarica/ })).toBeNull();
     expect(within(banner).getByRole('link', { name: 'Come aggiornare' }).getAttribute('href')).toBe(
       'https://docs.arenile.app/installazione/aggiornamenti/',
     );
@@ -95,6 +111,27 @@ describe('UpdateBanner', () => {
     await screen.findByRole('switch', { name: 'Modalità prova attiva' });
     expect(screen.queryByTestId('update-banner')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('appears without a reload once the first server check is done', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      let body = status({ pending: true, latest: undefined, update_available: false });
+      const { fetchMock } = renderApp(PATH, {
+        ...baseRoutes('owner'),
+        [`GET /api/admin/v1/establishments/${EST_ID}/test-mode`]: () =>
+          json(200, { enabled: false, public_enabled: false, test_bookings_count: 0, version: 1 }),
+        [`GET ${UPDATE}`]: () => json(200, body),
+      });
+      await waitFor(() => expect(callsTo(fetchMock, 'GET', UPDATE)).toHaveLength(1));
+      expect(screen.queryByTestId('update-banner')).toBeNull();
+      body = status();
+      await vi.advanceTimersByTimeAsync(PENDING_REFETCH_MS);
+      expect(await screen.findByTestId('update-banner')).toBeTruthy();
+      expect(callsTo(fetchMock, 'GET', UPDATE)).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('never asks a cashier', async () => {
@@ -167,5 +204,26 @@ describe('update notice helpers', () => {
   it('links the upgrade guide in the panel language', () => {
     expect(upgradeDocsUrl('it')).toBe('https://docs.arenile.app/installazione/aggiornamenti/');
     expect(upgradeDocsUrl('de')).toBe('https://docs.arenile.app/en/installazione/aggiornamenti/');
+  });
+});
+
+describe('update status cadence', () => {
+  it('polls every 15 s while the first check is pending, then hourly', () => {
+    expect(updateRefetchInterval({ pending: true, check_enabled: true })).toBe(PENDING_REFETCH_MS);
+    expect(updateRefetchInterval({ pending: false, check_enabled: true })).toBe(STATUS_REFETCH_MS);
+    expect(updateRefetchInterval({ pending: true, check_enabled: false })).toBe(STATUS_REFETCH_MS);
+    expect(updateRefetchInterval(undefined)).toBe(STATUS_REFETCH_MS);
+  });
+
+  it('names the system of the package', () => {
+    expect(platformLabel('darwin', 'arm64')).toBe('macOS (Apple Silicon)');
+    expect(platformLabel('darwin', 'amd64')).toBe('macOS (Intel)');
+    expect(platformLabel('windows', 'amd64')).toBe('Windows');
+    expect(platformLabel('linux', 'amd64')).toBe('Linux');
+    expect(platformLabel(undefined, undefined)).toBeUndefined();
+    expect(isPackageUrl('https://arenile.app/download/')).toBe(false);
+    expect(isPackageUrl('https://arenile.app/download')).toBe(false);
+    expect(isPackageUrl('https://updates.coste360.it/arenile/1.2.0/Arenile-1.2.0.dmg')).toBe(true);
+    expect(isPackageUrl(undefined)).toBe(false);
   });
 });
