@@ -52,7 +52,7 @@ func (v NotificationVisibility) audiences() []string {
 }
 
 func notificationAudience(q *bun.SelectQuery, v NotificationVisibility) *bun.SelectQuery {
-	return q.Where("an.audience IN (?)", bun.In(v.audiences()))
+	return q.Where("an.audience IN (?)", bun.List(v.audiences()))
 }
 
 // ListAdminNotifications returns a page of the notifications of es, newest
@@ -130,7 +130,7 @@ func MarkAllAdminNotificationsRead(ctx context.Context, db bun.IDB, es Establish
 	q := db.NewUpdate().Model((*AdminNotification)(nil)).
 		Set("read_at = ?", at).Set("read_by_user_id = ?", notificationUser(userID)).
 		Where("establishment_id = ?", es.ID()).Where("read_at IS NULL")
-	q = q.Where("audience IN (?)", bun.In(v.audiences()))
+	q = q.Where("audience IN (?)", bun.List(v.audiences()))
 	res, err := q.Exec(ctx)
 	if err != nil {
 		return 0, wrapWrite("mark admin notifications read", err)

@@ -315,7 +315,7 @@ func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
 		if _, _, err := del.CreateEndpoint(ctx, db, es, event.CreateEndpointInput{URL: "http://127.0.0.1:1/hook", Events: []string{"booking.*"}}); err != nil {
 			t.Fatal(err)
 		}
-		real := f.MustCreate(f.Input(f.Spots[0], "2027-07-10", "2027-07-10"))
+		realBk := f.MustCreate(f.Input(f.Spots[0], "2027-07-10", "2027-07-10"))
 
 		// Switch test mode on: the next booking is a test row.
 		row, err := store.EnsureTestModeSettings(ctx, db, es, f.Clock.Now())
@@ -371,7 +371,7 @@ func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
 		for _, dl := range deliveries {
 			var ev store.OutboxEvent
 			_ = db.NewSelect().Model(&ev).Where("id = ?", dl.EventID).Scan(ctx)
-			if bytes.Contains(ev.Payload, []byte(real.Booking.ID)) {
+			if bytes.Contains(ev.Payload, []byte(realBk.Booking.ID)) {
 				realDelivered = true
 			}
 		}

@@ -105,11 +105,11 @@ func TestPaymentWebhook_ModeFollowsIntent(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		e := newEnv(t, db)
 		e.settings.twoModes = true
-		real := e.held(0, "2027-07-10")
-		if real.Test {
+		realBk := e.held(0, "2027-07-10")
+		if realBk.Test {
 			t.Fatal("real booking flagged test")
 		}
-		liveRes := e.start(real)
+		liveRes := e.start(realBk)
 		if pi := e.intent(liveRes.IntentID); pi.Mode != store.ProviderModeLive {
 			t.Fatalf("real booking intent mode %q", pi.Mode)
 		}
@@ -131,14 +131,14 @@ func TestPaymentWebhook_ModeFollowsIntent(t *testing.T) {
 		if out, err := e.deliverSigned(e.f.Est.ID, payload, stripetest.WebhookSecret); err != nil || !out.Ignored {
 			t.Fatalf("live event verified by the test secret: %+v %v", out, err)
 		}
-		if e.reload(real.ID).Status != "held" {
+		if e.reload(realBk.ID).Status != "held" {
 			t.Fatal("real booking confirmed by a test-signed delivery")
 		}
 		payload = e.srv.SessionEvent(e.evt(), "checkout.session.completed", livePI.ExternalID, e.f.Clock.Now())
 		if out, err := e.deliverSigned(e.f.Est.ID, payload, liveWebhookSecret); err != nil || out.Ignored || out.Duplicate {
 			t.Fatalf("live delivery: %+v %v", out, err)
 		}
-		if got := e.reload(real.ID); got.Status != "confirmed" || got.PaidAmount != real.TotalAmount {
+		if got := e.reload(realBk.ID); got.Status != "confirmed" || got.PaidAmount != realBk.TotalAmount {
 			t.Fatalf("real booking after live webhook: %+v", got)
 		}
 		livePI = e.intent(liveRes.IntentID)
