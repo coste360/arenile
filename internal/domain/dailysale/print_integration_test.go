@@ -23,8 +23,8 @@ import (
 // and an entry ticket queued as daily_ticket jobs reach the network printer
 // with number, day, spot or "da assegnare", pack or ticket types, amount,
 // the QR of the gate token and the non-fiscal line; the drawer opens only
-// for the first print of a cash ticket (never on a reprint); the holder
-// name is never printed; a reprint says so; unknown
+// for the first print of a cash ticket (never on a reprint); the optional
+// holder surname is printed like on the browser ticket; a reprint says so; unknown
 // tickets are not found; the route is offered only on the desktop edition.
 func TestTicketing_PrintsOnThermalPrinter(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
@@ -108,7 +108,7 @@ func TestTicketing_PrintsOnThermalPrinter(t *testing.T) {
 		s := find("BIGLIETTO #001")
 		for _, want := range [][]byte{
 			[]byte("10/07/2027"), []byte("A1"), []byte("Giornata intera"), []byte(euro(int64(spot.Ticket.TotalAmount))),
-			[]byte("Contanti"), []byte("Non valido ai fini fiscali"), qr(spot.Ticket.GateToken), kick,
+			[]byte("Contanti"), []byte("Non valido ai fini fiscali"), qr(spot.Ticket.GateToken), kick, []byte("Rossi"),
 		} {
 			if !bytes.Contains(s, want) {
 				t.Errorf("spot ticket lacks %q", want)
@@ -125,8 +125,8 @@ func TestTicketing_PrintsOnThermalPrinter(t *testing.T) {
 			t.Errorf("entry ticket:\n%s", escpos.Dump(en))
 		}
 		for _, j := range jobs {
-			if bytes.Contains(j, []byte("Rossi")) || bytes.Contains(j, []byte("RISTAMPA")) {
-				t.Errorf("holder name or reprint mark on a first print:\n%s", escpos.Dump(j))
+			if bytes.Contains(j, []byte("RISTAMPA")) {
+				t.Errorf("reprint mark on a first print:\n%s", escpos.Dump(j))
 			}
 		}
 
