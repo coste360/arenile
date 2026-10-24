@@ -101,6 +101,13 @@ func TestAcceptance_TestMode(t *testing.T) {
 			t.Fatalf("tampered preview token accepted: %s", r)
 		}
 
+		// A real booking paid online with Stripe in test mode carries a test
+		// payment (gateway: payments.test = provider mode test). The purge
+		// never deletes it, so the dry run must not count it either.
+		if _, err := e.db.NewUpdate().TableExpr("payments").Set("test = ?", true).
+			Where("booking_id = ?", realBk.id).Exec(ctx); err != nil {
+			t.Fatalf("mark the real payment as a Stripe test-mode payment: %v", err)
+		}
 		// Purge: dry run counts, then deletes only the test rows.
 		res := decode[api.TestBookingsPurgeResult](t, d.c.must(d.c.post("purgeTestBookings", e.path("/test-bookings/purge"), api.TestBookingsPurgeRequest{DryRun: &on}), "dry run"))
 		if res.Deleted || res.Bookings != 1 || res.Payments != 1 {
@@ -114,6 +121,10 @@ func TestAcceptance_TestMode(t *testing.T) {
 			t.Fatalf("purged booking still readable: %s", r)
 		}
 		d.c.must(d.c.get("getBooking", e.path("/bookings/"+realBk.id)), "real booking after purge")
+		var realPayments int
+		if err := e.db.NewSelect().TableExpr("payments").ColumnExpr("COUNT(*)").Where("booking_id = ?", realBk.id).Scan(ctx, &realPayments); err != nil || realPayments != 1 {
+			t.Fatalf("payments of the real booking after purge: %d %v", realPayments, err)
+		}
 		var left int
 		if err := e.db.NewSelect().TableExpr("spot_allocations").ColumnExpr("COUNT(*)").Where("booking_id = ?", test.id).Scan(ctx, &left); err != nil || left != 0 {
 			t.Fatalf("allocations of the purged booking: %d %v", left, err)

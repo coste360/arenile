@@ -104,7 +104,10 @@ type TestRowCounts struct {
 	Payments int64
 }
 
-// CountTestRows counts the test bookings and test payments of es.
+// CountTestRows counts the rows DeleteTestRows would delete: the test
+// bookings and the payments that belong to them or are test payments without
+// a booking. A test payment of a real booking (paid online with the provider
+// in test mode) is never deleted, so it is not counted.
 func CountTestRows(ctx context.Context, db bun.IDB, es EstablishmentScope) (TestRowCounts, error) {
 	if err := es.mustBeValid(); err != nil {
 		return TestRowCounts{}, err
@@ -117,7 +120,8 @@ func CountTestRows(ctx context.Context, db bun.IDB, es EstablishmentScope) (Test
 	if err := db.NewSelect().TableExpr("payments").ColumnExpr("COUNT(*)").
 		Where("establishment_id = ?", es.ID()).
 		WhereGroup(" AND ", func(q *bun.SelectQuery) *bun.SelectQuery {
-			return q.Where("test = ?", true).WhereOr("booking_id IN (?)", testBookingIDs(db, es))
+			return q.Where("booking_id IN (?)", testBookingIDs(db, es)).
+				WhereOr("test = ? AND booking_id IS NULL", true)
 		}).Scan(ctx, &out.Payments); err != nil && !isNoRows(err) {
 		return out, fmt.Errorf("store: count test payments: %w", err)
 	}

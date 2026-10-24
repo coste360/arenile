@@ -492,6 +492,10 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Fixed
 
+- Area di gestione del cliente: l'avviso del rimborso di una prenotazione cancellata mostrava le chiavi di
+  traduzione (`manage.refund.title`, …) invece dei testi; ora usa lo spazio dei testi della pagina pubblica.
+- Modalità prova, **Elimina le prenotazioni di prova**: l'anteprima contava anche i pagamenti Stripe in modalità test
+  di prenotazioni reali, che l'eliminazione non tocca; ora conta esattamente le righe che verranno eliminate.
 - Le richieste annullate dal client (`context.Canceled`, ad esempio una pagina chiusa durante il caricamento) non
   sono più registrate come errori 500 nei log.
 - Pannello, **Nuova prenotazione**: gli extra usano il nuovo controllo condiviso `QuantityStepper` (− valore +,
