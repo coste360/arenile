@@ -79,7 +79,7 @@ func TestSmoke_ServeHealthAndReady(t *testing.T) {
 		"inventory.sweep_expired_holds", "bookings.expire_holds", "bookings.complete",
 		"fiscal.issue_pending",
 		"payments.reconcile",
-		"notify.deliver",
+		"notify.deliver", "notify.reminders",
 		"device.cleanup_pairing_codes", "fiscalbridge.requeue_expired_leases",
 		"webhooks.retention",
 		"renewals.sync",

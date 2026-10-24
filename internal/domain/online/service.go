@@ -681,6 +681,10 @@ func (s *Service) UpdateEmail(ctx context.Context, p *auth.Principal, establishm
 		if err != nil {
 			return err
 		}
+		if in.Reminders == nil {
+			// Clients that do not send the schedule keep the stored one.
+			in.Reminders = ParseEmailConfig(row.EmailConfig).Reminders
+		}
 		if row.EmailConfig, err = store.MarshalJSONValue(in); err != nil {
 			return fmt.Errorf("online: %w", err)
 		}
@@ -689,6 +693,8 @@ func (s *Service) UpdateEmail(ctx context.Context, p *auth.Principal, establishm
 		}
 		if err := s.record(ctx, tx, p, es, "online.email_settings_updated", event.EntityEmailSettings, es.ID(), row.Version, map[string]any{
 			"reply_to_set": in.ReplyTo != "", "manager_email_set": in.Manager != "",
+			"balance_reminder": in.ToCustomer.BalanceReminder, "day_before_reminder": in.ToCustomer.DayBeforeReminder,
+			"reminders": in.Schedule(),
 		}); err != nil {
 			return err
 		}

@@ -51,6 +51,16 @@
 //     nothing when their data is missing. Labels shared by every template
 //     live in the catalogs i18n/<locale>.json. No tracking pixels, no
 //     remote images except the https logo of the theme.
+//  4. Editable customer texts (ADR 0022, editable.go, templates_admin.go):
+//     subject, opening, closing and signature of every customer kind and
+//     locale, plain text with the placeholders of Placeholders ({nome},
+//     {codice}, ...), validated on save (422 email_template_invalid) and
+//     escaped on render; overrides in email_template_overrides, defaults in
+//     the front matter of the built-in templates.
+//  5. Automatic reminders (reminders.go, job notify.reminders every 5 min):
+//     day before the start and balance due, at the hours of the email
+//     settings in the establishment timezone, once per booking and kind
+//     (dedupe key "reminder:<kind>:<booking id>").
 //
 // The confirmation and modification emails issue a NEW magic link at send
 // time (the raw token exists only in the email; it is revoked if the

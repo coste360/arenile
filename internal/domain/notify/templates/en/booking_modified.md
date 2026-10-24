@@ -1,10 +1,13 @@
 ---
-subject: Booking {{booking.code}} changed – {{establishment.name}}
+subject: Booking {codice} changed – {stabilimento}
 preheader: Here is the updated summary.
+opening: Hi {nome}, we updated booking {codice}. Here is the new summary.
+closing: 
+signature:
 ---
 # Your booking has been changed
 
-Hi {{customer.first_name}}, we updated booking **{{booking.code}}**. Here is the new summary.
+{{> opening}}
 
 {{> summary}}
 
@@ -15,3 +18,7 @@ Hi {{customer.first_name}}, we updated booking **{{booking.code}}**. Here is the
 {{link.expires}}
 
 {{> ics_note}}
+
+{{> closing}}
+
+{{> signature}}

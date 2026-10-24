@@ -52,5 +52,12 @@
   "ics_summary": "{name} – prenotazione {code}",
   "ics_description": "Prenotazione {code} presso {name}.",
   "ics_filename": "prenotazione-{code}.ics",
-  "ics_note": "In allegato trovi il file per aggiungere la prenotazione al tuo calendario."
+  "ics_note": "In allegato trovi il file per aggiungere la prenotazione al tuo calendario.",
+  "balance_notice": "Saldo da pagare: {amount}, entro {date}.",
+  "balance_notice_on_arrival": "Saldo da pagare: {amount}, all'arrivo.",
+  "balance_due_on_arrival": "all'arrivo",
+  "preview_first_name": "Mario",
+  "preview_last_name": "Rossi",
+  "preview_zone": "Prima fila",
+  "preview_pack": "Ombrellone e 2 lettini"
 }

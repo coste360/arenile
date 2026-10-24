@@ -15,6 +15,18 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Added
 
+- **Testi delle email ai clienti modificabili** ([ADR 0022](docs/adr/0022-modelli-email-e-promemoria.md),
+  INV-97): nuova pagina Configurazione → **Email ai clienti**; per ogni email al cliente e lingua (it/en/de/fr)
+  si modificano oggetto, testo iniziale, testo finale e firma, con segnaposto dall'elenco (`{nome}`, `{codice}`,
+  `{data}`, `{postazione}`, `{stabilimento}`, `{importo}`, `{saldo}`, `{scadenza}`, `{cognome}`), anteprima dal vivo
+  con dati di esempio, prova al proprio indirizzo e ripristino del testo predefinito. QR, riepilogo, importi, link di
+  gestione e piè di pagina restano fissi. API `email-templates` (ETag/`If-Match`, `422 email_template_invalid`),
+  migrazione **00012** (SQLite e PostgreSQL) con la tabella `email_template_overrides`.
+- **Promemoria automatici** (ADR 0022, INV-95, INV-96): il promemoria del giorno prima (18:00 predefinite) e quello
+  del saldo (alle 10:00, 2 giorni prima della scadenza della policy, configurabili) partono da soli con il job
+  `notify.reminders`, nel fuso orario dello stabilimento, una sola volta per prenotazione; mai per prenotazioni di
+  prova, cancellate o scadute, clienti senza email o saldo a zero. Nuovi modelli `balance_reminder` e
+  `day_before_reminder` in quattro lingue; `email-settings` ha il nuovo campo `reminders`.
 - Contratto della **vendita giornaliera** (ADR 0020, spec 14.3): API `daily-sales` (preventivo e vendita su
   postazione o zona, pagamento contanti/carta, nome facoltativo), `tickets` (Ticket del giorno con riepilogo ed
   esportazione CSV, dati di stampa, ristampa, annullamento con rimborso, assegnazione, spostamento, assegnazione
@@ -434,6 +446,11 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
   stabilimenti gestiti direttamente, comprese le piscine all'aperto; sono chiariti widget e link nei siti, installazione
   "in un clic", consorzi e associazioni, hotel e aiuto gratuito; il divieto riguarda i servizi a terzi e i prodotti
   che sostituiscono Arenile. README, FAQ e pagina Licenza della documentazione aggiornati.
+- **Promemoria attivi per impostazione predefinita**: gli interruttori dei promemoria del saldo e del giorno prima,
+  finora visibili ma senza effetto, erano già accesi nelle impostazioni email predefinite; dall'aggiornamento i
+  promemoria partono davvero. Si spengono in Configurazione → Email ai clienti, dove si trovano ora (non più in
+  Email e notifiche). Le email ai clienti non usano più il grassetto nel testo iniziale e finale (testo semplice
+  modificabile).
 - **Approvazione delle prenotazioni** (regola R3, ADR 0019 E, INV-78): **Approva**, e **Conferma** su una
   prenotazione *Da approvare*, richiedono ora `establishment.configure` (titolare e gestore); con il solo
   `bookings.write` (cassa, chiavi API con quel permesso) la risposta è `403`. **Rifiuta** resta con

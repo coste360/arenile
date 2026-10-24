@@ -1,0 +1,39 @@
+Subject: Bis morgen – Lido Delfino
+
+Bis morgen!
+===========
+
+Hallo Mario, wir freuen uns, Sie morgen bei Lido Delfino begrüßen zu dürfen. Hier ist die Übersicht der Buchung LD-2027-000001.
+
+Code: LD-2027-000001
+Gebucht von: Mario Rossi
+Zeitraum: Vom Samstag, 10. Juli 2027 bis Montag, 12. Juli 2027
+Tageszeit: Ganzer Tag
+Bereich: Erste Reihe
+Plätze: A1
+Paket: Ombrellone e 2 lettini
+Extras: Zusätzliche Liege × 2
+Gesamt: 1.234,50 €
+Bezahlt: 300,00 €
+Fällige Anzahlung: 70,00 €
+Offener Restbetrag: 934,50 €
+
+Zeigen Sie diesen Code bei Ihrer Ankunft an der Kasse vor.
+LD-2027-000001
+
+Buchung verwalten:
+https://arenile.example/b/lido-delfino/m/TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_A
+
+Der Link ist persönlich und bis Freitag, 13. August 2027 gültig.
+
+Bis morgen am Strand!
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Service-E-Mail zu Ihrer Buchung bei Lido Delfino. Sie enthält weder Werbung noch Tracking.
+
+Arenile — Coste360.it · https://arenile.app

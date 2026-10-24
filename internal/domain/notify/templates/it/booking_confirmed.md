@@ -1,10 +1,13 @@
 ---
-subject: Prenotazione {{booking.code}} confermata – {{establishment.name}}
+subject: Prenotazione {codice} confermata – {stabilimento}
 preheader: Ti aspettiamo {{booking.period}}.
+opening: Ciao {nome}, grazie per aver scelto {stabilimento}. Ecco il riepilogo della prenotazione.
+closing: A presto in spiaggia!
+signature:
 ---
 # La tua prenotazione è confermata
 
-Ciao {{customer.first_name}}, grazie per aver scelto **{{establishment.name}}**. Ecco il riepilogo della prenotazione.
+{{> opening}}
 
 {{> summary}}
 
@@ -18,4 +21,6 @@ Dall'area di gestione puoi vedere i dettagli, pagare il saldo e, nei limiti dell
 
 {{> policy}}
 
-A presto in spiaggia!
+{{> closing}}
+
+{{> signature}}

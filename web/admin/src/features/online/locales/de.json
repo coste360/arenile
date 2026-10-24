@@ -187,7 +187,7 @@
       "day_before_reminder": "Erinnerung am Vortag",
       "cancellation": "Stornierung",
       "refund": "Erstattung oder Gutschrift",
-      "upcoming": "Folgt in einer späteren Version: wird noch nicht gesendet."
+      "remindersMoved": "Erinnerungen an Restbetrag und Vortag stellen Sie unter „E-Mails an Gäste“ ein."
     },
     "manager": {
       "new_online_booking": "Neue Online-Buchung",
@@ -240,6 +240,84 @@
       "manager_approval_requested": "Zu genehmigende Anfrage",
       "manager_payment_failed": "Zahlung fehlgeschlagen",
       "manager_delivery_failed": "E-Mail nicht zugestellt"
+    }
+  },
+  "customerEmails": {
+    "title": "E-Mails an Gäste",
+    "description": "Automatische Erinnerungen und die Texte der E-Mails an Ihre Gäste, in jeder Sprache.",
+    "reminders": {
+      "title": "Automatische Erinnerungen",
+      "description": "Arenile versendet sie selbstständig, einmal pro Buchung, in der Zeitzone des Betriebs.",
+      "dayBefore": "Erinnerung am Vortag",
+      "dayBeforeHint": "Am Tag vor der Anreise um {{time}}, mit QR-Code und Übersicht.",
+      "dayBeforeTime": "Versandzeit der Erinnerung am Vortag",
+      "balance": "Erinnerung an den Restbetrag",
+      "balanceHint": "Um {{time}}, vor der Fälligkeit des Restbetrags laut Buchungsregel.",
+      "balanceTime": "Versandzeit der Erinnerung an den Restbetrag",
+      "leadDays": "Wann, bezogen auf die Fälligkeit",
+      "leadOption_one": "{{count}} Tag vorher",
+      "leadOption_other": "{{count}} Tage vorher",
+      "leadOption_zero": "Am Fälligkeitstag",
+      "rules": "Nicht versendet für Testbuchungen, stornierte oder abgelaufene Buchungen, Gäste ohne E-Mail und beim Restbetrag, wenn nichts mehr offen ist. Die Fälligkeit stammt aus der Buchungsregel („N Tage vorher“ oder bei Ankunft)."
+    },
+    "editor": {
+      "title": "E-Mail-Texte",
+      "description": "Betreff, Einleitung, Schlusstext und Signatur jeder E-Mail. QR-Code, Übersicht, Beträge, Verwaltungslink und Fußzeile bleiben fest; Logo und Farben kommen aus dem Design.",
+      "kind": "E-Mail",
+      "locale": "Sprache",
+      "customized": "Angepasst",
+      "default": "Standardtext",
+      "subject": "Betreff",
+      "opening": "Einleitung",
+      "closing": "Schlusstext",
+      "signature": "Signatur",
+      "counter": "{{count}} von {{max}} Zeichen. Reiner Text: eine Leerzeile trennt Absätze.",
+      "insert": "Platzhalter einfügen",
+      "insertHint": "In das ausgewählte Feld",
+      "fixed": "Feste Blöcke zwischen Einleitung und Schlusstext: {{blocks}}.",
+      "sendTest": "Test an mich senden",
+      "testQueued": "Test-E-Mail für {{to}} in die Warteschlange gestellt.",
+      "restore": "Standard wiederherstellen",
+      "restoreTitle": "Standardtext wiederherstellen?",
+      "restoreDescription": "Die angepassten Texte dieser E-Mail und Sprache werden gelöscht.",
+      "restored": "Standardtext wiederhergestellt."
+    },
+    "preview": {
+      "title": "Vorschau",
+      "subject": "Betreff",
+      "frame": "Vorschau der E-Mail",
+      "sample": "Mit einer Beispielbuchung: keine echten Gästedaten.",
+      "invalid": "Korrigieren Sie die Texte, um die Vorschau zu aktualisieren."
+    },
+    "placeholders": {
+      "nome": "Vorname des Gastes",
+      "cognome": "Nachname des Gastes",
+      "codice": "Buchungscode",
+      "data": "Aufenthaltsdaten",
+      "postazione": "Plätze",
+      "stabilimento": "Name des Betriebs",
+      "importo": "Betrag (Gesamt oder Erstattung)",
+      "saldo": "Offener Restbetrag",
+      "scadenza": "Fälligkeit des Restbetrags"
+    },
+    "blocks": {
+      "summary": "Übersicht und Beträge",
+      "qr": "QR-Code",
+      "manage_button": "Verwaltungslink",
+      "policy": "Stornobedingungen",
+      "ics_note": "Kalenderhinweis",
+      "balance_notice": "Restbetrag und Fälligkeit"
+    },
+    "locales": {
+      "it": "Italienisch",
+      "en": "Englisch",
+      "de": "Deutsch",
+      "fr": "Französisch"
+    },
+    "validation": {
+      "tooLong": "Text zu lang.",
+      "placeholder": "Unbekannter Platzhalter: nur die aus der Liste verwenden.",
+      "oneLine": "Der Betreff muss in eine Zeile passen."
     }
   }
 }

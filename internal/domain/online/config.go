@@ -221,6 +221,17 @@ func ValidateEmailConfig(c EmailConfig) (EmailConfig, error) {
 			ve.Add(f.name, "Indirizzo email non valido.")
 		}
 	}
+	if r := c.Reminders; r != nil {
+		if _, _, ok := ParseClock(r.DayBeforeTime); !ok {
+			ve.Add("reminders.day_before_time", "Orario non valido (HH:MM).")
+		}
+		if _, _, ok := ParseClock(r.BalanceTime); !ok {
+			ve.Add("reminders.balance_time", "Orario non valido (HH:MM).")
+		}
+		if r.BalanceLeadDays < 0 || r.BalanceLeadDays > MaxBalanceLeadDays {
+			ve.Add("reminders.balance_lead_days", fmt.Sprintf("Da 0 a %d giorni.", MaxBalanceLeadDays))
+		}
+	}
 	return c, ve.OrNil()
 }
 

@@ -1,0 +1,38 @@
+Subject: Reminder: balance of booking LD-2027-000001 – Lido Delfino
+
+Balance reminder
+================
+
+Hi Mario, this is a reminder that the balance of booking LD-2027-000001 at Lido Delfino is still to be paid.
+
+Balance due: €934.50, on arrival.
+
+Code: LD-2027-000001
+Booked by: Mario Rossi
+Dates: From Saturday, 10 July 2027 to Monday, 12 July 2027
+Time slot: Full day
+Area: Front row
+Spots: A1
+Package: Umbrella and 2 sunbeds
+Extras: Lettino aggiuntivo × 2
+Total: €1,234.50
+Paid: €300.00
+Deposit due: €70.00
+Balance due: €934.50
+
+Manage your booking:
+https://arenile.example/b/lido-delfino/m/TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_TOKEN_A
+
+This link is personal and stays valid until Friday, 13 August 2027.
+
+You can pay online from the booking page or at the desk. If you have already paid, please ignore this message.
+
+-- 
+Lido Delfino
++39 0541 123456
+info@lidodelfino.example
+Via del Mare 1, 47921 Rimini (RN)
+
+Service email about your booking at Lido Delfino. It contains no advertising and no tracking.
+
+Arenile — Coste360.it · https://arenile.app

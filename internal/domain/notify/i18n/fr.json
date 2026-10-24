@@ -52,5 +52,12 @@
   "ics_summary": "{name} – réservation {code}",
   "ics_description": "Réservation {code} chez {name}.",
   "ics_filename": "reservation-{code}.ics",
-  "ics_note": "Le fichier joint ajoute la réservation à votre agenda."
+  "ics_note": "Le fichier joint ajoute la réservation à votre agenda.",
+  "balance_notice": "Solde à payer : {amount}, avant le {date}.",
+  "balance_notice_on_arrival": "Solde à payer : {amount}, à l'arrivée.",
+  "balance_due_on_arrival": "à l'arrivée",
+  "preview_first_name": "Claire",
+  "preview_last_name": "Martin",
+  "preview_zone": "Premier rang",
+  "preview_pack": "Parasol et 2 transats"
 }

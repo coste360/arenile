@@ -1,11 +1,16 @@
 ---
-subject: Buchung {{booking.code}} storniert – {{establishment.name}}
+subject: Buchung {codice} storniert – {stabilimento}
 preheader: Die Buchung {{booking.code}} wurde storniert.
+opening: Hallo {nome}, die Buchung {codice} ({data}) wurde storniert.
+closing: Falls Ihnen eine Erstattung oder ein Guthaben zusteht, erhalten Sie eine separate Nachricht mit dem Betrag. Bei Fragen antworten Sie einfach auf diese E-Mail oder wenden Sie sich an das Strandbad.
+signature:
 ---
 # Buchung storniert
 
-Hallo {{customer.first_name}}, die Buchung **{{booking.code}}** ({{booking.period}}) wurde storniert.
+{{> opening}}
 
 {{> summary}}
 
-Falls Ihnen eine Erstattung oder ein Guthaben zusteht, erhalten Sie eine separate Nachricht mit dem Betrag. Bei Fragen antworten Sie einfach auf diese E-Mail oder wenden Sie sich an das Strandbad.
+{{> closing}}
+
+{{> signature}}

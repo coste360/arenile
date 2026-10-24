@@ -187,7 +187,7 @@
       "day_before_reminder": "Promemoria il giorno prima",
       "cancellation": "Cancellazione",
       "refund": "Rimborso o credito",
-      "upcoming": "In arrivo in una prossima versione: per ora non viene inviato."
+      "remindersMoved": "I promemoria del saldo e del giorno prima si configurano in \"Email ai clienti\"."
     },
     "manager": {
       "new_online_booking": "Nuova prenotazione online",
@@ -240,6 +240,84 @@
       "manager_approval_requested": "Richiesta da approvare",
       "manager_payment_failed": "Pagamento non riuscito",
       "manager_delivery_failed": "Email non recapitata"
+    }
+  },
+  "customerEmails": {
+    "title": "Email ai clienti",
+    "description": "Promemoria automatici e testi delle email che ricevono i clienti, in ogni lingua.",
+    "reminders": {
+      "title": "Promemoria automatici",
+      "description": "Arenile li invia da solo, una volta per prenotazione, nel fuso orario dello stabilimento.",
+      "dayBefore": "Promemoria il giorno prima",
+      "dayBeforeHint": "Il giorno prima dell'arrivo alle {{time}}, con QR e riepilogo.",
+      "dayBeforeTime": "Ora di invio del promemoria del giorno prima",
+      "balance": "Promemoria del saldo",
+      "balanceHint": "Alle {{time}}, prima della scadenza del saldo indicata dalla policy.",
+      "balanceTime": "Ora di invio del promemoria del saldo",
+      "leadDays": "Quando, rispetto alla scadenza del saldo",
+      "leadOption_one": "{{count}} giorno prima",
+      "leadOption_other": "{{count}} giorni prima",
+      "leadOption_zero": "Il giorno della scadenza",
+      "rules": "Non partono per prenotazioni di prova, cancellate o scadute, per clienti senza email e, per il saldo, quando non resta nulla da pagare. La scadenza del saldo viene dalla policy della prenotazione (\"N giorni prima\" oppure all'arrivo)."
+    },
+    "editor": {
+      "title": "Testi delle email",
+      "description": "Oggetto, testo iniziale, testo finale e firma di ogni email. QR, riepilogo, importi, link di gestione e piè di pagina restano fissi; logo e colori vengono dal tema.",
+      "kind": "Email",
+      "locale": "Lingua",
+      "customized": "Personalizzata",
+      "default": "Testo predefinito",
+      "subject": "Oggetto",
+      "opening": "Testo iniziale",
+      "closing": "Testo finale",
+      "signature": "Firma",
+      "counter": "{{count}} di {{max}} caratteri. Testo semplice: una riga vuota separa i paragrafi.",
+      "insert": "Inserisci segnaposto",
+      "insertHint": "Nel campo selezionato",
+      "fixed": "Blocchi fissi tra testo iniziale e finale: {{blocks}}.",
+      "sendTest": "Invia una prova a me",
+      "testQueued": "Email di prova accodata per {{to}}.",
+      "restore": "Ripristina predefinito",
+      "restoreTitle": "Ripristinare il testo predefinito?",
+      "restoreDescription": "I testi personalizzati di questa email e lingua verranno eliminati.",
+      "restored": "Testo predefinito ripristinato."
+    },
+    "preview": {
+      "title": "Anteprima",
+      "subject": "Oggetto",
+      "frame": "Anteprima dell'email",
+      "sample": "Con una prenotazione di esempio: nessun dato reale dei clienti.",
+      "invalid": "Correggi i testi per aggiornare l'anteprima."
+    },
+    "placeholders": {
+      "nome": "Nome del cliente",
+      "cognome": "Cognome del cliente",
+      "codice": "Codice prenotazione",
+      "data": "Date del soggiorno",
+      "postazione": "Postazioni",
+      "stabilimento": "Nome dello stabilimento",
+      "importo": "Importo (totale o rimborso)",
+      "saldo": "Saldo da pagare",
+      "scadenza": "Scadenza del saldo"
+    },
+    "blocks": {
+      "summary": "riepilogo e importi",
+      "qr": "codice QR",
+      "manage_button": "link di gestione",
+      "policy": "condizioni di cancellazione",
+      "ics_note": "nota sul calendario",
+      "balance_notice": "saldo e scadenza"
+    },
+    "locales": {
+      "it": "Italiano",
+      "en": "Inglese",
+      "de": "Tedesco",
+      "fr": "Francese"
+    },
+    "validation": {
+      "tooLong": "Testo troppo lungo.",
+      "placeholder": "Segnaposto sconosciuto: usa solo quelli dell'elenco.",
+      "oneLine": "L'oggetto deve stare su una riga."
     }
   }
 }

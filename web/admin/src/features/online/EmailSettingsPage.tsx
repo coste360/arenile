@@ -14,6 +14,7 @@ import {
 import { NativeSelect, NativeSelectOption } from '@arenile/shared/ui/native-select';
 import { Spinner } from '@arenile/shared/ui/spinner';
 import { BellIcon, InboxIcon, MailIcon, SendIcon, ServerIcon } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -51,8 +52,8 @@ const STATUS_TONE: Record<MessageStatus, StatusTone> = {
   failed: 'danger',
   cancelled: 'neutral',
 };
-/** Reminders not sent yet (their templates exist; the scheduler comes later). */
-const UPCOMING_CUSTOMER = new Set<string>(['balance_reminder', 'day_before_reminder']);
+/** Reminders are configured in "Email ai clienti" (CustomerEmailsPage, ADR 0022). */
+const REMINDERS = new Set<string>(['balance_reminder', 'day_before_reminder']);
 type Message = NonNullable<ReturnType<typeof useMessages>['data']>['items'][number];
 
 const STATUSES: MessageStatus[] = ['queued', 'sending', 'sent', 'failed', 'cancelled'];
@@ -360,18 +361,26 @@ function EmailForm({
           <div className="grid gap-6 lg:grid-cols-2">
             <FieldSet className="gap-3">
               <FieldLegend variant="label">{t('email.settings.customer')}</FieldLegend>
-              {CUSTOMER_NOTIFICATIONS.map((k) => (
+              {CUSTOMER_NOTIFICATIONS.filter((k) => !REMINDERS.has(k)).map((k) => (
                 <BooleanField
                   key={k}
                   control={form.control}
                   name={`customer_notifications.${k}`}
                   id={`mail-c-${k}`}
                   variant="switch"
-                  disabled={readOnly || UPCOMING_CUSTOMER.has(k)}
+                  disabled={readOnly}
                   label={t(`email.customer.${k}`)}
-                  description={UPCOMING_CUSTOMER.has(k) ? t('email.customer.upcoming') : undefined}
                 />
               ))}
+              <p className="text-sm text-muted-foreground">
+                <Link
+                  to="/e/$establishmentId/config/customer-emails"
+                  params={{ establishmentId }}
+                  className="underline underline-offset-4"
+                >
+                  {t('email.customer.remindersMoved')}
+                </Link>
+              </p>
             </FieldSet>
             <FieldSet className="gap-3">
               <FieldLegend variant="label">
