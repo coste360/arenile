@@ -85,4 +85,5 @@ export const STRIPE_EVENTS = [
   'checkout.session.async_payment_failed',
   'checkout.session.expired',
   'charge.refunded',
+  'refund.failed',
 ] as const;

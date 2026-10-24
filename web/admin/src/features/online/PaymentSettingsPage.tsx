@@ -392,7 +392,7 @@ function PaymentForm({
                   <p>{t('payments.webhook.local.description')}</p>
                   <CodeBlock
                     label={t('payments.webhook.local.command')}
-                    value={`stripe listen --forward-to ${current.webhook_url}`}
+                    value={`stripe listen --events ${STRIPE_EVENTS.join(',')} --forward-to ${current.webhook_url}`}
                     language="shell"
                   />
                 </AlertDescription>
