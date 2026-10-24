@@ -107,22 +107,54 @@ static NSUInteger applicationShouldTerminate(id self, SEL _cmd, id app) {
 	return arenileShellQuitRequested() ? NSTerminateCancel : NSTerminateNow;
 }
 
-// WKUIDelegate: target=_blank and window.open. Other origins go to the
-// default browser (policy in Go); the panel's own pages open in place.
+// Link classes of desktop.ClassifyLink (arenileShellClassifyLink).
+enum {
+	kLinkOther = 0,
+	kLinkPanelPage = 1,
+	kLinkPanelResource = 2,
+	kLinkLeaves = 3,
+};
+
+// classifyLink asks the Go rule (desktop.ClassifyLink, the single source
+// of truth shared with the injected script) how url relates to the panel
+// shown in webView. With no web page shown yet (first load) nothing is
+// classified: the controller's own navigation proceeds.
+static int classifyLink(WKWebView *webView, NSURL *url) {
+	NSURL *current = webView.URL;
+	if (url == nil || current == nil ||
+	    !([current.scheme isEqualToString:@"http"] || [current.scheme isEqualToString:@"https"])) {
+		return kLinkOther;
+	}
+	return arenileShellClassifyLink((char *)[current.absoluteString UTF8String], (char *)[url.absoluteString UTF8String]);
+}
+
+// WKUIDelegate: target=_blank and window.open (the injected script
+// already handles most of them; this is the native net). A link that
+// leaves the panel goes to the default browser (policy in Go); a panel
+// page opens in place; an API URL of the panel (Z report PDF) is saved as
+// a download instead of replacing the panel with a page the operator
+// cannot leave.
 static WKWebView *createWebView(id self, SEL _cmd, WKWebView *webView, WKWebViewConfiguration *cfg,
                                 WKNavigationAction *action, WKWindowFeatures *features) {
 	NSURL *url = action.request.URL;
 	if (url == nil) {
 		return nil;
 	}
-	NSURL *current = webView.URL;
-	BOOL same = current != nil && [url.scheme isEqualToString:current.scheme] &&
-	            [url.host isEqualToString:current.host] &&
-	            ((url.port == nil && current.port == nil) || [url.port isEqual:current.port]);
-	if (same) {
+	switch (classifyLink(webView, url)) {
+	case kLinkPanelPage:
 		[webView loadRequest:action.request];
-	} else {
+		break;
+	case kLinkPanelResource:
+		[webView startDownloadUsingRequest:action.request
+		                 completionHandler:^(WKDownload *download) {
+			                 download.delegate = (id<WKDownloadDelegate>)gNavDelegate;
+		                 }];
+		break;
+	default:
+		// Leaves the panel, or not a web URL: Go refuses what is not a
+		// web link (AllowExternal).
 		arenileShellOpenExternal((char *)[url.absoluteString UTF8String]);
+		break;
 	}
 	return nil;
 }
@@ -152,18 +184,14 @@ static void addMethod(id object, SEL sel, IMP imp, const char *types) {
 		decisionHandler(WKNavigationActionPolicyDownload);
 		return;
 	}
-	// The window shows the panel only: a top-level navigation to another
-	// origin (redirect, location.href, form post) goes to the default
-	// browser (policy in Go) instead of loading with the window bindings.
-	NSURL *url = action.request.URL;
-	NSURL *current = webView.URL;
-	BOOL web = [url.scheme isEqualToString:@"http"] || [url.scheme isEqualToString:@"https"];
-	BOOL panel = current != nil && ([current.scheme isEqualToString:@"http"] || [current.scheme isEqualToString:@"https"]);
-	if (action.targetFrame.isMainFrame && web && panel) {
-		BOOL same = [url.scheme isEqualToString:current.scheme] && [url.host isEqualToString:current.host] &&
-		            ((url.port == nil && current.port == nil) || [url.port isEqual:current.port]);
-		if (!same) {
-			arenileShellOpenExternal((char *)[url.absoluteString UTF8String]);
+	// The window shows the panel only: a top-level navigation that leaves
+	// it (another origin, or a same-origin page outside /admin such as the
+	// public booking page; redirect, location.href, form post) goes to the
+	// default browser (policy in Go) instead of loading with the window
+	// bindings and no way back.
+	if (action.targetFrame == nil || action.targetFrame.isMainFrame) {
+		if (classifyLink(webView, action.request.URL) == kLinkLeaves) {
+			arenileShellOpenExternal((char *)[action.request.URL.absoluteString UTF8String]);
 			decisionHandler(WKNavigationActionPolicyCancel);
 			return;
 		}
@@ -179,7 +207,10 @@ static void addMethod(id object, SEL sel, IMP imp, const char *types) {
 		NSString *cd = [(NSHTTPURLResponse *)response.response valueForHTTPHeaderField:@"Content-Disposition"];
 		attachment = cd != nil && [[cd lowercaseString] hasPrefix:@"attachment"];
 	}
-	if (attachment || !response.canShowMIMEType) {
+	// A top-level API response (an export or a PDF opened by URL) would
+	// replace the panel with a page the operator cannot leave: saved instead.
+	BOOL resource = response.isForMainFrame && classifyLink(webView, response.response.URL) == kLinkPanelResource;
+	if (attachment || resource || !response.canShowMIMEType) {
 		decisionHandler(WKNavigationResponsePolicyDownload);
 		return;
 	}

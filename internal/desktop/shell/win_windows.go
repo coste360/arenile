@@ -18,7 +18,12 @@ import (
 // (Ctrl+C/V/X/Z/A), reload (F5, Ctrl+R) and zoom (Ctrl +/-/0). This file
 // adds the close behaviour (WM_CLOSE subclass: hide or quit, never destroy
 // before the state is saved), the window placement and the focus on a
-// second launch.
+// second launch. Links and navigations that leave the panel are sent to
+// the default browser by the injected script (desktop.LinkScript: clicks,
+// window.open and the Navigation API's navigate event, which WebView2
+// supports), so no WebView2 COM handler is needed here; a same-origin
+// panel URL opened in a new window (Z report PDF) gets WebView2's own
+// popup, which the operator closes to return to the panel.
 
 var (
 	user32                  = windows.NewLazySystemDLL("user32.dll")

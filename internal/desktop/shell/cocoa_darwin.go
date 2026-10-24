@@ -16,6 +16,8 @@ import (
 	"unsafe"
 
 	webview "github.com/webview/webview_go"
+
+	"github.com/coste360/arenile/internal/desktop"
 )
 
 // The macOS layer is a small Objective-C shim (cocoa_darwin.m) on the
@@ -34,7 +36,9 @@ import (
 //   - a WKNavigationDelegate turning attachments, non-displayable types and
 //     <a download> (blob URLs included) into WKDownloads saved where the
 //     controller says (~/Downloads, unique name), with a notification;
-//   - links to other origins opened in a new window -> default browser;
+//   - links and top-level navigations that leave the panel (another origin
+//     or a same-origin page outside /admin: desktop.ClassifyLink) -> default
+//     browser; API URLs opened as pages (Z report PDF) -> downloads;
 //   - window.print -> NSPrintOperation of the WKWebView (print panel);
 //   - window frame (get/set, kept on screen) and page zoom.
 //
@@ -175,4 +179,13 @@ func arenileShellDownloadDone(path *C.char, failed C.int) {
 		p := C.GoString(path)
 		go c.DownloadFinished(p, failed != 0)
 	}
+}
+
+// arenileShellClassifyLink is desktop.ClassifyLink for the shim (pure,
+// synchronous on the main thread): one rule for the injected script, the
+// new-window requests and the top-level navigations.
+//
+//export arenileShellClassifyLink
+func arenileShellClassifyLink(current, target *C.char) C.int {
+	return C.int(desktop.ClassifyLink(C.GoString(current), C.GoString(target)))
 }

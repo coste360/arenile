@@ -72,22 +72,27 @@ func TestVersionAtLeast_Scenarios(t *testing.T) {
 
 func TestWindowHelpers(t *testing.T) {
 	js := InitScript("1.0.0", true)
-	if !strings.Contains(js, `"mode":"remote"`) || !strings.Contains(js, `"kiosk":true`) || !strings.Contains(js, "arenileOpenExternal") {
+	if !strings.Contains(js, `"mode":"remote"`) || !strings.Contains(js, `"kiosk":true`) || !strings.Contains(js, "arenileOpenExternal") ||
+		!strings.Contains(js, `p.indexOf("/admin/") === 0`) || !strings.Contains(js, "window.open = function") {
 		t.Fatal(js)
 	}
-	if !IsExternal("http://127.0.0.1:5/admin/", "https://www.coste360.it/") || IsExternal("http://127.0.0.1:5/admin/", "http://127.0.0.1:5/x") {
+	if !IsExternal("http://127.0.0.1:5/admin/", "https://www.coste360.it/") || IsExternal("http://127.0.0.1:5/admin/", "http://127.0.0.1:5/admin/oggi") ||
+		!IsExternal("http://127.0.0.1:5/admin/", "http://127.0.0.1:5/x") {
 		t.Fatal("IsExternal")
 	}
 	// The binding opens web links of other origins only: never local
 	// programs, files or custom schemes, even though they are "external".
 	panel := "http://127.0.0.1:5/admin/"
-	for _, ok := range []string{"https://www.coste360.it/", "mailto:info@lido.example", "http://192.168.1.20:8443/admin/"} {
+	for _, ok := range []string{
+		"https://www.coste360.it/", "mailto:info@lido.example", "http://192.168.1.20:8443/admin/",
+		"http://127.0.0.1:5/b/bar-marini", "http://127.0.0.1:5/other", "http://127.0.0.1:5/administrator",
+	} {
 		if !AllowExternal(panel, ok) {
 			t.Errorf("AllowExternal(%q) = false", ok)
 		}
 	}
 	for _, bad := range []string{
-		"http://127.0.0.1:5/other", "file:/Applications/Terminal.app", "/Applications/Calculator.app",
+		"http://127.0.0.1:5/admin", "http://127.0.0.1:5/admin/oggi", "/b/bar-marini", "file:/Applications/Terminal.app", "/Applications/Calculator.app",
 		`C:\Windows\System32\calc.exe`, `\\host\share\evil.exe`, "javascript:alert(1)", "arenile://pair?d=x", "-n",
 	} {
 		if AllowExternal(panel, bad) {

@@ -239,6 +239,16 @@ func TestAllowExternal_Policy(t *testing.T) {
 		`\\server\share`:                   false,
 		"https://user:pass@example.it/":    false,
 		"/admin/desktop":                   false,
+		// Same origin, outside the panel: the public pages leave the window.
+		"http://127.0.0.1:5173/b/bar-marini":       true,
+		"http://127.0.0.1:5173/embed.js":           true,
+		"http://127.0.0.1:5173/":                   true,
+		"http://127.0.0.1:5173/administrator":      true,
+		"http://127.0.0.1:5173/admin":              false,
+		"http://127.0.0.1:5173/admin/../b/lido":    true,
+		"http://127.0.0.1:5173/api/admin/v1/x.pdf": false,
+		"/b/bar-marini":                            false,
+		"b/bar-marini":                             false,
 	} {
 		if got := AllowExternal(panel, target); got != want {
 			t.Errorf("AllowExternal(%q)=%v", target, got)
@@ -248,7 +258,10 @@ func TestAllowExternal_Policy(t *testing.T) {
 
 func TestInitScript_DesktopGlobalAndPrint(t *testing.T) {
 	mac := InitScript("v1.2.3", false)
-	for _, want := range []string{`"mode":"local"`, `"shell":"window"`, `"version":"v1.2.3"`, "arenileOpenExternal", "window.print = function", "arenilePrint"} {
+	for _, want := range []string{
+		`"mode":"local"`, `"shell":"window"`, `"version":"v1.2.3"`, "arenileOpenExternal", "window.print = function", "arenilePrint",
+		`p.indexOf("/admin/") === 0`, `a.hasAttribute("download")`, "window.open = function", `addEventListener("navigate"`,
+	} {
 		if !strings.Contains(mac, want) {
 			t.Errorf("macOS script lacks %q", want)
 		}

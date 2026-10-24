@@ -3,7 +3,6 @@ package remote
 import (
 	"context"
 	"encoding/json"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,38 +38,26 @@ var nativeWindow func() Window
 
 // InitScript is the script injected in the panel window (pure): the panel
 // detects the remote mode from window.arenileDesktop (web/admin lib/meta.ts)
-// and links to other origins open in the default browser through the
-// bound arenileOpenExternal function.
+// and links that leave the panel (desktop.LinkScript) open in the default
+// browser through the bound arenileOpenExternal function.
 func InitScript(version string, kiosk bool) string {
 	desc, _ := json.Marshal(map[string]any{"mode": "remote", "version": version, "kiosk": kiosk})
 	return `(function(){
   Object.defineProperty(window, "arenileDesktop", {value: Object.freeze(` + string(desc) + `), writable: false});
-  document.addEventListener("click", function (e) {
-    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
-    if (!a || typeof window.arenileOpenExternal !== "function") return;
-    var u;
-    try { u = new URL(a.href, location.href); } catch (_) { return; }
-    if (u.origin !== location.origin && (u.protocol === "https:" || u.protocol === "http:" || u.protocol === "mailto:")) {
-      e.preventDefault();
-      window.arenileOpenExternal(u.href);
-    }
-  }, true);
+  ` + desktop.LinkScript + `
 })();`
 }
 
-// IsExternal reports whether target leaves the panel origin (pure).
+// IsExternal reports whether target leaves the panel (pure,
+// desktop.LeavesPanel): another origin, or a same-origin path outside the
+// panel (/admin, /api).
 func IsExternal(panelURL, target string) bool {
-	p, err1 := url.Parse(panelURL)
-	t, err2 := url.Parse(target)
-	if err1 != nil || err2 != nil {
-		return false
-	}
-	return t.Scheme+"://"+t.Host != p.Scheme+"://"+p.Host
+	return desktop.LeavesPanel(panelURL, target)
 }
 
 // AllowExternal is the policy of the arenileOpenExternal binding (pure):
 // the window hands to the default browser only web links (http, https,
-// mailto: desktop.IsWebLink) of another origin. The binding stays
+// mailto: desktop.IsWebLink) that leave the panel (IsExternal). The binding stays
 // callable by any script in the window, including a page the window was
 // navigated to, so this check, not the injected click handler, is the
 // security boundary: no file:, path, UNC path or custom scheme ever
