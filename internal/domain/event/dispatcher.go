@@ -65,11 +65,10 @@ func (d *Dispatcher) DispatchPending(ctx context.Context) (int, error) {
 				return err
 			}
 			claimed = true
-			if ev.EstablishmentID == "" {
+			if ev.EstablishmentID == "" || row.Test {
+				// Test-mode events (flag set when the row was written) reach
+				// the sinks and the bus, never the outgoing webhooks (INV-74).
 				return nil
-			}
-			if test, err := testModeEvent(ctx, tx, ev); err != nil || test {
-				return err
 			}
 			endpoints, err := store.ListActiveWebhookEndpoints(ctx, tx, ev.EstablishmentID)
 			if err != nil {

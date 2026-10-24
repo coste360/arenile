@@ -102,6 +102,14 @@ func (o *Outbox) write(ctx context.Context, db bun.IDB, eventType, establishment
 	}
 	if establishmentID != "" {
 		row.EstablishmentID = &establishmentID
+		// Test mode (INV-74): decided now, in the transaction that writes
+		// the test row the event is about, so a purge before the dispatch
+		// cannot turn it into a real event.
+		test, err := testModeEvent(ctx, db, ev)
+		if err != nil {
+			return ext.Event{}, err
+		}
+		row.Test = test
 	}
 	if err := store.InsertOutboxEvent(ctx, db, row); err != nil {
 		return ext.Event{}, fmt.Errorf("event: write %s: %w", eventType, err)

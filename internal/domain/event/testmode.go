@@ -13,9 +13,14 @@ import (
 )
 
 // testModeEvent reports whether ev must stay out of the outgoing webhooks
-// because of test mode (spec 15.4, ADR 0019): events about a test booking or
-// a test payment, and the test-mode events themselves. The real-time bus
-// and the in-process sinks still receive them (the panel shows test rows).
+// because of test mode (spec 15.4, ADR 0019, INV-74): events about a test
+// booking or a test payment, and the test-mode events themselves. It runs
+// when the event is written (Outbox.write, in the transaction that created
+// the row it is about) and its answer is stored on the outbox row, so the
+// dispatcher never looks the row up again: a purge that deletes the test
+// booking before the dispatch cannot turn its events into real ones. The
+// real-time bus and the in-process sinks still receive them (the panel
+// shows test rows).
 func testModeEvent(ctx context.Context, db bun.IDB, ev ext.Event) (bool, error) {
 	if strings.HasPrefix(ev.Type, "establishment.test_") || ev.Type == "booking.test_bookings_purged" {
 		return true, nil

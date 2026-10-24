@@ -34,6 +34,10 @@ ALTER TABLE bookings ADD COLUMN price_override_at timestamptz;
 CREATE INDEX bookings_establishment_test_idx ON bookings (establishment_id) WHERE test;
 
 ALTER TABLE payments ADD COLUMN test boolean NOT NULL DEFAULT false;
+-- Set when the event is written (same transaction as the test row it is
+-- about): the dispatcher keeps flagged events out of the outgoing webhooks
+-- even after the purge deleted the row.
+ALTER TABLE outbox_events ADD COLUMN test boolean NOT NULL DEFAULT false;
 CREATE INDEX payments_establishment_test_idx ON payments (establishment_id) WHERE test;
 
 CREATE TABLE test_mode_settings (
@@ -189,6 +193,7 @@ DROP TABLE cash_registers;
 DROP TABLE refund_requests;
 DROP TABLE test_mode_settings;
 DROP INDEX payments_establishment_test_idx;
+ALTER TABLE outbox_events DROP COLUMN test;
 ALTER TABLE payments DROP COLUMN test;
 DROP INDEX bookings_establishment_test_idx;
 ALTER TABLE bookings DROP COLUMN price_override_at;

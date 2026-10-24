@@ -282,8 +282,8 @@ func recomputeCreditBalance(ctx context.Context, tx bun.IDB, es EstablishmentSco
 
 // IsTestEventSubject reports whether the booking or the payment an event
 // is about (ids from the event payload, empty = none) is a test-mode row of
-// the establishment. Used by the outbox dispatcher, a system job, to keep
-// test rows out of the outgoing webhooks (spec 15.4).
+// the establishment. Used by the outbox when an event is written, to flag
+// the row and keep it out of the outgoing webhooks (spec 15.4, INV-74).
 func IsTestEventSubject(ctx context.Context, db bun.IDB, establishmentID, bookingID, paymentID string) (bool, error) {
 	// A subject id that is not a UUID cannot name a row (and PostgreSQL
 	// would refuse the comparison with the uuid column, aborting the

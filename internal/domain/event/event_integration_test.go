@@ -20,6 +20,7 @@ import (
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/crypto"
 	"github.com/coste360/arenile/internal/domain/audit"
+	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
@@ -294,4 +295,91 @@ func count(t *testing.T, db *store.DB, table string) int {
 		t.Fatal(err)
 	}
 	return n
+}
+
+// TestDispatcher_TestModeEventsNotDelivered (INV-74): the events of a test
+// booking are flagged when they are written, so they never reach the
+// outgoing webhooks, even when the purge deleted the booking before the
+// dispatcher ran; the events of a real booking are delivered. The sinks and
+// the bus still see every event (the panel shows test rows).
+func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		ctx := f.Ctx
+		es, err := store.SystemEstablishmentScope(ctx, db, f.Est.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		kr, _ := crypto.NewKeyRing(bytes.Repeat([]byte{5}, 32))
+		del := event.NewDeliverer(db, f.Clock, kr, nil, audit.NewWriter(f.Clock), nil, event.DeliveryOptions{})
+		if _, _, err := del.CreateEndpoint(ctx, db, es, event.CreateEndpointInput{URL: "http://127.0.0.1:1/hook", Events: []string{"booking.*"}}); err != nil {
+			t.Fatal(err)
+		}
+		real := f.MustCreate(f.Input(f.Spots[0], "2027-07-10", "2027-07-10"))
+
+		// Switch test mode on: the next booking is a test row.
+		row, err := store.EnsureTestModeSettings(ctx, db, es, f.Clock.Now())
+		if err != nil {
+			t.Fatal(err)
+		}
+		row.Enabled = true
+		if ok, err := store.UpdateTestModeSettingsVersioned(ctx, db, es, row, row.Version); err != nil || !ok {
+			t.Fatalf("enable test mode: %v %v", ok, err)
+		}
+		test := f.MustCreate(f.Input(f.Spots[1], "2027-07-10", "2027-07-10"))
+		if !test.Booking.Test {
+			t.Fatal("booking created in test mode not flagged")
+		}
+		var flagged []store.OutboxEvent
+		if err := db.NewSelect().Model(&flagged).Where("test = ?", true).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if len(flagged) == 0 {
+			t.Fatal("no outbox event flagged test")
+		}
+		for _, ev := range flagged {
+			if !bytes.Contains(ev.Payload, []byte(test.Booking.ID)) {
+				t.Fatalf("flagged event %s does not name the test booking", ev.Type)
+			}
+		}
+		// The purge runs before the dispatcher: the test booking is gone.
+		if _, err := db.NewDelete().Model((*store.Booking)(nil)).Where("id = ?", test.Booking.ID).Exec(ctx); err != nil {
+			t.Fatal(err)
+		}
+		sink := &recordingSink{}
+		d := event.NewDispatcher(db, f.Clock, []ext.EventSink{sink}, nil, nil)
+		if _, err := d.DispatchPending(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if n := count(t, db, "outbox_events WHERE dispatched_at IS NULL"); n != 0 {
+			t.Fatalf("undispatched events: %d", n)
+		}
+		var deliveries []store.WebhookDelivery
+		if err := db.NewSelect().Model(&deliveries).Scan(ctx); err != nil {
+			t.Fatal(err)
+		}
+		for _, dl := range deliveries {
+			var ev store.OutboxEvent
+			if err := db.NewSelect().Model(&ev).Where("id = ?", dl.EventID).Scan(ctx); err != nil {
+				t.Fatal(err)
+			}
+			if ev.Test || bytes.Contains(ev.Payload, []byte(test.Booking.ID)) {
+				t.Fatalf("test event %s scheduled to a webhook", ev.Type)
+			}
+		}
+		realDelivered := false
+		for _, dl := range deliveries {
+			var ev store.OutboxEvent
+			_ = db.NewSelect().Model(&ev).Where("id = ?", dl.EventID).Scan(ctx)
+			if bytes.Contains(ev.Payload, []byte(real.Booking.ID)) {
+				realDelivered = true
+			}
+		}
+		if !realDelivered {
+			t.Fatal("the events of the real booking were not scheduled")
+		}
+		if len(sink.events) < 2 {
+			t.Fatalf("sinks received %d events, want every event (test ones included)", len(sink.events))
+		}
+	})
 }

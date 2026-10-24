@@ -650,7 +650,13 @@ Anche il riepilogo Z di una sessione di cassa ignora i pagamenti di prova (`Test
 `internal/domain/cash`).
 Corrispettivi, riepilogo di "Oggi" ed esportazioni (CSV e XLSX) le escludono: `TestAcceptance_TestMode`
 (`internal/acceptance`), `TestExportsHTTP_XLSX` (`internal/http/admin`), tag `integration`, SQLite e PostgreSQL. Gli
-eventi delle righe di prova non escono verso i webhook. Stato: implemented.
+eventi delle righe di prova non escono verso i webhook: il flag `outbox_events.test` è scritto nella stessa
+transazione dell'evento (mai deciso al momento dell'invio), così una purga eseguita prima del dispatcher non li
+trasforma in eventi reali (`TestDispatcher_TestModeEventsNotDelivered`, `internal/domain/event`). La modalità
+(live/test) della configurazione Stripe segue la prenotazione, non l'interruttore: una prenotazione reale non paga
+mai con le chiavi di test e i suoi webhook si verificano con il segreto live anche a modalità prova accesa; un
+pagamento preso con chiavi di test è una riga di prova (`TestPaymentWebhook_ModeFollowsIntent`,
+`internal/domain/payment/gateway`). Stato: implemented.
 
 **INV-75 — Rimborso garantito: mai perso, mai doppio.**
 La cancellazione di una prenotazione pagata online (link di gestione del cliente o pannello) inserisce la richiesta

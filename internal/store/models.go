@@ -262,6 +262,9 @@ type OutboxEvent struct {
 	OccurredAt      time.Time  `bun:"occurred_at,notnull"`
 	CreatedAt       time.Time  `bun:"created_at,notnull"`
 	DispatchedAt    *time.Time `bun:"dispatched_at"`
+	// Test marks an event about a test-mode row (spec 15.4, INV-74), set
+	// when the event is written: never scheduled to outgoing webhooks.
+	Test bool `bun:"test,notnull"`
 }
 
 // WebhookEndpoint is an outgoing webhook target of an establishment.
