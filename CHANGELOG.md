@@ -6,6 +6,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-25
+
+Versione di sola distribuzione: il codice è identico alla 1.0.1.
+
+### Modificato
+- Gli installer Windows (x64 e arm64) e l'eseguibile dell'app desktop sono firmati da **Coste360 SRL** con Azure
+  Artifact Signing e marca temporale Microsoft: SmartScreen non mostra più "editore sconosciuto". Documentazione
+  dell'app desktop aggiornata.
+
 ## [1.0.1] - 2026-10-24
 
 ### Aggiunto
@@ -833,6 +842,7 @@ della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.1...main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.2...main
+[1.0.2]: https://github.com/coste360/arenile/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/coste360/arenile/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/coste360/arenile/releases/tag/v1.0.0
