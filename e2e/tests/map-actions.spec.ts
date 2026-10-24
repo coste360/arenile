@@ -30,7 +30,7 @@ test("three spots selected on the map become one group booking", async ({ page }
   for (const l of ["E3", "E4", "E5"]) await expect(spot(page, l)).toHaveAccessibleName(/Libero/);
 
   // Selection mode: tap the first spot, Shift-click the last one (range).
-  await page.getByRole("button", { name: "Selezione multipla delle postazioni" }).click();
+  await page.getByRole("button", { name: "Seleziona più postazioni" }).click();
   await spot(page, "E3").click();
   await spot(page, "E5").click({ modifiers: ["Shift"] });
   const bar = page.getByTestId("selection-bar");
