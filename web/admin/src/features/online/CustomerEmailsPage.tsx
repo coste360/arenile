@@ -126,7 +126,7 @@ function RemindersCard({
       >
         <div className="space-y-4">
           <FormAlert state={alert} onReload={() => void reload()} />
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="space-y-3">
               <BooleanField
                 control={form.control}
@@ -261,7 +261,7 @@ function PreviewPanel({
 }) {
   const { t } = useTranslation('online');
   return (
-    <section aria-labelledby="tpl-preview-title" className="space-y-2">
+    <section aria-labelledby="tpl-preview-title" className="min-w-0 space-y-2">
       <div className="flex items-center gap-2">
         <EyeIcon aria-hidden="true" className="size-4 text-muted-foreground" />
         <h3 id="tpl-preview-title" className="text-sm font-medium">
@@ -386,7 +386,7 @@ function TemplateEditor({
   ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <form noValidate onSubmit={save} className="min-w-0 space-y-4">
         <FormAlert state={alert} />
         <div className="flex flex-wrap items-center gap-2">
