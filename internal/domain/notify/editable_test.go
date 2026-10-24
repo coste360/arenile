@@ -241,6 +241,42 @@ func TestReminderWindow_TimezonesAndDST(t *testing.T) {
 	}
 }
 
+func TestReminderStillDue_Scenarios(t *testing.T) {
+	b := &store.Booking{
+		StartsOn:       calendar.MustParse("2026-07-10"),
+		PolicySnapshot: store.JSON(`{"version":1,"rules":{"payment":{"balance_due":"days_before:3"}}}`),
+	}
+	day := calendar.MustParse
+	dayBefore := reminderPayload(TemplateDayBeforeReminder, b)
+	balance := reminderPayload(TemplateBalanceReminder, b)
+	if balance["balance_due_on"] != "2026-07-07" {
+		t.Fatalf("payload %v", balance)
+	}
+	tests := []struct {
+		name    string
+		kind    string
+		payload map[string]any
+		today   string
+		want    bool
+	}{
+		{"day before on time", TemplateDayBeforeReminder, dayBefore, "2026-07-09", true},
+		{"day before on the start day", TemplateDayBeforeReminder, dayBefore, "2026-07-10", false},
+		{"day before for other dates", TemplateDayBeforeReminder, map[string]any{"starts_on": "2026-07-11"}, "2026-07-09", false},
+		{"day before without payload", TemplateDayBeforeReminder, map[string]any{}, "2026-07-09", false},
+		{"balance before due", TemplateBalanceReminder, balance, "2026-07-05", true},
+		{"balance on the due day", TemplateBalanceReminder, balance, "2026-07-07", true},
+		{"balance after due", TemplateBalanceReminder, balance, "2026-07-08", false},
+		{"balance due date changed", TemplateBalanceReminder, map[string]any{"starts_on": "2026-07-10", "balance_due_on": "2026-07-03"}, "2026-07-02", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ReminderStillDue(tt.kind, b, tt.payload, day(tt.today)); got != tt.want {
+				t.Fatalf("got %v", got)
+			}
+		})
+	}
+}
+
 func TestReminderEligible_Scenarios(t *testing.T) {
 	base := store.Booking{Status: statusConfirmed, TotalAmount: money.Cents(1000), PaidAmount: 400}
 	with := func(f func(*store.Booking)) *store.Booking { b := base; f(&b); return &b }

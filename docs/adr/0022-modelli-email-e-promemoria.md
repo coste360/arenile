@@ -33,11 +33,12 @@ di non inviare due volte lo stesso promemoria anche con più istanze o esecuzion
 - **Solo le personalizzazioni nel database.** I testi predefiniti sono il front matter dei modelli incorporati
   (`subject`, `opening`, `closing`, `signature`), quindi seguono gli aggiornamenti di Arenile. La migrazione
   **00012** aggiunge `email_template_overrides` (una riga per stabilimento, tipo e lingua, `version` come ETag,
-  `If-Match` con `"0"` per la prima personalizzazione); "ripristina predefinito" elimina la riga. Permesso
+  `If-Match` con `"0"` per la prima personalizzazione); "ripristina predefinito" disattiva la riga (`active =
+false`) e incrementa la versione, così un ETag letto prima del ripristino non vale più (niente ABA). Permesso
   `establishment.configure` per salvare, ripristinare e inviare la prova (all'indirizzo dell'utente collegato,
   oggetto con `[PROVA]`), `bookings.read` per leggere e per l'anteprima; salvataggio e ripristino scrivono il
   registro di audit con i soli nomi dei campi cambiati. La vecchia `notification_templates` resta: se una riga
-  esiste, vince come prima.
+  esiste, vince come prima: i testi modificabili si applicano solo ai modelli incorporati.
 - **Anteprima sul server.** L'anteprima rende i testi non salvati con una prenotazione di esempio (nessun dato
   reale), con le immagini in linea come data URI; il pannello la mostra in un `iframe` con `sandbox` vuoto.
 - **Promemoria come job in processo.** `notify.reminders` gira ogni 5 minuti: per ogni stabilimento calcola il
@@ -53,7 +54,9 @@ di non inviare due volte lo stesso promemoria anche con più istanze o esecuzion
   `message_log (establishment_id, dedupe_key)` (00005, `INSERT ... ON CONFLICT DO NOTHING`) rende l'invio
   idempotente senza una tabella nuova. Idonee: confermate, non di prova, create prima dell'istante di invio,
   cliente con email non anonimizzato, saldo positivo per il promemoria del saldo; le stesse regole si ricontrollano
-  all'invio (un pagamento arrivato nel frattempo annulla il messaggio).
+  all'invio, insieme alle date (il messaggio registra inizio e scadenza del saldo: se sono cambiate o già passate,
+  per esempio dopo una modifica o un SMTP fermo per la notte, il messaggio è annullato). Le prenotazioni già
+  ricordate sono escluse dalla lettura dei candidati, letti a pagine con un cursore su data di inizio e id.
 - **Pagina "Email ai clienti"** in Configurazione: promemoria (interruttori, orari, anticipo) e editor con scelta
   del segnaposto, anteprima dal vivo, prova e ripristino. I promemoria escono dalla pagina "Email e notifiche".
 

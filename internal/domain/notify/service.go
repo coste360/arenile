@@ -181,6 +181,8 @@ type Deps struct {
 	MaxAttempts int
 	// BatchSize of one delivery run (default DefaultBatchSize).
 	BatchSize int
+	// ReminderBatch is the page size of the reminder candidates (tests).
+	ReminderBatch int
 }
 
 // Service implements notifications, magic links, QR and .ics.

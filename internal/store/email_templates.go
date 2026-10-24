@@ -16,7 +16,9 @@ import (
 // establishment.
 
 // EmailTemplateOverride is the set of texts an establishment changed for one
-// customer email kind and locale. Absent row = built-in texts.
+// customer email kind and locale. Absent row or Active = false = built-in
+// texts ("restore default" deactivates the row and bumps Version, so an ETag
+// is never reused).
 type EmailTemplateOverride struct {
 	bun.BaseModel `bun:"table:email_template_overrides,alias:eto"`
 
@@ -28,6 +30,7 @@ type EmailTemplateOverride struct {
 	Opening         string    `bun:"opening,notnull"`
 	Closing         string    `bun:"closing,notnull"`
 	Signature       string    `bun:"signature,notnull"`
+	Active          bool      `bun:"active,notnull"`
 	Version         int64     `bun:"version,notnull"`
 	UpdatedByUserID *string   `bun:"updated_by_user_id"`
 	CreatedAt       time.Time `bun:"created_at,notnull"`
@@ -79,27 +82,11 @@ func UpdateEmailTemplateOverride(ctx context.Context, db bun.IDB, es Establishme
 		return false, err
 	}
 	res, err := db.NewUpdate().Model(o).
-		Column("subject", "opening", "closing", "signature", "version", "updated_by_user_id", "updated_at").
+		Column("subject", "opening", "closing", "signature", "active", "version", "updated_by_user_id", "updated_at").
 		Where("establishment_id = ?", es.ID()).Where("id = ?", o.ID).Where("version = ?", prev).
 		Exec(ctx)
 	if err != nil {
 		return false, wrapWrite("update email template override", err)
-	}
-	n, _ := res.RowsAffected()
-	return n == 1, nil
-}
-
-// DeleteEmailTemplateOverride deletes the override of es with id when its
-// version is still version and reports whether a row was deleted.
-func DeleteEmailTemplateOverride(ctx context.Context, db bun.IDB, es EstablishmentScope, id string, version int64) (bool, error) {
-	if err := es.mustBeValid(); err != nil {
-		return false, err
-	}
-	res, err := db.NewDelete().Model((*EmailTemplateOverride)(nil)).
-		Where("establishment_id = ?", es.ID()).Where("id = ?", id).Where("version = ?", version).
-		Exec(ctx)
-	if err != nil {
-		return false, wrapWrite("delete email template override", err)
 	}
 	n, _ := res.RowsAffected()
 	return n == 1, nil
@@ -114,7 +101,16 @@ type ReminderCandidateFilter struct {
 	CreatedBefore time.Time
 	// WithBalance keeps only bookings with total_amount > paid_amount.
 	WithBalance bool
-	Limit       int
+	// ExcludeDedupePrefix, when set, leaves out the bookings that already
+	// have a message_log row with dedupe key ExcludeDedupePrefix + booking id
+	// (reminders already queued are not read again by later runs).
+	ExcludeDedupePrefix string
+	// AfterStartsOn and AfterID are the keyset cursor (last row of the
+	// previous page; empty AfterID = first page).
+	AfterStartsOn calendar.Date
+	AfterID       string
+	// Limit is the page size (0 = no limit).
+	Limit int
 }
 
 // ListReminderCandidates returns the confirmed, non-test bookings of es
@@ -133,6 +129,12 @@ func ListReminderCandidates(ctx context.Context, db bun.IDB, es EstablishmentSco
 		Where("bk.created_at < ?", f.CreatedBefore)
 	if f.WithBalance {
 		q = q.Where("bk.total_amount > bk.paid_amount")
+	}
+	if f.ExcludeDedupePrefix != "" {
+		q = q.Where("NOT EXISTS (SELECT 1 FROM message_log AS ml WHERE ml.establishment_id = bk.establishment_id AND ml.dedupe_key = ? || CAST(bk.id AS TEXT))", f.ExcludeDedupePrefix)
+	}
+	if f.AfterID != "" {
+		q = q.Where("(bk.starts_on > ? OR (bk.starts_on = ? AND bk.id > ?))", f.AfterStartsOn, f.AfterStartsOn, f.AfterID)
 	}
 	if f.Limit > 0 {
 		q = q.Limit(int64(f.Limit))

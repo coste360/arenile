@@ -36,7 +36,7 @@ func TestMigration00012_EmailTemplateOverrides(t *testing.T) {
 		}
 		row := func(locale string) *store.EmailTemplateOverride {
 			return &store.EmailTemplateOverride{
-				ID: store.NewID(), Kind: "booking_confirmed", Locale: locale, Subject: "S {codice}", Opening: "O",
+				ID: store.NewID(), Kind: "booking_confirmed", Locale: locale, Subject: "S {codice}", Opening: "O", Active: true,
 				Version: 1, CreatedAt: t0, UpdatedAt: t0,
 			}
 		}
@@ -72,14 +72,18 @@ func TestMigration00012_EmailTemplateOverrides(t *testing.T) {
 		if err != nil || got.Subject != "S2" || got.Version != 2 {
 			t.Fatalf("get: %v %+v", err, got)
 		}
-		if ok, _ := store.DeleteEmailTemplateOverride(ctx, db, oes, o.ID, 2); ok {
-			t.Fatal("deleted the row of another establishment")
+		if !got.Active {
+			t.Fatal("active must default to true")
 		}
-		if ok, err := store.DeleteEmailTemplateOverride(ctx, db, es, o.ID, 1); err != nil || ok {
-			t.Fatalf("stale delete: %v %v", ok, err)
+		o.Active, o.Version = false, 3
+		if ok, _ := store.UpdateEmailTemplateOverride(ctx, db, oes, o, 2); ok {
+			t.Fatal("updated the row of another establishment")
 		}
-		if ok, err := store.DeleteEmailTemplateOverride(ctx, db, es, o.ID, 2); err != nil || !ok {
-			t.Fatalf("delete: %v %v", ok, err)
+		if ok, err := store.UpdateEmailTemplateOverride(ctx, db, es, o, 2); err != nil || !ok {
+			t.Fatalf("deactivate: %v %v", ok, err)
+		}
+		if got, err := store.GetEmailTemplateOverride(ctx, db, es, "booking_confirmed", "it"); err != nil || got.Active || got.Version != 3 {
+			t.Fatalf("after deactivate: %v %+v", err, got)
 		}
 		list, err := store.ListEmailTemplateOverrides(ctx, db, oes)
 		if err != nil || len(list) != 1 {

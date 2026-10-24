@@ -45,7 +45,7 @@ const JobReminders = "notify.reminders"
 // ReminderInterval is how often the reminder job runs.
 const ReminderInterval = 5 * time.Minute
 
-// reminderBatch bounds the candidates read per establishment and kind.
+// reminderBatch is the page size of the candidates read per establishment and kind.
 const reminderBatch = 2000
 
 // maxBalanceHorizon bounds how far ahead a balance due date can push the
@@ -92,10 +92,12 @@ func (s *Service) RunReminders(ctx context.Context) (int, error) {
 	for estID, tz := range tzs {
 		loc, err := time.LoadLocation(tz)
 		if err != nil {
+			s.d.Log.WarnContext(ctx, "reminders skipped: invalid timezone", slog.String("establishment_id", estID), slog.String("error", err.Error()))
 			continue
 		}
 		es, err := store.SystemEstablishmentScope(ctx, s.d.DB, estID)
 		if err != nil {
+			s.d.Log.WarnContext(ctx, "reminders skipped", slog.String("establishment_id", estID), slog.String("error", err.Error()))
 			continue
 		}
 		n, err := s.remindEstablishment(ctx, es, loc)
@@ -119,52 +121,69 @@ func (s *Service) remindEstablishment(ctx context.Context, es store.Establishmen
 	sched := cfg.Schedule()
 	now := s.now()
 	n := 0
+	queue := func(kind string, b *store.Booking) error {
+		ok, err := s.QueueReminder(ctx, es, kind, b)
+		if ok {
+			n++
+		}
+		return err
+	}
 	if cfg.ToCustomer.DayBeforeReminder {
 		if today, at, due := ReminderWindow(now, loc, sched.DayBeforeTime); due {
 			tomorrow := today.AddDays(1)
-			cands, err := store.ListReminderCandidates(ctx, s.d.DB, es, store.ReminderCandidateFilter{
-				StartsFrom: tomorrow, StartsTo: tomorrow, CreatedBefore: at, Limit: reminderBatch,
-			})
+			err := s.eachCandidate(ctx, es, TemplateDayBeforeReminder, store.ReminderCandidateFilter{StartsFrom: tomorrow, StartsTo: tomorrow, CreatedBefore: at},
+				func(b *store.Booking) error { return queue(TemplateDayBeforeReminder, b) })
 			if err != nil {
 				return n, err
-			}
-			for i := range cands {
-				ok, err := s.QueueReminder(ctx, es, TemplateDayBeforeReminder, &cands[i])
-				if err != nil {
-					return n, err
-				}
-				if ok {
-					n++
-				}
 			}
 		}
 	}
 	if cfg.ToCustomer.BalanceReminder {
 		if today, at, due := ReminderWindow(now, loc, sched.BalanceTime); due {
 			dueDay := today.AddDays(sched.BalanceLeadDays)
-			cands, err := store.ListReminderCandidates(ctx, s.d.DB, es, store.ReminderCandidateFilter{
-				StartsFrom: dueDay, StartsTo: dueDay.AddDays(maxBalanceHorizon), CreatedBefore: at,
-				WithBalance: true, Limit: reminderBatch,
+			f := store.ReminderCandidateFilter{StartsFrom: dueDay, StartsTo: dueDay.AddDays(maxBalanceHorizon), CreatedBefore: at, WithBalance: true}
+			err := s.eachCandidate(ctx, es, TemplateBalanceReminder, f, func(b *store.Booking) error {
+				if d, _, ok := BalanceDueDate(b); !ok || !d.Equal(dueDay) {
+					return nil
+				}
+				return queue(TemplateBalanceReminder, b)
 			})
 			if err != nil {
 				return n, err
 			}
-			for i := range cands {
-				d, _, ok := BalanceDueDate(&cands[i])
-				if !ok || !d.Equal(dueDay) {
-					continue
-				}
-				ok, err := s.QueueReminder(ctx, es, TemplateBalanceReminder, &cands[i])
-				if err != nil {
-					return n, err
-				}
-				if ok {
-					n++
-				}
-			}
 		}
 	}
 	return n, nil
+}
+
+// eachCandidate calls fn for every reminder candidate of f not reminded yet
+// for kind, page by page (keyset on start date and id, so rows queued by fn
+// leaving the result set never shift the next page).
+func (s *Service) eachCandidate(ctx context.Context, es store.EstablishmentScope, kind string, f store.ReminderCandidateFilter, fn func(*store.Booking) error) error {
+	f.Limit, f.ExcludeDedupePrefix = s.reminderBatch(), ReminderDedupeKey(kind, "")
+	for {
+		page, err := store.ListReminderCandidates(ctx, s.d.DB, es, f)
+		if err != nil {
+			return err
+		}
+		for i := range page {
+			if err := fn(&page[i]); err != nil {
+				return err
+			}
+		}
+		if len(page) < f.Limit {
+			return nil
+		}
+		last := page[len(page)-1]
+		f.AfterStartsOn, f.AfterID = last.StartsOn, last.ID
+	}
+}
+
+func (s *Service) reminderBatch() int {
+	if s.d.ReminderBatch > 0 {
+		return s.d.ReminderBatch
+	}
+	return reminderBatch
 }
 
 // QueueReminder queues the reminder kind for booking b when b is eligible
@@ -189,7 +208,7 @@ func (s *Service) QueueReminder(ctx context.Context, es store.EstablishmentScope
 		_, created, err := s.enqueue(ctx, tx, es, Enqueue{
 			Template: kind, BookingID: b.ID, CustomerID: cu.ID, Recipient: *cu.Email,
 			Locale: bookingLocale(b, cu), DedupeKey: ReminderDedupeKey(kind, b.ID),
-			Payload: map[string]any{"starts_on": b.StartsOn.String()},
+			Payload: reminderPayload(kind, b),
 		})
 		if errors.Is(err, errInvalidRecipient) {
 			return nil
@@ -217,4 +236,31 @@ func ReminderEligible(kind string, b *store.Booking) bool {
 		return b.BalanceDue() > 0
 	}
 	return false
+}
+
+// reminderPayload records the dates the reminder was queued for; compose
+// skips the message when they changed or passed before delivery.
+func reminderPayload(kind string, b *store.Booking) map[string]any {
+	p := map[string]any{"starts_on": b.StartsOn.String()}
+	if kind == TemplateBalanceReminder {
+		if due, _, ok := BalanceDueDate(b); ok {
+			p["balance_due_on"] = due.String()
+		}
+	}
+	return p
+}
+
+// ReminderStillDue reports whether a queued reminder still applies at
+// delivery: the booking dates it was queued for are unchanged and not past
+// (today is the establishment local date of the delivery).
+func ReminderStillDue(kind string, b *store.Booking, payload map[string]any, today calendar.Date) bool {
+	if s, _ := payload["starts_on"].(string); s != b.StartsOn.String() || !today.Before(b.StartsOn) {
+		return false
+	}
+	if kind != TemplateBalanceReminder {
+		return true
+	}
+	due, _, ok := BalanceDueDate(b)
+	queued, _ := payload["balance_due_on"].(string)
+	return ok && queued == due.String() && !today.After(due)
 }

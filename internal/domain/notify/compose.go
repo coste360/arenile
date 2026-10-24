@@ -11,6 +11,7 @@ import (
 
 	"github.com/uptrace/bun"
 
+	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -153,6 +154,9 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 			if m.Template == TemplateBalanceReminder && d.Booking.BalanceDue() <= 0 {
 				return Email{}, nil, fmt.Errorf("%w: nothing left to pay", errSkip)
 			}
+			if !ReminderStillDue(m.Template, d.Booking, m.Payload, calendar.In(now, estLocation(est))) {
+				return Email{}, nil, fmt.Errorf("%w: booking dates changed or passed", errSkip)
+			}
 			link, err := s.issueForEmail(ctx, es, d.Booking.ID, nil)
 			if err != nil {
 				return Email{}, nil, err
@@ -180,7 +184,13 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		content = bookingContent(cat, d, opts)
 	}
 
-	if IsEditableKind(kind) {
+	src, builtin, err := s.templateSource(ctx, es, kind, cat.locale)
+	if err != nil {
+		return Email{}, nil, fmt.Errorf("%w: %w", ErrPermanent, err)
+	}
+	// A legacy full override (notification_templates) wins as before: the
+	// editable texts apply to the built-in templates only.
+	if builtin && IsEditableKind(kind) {
 		if texts == nil {
 			t, err := s.textsFor(ctx, s.d.DB, es, kind, cat.locale)
 			if err != nil {
@@ -190,10 +200,6 @@ func (s *Service) compose(ctx context.Context, es store.EstablishmentScope, m *s
 		}
 		resolved := ResolveTexts(*texts, placeholderValues(kind, content.Vars))
 		content.Texts = &resolved
-	}
-	src, err := s.templateSource(ctx, es, kind, cat.locale)
-	if err != nil {
-		return Email{}, nil, fmt.Errorf("%w: %w", ErrPermanent, err)
 	}
 	r, err := Render(src, cat, br, content)
 	if err != nil {
@@ -240,16 +246,18 @@ func (s *Service) revokeOnFailure(es store.EstablishmentScope, linkID string) fu
 }
 
 // templateSource returns the establishment override of a template in
-// locale, else the built-in one.
-func (s *Service) templateSource(ctx context.Context, es store.EstablishmentScope, code, locale string) (templateSource, error) {
+// locale (legacy notification_templates), else the built-in one; builtin
+// reports the latter.
+func (s *Service) templateSource(ctx context.Context, es store.EstablishmentScope, code, locale string) (templateSource, bool, error) {
 	t, err := store.GetNotificationTemplate(ctx, s.d.DB, es, code, locale)
 	switch {
 	case err == nil:
-		return templateSource{Subject: t.Subject, Body: t.BodyMarkdown}, nil
+		return templateSource{Subject: t.Subject, Body: t.BodyMarkdown}, false, nil
 	case !errors.Is(err, store.ErrNotFound):
-		return templateSource{}, err
+		return templateSource{}, false, err
 	}
-	return builtinTemplate(code, locale)
+	src, err := builtinTemplate(code, locale)
+	return src, true, err
 }
 
 // payloadVars formats the non-personal payload of a message as variables.

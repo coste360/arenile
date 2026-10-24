@@ -379,7 +379,8 @@ Convenzioni: ogni tabella ha `id` (UUIDv7), `created_at`, `updated_at`. Le tabel
 **outbox_events**: id, establishment_id, type, payload, created_at, dispatched_at.
 **webhook_endpoints**: establishment_id, url, secret, events (json), active.
 **webhook_deliveries**: endpoint_id, event_id, attempt, status_code, response_excerpt, next_attempt_at, delivered_at.
-**notification_templates**: establishment_id, code, locale, subject, body (Markdown con variabili), active.
+**notification_templates**: establishment_id, code, locale, subject, body (Markdown con variabili), active. Senza API dalla 1.0: i testi si modificano con `email_template_overrides`.
+**email_template_overrides** (ADR 0022): establishment_id, kind, locale, subject, opening, closing, signature, active, version; unique (establishment_id, kind, locale).
 **message_log**: destinatario, canale, template, stato, errore.
 
 ---

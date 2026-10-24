@@ -42,6 +42,8 @@ func (h *harness) withSettings(cfg online.EmailConfig) {
 		DB: h.DB, Clock: h.Clock, Audit: audit.NewWriter(h.Clock), Outbox: event.NewOutbox(h.Clock),
 		Keys: keys, Transport: h.Transport, MailFrom: "noreply@arenile.example", BaseURL: "https://arenile.example",
 		Settings: fixedSettings{cfg},
+		// One candidate per page: every reminder test exercises the paging.
+		ReminderBatch: 1,
 	})
 }
 
@@ -140,6 +142,7 @@ func TestReminders_SchedulingAndEligibility(t *testing.T) {
 		if n := h.runReminders(); n != 0 {
 			t.Fatalf("later run queued %d", n)
 		}
+		h.deliver() // before the start: delivery re-checks the dates
 		for _, b := range []*store.Booking{b2, b3, b4} {
 			if got := h.messages("booking_id = ? AND template IN (?)", b.ID, bun.List([]string{notify.TemplateDayBeforeReminder, notify.TemplateBalanceReminder})); len(got) != 0 {
 				t.Fatalf("booking %s got %d reminders", b.Code, len(got))
@@ -210,6 +213,63 @@ func TestReminders_SkippedAtSendTime(t *testing.T) {
 		}
 		if h.Count((*store.Message)(nil), "status = ?", store.MessageCancelled) != 1 {
 			t.Fatal("message not cancelled")
+		}
+	})
+}
+
+// TestReminders_DatesRecheckedAtSendTime: a day-before reminder queued for
+// a booking whose dates change, or delivered only after the start (SMTP
+// down overnight), is cancelled instead of sent.
+func TestReminders_DatesRecheckedAtSendTime(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		h := newHarness(t, db, 0)
+		h.withSettings(remindersOn())
+		moved := h.book(0)
+		late := h.book(1)
+		h.Clock.Set(at(t, "2027-07-09T16:00:00Z"))
+		if n := h.runReminders(); n != 2 {
+			t.Fatalf("queued %d", n)
+		}
+		h.exec("UPDATE bookings SET starts_on = '2027-07-11' WHERE id = ?", moved.ID)
+		h.exec("UPDATE message_log SET next_attempt_at = ? WHERE booking_id = ?", at(t, "2027-07-10T07:00:00Z"), late.ID)
+		h.deliver() // moved: dates changed
+		h.Clock.Set(at(t, "2027-07-10T07:00:00Z"))
+		h.deliver() // late: the stay has started
+		if len(h.Transport.Sent()) != 0 {
+			t.Fatalf("sent %d stale reminders", len(h.Transport.Sent()))
+		}
+		if n := h.Count((*store.Message)(nil), "status = ?", store.MessageCancelled); n != 2 {
+			t.Fatalf("cancelled %d, want 2", n)
+		}
+	})
+}
+
+// TestReminders_LegacyTemplateWins: a full Markdown override of the legacy
+// notification_templates table keeps its own subject and body; the editable
+// texts apply to the built-in templates only.
+func TestReminders_LegacyTemplateWins(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		h := newHarness(t, db, 0)
+		b := h.book(0)
+		now := h.Clock.Now()
+		if _, err := db.NewInsert().Model(&store.NotificationTemplate{
+			ID: store.NewID(), EstablishmentID: h.Est.ID, Template: notify.TemplateBookingConfirmed, Locale: "en",
+			Subject: "Legacy {{booking.code}}", BodyMarkdown: "Legacy body {{customer.first_name}}", Enabled: true,
+			Version: 1, CreatedAt: now, UpdatedAt: now,
+		}).Exec(h.Ctx); err != nil {
+			t.Fatal(err)
+		}
+		owner := *h.Owner
+		if _, err := h.Notify.UpdateEmailTemplate(h.Ctx, &owner, h.Est.ID, notify.TemplateBookingConfirmed, "en", nil, notify.Texts{Subject: "Edited {codice}", Opening: "Edited"}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := h.Notify.ResendConfirmation(h.Ctx, h.Cashier, h.Est.ID, b.ID); err != nil {
+			t.Fatal(err)
+		}
+		h.deliver()
+		sent := h.Transport.Sent()
+		if len(sent) != 1 || sent[0].Subject != "Legacy "+b.Code || !strings.Contains(sent[0].Text, "Legacy body Mario") || strings.Contains(sent[0].Text, "Edited") {
+			t.Fatalf("sent %+v", sent)
 		}
 	})
 }
@@ -363,8 +423,14 @@ func TestEmailTemplates_EditorUseCases(t *testing.T) {
 		// Restore default.
 		v2 := int64(2)
 		reset, err := h.Notify.ResetEmailTemplate(h.Ctx, h.Manager, h.Est.ID, kind, "it", &v2)
-		if err != nil || reset.Customized || reset.Version != 0 || reset.Texts != reset.Defaults {
+		if err != nil || reset.Customized || reset.Version != 3 || reset.Texts != reset.Defaults {
 			t.Fatalf("reset: %v %+v", err, reset)
+		}
+		if _, err := h.Notify.UpdateEmailTemplate(h.Ctx, h.Manager, h.Est.ID, kind, "it", &v2, in); !errors.Is(err, configerr.ErrVersionConflict) {
+			t.Fatalf("stale ETag after restore accepted: %v", err)
+		}
+		if got, err := h.Notify.GetEmailTemplate(h.Ctx, h.Viewer, h.Est.ID, kind, "it"); err != nil || got.Customized {
+			t.Fatalf("after restore: %v %+v", err, got)
 		}
 		if _, err := h.Notify.ResetEmailTemplate(h.Ctx, h.Manager, h.Est.ID, kind, "it", nil); err != nil {
 			t.Fatalf("reset again: %v", err)

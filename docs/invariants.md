@@ -876,13 +876,15 @@ Stato: implemented.
 Un promemoria si accoda solo per prenotazioni `confirmed`, non di prova, create prima dell'istante di invio, con
 un cliente che può ricevere email (non anonimizzato, non il cliente provvisorio online, con indirizzo) e con
 l'interruttore del tipo attivo; il promemoria del saldo solo se resta un saldo positivo. Le stesse regole sono
-ricontrollate all'invio (altrimenti il messaggio è annullato). L'istante di invio è l'orario configurato nel
+ricontrollate all'invio insieme alle date per cui il promemoria era stato accodato (inizio, scadenza del saldo):
+se sono cambiate o già passate il messaggio è annullato. L'istante di invio è l'orario configurato nel
 giorno locale dello stabilimento (ora legale compresa; un orario inesistente passa al primo istante valido) e vale
 fino alla fine di quel giorno locale: giorno prima dell'inizio per il promemoria del giorno prima, `balance_lead_days`
 giorni prima della scadenza del saldo della policy (`days_before:N` o giorno di inizio) per quello del saldo.
 Verificata da: `TestReminderWindow_TimezonesAndDST`, `TestReminderEligible_Scenarios`,
-`TestBalanceDueDate_Scenarios` (`internal/domain/notify`), `TestReminders_SchedulingAndEligibility`,
-`TestReminders_SkippedAtSendTime`, `TestReminders_TogglesOff` (tag `integration`). Stato: implemented.
+`TestReminderStillDue_Scenarios`, `TestBalanceDueDate_Scenarios` (`internal/domain/notify`),
+`TestReminders_SchedulingAndEligibility`, `TestReminders_SkippedAtSendTime`, `TestReminders_DatesRecheckedAtSendTime`,
+`TestReminders_TogglesOff` (tag `integration`). Stato: implemented.
 
 **INV-97 — I testi modificati delle email non possono iniettare markup né usare segnaposto sconosciuti.**
 Oggetto, testo iniziale, testo finale e firma sono testo semplice: al salvataggio, in anteprima e nella prova un
@@ -891,7 +893,7 @@ controllo rispondono `422 email_template_invalid` con il campo. Alla composizion
 sola volta con valori in testo semplice e poi tutto è sottoposto a escape (paragrafi e `<br>` sono l'unico markup
 generato); l'oggetto è su una riga (niente iniezione di intestazioni). QR, riepilogo, importi, link di gestione e
 piè di pagina restano fissi. Le personalizzazioni sono per stabilimento (`email_template_overrides`, una riga per
-tipo e lingua, `version` con `If-Match`).
+tipo e lingua, `version` con `If-Match` che cresce anche al ripristino del predefinito, così un ETag non si riusa).
 Verificata da: `TestValidateTexts_Scenarios`, `TestPlainTextHTML_EscapesAndParagraphs`,
 `TestRender_EditableTextsEscaped`, `TestDefaultTexts_ValidInEveryLocale` (`internal/domain/notify`),
 `TestEmailTemplates_EditorUseCases` (tag `integration`), `TestEmailTemplatesHTTP_ValidationAndETag`

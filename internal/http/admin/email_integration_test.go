@@ -166,8 +166,18 @@ func TestEmailTemplatesHTTP_ValidationAndETag(t *testing.T) {
 		code, hdr, out = callTarget(t, manager, http.MethodDelete, path, nil, func(w http.ResponseWriter, r *http.Request) {
 			h.ResetEmailTemplate(w, r, est.ID, kind, locale, api.ResetEmailTemplateParams{IfMatch: &one})
 		})
-		if code != http.StatusOK || hdr.Get("ETag") != `"0"` || out["customized"] != false {
+		// The version moves on after a restore: an ETag is never reused.
+		if code != http.StatusOK || hdr.Get("ETag") != `"2"` || out["customized"] != false {
 			t.Fatalf("reset: %d %v %v", code, hdr, out)
+		}
+		if code, _, _ := put(`"1"`, texts); code != http.StatusPreconditionFailed {
+			t.Fatalf("save with the ETag read before the restore: %d", code)
+		}
+		if code, _, _ := put(`"0"`, texts); code != http.StatusPreconditionFailed {
+			t.Fatalf("save as new after the restore: %d", code)
+		}
+		if code, hdr, _ := put(`"2"`, texts); code != http.StatusOK || hdr.Get("ETag") != `"3"` {
+			t.Fatalf("save after the restore: %d %v", code, hdr)
 		}
 		code, _, out = callTarget(t, manager, http.MethodGet, "/api/admin/v1/establishments/"+est.ID+"/email-templates", nil, func(w http.ResponseWriter, r *http.Request) {
 			h.ListEmailTemplates(w, r, est.ID)
