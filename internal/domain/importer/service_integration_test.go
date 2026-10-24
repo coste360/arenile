@@ -469,11 +469,11 @@ func TestConcurrency_ImportApplySameFile(t *testing.T) {
 			jobs[i], _ = e.preview(j, importer.Options{})
 		}
 		var (
-			wg                     sync.WaitGroup
-			mu                     sync.Mutex
-			applied, already       int
-			other                  []error
-			start                  = make(chan struct{})
+			wg               sync.WaitGroup
+			mu               sync.Mutex
+			applied, already int
+			other            []error
+			start            = make(chan struct{})
 		)
 		for _, j := range jobs {
 			wg.Add(1)
@@ -501,7 +501,7 @@ func TestConcurrency_ImportApplySameFile(t *testing.T) {
 		if applied != 1 || already != parallel-1 {
 			t.Fatalf("applied %d, already applied %d", applied, already)
 		}
-		if n := e.Count((*store.Customer)(nil), "email IN (?)", bun.In([]string{"rossi@example.org", "bianchi@example.org"})); n != 2 {
+		if n := e.Count((*store.Customer)(nil), "email IN (?)", bun.List([]string{"rossi@example.org", "bianchi@example.org"})); n != 2 {
 			t.Fatalf("customers %d, want 2", n)
 		}
 		if n := e.Count((*store.ImportJob)(nil), "status = ?", store.ImportStatusApplied); n != 1 {

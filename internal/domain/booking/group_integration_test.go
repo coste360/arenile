@@ -158,11 +158,11 @@ func TestConcurrency_SpotBlocksVsGroupBooking(t *testing.T) {
 		inv := inventory.NewService(inventory.Deps{DB: db, Clock: f.Clock, Audit: audit.NewWriter(f.Clock), Outbox: event.NewOutbox(f.Clock)})
 		day := calendar.MustParse("2027-07-10")
 		var (
-			wg                     sync.WaitGroup
-			mu                     sync.Mutex
-			groupWins, blockWins   int
-			conflicts              int
-			other                  []error
+			wg                   sync.WaitGroup
+			mu                   sync.Mutex
+			groupWins, blockWins int
+			conflicts            int
+			other                []error
 		)
 		start := make(chan struct{})
 		for i := range parallel {

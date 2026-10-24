@@ -94,7 +94,7 @@ func TestPaymentWebhook_ConfirmsBooking(t *testing.T) {
 }
 
 // TestPaymentWebhook_ModeFollowsIntent (spec 15.4, INV-74): the provider
-// mode of a payment follows the booking, not the test-mode switch. A real
+// mode of a payment follows the booking, not the test-mode switch. A realBk
 // booking started before the switch pays through the live configuration
 // and its live-signed webhook still verifies and confirms it while test
 // mode is on; a test booking pays through the test configuration, its
@@ -105,13 +105,13 @@ func TestPaymentWebhook_ModeFollowsIntent(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		e := newEnv(t, db)
 		e.settings.twoModes = true
-		real := e.held(0, "2027-07-10")
-		if real.Test {
-			t.Fatal("real booking flagged test")
+		realBk := e.held(0, "2027-07-10")
+		if realBk.Test {
+			t.Fatal("realBk booking flagged test")
 		}
-		liveRes := e.start(real)
+		liveRes := e.start(realBk)
 		if pi := e.intent(liveRes.IntentID); pi.Mode != store.ProviderModeLive {
-			t.Fatalf("real booking intent mode %q", pi.Mode)
+			t.Fatalf("realBk booking intent mode %q", pi.Mode)
 		}
 
 		e.setTestMode(true)
@@ -124,30 +124,30 @@ func TestPaymentWebhook_ModeFollowsIntent(t *testing.T) {
 		if testPI.Mode != store.ProviderModeTest {
 			t.Fatalf("test booking intent mode %q", testPI.Mode)
 		}
-		// The live webhook of the real intent verifies with the live secret
+		// The live webhook of the realBk intent verifies with the live secret
 		// while test mode is on, and never with the test one.
 		livePI := e.intent(liveRes.IntentID)
 		payload := e.paidEvent(livePI.ExternalID)
 		if out, err := e.deliverSigned(e.f.Est.ID, payload, stripetest.WebhookSecret); err != nil || !out.Ignored {
 			t.Fatalf("live event verified by the test secret: %+v %v", out, err)
 		}
-		if e.reload(real.ID).Status != "held" {
-			t.Fatal("real booking confirmed by a test-signed delivery")
+		if e.reload(realBk.ID).Status != "held" {
+			t.Fatal("realBk booking confirmed by a test-signed delivery")
 		}
 		payload = e.srv.SessionEvent(e.evt(), "checkout.session.completed", livePI.ExternalID, e.f.Clock.Now())
 		if out, err := e.deliverSigned(e.f.Est.ID, payload, liveWebhookSecret); err != nil || out.Ignored || out.Duplicate {
 			t.Fatalf("live delivery: %+v %v", out, err)
 		}
-		if got := e.reload(real.ID); got.Status != "confirmed" || got.PaidAmount != real.TotalAmount {
-			t.Fatalf("real booking after live webhook: %+v", got)
+		if got := e.reload(realBk.ID); got.Status != "confirmed" || got.PaidAmount != realBk.TotalAmount {
+			t.Fatalf("realBk booking after live webhook: %+v", got)
 		}
 		livePI = e.intent(liveRes.IntentID)
 		pm, err := store.GetPayment(e.ctx, db, e.es, *livePI.PaymentID)
 		if err != nil || pm.Test {
-			t.Fatalf("real payment: %v test=%v", err, pm.Test)
+			t.Fatalf("realBk payment: %v test=%v", err, pm.Test)
 		}
 		if n := e.count("fiscal_documents", "payment_id = ?", pm.ID); n != 1 {
-			t.Fatalf("fiscal documents of the real payment: %d", n)
+			t.Fatalf("fiscal documents of the realBk payment: %d", n)
 		}
 
 		// The test intent verifies with the test secret after the switch is

@@ -153,7 +153,8 @@ describe('CashPage', () => {
         },
       }),
     );
-    await user.click(await screen.findByRole('button', { name: 'Movimento' }));
+    await user.click(await screen.findByRole('button', { name: 'Altro' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Movimento' }));
     const dialog = await screen.findByRole('dialog', { name: 'Movimento di cassa' });
     await user.click(within(dialog).getByRole('radio', { name: 'Prelievo' }));
     await user.type(within(dialog).getByLabelText('Importo'), '50');
@@ -281,7 +282,8 @@ describe('CashPage', () => {
       routes('cashier', { [`GET ${API}/cash-sessions/current`]: () => json(200, openDetail) }),
     );
     await screen.findByTestId('stat-expected-cash');
-    await user.click(screen.getByRole('button', { name: 'PDF chiusura Z' }));
+    await user.click(screen.getByRole('button', { name: 'Altro' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'PDF A4' }));
     const frame = document.querySelector('iframe[title="z-report"]') as HTMLIFrameElement;
     expect(frame).not.toBeNull();
     expect(frame.getAttribute('src')).toBe(`${API}/cash-sessions/s1/z-report?paper=a4`);
@@ -289,6 +291,7 @@ describe('CashPage', () => {
   });
 
   it('is read-only for the viewer', async () => {
+    const user = userEvent.setup();
     renderApp(
       PATH,
       routes('viewer', {
@@ -300,7 +303,8 @@ describe('CashPage', () => {
     await screen.findByRole('table', { name: 'Storico sessioni' });
     expect(screen.queryByRole('button', { name: 'Incassa' })).not.toBeInTheDocument();
     expect(screen.queryByRole('form', { name: 'Apri la cassa' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Corrispettivi' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Altro' }));
+    expect(await screen.findByRole('menuitem', { name: 'Corrispettivi' })).toBeInTheDocument();
   });
 
   it('denies roles without cash permissions', async () => {

@@ -16,7 +16,7 @@ import (
 )
 
 // TestConcurrency_PurgeVsCreate (INV-76): 100 parallel operations while
-// test mode is on, half creations of test bookings and half purges. A real
+// test mode is on, half creations of test bookings and half purges. A realBk
 // booking created before the switch is never touched; every surviving
 // booking is a test booking created after the last purge, with its
 // allocations consistent (a purge deletes whole bookings, never a line or
@@ -28,7 +28,7 @@ func TestConcurrency_PurgeVsCreate(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		real := f.MustCreate(f.Input(f.Spots[0], "2027-07-01", "2027-07-01"))
+		realBk := f.MustCreate(f.Input(f.Spots[0], "2027-07-01", "2027-07-01"))
 		row, err := store.EnsureTestModeSettings(f.Ctx, db, es, f.Clock.Now())
 		if err != nil {
 			t.Fatal(err)
@@ -70,11 +70,11 @@ func TestConcurrency_PurgeVsCreate(t *testing.T) {
 		if len(other) > 0 {
 			t.Fatalf("unexpected errors (%d), first: %v", len(other), other[0])
 		}
-		if b, err := store.GetBooking(f.Ctx, db, es, real.Booking.ID); err != nil || b.Test || b.Status != real.Booking.Status {
-			t.Fatalf("real booking touched: %v %+v", err, b)
+		if b, err := store.GetBooking(f.Ctx, db, es, realBk.Booking.ID); err != nil || b.Test || b.Status != realBk.Booking.Status {
+			t.Fatalf("realBk booking touched: %v %+v", err, b)
 		}
 		if n := f.Count((*store.Booking)(nil), "test = ?", false); n != 1 {
-			t.Fatalf("real bookings %d, want 1", n)
+			t.Fatalf("realBk bookings %d, want 1", n)
 		}
 		// Every surviving test booking is whole: its lines and allocations exist.
 		var survivors []store.Booking
@@ -93,7 +93,7 @@ func TestConcurrency_PurgeVsCreate(t *testing.T) {
 		if n := f.Count((*store.Booking)(nil), "test = ?", true); n != 0 {
 			t.Fatalf("test bookings after the final purge: %d", n)
 		}
-		if n := f.Count((*store.SpotAllocation)(nil), "booking_id <> ?", real.Booking.ID); n != 0 {
+		if n := f.Count((*store.SpotAllocation)(nil), "booking_id <> ?", realBk.Booking.ID); n != 0 {
 			t.Fatalf("allocations of purged bookings left: %d", n)
 		}
 		if n := f.Count((*store.AuditEntry)(nil), "action = ?", testmode.ActionPurged); n < 1 {
@@ -103,9 +103,9 @@ func TestConcurrency_PurgeVsCreate(t *testing.T) {
 }
 
 // TestPurge_RefusedWhenTestCreditSpentByRealBooking (INV-76): a credit
-// granted by a test booking and already spent on a real booking blocks the
-// purge (dry run and real run, 409) until the credits are corrected;
-// deleting the grant would leave real money paid with credit that never
+// granted by a test booking and already spent on a realBk booking blocks the
+// purge (dry run and realBk run, 409) until the credits are corrected;
+// deleting the grant would leave realBk money paid with credit that never
 // existed.
 func TestPurge_RefusedWhenTestCreditSpentByRealBooking(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
@@ -114,7 +114,7 @@ func TestPurge_RefusedWhenTestCreditSpentByRealBooking(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		real := f.MustCreate(f.Input(f.Spots[0], "2027-07-01", "2027-07-01"))
+		realBk := f.MustCreate(f.Input(f.Spots[0], "2027-07-01", "2027-07-01"))
 		row, err := store.EnsureTestModeSettings(f.Ctx, db, es, f.Clock.Now())
 		if err != nil {
 			t.Fatal(err)
@@ -125,14 +125,14 @@ func TestPurge_RefusedWhenTestCreditSpentByRealBooking(t *testing.T) {
 		}
 		test := f.MustCreate(f.Input(f.Spots[1], "2027-07-02", "2027-07-02"))
 		now := f.Clock.Now()
-		cust := real.Booking.CustomerID
+		cust := realBk.Booking.CustomerID
 		grant := &store.CustomerCredit{
 			ID: store.NewID(), EstablishmentID: f.Est.ID, CustomerID: cust, Amount: 1000, Source: store.CreditSourceCancellation,
 			BookingID: &test.Booking.ID, Note: "prova", CreatedAt: now,
 		}
 		spent := &store.CustomerCredit{
 			ID: store.NewID(), EstablishmentID: f.Est.ID, CustomerID: cust, Amount: -1000, Source: store.CreditSourceRedemption,
-			BookingID: &real.Booking.ID, Note: "saldo", CreatedAt: now,
+			BookingID: &realBk.Booking.ID, Note: "saldo", CreatedAt: now,
 		}
 		f.Insert(grant)
 		f.Insert(spent)
@@ -151,7 +151,7 @@ func TestPurge_RefusedWhenTestCreditSpentByRealBooking(t *testing.T) {
 			t.Fatalf("test booking deleted by a refused purge: %d left", n)
 		}
 		// The manager corrects the ledger (a goodwill grant covers the spent
-		// credit): the purge runs and the real booking keeps its credit.
+		// credit): the purge runs and the realBk booking keeps its credit.
 		f.Insert(&store.CustomerCredit{
 			ID: store.NewID(), EstablishmentID: f.Est.ID, CustomerID: cust, Amount: 1000, Source: store.CreditSourceGoodwill,
 			Note: "regolarizzazione", CreatedAt: now,

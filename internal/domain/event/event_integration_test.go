@@ -300,7 +300,7 @@ func count(t *testing.T, db *store.DB, table string) int {
 // TestDispatcher_TestModeEventsNotDelivered (INV-74): the events of a test
 // booking are flagged when they are written, so they never reach the
 // outgoing webhooks, even when the purge deleted the booking before the
-// dispatcher ran; the events of a real booking are delivered. The sinks and
+// dispatcher ran; the events of a realBk booking are delivered. The sinks and
 // the bus still see every event (the panel shows test rows).
 func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
@@ -315,7 +315,7 @@ func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
 		if _, _, err := del.CreateEndpoint(ctx, db, es, event.CreateEndpointInput{URL: "http://127.0.0.1:1/hook", Events: []string{"booking.*"}}); err != nil {
 			t.Fatal(err)
 		}
-		real := f.MustCreate(f.Input(f.Spots[0], "2027-07-10", "2027-07-10"))
+		realBk := f.MustCreate(f.Input(f.Spots[0], "2027-07-10", "2027-07-10"))
 
 		// Switch test mode on: the next booking is a test row.
 		row, err := store.EnsureTestModeSettings(ctx, db, es, f.Clock.Now())
@@ -371,12 +371,12 @@ func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
 		for _, dl := range deliveries {
 			var ev store.OutboxEvent
 			_ = db.NewSelect().Model(&ev).Where("id = ?", dl.EventID).Scan(ctx)
-			if bytes.Contains(ev.Payload, []byte(real.Booking.ID)) {
+			if bytes.Contains(ev.Payload, []byte(realBk.Booking.ID)) {
 				realDelivered = true
 			}
 		}
 		if !realDelivered {
-			t.Fatal("the events of the real booking were not scheduled")
+			t.Fatal("the events of the realBk booking were not scheduled")
 		}
 		if len(sink.events) < 2 {
 			t.Fatalf("sinks received %d events, want every event (test ones included)", len(sink.events))
