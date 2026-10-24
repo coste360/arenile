@@ -648,27 +648,33 @@ Stato: implemented per i report; corrispettivi, KPI ed esportazioni a carico del
 
 ## Stampa ESC/POS su stampanti di rete (ADR 0021)
 
-**INV-75 — Un lavoro di stampa per chiave, stampato una volta.**
-Una richiesta di stampa con la stessa chiave di idempotenza (header `Idempotency-Key` o chiave derivata
-`<tipo>:<documento>:<stampante>`) crea al più un lavoro per stabilimento (indice unico
-`print_jobs (establishment_id, idempotency_key)`, `INSERT ... ON CONFLICT DO NOTHING`): le richieste successive
-ricevono il lavoro esistente. La consegna prende il lavoro con un aggiornamento condizionato e un lease
-(`queued` → `printing`, `locked_until`); l'esito si scrive solo se il lease è ancora quello del lavoratore, quindi più
-consegne concorrenti stampano il lavoro una volta sola; dopo `max_attempts` tentativi falliti (attese 5 s, 15 s,
-1 min, 5 min) il lavoro è `failed` e si riprova solo a mano. `printed_at` è valorizzato se e solo se lo stato è
-`printed` (CHECK della migrazione 00011).
+**INV-75 — Un lavoro di stampa per chiave, consegna almeno una volta e mai in parallelo.**
+Una richiesta di stampa con la stessa chiave di idempotenza (header `Idempotency-Key`) crea al più un lavoro per
+stabilimento (indice unico `print_jobs (establishment_id, idempotency_key)`, `INSERT ... ON CONFLICT DO NOTHING`):
+le richieste successive con la stessa chiave ricevono il lavoro esistente se chiedono lo stesso documento, tipo e
+stampante, altrimenti `422 idempotency_key_reused`; senza chiave ogni richiesta è un nuovo lavoro (ristampa voluta;
+il pannello manda una chiave nuova per ogni clic). La consegna prende il lavoro con un aggiornamento condizionato e
+un lease (`queued` → `printing`, `locked_until`); l'esito si scrive solo se il lease è ancora quello del lavoratore,
+quindi più consegne concorrenti non inviano mai lo stesso lavoro insieme. La consegna è **almeno una volta**: un
+lease scaduto (lavoratore caduto a metà invio) viene reclamato contando il tentativo e il lavoro è rispedito senza
+il comando di apertura cassetto. Dopo `max_attempts` tentativi falliti (attese 5 s, 15 s, 1 min, 5 min) il lavoro è
+`failed` e si riprova solo a mano. `printed_at` è valorizzato se e solo se lo stato è `printed` (CHECK della
+migrazione 00011). Il contenuto (`payload`) dei lavori conclusi viene azzerato dopo 30 giorni.
 Verificata da: `TestConcurrency_PrintJobOnce` (100 richieste e 100 consegne in parallelo, SQLite e PostgreSQL),
-`TestService_RetryBackoffAndFailure`, `TestService_JobRoutingEndToEnd` (`internal/domain/printing`, tag
-`integration`), `TestMigration00011_PrintingSchema` (`internal/store`). Stato: implemented.
+`TestService_RetryBackoffAndFailure`, `TestService_JobRoutingEndToEnd`, `TestService_LeaseReclaimAndRetention`
+(`internal/domain/printing`, tag `integration`), `TestHTTPIntegration_Printing` (replay e `422`),
+`TestMigration00011_PrintingSchema` (`internal/store`). Stato: implemented.
 
-**INV-76 — La stampa non raggiunge mai indirizzi pubblici e funziona solo nell'edizione desktop.**
-L'host di una stampante è un indirizzo privato o di rete locale (RFC 1918, 100.64/10, loopback, link-local, ULA
-IPv6) o un nome che si risolve solo in tali indirizzi, controllato al salvataggio (`422 printer_address_not_allowed`)
-e di nuovo sull'indirizzo effettivamente contattato a ogni connessione (`Dialer.Control`), così il server non
-diventa un proxy TCP verso Internet. Sull'edizione server verifica, pagina di prova, creazione e riprova dei lavori
-rispondono `409 printing_unavailable`, il job di consegna non è registrato e la risoluzione dell'instradamento non è
-mai `ready`. Log e `last_error` contengono solo id, tipo documento e classe dell'errore di rete, mai il contenuto
-stampato né dati dei clienti.
+**INV-76 — La stampa non raggiunge mai indirizzi pubblici o locali al server e funziona solo nell'edizione desktop.**
+L'host di una stampante è un indirizzo privato o di rete locale (RFC 1918, 100.64/10, link-local, ULA IPv6) o un
+nome che si risolve solo in tali indirizzi, controllato al salvataggio (`422 printer_address_not_allowed`) e di
+nuovo sull'indirizzo effettivamente contattato a ogni connessione (`Dialer.Control`), così il server non diventa un
+proxy TCP verso Internet. Loopback è ammesso solo con `ARENILE_PRINTERS_ALLOW_LOOPBACK` (sviluppo e test); gli
+indirizzi dei metadati cloud (169.254.169.254, fd00:ec2::254) sono rifiutati sempre. Sull'edizione server
+creazione e modifica delle stampanti, verifica, pagina di prova, creazione e riprova dei lavori rispondono
+`409 printing_unavailable`, i job di consegna e retention non sono registrati e la risoluzione dell'instradamento
+non è mai `ready`. Log e `last_error` contengono solo id, tipo documento e classe dell'errore di rete, mai il
+contenuto stampato né dati dei clienti.
 Verificata da: `TestAllowedIP_Scenarios`, `TestCheckHost_Scenarios`, `TestNetworkDriver_Errors`
 (`internal/domain/printing`), `TestService_ServerEditionAndDelete` e `TestHTTPIntegration_Printing` (tag
 `integration`). Stato: implemented.

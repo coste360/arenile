@@ -1,6 +1,6 @@
 ---
 title: Stampanti e ESC/POS
-description: Stampanti termiche di rete (Wi-Fi o Ethernet) con l'app desktop - configurazione, stampa di prova, instradamento per cassa, cassetto portadenaro e ripiego sulla stampa dal browser.
+description: Stampanti termiche di rete (Wi-Fi o Ethernet) con l'app desktop - configurazione, stampa di prova, instradamento per cassa, cassetto portadenaro, ricevute e chiusure Z, ripiego sulla stampa dal browser.
 sidebar:
   order: 27.5
 ---
@@ -11,15 +11,17 @@ import { Screenshot } from '~/components';
 **Dove:** Configurazione → **Stampanti**. **Chi:** gestori e proprietari configurano stampanti e
 instradamento; i cassieri vedono lo stato, verificano la connessione e lanciano la stampa di prova.
 
-Arenile stampa **biglietti giornalieri**, **ricevute di pagamento non fiscali** e **chiusure di cassa (Z)**
-direttamente sulle stampanti termiche ESC/POS collegate alla rete del lido, senza finestre di stampa e con
-taglio della carta e apertura del cassetto.
+Arenile stampa **ricevute di pagamento non fiscali** e **chiusure di cassa (Z)** direttamente sulle stampanti
+termiche ESC/POS collegate alla rete del lido, senza finestre di stampa e con taglio della carta e apertura del
+cassetto. I **biglietti giornalieri** useranno le stesse stampanti quando arriverà la vendita giornaliera: fino ad
+allora il documento *Biglietto giornaliero* non compare tra quelli instradabili.
 
 <Aside type="caution" title="Disponibile con l'app desktop">
 La stampa ESC/POS funziona quando Arenile gira sul computer dello stabilimento: con l'[app
 desktop](/gestore/app-desktop/), anche in modalità rete locale. Il server deve raggiungere la stampante sulla
 rete del lido, cosa che un server online (VPS o Docker) non può fare. Su un'installazione server la pagina
-Stampanti lo spiega e biglietti, ricevute e chiusure si stampano **dal browser**, come sempre.
+Stampanti lo spiega (la voce non compare nel menu Configurazione): la chiusura di cassa si stampa **dal
+browser**, come sempre, mentre la ricevuta non fiscale esiste solo sulla stampante termica.
 </Aside>
 
 <Screenshot name="admin-printers-desktop" alt="Pagina Stampanti nell'app desktop: una stampante di rete raggiungibile con Verifica e Stampa di prova, l'instradamento dei documenti e le ultime stampe" />
@@ -39,7 +41,8 @@ dirette sulla porta TCP **9100** (RAW, chiamata anche JetDirect o AppSocket). Le
 
 <Aside type="note" title="Non in questa versione">
 Stampanti **USB** o **Bluetooth** e la stampa da un'installazione online tramite un ponte sul computer della
-cassa non sono ancora supportate: in quei casi si stampa dal browser.
+cassa non sono ancora supportate: in quei casi si stampa dal browser. La stampa dei **biglietti giornalieri**
+arriva con la vendita giornaliera.
 </Aside>
 
 ## Collegare la stampante
@@ -60,7 +63,9 @@ cassa non sono ancora supportate: in quei casi si stampa dal browser.
 </Steps>
 
 Sono accettati **solo indirizzi della rete locale** (192.168.x.x, 10.x.x.x, 172.16-31.x.x): un indirizzo
-pubblico viene rifiutato, anche se è un nome host che punta fuori dalla rete.
+pubblico viene rifiutato, anche se è un nome host che punta fuori dalla rete. Lo stesso vale per l'indirizzo del
+computer stesso (127.0.0.1) e per gli indirizzi dei servizi cloud: la stampante è un altro dispositivo. Chi
+sviluppa o fa test con una stampante virtuale sullo stesso PC imposta `ARENILE_PRINTERS_ALLOW_LOOPBACK=true`.
 
 ## Opzioni della stampante
 
@@ -79,9 +84,12 @@ Nella sezione **Instradamento** scegli, per ogni documento, la stampante e il nu
 
 - una regola per **Tutte le casse** vale come predefinita;
 - una regola per una **cassa** precisa vale prima di quella predefinita (es. il bar stampa sulla sua stampante);
-- **Apri cassetto** apre il cassetto a fine stampa (solo per le stampanti con cassetto).
+- **Apri cassetto** apre il cassetto a fine stampa (solo per le stampanti con cassetto, una volta sola anche se
+  la stampa viene rispedita);
+- con **Copie** 2 o 3, dalla seconda in poi la stampa porta in testa la dicitura **COPIA**.
 
-Senza una regola il documento si stampa dal browser. Premi **Salva instradamento** per applicare le modifiche.
+Senza una regola la chiusura si stampa dal browser e la ricevuta non viene proposta. Premi **Salva
+instradamento** per applicare le modifiche.
 
 ## Stampare dalla cassa
 
@@ -95,7 +103,11 @@ il messaggio di conferma offre **Stampa ricevuta** (ricevuta **non fiscale**).
 
 La sezione **Ultime stampe** mostra ogni stampa con il suo esito. Se la stampante è spenta o fuori rete,
 Arenile riprova da solo dopo 5 secondi, 15 secondi, 1 minuto e 5 minuti; poi la stampa risulta **Non
-riuscita** e puoi premere **Riprova**. Un doppio clic non stampa due volte lo stesso documento.
+riuscita** e puoi premere **Riprova**. Mentre una stampante non risponde, le stampe in coda per le altre
+stampanti partono lo stesso. Un doppio clic sullo stesso pulsante crea una sola stampa; premere di nuovo
+**Stampa riepilogo** più tardi è una ristampa voluta e ne crea un'altra. Se Arenile viene chiuso proprio
+mentre sta inviando una stampa, alla riapertura la rispedisce (potrebbe uscire due volte, senza riaprire il
+cassetto). Il contenuto delle stampe concluse viene cancellato dopo 30 giorni; resta solo la riga con l'esito.
 
 <Screenshot name="admin-printers" alt="Pagina Stampanti su un'installazione server: avviso che la stampa ESC/POS è disponibile con l'app desktop" />
 

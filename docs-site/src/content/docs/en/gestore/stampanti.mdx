@@ -1,6 +1,6 @@
 ---
 title: Printers and ESC/POS
-description: Network thermal printers (Wi-Fi or Ethernet) with the desktop app - setup, test print, routing per cash register, cash drawer and fallback to browser printing.
+description: Network thermal printers (Wi-Fi or Ethernet) with the desktop app - setup, test print, routing per cash register, cash drawer, receipts and Z reports, fallback to browser printing.
 sidebar:
   order: 27.5
 ---
@@ -11,14 +11,17 @@ import { Screenshot } from '~/components';
 **Where:** Configuration → **Printers**. **Who:** managers and owners configure printers and routing;
 cashiers see the status, check the connection and send the test print.
 
-Arenile prints **daily tickets**, **non-fiscal payment receipts** and **cash closings (Z)** straight to the
-ESC/POS thermal printers on the beach network, with no print dialog, with paper cut and cash drawer opening.
+Arenile prints **non-fiscal payment receipts** and **cash closings (Z)** straight to the ESC/POS thermal
+printers on the beach network, with no print dialog, with paper cut and cash drawer opening. **Daily tickets**
+will use the same printers once the daily sale arrives: until then the *Daily ticket* document is not offered
+for routing.
 
 <Aside type="caution" title="Available with the desktop app">
 ESC/POS printing works when Arenile runs on the establishment's computer: with the [desktop
 app](/en/gestore/app-desktop/), LAN mode included. The server must reach the printer on the beach network,
-which an online server (VPS or Docker) cannot do. On a server installation the Printers page explains this and
-tickets, receipts and closings print **from the browser**, as always.
+which an online server (VPS or Docker) cannot do. On a server installation the Printers page explains this (the
+entry is not in the Configuration menu): the cash closing prints **from the browser**, as always, while the
+non-fiscal receipt exists only on the thermal printer.
 </Aside>
 
 <Screenshot name="admin-printers-desktop" alt="Printers page in the desktop app: a reachable network printer with Check and Test print, document routing and the latest prints" />
@@ -38,7 +41,8 @@ on TCP port **9100** (RAW, also called JetDirect or AppSocket). We designed it f
 
 <Aside type="note" title="Not in this version">
 **USB** or **Bluetooth** printers and printing from an online installation through a bridge on the cash desk
-computer are not supported yet: in those cases you print from the browser.
+computer are not supported yet: in those cases you print from the browser. **Daily ticket** printing comes with
+the daily sale.
 </Aside>
 
 ## Connecting the printer
@@ -58,7 +62,9 @@ computer are not supported yet: in those cases you print from the browser.
 </Steps>
 
 Only **local network addresses** are accepted (192.168.x.x, 10.x.x.x, 172.16-31.x.x): a public address is
-refused, even a host name that points outside the network.
+refused, even a host name that points outside the network. The same goes for the computer's own address
+(127.0.0.1) and for cloud service addresses: the printer is another device. Developers testing with a virtual
+printer on the same PC set `ARENILE_PRINTERS_ALLOW_LOOPBACK=true`.
 
 ## Printer options
 
@@ -77,9 +83,12 @@ In **Routing** choose, for each document, the printer and the number of **Copies
 
 - a rule for **All registers** is the default;
 - a rule for one **register** wins over the default (e.g. the bar prints on its own printer);
-- **Open drawer** opens the drawer at the end of the print (printers with a drawer only).
+- **Open drawer** opens the drawer at the end of the print (printers with a drawer only, once even when the
+  print is resent);
+- with **Copies** 2 or 3, the second copy onwards carries a **COPY** mark at the top.
 
-Without a rule the document prints from the browser. Press **Save routing** to apply the changes.
+Without a rule the closing prints from the browser and the receipt is not offered. Press **Save routing** to
+apply the changes.
 
 ## Printing from the cash desk
 
@@ -93,7 +102,11 @@ receipt).
 
 **Latest prints** lists every print with its outcome. If the printer is off or offline, Arenile retries on its
 own after 5 seconds, 15 seconds, 1 minute and 5 minutes; then the print is **Failed** and you can press
-**Retry**. A double click never prints the same document twice.
+**Retry**. While one printer is not answering, queued prints for the other printers still go out. A double
+click on the same button creates one print; pressing **Print summary** again later is a deliberate reprint and
+creates another. If Arenile is closed right while sending a print, it resends it on restart (it may come out
+twice, without opening the drawer again). The content of finished prints is deleted after 30 days; only the row
+with the outcome remains.
 
 <Screenshot name="admin-printers" alt="Printers page on a server installation: notice that ESC/POS printing is available with the desktop app" />
 
