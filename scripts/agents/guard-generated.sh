@@ -69,13 +69,13 @@ case "$rel" in
 	block "This is generated Go code. Edit api/openapi.yaml (or the generator config) and run 'make gen' instead."
 	;;
 *_gen.go)
-	block "This is generated Go code (map kit: web/scripts/gen-map-kit.mjs). Edit the source (assets/beach-map-kit or the generator) and run 'make gen' instead."
+	block "This is generated Go code (map kit: web/scripts/gen-map-kit.mjs). Edit the source (assets/map-kits/<key> or the generator) and run 'make gen' instead."
 	;;
 web/shared/api/generated/*)
 	block "This is the generated TypeScript API client. Edit api/openapi.yaml and run 'make gen' instead."
 	;;
 web/shared/src/map/kit/generated/*)
-	block "This is the generated beach map kit. Edit assets/beach-map-kit (manifest + svg) or web/scripts/gen-map-kit.mjs and run 'make gen' instead."
+	block "This is the generated beach map kit. Edit assets/map-kits/<key> (manifest + svg) or web/scripts/gen-map-kit.mjs and run 'make gen' instead."
 	;;
 internal/migrations/*)
 	top="$(git -C "$root" rev-parse --show-toplevel 2>/dev/null || true)"

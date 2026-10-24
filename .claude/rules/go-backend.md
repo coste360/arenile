@@ -14,4 +14,4 @@ paths:
 - DB integration tests use `//go:build integration`; PostgreSQL only if `ARENILE_TEST_POSTGRES_URL` is set.
 - Concurrency tests are named `TestConcurrency_*` and must pass with `-race`.
 - Never edit `*.gen.go` / `*_gen.go`; change `api/openapi.yaml` (or the map kit in
-  `assets/beach-map-kit`) and run `make gen`.
+  `assets/map-kits/<key>`) and run `make gen`.

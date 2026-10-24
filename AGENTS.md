@@ -35,7 +35,7 @@ The specification (Italian) lives in `docs/spec/`, one file per section; it is a
 - `internal/http/api/*.gen.go` from `api/openapi.yaml` via oapi-codegen (`api/oapi-codegen.yaml`)
 - `web/shared/api/generated/**` (openapi-typescript `schema.d.ts`, used with openapi-fetch)
 - `web/shared/src/map/kit/generated/**` and `internal/domain/mapping/kitassets_gen.go` from the beach
-  map kit `assets/beach-map-kit` via `web/scripts/gen-map-kit.mjs` (ADR 0012)
+  map kits `assets/map-kits/<key>` via `web/scripts/gen-map-kit.mjs` (ADR 0012, ADR 0024)
 - `make check` regenerates and fails if the generated code differs from what is committed.
 
 ## Non-negotiable rules
