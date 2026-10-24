@@ -128,7 +128,7 @@ func TestCashRegistersHTTP_TwoRegistersAndZReport(t *testing.T) {
 		if strings.Contains(html, `data-testid="draft"`) {
 			t.Error("closed session printed as draft")
 		}
-		receipt := api.Receipt80
+		receipt := api.GetCashSessionZReportParamsPaperReceipt80
 		if w := z(e.cashier, mainID, &receipt); w.Code != 200 || !strings.Contains(w.Body.String(), "size: 80mm auto") || !strings.Contains(w.Body.String(), `data-testid="draft"`) {
 			t.Fatalf("receipt draft: %d", w.Code)
 		}
