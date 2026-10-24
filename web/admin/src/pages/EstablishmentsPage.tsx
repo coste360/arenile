@@ -1,4 +1,5 @@
 import { useEstablishmentPages, type Establishment } from '@arenile/shared/api';
+import { Button } from '@arenile/shared/ui/button';
 import {
   DataTable,
   QueryState,
@@ -6,14 +7,26 @@ import {
   StatusBadge,
   type ColumnDef,
 } from '@arenile/shared/ui/patterns';
-import { ExternalLinkIcon } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { ExternalLinkIcon, PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useIsOwner } from '../establishment/context';
 
 /** Establishments accessible to the current user (M0 endpoint, cursor pagination). */
 export function EstablishmentsPage() {
   const { t } = useTranslation();
   const query = useEstablishmentPages();
   const items = query.data?.pages.flatMap((p) => p.items) ?? [];
+  // Only the owner creates establishments (same rule as the switcher menu).
+  const isOwner = useIsOwner();
+  const newButton = (
+    <Button asChild size="sm">
+      <Link to="/establishments/new">
+        <PlusIcon aria-hidden="true" />
+        {t('admin.switcherNew')}
+      </Link>
+    </Button>
+  );
 
   const columns: ColumnDef<Establishment>[] = [
     {
@@ -69,7 +82,12 @@ export function EstablishmentsPage() {
 
   return (
     <section aria-labelledby="establishments-title">
-      <SectionCard titleId="establishments-title" title={t('admin.establishments.title')} flush>
+      <SectionCard
+        titleId="establishments-title"
+        title={t('admin.establishments.title')}
+        actions={isOwner && items.length > 0 ? newButton : undefined}
+        flush
+      >
         <DataTable
           embedded
           caption={t('admin.establishments.title')}
@@ -89,9 +107,10 @@ export function EstablishmentsPage() {
           pageSize={0}
           columnToggle={false}
           empty={
-            <p className="py-10 text-center text-sm text-muted-foreground">
-              {t('admin.establishments.empty')}
-            </p>
+            <div className="flex flex-col items-center gap-4 py-10 text-center">
+              <p className="text-sm text-muted-foreground">{t('admin.establishments.empty')}</p>
+              {isOwner && newButton}
+            </div>
           }
           loadMore={{
             hasMore: !!query.hasNextPage,

@@ -341,6 +341,18 @@ describe('establishment-scoped configuration (M1/M2 scaffolding)', () => {
     await waitFor(() => expect(history.location.pathname).toBe('/admin/establishments/new'));
   });
 
+  it('offers the first establishment from the empty list (owners), with no placeholder left', async () => {
+    const user = userEvent.setup();
+    const { history } = setup('/admin/configurazione', {
+      ...routes,
+      'GET /api/admin/v1/establishments': () => json(200, { items: [] }),
+    });
+    expect(await screen.findByText('Nessuno stabilimento configurato.')).toBeInTheDocument();
+    expect(screen.queryByText('Sezione in preparazione')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Nuovo stabilimento' }));
+    await waitFor(() => expect(history.location.pathname).toBe('/admin/establishments/new'));
+  });
+
   it('switches from a booking detail to the bookings list', async () => {
     const user = userEvent.setup();
     const { history } = setup('/admin/e/e1/prenotazioni/b1', routes);
