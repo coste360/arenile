@@ -39,9 +39,10 @@ export interface BookingPageProps {
 function Message({ children, role = 'status' }: { children: string; role?: 'status' | 'alert' }) {
   return (
     <main className="mx-auto max-w-xl px-4 py-12 text-center">
-      <p role={role} className="text-muted-foreground">
-        {children}
-      </p>
+      {/* The message is the page's only heading (no establishment to name). */}
+      <div role={role}>
+        <h1 className="text-base font-normal text-muted-foreground">{children}</h1>
+      </div>
     </main>
   );
 }
@@ -81,11 +82,13 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
     const notFound = query.error instanceof ApiProblem && query.error.status === 404;
     return (
       <main className="mx-auto max-w-xl space-y-4 px-4 py-12 text-center">
-        <p role="alert" className="text-muted-foreground">
-          {notFound
-            ? t('booking.notFound')
-            : t(query.error.isNetworkError ? 'common.errors.network' : 'common.errors.generic')}
-        </p>
+        <div role="alert">
+          <h1 className="text-base font-normal text-muted-foreground">
+            {notFound
+              ? t('booking.notFound')
+              : t(query.error.isNetworkError ? 'common.errors.network' : 'common.errors.generic')}
+          </h1>
+        </div>
         {!notFound && (
           <Button onClick={() => void query.refetch()}>
             <RotateCwIcon aria-hidden="true" />
@@ -210,9 +213,10 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
       <main className="flex flex-1 flex-col">
         {e.test_mode && (
           <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-            <Alert variant="warning">
+            {/* A static notice of the page, not an alert announced on load. */}
+            <Alert variant="warning" role="note">
               <FlaskConicalIcon aria-hidden="true" />
-              <AlertDescription role="status">{t('booking.testMode')}</AlertDescription>
+              <AlertDescription>{t('booking.testMode')}</AlertDescription>
             </Alert>
           </div>
         )}
@@ -226,9 +230,9 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
           ) : (
             <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:py-8">
               {heading}
-              <Alert>
+              <Alert role="status">
                 <InfoIcon aria-hidden="true" />
-                <AlertDescription role="status">{t('booking.disabled')}</AlertDescription>
+                <AlertDescription>{t('booking.disabled')}</AlertDescription>
               </Alert>
               {contacts}
             </div>

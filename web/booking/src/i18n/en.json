@@ -37,7 +37,8 @@
     "rangeAvailable": "Spots available for the whole period.",
     "dayFull": "full",
     "dayLimited": "last spots",
-    "dayClosed": "closed"
+    "dayClosed": "closed",
+    "dayUnavailable": "not bookable online"
   },
   "where": {
     "title": "Choose where",

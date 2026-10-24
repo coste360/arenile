@@ -10,6 +10,7 @@ import {
   CollapsibleTrigger,
 } from '@arenile/shared/ui/collapsible';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
+import { cn } from '@arenile/shared/lib/utils';
 import { Spinner } from '@arenile/shared/ui/spinner';
 import {
   ArrowLeftIcon,
@@ -74,7 +75,10 @@ function ActionPanel({
           <span className="flex-1 text-left font-medium">{title}</span>
           <ChevronDownIcon
             aria-hidden="true"
-            className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+            className={cn(
+              'transition-transform motion-reduce:transition-none',
+              open && 'rotate-180',
+            )}
           />
         </Button>
       </CollapsibleTrigger>

@@ -725,7 +725,6 @@ function RatePeriodForm({
     formState: { errors },
   } = form;
   const code = useWatch({ control, name: 'code' });
-  const rangeValues = useWatch({ control, name: 'ranges' });
   return (
     <form noValidate onSubmit={s.submit} className="space-y-5">
       <FormAlert state={s.alert} onReload={onCancel} />
@@ -793,7 +792,6 @@ function RatePeriodForm({
           })}
         </FieldDescription>
         {ranges.fields.map((f, i) => {
-          const value = rangeValues[i];
           const label = t('periods.rangeAria', { index: i + 1 });
           return (
             <div key={f.id} className="flex flex-wrap items-start gap-2">
@@ -802,9 +800,8 @@ function RatePeriodForm({
                 fromName={`ranges.${i}.from`}
                 toName={`ranges.${i}.to`}
                 id={`rp-r${i}`}
-                label={
-                  value?.from ? `${label}: ${range(value.from, value.to || value.from)}` : label
-                }
+                // The picker appends the period shown to the name.
+                label={label}
                 min={season.opens_on}
                 max={season.closes_on}
               />
@@ -984,11 +981,8 @@ function HolidayDate({
       <div className="flex items-center gap-2">
         <DatePicker
           {...fieldAria(id, fieldState.error)}
-          aria-label={
-            field.value
-              ? `${t('holidays.dateAria', { index: index + 1 })}: ${formatIsoDate(field.value)}`
-              : t('holidays.dateAria', { index: index + 1 })
-          }
+          // The picker appends the date shown to the name.
+          aria-label={t('holidays.dateAria', { index: index + 1 })}
           value={field.value || undefined}
           onChange={(v) => field.onChange(v ?? '')}
           disabled={readOnly}

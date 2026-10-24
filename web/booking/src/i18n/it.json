@@ -37,7 +37,8 @@
     "rangeAvailable": "Posti disponibili per tutto il periodo.",
     "dayFull": "pieno",
     "dayLimited": "ultimi posti",
-    "dayClosed": "chiuso"
+    "dayClosed": "chiuso",
+    "dayUnavailable": "non prenotabile online"
   },
   "where": {
     "title": "Scegli dove",

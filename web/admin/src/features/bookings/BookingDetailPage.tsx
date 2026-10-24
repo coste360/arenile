@@ -574,8 +574,14 @@ function AllocationsCard({
       title={t('allocations.title')}
       description={t('allocations.description', { count: rows.length })}
     >
-      {/* Long stays (season passes: ~300 rows) scroll inside the card. */}
-      <div className="max-h-80 overflow-y-auto">
+      {/* Long stays (season passes: ~300 rows) scroll inside the card; the
+          region is focusable so the keyboard can scroll it too (WCAG 2.1.1). */}
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label={t('allocations.title')}
+        className="max-h-80 overflow-y-auto rounded-b-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      >
         <DataTable
           embedded
           caption={t('allocations.title')}

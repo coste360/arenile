@@ -37,7 +37,8 @@
     "rangeAvailable": "Plätze für den ganzen Zeitraum verfügbar.",
     "dayFull": "ausgebucht",
     "dayLimited": "letzte Plätze",
-    "dayClosed": "geschlossen"
+    "dayClosed": "geschlossen",
+    "dayUnavailable": "online nicht buchbar"
   },
   "where": {
     "title": "Wo möchten Sie liegen?",

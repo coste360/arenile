@@ -47,7 +47,13 @@ export function StatusChart({ byStatus }: StatusChartProps) {
         className="aspect-auto h-64 w-full"
         aria-hidden="true"
       >
-        <BarChart data={rows} layout="vertical" margin={{ left: 8, right: 40 }}>
+        {/* No keyboard layer: the chart is aria-hidden, the figcaption carries the data. */}
+        <BarChart
+          accessibilityLayer={false}
+          data={rows}
+          layout="vertical"
+          margin={{ left: 8, right: 40 }}
+        >
           <XAxis type="number" allowDecimals={false} hide />
           <YAxis type="category" dataKey="label" width={140} tickLine={false} axisLine={false} />
           <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel={false} />} />

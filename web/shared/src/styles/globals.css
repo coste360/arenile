@@ -336,3 +336,19 @@
     @apply min-w-80 bg-background font-sans text-foreground antialiased;
   }
 }
+
+/*
+ * Reduced motion (WCAG 2.3.3): when the device asks for less motion, the
+ * shadcn enter/exit animations, transitions and smooth scrolling become
+ * instant. No state is conveyed by motion alone.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

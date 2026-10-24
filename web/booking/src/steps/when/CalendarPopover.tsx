@@ -8,6 +8,8 @@ export interface CalendarPopoverProps extends AvailabilityCalendarProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contentId: string;
+  /** Accessible name of the popover dialog (the field label). */
+  label: string;
 }
 
 /**
@@ -21,6 +23,7 @@ export default function CalendarPopover({
   open,
   onOpenChange,
   contentId,
+  label,
   ...calendar
 }: CalendarPopoverProps) {
   return (
@@ -28,6 +31,7 @@ export default function CalendarPopover({
       <PopoverAnchor virtualRef={triggerRef} />
       <PopoverContent
         id={contentId}
+        aria-label={label}
         className="w-auto p-0"
         align="start"
         onCloseAutoFocus={(e) => {

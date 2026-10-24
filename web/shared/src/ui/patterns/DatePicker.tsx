@@ -36,6 +36,15 @@ interface CommonProps {
 const triggerClass =
   'w-full min-w-0 justify-start gap-2 overflow-hidden bg-transparent px-3 text-left font-normal tabular-nums data-[empty=true]:text-muted-foreground sm:w-56 sm:max-w-full dark:bg-input/30';
 
+/**
+ * Accessible name of a trigger labelled with `aria-label`: the label plus the
+ * visible text, so the name contains what is on screen (WCAG 2.5.3 Label in
+ * Name; speech users say what they see).
+ */
+function nameWithValue(label: string | undefined, visible: string): string | undefined {
+  return label ? `${label}: ${visible}` : undefined;
+}
+
 function CalendarLoading({ label, wide }: { label: string; wide?: boolean }) {
   return (
     <div role="status" className={cn('space-y-2 p-3', wide ? 'w-[36rem] max-w-[90vw]' : 'w-72')}>
@@ -66,11 +75,14 @@ export function DatePicker({
   max,
   className,
   disabled,
+  'aria-label': ariaLabel,
   ...aria
 }: DatePickerProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const selected = isoToDate(value);
+  const visible =
+    selected && value ? formatIsoDate(value) : (placeholder ?? t('ui.date.placeholder'));
   return (
     <div className={cn('flex min-w-0 items-center gap-1', className)}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -80,10 +92,11 @@ export function DatePicker({
             disabled={disabled}
             data-empty={!selected}
             className={triggerClass}
+            aria-label={nameWithValue(ariaLabel, visible)}
             {...aria}
           >
             <CalendarIcon aria-hidden="true" className="text-muted-foreground" />
-            {selected && value ? formatIsoDate(value) : (placeholder ?? t('ui.date.placeholder'))}
+            {visible}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -138,6 +151,7 @@ export function DateRangePicker({
   numberOfMonths = 2,
   className,
   disabled,
+  'aria-label': ariaLabel,
   ...aria
 }: DateRangePickerProps) {
   const { t } = useTranslation();
@@ -155,6 +169,7 @@ export function DateRangePicker({
             disabled={disabled}
             data-empty={!from}
             className={cn(triggerClass, 'sm:w-72 sm:max-w-full')}
+            aria-label={nameWithValue(ariaLabel, label)}
             {...aria}
           >
             <CalendarIcon aria-hidden="true" className="text-muted-foreground" />
