@@ -299,9 +299,9 @@ func TestManage_PayBalanceNeverSendsTokenToProvider(t *testing.T) {
 		e := checkouttest.New(t, db)
 		ctx := e.Ctx
 		s, token := confirmed(e, e.F.Spots[0], "2027-07-20")
-		sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+		sk, wh := "sk_live_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
 		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
-			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+			Provider: "stripe", Mode: "live", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
 		}); err != nil {
 			t.Fatal(err)
 		}
@@ -320,6 +320,61 @@ func TestManage_PayBalanceNeverSendsTokenToProvider(t *testing.T) {
 		}
 		if !strings.HasSuffix(req.CancelURL, "&cancelled=1") || req.Purpose != gateway.PurposeBalance {
 			t.Fatalf("cancel url %s purpose %s", req.CancelURL, req.Purpose)
+		}
+	})
+}
+
+// setTestMode switches the test mode of the lido (spec 15.4) through the store.
+func setTestMode(e *checkouttest.Env, on bool) {
+	e.T.Helper()
+	row, err := store.EnsureTestModeSettings(e.Ctx, e.DB, e.ES, e.F.Clock.Now())
+	if err != nil {
+		e.T.Fatal(err)
+	}
+	row.Enabled, row.UpdatedAt = on, e.F.Clock.Now()
+	if ok, err := store.UpdateTestModeSettingsVersioned(e.Ctx, e.DB, e.ES, row, row.Version); err != nil || !ok {
+		e.T.Fatalf("switch test mode: %v %v", ok, err)
+	}
+}
+
+// TestManage_TestKeysFollowTheBooking (INV-88, spec 15.4): with Stripe in
+// mode test and test mode off, the balance of a real booking is never
+// offered nor started online (ErrProviderTestMode, no provider call),
+// while a test booking created earlier still pays its balance with the
+// test keys: the decision follows the booking, not the switch.
+func TestManage_TestKeysFollowTheBooking(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		ctx := e.Ctx
+		_, realToken := confirmed(e, e.F.Spots[0], "2027-07-20")
+		setTestMode(e, true)
+		_, testToken := confirmed(e, e.F.Spots[1], "2027-07-20")
+		setTestMode(e, false)
+		sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
+			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+		}); err != nil {
+			t.Fatal(err)
+		}
+
+		m, err := e.Svc.Manage(ctx, slug, realToken)
+		if err != nil || m.Booking.Booking.Test || m.Allowed.PayBalance {
+			t.Fatalf("real booking: balance offered with test keys: %v %+v", err, m.Allowed)
+		}
+		if _, err := e.Svc.ManagePay(ctx, slug, realToken, ""); !errors.Is(err, gateway.ErrProviderTestMode) {
+			t.Fatalf("real booking balance with test keys: %v", err)
+		}
+		if len(e.Pay.Starts) != 0 {
+			t.Fatal("provider called for a real booking with test keys")
+		}
+
+		m, err = e.Svc.Manage(ctx, slug, testToken)
+		if err != nil || !m.Booking.Booking.Test || !m.Allowed.PayBalance {
+			t.Fatalf("test booking: balance not offered: %v %+v", err, m.Allowed)
+		}
+		out, err := e.Svc.ManagePay(ctx, slug, testToken, "")
+		if err != nil || out.Mode != checkout.PayRedirect || len(e.Pay.Starts) != 1 {
+			t.Fatalf("test booking balance: %v %+v", err, out)
 		}
 	})
 }

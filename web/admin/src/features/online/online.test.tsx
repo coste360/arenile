@@ -64,6 +64,7 @@ function paymentSettings(overrides: Record<string, unknown> = {}) {
       embedded_mode: false,
     },
     webhook_url: `https://prenota.example/webhooks/payments/stripe/${EST_ID}`,
+    live_payments_blocked: false,
     version: 2,
     ...overrides,
   };
@@ -220,6 +221,40 @@ describe('OnlineSettingsPage', () => {
   });
 });
 
+describe('OnlineSettingsPage test keys warning (INV-88)', () => {
+  const PATH = `/admin/e/${EST_ID}/config/online`;
+  const routes = (blocked: boolean) => ({
+    ...baseRoutes('owner'),
+    [`GET ${API}/online-settings`]: () => json(200, onlineSettings(), { ETag: '"7"' }),
+    [`GET ${API}/terms-versions`]: () => json(200, { items: [TERMS] }),
+    [`GET ${API}/payment-settings`]: () =>
+      json(200, paymentSettings({ live_payments_blocked: blocked })),
+  });
+
+  it('shows the banner with the shortcuts when online payments are blocked', async () => {
+    renderApp(PATH, routes(true));
+    const alert = (
+      await screen.findByText('Pagamenti online bloccati per i clienti reali')
+    ).closest('[role="alert"]') as HTMLElement;
+    expect(within(alert).getByRole('link', { name: 'Pagamenti online' })).toHaveAttribute(
+      'href',
+      `/admin/e/${EST_ID}/config/payments`,
+    );
+    expect(within(alert).getByRole('link', { name: 'Modalità prova' })).toBeInTheDocument();
+  });
+
+  it('shows nothing with live keys', async () => {
+    const { fetchMock } = renderApp(PATH, routes(false));
+    await screen.findByRole('region', { name: 'Prenotazioni online' });
+    await waitFor(() =>
+      expect(callsTo(fetchMock, 'GET', `${API}/payment-settings`)).toHaveLength(1),
+    );
+    expect(
+      screen.queryByText('Pagamenti online bloccati per i clienti reali'),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe('PaymentSettingsPage', () => {
   const PATH = `/admin/e/${EST_ID}/config/payments`;
 
@@ -240,6 +275,9 @@ describe('PaymentSettingsPage', () => {
       `https://prenota.example/webhooks/payments/stripe/${EST_ID}`,
     );
     expect(screen.getByText('checkout.session.completed')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Pagamenti online bloccati per i clienti reali'),
+    ).not.toBeInTheDocument();
     await user.type(screen.getByLabelText('Segreto di firma del webhook'), 'whsec_abc123');
     await user.click(screen.getByRole('button', { name: 'Salva' }));
     await waitFor(() =>
@@ -257,6 +295,25 @@ describe('PaymentSettingsPage', () => {
         webhook_secret: 'whsec_abc123',
       },
     });
+  });
+
+  it('warns that test keys block real customers while test mode is off (INV-88)', async () => {
+    renderApp(PATH, {
+      ...baseRoutes('owner'),
+      [`GET ${API}/payment-settings`]: () =>
+        json(200, paymentSettings({ live_payments_blocked: true })),
+    });
+    const alert = (
+      await screen.findByText('Pagamenti online bloccati per i clienti reali')
+    ).closest('[role="alert"]') as HTMLElement;
+    expect(alert).toBeInTheDocument();
+    expect(within(alert).getByText(/Inserisci le chiavi live/)).toBeInTheDocument();
+    expect(within(alert).getByRole('link', { name: 'Modalità prova' })).toHaveAttribute(
+      'href',
+      `/admin/e/${EST_ID}/config/test-mode`,
+    );
+    // Already on the payment settings: no link to themselves.
+    expect(within(alert).queryByRole('link', { name: 'Pagamenti online' })).not.toBeInTheDocument();
   });
 
   it('refuses a live key in test mode', async () => {

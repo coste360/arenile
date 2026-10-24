@@ -35,7 +35,7 @@ func TestPaymentWebhook_ConfirmsBooking(t *testing.T) {
 			t.Fatalf("start: %+v", res)
 		}
 		pi := e.intent(res.IntentID)
-		if pi.Status != store.IntentPending || pi.Attempt != 1 || *pi.IdempotencyKey != b.ID+":1" || pi.Mode != store.ProviderModeTest {
+		if pi.Status != store.IntentPending || pi.Attempt != 1 || *pi.IdempotencyKey != b.ID+":1" || pi.Mode != store.ProviderModeLive {
 			t.Fatalf("intent: %+v", pi)
 		}
 		cs := e.srv.Session(pi.ExternalID)
@@ -578,6 +578,78 @@ func TestStart_AttemptsAndProvider(t *testing.T) {
 		})
 		if !errors.Is(err, gateway.ErrProviderUnavailable) {
 			t.Fatalf("outage: %v", err)
+		}
+	})
+}
+
+// TestStart_TestKeysNeverPayRealBookings (INV-88): with the active provider
+// configured in mode test (test keys) a real booking (test mode off when it
+// was created) never starts a payment: no provider call, no intent, 409
+// payment_provider_test_mode. A test booking pays with the same test keys
+// as before.
+func TestStart_TestKeysNeverPayRealBookings(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		e.settings.testKeys = true
+		realBk := e.held(0, "2027-07-10")
+		if realBk.Test {
+			t.Fatal("real booking flagged test")
+		}
+		calls := len(e.srv.Requests())
+		res, err := e.tryStart(realBk)
+		if !errors.Is(err, gateway.ErrProviderTestMode) || !errors.Is(err, configerr.ErrConflict) || res != nil {
+			t.Fatalf("real booking with test keys: %+v %v", res, err)
+		}
+		if n := len(e.srv.Requests()); n != calls {
+			t.Fatalf("provider called %d times for a refused start", n-calls)
+		}
+		if n := e.count("payment_intents", "booking_id = ?", realBk.ID); n != 0 {
+			t.Fatalf("%d intents recorded for a refused start", n)
+		}
+
+		e.setTestMode(true)
+		test := e.held(1, "2027-07-10")
+		if !test.Test {
+			t.Fatal("booking created in test mode not flagged")
+		}
+		if pi := e.intent(e.start(test).IntentID); pi.Mode != store.ProviderModeTest {
+			t.Fatalf("test booking intent mode %q", pi.Mode)
+		}
+		// Live keys are unaffected: covered by TestPaymentWebhook_ConfirmsBooking.
+	})
+}
+
+// TestPaymentWebhook_TestKeysNeverConfirmRealBooking (INV-88): a test-mode
+// session opened for a real booking before the block (simulated: a test
+// booking turned real in the database) is paid with a test card. The
+// verified success never confirms the booking: the intent fails with
+// test_keys_real_booking, no ledger row, the booking stays held. A test
+// booking keeps confirming through the same keys (TestStart_TestKeysNeverPayRealBookings).
+func TestPaymentWebhook_TestKeysNeverConfirmRealBooking(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		e.settings.testKeys = true
+		e.setTestMode(true)
+		b := e.held(0, "2027-07-10")
+		res := e.start(b)
+		e.setTestMode(false)
+		if _, err := db.NewUpdate().TableExpr("bookings").Set("test = ?", false).Where("id = ?", b.ID).Exec(e.ctx); err != nil {
+			t.Fatal(err)
+		}
+		pi := e.intent(res.IntentID)
+		if pi.Mode != store.ProviderModeTest {
+			t.Fatalf("intent mode %q", pi.Mode)
+		}
+		e.mustDeliver(e.paidEvent(pi.ExternalID))
+		if got := e.reload(b.ID); got.Status != "held" || got.PaidAmount != 0 {
+			t.Fatalf("real booking after a test-card payment: %s paid %d", got.Status, got.PaidAmount)
+		}
+		pi = e.intent(res.IntentID)
+		if pi.Status != store.IntentFailed || pi.FailureReason == nil || *pi.FailureReason != "test_keys_real_booking" || pi.PaymentID != nil {
+			t.Fatalf("intent after a test-card payment: %+v", pi)
+		}
+		if n := e.count("payments", "booking_id = ?", b.ID); n != 0 {
+			t.Fatalf("%d ledger rows for a test-card payment of a real booking", n)
 		}
 	})
 }

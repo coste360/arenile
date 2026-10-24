@@ -32,7 +32,11 @@ import (
 
 // Test credentials accepted by the fake (not real keys).
 const (
-	SecretKey      = "sk_test_arenile_fake_0000" //nolint:gosec // fake test credential
+	SecretKey = "sk_test_arenile_fake_0000" //nolint:gosec // fake test credential
+	// LiveSecretKey is a live-mode key the fake also accepts: real bookings
+	// never pay with test keys (INV-88), so end-to-end flows of real
+	// bookings configure the establishment in mode live.
+	LiveSecretKey  = "sk_live_arenile_fake_0000" //nolint:gosec // fake test credential
 	WebhookSecret  = "whsec_arenile_test_secret" //nolint:gosec // fake test credential
 	PublishableKey = "pk_test_arenile_fake_0000"
 )
@@ -219,7 +223,7 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "api_error", "", "fake outage")
 		return
 	}
-	if req.Authorization != "Bearer "+SecretKey {
+	if req.Authorization != "Bearer "+SecretKey && req.Authorization != "Bearer "+LiveSecretKey {
 		writeErr(w, http.StatusUnauthorized, "invalid_request_error", "", "Invalid API Key provided")
 		return
 	}

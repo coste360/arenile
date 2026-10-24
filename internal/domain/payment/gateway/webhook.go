@@ -223,10 +223,26 @@ func (s *Service) apply(ctx context.Context, es store.EstablishmentScope, provid
 		}
 		before := pi.Status
 		x := &txn{s: s, tx: tx, es: es, cfg: cfg, ev: ev, eventID: eventID, source: source, out: out}
-		switch pi.Kind {
-		case store.IntentKindPayment:
+		testKeys, err := x.testKeysOnRealBooking(ctx, pi)
+		if err != nil {
+			return err
+		}
+		if testKeys {
+			// A test-mode session opened for a real booking before INV-88
+			// blocked such starts: a test card never confirms a real
+			// booking (not even as a late payment). An open intent fails,
+			// nothing is recorded.
+			s.d.Log.WarnContext(ctx, "gateway: test-mode payment of a real booking not applied", "provider", provider, "establishment_id", es.ID(), "event_id", eventID, "intent_id", pi.ID)
+			if !isOpen(pi.Status) {
+				return s.ignore(ctx, tx, es, we, out, failureTestKeys)
+			}
+		}
+		switch {
+		case testKeys:
+			err = x.close(ctx, pi, store.IntentFailed, failureTestKeys)
+		case pi.Kind == store.IntentKindPayment:
 			err = x.onPayment(ctx, pi)
-		case store.IntentKindRefund:
+		case pi.Kind == store.IntentKindRefund:
 			err = x.onRefund(ctx, pi)
 		}
 		if err != nil {
@@ -380,6 +396,26 @@ func (x *txn) onPayment(ctx context.Context, pi *store.PaymentIntent) error {
 		return x.settleRefunds(ctx, pi, money.Cents(ev.Amount))
 	}
 	return nil
+}
+
+// failureTestKeys is the failure reason of a test-mode payment of a real
+// booking (INV-88).
+const failureTestKeys = "test_keys_real_booking"
+
+// testKeysOnRealBooking reports whether a success event would pay a real
+// booking (bookings.test = false) through an intent in mode test not yet
+// succeeded: a session opened before INV-88 blocked such starts. Refunds
+// and payments already recorded are never affected.
+func (x *txn) testKeysOnRealBooking(ctx context.Context, pi *store.PaymentIntent) (bool, error) {
+	if x.ev.Type != ext.PaymentSucceeded || pi.Kind != store.IntentKindPayment || pi.Mode != store.ProviderModeTest ||
+		pi.Status == store.IntentSucceeded || pi.BookingID == nil {
+		return false, nil
+	}
+	b, err := store.GetBooking(ctx, x.tx, x.es, *pi.BookingID)
+	if err != nil {
+		return false, fmt.Errorf("gateway: %w", err)
+	}
+	return !b.Test, nil
 }
 
 // close moves an open payment intent to a terminal failure (payment.failed).

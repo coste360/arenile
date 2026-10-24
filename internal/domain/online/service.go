@@ -380,9 +380,11 @@ func (s *Service) paymentsView(ctx context.Context, db bun.IDB, es store.Establi
 	}
 	out := &PaymentSettings{Provider: ProviderManual, Mode: store.ProviderModeTest, AvailableProviders: s.providerCodes(), Version: row.Version}
 	active, err := store.GetActivePaymentProvider(ctx, db, es)
+	canPay := false
 	switch {
 	case err == nil:
 		out.Provider, out.Mode = active.Provider, active.Mode
+		canPay = active.Credentials != "" && s.providerOnline(active.Provider)
 	case !errors.Is(err, store.ErrNotFound):
 		return nil, fmt.Errorf("online: %w", err)
 	}
@@ -396,6 +398,11 @@ func (s *Service) paymentsView(ctx context.Context, db bun.IDB, es store.Establi
 	case !errors.Is(err, store.ErrNotFound):
 		return nil, fmt.Errorf("online: %w", err)
 	}
+	on, err := store.TestModeEnabled(ctx, db, es)
+	if err != nil {
+		return nil, fmt.Errorf("online: %w", err)
+	}
+	out.LivePaymentsBlocked = canPay && LivePaymentsBlocked(on, out.Provider, out.Mode)
 	out.WebhookURL = s.d.BaseURL + "/webhooks/payments/" + out.Provider + "/" + es.ID()
 	return out, nil
 }
@@ -726,7 +733,11 @@ func (s *Service) ResolvePublic(ctx context.Context, slug string) (*PublicEstabl
 	if out.Terms, err = s.CurrentTerms(ctx, s.d.DB, es); err != nil {
 		return nil, err
 	}
-	active, err := effectivePaymentProvider(ctx, s.d.DB, es)
+	on, err := store.TestModeEnabled(ctx, s.d.DB, es)
+	if err != nil {
+		return nil, fmt.Errorf("online: resolve: %w", err)
+	}
+	active, err := providerForBooking(ctx, s.d.DB, es, on)
 	switch {
 	case err == nil:
 		out.Provider = active.Provider
@@ -739,6 +750,12 @@ func (s *Service) ResolvePublic(ctx context.Context, slug string) (*PublicEstabl
 			if out.Embedded {
 				out.PublishableKey = v.PublishableKey
 			}
+		}
+		// Test keys never take the money of a real customer (INV-88): the
+		// bookings of the page are real while test mode is off. Only a
+		// setup that could pay is reported as blocked.
+		if out.Online && LivePaymentsBlocked(on, active.Provider, active.Mode) {
+			out.Online, out.LivePaymentsBlocked = false, true
 		}
 	case !errors.Is(err, store.ErrNotFound):
 		return nil, fmt.Errorf("online: resolve: %w", err)
@@ -800,18 +817,6 @@ func (s *Service) ProviderConfig(ctx context.Context, db bun.IDB, es store.Estab
 		return nil, store.ErrNotFound
 	}
 	return s.providerConfig(es, row)
-}
-
-// effectivePaymentProvider is the provider row the bookings created on the
-// public page of es use now: the row of a real booking outside test mode,
-// the row of a test booking while the switch is on (new bookings are
-// flagged test then).
-func effectivePaymentProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (*store.PaymentProviderSettings, error) {
-	on, err := store.TestModeEnabled(ctx, db, es)
-	if err != nil {
-		return nil, fmt.Errorf("online: %w", err)
-	}
-	return providerForBooking(ctx, db, es, on)
 }
 
 // providerForBooking is the provider row a booking with the given test flag

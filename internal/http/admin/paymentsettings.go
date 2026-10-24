@@ -91,7 +91,7 @@ func (h *Handlers) TestPaymentSettings(w http.ResponseWriter, r *http.Request, e
 func PaymentSettingsToAPI(ps *online.PaymentSettings) api.PaymentSettings {
 	out := api.PaymentSettings{
 		Provider: ps.Provider, AvailableProviders: ps.AvailableProviders, Mode: api.ProviderMode(ps.Mode),
-		WebhookUrl: ps.WebhookURL, Version: ps.Version,
+		WebhookUrl: ps.WebhookURL, LivePaymentsBlocked: ps.LivePaymentsBlocked, Version: ps.Version,
 		Stripe: api.StripeSettings{
 			Configured: ps.Stripe.Configured, EmbeddedMode: ps.Stripe.EmbeddedMode,
 			WebhookSecretConfigured: ps.Stripe.WebhookSecretConfigured, VerifiedAt: ps.Stripe.VerifiedAt,

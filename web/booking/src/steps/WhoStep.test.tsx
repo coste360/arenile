@@ -7,6 +7,7 @@ import {
   TOKEN,
   checkoutStateFixture,
   callsTo,
+  establishmentFixture,
   json,
   problem,
   quoteFixture,
@@ -127,6 +128,59 @@ describe('WhoStep', () => {
     expect(
       await screen.findByText('Ti stiamo portando alla pagina di pagamento…'),
     ).toBeInTheDocument();
+  });
+
+  it('blocks the checkout when test keys would take a real payment (INV-88)', async () => {
+    const online = establishmentFixture().online!;
+    const { fetchMock } = renderWithEnv(
+      <WhoStep
+        session={session}
+        state={checkoutStateFixture() as never}
+        holdExpiresAt={new Date(Date.now() + 10 * 60_000).toISOString()}
+        quote={quoteFixture() as never}
+        onCompleted={vi.fn()}
+        onExpired={vi.fn()}
+      />,
+      {},
+      {
+        online: {
+          ...online,
+          payment: { ...online.payment, online: false, live_payments_blocked: true },
+        },
+      },
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Il pagamento online non è disponibile in questo momento',
+    );
+    const submit = screen.getByRole('button', { name: 'Conferma la prenotazione' });
+    expect(submit).toBeDisabled();
+    // Never the "pay at the desk" or "no real charge" hints to a real customer.
+    expect(screen.queryByText(/Pagherai direttamente/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Modalità di prova/)).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('a free or desk plan is not blocked by test keys', () => {
+    const online = establishmentFixture().online!;
+    renderWithEnv(
+      <WhoStep
+        session={session}
+        state={checkoutStateFixture() as never}
+        holdExpiresAt={new Date(Date.now() + 10 * 60_000).toISOString()}
+        quote={quoteFixture({ payment_plan: 'at_desk', due_now: 0 }) as never}
+        onCompleted={vi.fn()}
+        onExpired={vi.fn()}
+      />,
+      {},
+      {
+        online: {
+          ...online,
+          payment: { ...online.payment, online: false, live_payments_blocked: true },
+        },
+      },
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Conferma la prenotazione' })).toBeEnabled();
   });
 
   it('goes back when the hold expired on the server', async () => {

@@ -148,6 +148,12 @@
       "secret": "La clé secrète commence par sk_test_, sk_live_, rk_test_ ou rk_live_",
       "webhook": "Le secret du webhook commence par whsec_",
       "mode": "La clé ne correspond pas au mode choisi"
+    },
+    "blocked": {
+      "title": "Paiements en ligne bloqués pour les vrais clients",
+      "description": "Le prestataire de paiement est configuré avec des clés de test alors que le mode test d'Arenile est désactivé : les clients ne peuvent pas payer en ligne, afin que personne n'obtienne une réservation confirmée avec une fausse carte. Saisissez les clés live pour encaisser réellement, ou activez le mode test pour essayer le parcours.",
+      "toPayments": "Paiements en ligne",
+      "toTestMode": "Mode test"
     }
   },
   "email": {

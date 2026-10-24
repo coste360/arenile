@@ -417,10 +417,8 @@ func checkCorrispettivi(t *testing.T, e *env, d *day, s *snapshot, fail func(str
 			continue
 		}
 		if p.Test {
-			// The online payments of the day go through the Stripe
-			// configuration in mode test (online_test.go): no real money,
-			// so they are test rows and stay out of the corrispettivi
-			// (INV-74), whatever the booking.
+			// Test payments carry no real money and stay out of the
+			// corrispettivi (INV-74), whatever the booking.
 			continue
 		}
 		if p.BusinessDate.Before(from) || p.BusinessDate.After(to) {

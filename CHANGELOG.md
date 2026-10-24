@@ -496,6 +496,16 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Fixed
 
+- **Chiavi di test e clienti reali** (INV-88): con il provider di pagamento configurato in modalità test (chiavi
+  `sk_test_…`) e la modalità prova spenta, un cliente reale poteva pagare con una carta di test e ottenere una
+  prenotazione confermata gratis. Ora nessun pagamento online parte per una prenotazione reale con chiavi di test
+  (`409 payment_provider_test_mode`, nuovo tipo di problema) e un pagamento di prova su una sessione aperta prima
+  dell'aggiornamento non conferma la prenotazione reale; la pagina pubblica riporta il pagamento online come
+  non disponibile (`online.payment.live_payments_blocked`) e blocca il passo di pagamento con un messaggio chiaro;
+  `payment-settings` espone `live_payments_blocked` e il pannello mostra l'avviso **Pagamenti online bloccati per
+  i clienti reali** in Pagamenti online e Pagina pubblica, con i collegamenti per passare alle chiavi live o
+  accendere la modalità prova. Le prenotazioni di prova continuano a usare le chiavi di test; con le chiavi live
+  nulla cambia. Test end-to-end e collaudo M4 ora configurano Stripe (finto) in modalità live.
 - Area di gestione del cliente: l'avviso del rimborso di una prenotazione cancellata mostrava le chiavi di
   traduzione (`manage.refund.title`, …) invece dei testi; ora usa lo spazio dei testi della pagina pubblica.
 - Modalità prova, **Elimina le prenotazioni di prova**: l'anteprima contava anche i pagamenti Stripe in modalità test

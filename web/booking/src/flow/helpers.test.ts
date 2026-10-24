@@ -15,6 +15,7 @@ describe('problemMessageKey', () => {
     [problem('hold_expired', 410), 'public:errors.hold_expired'],
     [problem('unknown_error', 410), 'public:errors.hold_expired'],
     [problem('payment_provider_unavailable', 503), 'public:errors.payment_provider_unavailable'],
+    [problem('payment_provider_test_mode', 409), 'public:errors.payment_provider_test_mode'],
     [new ApiProblem({ type: 'network_error', status: 0, title: 'x' }), 'common.errors.network'],
     [problem('internal_error', 500), 'common.errors.generic'],
     [new Error('boom'), 'common.errors.generic'],

@@ -2,7 +2,8 @@
 // process, with its hosted payment page, for the end-to-end tests and the
 // real-binary acceptance (never for production). Point Arenile at it with
 // ARENILE_STRIPE_API_URL and configure the establishment with the fake
-// credentials stripetest.SecretKey / stripetest.WebhookSecret.
+// credentials stripetest.SecretKey (mode test) or stripetest.LiveSecretKey
+// (mode live, for real bookings: INV-88) and stripetest.WebhookSecret.
 //
 //	go run ./internal/testtools/stripefake -addr 127.0.0.1:12111 -arenile http://127.0.0.1:8090
 package main

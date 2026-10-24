@@ -127,7 +127,8 @@
       "email": "Inserisci un indirizzo email valido",
       "phone": "Inserisci un numero di telefono valido",
       "terms": "Per prenotare devi accettare le condizioni"
-    }
+    },
+    "onlinePaymentBlocked": "Il pagamento online non è disponibile in questo momento, quindi la prenotazione non può essere completata qui. Contatta lo stabilimento per prenotare."
   },
   "summary": {
     "title": "Riepilogo",
@@ -279,6 +280,7 @@
     "invalid_transition": "Operazione non più possibile per questa prenotazione.",
     "version_conflict": "La prenotazione è stata aggiornata nel frattempo: ricarica la pagina.",
     "conflict": "Le condizioni sono state aggiornate: rileggile e accettale di nuovo.",
-    "validation_failed": "Alcuni dati non sono validi: controlla i campi."
+    "validation_failed": "Alcuni dati non sono validi: controlla i campi.",
+    "payment_provider_test_mode": "Il pagamento online non è disponibile in questo momento: contatta lo stabilimento per prenotare."
   }
 }

@@ -6696,6 +6696,8 @@ paths:
         (`target=_top` dal widget, nuova scheda se il contenitore lo impedisce). Con policy `payment.mode = none`
         o provider `manual` la prenotazione è confermata dal driver manuale (o va in `awaiting_approval`) e la
         risposta ha `mode = none`. Provider non raggiungibile → 503 `payment_provider_unavailable` (l'hold resta).
+        Provider configurato in modalità test (chiavi di prova) per una prenotazione reale, cioè con la modalità
+        prova (spec 15.4) spenta → 409 `payment_provider_test_mode`: nessun pagamento parte (INV-88).
         `Idempotency-Key` consigliata; la chiave verso il provider è `booking_id + tentativo` (spec 13.2).
       security: []
       parameters:
@@ -12620,6 +12622,7 @@ components:
         - printing_unavailable
         - printer_address_not_allowed
         - print_route_missing
+        - payment_provider_test_mode
     Problem:
       type: object
       description: Errore RFC 9457 (`application/problem+json`).
@@ -18935,6 +18938,12 @@ components:
           description: Chiave pubblicabile, solo con `embedded`.
         test_mode:
           type: boolean
+        live_payments_blocked:
+          type: boolean
+          description: >-
+            Vero quando il provider attivo è configurato in modalità test (chiavi di prova) e la modalità
+            prova dello stabilimento è spenta: i pagamenti online dei clienti reali sono bloccati (INV-88),
+            `online` è falso e il pagamento risponde 409 `payment_provider_test_mode`.
     PublicOnlineConfig:
       type: object
       description: Configurazione del flusso pubblico (spec 12, 17.2).
@@ -20016,7 +20025,7 @@ components:
           type: boolean
     PaymentSettings:
       type: object
-      required: [provider, available_providers, mode, stripe, webhook_url, version]
+      required: [provider, available_providers, mode, stripe, webhook_url, live_payments_blocked, version]
       properties:
         provider:
           type: string
@@ -20032,6 +20041,12 @@ components:
         webhook_url:
           type: string
           description: "URL da configurare presso il provider: `<base>/webhooks/payments/<provider>/<establishment_id>`."
+        live_payments_blocked:
+          type: boolean
+          description: >-
+            Vero quando il provider attivo (non `manual`) è in modalità `test` e la modalità prova dello
+            stabilimento (spec 15.4) è spenta: i clienti reali non possono pagare online (INV-88). Per
+            sbloccare usa le chiavi live oppure accendi la modalità prova per provare il flusso.
         version:
           $ref: "#/components/schemas/Version"
     PaymentSettingsInput:

@@ -121,6 +121,10 @@ func (h *Handlers) onlineConfig(r *http.Request, slug string) (*api.PublicOnline
 		Zones: make([]api.PublicZone, len(p.Zones)),
 		Slots: make([]api.Slots, len(p.Slots)),
 	}
+	if pe.LivePaymentsBlocked {
+		blocked := true
+		out.Payment.LivePaymentsBlocked = &blocked
+	}
 	for i, sl := range p.Slots {
 		out.Slots[i] = api.Slots(sl)
 	}

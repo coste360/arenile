@@ -74,14 +74,26 @@ paghi solo le commissioni di Stripe.
 7. **Verifica.** Premi **Verifica credenziali**: Arenile chiede a Stripe i dati dell'account e
    mostra il nome dell'attività se le chiavi sono giuste.
 
-8. **Prova una prenotazione** dalla pagina pubblica, possibilmente dal telefono, con la carta di test
-   `4242 4242 4242 4242` (qualsiasi data futura e CVC). Controlla che arrivi la conferma e che la prenotazione
-   risulti **Confermata** e incassata nel pannello.
+8. **Prova una prenotazione.** Accendi la [Modalità prova](/gestore/modalita-prova/), crea il link di anteprima
+   e prenota dalla pagina pubblica, possibilmente dal telefono, con la carta di test `4242 4242 4242 4242`
+   (qualsiasi data futura e CVC). Controlla che arrivi la conferma e che la prenotazione risulti **Confermata**
+   e incassata nel pannello. Poi spegni la modalità prova ed elimina le prenotazioni di prova.
 
 9. **Passa in produzione.** Ripeti i passi 2–6 con l'interruttore "Modalità test" spento (chiavi `live` e un
    nuovo webhook live, con il suo segreto) e scegli **Pagamenti reali** in Arenile.
 
 </Steps>
+
+<Aside type="danger" title="Chiavi di test e clienti reali">
+  Con Stripe impostato su **Modalità di prova** (chiavi `sk_test_…`) e la [Modalità prova](/gestore/modalita-prova/)
+  di Arenile **spenta**, i pagamenti online dei clienti reali sono **bloccati**: altrimenti chiunque potrebbe
+  "pagare" con una carta di test e ottenere una prenotazione confermata gratis. La pagina pubblica dice al
+  cliente che il pagamento online non è disponibile e di contattare lo stabilimento; la prenotazione non si
+  completa e non viene confermata. Nel pannello, in **Pagamenti online** e in **Pagina pubblica**, compare
+  l'avviso rosso **Pagamenti online bloccati per i clienti reali**. Per sbloccare inserisci le chiavi live e
+  scegli **Pagamenti reali**, oppure accendi la Modalità prova se stai ancora provando il flusso. Le
+  prenotazioni con pagamento all'arrivo o senza importo da pagare non sono toccate.
+</Aside>
 
 <Aside type="note" title="Le chiavi sono al sicuro">
   Le chiavi segrete vengono cifrate prima di essere salvate e **non vengono mai mostrate di nuovo**: il pannello
@@ -147,6 +159,7 @@ in denaro o come credito al cliente.
 
 | Sintomo | Cosa controllare |
 |---|---|
+| Avviso "Pagamenti online bloccati per i clienti reali" | Stripe è in modalità test e la Modalità prova è spenta: passa alle chiavi live o accendi la Modalità prova |
 | La verifica delle credenziali fallisce | Chiave segreta della modalità sbagliata (test o live) o chiave revocata |
 | Pagamento riuscito su Stripe ma prenotazione in attesa | Webhook non creato, URL sbagliato (dominio, id dello stabilimento) o segreto di firma errato. La dashboard di Stripe mostra gli errori di consegna; la riconciliazione recupera entro 15 minuti |
 | Stripe segnala errori `400` sul webhook | Segreto di firma errato o di un'altra modalità (test vs live) |

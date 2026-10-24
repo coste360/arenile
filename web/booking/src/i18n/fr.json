@@ -127,7 +127,8 @@
       "email": "Saisissez une adresse e-mail valide",
       "phone": "Saisissez un numéro de téléphone valide",
       "terms": "Vous devez accepter les conditions pour réserver"
-    }
+    },
+    "onlinePaymentBlocked": "Le paiement en ligne n'est pas disponible pour le moment, la réservation ne peut donc pas être finalisée ici. Contactez l'établissement pour réserver."
   },
   "summary": {
     "title": "Récapitulatif",
@@ -279,6 +280,7 @@
     "invalid_transition": "Cette opération n'est plus possible pour cette réservation.",
     "version_conflict": "La réservation a été mise à jour entre-temps : rechargez la page.",
     "conflict": "Les conditions ont été mises à jour : relisez-les et acceptez-les à nouveau.",
-    "validation_failed": "Certaines données ne sont pas valides : vérifiez les champs."
+    "validation_failed": "Certaines données ne sont pas valides : vérifiez les champs.",
+    "payment_provider_test_mode": "Le paiement en ligne n'est pas disponible pour le moment : contactez l'établissement pour réserver."
   }
 }

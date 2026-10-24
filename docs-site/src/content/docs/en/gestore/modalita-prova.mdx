@@ -56,6 +56,13 @@ If you saved the Stripe **test** configuration too in [Online payments](/en/gest
 uses it automatically: no real charges, Stripe test cards. Without test keys online payments are disabled during
 the test (payment at the venue).
 
+<Aside type="caution" title="Test keys with test mode off">
+The Stripe test keys are **only** for test bookings. If Stripe stays configured in test mode when you turn test
+mode off, real customers **cannot pay online**: the public page explains it to the customer and the payment is
+refused, so nobody gets a confirmed booking with a test card. The panel shows the warning **Online payments blocked
+for real customers** until you switch to the live keys (or turn test mode back on).
+</Aside>
+
 ## Deleting test bookings
 
 <Steps>

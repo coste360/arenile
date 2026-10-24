@@ -8,6 +8,7 @@ import {
 } from '@arenile/shared/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ifMatch } from '../configuration/lib/validation';
+import { onlineKeys } from '../online/api';
 
 /**
  * Data hooks of the test mode (spec 15.4, ADR 0019): the switch (If-Match
@@ -55,7 +56,12 @@ export function useUpdateTestMode(establishmentId: string) {
           body,
         }),
       ),
-    onSuccess: (s) => qc.setQueryData(testModeKeys.state(establishmentId), s),
+    onSuccess: (s) => {
+      qc.setQueryData(testModeKeys.state(establishmentId), s);
+      // The payment settings report whether test keys block real customers
+      // (live_payments_blocked, INV-88), which depends on the switch.
+      void qc.invalidateQueries({ queryKey: onlineKeys.payments(establishmentId) });
+    },
   });
 }
 

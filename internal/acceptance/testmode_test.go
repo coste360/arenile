@@ -101,9 +101,11 @@ func TestAcceptance_TestMode(t *testing.T) {
 			t.Fatalf("tampered preview token accepted: %s", r)
 		}
 
-		// A real booking paid online with Stripe in test mode carries a test
-		// payment (gateway: payments.test = provider mode test). The purge
-		// never deletes it, so the dry run must not count it either.
+		// A real booking paid online with Stripe in test mode (possible
+		// only before INV-88 blocked test keys for real bookings: legacy
+		// rows) carries a test payment (payments.test = provider mode
+		// test). The purge never deletes it, so the dry run must not count
+		// it either.
 		if _, err := e.db.NewUpdate().TableExpr("payments").Set("test = ?", true).
 			Where("booking_id = ?", realBk.id).Exec(ctx); err != nil {
 			t.Fatalf("mark the real payment as a Stripe test-mode payment: %v", err)

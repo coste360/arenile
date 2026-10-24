@@ -2131,6 +2131,7 @@ const (
 	ProblemTypeNotFound                   ProblemType = "not_found"
 	ProblemTypeNotImplemented             ProblemType = "not_implemented"
 	ProblemTypePairingCodeInvalid         ProblemType = "pairing_code_invalid"
+	ProblemTypePaymentProviderTestMode    ProblemType = "payment_provider_test_mode"
 	ProblemTypePaymentProviderUnavailable ProblemType = "payment_provider_unavailable"
 	ProblemTypePolicyViolation            ProblemType = "policy_violation"
 	ProblemTypePoolExhausted              ProblemType = "pool_exhausted"
@@ -2220,6 +2221,8 @@ func (e ProblemType) Valid() bool {
 	case ProblemTypeNotImplemented:
 		return true
 	case ProblemTypePairingCodeInvalid:
+		return true
+	case ProblemTypePaymentProviderTestMode:
 		return true
 	case ProblemTypePaymentProviderUnavailable:
 		return true
@@ -7080,8 +7083,11 @@ type PaymentPlan string
 
 // PaymentSettings defines model for PaymentSettings.
 type PaymentSettings struct {
-	AvailableProviders []string     `json:"available_providers"`
-	Mode               ProviderMode `json:"mode"`
+	AvailableProviders []string `json:"available_providers"`
+
+	// LivePaymentsBlocked Vero quando il provider attivo (non `manual`) è in modalità `test` e la modalità prova dello stabilimento (spec 15.4) è spenta: i clienti reali non possono pagare online (INV-88). Per sbloccare usa le chiavi live oppure accendi la modalità prova per provare il flusso.
+	LivePaymentsBlocked bool         `json:"live_payments_blocked"`
+	Mode                ProviderMode `json:"mode"`
 
 	// Provider Provider attivo per la pagina pubblica (`manual` = nessun pagamento online).
 	Provider string         `json:"provider"`
@@ -8239,6 +8245,9 @@ type PublicPackComponent struct {
 type PublicPaymentConfig struct {
 	// Embedded Payment Element incorporato abilitato (altrimenti Checkout in redirect).
 	Embedded bool `json:"embedded"`
+
+	// LivePaymentsBlocked Vero quando il provider attivo è configurato in modalità test (chiavi di prova) e la modalità prova dello stabilimento è spenta: i pagamenti online dei clienti reali sono bloccati (INV-88), `online` è falso e il pagamento risponde 409 `payment_provider_test_mode`.
+	LivePaymentsBlocked *bool `json:"live_payments_blocked,omitempty"`
 
 	// Online Vero se il cliente può pagare online.
 	Online bool `json:"online"`

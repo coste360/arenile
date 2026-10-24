@@ -73,7 +73,7 @@ func (s *Service) Manage(ctx context.Context, slug, token string) (*Managed, err
 
 func (s *Service) managed(ctx context.Context, pe *online.PublicEstablishment, l *store.MagicLinkToken, d *booking.Detail) (*Managed, error) {
 	b := &d.Booking
-	out := &Managed{Booking: d, Link: *l, Allowed: manageActions(b, rulesOf(b), s.today(pe.Establishment), pe.Online), Refund: ManageRefundOf(d.RefundRequests)}
+	out := &Managed{Booking: d, Link: *l, Allowed: manageActions(b, rulesOf(b), s.today(pe.Establishment), onlinePayment(pe, b.Test) == nil), Refund: ManageRefundOf(d.RefundRequests)}
 	var err error
 	if out.Quote, out.Labels, err = s.summarize(ctx, s.d.DB, pe, d); err != nil {
 		return nil, err
@@ -126,6 +126,24 @@ func (s *Service) manageReturnURL(slug, bookingID string) string {
 	return s.pageURL(slug) + "/m?paid=1&booking=" + bookingID
 }
 
+// onlinePayment reports whether a booking with the given test flag can pay
+// online now (nil) or why not. pe describes the bookings the page creates
+// now (test flag = the test-mode switch); an existing booking keeps its own
+// flag (spec 15.4): with test keys while test mode is off a real booking is
+// refused (ErrProviderTestMode, INV-88) but a test booking created earlier
+// still pays with the test keys (gateway.Start decides by the booking too).
+func onlinePayment(pe *online.PublicEstablishment, test bool) error {
+	switch {
+	case pe.LivePaymentsBlocked && !test:
+		return gateway.ErrProviderTestMode
+	case pe.LivePaymentsBlocked:
+		return nil
+	case !pe.Online:
+		return ErrOnlinePaymentUnavailable
+	}
+	return nil
+}
+
 // ManagePay starts the payment of the balance with the online provider.
 func (s *Service) ManagePay(ctx context.Context, slug, token, idempotencyKey string) (*PayOutcome, error) {
 	pe, l, d, err := s.link(ctx, slug, token)
@@ -141,8 +159,8 @@ func (s *Service) ManagePay(ctx context.Context, slug, token, idempotencyKey str
 	if balance <= 0 {
 		return nil, ErrNothingToPay
 	}
-	if !pe.Online {
-		return nil, ErrOnlinePaymentUnavailable
+	if err := onlinePayment(pe, b.Test); err != nil {
+		return nil, err
 	}
 	locale := d.Customer.Locale
 	if b.Locale != nil {

@@ -4,7 +4,7 @@
 #
 #   1. serve with a temporary data dir, `seed demo`, fake Stripe as a process
 #      (ARENILE_STRIPE_API_URL, credentials of internal/.../stripetest);
-#   2. owner login, Stripe in test mode through the admin API;
+#   2. owner login, Stripe (fake, live-mode key: INV-88) through the admin API;
 #   3. public flow: create (hold) -> customer details -> pay -> the fake
 #      Stripe page completes the session and posts a SIGNED webhook ->
 #      confirmed (polling never confirms by itself);
@@ -26,7 +26,7 @@ PUB="$BASE/api/public/v1/$SLUG"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/arenile-m4-XXXXXX")"
 JAR="$WORK/cookies"
 PASSWORD='Acceptance-Owner-2026!'
-STRIPE_SK=sk_test_arenile_fake_0000
+STRIPE_SK=sk_live_arenile_fake_0000
 STRIPE_WHSEC=whsec_arenile_test_secret
 pass=0
 
@@ -62,7 +62,7 @@ ok "serve on $BASE, fake Stripe on 127.0.0.1:$SPORT"
 [[ -z "$(ls -A "$ARENILE_MAIL_DIR")" ]] && ok "seeded demo history sends no email" || die "emails sent for seeded data"
 
 # --- admin -------------------------------------------------------------------
-say "owner login, Stripe in test mode"
+say "owner login, Stripe in live mode (fake)"
 curl -fs -c "$JAR" -b "$JAR" -H 'Content-Type: application/json' \
   -d "{\"email\":\"demo@lido-demo.example\",\"password\":\"$PASSWORD\"}" "$BASE/api/admin/v1/auth/login" >/dev/null
 CSRF="$(awk '$6=="arenile_csrf"{print $7}' "$JAR")"
@@ -75,7 +75,7 @@ admin() { # method path [json]
     ${3:+-d "$3"} "$BASE/api/admin/v1/establishments/$EST$2"
 }
 ETAG="$(curl -fsS -b "$JAR" -D - -o /dev/null "$BASE/api/admin/v1/establishments/$EST/payment-settings" | awk 'tolower($1)=="etag:"{print $2}' | tr -d '\r')"
-admin PUT /payment-settings "{\"provider\":\"stripe\",\"mode\":\"test\",\"stripe\":{\"secret_key\":\"$STRIPE_SK\",\"webhook_secret\":\"$STRIPE_WHSEC\"}}" -H "If-Match: $ETAG" >"$WORK/ps.json"
+admin PUT /payment-settings "{\"provider\":\"stripe\",\"mode\":\"live\",\"stripe\":{\"secret_key\":\"$STRIPE_SK\",\"webhook_secret\":\"$STRIPE_WHSEC\"}}" -H "If-Match: $ETAG" >"$WORK/ps.json"
 [[ "$(jq -r .provider "$WORK/ps.json")" == stripe ]] || die "payment settings: $(cat "$WORK/ps.json")"
 grep -q "$STRIPE_SK" "$WORK/ps.json" && die "secret key returned by the API"
 ok "stripe configured (secret never returned), webhook $(jq -r .webhook_url "$WORK/ps.json")"

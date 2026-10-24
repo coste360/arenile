@@ -859,3 +859,22 @@ contenuto stampato né dati dei clienti.
 Verificata da: `TestAllowedIP_Scenarios`, `TestCheckHost_Scenarios`, `TestNetworkDriver_Errors`
 (`internal/domain/printing`), `TestService_ServerEditionAndDelete` e `TestHTTPIntegration_Printing` (tag
 `integration`). Stato: implemented.
+
+**INV-88 — Le chiavi di test non incassano mai una prenotazione reale.**
+Una prenotazione reale (`bookings.test = false`: creata con la modalità prova spenta, spec 15.4) non avvia mai un
+pagamento online con un provider configurato in modalità `test`, anche quando quella configurazione è la riga
+attiva: altrimenti un cliente pagherebbe con una carta di test e otterrebbe una prenotazione confermata gratis. Il
+controllo è nel punto unico di avvio dei pagamenti (`gateway.Start`, per il flag della prenotazione: nessuna
+chiamata al provider, nessun intento, `409 payment_provider_test_mode`; le sessioni aperte prima sono chiuse). Un
+pagamento riuscito su un intento in modalità `test` di una prenotazione reale (sessione aperta prima del blocco)
+non conferma mai: l'intento fallisce con `test_keys_real_booking` e non si registra nulla. A monte la pagina
+pubblica riporta `online = false` e `live_payments_blocked = true`, il piano resta online (mai "alla cassa",
+INV-19), il pagamento del checkout e il saldo dalla pagina di gestione rifiutano con lo stesso errore e il rinnovo
+non offre il pagamento online; il pannello lo segnala con `live_payments_blocked` in `payment-settings`. La
+decisione segue la prenotazione, non l'interruttore (INV-74): le prenotazioni di prova continuano a pagare con le
+chiavi di test anche dopo lo spegnimento; con le chiavi live nulla cambia.
+Verificata da: `TestLivePaymentsBlocked_Scenarios` (`internal/domain/online`, unitario);
+`TestStart_TestKeysNeverPayRealBookings`, `TestPaymentWebhook_TestKeysNeverConfirmRealBooking`
+(`internal/domain/payment/gateway`), `TestCheckoutFlow_TestKeysBlockRealCustomers`,
+`TestManage_TestKeysFollowTheBooking` (`internal/domain/checkout`), `TestOnlinePayments_EncryptedCredentials`
+(`internal/domain/online`), tag `integration`, SQLite e PostgreSQL. Stato: implemented.

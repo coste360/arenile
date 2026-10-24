@@ -73,14 +73,25 @@ Stripe's fees.
 7. **Verify.** Press **Check credentials**: Arenile asks Stripe for the account details and shows the
    business name if the keys are right.
 
-8. **Try a booking** from the public page, ideally from your phone, with the test card `4242 4242 4242 4242` (any
-   future date and CVC). Check that the confirmation arrives and that the booking is **Confirmed** and paid in the
-   panel.
+8. **Try a booking.** Turn on Arenile's [Test mode](/en/gestore/modalita-prova/), create the preview link and book
+   from the public page, ideally from your phone, with the test card `4242 4242 4242 4242` (any future date and
+   CVC). Check that the confirmation arrives and that the booking is **Confirmed** and paid in the panel. Then turn
+   test mode off and delete the test bookings.
 
 9. **Go live.** Repeat steps 2–6 with the "Test mode" switch off (`live` keys and a new live webhook with its own
    secret) and choose **Live payments** in Arenile.
 
 </Steps>
+
+<Aside type="danger" title="Test keys and real customers">
+  With Stripe set to test mode (`sk_test_…` keys) and Arenile's [Test mode](/en/gestore/modalita-prova/) **off**,
+  online payments of real customers are **blocked**: otherwise anyone could "pay" with a test card and get a
+  confirmed booking for free. The public page tells the customer that online payment is not available and to
+  contact the establishment; the booking is not completed and never confirmed. In the panel, **Online payments**
+  and **Public page** show the red warning **Online payments blocked for real customers**. To unblock, enter the
+  live keys and choose **Live payments**, or turn on Test mode if you are still trying the flow. Bookings paid on
+  arrival or with nothing to pay are not affected.
+</Aside>
 
 <Aside type="note" title="Your keys are safe">
   Secret keys are encrypted before being saved and **are never shown again**: the panel only says they are configured
@@ -143,6 +154,7 @@ to the customer.
 
 | Symptom | What to check |
 |---|---|
+| Warning "Online payments blocked for real customers" | Stripe is in test mode and Arenile's Test mode is off: switch to the live keys or turn on Test mode |
 | The credentials check fails | Secret key of the wrong mode (test or live) or revoked key |
 | Payment succeeded on Stripe but booking still pending | Webhook not created, wrong URL (domain, establishment id) or wrong signing secret. The Stripe dashboard shows delivery errors; reconciliation recovers within 15 minutes |
 | Stripe reports `400` errors on the webhook | Wrong signing secret or one from the other mode (test vs live) |

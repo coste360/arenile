@@ -60,6 +60,7 @@ func TestError_Mapping(t *testing.T) {
 		{"unknown", errors.New("db exploded: secret detail"), 500, "internal_error"},
 		{"checkout not found", fmt.Errorf("x: %w", checkout.ErrSessionNotFound), 404, "checkout_not_found"},
 		{"provider unavailable", fmt.Errorf("x: %w", gateway.ErrProviderUnavailable), 503, "payment_provider_unavailable"},
+		{"provider in test mode for a real booking", fmt.Errorf("x: %w", gateway.ErrProviderTestMode), 409, "payment_provider_test_mode"},
 		{"webhook signature", gateway.ErrSignatureInvalid, 400, "webhook_signature_invalid"},
 		{"webhook signature ext", ext.ErrInvalidSignature, 400, "webhook_signature_invalid"},
 		{"terms outdated", checkout.ErrTermsOutdated, 409, "conflict"},

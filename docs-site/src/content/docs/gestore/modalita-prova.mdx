@@ -58,6 +58,14 @@ Se in [Pagamenti online](/gestore/pagamenti-online/) hai salvato anche la config
 modalità prova la usa automaticamente: nessun addebito reale, carte di test di Stripe. Senza chiavi di test i
 pagamenti online sono disattivati durante la prova (pagamento in struttura).
 
+<Aside type="caution" title="Chiavi di test con la modalità prova spenta">
+Le chiavi di test servono **solo** alle prenotazioni di prova. Se Stripe resta configurato in modalità test
+quando spegni la modalità prova, i clienti reali **non possono pagare online**: la pagina pubblica lo spiega al
+cliente e il pagamento viene rifiutato, così nessuno ottiene una prenotazione confermata con una carta di test.
+Il pannello mostra l'avviso **Pagamenti online bloccati per i clienti reali** finché non passi alle chiavi live
+(o riaccendi la modalità prova).
+</Aside>
+
 ## Eliminare le prenotazioni di prova
 
 <Steps>

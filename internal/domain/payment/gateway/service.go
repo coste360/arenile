@@ -100,6 +100,11 @@ var (
 	// ErrProviderNotConfigured: no credentials for the provider of the
 	// active configuration (409 for payments and refunds).
 	ErrProviderNotConfigured = fmt.Errorf("%w: nessun provider di pagamento impostato", configerr.ErrConflict)
+	// ErrProviderTestMode: the provider of a real booking (test mode was
+	// off when it was created) is configured in mode test: a test card
+	// would confirm it for free, so no payment starts (409
+	// payment_provider_test_mode, INV-88).
+	ErrProviderTestMode = fmt.Errorf("%w: il provider di pagamento è in modalità test: i clienti reali non possono pagare online", configerr.ErrConflict)
 	// ErrWebhookTarget: the establishment or the provider of a webhook URL
 	// does not exist or was never configured (404, no details).
 	ErrWebhookTarget = fmt.Errorf("%w: webhook target", configerr.ErrNotFound)

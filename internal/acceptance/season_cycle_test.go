@@ -48,10 +48,10 @@ func TestAcceptance_SeasonCycle(t *testing.T) {
 
 		// Online payments with the fake Stripe.
 		r := c.must(c.get("getPaymentSettings", e.path("/payment-settings")), "payment settings")
-		sk, wh, test := stripetest.SecretKey, stripetest.WebhookSecret, api.Test
+		sk, wh, live := stripetest.LiveSecretKey, stripetest.WebhookSecret, api.Live
 		c.must(c.do("updatePaymentSettings", http.MethodPut, e.path("/payment-settings"), api.PaymentSettingsInput{
-			Provider: "stripe", Mode: test, Stripe: &api.StripeSettingsInput{SecretKey: &sk, WebhookSecret: &wh},
-		}, map[string]string{"If-Match": r.ETag}), "stripe in test mode")
+			Provider: "stripe", Mode: live, Stripe: &api.StripeSettingsInput{SecretKey: &sk, WebhookSecret: &wh},
+		}, map[string]string{"If-Match": r.ETag}), "stripe in live mode (fake; real bookings never pay with test keys, INV-88)")
 
 		// 1. Season passes of 2027.
 		const n = 6

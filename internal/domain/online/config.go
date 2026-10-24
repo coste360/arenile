@@ -224,6 +224,15 @@ func ValidateEmailConfig(c EmailConfig) (EmailConfig, error) {
 	return c, ve.OrNil()
 }
 
+// LivePaymentsBlocked reports whether a real booking (test mode off) would
+// pay through a provider configured with test keys: an online provider
+// (not the manual driver) in mode test while test mode is off. Real
+// customers must never get a confirmed booking paid with a test card
+// (INV-88); test bookings (test mode on) keep using the test keys.
+func LivePaymentsBlocked(testModeOn bool, provider, mode string) bool {
+	return !testModeOn && provider != ProviderManual && mode == store.ProviderModeTest
+}
+
 // AAD is the additional authenticated data of the encrypted credentials of
 // provider in mode for an establishment (ADR 0013 §7): a ciphertext copied
 // to another establishment, provider or mode never decrypts.

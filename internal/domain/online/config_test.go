@@ -153,3 +153,28 @@ func TestAAD_Distinct(t *testing.T) {
 		t.Fatal("aad/last4")
 	}
 }
+
+// TestLivePaymentsBlocked_Scenarios (INV-88): only an online provider in
+// mode test while test mode is off blocks the payments of real customers.
+func TestLivePaymentsBlocked_Scenarios(t *testing.T) {
+	cases := []struct {
+		name           string
+		testMode       bool
+		provider, mode string
+		want           bool
+	}{
+		{"test keys, test mode off", false, ProviderStripe, "test", true},
+		{"test keys, test mode on", true, ProviderStripe, "test", false},
+		{"live keys, test mode off", false, ProviderStripe, "live", false},
+		{"live keys, test mode on", true, ProviderStripe, "live", false},
+		{"manual, test mode off", false, ProviderManual, "test", false},
+		{"other online provider in test", false, "satispay", "test", true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := LivePaymentsBlocked(c.testMode, c.provider, c.mode); got != c.want {
+				t.Fatalf("LivePaymentsBlocked(%v, %q, %q) = %v, want %v", c.testMode, c.provider, c.mode, got, c.want)
+			}
+		})
+	}
+}

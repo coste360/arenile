@@ -148,6 +148,12 @@
       "secret": "Der geheime Schlüssel beginnt mit sk_test_, sk_live_, rk_test_ oder rk_live_",
       "webhook": "Das Webhook-Geheimnis beginnt mit whsec_",
       "mode": "Der Schlüssel passt nicht zum gewählten Modus"
+    },
+    "blocked": {
+      "title": "Online-Zahlungen für echte Kunden gesperrt",
+      "description": "Der Zahlungsanbieter ist mit Testschlüsseln eingerichtet, während der Testmodus von Arenile ausgeschaltet ist: Kunden können nicht online bezahlen, damit niemand mit einer Testkarte eine bestätigte Buchung erhält. Geben Sie die Live-Schlüssel ein, um echte Zahlungen anzunehmen, oder schalten Sie den Testmodus ein, um den Ablauf auszuprobieren.",
+      "toPayments": "Online-Zahlungen",
+      "toTestMode": "Testmodus"
     }
   },
   "email": {

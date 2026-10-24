@@ -123,7 +123,10 @@ type PaymentSettings struct {
 	Stripe             StripeView
 	// WebhookURL is <base>/webhooks/payments/<provider>/<establishment_id>.
 	WebhookURL string
-	Version    int64
+	// LivePaymentsBlocked: the active provider is in test mode while test
+	// mode is off, so real customers cannot pay online (INV-88).
+	LivePaymentsBlocked bool
+	Version             int64
 }
 
 // StripeInput carries the Stripe fields of an update: nil = unchanged,
@@ -174,4 +177,8 @@ type PublicEstablishment struct {
 	Embedded       bool
 	PublishableKey string
 	TestMode       bool
+	// LivePaymentsBlocked: the provider row of the page bookings is in test
+	// mode while test mode is off (real bookings): Online is false and the
+	// payment start answers ErrProviderTestMode (INV-88).
+	LivePaymentsBlocked bool
 }

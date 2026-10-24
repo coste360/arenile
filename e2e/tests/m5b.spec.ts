@@ -27,7 +27,9 @@ import {
  * state left by the previous one (the 2028 season, the campaign).
  */
 
-const STRIPE_SK = "sk_test_arenile_fake_0000";
+// Live-mode fake key: real bookings never pay with test keys while the
+// test mode is off (INV-88); the fake Stripe accepts it.
+const STRIPE_SK = "sk_live_arenile_fake_0000";
 const STRIPE_WHSEC = "whsec_arenile_test_secret";
 const MAIL_DIR =
   process.env.ARENILE_E2E_MAIL_DIR ??
@@ -161,7 +163,7 @@ test.beforeAll(async ({ baseURL }) => {
   admin = await adminSession(baseURL!);
   await put(admin, "/payment-settings", {
     provider: "stripe",
-    mode: "test",
+    mode: "live",
     stripe: { secret_key: STRIPE_SK, webhook_secret: STRIPE_WHSEC },
   });
   const seasons = (await admin.ok("GET", "/seasons")).items as { year: number }[];

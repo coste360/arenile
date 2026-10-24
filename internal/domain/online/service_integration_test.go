@@ -192,8 +192,12 @@ func TestOnlinePayments_EncryptedCredentials(t *testing.T) {
 			t.Fatalf("test %v %+v", err, res)
 		}
 		pe, err := svc.ResolvePublic(ctx, "lido-delfino")
-		if err != nil || pe.Provider != "stripe" || !pe.Online || !pe.TestMode || !pe.Embedded || pe.PublishableKey != pk {
+		// Test keys with test mode off: real customers cannot pay (INV-88).
+		if err != nil || pe.Provider != "stripe" || pe.Online || !pe.LivePaymentsBlocked || !pe.TestMode || !pe.Embedded || pe.PublishableKey != pk {
 			t.Fatalf("public payment %v %+v", err, pe)
+		}
+		if ps, err := svc.GetPayments(ctx, f.Owner, est); err != nil || !ps.LivePaymentsBlocked {
+			t.Fatalf("payment settings must report the block: %v %+v", err, ps)
 		}
 		// Back to manual: webhooks of stripe still verify.
 		if _, err := svc.UpdatePayments(ctx, f.Owner, est, nil, online.PaymentSettingsInput{Provider: "manual"}); err != nil {
@@ -201,6 +205,9 @@ func TestOnlinePayments_EncryptedCredentials(t *testing.T) {
 		}
 		if cfg, _ = svc.ActiveProvider(ctx, db, mustScope(t, f), false); cfg.Code != "manual" {
 			t.Fatalf("active %s", cfg.Code)
+		}
+		if ps, err := svc.GetPayments(ctx, f.Owner, est); err != nil || ps.LivePaymentsBlocked {
+			t.Fatalf("manual is never blocked: %v %+v", err, ps)
 		}
 		if cfg, err = svc.ProviderConfig(ctx, db, mustScope(t, f), "stripe", store.ProviderModeTest); err != nil || cfg.Credentials["webhook_secret"] != wh {
 			t.Fatalf("inactive provider config %v", err)

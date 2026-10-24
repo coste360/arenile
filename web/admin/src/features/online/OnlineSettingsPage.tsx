@@ -1,3 +1,4 @@
+import { useMe } from '@arenile/shared/api';
 import { DEFAULT_ACCENT, DEFAULT_PRIMARY } from '@arenile/shared/theme';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
@@ -36,11 +37,18 @@ import { FormAlert } from '../configuration/components/FormAlert';
 import { ThemeWarnings } from '../configuration/components/ThemePreview';
 import { fieldAria } from '../configuration/lib/aria';
 import { problemToFormState, type FormAlertState } from '../configuration/lib/formErrors';
-import { useOnlineSettings, useUpdateOnlineSettings, type OnlineSettings } from './api';
+import {
+  useOnlineSettings,
+  usePaymentSettings,
+  useUpdateOnlineSettings,
+  type OnlineSettings,
+} from './api';
 import { CodeBlock } from './components/CodeBlock';
+import { LivePaymentsBlockedAlert } from './components/LivePaymentsBlockedAlert';
 import { PublicPagePreview } from './components/PublicPagePreview';
 import { SectionCard } from './components/SectionCard';
 import { TermsSection } from './components/TermsSection';
+import { hasPermission } from './lib/permissions';
 import {
   FONT_FAMILIES,
   FORMULAS,
@@ -463,30 +471,43 @@ export function OnlineSettingsPage() {
   const query = useOnlineSettings(ctx.establishmentId);
   const est = ctx.establishment;
   const settings = query.data;
+  // The payment settings need payments.configure: the warning about test
+  // keys (INV-88) is shown only to who can fix it.
+  const me = useMe();
+  const canPayments = hasPermission(me.data, est, 'payments.configure');
+  const payments = usePaymentSettings(ctx.establishmentId, !!est && canPayments);
   return (
     <ConfigPage
       title={t('settings.title')}
       description={t('settings.description')}
       readOnly={!!est && !ctx.canConfigure}
     >
-      {!settings || !est ? (
-        <QueryState
-          isLoading={query.isPending || ctx.isLoading}
-          error={query.error ?? ctx.error}
-          onRetry={() => void query.refetch()}
-          rows={6}
-        />
-      ) : (
-        <OnlineSettingsForm
-          key={est.id}
-          settings={settings}
-          establishmentId={est.id}
-          slug={est.slug}
-          locales={ctx.locales}
-          defaultLocale={ctx.defaultLocale}
-          readOnly={!ctx.canConfigure}
-        />
-      )}
+      <div className="space-y-6">
+        {est &&
+          canPayments &&
+          payments.data?.live_payments_blocked &&
+          settings?.booking_enabled && (
+            <LivePaymentsBlockedAlert establishmentId={est.id} showPaymentsLink />
+          )}
+        {!settings || !est ? (
+          <QueryState
+            isLoading={query.isPending || ctx.isLoading}
+            error={query.error ?? ctx.error}
+            onRetry={() => void query.refetch()}
+            rows={6}
+          />
+        ) : (
+          <OnlineSettingsForm
+            key={est.id}
+            settings={settings}
+            establishmentId={est.id}
+            slug={est.slug}
+            locales={ctx.locales}
+            defaultLocale={ctx.defaultLocale}
+            readOnly={!ctx.canConfigure}
+          />
+        )}
+      </div>
     </ConfigPage>
   );
 }

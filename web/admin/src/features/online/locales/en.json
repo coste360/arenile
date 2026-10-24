@@ -148,6 +148,12 @@
       "secret": "The secret key starts with sk_test_, sk_live_, rk_test_ or rk_live_",
       "webhook": "The webhook secret starts with whsec_",
       "mode": "The key does not match the chosen mode"
+    },
+    "blocked": {
+      "title": "Online payments blocked for real customers",
+      "description": "The payment provider is set up with test keys while Arenile's Test mode is off: customers cannot pay online, so nobody gets a confirmed booking with a fake card. Enter the live keys to take real payments, or turn on Test mode to try the flow.",
+      "toPayments": "Online payments",
+      "toTestMode": "Test mode"
     }
   },
   "email": {

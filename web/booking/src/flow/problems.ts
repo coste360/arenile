@@ -9,6 +9,7 @@ const PUBLIC_ERRORS = new Set([
   'policy_violation',
   'checkout_not_found',
   'payment_provider_unavailable',
+  'payment_provider_test_mode',
   'rate_limited',
   'invalid_transition',
   'version_conflict',

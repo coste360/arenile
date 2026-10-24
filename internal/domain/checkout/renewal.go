@@ -27,7 +27,8 @@ type ManageRef struct {
 	Establishment *store.Establishment
 	BookingID     string
 	LinkID        string
-	// Online reports whether the establishment takes online payments.
+	// Online reports whether the booking of the link can pay online now
+	// (by its own test flag: test keys never pay a real booking, INV-88).
 	Online bool
 	// TermsVersion is the current terms version ("" when none is published).
 	TermsVersion string
@@ -41,7 +42,7 @@ func (s *Service) ResolveManage(ctx context.Context, slug, token string) (*Manag
 		return nil, err
 	}
 	ref := &ManageRef{
-		Scope: pe.Scope, Establishment: pe.Establishment, BookingID: d.Booking.ID, LinkID: l.ID, Online: pe.Online,
+		Scope: pe.Scope, Establishment: pe.Establishment, BookingID: d.Booking.ID, LinkID: l.ID, Online: onlinePayment(pe, d.Booking.Test) == nil,
 	}
 	if pe.Terms != nil {
 		ref.TermsVersion = pe.Terms.Version
@@ -74,8 +75,8 @@ func (s *Service) PayManagedAmount(ctx context.Context, slug, token string, amou
 	if amount <= 0 {
 		return nil, ErrNothingToPay
 	}
-	if !pe.Online {
-		return nil, ErrOnlinePaymentUnavailable
+	if err := onlinePayment(pe, d.Booking.Test); err != nil {
+		return nil, err
 	}
 	var due money.Cents
 	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {

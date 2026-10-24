@@ -18,6 +18,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/online"
+	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
@@ -158,9 +159,9 @@ func TestCheckoutFlow_OnlinePaymentNeverConfirmsFromBrowser(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		e := checkouttest.New(t, db)
 		ctx := e.Ctx
-		sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+		sk, wh := "sk_live_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
 		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
-			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+			Provider: "stripe", Mode: "live", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
 		}); err != nil {
 			t.Fatal(err)
 		}
@@ -403,9 +404,9 @@ func TestCheckoutFlow_BrokenOnlineProviderNeverConfirms(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		e := checkouttest.New(t, db)
 		ctx := e.Ctx
-		sk, wh, empty := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn", ""
+		sk, wh, empty := "sk_live_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn", ""
 		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
-			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+			Provider: "stripe", Mode: "live", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
 		}); err != nil {
 			t.Fatal(err)
 		}
@@ -443,6 +444,75 @@ func TestCheckoutFlow_BrokenOnlineProviderNeverConfirms(t *testing.T) {
 	})
 }
 
+// TestCheckoutFlow_TestKeysBlockRealCustomers (INV-88): Stripe configured
+// in mode test (test keys) while test mode is off would let a real
+// customer pay with a test card and get a confirmed booking for free. The
+// public page reports online payment as unavailable (blocked), the plan
+// stays online (never "at the desk", INV-19) and Pay refuses with
+// gateway.ErrProviderTestMode without calling the provider. With test mode
+// on the same keys pay the (test) bookings as before.
+func TestCheckoutFlow_TestKeysBlockRealCustomers(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := checkouttest.New(t, db)
+		ctx := e.Ctx
+		sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
+			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+		}); err != nil {
+			t.Fatal(err)
+		}
+		ps, err := e.Online.GetPayments(ctx, e.F.Owner, e.F.Est.ID)
+		if err != nil || !ps.LivePaymentsBlocked {
+			t.Fatalf("payment settings must report the block: %v %+v", err, ps)
+		}
+		pe, err := e.Online.ResolvePublic(ctx, slug)
+		if err != nil || pe.Online || !pe.LivePaymentsBlocked {
+			t.Fatalf("test keys outside test mode must not take real payments: %v %+v", err, pe)
+		}
+		s := e.Create(e.Seat(e.F.Spots[1], "2027-07-12"))
+		if e.Booking(s.BookingID).Test {
+			t.Fatal("booking flagged test with test mode off")
+		}
+		if s.Quote.Plan != checkout.PlanOnlineFull || s.Quote.DueNow != 2000 {
+			t.Fatalf("plan must stay online, got %+v", s.Quote)
+		}
+		e.Details(s, "mario@example.org")
+		if _, err := e.Svc.Pay(ctx, slug, s.BookingID, s.Token, checkout.PayInput{}); !errors.Is(err, gateway.ErrProviderTestMode) {
+			t.Fatalf("pay with test keys: %v", err)
+		}
+		if b := e.Booking(s.BookingID); b.Status != "held" || b.PaidAmount != 0 {
+			t.Fatalf("booking must stay held, got %s paid %d", b.Status, b.PaidAmount)
+		}
+		if len(e.Pay.Starts) != 0 {
+			t.Fatal("provider must not be called")
+		}
+
+		// Test mode on: new bookings are test bookings and pay with the test keys.
+		row, err := store.EnsureTestModeSettings(ctx, db, e.ES, e.F.Clock.Now())
+		if err != nil {
+			t.Fatal(err)
+		}
+		row.Enabled, row.UpdatedAt = true, e.F.Clock.Now()
+		if ok, err := store.UpdateTestModeSettingsVersioned(ctx, db, e.ES, row, row.Version); err != nil || !ok {
+			t.Fatalf("switch test mode: %v %v", ok, err)
+		}
+		if ps, err = e.Online.GetPayments(ctx, e.F.Owner, e.F.Est.ID); err != nil || ps.LivePaymentsBlocked {
+			t.Fatalf("no block in test mode: %v %+v", err, ps)
+		}
+		if pe, err = e.Online.ResolvePublic(ctx, slug); err != nil || !pe.Online || pe.LivePaymentsBlocked || !pe.TestMode {
+			t.Fatalf("test mode must pay with the test keys: %v %+v", err, pe)
+		}
+		ts := e.Create(e.Seat(e.F.Spots[2], "2027-07-12"))
+		if !e.Booking(ts.BookingID).Test {
+			t.Fatal("booking not flagged test in test mode")
+		}
+		e.Details(ts, "mario@example.org")
+		if out, err := e.Svc.Pay(ctx, slug, ts.BookingID, ts.Token, checkout.PayInput{}); err != nil || out.Mode != checkout.PayRedirect || len(e.Pay.Starts) != 1 {
+			t.Fatalf("test booking pay: %v %+v", err, out)
+		}
+	})
+}
+
 // TestCheckoutFlow_PayUsesCurrentTotal (INV-22, INV-51): the amount asked
 // to the provider is computed under the booking lock when the payment
 // starts, not from the total Pay read first: a change of the total in
@@ -452,9 +522,9 @@ func TestCheckoutFlow_PayUsesCurrentTotal(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		e := checkouttest.New(t, db)
 		ctx := e.Ctx
-		sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+		sk, wh := "sk_live_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
 		if _, err := e.Online.UpdatePayments(ctx, e.F.Owner, e.F.Est.ID, nil, online.PaymentSettingsInput{
-			Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+			Provider: "stripe", Mode: "live", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
 		}); err != nil {
 			t.Fatal(err)
 		}

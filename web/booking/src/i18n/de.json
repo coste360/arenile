@@ -127,7 +127,8 @@
       "email": "Geben Sie eine gültige E-Mail-Adresse ein",
       "phone": "Geben Sie eine gültige Telefonnummer ein",
       "terms": "Zum Buchen müssen Sie die Bedingungen akzeptieren"
-    }
+    },
+    "onlinePaymentBlocked": "Die Online-Zahlung ist derzeit nicht verfügbar, daher kann die Buchung hier nicht abgeschlossen werden. Bitte wenden Sie sich zur Buchung an den Strandbetrieb."
   },
   "summary": {
     "title": "Übersicht",
@@ -279,6 +280,7 @@
     "invalid_transition": "Für diese Buchung nicht mehr möglich.",
     "version_conflict": "Die Buchung wurde inzwischen aktualisiert: Bitte laden Sie die Seite neu.",
     "conflict": "Die Bedingungen wurden aktualisiert: Bitte lesen und akzeptieren Sie sie erneut.",
-    "validation_failed": "Einige Angaben sind ungültig: Bitte prüfen Sie die Felder."
+    "validation_failed": "Einige Angaben sind ungültig: Bitte prüfen Sie die Felder.",
+    "payment_provider_test_mode": "Die Online-Zahlung ist derzeit nicht verfügbar: Bitte wenden Sie sich zur Buchung an den Strandbetrieb."
   }
 }

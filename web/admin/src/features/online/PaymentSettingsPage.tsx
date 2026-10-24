@@ -33,6 +33,7 @@ import {
   type PaymentSettings,
 } from './api';
 import { CodeBlock } from './components/CodeBlock';
+import { LivePaymentsBlockedAlert } from './components/LivePaymentsBlockedAlert';
 import { SectionCard } from './components/SectionCard';
 import { hasPermission } from './lib/permissions';
 import {
@@ -207,6 +208,9 @@ function PaymentForm({
               </>
             )}
           </div>
+          {current.live_payments_blocked && (
+            <LivePaymentsBlockedAlert establishmentId={establishmentId} />
+          )}
           {current.provider === 'manual' && (
             <p className="text-sm text-muted-foreground">{t('payments.manualHint')}</p>
           )}

@@ -13,6 +13,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/pkg/ext"
@@ -27,7 +28,8 @@ import (
 // intent, which the page retries (a new attempt) and the hold sweeper
 // expires like any unpaid booking.
 //
-//  1. the active provider of es must take online payments;
+//  1. the active provider of es must take online payments, and a real
+//     booking never pays with test keys (ErrProviderTestMode, INV-88);
 //  2. open intents of earlier attempts are closed at the provider
 //     (PaymentCanceller, best effort) and marked cancelled, so the customer
 //     cannot pay two sessions; a payment that still slips through is
@@ -70,6 +72,13 @@ func (s *Service) Start(ctx context.Context, tx bun.IDB, es store.EstablishmentS
 	pp, ok := s.d.Providers.PaymentProvider(cfg.Code)
 	if !ok || !pp.Capabilities().Online {
 		return nil, ErrProviderNotConfigured
+	}
+	// A real booking never pays with test keys (INV-88): the active row
+	// itself may be in mode test while test mode is off. Sessions opened
+	// before the block are closed too (best effort, like any retry).
+	if !b.Test && cfg.Code != online.ProviderManual && cfg.Mode == store.ProviderModeTest {
+		s.cancelOpen(ctx, tx, es, cfg.Credentials, pp, b.ID)
+		return nil, ErrProviderTestMode
 	}
 	s.cancelOpen(ctx, tx, es, cfg.Credentials, pp, b.ID)
 

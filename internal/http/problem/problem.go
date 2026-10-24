@@ -98,6 +98,8 @@ const (
 	ImportInvalid           = api.ProblemType("import_invalid")
 	ImportAlreadyApplied    = api.ProblemType("import_already_applied")
 	RefundInProgress        = api.ProblemType("refund_in_progress")
+	// ProviderTestMode: a real booking would pay with test keys (INV-88).
+	ProviderTestMode = api.ProblemType("payment_provider_test_mode")
 )
 
 // ESC/POS printing type slugs (ADR 0021).
@@ -165,6 +167,7 @@ var catalog = map[api.ProblemType]meta{
 	ImportInvalid:           {http.StatusUnprocessableEntity, "Il file da importare contiene errori"},
 	ImportAlreadyApplied:    {http.StatusConflict, "Questo file è già stato importato"},
 	RefundInProgress:        {http.StatusConflict, "C'è già un rimborso in corso per questa prenotazione"},
+	ProviderTestMode:        {http.StatusConflict, "Pagamento online non disponibile: il provider è configurato in modalità test"},
 	// ESC/POS printing (ADR 0021).
 	PrintingUnavailable:      {http.StatusConflict, "La stampa ESC/POS è disponibile solo con l'app desktop"},
 	PrinterAddressNotAllowed: {http.StatusUnprocessableEntity, "L'indirizzo della stampante deve essere della rete locale"},
@@ -316,6 +319,8 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, CreditInsufficient)
 	case errors.Is(err, rollover.ErrTargetExists):
 		Write(w, r, SeasonRolloverConflict)
+	case errors.Is(err, gateway.ErrProviderTestMode):
+		Write(w, r, ProviderTestMode)
 	case errors.Is(err, gateway.ErrProviderUnavailable):
 		Write(w, r, ProviderUnavailable, RetryAfter(30*time.Second))
 	case errors.Is(err, ext.ErrInvalidSignature):

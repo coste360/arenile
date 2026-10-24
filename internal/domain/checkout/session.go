@@ -319,7 +319,7 @@ func (s *Service) Pay(ctx context.Context, slug, bookingID, token string, in Pay
 		}
 		returnURL = u
 	}
-	return s.startPayment(ctx, pe, cs, returnURL)
+	return s.startPayment(ctx, pe, cs, d.Booking.Test, returnURL)
 }
 
 // EmbedReturnParam is the query parameter of the host page that embed.js
@@ -369,10 +369,10 @@ func (s *Service) confirmWithoutPayment(ctx context.Context, pe *online.PublicEs
 // amount, never a stale one that would leave the booking below its
 // confirmation threshold with money on it. A booking that no longer needs
 // an online payment is a conflict: the page reloads its state.
-func (s *Service) startPayment(ctx context.Context, pe *online.PublicEstablishment, cs *store.CheckoutSession, returnURL string) (*PayOutcome, error) {
+func (s *Service) startPayment(ctx context.Context, pe *online.PublicEstablishment, cs *store.CheckoutSession, test bool, returnURL string) (*PayOutcome, error) {
 	es := pe.Scope
-	if !pe.Online {
-		return nil, ErrOnlinePaymentUnavailable
+	if err := onlinePayment(pe, test); err != nil {
+		return nil, err
 	}
 	until := s.now().Add(MaxPaymentHold)
 	if dl := s.holdDeadline(cs); until.After(dl) {

@@ -17,7 +17,7 @@ import {
 /**
  * M4 acceptance (spec 28): a complete booking from a smartphone, inside an
  * iframe on the lido's own website (another origin), in under 2 minutes,
- * paid with Stripe Checkout in test mode. The fake Stripe of
+ * paid with Stripe Checkout (live-mode fake key, INV-88). The fake Stripe of
  * internal/testtools/stripefake plays the hosted payment page and posts a
  * correctly SIGNED checkout.session.completed webhook to Arenile, which is
  * the only thing that confirms the booking (INV-19): the page only polls.
@@ -26,7 +26,9 @@ import {
 const HOST = `http://127.0.0.1:${hostPort}`;
 /** Same server, other origin: NOT in allowed_embed_origins. */
 const FOREIGN_HOST = `http://localhost:${hostPort}`;
-const STRIPE_SK = "sk_test_arenile_fake_0000";
+// Live-mode fake key: real bookings never pay with test keys while the
+// test mode is off (INV-88); the fake Stripe accepts it.
+const STRIPE_SK = "sk_live_arenile_fake_0000";
 const STRIPE_WHSEC = "whsec_arenile_test_secret";
 
 interface Admin {
@@ -133,7 +135,7 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
 
   test.beforeAll(async ({ baseURL }) => {
     admin = await adminSession(baseURL!);
-    // The lido's website may frame the page; Stripe in test mode with the
+    // The lido's website may frame the page; Stripe in live mode with the
     // fake's credentials (ARENILE_STRIPE_API_URL points at the fake).
     await admin.put(
       "/online-settings",
@@ -151,7 +153,7 @@ test.describe("M4 acceptance: embedded booking on another origin", () => {
     );
     await admin.put("/payment-settings", {
       provider: "stripe",
-      mode: "test",
+      mode: "live",
       stripe: { secret_key: STRIPE_SK, webhook_secret: STRIPE_WHSEC },
     });
   });

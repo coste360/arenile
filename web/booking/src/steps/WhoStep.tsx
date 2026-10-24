@@ -102,8 +102,11 @@ export default function WhoStep({
   const q = quote ?? state?.quote;
   const dueNow = q?.due_now ?? 0;
   const plan = q?.payment_plan;
-  const paysOnline =
-    online.payment.online && dueNow > 0 && plan !== 'at_desk' && plan !== 'approval';
+  const needsOnlinePayment = dueNow > 0 && plan !== 'at_desk' && plan !== 'approval';
+  const paysOnline = online.payment.online && needsOnlinePayment;
+  // Test keys while test mode is off (INV-88): nobody can pay online, the
+  // booking cannot be completed here.
+  const paymentBlocked = !!online.payment.live_payments_blocked && needsOnlinePayment;
   const submitLabel = paysOnline
     ? t('who.pay', { amount: formatMoney(dueNow, q?.currency ?? establishment.currency, lang) })
     : plan === 'approval'
@@ -281,6 +284,13 @@ export default function WhoStep({
         </div>
       )}
 
+      {paymentBlocked && (
+        <Alert variant="destructive" role="alert">
+          <CreditCardIcon aria-hidden="true" />
+          <AlertDescription>{t('who.onlinePaymentBlocked')}</AlertDescription>
+        </Alert>
+      )}
+
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{tc(error)}</AlertDescription>
@@ -320,21 +330,23 @@ export default function WhoStep({
           type="submit"
           size="lg"
           className="h-12 w-full sm:w-auto"
-          disabled={busy || redirecting}
+          disabled={busy || redirecting || paymentBlocked}
         >
           {busy ? <Spinner /> : paysOnline ? <LockIcon aria-hidden="true" /> : null}
           {submitLabel}
         </Button>
-        <p className="text-xs text-muted-foreground">
-          {paysOnline
-            ? t('who.securePayment', {
-                provider: PROVIDER_NAMES[online.payment.provider] ?? online.payment.provider,
-              })
-            : plan === 'approval'
-              ? t('who.approval')
-              : t('who.atDesk')}
-          {online.payment.test_mode && <> {t('who.testMode')}</>}
-        </p>
+        {!paymentBlocked && (
+          <p className="text-xs text-muted-foreground">
+            {paysOnline
+              ? t('who.securePayment', {
+                  provider: PROVIDER_NAMES[online.payment.provider] ?? online.payment.provider,
+                })
+              : plan === 'approval'
+                ? t('who.approval')
+                : t('who.atDesk')}
+            {online.payment.test_mode && <> {t('who.testMode')}</>}
+          </p>
+        )}
       </div>
     </form>
   );

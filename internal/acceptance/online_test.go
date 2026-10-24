@@ -26,7 +26,7 @@ import (
 // Stripe (stripetest, real signatures) plays the provider and the webhook
 // is the only online confirmation path (INV-19). Phases:
 //
-//   - enableOnline: Stripe in test mode, the gazebos become a zone-mode
+//   - enableOnline: Stripe in live mode (fake), the gazebos become a zone-mode
 //     zone (assignment at confirmation) with an online quota;
 //   - onlineVsDesk: desk bookings and online checkouts race on one spot and
 //     day: exactly one sale;
@@ -77,10 +77,10 @@ func (d *day) pubPath(suffix string) string { return "/api/public/v1/" + demoSlu
 func (d *day) enableOnline() {
 	d.on.pub, d.on.sessions = newClient(d.t, d.e.srv.URL), map[string]onlineSession{}
 	r := d.c.must(d.c.get("getPaymentSettings", d.e.path("/payment-settings")), "payment settings")
-	sk, wh, test := stripetest.SecretKey, stripetest.WebhookSecret, api.Test
+	sk, wh, live := stripetest.LiveSecretKey, stripetest.WebhookSecret, api.Live
 	d.c.must(d.c.do("updatePaymentSettings", http.MethodPut, d.e.path("/payment-settings"), api.PaymentSettingsInput{
-		Provider: "stripe", Mode: test, Stripe: &api.StripeSettingsInput{SecretKey: &sk, WebhookSecret: &wh},
-	}, map[string]string{"If-Match": r.ETag}), "stripe in test mode")
+		Provider: "stripe", Mode: live, Stripe: &api.StripeSettingsInput{SecretKey: &sk, WebhookSecret: &wh},
+	}, map[string]string{"If-Match": r.ETag}), "stripe in live mode (fake; real bookings never pay with test keys, INV-88)")
 
 	z := d.e.gazeboZone
 	r = d.c.must(d.c.get("getZone", d.e.path("/zones/"+z.ID)), "gazebo zone")

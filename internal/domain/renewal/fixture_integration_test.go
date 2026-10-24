@@ -98,9 +98,9 @@ func (x *fx) campaign() *renewal.CreateResult {
 // enableOnline configures the (fake) online provider.
 func (x *fx) enableOnline() {
 	x.t.Helper()
-	sk, wh := "sk_test_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
+	sk, wh := "sk_live_51abcdefghijklmnopqrstuv", "whsec_abcdefghijklmn"
 	if _, err := x.Online.UpdatePayments(x.ctx, x.F.Owner, x.F.Est.ID, nil, online.PaymentSettingsInput{
-		Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
+		Provider: "stripe", Mode: "live", Stripe: &online.StripeInput{SecretKey: &sk, WebhookSecret: &wh},
 	}); err != nil {
 		x.t.Fatal(err)
 	}

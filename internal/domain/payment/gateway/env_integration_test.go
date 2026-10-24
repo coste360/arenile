@@ -34,19 +34,25 @@ import (
 )
 
 // settings is the test double of *online.Service (gateway.ProviderSettings):
-// Stripe in test mode with the fake's credentials for every establishment.
+// Stripe in live mode with the fake's credentials for every establishment
+// (a real booking never pays with test keys, INV-88).
 type settings struct {
 	manual   atomic.Bool
 	embedded bool
-	// twoModes adds a live configuration (liveWebhookSecret) next to the
-	// test one: real bookings pay through it, test bookings through the
-	// test row (spec 15.4).
+	// twoModes adds a test configuration next to the live one and signs
+	// the live deliveries with liveWebhookSecret: real bookings pay through
+	// the live row, test bookings through the test row (spec 15.4).
 	twoModes bool
+	// testKeys makes the only configuration the test one, active for every
+	// booking (the active row in mode test, whatever the test-mode switch).
+	testKeys bool
 }
 
-// liveWebhookSecret signs the deliveries of the live configuration.
+// liveWebhookSecret signs the deliveries of the live configuration when
+// twoModes is on (the test one keeps stripetest.WebhookSecret).
 const liveWebhookSecret = "whsec_arenile_live_secret" //nolint:gosec // fake test credential
 
+// cfg is the test-mode configuration (twoModes only).
 func (s *settings) cfg(es store.EstablishmentScope) *online.ProviderConfig {
 	return &online.ProviderConfig{
 		EstablishmentID: es.ID(), Code: stripe.Code, Mode: store.ProviderModeTest, Online: true, Embedded: s.embedded,
@@ -55,34 +61,49 @@ func (s *settings) cfg(es store.EstablishmentScope) *online.ProviderConfig {
 	}
 }
 
+// live is the live configuration (the fake accepts its live secret key).
 func (s *settings) live(es store.EstablishmentScope) *online.ProviderConfig {
 	c := s.cfg(es)
 	c.Mode = store.ProviderModeLive
-	c.Credentials = ext.Credentials{stripe.CredSecretKey: stripetest.SecretKey, stripe.CredWebhookSecret: liveWebhookSecret}
+	c.Credentials = ext.Credentials{stripe.CredSecretKey: stripetest.LiveSecretKey, stripe.CredWebhookSecret: stripetest.WebhookSecret}
+	if s.twoModes {
+		c.Credentials[stripe.CredWebhookSecret] = liveWebhookSecret
+	}
 	return c
 }
 
 func (s *settings) ActiveProvider(_ context.Context, _ bun.IDB, es store.EstablishmentScope, test bool) (*online.ProviderConfig, error) {
-	if s.manual.Load() {
-		return &online.ProviderConfig{EstablishmentID: es.ID(), Code: payment.ProviderManual, Mode: store.ProviderModeLive}, nil
-	}
-	if s.twoModes && !test {
+	manual := &online.ProviderConfig{EstablishmentID: es.ID(), Code: payment.ProviderManual, Mode: store.ProviderModeLive}
+	switch {
+	case s.manual.Load():
+		return manual, nil
+	case s.testKeys:
+		return s.cfg(es), nil
+	case !test:
 		return s.live(es), nil
+	case s.twoModes:
+		return s.cfg(es), nil
 	}
-	return s.cfg(es), nil
+	return manual, nil
 }
 
 func (s *settings) ProviderConfig(_ context.Context, _ bun.IDB, es store.EstablishmentScope, provider, mode string) (*online.ProviderConfig, error) {
 	if provider != stripe.Code {
 		return nil, store.ErrNotFound
 	}
-	if mode == store.ProviderModeLive {
+	if s.testKeys {
+		if mode == store.ProviderModeLive {
+			return nil, store.ErrNotFound
+		}
+		return s.cfg(es), nil
+	}
+	if mode == store.ProviderModeTest {
 		if !s.twoModes {
 			return nil, store.ErrNotFound
 		}
-		return s.live(es), nil
+		return s.cfg(es), nil
 	}
-	return s.cfg(es), nil
+	return s.live(es), nil
 }
 
 // registry is the test double of *app.Registry (payment and fiscal
@@ -200,6 +221,15 @@ func (e *env) held(i int, day string) *store.Booking {
 // start starts a full online payment of b.
 func (e *env) start(b *store.Booking) *gateway.StartResult {
 	e.t.Helper()
+	res, err := e.tryStart(b)
+	if err != nil {
+		e.t.Fatalf("start payment: %v", err)
+	}
+	return res
+}
+
+// tryStart is start without failing the test on error.
+func (e *env) tryStart(b *store.Booking) (*gateway.StartResult, error) {
 	var res *gateway.StartResult
 	err := store.RunInTx(e.ctx, e.db, func(ctx context.Context, tx bun.Tx) error {
 		var err error
@@ -210,10 +240,7 @@ func (e *env) start(b *store.Booking) *gateway.StartResult {
 		})
 		return err
 	})
-	if err != nil {
-		e.t.Fatalf("start payment: %v", err)
-	}
-	return res
+	return res, err
 }
 
 // intent returns the payment intent of a start result.
