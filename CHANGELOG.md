@@ -430,6 +430,10 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Changed
 
+- Licenza: adottato il testo della concessione d'uso rivisto dal legale (ADR 0023). Restano gratuiti gli
+  stabilimenti gestiti direttamente, comprese le piscine all'aperto; sono chiariti widget e link nei siti, installazione
+  "in un clic", consorzi e associazioni, hotel e aiuto gratuito; il divieto riguarda i servizi a terzi e i prodotti
+  che sostituiscono Arenile. README, FAQ e pagina Licenza della documentazione aggiornati.
 - **Approvazione delle prenotazioni** (regola R3, ADR 0019 E, INV-78): **Approva**, e **Conferma** su una
   prenotazione *Da approvare*, richiedono ora `establishment.configure` (titolare e gestore); con il solo
   `bookings.write` (cassa, chiavi API con quel permesso) la risposta è `403`. **Rifiuta** resta con

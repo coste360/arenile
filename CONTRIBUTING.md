@@ -132,7 +132,7 @@ Arenile è distribuito con la [Business Source License 1.1](LICENSE) (BSL 1.1, S
 
 Per accettare i contributi chiediamo la firma del [Contributor License Agreement](CLA.md). **Alla prima pull request il bot CLA Assistant pubblica un commento** con le istruzioni: la firma richiede un solo commento e vale per tutti i contributi successivi. Il CLA consente a Coste360 SRL, titolare del progetto, di distribuire i contributi con la BSL 1.1, con licenze commerciali e con la AGPL-3.0 alla Change Date, e di modificare la licenza nel tempo; tu mantieni la titolarità del diritto d'autore.
 
-> Testo della licenza e della clausola d'uso da validare con un legale prima dell'apertura del repository.
+> La concessione d'uso della licenza è stata rivista da un legale (ottobre 2026). Il testo del CLA va validato prima dell'apertura del repository.
 
 ## Agenti AI
 

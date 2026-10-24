@@ -1,6 +1,7 @@
 # 0007 — Licenza del core: Business Source License 1.1 con conversione in AGPL-3.0 dopo tre anni
 
-- **Stato:** accettato
+- **Stato:** accettato, integrato da [ADR 0023](0023-revisione-concessione-d-uso.md) (testo della concessione d'uso
+  rivisto dal legale)
 - **Data:** 2026-10-22
 - **Sezioni della specifica:** `docs/spec/26-licenza-e-governance-del-progetto.md`,
   `docs/spec/29-edizione-desktop-e-app-mobile.md`, `docs/spec/04-struttura-del-repository.md`
