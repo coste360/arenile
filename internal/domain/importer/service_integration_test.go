@@ -5,6 +5,7 @@ package importer_test
 import (
 	"encoding/json"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
+	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/pass"
@@ -352,4 +354,156 @@ func remarshal(src map[string]any, dst any) error {
 		return err
 	}
 	return json.Unmarshal(b, dst)
+}
+
+// TestImport_SeasonPasses_ApprovalPackRefused (INV-78): a pack with
+// requires_approval cannot be imported, neither as the default pack of the
+// options (validation error) nor from the pack column (row refused with
+// pack_requires_approval): an imported pass would otherwise wait for an
+// approval nobody sees and expire with its hold.
+func TestImport_SeasonPasses_ApprovalPackRefused(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		for _, pk := range []*store.Pack{e.Base, e.VIP} {
+			pk.AllowedFormulas = append(pk.AllowedFormulas, "season")
+			if _, err := db.NewUpdate().Model(pk).Column("allowed_formulas").WherePK().Exec(e.Ctx); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := e.Pricing.CreateFixedPrice(e.Ctx, e.Owner, e.Est.ID, pricingconfig.FixedPriceInput{
+				SeasonID: e.Season.ID, PackID: pk.ID, Formula: pricing.FormulaSeason, PriceCategory: e.SeatZone.PriceCategory, Amount: 90000,
+			}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		j := e.upload(store.ImportKindSeasonPasses, "cognome;email;posto\nBlu;ada@example.org;A1\n")
+		_, err := e.svc.Preview(e.Ctx, e.Owner, "", e.Est.ID, j.ID, &j.Version, importer.Options{SeasonID: e.Season.ID, PackID: e.VIP.ID})
+		var ve *configerr.ValidationError
+		if !errors.As(err, &ve) {
+			t.Fatalf("approval pack as default: %v", err)
+		}
+		j2 := e.upload(store.ImportKindSeasonPasses, "cognome;email;posto;pacchetto\nBlu;ada@example.org;A1;"+e.VIP.Code+"\nRosa;ivo@example.org;A2;"+e.Base.Code+"\n")
+		_, rep := e.preview(j2, importer.Options{SeasonID: e.Season.ID})
+		if rep.ToCreate != 1 || rep.Invalid != 1 || !hasIssue(rep.Errors, 2, "pacchetto", "pack_requires_approval") {
+			t.Fatalf("preview %+v", rep)
+		}
+	})
+}
+
+// TestImport_TestModeBlocksAndFailedApplyClearsContent: no preview or
+// apply while test mode is on (the rows would be test rows, deleted by the
+// next purge); the uploaded content of a failed apply is cleared at once
+// (personal data, spec 23).
+func TestImport_TestModeBlocksAndFailedApplyClearsContent(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		es := scope(t, e)
+		j := e.upload(store.ImportKindCustomers, "cognome;email\nRossi;rossi@example.org\n")
+		row, err := store.EnsureTestModeSettings(e.Ctx, db, es, e.Clock.Now())
+		if err != nil {
+			t.Fatal(err)
+		}
+		row.Enabled = true
+		if ok, err := store.UpdateTestModeSettingsVersioned(e.Ctx, db, es, row, row.Version); err != nil || !ok {
+			t.Fatalf("enable test mode: %v %v", ok, err)
+		}
+		if _, err := e.svc.Preview(e.Ctx, e.Owner, "", e.Est.ID, j.ID, &j.Version, importer.Options{}); !errors.Is(err, importer.ErrTestModeOn) {
+			t.Fatalf("preview in test mode: %v", err)
+		}
+		row.Enabled = false
+		if ok, err := store.UpdateTestModeSettingsVersioned(e.Ctx, db, es, row, row.Version); err != nil || !ok {
+			t.Fatalf("disable test mode: %v %v", ok, err)
+		}
+		j, _ = e.preview(j, importer.Options{})
+		row.Enabled = true
+		if ok, err := store.UpdateTestModeSettingsVersioned(e.Ctx, db, es, row, row.Version); err != nil || !ok {
+			t.Fatalf("enable test mode: %v %v", ok, err)
+		}
+		if _, err := e.svc.Apply(e.Ctx, e.Owner, "", e.Est.ID, j.ID, &j.Version); !errors.Is(err, importer.ErrTestModeOn) {
+			t.Fatalf("apply in test mode: %v", err)
+		}
+		if n := e.Count((*store.Customer)(nil), "email = ?", "rossi@example.org"); n != 0 {
+			t.Fatalf("customers imported in test mode: %d", n)
+		}
+		row.Enabled = false
+		if ok, err := store.UpdateTestModeSettingsVersioned(e.Ctx, db, es, row, row.Version); err != nil || !ok {
+			t.Fatalf("disable test mode: %v %v", ok, err)
+		}
+
+		// A row refused at apply time: failed, content gone.
+		e.Base.AllowedFormulas = append(e.Base.AllowedFormulas, "season")
+		if _, err := db.NewUpdate().Model(e.Base).Column("allowed_formulas").WherePK().Exec(e.Ctx); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := e.Pricing.CreateFixedPrice(e.Ctx, e.Owner, e.Est.ID, pricingconfig.FixedPriceInput{
+			SeasonID: e.Season.ID, PackID: e.Base.ID, Formula: pricing.FormulaSeason, PriceCategory: e.SeatZone.PriceCategory, Amount: 90000,
+		}); err != nil {
+			t.Fatal(err)
+		}
+		opts := importer.Options{SeasonID: e.Season.ID, PackID: e.Base.ID}
+		p := e.upload(store.ImportKindSeasonPasses, "cognome;email;posto\nBlu;ada@example.org;A1\n")
+		p, _ = e.preview(p, opts)
+		e.MustCreate(e.Input(e.Spots[0], "2027-07-01", "2027-07-01")) // A1 taken after the preview
+		if _, err := e.svc.Apply(e.Ctx, e.Owner, "", e.Est.ID, p.ID, &p.Version); !isInvalid(err, "rows_refused") {
+			t.Fatalf("apply: %v", err)
+		}
+		got, _ := e.svc.Get(e.Ctx, e.Owner, e.Est.ID, p.ID)
+		if got.Status != store.ImportStatusFailed || got.Content != nil {
+			t.Fatalf("failed import keeps its content: %+v", got)
+		}
+	})
+}
+
+// TestConcurrency_ImportApplySameFile (INV-79): the same file uploaded as
+// 100 jobs and applied in parallel is applied exactly once; every loser
+// gets ErrAlreadyApplied (the unique index of applied files) and writes
+// nothing.
+func TestConcurrency_ImportApplySameFile(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		const parallel = 100
+		jobs := make([]*store.ImportJob, parallel)
+		for i := range jobs {
+			j := e.upload(store.ImportKindCustomers, "cognome;email\nRossi;rossi@example.org\nBianchi;bianchi@example.org\n")
+			jobs[i], _ = e.preview(j, importer.Options{})
+		}
+		var (
+			wg                     sync.WaitGroup
+			mu                     sync.Mutex
+			applied, already       int
+			other                  []error
+			start                  = make(chan struct{})
+		)
+		for _, j := range jobs {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				_, err := e.svc.Apply(e.Ctx, e.Owner, "", e.Est.ID, j.ID, &j.Version)
+				mu.Lock()
+				defer mu.Unlock()
+				switch {
+				case err == nil:
+					applied++
+				case errors.Is(err, importer.ErrAlreadyApplied):
+					already++
+				default:
+					other = append(other, err)
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		if len(other) > 0 {
+			t.Fatalf("unexpected errors (%d), first: %v", len(other), other[0])
+		}
+		if applied != 1 || already != parallel-1 {
+			t.Fatalf("applied %d, already applied %d", applied, already)
+		}
+		if n := e.Count((*store.Customer)(nil), "email IN (?)", bun.In([]string{"rossi@example.org", "bianchi@example.org"})); n != 2 {
+			t.Fatalf("customers %d, want 2", n)
+		}
+		if n := e.Count((*store.ImportJob)(nil), "status = ?", store.ImportStatusApplied); n != 1 {
+			t.Fatalf("applied jobs %d", n)
+		}
+	})
 }

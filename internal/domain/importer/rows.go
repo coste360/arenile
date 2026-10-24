@@ -96,6 +96,10 @@ const (
 	codeUnknownSpot     = "unknown_spot"
 	codeAmbiguousSpot   = "ambiguous_spot"
 	codeUnknownPack     = "unknown_pack"
+	// codePackNeedsApproval: the pack has requires_approval; an imported
+	// pass cannot wait for an approval (INV-78).
+	codePackNeedsApproval = "pack_requires_approval"
+
 	codeSpotUnavailable = "spot_unavailable"
 	codeCustomerMissing = "customer_not_found"
 	codeNoPrice         = "no_price"
@@ -109,6 +113,9 @@ const (
 	codeUnknownColumn     = "unknown_column"
 	codeConvertedEncoding = "converted_encoding"
 )
+
+// msgPackNeedsApproval is the issue text of codePackNeedsApproval.
+const msgPackNeedsApproval = "Il pacchetto richiede l'approvazione del gestore: crea questi abbonamenti dal pannello."
 
 // row is a validated data row. Customer holds only the values of the file
 // (empty = not given); Has lists the columns with a value.

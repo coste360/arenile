@@ -708,9 +708,15 @@ L'applicazione di un'importazione è un'unica transazione: al primo errore non c
 `import_already_applied`); le righe già presenti per il criterio scelto sono aggiornate o saltate, mai duplicate.
 Gli abbonamenti importati passano dal servizio prenotazioni (allocazioni protette dal database, audit, outbox). Il
 consenso marketing non è mai presunto.
+Nessuna importazione con la modalità prova accesa (409) e nessun abbonamento di un pacchetto che richiede
+approvazione (riga rifiutata, INV-78); il contenuto del file è cancellato appena il lavoro è applicato, fallito o
+scartato.
 Verificata da: `TestImport_SeasonPasses_RollbackAndIdempotence`, `TestImport_Customers_CreateSkipUpdate`,
-`TestImport_Customers_ValidationReport`, `TestImport_RetentionAndDiscard` (`internal/domain/importer`, tag
-`integration`, SQLite e PostgreSQL), `TestValidateRows_Scenarios`. Stato: implemented.
+`TestImport_Customers_ValidationReport`, `TestImport_RetentionAndDiscard`,
+`TestImport_SeasonPasses_ApprovalPackRefused`, `TestImport_TestModeBlocksAndFailedApplyClearsContent`,
+`TestConcurrency_ImportApplySameFile` (100 applicazioni parallele dello stesso file, una sola applicata)
+(`internal/domain/importer`, tag `integration`, SQLite e PostgreSQL), `TestValidateRows_Scenarios`. Stato:
+implemented.
 
 **INV-80 — Le azioni della mappa richiedono la versione letta.**
 Check-in, no-show, annullamento e spostamento di una prenotazione ed eliminazione di una mappa senza `If-Match`

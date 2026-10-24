@@ -61,7 +61,12 @@ attività.
 - Un file diverso con gli stessi clienti li riconosce per email o telefono e li aggiorna o li salta: nessun
   doppione.
 - **Storico importazioni** elenca ogni file con stato e risultato; **Scarta** cancella un file caricato e non
-  applicato. Il contenuto dei file è conservato al massimo 7 giorni.
+  applicato. Il contenuto di un file (nomi, email, telefoni) viene cancellato appena l'importazione è applicata,
+  fallita o scartata; un file caricato e mai applicato è conservato al massimo 7 giorni.
+- Con la [modalità prova](/gestore/modalita-prova/) accesa non si importa: le righe diventerebbero dati di prova e
+  sparirebbero alla prossima eliminazione. Spegnila prima.
+- Un pacchetto che richiede l'approvazione del gestore non si importa (riga rifiutata, *Il pacchetto richiede
+  l'approvazione*): crea quegli abbonamenti dal pannello.
 
 <Aside type="caution" title="Consenso marketing">
 Il consenso non è mai presunto: senza la colonna `consenso_marketing` vale l'opzione dell'anteprima (spenta di

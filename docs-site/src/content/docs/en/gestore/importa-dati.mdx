@@ -59,7 +59,12 @@ Imported season passes follow the same rules as those created by hand: the spot 
 - A different file with the same customers recognises them by email or phone and updates or skips them: no
   duplicates.
 - **Import history** lists every file with status and result; **Discard** deletes an uploaded file that was not
-  applied. File contents are kept for at most 7 days.
+  applied. The contents of a file (names, emails, phone numbers) are deleted as soon as the import is applied,
+  failed or discarded; a file uploaded and never applied is kept for at most 7 days.
+- Nothing is imported while [test mode](/en/gestore/modalita-prova/) is on: the rows would become test data and
+  disappear at the next purge. Switch it off first.
+- A pack that requires the manager's approval cannot be imported (row refused, *The pack requires approval*):
+  create those passes from the panel.
 
 <Aside type="caution" title="Marketing consent">
 Consent is never assumed: without the `consenso_marketing` column the preview option applies (off by default).

@@ -192,6 +192,8 @@ type executor struct {
 	// Season pass catalog.
 	spots map[string][]store.Spot
 	packs map[string][]string
+	// approvalPacks are the packs with requires_approval (never imported).
+	approvalPacks map[string]bool
 }
 
 func (ex *executor) commitRow() {
@@ -254,6 +256,11 @@ func (ex *executor) passRow(ctx context.Context, r *row) (outcome, []Issue, *Iss
 	}
 	if packID == "" {
 		return refuse(colPack, codeRequired, "Indica il pacchetto nella colonna o nelle opzioni.")
+	}
+	if ex.approvalPacks[packID] {
+		// An imported pass would wait for the approval (rule R2) and expire
+		// silently with its hold: refuse the row instead (INV-78).
+		return refuse(colPack, codePackNeedsApproval, msgPackNeedsApproval)
 	}
 
 	customerID, warnings, err := ex.passCustomer(ctx, r)
@@ -449,7 +456,11 @@ func (ex *executor) loadCatalog(ctx context.Context) error {
 		return fmt.Errorf("importer: %w", err)
 	}
 	ex.packs = map[string][]string{}
+	ex.approvalPacks = map[string]bool{}
 	for _, pk := range packs {
+		if pk.RequiresApproval {
+			ex.approvalPacks[pk.ID] = true
+		}
 		keys := map[string]bool{customer.Fold(pk.Code): true}
 		for _, n := range pk.Name {
 			keys[customer.Fold(n)] = true

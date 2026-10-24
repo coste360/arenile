@@ -29,8 +29,10 @@ corrispettivi, the Z closing and exports. At the end you delete them all with on
 </Steps>
 
 The flag is written on the booking when it is created: switching test mode off does not turn test bookings into
-real ones, and switching it on does not touch real ones. A payment inherits the flag of its booking. Test bookings
-take spots like any other until you delete them.
+real ones, and switching it on does not touch real ones. A payment inherits the flag of its booking; an online
+payment taken with the Stripe test keys is a test payment in any case. Real bookings keep paying with the live keys
+even while test mode is on. Test bookings take spots like any other until you delete them. While test mode is on,
+[data imports](/en/gestore/importa-dati/) are suspended.
 
 ## Public page: only from the preview link
 

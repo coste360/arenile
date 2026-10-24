@@ -39,6 +39,9 @@ var (
 	ErrClosed = fmt.Errorf("%w: importazione già applicata o scartata", configerr.ErrConflict)
 	// ErrContentGone: the uploaded file was cleared (retention).
 	ErrContentGone = fmt.Errorf("%w: il file caricato non è più disponibile, caricalo di nuovo", configerr.ErrConflict)
+	// ErrTestModeOn: no import while test mode is on (spec 15.4): the rows
+	// would be flagged test and deleted by the next purge.
+	ErrTestModeOn = fmt.Errorf("%w: la modalità prova è attiva: spegnila prima di importare dati reali", configerr.ErrConflict)
 )
 
 // InvalidError is a file that cannot be imported: unreadable, missing
@@ -51,7 +54,9 @@ type InvalidError struct {
 
 func (e *InvalidError) Error() string { return "importer: " + e.Code + ": " + e.Detail }
 
-// Retention of the uploaded content (personal data), spec ADR 0019.
+// Retention of the uploaded content (personal data), ADR 0019: a file
+// still waiting to be applied is kept ContentRetention; the content of an
+// applied, failed or discarded import is cleared at once.
 const (
 	ContentRetention = 7 * 24 * time.Hour
 	// JobRetention is the name of the background job clearing old content.
@@ -219,6 +224,9 @@ func (s *Service) Preview(ctx context.Context, p *auth.Principal, ip, establishm
 	if j.Content == nil {
 		return nil, ErrContentGone
 	}
+	if err := s.checkTestMode(ctx, es); err != nil {
+		return nil, err
+	}
 	if err := s.checkOptions(ctx, s.d.DB, es, j.Kind, &opts); err != nil {
 		return nil, err
 	}
@@ -262,6 +270,9 @@ func (s *Service) Apply(ctx context.Context, p *auth.Principal, ip, establishmen
 	case j.Content == nil:
 		return nil, ErrContentGone
 	}
+	if err := s.checkTestMode(ctx, es); err != nil {
+		return nil, err
+	}
 	other, err := store.AppliedImportJobID(ctx, s.d.DB, es, j.Kind, j.SHA256)
 	if err != nil {
 		return nil, fmt.Errorf("importer: apply: %w", err)
@@ -293,9 +304,10 @@ func (s *Service) Apply(ctx context.Context, p *auth.Principal, ip, establishmen
 	})
 	var inv *InvalidError
 	if errors.As(err, &inv) && rep != nil {
-		// Nothing was written: record the failure and its report.
+		// Nothing was written: record the failure and its report. The
+		// uploaded content (personal data) is not needed any more.
 		next := *j
-		next.Status, next.Report = store.ImportStatusFailed, toMap(rep)
+		next.Status, next.Content, next.Report = store.ImportStatusFailed, nil, toMap(rep)
 		if serr := s.save(ctx, s.d.DB, es, &next, j.Version); serr != nil {
 			s.d.Log.WarnContext(ctx, "import: cannot record the failed apply", slog.String("import_id", j.ID), slog.String("error", serr.Error()))
 		}
@@ -372,6 +384,18 @@ func (s *Service) save(ctx context.Context, db bun.IDB, es store.EstablishmentSc
 	return nil
 }
 
+// checkTestMode refuses an import while test mode is on (ErrTestModeOn).
+func (s *Service) checkTestMode(ctx context.Context, es store.EstablishmentScope) error {
+	on, err := store.TestModeEnabled(ctx, s.d.DB, es)
+	if err != nil {
+		return fmt.Errorf("importer: %w", err)
+	}
+	if on {
+		return ErrTestModeOn
+	}
+	return nil
+}
+
 // checkOptions validates opts for kind (references in es).
 func (s *Service) checkOptions(ctx context.Context, db bun.IDB, es store.EstablishmentScope, kind string, opts *Options) error {
 	ve := &configerr.ValidationError{}
@@ -391,10 +415,14 @@ func (s *Service) checkOptions(ctx context.Context, db bun.IDB, es store.Establi
 			return fmt.Errorf("importer: %w", err)
 		}
 		if opts.PackID != "" {
-			if _, err := store.GetPack(ctx, db, es, opts.PackID); errors.Is(err, store.ErrNotFound) {
+			pk, err := store.GetPack(ctx, db, es, opts.PackID)
+			switch {
+			case errors.Is(err, store.ErrNotFound):
 				ve.Add("pack_id", "Pacchetto inesistente in questo stabilimento.")
-			} else if err != nil {
+			case err != nil:
 				return fmt.Errorf("importer: %w", err)
+			case pk.RequiresApproval:
+				ve.Add("pack_id", msgPackNeedsApproval)
 			}
 		}
 	} else {
