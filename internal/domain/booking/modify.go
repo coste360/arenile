@@ -18,6 +18,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/policy"
+	"github.com/coste360/arenile/internal/domain/priceoverride"
 	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -241,7 +242,7 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 			return nil, err
 		}
 	}
-	if err := s.applyTotals(b, pr, now); err != nil {
+	if err := s.applyTotals(b, pr, now, diff); err != nil {
 		return nil, err
 	}
 	res.NewTotal = b.TotalAmount // a kept manual price (ADR 0019 E)
@@ -338,22 +339,48 @@ func (s *Service) rewriteRows(ctx context.Context, tx bun.IDB, es store.Establis
 // stored as price_current, so that total_amount always equals the total of
 // the breakdown that prices the booking (INV-12, ADR 0011) and payments split
 // their VAT on the current rate mix.
-func (s *Service) applyTotals(b *store.Booking, pr *priced, now time.Time) error {
-	if b.PriceOverrideEngineAmount != nil && *b.PriceOverrideEngineAmount == pr.res.Breakdown.Total {
-		// Manual price of a season pass (ADR 0019 E) and an engine total
-		// unchanged by the modification (notes, customer, same-price
-		// move): the override keeps pricing the pass.
-		return nil
-	}
-	b.TotalAmount = pr.res.Breakdown.Total
-	// A re-pricing modification that changes the engine total replaces a
-	// manual price of a season pass: the engine prices the new stay.
-	b.PriceOverrideAmount, b.PriceOverrideEngineAmount, b.PriceOverrideReason = nil, nil, nil
-	b.PriceOverrideByUserID, b.PriceOverrideAt = nil, nil
+//
+// A manual price of a season pass (ADR 0019 E, INV-77) survives every
+// re-pricing edit, whoever makes it: only SetPriceOverride and
+// ClearPriceOverride (establishment.configure, audited) change or remove
+// it. The engine total beneath it is updated and price_current is rebuilt
+// on the new engine breakdown, so that "Torna al listino" restores the
+// price of the stay as it is now; the audit diff records price_override_kept
+// and the new engine_total.
+func (s *Service) applyTotals(b *store.Booking, pr *priced, now time.Time, diff map[string]any) error {
+	engineTotal := pr.res.Breakdown.Total
 	if pr.res.SeasonID != "" {
 		sid := pr.res.SeasonID
 		b.SeasonID = &sid
 	}
+	if b.PriceOverrideAmount != nil {
+		amount := *b.PriceOverrideAmount
+		var prev json.RawMessage
+		if b.ConfirmedAt == nil {
+			if err := setSnapshots(b, pr, b.Channel, now); err != nil {
+				return err
+			}
+		} else {
+			cur, err := json.Marshal(pr.res.Breakdown)
+			if err != nil {
+				return fmt.Errorf("booking: price current: %w", err)
+			}
+			prev = cur
+		}
+		cur, err := priceoverride.Apply(pr.res.Breakdown, prev, amount)
+		if err != nil {
+			return fmt.Errorf("booking: %w", err)
+		}
+		b.PriceCurrent, b.TotalAmount = cur, amount
+		b.PriceOverrideEngineAmount = &engineTotal
+		b.DepositDue = policy.Deposit(amount, snapshotRules(b))
+		if diff != nil {
+			diff["price_override_kept"] = true
+			diff["engine_total"] = int64(engineTotal)
+		}
+		return nil
+	}
+	b.TotalAmount = engineTotal
 	if b.ConfirmedAt != nil {
 		b.DepositDue = policy.Deposit(b.TotalAmount, snapshotRules(b))
 		cur, err := json.Marshal(pr.res.Breakdown)
@@ -480,14 +507,12 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal,
 			return nil, err
 		}
 	}
-	if err := s.applyTotals(b, pr, now); err != nil {
+	diff := map[string]any{"line_id": in.LineID, "from_spot_id": prevSpot, "to_spot_id": in.SpotID, "from": from.String()}
+	if err := s.applyTotals(b, pr, now, diff); err != nil {
 		return nil, err
 	}
 	res.NewTotal = b.TotalAmount // a kept manual price (ADR 0019 E)
-	diff := map[string]any{
-		"line_id": in.LineID, "from_spot_id": prevSpot, "to_spot_id": in.SpotID, "from": from.String(),
-		"previous_total": int64(res.PreviousTotal), "new_total": int64(res.NewTotal),
-	}
+	diff["previous_total"], diff["new_total"] = int64(res.PreviousTotal), int64(res.NewTotal)
 	for k, v := range approvedDiff {
 		diff[k] = v
 	}

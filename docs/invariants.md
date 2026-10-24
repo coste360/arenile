@@ -677,11 +677,16 @@ prenotazione reale e il suo pagamento restano, le postazioni di prova tornano li
 **INV-77 — Prezzo manuale degli abbonamenti: solo il gestore, sempre tracciato, snapshot intatto.**
 Solo `establishment.configure` (titolare, gestore) imposta o toglie il prezzo manuale di un abbonamento, con motivo
 obbligatorio e `If-Match`; ogni modifica scrive audit (prima/dopo, motivo) ed evento `booking.modified` nella stessa
-transazione; `price_snapshot` non cambia mai (INV-21) e "Torna al listino" ripristina il totale del motore; il nuovo
-totale non scende sotto l'incassato.
-Verificata da: `TestPriceOverride_AuditedPermissionGatedSnapshotImmutable` (`internal/domain/pass`, tag
-`integration`, SQLite e PostgreSQL), `TestApplyOverride_Scenarios`, `TestOverride_RoundTripRestoresEngine`,
-`TestValidateOverride_Table`. Stato: implemented.
+transazione; `price_snapshot` non cambia mai (INV-21) e "Torna al listino" ripristina il totale del motore per il
+soggiorno com'è adesso (quello memorizzato sotto il prezzo manuale, aggiornato a ogni modifica); il nuovo totale
+non scende sotto l'incassato. Una modifica che ricalcola il prezzo (spostamento, cambio di pacchetto o date, PATCH
+con `bookings.write`) **conserva** il prezzo manuale: aggiorna il totale del motore sotto di esso, ricostruisce
+`price_current` e scrive `price_override_kept` nel diff dell'audit; solo le due operazioni dedicate lo cambiano o lo
+tolgono.
+Verificata da: `TestPriceOverride_AuditedPermissionGatedSnapshotImmutable`, `TestPriceOverride_DeskModifyCannotClear`
+(`internal/domain/pass`, tag `integration`, SQLite e PostgreSQL), `TestApplyOverride_Scenarios`,
+`TestOverride_RoundTripRestoresEngine`, `TestValidateOverride_Table` (`internal/domain/priceoverride`). Stato:
+implemented.
 
 **INV-78 — La forzatura dal banco non scavalca l'approvazione.**
 Una prenotazione che richiede approvazione (policy `approval_required` o pacchetto `requires_approval`) arriva a

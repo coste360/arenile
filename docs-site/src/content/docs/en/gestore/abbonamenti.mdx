@@ -80,8 +80,9 @@ package) the owner or the manager can replace it:
 </Steps>
 
 The section then shows **Manual price**, the **Price list amount** computed by the engine, the reason and when it
-was changed. **Back to price list** recomputes the price from the price list. The new total cannot be lower than
-what was already paid. Every change goes to the activity log with previous price, new price and reason; the price
+was changed. **Back to price list** restores the price list amount shown in the section (the one the engine
+computes for the current spot and period). Moving or editing the pass does not touch the manual price: only the
+price list amount shown beneath it changes. The new total cannot be lower than what was already paid. Every change goes to the activity log with previous price, new price and reason; the price
 breakdown accepted at creation stays unchanged. The cashier role sees the price but cannot change it.
 
 ## New season and renewals

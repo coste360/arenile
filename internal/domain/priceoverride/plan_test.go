@@ -1,11 +1,13 @@
-package pass
+package priceoverride
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"pgregory.net/rapid"
 
+	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
@@ -42,14 +44,14 @@ func TestValidateOverride_Table(t *testing.T) {
 		{"ok", 90000, "sconto fedeltà", ""},
 		{"zero is a free pass", 0, "omaggio", ""},
 		{"negative", -1, "errore", "amount"},
-		{"too large", maxOverride + 1, "errore", "amount"},
+		{"too large", MaxAmount + 1, "errore", "amount"},
 		{"reason missing", 1000, "", "reason"},
 		{"reason too short", 1000, "ab", "reason"},
 		{"reason too long", 1000, string(make([]rune, 501)), "reason"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateOverride(tt.amount, tt.reason)
+			err := Validate(tt.amount, tt.reason)
 			if tt.field == "" {
 				if err != nil {
 					t.Fatal(err)
@@ -75,11 +77,11 @@ func TestApplyOverride_Scenarios(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			raw, err := applyOverride(tt.engine, nil, tt.amount)
+			raw, err := Apply(tt.engine, nil, tt.amount)
 			if err != nil {
 				t.Fatal(err)
 			}
-			var got overrideBreakdown
+			var got Breakdown
 			if err := json.Unmarshal(raw, &got); err != nil {
 				t.Fatal(err)
 			}
@@ -90,7 +92,7 @@ func TestApplyOverride_Scenarios(t *testing.T) {
 				t.Fatalf("vat sums to %d, want %d", vatSum(got.VAT), tt.amount)
 			}
 			last := got.Discounts[len(got.Discounts)-1]
-			if last.Source != OverrideSource || last.Amount != tt.amount-tt.engine.Total {
+			if last.Source != Source || last.Amount != tt.amount-tt.engine.Total {
 				t.Fatalf("override line %+v", last)
 			}
 			if got.Override == nil || got.Override.Engine.Total != tt.engine.Total || string(got.Override.Previous) != "null" {
@@ -118,21 +120,21 @@ func TestOverride_RoundTripRestoresEngine(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &store.Booking{PriceSnapshot: store.JSON(snap), PriceCurrent: tt.current, TotalAmount: 120000}
-			eng, prev, err := engineOf(b)
+			eng, prev, err := EngineOf(b)
 			if err != nil || eng.Total != 120000 {
 				t.Fatalf("engine %v %d", err, eng.Total)
 			}
-			cur, err := applyOverride(eng, prev, 90000)
+			cur, err := Apply(eng, prev, 90000)
 			if err != nil {
 				t.Fatal(err)
 			}
 			b.PriceCurrent, b.TotalAmount = cur, 90000
 			// A second override keeps the original engine origin.
-			eng2, prev2, err := engineOf(b)
+			eng2, prev2, err := EngineOf(b)
 			if err != nil || eng2.Total != 120000 || string(prev2) != string(prevOrNull(prev)) {
 				t.Fatalf("second override origin %v %d %s", err, eng2.Total, prev2)
 			}
-			restored, total, err := restoreEngine(b)
+			restored, total, err := Restore(b)
 			if err != nil || total != 120000 {
 				t.Fatalf("restore %v %d", err, total)
 			}
@@ -160,8 +162,8 @@ func TestRescaleVAT_Property(t *testing.T) {
 		for i := 0; i < n; i++ {
 			v = append(v, vat(rates[i], money.Cents(rapid.Int64Range(0, 5_000_000).Draw(t, "gross"))))
 		}
-		total := money.Cents(rapid.Int64Range(0, int64(maxOverride)).Draw(t, "total"))
-		out := rescaleVAT(v, total)
+		total := money.Cents(rapid.Int64Range(0, int64(MaxAmount)).Draw(t, "total"))
+		out := RescaleVAT(v, total)
 		if vatSum(out) != total {
 			t.Fatalf("sum %d, want %d", vatSum(out), total)
 		}
@@ -171,4 +173,18 @@ func TestRescaleVAT_Property(t *testing.T) {
 			}
 		}
 	})
+}
+
+func assertField(t *testing.T, err error, field string) {
+	t.Helper()
+	var ve *configerr.ValidationError
+	if !errors.As(err, &ve) {
+		t.Fatalf("want validation error on %q, got %v", field, err)
+	}
+	for _, f := range ve.Fields {
+		if f.Field == field {
+			return
+		}
+	}
+	t.Fatalf("no error on %q: %+v", field, ve.Fields)
 }

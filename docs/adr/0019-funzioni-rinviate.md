@@ -82,10 +82,15 @@ i dialetti) e le scelte trasversali scritte.
 - **E. Prezzo manuale degli abbonamenti**: colonne `bookings.price_override_*`, permesso `establishment.configure`,
   audit con prima/dopo e motivo; `price_snapshot` resta immutabile (INV-21). `price_current` riporta la riga di
   override e il totale del motore al momento della modifica, così "Torna al listino" ripristina esattamente il
-  calcolo precedente; il nuovo totale non può scendere sotto l'incassato (409, prima un rimborso). Il pannello
-  mostra la sezione "Prezzo" nella scheda dell'abbonamento; la cassa la vede in sola lettura. Test:
-  `TestPriceOverride_AuditedPermissionGatedSnapshotImmutable`, `TestApplyOverride_Scenarios`,
-  `TestOverride_RoundTripRestoresEngine`.
+  calcolo del motore; il nuovo totale non può scendere sotto l'incassato (409, prima un rimborso). Una modifica
+  che ricalcola il prezzo (spostamento, cambio pacchetto o date, PATCH, anche dalla cassa con `bookings.write`)
+  **conserva** il prezzo manuale: aggiorna il totale del motore sotto di esso e ricostruisce `price_current` sul
+  nuovo calcolo (diff dell'audit con `price_override_kept` e `engine_total`); solo le due operazioni dedicate,
+  con `establishment.configure`, lo cambiano o lo tolgono. Il nucleo puro vive in
+  `internal/domain/priceoverride`, condiviso da `pass` e `booking`. Il pannello mostra la sezione "Prezzo" nella
+  scheda dell'abbonamento; la cassa la vede in sola lettura. Test:
+  `TestPriceOverride_AuditedPermissionGatedSnapshotImmutable`, `TestPriceOverride_DeskModifyCannotClear`,
+  `TestApplyOverride_Scenarios`, `TestOverride_RoundTripRestoresEngine`.
 - **E. Regola di approvazione con forzatura dal banco** (spec 9 `approval_required`, spec 10.2
   `awaiting_approval`; `internal/domain/booking/approval.go`). Una prenotazione richiede approvazione quando la sua
   policy ha `approval_required` o un suo pacchetto `requires_approval`. Regole: (R1) **la forzatura scavalca solo le

@@ -12,6 +12,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/policy"
+	"github.com/coste360/arenile/internal/domain/priceoverride"
 	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -39,7 +40,7 @@ func (s *Service) SetPriceOverride(ctx context.Context, p *auth.Principal, ip, e
 		return nil, err
 	}
 	reason = strings.TrimSpace(reason)
-	if err := validateOverride(amount, reason); err != nil {
+	if err := priceoverride.Validate(amount, reason); err != nil {
 		return nil, err
 	}
 	var out *Detail
@@ -52,17 +53,17 @@ func (s *Service) SetPriceOverride(ctx context.Context, p *auth.Principal, ip, e
 		if err := configerr.CheckVersion(ifMatch, b.Version); err != nil {
 			return err
 		}
-		if !overridableStatuses[b.Status] {
+		if !priceoverride.Overridable(b.Status) {
 			return ErrOverrideNotAllowed
 		}
 		if amount < b.PaidAmount {
 			return ErrOverrideBelowPaid
 		}
-		engine, prev, err := engineOf(&b)
+		engine, prev, err := priceoverride.EngineOf(&b)
 		if err != nil {
 			return err
 		}
-		cur, err := applyOverride(engine, prev, amount)
+		cur, err := priceoverride.Apply(engine, prev, amount)
 		if err != nil {
 			return err
 		}
@@ -114,10 +115,10 @@ func (s *Service) ClearPriceOverride(ctx context.Context, p *auth.Principal, ip,
 		if b.PriceOverrideAmount == nil {
 			return ErrNoOverride
 		}
-		if !overridableStatuses[b.Status] {
+		if !priceoverride.Overridable(b.Status) {
 			return ErrOverrideNotAllowed
 		}
-		cur, total, err := restoreEngine(&b)
+		cur, total, err := priceoverride.Restore(&b)
 		if err != nil {
 			return err
 		}

@@ -1,4 +1,4 @@
-package pass
+package priceoverride
 
 import (
 	"encoding/json"
@@ -11,7 +11,9 @@ import (
 	"github.com/coste360/arenile/internal/store"
 )
 
-// Functional core of the manual price of a season pass (ADR 0019 E).
+// Package priceoverride is the functional core of the manual price of a
+// season pass (ADR 0019 E, INV-77), shared by the pass service (set and
+// clear) and the booking service (re-pricing edits keep the manual price).
 //
 // The override never touches price_snapshot (INV-21). It writes
 // price_current as the breakdown that prices the pass from now on, so that
@@ -19,7 +21,7 @@ import (
 // payments split their VAT on its rate mix (INV-16):
 //
 //   - the engine breakdown (the current one before the first override) is
-//     copied, a booking-level discount with source OverrideSource and amount
+//     copied, a booking-level discount with source Source and amount
 //     (override - engine total) is appended (positive when the manager
 //     raises the price), Total becomes the override;
 //   - the VAT lines are re-split on the new total in proportion to their
@@ -34,35 +36,35 @@ import (
 // Readers of price_current decode it as pricing.PriceBreakdown and ignore the
 // extra member.
 
-// OverrideSource is the discount source of the override line in price_current.
-const OverrideSource = "manual_price_override"
+// Source is the discount source of the override line in price_current.
+const Source = "manual_price_override"
 
 // Limits of the override input (api.SeasonPassPriceOverrideInput).
 const (
 	minReasonLen = 3
 	maxReasonLen = 500
-	// maxOverride caps the amount at 1,000,000 euro (input sanity, int64 safe).
-	maxOverride = money.Cents(100_000_000)
+	// MaxAmount caps the amount at 1,000,000 euro (input sanity, int64 safe).
+	MaxAmount = money.Cents(100_000_000)
 )
 
-// overrideBreakdown is price_current while an override is set.
-type overrideBreakdown struct {
+// Breakdown is price_current while an override is set.
+type Breakdown struct {
 	pricing.PriceBreakdown
-	Override *overrideOrigin `json:"override,omitempty"`
+	Override *Origin `json:"override,omitempty"`
 }
 
-// overrideOrigin is what clearing the override restores.
-type overrideOrigin struct {
+// Origin is what clearing the override restores.
+type Origin struct {
 	// Engine is the engine breakdown replaced by the override.
 	Engine pricing.PriceBreakdown `json:"engine"`
 	// Previous is price_current before the first override (null: snapshot).
 	Previous json.RawMessage `json:"previous"`
 }
 
-// validateOverride checks the input of SetPriceOverride.
-func validateOverride(amount money.Cents, reason string) error {
+// Validate checks the input of SetPriceOverride.
+func Validate(amount money.Cents, reason string) error {
 	ve := &configerr.ValidationError{}
-	if amount < 0 || amount > maxOverride {
+	if amount < 0 || amount > MaxAmount {
 		ve.Add("amount", "L'importo deve essere compreso tra 0 e 1.000.000 €.")
 	}
 	if n := len([]rune(reason)); n < minReasonLen || n > maxReasonLen {
@@ -71,20 +73,23 @@ func validateOverride(amount money.Cents, reason string) error {
 	return ve.OrNil()
 }
 
-// overridableStatuses are the statuses in which the price of a pass may
+// overridable are the statuses in which the price of a pass may
 // still change (not terminal).
-var overridableStatuses = map[string]bool{
+var overridable = map[string]bool{
 	"draft": true, "held": true, "pending_payment": true, "awaiting_approval": true, "confirmed": true, "checked_in": true,
 }
 
-// engineOf returns the engine breakdown currently pricing b and the raw
+// Overridable reports whether the price of a pass in status may still change.
+func Overridable(status string) bool { return overridable[status] }
+
+// EngineOf returns the engine breakdown currently pricing b and the raw
 // price_current to restore on clear: for a pass already overridden, the
 // stored origin; otherwise CurrentPrice() and the current price_current.
-func engineOf(b *store.Booking) (pricing.PriceBreakdown, json.RawMessage, error) {
+func EngineOf(b *store.Booking) (pricing.PriceBreakdown, json.RawMessage, error) {
 	if len(b.PriceCurrent) > 0 {
-		var ob overrideBreakdown
+		var ob Breakdown
 		if err := json.Unmarshal(b.PriceCurrent, &ob); err != nil {
-			return pricing.PriceBreakdown{}, nil, fmt.Errorf("pass: price current: %w", err)
+			return pricing.PriceBreakdown{}, nil, fmt.Errorf("priceoverride: price current: %w", err)
 		}
 		if ob.Override != nil {
 			return ob.Override.Engine, ob.Override.Previous, nil
@@ -92,7 +97,7 @@ func engineOf(b *store.Booking) (pricing.PriceBreakdown, json.RawMessage, error)
 	}
 	var bd pricing.PriceBreakdown
 	if err := json.Unmarshal(b.CurrentPrice(), &bd); err != nil {
-		return pricing.PriceBreakdown{}, nil, fmt.Errorf("pass: price: %w", err)
+		return pricing.PriceBreakdown{}, nil, fmt.Errorf("priceoverride: price: %w", err)
 	}
 	var prev json.RawMessage
 	if len(b.PriceCurrent) > 0 {
@@ -101,29 +106,29 @@ func engineOf(b *store.Booking) (pricing.PriceBreakdown, json.RawMessage, error)
 	return bd, prev, nil
 }
 
-// applyOverride returns price_current for the override amount on top of the
+// Apply returns price_current for the override amount on top of the
 // engine breakdown (see the package comment above).
-func applyOverride(engine pricing.PriceBreakdown, previous json.RawMessage, amount money.Cents) (store.JSON, error) {
+func Apply(engine pricing.PriceBreakdown, previous json.RawMessage, amount money.Cents) (store.JSON, error) {
 	out := engine
 	out.Lines = append([]pricing.LineBreakdown(nil), engine.Lines...)
 	out.Discounts = append(append([]pricing.DiscountBreakdown{}, engine.Discounts...),
-		pricing.DiscountBreakdown{Source: OverrideSource, Amount: amount - engine.Total})
+		pricing.DiscountBreakdown{Source: Source, Amount: amount - engine.Total})
 	out.Total = amount
-	out.VAT = rescaleVAT(engine.VAT, amount)
+	out.VAT = RescaleVAT(engine.VAT, amount)
 	if previous == nil {
 		previous = json.RawMessage("null")
 	}
-	raw, err := json.Marshal(overrideBreakdown{PriceBreakdown: out, Override: &overrideOrigin{Engine: engine, Previous: previous}})
+	raw, err := json.Marshal(Breakdown{PriceBreakdown: out, Override: &Origin{Engine: engine, Previous: previous}})
 	if err != nil {
-		return nil, fmt.Errorf("pass: price override: %w", err)
+		return nil, fmt.Errorf("priceoverride: %w", err)
 	}
 	return store.JSON(raw), nil
 }
 
-// restoreEngine returns price_current and the total after clearing the
+// Restore returns price_current and the total after clearing the
 // override of b (b.PriceCurrent must carry the override origin).
-func restoreEngine(b *store.Booking) (store.JSON, money.Cents, error) {
-	engine, prev, err := engineOf(b)
+func Restore(b *store.Booking) (store.JSON, money.Cents, error) {
+	engine, prev, err := EngineOf(b)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -133,11 +138,11 @@ func restoreEngine(b *store.Booking) (store.JSON, money.Cents, error) {
 	return store.JSON(prev), engine.Total, nil
 }
 
-// rescaleVAT splits total over the rates of vat in proportion to their
+// RescaleVAT splits total over the rates of vat in proportion to their
 // gross amounts (largest remainder, ties to the lower rate); each share is
 // split into taxable and tax with money.VATSplit. Rates that cannot be read
 // as basis points keep their proportion with the stored ratio.
-func rescaleVAT(vat []pricing.VATBreakdown, total money.Cents) []pricing.VATBreakdown {
+func RescaleVAT(vat []pricing.VATBreakdown, total money.Cents) []pricing.VATBreakdown {
 	if len(vat) == 0 {
 		return vat
 	}
@@ -185,7 +190,7 @@ func largestRemainder(total int64, weights []int64, sum int64) []int64 {
 	rems := make([]rem, len(weights))
 	var assigned int64
 	for i, w := range weights {
-		// total and w are bounded by maxOverride-like amounts (< 2^40), so
+		// total and w are bounded by MaxAmount-like amounts (< 2^40), so
 		// the product fits in int64.
 		p := total * w
 		out[i] = p / sum
