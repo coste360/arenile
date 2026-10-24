@@ -47,8 +47,8 @@ async function publicStep(page: Page, step: "where" | "what" | "who", seat = 0) 
       // Each screenshot books its own spot (rows G and H): the captures run
       // in parallel and must not race for the same hold.
       const label = `${seat < 15 ? "G" : "H"}${(seat % 15) + 1}`;
-      const own = page.getByRole("button", { name: new RegExp(`^${label} – Libero`) });
-      await ((await own.count()) ? own : page.getByRole("button", { name: / – Libero/ }).last()).click();
+      const own = page.getByRole("button", { name: new RegExp(`^${label} Libero`) });
+      await ((await own.count()) ? own : page.getByRole("button", { name: /^\S+ Libero/ }).last()).click();
       await page.getByRole("button", { name: "Mostra la mappa" }).click();
       await page.getByRole("button", { name: "Avanti" }).click();
     } else if (current === "what") {
@@ -76,14 +76,14 @@ const PREPARE: Record<string, Prepare> = {
   "admin-map-selection": async (page) => {
     // Selection only (no booking is created): E3 to E5 with Shift.
     await page.getByRole("button", { name: "Seleziona più postazioni" }).click();
-    await page.getByRole("button", { name: /^Postazione E3:/ }).click();
-    await page.getByRole("button", { name: /^Postazione E5:/ }).click({ modifiers: ["Shift"] });
+    await page.getByRole("button", { name: /^Postazione E3[,:]/ }).click();
+    await page.getByRole("button", { name: /^Postazione E5[,:]/ }).click({ modifiers: ["Shift"] });
     await expect(page.getByTestId("selection-bar")).toBeVisible();
   },
   "admin-map-block": async (page) => {
     await page.getByRole("button", { name: "Seleziona più postazioni" }).click();
-    await page.getByRole("button", { name: /^Postazione E3:/ }).click();
-    await page.getByRole("button", { name: /^Postazione E4:/ }).click({ modifiers: ["Shift"] });
+    await page.getByRole("button", { name: /^Postazione E3[,:]/ }).click();
+    await page.getByRole("button", { name: /^Postazione E4[,:]/ }).click({ modifiers: ["Shift"] });
     await page.getByTestId("selection-bar").getByRole("button", { name: "Blocca", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
   },
