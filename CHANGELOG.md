@@ -6,6 +6,11 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Modificato
+- Repository pubblico: le GitHub Actions non conservano più binari o pacchetti desktop come artefatti (sarebbero
+  scaricabili da chiunque). `release.yml` non costruisce più i pacchetti desktop, che si fanno nel repository privato
+  delle build; il bundle dei binari server va solo al portale Coste360, quando configurato.
+
 ## [1.0.0] - 2026-10-24
 
 Prima versione stabile. Comprende tutte le milestone della specifica: **M0 — Fondamenta**, **M1 — Inventario e

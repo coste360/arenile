@@ -8,11 +8,10 @@ name: Desktop packages
 #   tested but NOT uploaded (a public repository: an Actions artifact would be
 #   downloadable by anyone with a GitHub account, against the distribution
 #   rule of spec 29.1 "packages only from the Coste360 portal").
-# - workflow_dispatch (maintainers): unsigned packages kept 3 days, for a test.
-# - Release (called by release.yml with the tag): signed packages when the
-#   signing secrets are configured, unsigned and labelled "-unsigned" otherwise.
-#   They feed the portal-bundle-<tag> artifact of the Coste360 download portal;
-#   NOTHING here is ever uploaded as a GitHub release asset.
+# - workflow_dispatch (maintainers): build and smoke test only, nothing uploaded.
+# - Distributable packages (signed) are built in the private build repository,
+#   not here: in a public repository every Actions artifact is a public download.
+#   NOTHING here is ever uploaded as an artifact or a GitHub release asset.
 #
 # Signing secrets (all optional, see docs/desktop-build.md):
 #   macOS:   APPLE_CERTIFICATE_P12_BASE64, APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY,
@@ -64,8 +63,9 @@ env:
   VERSION: ${{ inputs.version }}
   SKIP_WEB_BUILD: "1"
   RETENTION_DAYS: ${{ inputs.retention-days || 3 }}
-  # Packages leave the runner only outside pull requests (see the header).
-  UPLOAD: ${{ github.event_name != 'pull_request' }}
+  # Public repository: packages never leave the runner here. Distributable (signed)
+  # packages are built in the private build repository (docs/desktop-build.md).
+  UPLOAD: "false"
 
 jobs:
   web:

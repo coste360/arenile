@@ -161,30 +161,22 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-  desktop:
-    # Desktop edition packages (spec 29.1), built on native runners and signed when the
-    # signing secrets exist (see docs/desktop-build.md). They only feed portal-bundle.
-    name: Desktop packages
-    uses: ./.github/workflows/desktop.yml
-    with:
-      version: ${{ github.ref_name }}
-    secrets: inherit
-
   portal-bundle:
     # Ready-made binaries are distributed through the Coste360 download portal (login required),
     # never as GitHub release assets: GitHub carries the source and the instructions only.
-    # The server bundle does not depend on the desktop packages: a notarization timeout, a
-    # choco outage or an apt failure must not block the server release. When the desktop job
-    # failed, the bundle ships without its packages and says so in the job summary; the
-    # desktop workflow can then be re-run by hand (workflow_dispatch with the same tag).
+    # The repository is public, so the bundle is never stored as an Actions artifact (anyone
+    # signed in could download it): it goes to the portal only when the upload is configured.
+    # Desktop packages are built and signed in the private build repository.
     name: Portal bundle
-    needs: [binaries, desktop]
+    needs: [binaries]
     if: ${{ !cancelled() && needs.binaries.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      actions: write
     env:
-      # Optional: the intake endpoint of the Coste360 portal. When both secrets exist the
-      # bundle is pushed there and the GitHub artifact is only a short-lived fallback.
+      # Optional: the intake endpoint of the Coste360 portal. Without it the bundle is
+      # built and checksummed, then discarded.
       PORTAL_UPLOAD_URL: ${{ secrets.PORTAL_UPLOAD_URL }}
       PORTAL_UPLOAD_TOKEN: ${{ secrets.PORTAL_UPLOAD_TOKEN }}
     steps:
@@ -193,36 +185,6 @@ jobs:
           pattern: bin-*
           path: dist
           merge-multiple: true
-
-      # Taken also when one desktop job failed (e.g. only Windows arm64): the packages
-      # that were built still reach the bundle, with the warning below.
-      - name: Desktop packages (Windows x64/arm64 installers, macOS universal/arm64/x86_64 dmg, Linux AppImage)
-        if: needs.desktop.result == 'success' || needs.desktop.result == 'failure'
-        continue-on-error: true
-        uses: actions/download-artifact@v8
-        with:
-          pattern: desktop-{windows-amd64,windows-arm64,macos,macos-arm64,macos-x86_64,linux}
-          path: dist
-          merge-multiple: true
-
-      - name: Note missing desktop packages
-        if: needs.desktop.result != 'success'
-        run: |
-          echo "::warning::desktop packages missing or incomplete (desktop job: ${{ needs.desktop.result }}); check the bundle contents"
-          echo "Desktop packages missing or incomplete: desktop job ended with **${{ needs.desktop.result }}**. Re-run desktop.yml with version ${{ github.ref_name }}." >> "$GITHUB_STEP_SUMMARY"
-
-      # A macOS dmg whose notarization was still pending at Apple is kept in the desktop
-      # artifact for a manual staple (docs/desktop-build.md) but never reaches the portal.
-      - name: Drop packages with notarization pending
-        working-directory: dist
-        run: |
-          shopt -s nullglob
-          pending=(*-notarization-pending* *.notarization.txt)
-          [ "${#pending[@]}" -eq 0 ] && exit 0
-          printf 'dropped: %s\n' "${pending[@]}"
-          rm -f -- "${pending[@]}"
-          echo "::warning::macOS packages with notarization pending left out of the bundle; staple them and re-run desktop.yml"
-          echo "macOS packages with notarization pending left out of the bundle: ${pending[*]}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checksums
         working-directory: dist
@@ -238,14 +200,16 @@ jobs:
             echo "uploaded $f"
           done
 
-      # Short retention: the artifact is the hand-off to the portal (or a fallback when the
-      # portal upload is not configured), not a download channel.
-      - uses: actions/upload-artifact@v7
-        with:
-          name: portal-bundle-${{ github.ref_name }}
-          path: dist/*
-          retention-days: 7
-          if-no-files-found: error
+      # The intermediate bin-* artifacts are public in a public repository: remove them as
+      # soon as the bundle no longer needs them.
+      - name: Remove intermediate binaries
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" --paginate \
+            --jq '.artifacts[] | select(.name | startswith("bin-") or . == "web-dist") | .id' |
+            while read -r id; do gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}"; done
 
   docs:
     # Documentation of this release: screenshots regenerated on the real binary,
