@@ -82,11 +82,17 @@ periodo, i due numeri possono essere diversi.
 Quando il valore dell'anno precedente è zero la variazione percentuale non si può calcolare e la scheda è segnata
 **Nuovo**.
 
-## Esportare in CSV
+## Esportare in CSV o Excel
 
-Ogni report ha il pulsante **Esporta CSV**, che scarica esattamente ciò che vedi: periodo, raggruppamento e base
-scelti. Anche il confronto con l'anno precedente si esporta. Il file usa il formato italiano (separatore `;`,
-virgola decimale) e si apre direttamente con Excel, LibreOffice o Numbers.
+Ogni report ha i pulsanti **Esporta CSV** ed **Esporta Excel**, che scaricano esattamente ciò che vedi: periodo,
+raggruppamento e base scelti. Anche il confronto con l'anno precedente si esporta. Il CSV usa il formato italiano
+(separatore `;`, virgola decimale); il file Excel (`.xlsx`) ha le stesse colonne, con numeri e date veri.
+
+<Screenshot name="admin-report-exports" alt="Report con il menu Esporta elenchi aperto" />
+
+**Esporta elenchi**, accanto al periodo, scarica in Excel o CSV gli elenchi completi: **Clienti**,
+**Prenotazioni del periodo**, **Abbonamenti** e **Incassi del periodo**. Le colonne sono le stesse dei CSV, senza
+dati personali in più, e le prenotazioni di [prova](/gestore/modalita-prova/) sono sempre escluse.
 
 <Aside type="tip" title="Per il commercialista">
 Crea un utente con ruolo **Sola lettura** (vedi [Team e ruoli](/gestore/team-e-ruoli/)): può consultare i report

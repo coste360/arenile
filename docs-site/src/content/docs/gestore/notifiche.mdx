@@ -1,0 +1,33 @@
+---
+title: Notifiche del pannello
+description: La campanella in alto con gli avvisi su webhook disattivati, rimborsi non riusciti e importazioni, con email al titolare per gli avvisi importanti.
+sidebar:
+  order: 31.5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** la **campanella** in alto a destra, in ogni pagina dello stabilimento. **Chi:** tutto lo staff vede le
+notifiche dello stabilimento; quelle riservate al titolare (webhook, rimborsi) solo chi gestisce gli utenti.
+
+<Screenshot name="admin-notifications" alt="Campanella delle notifiche aperta" />
+
+Il numero sulla campanella conta le notifiche **da leggere**. Aprila per vedere le ultime: un clic su una notifica
+la segna come letta e porta alla pagina giusta; **Segna tutte come lette** azzera il conteggio. Lo stato letto è
+condiviso dallo staff: se un collega ha già visto l'avviso, risulta letto anche per te.
+
+## Cosa arriva
+
+| Notifica | Quando | Dove porta |
+| --- | --- | --- |
+| **Webhook disattivato** | Un endpoint webhook è stato disattivato in automatico dopo troppe consegne fallite di fila. Arriva anche un'**email ai titolari** (se le email al gestore per gli errori dei webhook sono attive in [Email e notifiche](/gestore/email/)). | [Chiavi API e webhook](/gestore/chiavi-api-e-webhook/) |
+| **Rimborso non riuscito** | Un [rimborso automatico](/gestore/prenotazioni/#rimborsi-automatici) ha esaurito i tentativi. | La prenotazione, dove puoi riprovare |
+| **Importazione completata / non riuscita** | L'esito di un'[importazione](/gestore/importa-dati/). | Importa dati |
+
+Le notifiche contengono solo codici ed etichette (ad esempio l'host dell'endpoint o il codice della prenotazione),
+mai email, telefoni o altri dati personali dei clienti.
+
+<Aside type="tip">
+Il pannello controlla le nuove notifiche ogni minuto: non serve ricaricare la pagina.
+</Aside>

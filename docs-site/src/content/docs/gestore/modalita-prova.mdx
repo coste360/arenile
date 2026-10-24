@@ -1,0 +1,76 @@
+---
+title: Modalità prova
+description: Provare pagina pubblica, pagamenti e cassa senza sporcare i numeri; link di anteprima, chiavi di test Stripe ed eliminazione in blocco delle prenotazioni di prova.
+sidebar:
+  order: 12.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Modalità prova**. **Chi:** titolare e gestore la accendono e la spengono; tutto lo
+staff vede l'avviso finché è attiva.
+
+La **modalità prova** serve a provare Arenile prima dell'apertura (o a formare il personale) senza falsare i
+numeri: ogni prenotazione e ogni incasso creati mentre è attiva sono **di prova** e restano fuori da report,
+indicatori di "Oggi", corrispettivi, chiusura Z ed esportazioni. Alla fine li elimini tutti con un clic.
+
+<Screenshot name="admin-test-mode" alt="Pagina Modalità prova con interruttore, link di anteprima e prenotazioni di prova" />
+
+## Accendere e spegnere
+
+<Steps>
+
+1. Attiva **Modalità prova attiva**. In cima a ogni pagina del pannello compare l'avviso giallo **Modalità prova
+   attiva**: chiunque lavori in quel momento sa che sta creando dati di prova.
+2. Prova quello che ti serve: prenotazioni dal banco, dalla mappa, incassi in cassa, la pagina pubblica dal link di
+   anteprima.
+3. Spegni l'interruttore prima di lavorare con i clienti reali.
+
+</Steps>
+
+Il flag è scritto sulla prenotazione nel momento in cui viene creata: spegnere la modalità prova non trasforma in
+reali le prenotazioni di prova, e accenderla non tocca quelle reali. Un pagamento eredita il flag della sua
+prenotazione. Le prenotazioni di prova occupano le postazioni come le altre finché non le elimini.
+
+## Pagina pubblica: solo dal link di anteprima
+
+Con la modalità prova attiva la pagina pubblica **non accetta prenotazioni dai clienti**: chi prova a prenotare
+legge che le prenotazioni online sono momentaneamente sospese. Per provarla tu:
+
+<Steps>
+
+1. Nella sezione **Anteprima della pagina pubblica** premi **Crea link di anteprima**.
+2. **Copia** il link o **Apri**: vale **2 ore**, anche su un altro dispositivo (il telefono, per provare il
+   percorso del cliente).
+
+</Steps>
+
+L'opzione **Prenotazioni di prova anche dai clienti** apre la pagina a tutti: è sconsigliata se la pagina è già
+pubblicata, perché le prenotazioni dei clienti reali sarebbero di prova (escluse dai numeri ed eliminabili).
+
+## Pagamenti online con le chiavi di test
+
+Se in [Pagamenti online](/gestore/pagamenti-online/) hai salvato anche la configurazione Stripe **di test**, la
+modalità prova la usa automaticamente: nessun addebito reale, carte di test di Stripe. Senza chiavi di test i
+pagamenti online sono disattivati durante la prova (pagamento in struttura).
+
+## Eliminare le prenotazioni di prova
+
+<Steps>
+
+1. Nella sezione **Prenotazioni di prova** controlla il numero.
+2. **Elimina prenotazioni di prova**: la finestra di conferma mostra quante prenotazioni e quanti pagamenti
+   verranno eliminati.
+3. **Elimina**.
+
+</Steps>
+
+L'eliminazione è definitiva e avviene in un'unica operazione: prenotazioni, allocazioni, pagamenti, documenti e
+messaggi collegati. **Le prenotazioni reali non vengono mai toccate** e il registro attività resta. I crediti
+cliente generati dalle prove vengono tolti e il saldo ricalcolato.
+
+<Aside type="note" title="Webhook e integrazioni">
+Gli eventi delle prenotazioni di prova non vengono inviati ai [webhook](/gestore/chiavi-api-e-webhook/): i sistemi
+collegati non vedono le prove.
+</Aside>

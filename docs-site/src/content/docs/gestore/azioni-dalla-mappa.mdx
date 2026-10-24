@@ -1,0 +1,66 @@
+---
+title: Blocca postazioni e prenotazione di gruppo
+description: Selezione multipla sulla mappa del giorno, prenotazione di gruppo con più postazioni in una sola prenotazione, blocco di postazioni con motivo, periodo e fascia.
+sidebar:
+  order: 21.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Mappa**. **Chi:** chi crea prenotazioni (titolare, gestore, cassa) per la prenotazione di
+gruppo; chi gestisce l'operatività della spiaggia (permesso di check-in e spostamenti) per i blocchi.
+
+Dalla [mappa del giorno](/gestore/mappa-del-giorno/) puoi selezionare più postazioni insieme e, in un colpo solo,
+farne **una prenotazione di gruppo** o **bloccarle**.
+
+<Screenshot name="admin-map-selection" alt="Mappa del giorno con tre postazioni selezionate e la barra delle azioni" />
+
+## Selezionare più postazioni
+
+- Premi **Seleziona**, poi tocca le postazioni libere una per una.
+- Oppure trascina un **rettangolo** sulla mappa (con il mouse o con un dito): entrano tutte le postazioni libere
+  al suo interno. Con due dita continui a spostare e ingrandire la mappa.
+- Da tastiera e mouse: **Maiusc**-clic seleziona l'intervallo dall'ultima postazione scelta, **Ctrl**-clic (o
+  **Cmd** su Mac) aggiunge o toglie una postazione, anche senza premere prima **Seleziona**.
+
+Si possono selezionare solo le postazioni **prenotabili nella fascia mostrata**; se una viene prenotata da un
+collega nel frattempo esce da sola dalla selezione. La barra in basso mostra il conteggio e le azioni:
+**Prenotazione di gruppo**, **Blocca**, **Svuota** ed **Esci dalla selezione**.
+
+## Prenotazione di gruppo
+
+<Steps>
+
+1. Seleziona le postazioni e premi **Prenotazione di gruppo**.
+2. Si apre il foglio di nuova prenotazione con tutte le postazioni: scegli pacchetto, cliente, date e fascia
+   come per una prenotazione normale. Il preventivo è calcolato dal listino per ogni postazione.
+3. **Crea prenotazione**.
+
+</Steps>
+
+Il risultato è **una sola prenotazione** con una riga per postazione: un unico codice, un unico saldo, un unico
+link di gestione per il cliente. È **tutto o niente**: se anche una sola postazione non è più libera, non viene
+creato nulla e il pannello indica quale.
+
+## Bloccare postazioni
+
+<Screenshot name="admin-map-block" alt="Finestra Blocca 2 postazioni con periodo, fascia e motivo" />
+
+<Steps>
+
+1. Seleziona le postazioni e premi **Blocca** (per una sola postazione: **Blocca postazione** dalla sua scheda).
+2. Scegli il **Periodo**, la **Fascia** (giorno intero, mattina o pomeriggio) e, se vuoi, il **Motivo** (ad
+   esempio *manutenzione ombrellone*).
+3. **Blocca**.
+
+</Steps>
+
+Le postazioni bloccate non sono prenotabili, né dal banco né online, e sulla mappa appaiono in grigio come
+**Bloccato**. Il blocco di più postazioni è tutto o niente. Per toglierlo apri la scheda della postazione e premi
+**Sblocca**: il blocco viene rimosso per tutto il suo periodo.
+
+<Aside type="note" title="Modifiche in contemporanea">
+Le azioni dalla mappa (check-in, no-show, annullamento, spostamento) inviano sempre la versione della prenotazione
+letta: se un collega l'ha modificata nel frattempo il pannello lo segnala invece di sovrascrivere.
+</Aside>

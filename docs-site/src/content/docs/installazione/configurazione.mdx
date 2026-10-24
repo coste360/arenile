@@ -47,6 +47,8 @@ variabile e il formato atteso: meglio non partire che partire configurato male.
 | `ARENILE_HOLD_TTL` | `10m` | Durata del blocco temporaneo della postazione mentre il cliente completa la prenotazione online (formato durata Go: `10m`, `15m`, `1h`). Durante il pagamento il blocco viene esteso fino a un massimo di 30 minuti. |
 | `ARENILE_PUBLIC_READS_PER_MINUTE` | `60` | Letture al minuto per indirizzo IP sull'API pubblica (spec 17.2). Alzalo se molti clienti prenotano dalla stessa rete (Wi-Fi dell'hotel o del lido) e Arenile non è dietro un proxy configurato in `ARENILE_TRUSTED_PROXIES`. |
 | `ARENILE_PUBLIC_CREATIONS_PER_MINUTE` | `10` | Prenotazioni avviate (e richieste di un nuovo link) al minuto per indirizzo IP. I passi successivi della stessa prenotazione contano come letture. |
+| `ARENILE_REFUND_MAX_ATTEMPTS` | `10` | Tentativi di invio al gestore di pagamento di un rimborso automatico (cancellazione dal link del cliente o dal pannello), con attesa crescente da 1 minuto a 12 ore. Esauriti, il rimborso passa a «Non riuscito», il gestore riceve una notifica e può riprovare dalla prenotazione. Da 1 a 100. |
+| `ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS` | `30` | Giorni di conservazione dello storico completo dei tentativi di consegna dei webhook (ogni tentativo, non solo l'ultimo). |
 
 ## Rete e sicurezza
 

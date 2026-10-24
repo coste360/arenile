@@ -636,12 +636,74 @@ solo hold), `TestWaitlist_CancellationOffersToFirstEntryAndAcceptGoesToCheckout`
 Ogni stabilimento ha una cassa predefinita attiva (indice unico parziale su `cash_registers.is_default`) e al massimo
 una sessione aperta per cassa (`cash_sessions_register_open_uidx` su `register_id` con `closed_at IS NULL`, accanto
 all'indice di 00003 sul codice). La migrazione 00009 assegna `register_id` a ogni sessione esistente.
-Verificata da: `TestMigration00009_CashRegisterBackfill` (`internal/store`, tag `integration`, SQLite e PostgreSQL).
-Stato: implemented (schema); la concorrenza dell'apertura per cassa è a carico del servizio cassa
-(`TestConcurrency_*` del costruttore D).
+Il servizio cassa apre solo casse attive e tiene il lock della riga della cassa durante l'apertura, così disattivazione
+e apertura non si sovrappongono; la cassa predefinita creata in modo pigro è unica anche sotto concorrenza.
+Verificata da: `TestMigration00009_CashRegisterBackfill` (`internal/store`), `TestConcurrency_OpenSessionPerRegister`,
+`TestCashRegisters_TwoOpenSessionsReconcile`, `TestCashRegisters_CRUD` (`internal/domain/cash`), tutti con tag
+`integration`, SQLite e PostgreSQL. Stato: implemented.
 
 **INV-74 — Le righe di prova non entrano nei numeri.**
 Prenotazioni e pagamenti creati in modalità prova (`bookings.test`, `payments.test`, spec 15.4) sono esclusi da ogni
 query dei report; le loro allocazioni contano come libere. Lo stesso vale per corrispettivi, KPI ed esportazioni.
 Verificata da: `TestReportQueries_TestBookingsExcluded` (`internal/store`, tag `integration`, SQLite e PostgreSQL).
-Stato: implemented per i report; corrispettivi, KPI ed esportazioni a carico del costruttore A.
+Anche il riepilogo Z di una sessione di cassa ignora i pagamenti di prova (`TestSummarize_TestPaymentsExcluded`,
+`internal/domain/cash`).
+Corrispettivi, riepilogo di "Oggi" ed esportazioni (CSV e XLSX) le escludono: `TestAcceptance_TestMode`
+(`internal/acceptance`), `TestExportsHTTP_XLSX` (`internal/http/admin`), tag `integration`, SQLite e PostgreSQL. Gli
+eventi delle righe di prova non escono verso i webhook. Stato: implemented.
+
+**INV-75 — Rimborso garantito: mai perso, mai doppio.**
+La cancellazione di una prenotazione pagata online (link di gestione del cliente o pannello) inserisce la richiesta
+di rimborso (`refund_requests`) nella **stessa transazione** della cancellazione: se la transazione va a buon fine il
+rimborso esiste, se fallisce non esiste nemmeno la cancellazione. L'importo non supera mai l'incassato online non
+ancora rimborsato. Un indice unico su `(booking_id, payment_intent_id)` delle richieste non annullate impedisce due
+richieste vive per lo stesso pagamento; l'invio al provider usa una chiave di idempotenza fissa per ciclo e un
+reclamo condizionale della riga, quindi anche con più istanze e ritentativi il provider esegue il rimborso una volta.
+Finché una richiesta è viva un rimborso manuale o una seconda cancellazione sono rifiutati (409
+`refund_in_progress`). Tentativi esauriti → `failed`, notifica al titolare, riprova manuale.
+Verificata da: `TestConcurrency_CancelRefundOnce` (100 tentativi paralleli tra cancellazioni e invii: una richiesta, un rimborso),
+`TestRefund_ProviderDownThenUp`, `TestRefund_DeadLetterThenRetry`, `TestRefund_ReserveCapsAtProviderPayments`,
+`TestRefund_PanelCancellation` (`internal/domain/refund`, tag `integration`, SQLite e PostgreSQL), `TestBackoff_Steps`,
+`TestCycle_RetryStartsNewCycle`, `TestIntentKey_DerivedAfterRefusal`. Stato: implemented.
+
+**INV-76 — La purga di prova non tocca mai una riga reale.**
+L'eliminazione in blocco delle prenotazioni di prova avviene in un'unica transazione, rilascia prima i contatori dei
+pool e cancella solo righe con `test = true` o appartenenti a una prenotazione di prova (pagamenti, intent, documenti,
+richieste di rimborso, messaggi, righe di credito); il saldo crediti dei clienti coinvolti è ricalcolato dal registro
+e non diventa mai negativo; il registro attività resta.
+Verificata da: `TestAcceptance_TestMode` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL: la
+prenotazione reale e il suo pagamento restano, le postazioni di prova tornano libere). Stato: implemented.
+
+**INV-77 — Prezzo manuale degli abbonamenti: solo il gestore, sempre tracciato, snapshot intatto.**
+Solo `establishment.configure` (titolare, gestore) imposta o toglie il prezzo manuale di un abbonamento, con motivo
+obbligatorio e `If-Match`; ogni modifica scrive audit (prima/dopo, motivo) ed evento `booking.modified` nella stessa
+transazione; `price_snapshot` non cambia mai (INV-21) e "Torna al listino" ripristina il totale del motore; il nuovo
+totale non scende sotto l'incassato.
+Verificata da: `TestPriceOverride_AuditedPermissionGatedSnapshotImmutable` (`internal/domain/pass`, tag
+`integration`, SQLite e PostgreSQL), `TestApplyOverride_Scenarios`, `TestOverride_RoundTripRestoresEngine`,
+`TestValidateOverride_Table`. Stato: implemented.
+
+**INV-78 — La forzatura dal banco non scavalca l'approvazione.**
+Una prenotazione che richiede approvazione (policy `approval_required` o pacchetto `requires_approval`) arriva a
+`confirmed` solo con **Approva** da chi ha `establishment.configure`; la forzatura scavalca solo le violazioni di
+policy, mai l'approvazione; una modifica che introduce l'obbligo di approvazione è rifiutata a chi non può approvare
+(regole R1–R5, ADR 0019 E).
+Verificata da: `TestDecideApproval_Rules` (`internal/domain/booking`), `TestApprovalRule_DeskCannotBypass`
+(tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-79 — Importazione CSV: tutto o niente, lo stesso file una volta.**
+L'applicazione di un'importazione è un'unica transazione: al primo errore non cambia nessun dato e il lavoro passa a
+`failed` con il rapporto. Lo stesso file (SHA-256) dello stesso tipo si applica una sola volta (indice unico, 409
+`import_already_applied`); le righe già presenti per il criterio scelto sono aggiornate o saltate, mai duplicate.
+Gli abbonamenti importati passano dal servizio prenotazioni (allocazioni protette dal database, audit, outbox). Il
+consenso marketing non è mai presunto.
+Verificata da: `TestImport_SeasonPasses_RollbackAndIdempotence`, `TestImport_Customers_CreateSkipUpdate`,
+`TestImport_Customers_ValidationReport`, `TestImport_RetentionAndDiscard` (`internal/domain/importer`, tag
+`integration`, SQLite e PostgreSQL), `TestValidateRows_Scenarios`. Stato: implemented.
+
+**INV-80 — Le azioni della mappa richiedono la versione letta.**
+Check-in, no-show, annullamento e spostamento di una prenotazione ed eliminazione di una mappa senza `If-Match`
+rispondono `428 precondition_required` (con `*` = qualunque versione; le anteprime `dry_run` non scrivono e restano
+libere); con una versione superata `412`. I client del pannello, coda offline compresa, inviano sempre la versione.
+Verificata da: `TestMapsHTTP_DocumentFlow`, `TestMapsHTTP_IfMatchWildcard`, `TestBookingsHTTP_FlowAndErrors`
+(`internal/http/admin`, tag `integration`, SQLite e PostgreSQL), `e2e/tests/map-actions.spec.ts`. Stato: implemented.

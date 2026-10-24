@@ -113,8 +113,9 @@ notification to that endpoint only and tells you whether it was delivered and wi
 | **Paused** | You paused it by turning off **Active** in **Edit endpoint**: events are not sent (the test event still works). |
 | **Disabled after failures** | Arenile stopped it by itself after many failed deliveries in a row. When the receiving program works again, turn it back on from **Edit endpoint**. |
 
-The number of **Consecutive failures** appears under the status. After an outage of the receiving program, check
-this page: Arenile does not send an email about the disabling.
+The number of **Consecutive failures** appears under the status. When Arenile disables an endpoint, the owner gets a
+[panel notification](/en/gestore/notifiche/) (bell) and, if manager emails for webhook errors are on in
+[Email and notifications](/en/gestore/email/), an email with the endpoint host and the number of failures.
 
 ### Delivery log
 
@@ -122,8 +123,13 @@ this page: Arenile does not send an email about the disabling.
 **Delivered**, **Failed**), **Attempts** and response. Open a row to see the **Body sent** and the **Response
 (excerpt)**; **Redeliver** queues a delivery again (for example after fixing the receiving program).
 
+In the delivery detail the **Attempt history** lists **every** attempt, not only the last one: number, time, HTTP
+code, duration and error. Useful to tell whether the receiving program was slow, unreachable or answering with an
+error.
+
 A failed delivery is retried automatically with growing waits for 24 hours. Deliveries stay in the log for 30
-days.
+days; the attempt history for the days set in `ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS` (default 30, see
+[Configuration](/en/installazione/configurazione/)).
 
 ### Changing the signing secret
 

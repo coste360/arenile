@@ -1,0 +1,65 @@
+---
+title: Casse multiple e chiusura Z in PDF
+description: Più casse per stabilimento (bar, ingresso, spiaggia), una sessione aperta per cassa, report per cassa e chiusura Z stampabile o salvabile in PDF con il logo e l'intestazione dello stabilimento.
+sidebar:
+  order: 26.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Casse** (gestione), Operatività → **Cassa** (sessioni). **Chi:** titolare e gestore
+creano e modificano le casse; chi opera la cassa sceglie quale aprire.
+
+Ogni stabilimento ha la **Cassa principale**, creata in automatico. Se incassi in più punti (ingresso, bar,
+noleggio in spiaggia) aggiungi una cassa per ciascuno: ogni cassa ha **la sua sessione**, il suo fondo, la sua
+chiusura Z e i suoi totali nei corrispettivi.
+
+<Screenshot name="admin-cash-registers" alt="Elenco delle casse con la cassa predefinita e lo stato della sessione" />
+
+## Gestire le casse
+
+<Steps>
+
+1. **Nuova cassa**: indica il **Nome** (ad esempio *Bar*). Il **Codice** è facoltativo: se vuoto viene ricavato
+   dal nome e poi non si può più cambiare.
+2. **Ordine** decide la posizione nell'elenco e nel selettore della pagina Cassa.
+3. Per toglierla dall'uso disattiva **Attiva**: serve prima chiudere l'eventuale sessione aperta.
+
+</Steps>
+
+- La **cassa predefinita** resta sempre attiva e non si elimina.
+- Una cassa con sessioni nello storico si può solo **disattivare**; si elimina solo una cassa mai usata.
+- Le modifiche alle casse finiscono nel registro attività.
+
+## Aprire una cassa
+
+Nella pagina [Cassa](/gestore/cassa/) il selettore **Cassa** mostra ogni cassa attiva con il suo stato (*aperta* o
+*chiusa*). Scegli la cassa, indica il fondo e apri la sessione. **C'è al massimo una sessione aperta per cassa**,
+anche se due persone provano ad aprirla nello stesso istante; casse diverse possono essere aperte insieme.
+
+## Report per cassa
+
+In [Corrispettivi](/gestore/corrispettivi/) il filtro **Cassa** mostra solo gli incassi registrati nelle sessioni
+di quella cassa. I pagamenti online, che non passano da una sessione, compaiono solo nel totale di **Tutte le
+casse**. Anche lo storico delle sessioni indica la cassa di ciascuna.
+
+## Chiusura Z in PDF
+
+Dopo la chiusura (o durante la giornata, per un controllo) premi **PDF chiusura Z**:
+
+- il pannello prepara il riepilogo Z della sessione e apre la finestra di stampa del browser: scegli
+  **Salva come PDF** per avere il file, oppure stampa;
+- dal menu accanto scegli il formato **PDF A4** o **Scontrino 80 mm** (stampanti termiche), oppure **Apri in una
+  nuova scheda**.
+
+Il documento ha l'intestazione dello stabilimento (ragione sociale, indirizzo, partita IVA quando presenti), il
+logo Arenile nella versione monocromatica, la cassa, chi ha aperto e chiuso, fondo, incassi per metodo,
+movimenti, contanti attesi e contati con la differenza. I totali sono calcolati dal server, gli stessi della
+pagina Cassa; i pagamenti in [modalità prova](/gestore/modalita-prova/) non ci sono.
+
+<Aside type="note" title="Perché la stampa del browser">
+Arenile genera il riepilogo come pagina pronta per la stampa invece di un PDF lato server: nessuna dipendenza in
+più da mantenere, testo selezionabile e accessibile, stessa resa delle ricevute. Il risultato è un PDF identico a
+quello di un generatore (ADR 0019).
+</Aside>

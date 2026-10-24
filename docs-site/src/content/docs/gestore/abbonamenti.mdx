@@ -68,6 +68,27 @@ Con **Credito per giorni liberati** attivo nella policy, ogni giorno rilasciato 
 all'abbonato un credito pari alla percentuale scelta: lo vedi in **Credito maturato** e nella scheda cliente.
 Il credito non va mai sotto zero.
 
+## Prezzo manuale
+
+Il prezzo di un abbonamento viene dal listino. Per un accordo particolare (cliente storico, pacchetto concordato)
+il titolare o il gestore possono sostituirlo:
+
+<Screenshot name="admin-pass-price" alt="Scheda di un abbonamento con la sezione Prezzo" />
+
+<Steps>
+
+1. Apri l'abbonamento: la sezione **Prezzo** mostra il **Totale**.
+2. **Imposta prezzo manuale**, scrivi il **Nuovo totale** e il **Motivo** (obbligatorio).
+3. **Salva prezzo**.
+
+</Steps>
+
+La sezione mostra poi **Prezzo manuale**, il **Prezzo da listino** calcolato dal motore, il motivo e quando è
+stato modificato. **Torna al listino** ricalcola il prezzo dal listino. Il nuovo totale non può essere inferiore
+a quanto già incassato. Ogni modifica finisce nel registro attività con prezzo precedente, nuovo prezzo e motivo;
+il dettaglio del prezzo accettato alla creazione resta invariato. La cassa (ruolo **Cassa**) vede il prezzo ma non
+può cambiarlo.
+
 ## Nuova stagione e rinnovi
 
 A fine stagione il [cambio stagione](/gestore/cambio-stagione/) prepara la stagione successiva e una campagna di

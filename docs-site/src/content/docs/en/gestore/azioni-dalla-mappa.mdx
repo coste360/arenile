@@ -1,0 +1,66 @@
+---
+title: Block spots and group bookings
+description: Multiple selection on the day map, group booking with several spots in a single booking, blocking spots with reason, period and slot.
+sidebar:
+  order: 21.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Map**. **Who:** whoever creates bookings (owner, manager, cashier) for group bookings;
+whoever runs the beach operations (check-in and moves permission) for blocks.
+
+From the [day map](/en/gestore/mappa-del-giorno/) you can select several spots together and, in one go, turn them
+into **one group booking** or **block** them.
+
+<Screenshot name="admin-map-selection" alt="Day map with three spots selected and the action bar" />
+
+## Selecting several spots
+
+- Press **Select**, then tap the free spots one by one.
+- Or drag a **rectangle** on the map (with the mouse or a finger): every free spot inside it is selected. With two
+  fingers you still pan and zoom the map.
+- With keyboard and mouse: **Shift**-click selects the range from the last chosen spot, **Ctrl**-click (**Cmd** on a
+  Mac) adds or removes a spot, even without pressing **Select** first.
+
+Only spots **bookable in the slot shown** can be selected; if a colleague books one meanwhile it leaves the
+selection by itself. The bar at the bottom shows the count and the actions: **Group booking**, **Block**, **Clear**
+and **Exit selection**.
+
+## Group booking
+
+<Steps>
+
+1. Select the spots and press **Group booking**.
+2. The new booking sheet opens with all the spots: choose pack, customer, dates and slot as for a normal booking.
+   The quote is computed from the price list for every spot.
+3. **Create booking**.
+
+</Steps>
+
+The result is **a single booking** with one line per spot: one code, one balance, one manage link for the
+customer. It is **all or nothing**: if even one spot is no longer free nothing is created and the panel tells you
+which one.
+
+## Blocking spots
+
+<Screenshot name="admin-map-block" alt="Block 2 spots dialog with period, slot and reason" />
+
+<Steps>
+
+1. Select the spots and press **Block** (for a single spot: **Block spot** from its sheet).
+2. Choose the **Period**, the **Slot** (full day, morning or afternoon) and optionally the **Reason** (for example
+   *umbrella maintenance*).
+3. **Block**.
+
+</Steps>
+
+Blocked spots cannot be booked, neither at the desk nor online, and appear grey as **Blocked** on the map. Blocking
+several spots is all or nothing. To remove a block open the spot sheet and press **Unblock**: the block is removed
+for its whole period.
+
+<Aside type="note" title="Concurrent changes">
+Map actions (check-in, no-show, cancellation, move) always send the version of the booking they read: if a
+colleague changed it meanwhile the panel tells you instead of overwriting.
+</Aside>

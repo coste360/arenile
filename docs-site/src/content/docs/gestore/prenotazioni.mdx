@@ -126,6 +126,20 @@ cliente), **Motivo**. Per un pagamento fatto online con Stripe puoi rimborsare *
 torna sulla carta del cliente e il rimborso resta **In corso** finché Stripe non lo conferma (vedi
 [Pagamenti online](/gestore/pagamenti-online/#rimborsi)).
 
+### Rimborsi automatici
+
+Quando una prenotazione pagata online viene cancellata (dal cliente con il link di gestione o dal pannello) e le
+condizioni prevedono un rimborso sulla carta, Arenile **riserva il rimborso nella stessa operazione della
+cancellazione**: non può andare perso, nemmeno se il gestore di pagamento in quel momento non risponde, e non
+viene mai eseguito due volte.
+
+La sezione **Rimborsi automatici** del dettaglio mostra ogni rimborso con lo stato: **In attesa di invio**, **In
+attesa di conferma** (inviato, in attesa della conferma del gestore di pagamento), **Rimborsato**, **Non
+riuscito**. Arenile ritenta da solo con attese crescenti (da 1 minuto a 12 ore, fino a
+`ARENILE_REFUND_MAX_ATTEMPTS` tentativi, default 10). Se i tentativi finiscono il rimborso passa a **Non
+riuscito**, il titolare riceve una [notifica](/gestore/notifiche/) e **Riprova** lo rimette in coda. Il cliente
+vede lo stato del rimborso nel suo link di gestione.
+
 ### Cancellare
 
 <Steps>
