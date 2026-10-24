@@ -64,12 +64,16 @@ paghi solo le commissioni di Stripe.
    | Evento | A cosa serve |
    |---|---|
    | `checkout.session.completed` | Pagamento completato con Checkout: conferma la prenotazione |
-   | `payment_intent.succeeded` | Pagamento riuscito (anche con il modulo incorporato) |
+   | `payment_intent.succeeded` | Pagamento riuscito |
    | `payment_intent.payment_failed` | Pagamento non riuscito: il cliente può riprovare finché il blocco è valido |
    | `charge.refunded` | Rimborso eseguito su Stripe: registrato in Arenile |
 
 6. **Copia il segreto di firma** del webhook (`whsec_…`, "Signing secret") e incollalo in Arenile come
    segreto del webhook. Salva.
+
+   Se Arenile gira su un indirizzo locale (questo computer, `localhost` o la rete del lido), Stripe non può
+   raggiungerlo e il pannello lo segnala: per provare i pagamenti usa la riga di comando di Stripe,
+   `stripe listen --forward-to <URL del webhook>`, e incolla come segreto quello che stampa (`whsec_…`).
 
 7. **Verifica.** Premi **Verifica credenziali**: Arenile chiede a Stripe i dati dell'account e
    mostra il nome dell'attività se le chiavi sono giuste.

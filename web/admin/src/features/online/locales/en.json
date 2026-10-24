@@ -141,7 +141,12 @@
       "events": "Events to send",
       "step1": "In Stripe open Developers → Webhooks and add an endpoint with this URL.",
       "step2": "Select the events listed above and save.",
-      "step3": "Copy the signing secret (whsec_…) into the field above and press “Check credentials”."
+      "step3": "Copy the signing secret (whsec_…) into the field above and press “Check credentials”.",
+      "local": {
+        "title": "Stripe cannot reach this address",
+        "description": "The address is local (this computer or the establishment's network): Stripe sends webhooks only to public HTTPS addresses. To try payments from here, forward the events with the Stripe CLI and use the webhook secret it prints (whsec_…). In production, publish Arenile on a domain reachable from the internet.",
+        "command": "Command to run on this computer"
+      }
     },
     "validation": {
       "publishable": "The publishable key starts with pk_test_ or pk_live_",

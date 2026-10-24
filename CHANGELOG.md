@@ -15,6 +15,8 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Added
 
+- Pagamenti online: se l'URL del webhook è locale (`localhost`, rete privata, `.local`), il pannello avvisa che
+  Stripe non può raggiungerlo e suggerisce il comando `stripe listen --forward-to <URL>` per le prove.
 - **Testi delle email ai clienti modificabili** ([ADR 0022](docs/adr/0022-modelli-email-e-promemoria.md),
   INV-97): nuova pagina Configurazione → **Email ai clienti**; per ogni email al cliente e lingua (it/en/de/fr)
   si modificano oggetto, testo iniziale, testo finale e firma, con segnaposto dall'elenco (`{nome}`, `{codice}`,

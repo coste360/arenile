@@ -141,7 +141,12 @@
       "events": "Événements à envoyer",
       "step1": "Dans Stripe, ouvrez Développeurs → Webhooks et ajoutez un point de terminaison avec cette URL.",
       "step2": "Sélectionnez les événements listés ci-dessus et enregistrez.",
-      "step3": "Copiez le secret de signature (whsec_…) dans le champ ci-dessus et cliquez sur « Vérifier les identifiants »."
+      "step3": "Copiez le secret de signature (whsec_…) dans le champ ci-dessus et cliquez sur « Vérifier les identifiants ».",
+      "local": {
+        "title": "Stripe ne peut pas joindre cette adresse",
+        "description": "L'adresse est locale (cet ordinateur ou le réseau de l'établissement) : Stripe n'envoie les webhooks qu'à des adresses HTTPS publiques. Pour tester les paiements d'ici, transférez les événements avec la CLI Stripe et utilisez le secret de webhook qu'elle affiche (whsec_…). En production, publiez Arenile sur un domaine accessible depuis Internet.",
+        "command": "Commande à exécuter sur cet ordinateur"
+      }
     },
     "validation": {
       "publishable": "La clé publiable commence par pk_test_ ou pk_live_",

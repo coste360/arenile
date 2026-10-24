@@ -35,6 +35,7 @@ import {
 import { CodeBlock } from './components/CodeBlock';
 import { LivePaymentsBlockedAlert } from './components/LivePaymentsBlockedAlert';
 import { SectionCard } from './components/SectionCard';
+import { isLocalUrl } from './lib/localUrl';
 import { hasPermission } from './lib/permissions';
 import {
   STRIPE_EVENTS,
@@ -384,6 +385,19 @@ function PaymentForm({
               value={current.webhook_url}
               language="URL"
             />
+            {isLocalUrl(current.webhook_url) && (
+              <Alert>
+                <AlertTitle>{t('payments.webhook.local.title')}</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>{t('payments.webhook.local.description')}</p>
+                  <CodeBlock
+                    label={t('payments.webhook.local.command')}
+                    value={`stripe listen --forward-to ${current.webhook_url}`}
+                    language="shell"
+                  />
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2 text-sm">
               <p className="font-medium">{t('payments.webhook.events')}</p>
               <ul className="flex flex-wrap gap-1.5">

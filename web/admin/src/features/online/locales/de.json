@@ -141,7 +141,12 @@
       "events": "Zu sendende Ereignisse",
       "step1": "Öffnen Sie in Stripe Entwickler → Webhooks und fügen Sie einen Endpunkt mit dieser URL hinzu.",
       "step2": "Wählen Sie die oben aufgeführten Ereignisse und speichern Sie.",
-      "step3": "Kopieren Sie das Signaturgeheimnis (whsec_…) in das Feld oben und klicken Sie auf „Zugangsdaten prüfen“."
+      "step3": "Kopieren Sie das Signaturgeheimnis (whsec_…) in das Feld oben und klicken Sie auf „Zugangsdaten prüfen“.",
+      "local": {
+        "title": "Stripe kann diese Adresse nicht erreichen",
+        "description": "Die Adresse ist lokal (dieser Computer oder das Netzwerk des Betriebs): Stripe sendet Webhooks nur an öffentliche HTTPS-Adressen. Um Zahlungen von hier zu testen, leite die Ereignisse mit der Stripe CLI weiter und verwende das angezeigte Webhook-Geheimnis (whsec_…). Im Betrieb veröffentliche Arenile unter einer aus dem Internet erreichbaren Domain.",
+        "command": "Befehl auf diesem Computer"
+      }
     },
     "validation": {
       "publishable": "Der veröffentlichbare Schlüssel beginnt mit pk_test_ oder pk_live_",
