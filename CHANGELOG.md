@@ -15,6 +15,17 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Added
 
+- **Accessibilità (WCAG 2.1 AA, European Accessibility Act)**: nuova pagina della guida
+  [Accessibilità](https://docs.arenile.app/gestore/accessibilita/) (it/en) con cosa è supportato, limiti noti e un
+  modello di dichiarazione di accessibilità per il lido; sezione dedicata nel README. Correzioni: il calendario della
+  pagina pubblica è una finestra con nome e legenda, i giorni pieni, chiusi o non prenotabili sono barrati (non solo
+  attenuati) e annunciati; pagine di errore con un titolo di primo livello; l'avviso della modalità prova non viene
+  più annunciato come allarme; con la preferenza "riduci movimento" animazioni, transizioni e scorrimenti diventano
+  istantanei; testo dei toast leggibile (4,5:1) sui colori di stato; i selettori di data del pannello includono la
+  data mostrata nel nome accessibile; i grafici nascosti alle tecnologie assistive non ricevono più il focus; barra
+  laterale come regione `complementary`; l'elenco delle allocazioni di una prenotazione scorre anche da tastiera. Test
+  end-to-end: axe su ogni passo della prenotazione, sull'esito, sull'area del cliente e sulle pagine principali del
+  pannello, una prenotazione completata con la sola tastiera, lingua della pagina e movimento ridotto.
 - Pagamenti online: se l'URL del webhook è locale (`localhost`, rete privata, `.local`), il pannello avvisa che
   Stripe non può raggiungerlo e suggerisce il comando `stripe listen --forward-to <URL>` per le prove.
 - **Testi delle email ai clienti modificabili** ([ADR 0022](docs/adr/0022-modelli-email-e-promemoria.md),

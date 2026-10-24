@@ -1,0 +1,182 @@
+---
+title: Accessibilità
+description: Cosa fa Arenile per l'accessibilità della prenotazione online (WCAG 2.1 AA, European Accessibility Act), tastiera, lettori di schermo, contrasto, limiti noti e un modello di dichiarazione di accessibilità per il lido.
+sidebar:
+  order: 14.5
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+La pagina di prenotazione è il punto in cui i tuoi clienti incontrano il lido online: deve funzionare anche per chi
+usa solo la tastiera, un lettore di schermo, lo zoom o un telefono vecchio. Arenile punta al livello **AA delle
+WCAG 2.1** (le linee guida internazionali, richiamate dalla norma europea EN 301 549) sulla pagina pubblica, sul
+widget incorporato nel tuo sito e sull'area "Gestisci la prenotazione" del cliente; anche i flussi principali del
+pannello sono verificati con gli stessi criteri.
+
+Questa pagina dice cosa è supportato, come lo verifichiamo, cosa **non** è ancora perfetto e come scrivere la
+dichiarazione di accessibilità del tuo lido.
+
+## Perché ti riguarda: l'European Accessibility Act
+
+Dal **28 giugno 2025** la direttiva europea sull'accessibilità (*European Accessibility Act*, direttiva UE
+2019/882, recepita in Italia con il D.Lgs. 82/2022) chiede che i servizi di commercio elettronico rivolti ai
+consumatori, comprese le prenotazioni online, siano accessibili, e che il fornitore spieghi in modo chiaro come lo
+sono. Le **microimprese** che forniscono servizi (meno di 10 dipendenti e fatturato o bilancio annuo fino a 2
+milioni di euro) sono esentate dagli obblighi, ma una pagina accessibile resta una pagina che più clienti riescono
+a usare.
+
+<Aside type="caution">
+  Arenile ti dà uno strumento progettato e verificato per essere accessibile, ma la responsabilità del servizio
+  resta del lido: dipende anche da cosa pubblichi (testi, logo, colori, sito che ospita il widget). Per capire se
+  e come la norma si applica al tuo caso chiedi al tuo consulente.
+</Aside>
+
+## Cosa è supportato
+
+### Tastiera
+
+- Tutta la prenotazione si completa **senza mouse**: date, postazione, pacchetto ed extra, dati del cliente,
+  condizioni e conferma. Un test automatico la ripete a ogni modifica del codice usando solo la tastiera.
+- **Calendario:** si apre con Invio, le frecce spostano di un giorno, Pagina giù e Pagina su di un mese; Invio
+  due volte sullo stesso giorno sceglie un giorno solo. Esc chiude e il cursore torna sul campo delle date.
+- **Mappa:** la mappa è un solo punto di tabulazione; le frecce passano da una postazione all'altra, Home e Fine
+  vanno alla prima e all'ultima, Invio o Spazio scelgono. Il pulsante **Mostra come elenco** offre la stessa scelta
+  come elenco di pulsanti.
+- Pacchetti e fasce orarie sono gruppi di opzioni: Tab entra nel gruppo, le frecce cambiano scelta.
+- Il **focus è sempre visibile** (un anello attorno all'elemento attivo) e, a ogni cambio di passo, si sposta sul
+  titolo del nuovo passo; dopo la conferma va sul titolo dell'esito.
+- Le finestre di conferma (per esempio "Cancella la prenotazione") trattengono il focus finché sono aperte, Esc le
+  chiude e il focus torna al pulsante che le ha aperte.
+
+### Lettori di schermo
+
+- La pagina ha regioni (intestazione, contenuto, piè di pagina), titoli in ordine e l'attributo di **lingua** che
+  segue la lingua scelta (italiano, inglese, tedesco o francese).
+- Ogni postazione della mappa ha un nome completo, per esempio "Postazione A1: Libero, da 30,00 €"; le postazioni
+  non disponibili sono annunciate come tali e non si possono scegliere.
+- L'**elenco delle postazioni**, raggruppato per fila, è l'alternativa non visiva alla mappa: ogni pulsante dice
+  postazione, stato ed eventuale prezzo "da".
+- I giorni del calendario dicono se sono pieni, chiusi, non prenotabili online o con gli ultimi posti.
+- Gli aggiornamenti arrivano da soli, senza spostare il cursore: il prezzo ricalcolato, il tempo rimasto per
+  completare la prenotazione (annunciato a intervalli, non ogni secondo), l'esito del pagamento quando passa da
+  "in attesa" a "confermata".
+- Gli errori dei moduli sono collegati al proprio campo e annunciati; all'invio il cursore va sul primo campo da
+  correggere. Lo stesso vale per gli errori restituiti dal server nel pannello.
+- Immagini e icone hanno un testo alternativo quando portano informazione (il codice QR, per esempio) e sono
+  ignorate quando sono solo decorative.
+
+### Contrasto e colori
+
+- I colori dell'interfaccia rispettano il contrasto **4,5:1** per il testo e **3:1** per bordi dei campi e anello
+  del focus, in tema **chiaro e scuro**; un test automatico lo verifica per ogni coppia di colori.
+- Quando scegli il colore principale del tuo lido, Arenile calcola da solo il colore del testo sopra (bianco o
+  scuro) perché resti leggibile, qualunque colore tu scelga.
+- Il colore non è mai l'unico segnale: nel calendario i giorni pieni o chiusi sono **barrati** oltre che attenuati
+  e i giorni con gli ultimi posti hanno un **punto**; nella mappa e nell'elenco lo stato è scritto per esteso.
+
+### Movimento, zoom e schermi piccoli
+
+- Se il dispositivo chiede di **ridurre il movimento**, animazioni, transizioni e scorrimenti diventano istantanei.
+- La pagina si legge senza scorrimento orizzontale fino a **320 px** di larghezza, cioè anche con lo zoom del
+  browser al 200 % e oltre (verificato da un test automatico a ogni passo).
+- Sulla pagina pubblica i pulsanti e le aree da toccare sono alti almeno **44 px**; le postazioni piccole della
+  mappa si ingrandiscono al primo tocco per non sbagliare.
+
+### Lingue
+
+Pagina pubblica, email e pannello sono in **italiano, inglese, tedesco e francese**. I testi che scrivi tu
+(presentazione, condizioni, email) sono mostrati nella lingua del cliente solo se li hai tradotti: se manca una
+traduzione il cliente vede la tua lingua predefinita.
+
+## Come lo verifichiamo
+
+- **axe-core** (lo strumento di verifica automatica più diffuso) controlla, a ogni modifica del codice, ogni passo
+  della prenotazione, il calendario, la mappa e l'elenco, l'esito, l'area del cliente con le azioni aperte e la
+  finestra di cancellazione, le pagine di errore e le pagine principali del pannello (Oggi, Mappa, Prenotazioni,
+  Cassa, Vendita rapida, Ticket, Varco, configurazione della pagina pubblica, dei pagamenti e delle email). Le
+  violazioni gravi o critiche dei criteri WCAG 2.1 A e AA bloccano il rilascio.
+- Un **test da sola tastiera** completa una prenotazione dall'inizio alla conferma e controlla a ogni passo che il
+  focus sia visibile e nel posto giusto.
+- Test dedicati verificano il contrasto dei colori in entrambi i temi, la larghezza di 320 px, la lingua della
+  pagina e la riduzione del movimento.
+
+## Limiti noti
+
+Diciamo con franchezza cosa non è ancora come vorremmo:
+
+- **La mappa è un disegno.** Con un lettore di schermo si usa, ma l'elenco delle postazioni è più comodo; sulla
+  mappa la differenza tra postazioni libere e non disponibili è data soprattutto dal tono (le non disponibili sono
+  attenuate). Lo stato completo è nel nome di ogni postazione e nell'elenco.
+- **Elenchi lunghi.** Nell'elenco ogni postazione libera è un punto di tabulazione: in un lido con molte postazioni
+  servono parecchi Tab per arrivare ad "Avanti" (Maiusc+Tab torna indietro).
+- **Pagamento online.** La pagina di pagamento è di Stripe, non di Arenile: la sua accessibilità dipende da Stripe.
+- **Contenuti del lido.** Logo, testi di presentazione, condizioni ed email li scrivi tu: usa frasi chiare, non
+  mettere informazioni importanti solo in un'immagine e controlla il contrasto del logo sullo sfondo.
+- **Sito che ospita il widget.** Arenile è accessibile dentro il riquadro; il resto della pagina del tuo sito
+  dipende da chi l'ha realizzato.
+- **Editor della mappa.** Disegnare la spiaggia nel pannello richiede mouse o touch; le proprietà delle postazioni
+  (nome, fila, illustrazione) si modificano anche da tastiera nel pannello laterale.
+- **Nessun audit esterno, per ora.** Le verifiche sono automatiche e manuali sul codice; non è ancora stato fatto
+  un audit con persone che usano tecnologie assistive. Le segnalazioni sono benvenute (vedi sotto).
+
+## Modello di dichiarazione di accessibilità
+
+Pubblica la dichiarazione sul sito del lido (per esempio in una pagina "Accessibilità" collegata dal piè di pagina
+o vicino al widget) e aggiornala quando cambi qualcosa. Copia il modello, sostituisci le parti tra parentesi quadre
+e togli quello che non ti riguarda.
+
+<Steps>
+
+1. Indica il nome del lido, l'indirizzo della pagina di prenotazione e la data.
+2. Elenca eventuali contenuti tuoi non accessibili (per esempio un PDF del listino scansionato).
+3. Indica un contatto a cui i clienti possono segnalare problemi e il tempo entro cui rispondi.
+
+</Steps>
+
+```text
+Dichiarazione di accessibilità – [Nome del lido]
+
+[Ragione sociale del lido] si impegna a rendere accessibile il proprio servizio di
+prenotazione online, disponibile all'indirizzo [https://…/b/nome-lido] e nel sito
+[https://www.nomelido.it].
+
+Conformità
+Il servizio di prenotazione usa Arenile, progettato per rispettare il livello AA delle
+linee guida WCAG 2.1 (norma EN 301 549). Il servizio è [parzialmente conforme]: i contenuti
+non accessibili sono elencati più sotto.
+
+Come si usa
+- Tutta la prenotazione si completa con la sola tastiera.
+- È compatibile con i lettori di schermo; in alternativa alla mappa delle postazioni è
+  disponibile un elenco, con il pulsante "Mostra come elenco".
+- Il testo rispetta il contrasto minimo, il colore non è l'unico modo per indicare lo stato
+  delle postazioni e dei giorni, la pagina si adatta allo zoom fino al 200 % e rispetta la
+  preferenza "riduci movimento" del dispositivo.
+- È disponibile in italiano, inglese, tedesco e francese.
+
+Contenuti non accessibili
+- Sulla mappa delle postazioni la differenza tra posti liberi e non disponibili è indicata
+  soprattutto dal colore; l'elenco delle postazioni riporta lo stato per esteso.
+- Il pagamento online avviene sulla pagina di Stripe, la cui accessibilità dipende da Stripe.
+- [Altri contenuti del lido non accessibili, per esempio: "Il listino in PDF non è
+  accessibile; i prezzi sono comunque mostrati durante la prenotazione."]
+
+Alternative
+Se non riesci a prenotare online puoi prenotare per telefono al [numero], per email a
+[indirizzo email] o direttamente alla cassa del lido, alle stesse condizioni.
+
+Segnalazioni
+Per segnalare un problema di accessibilità o chiedere un'informazione in formato
+accessibile scrivi a [indirizzo email]. Rispondiamo entro [10] giorni lavorativi.
+[Se il servizio rientra nell'European Accessibility Act, indica anche l'autorità a cui il
+cliente può rivolgersi se la risposta non è soddisfacente, secondo le indicazioni del tuo
+consulente.]
+
+Data della dichiarazione: [gg/mm/aaaa]. Ultimo aggiornamento: [gg/mm/aaaa].
+```
+
+## Segnalare un problema in Arenile
+
+Se trovi un problema di accessibilità nella pagina di prenotazione o nel pannello, apri una segnalazione nel
+[repository](https://github.com/coste360/arenile/issues) indicando pagina, browser, tecnologia assistiva usata e
+cosa ti aspettavi. Le segnalazioni di accessibilità hanno la stessa priorità dei difetti.

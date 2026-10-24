@@ -22,6 +22,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 
 [Perché Arenile](#gestionale-per-stabilimenti-balneari-gratuito-e-a-codice-sorgente-disponibile) ·
 [Funzionalità](#funzionalità) ·
+[Accessibilità](#accessibilità) ·
 [Installazione](#installazione-in-5-minuti) ·
 [Widget](#incorporare-il-widget-nel-tuo-sito) ·
 [Architettura](#architettura) ·
@@ -58,6 +59,7 @@ Perché scegliere Arenile come software di gestione dello stabilimento balneare,
 | **Nessun servizio esterno obbligatorio** | Niente Redis, code esterne o object storage. SQLite incluso; PostgreSQL facoltativo. Anche email e pagamenti online sono opzionali. |
 | **Configurabile senza codice** | File, zone, pack, listini, periodi tariffari e policy di cancellazione si esprimono come dati, non come condizioni nel codice. Ogni lido è diverso, il software si adatta. |
 | **Il tuo sito, il tuo marchio** | Il widget di prenotazione si integra nel sito del lido (WordPress, Wix, sito statico) con i tuoi colori e il tuo logo. Il cliente prenota da te, non su un portale di terzi. |
+| **Prenotazione online accessibile** | La pagina di prenotazione punta al livello **AA delle WCAG 2.1**, come chiede l'European Accessibility Act per le prenotazioni online: si completa con la sola tastiera, funziona con i lettori di schermo (con un elenco delle postazioni in alternativa alla mappa), resta leggibile con i colori del lido, con lo zoom e in quattro lingue. [Dettagli](#accessibilità). |
 | **Aperto ed estendibile** | API REST documentate in OpenAPI, webhook firmati e punti di estensione Go per nuovi driver di pagamento, fiscali e di notifica. |
 
 ---
@@ -135,6 +137,30 @@ Panoramica delle aree funzionali previste dalla specifica. Lo stato di ciascuna 
 
 ---
 
+## Accessibilità
+
+La prenotazione di ombrelloni e lettini online deve funzionare per tutti i clienti del lido. Arenile punta al livello **AA delle WCAG 2.1** (norma europea EN 301 549) sulla pagina pubblica, sul widget incorporato nel sito del lido e sull'area "Gestisci la prenotazione" del cliente; i flussi principali del pannello sono verificati con gli stessi criteri.
+
+**Cosa è supportato**
+- **Tastiera**: tutta la prenotazione si completa senza mouse (calendario con frecce e Pagina su/giù, mappa con le frecce, gruppi di opzioni, finestre che trattengono il focus); il focus è sempre visibile e si sposta sul titolo di ogni nuovo passo e sull'esito.
+- **Lettori di schermo**: regioni, titoli e attributo di lingua per ogni lingua; ogni postazione ha un nome completo ("Postazione A1: Libero, da 30,00 €"); prezzo, tempo rimasto ed esito del pagamento sono annunciati senza spostare il cursore; gli errori dei moduli sono collegati al campo.
+- **Alternativa non visiva alla mappa**: il pulsante "Mostra come elenco" offre le postazioni raggruppate per fila, con stato e prezzo scritti per esteso.
+- **Contrasto**: 4,5:1 per il testo e 3:1 per bordi e focus, in tema chiaro e scuro; sul colore principale scelto dal lido il colore del testo è calcolato in automatico.
+- **Il colore non è mai l'unico segnale**: giorni pieni o chiusi barrati, giorni con gli ultimi posti segnati da un punto, stato delle postazioni scritto nel nome e nell'elenco.
+- **Movimento ridotto**: con la preferenza "riduci movimento" del dispositivo animazioni e transizioni diventano istantanee.
+- **Zoom e schermi piccoli**: nessuno scorrimento orizzontale fino a 320 px (zoom al 200 % e oltre), aree da toccare di almeno 44 px sulla pagina pubblica.
+- **Quattro lingue**: italiano, inglese, tedesco e francese per pagina pubblica, email e pannello.
+
+**Come è verificato**: a ogni modifica del codice axe-core controlla ogni passo della prenotazione, la mappa e l'elenco, l'esito, l'area del cliente (anche con le azioni e la finestra di cancellazione aperte) e le pagine principali del pannello, e le violazioni gravi bloccano il rilascio; un test end-to-end completa una prenotazione **con la sola tastiera**; test dedicati controllano il contrasto dei colori in entrambi i temi, la larghezza di 320 px, la lingua della pagina e la riduzione del movimento.
+
+**European Accessibility Act**: dal 28 giugno 2025 la direttiva UE 2019/882 (in Italia D.Lgs. 82/2022) chiede che i servizi di prenotazione online per i consumatori siano accessibili e che il fornitore lo dichiari; le microimprese sono esentate. Arenile fornisce lo strumento e un modello di dichiarazione, ma la responsabilità del servizio resta del lido.
+
+**Limiti noti**: sulla mappa la differenza tra postazioni libere e non disponibili è data soprattutto dal tono (l'elenco riporta lo stato per esteso); nell'elenco ogni postazione libera è un punto di tabulazione; la pagina di pagamento è di Stripe; logo, testi ed email scritti dal lido e il sito che ospita il widget dipendono dal lido; disegnare la mappa nell'editor richiede mouse o touch; non è ancora stato fatto un audit con utenti di tecnologie assistive.
+
+Guida completa e modello di dichiarazione di accessibilità da adattare: [docs.arenile.app/gestore/accessibilita](https://docs.arenile.app/gestore/accessibilita/) ([modello](https://docs.arenile.app/gestore/accessibilita/#modello-di-dichiarazione-di-accessibilità)).
+
+---
+
 ## Stato delle funzionalità
 
 Legenda: **Disponibile** = rilasciato e utilizzabile · **Completato** = implementato e coperto da test nel ramo di sviluppo, non ancora rilasciato · **Pianificato** = previsto, non ancora iniziato.
@@ -170,6 +196,7 @@ La prima versione, la **1.0.0**, è in preparazione ([note di rilascio](docs/rel
 | Cassa | Casse multiple, chiusura Z stampabile (A4 o 80 mm) | M5 | Completato |
 | Mappa | Selezione multipla, prenotazione di gruppo, blocco delle postazioni | M5 | Completato |
 | Lingue | Traduzioni inglese, tedesco, francese di pannello, pagina pubblica ed email | M5 | Completato |
+| Accessibilità | WCAG 2.1 AA sulla pagina pubblica, sul widget e sull'area del cliente: tastiera, lettori di schermo, elenco alternativo alla mappa, contrasto, movimento ridotto; axe su ogni passo e prenotazione da sola tastiera nei test end-to-end | — | Completato |
 | Vendita giornaliera | Ticket numerati del giorno su postazione o zona, assegnazione delle postazioni, biglietti d'ingresso con controllo al varco tramite QR (ADR 0020) | — | Completato |
 | Desktop | App desktop per Windows, macOS e Linux: server sul PC della cassa, backup, modalità rete locale, modalità remota con ponte fiscale; dispositivi abbinati con QR e token revocabili | M6 | Completato (pacchetti firmati da completare: firma per macOS pronta, Windows senza firma) |
 | Stampa | Stampanti termiche ESC/POS di rete (Wi-Fi/Ethernet) dall'app desktop: ticket, ricevute non fiscali, chiusura Z, cassetto (ADR 0021) | — | Completato (USB e Bluetooth dopo la 1.0) |
@@ -643,3 +670,5 @@ Se Arenile ti è utile, lascia una stella al repository e parlane con altri gest
 ## In English
 
 **Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. All milestones from M0 (foundations) to M6 (desktop edition) are complete and covered by automated tests, and version 1.0.0 is being prepared; it is provided as is, without warranty, and Coste360 offers verified installations with support; the project is developed by [Coste360 SRL](https://www.coste360.it/); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments (and open-air pools) that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release. Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md). Website: [arenile.app](https://arenile.app); documentation: [docs.arenile.app](https://docs.arenile.app).
+
+The public booking page, the embedded widget and the customer's manage area target **WCAG 2.1 level AA**, as the European Accessibility Act expects for consumer online booking: keyboard-only operation, screen reader support with a list of spots as a non-visual alternative to the map, contrast in both themes (also on the beach's own colours), colour never the only cue, reduced motion, reflow down to 320 px and four languages, verified by axe on every public step and the manage page and by a keyboard-only end-to-end booking. See the [accessibility guide](https://docs.arenile.app/en/gestore/accessibilita/) for the known limits and an accessibility statement template.
