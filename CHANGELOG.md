@@ -46,6 +46,22 @@ offline).
   accessi" (it, en) con screenshot; cassa, clienti, prenotazioni e pagina pubblica aggiornate per il telefono
   facoltativo. Test end-to-end della vendita su postazione e per zona, assegnazione, annullamento, ingressi e varco,
   checkout pubblico e nuovo cliente senza telefono.
+- Revisione della vendita giornaliera (ADR 0020, INV-83, INV-84): la prenotazione di un biglietto si cambia solo dalle
+  azioni del biglietto (cancellazione, modifica, spostamento e assegnazione automatica generici rispondono 409
+  `ticket_owned`); assegnazione e spostamento **conservano il totale incassato** (prezzo del motore solo nell'audit);
+  annullamento e assegnazione prendono i lock nello stesso ordine (nessuno stallo su PostgreSQL); `assign`, `move` e
+  `void` richiedono **If-Match** con la versione del biglietto (428/412) e rispondono con `ETag`; il QR porta un **gate
+  token** casuale (`tickets.gate_token`, 128 bit) e il varco fa entrare solo con quello: numero del giorno o codice
+  della prenotazione scritti a mano passano come **inserimento manuale** confermato (`manual`, nell'audit); un
+  biglietto la cui prenotazione non è più confermata non entra; una vendita di ingressi riguarda una sola zona (una
+  scansione fa entrare il gruppo); `OperationalTicket` espone `id` e `version`; il riepilogo di Ticket del giorno è
+  dichiarato per giorno di validità; il cliente "al banco" resta fuori dalla classifica dei migliori clienti. Pannello:
+  spostamento dei biglietti dalla mappa con le azioni del biglietto, postazioni provvisorie segnate "da assegnare" (la
+  zona piena offre al biglietto la sua stessa postazione, le postazioni libere come pulsanti grandi, mappa portata in
+  vista con tocchi da 44 px e legenda ripiegata), scorciatoie C/K attive solo dentro il modulo e mai sotto un altro
+  dialogo, riepilogo compatto sul telefono con le zone piene disattivate, postazione in grande e "Non valido ai fini
+  fiscali" sul biglietto, stato accanto al numero sui telefoni, varco con numero del giorno e avviso per iPhone e
+  Firefox. Guide, spec 14.3 e invarianti allineate (numerazione per giorno di validità).
 - Contratto delle funzioni rinviate (ADR 0019): modalità prova (`/test-mode`, anteprima, eliminazione in blocco),
   rimborsi garantiti (`/refund-requests`), casse multiple (`/cash-registers`, `register_id` sulle sessioni) e
   chiusura Z stampabile (`/cash-sessions/{id}/z-report`), prezzo manuale degli abbonamenti

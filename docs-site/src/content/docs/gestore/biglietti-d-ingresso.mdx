@@ -57,11 +57,18 @@ vendono l'ultimo posto nello stesso istante, una sola vendita passa: la capienza
 
 <Screenshot name="admin-entry-gate-mobile" alt="Varco sul telefono: lettura del QR o codice del biglietto scritto a mano" />
 
-- **Avvia fotocamera** e inquadra il QR del biglietto, oppure scrivi il **Codice del biglietto** e **Verifica**.
+- **Avvia fotocamera** e inquadra il QR del biglietto (Chrome o Edge su Android e computer), oppure scrivi il
+  **numero del giorno** stampato in grande sul biglietto (es. `37`) o il codice della prenotazione e tocca
+  **Conferma ingresso**.
 - Esiti: **Ingresso valido** (con numero e persone), **Già entrato** (con l'ora del primo ingresso), **Biglietto
-  annullato**, **Biglietto di un altro giorno**, **Biglietto non trovato**. Il telefono vibra a ogni esito.
+  annullato**, **Biglietto di un altro giorno**, **Biglietto non trovato**. Dove il telefono lo supporta (Android)
+  una vibrazione accompagna l'esito; su iPhone leggi lo schermo.
 - La stessa lettura ripetuta nei 4 secondi successivi viene ignorata: niente doppi esiti se il QR resta inquadrato.
+- Un biglietto copre tutte le persone della vendita: **una scansione fa entrare il gruppo** (il risultato mostra
+  quante persone).
 
-<Aside type="tip" title="Senza fotocamera">
-  Se il browser non legge i QR o la fotocamera non è autorizzata, il campo del codice resta sempre disponibile.
+<Aside type="caution" title="iPhone e Firefox: inserimento manuale">
+  Safari su iPhone e Firefox non leggono i QR con la fotocamera: la pagina lo dice e lo staff scrive il numero del
+  biglietto. Il QR contiene un codice casuale, quindi solo la scansione fa entrare da sola; un numero o un codice
+  scritti a mano passano solo con **Conferma ingresso**, che resta registrato nello storico come inserimento manuale.
 </Aside>

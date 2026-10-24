@@ -55,11 +55,16 @@ place at the same moment, only one sale goes through: the database checks the ca
 
 <Screenshot name="admin-entry-gate-mobile" alt="Gate on a phone: QR reading or the ticket code typed by hand" />
 
-- **Start camera** and frame the ticket's QR code, or type the **Ticket code** and **Check**.
+- **Start camera** and frame the ticket's QR code (Chrome or Edge on Android and desktop), or type the **day
+  number** printed large on the ticket (e.g. `37`) or the booking code and tap **Confirm entry**.
 - Results: **Valid entry** (with number and people), **Already entered** (with the time of the first entry), **Ticket
-  voided**, **Ticket for another day**, **Ticket not found**. The phone vibrates on each result.
+  voided**, **Ticket for another day**, **Ticket not found**. Where the phone supports it (Android) a vibration goes
+  with the result; on iPhone read the screen.
 - The same reading repeated within 4 seconds is ignored: no double results while the QR stays in frame.
+- One ticket covers everybody in the sale: **one scan admits the group** (the result shows how many people).
 
-<Aside type="tip" title="Without a camera">
-  If the browser cannot read QR codes or the camera is not allowed, the code field is always available.
+<Aside type="caution" title="iPhone and Firefox: manual entry">
+  Safari on iPhone and Firefox cannot read QR codes with the camera: the page says so and the staff types the ticket
+  number. The QR holds a random code, so only a scan admits on its own; a typed number or code goes through only with
+  **Confirm entry**, recorded in the history as a manual entry.
 </Aside>

@@ -47,16 +47,19 @@ On the desk computer, shortcuts speed things up: **1**, **2**, **3** for the slo
 
 ## The ticket number
 
-- It starts again from **#001** every morning (establishment time zone) and is unique for the establishment: several
-  registers and devices never produce the same number twice.
+- It is a **progressive number per day of validity** (establishment time zone), shared by umbrellas and entries: the
+  first ticket valid today is **#001** and the sequence is unique for the establishment, across registers and
+  devices. Selling for another day uses that day's numbering (tomorrow starts again at #001 while today goes on).
 - A **voided** ticket keeps its number, marked *Voided*: the only case where the sequence has a visible gap.
-- The QR code holds the booking code: staff check it with their phone.
+- The QR code holds a **random code** of the ticket, not the booking code (which is sequential and stays printed
+  under the QR): staff check it with their phone and nobody can guess it.
 
 ## Printing
 
 Tickets print from the browser, no software to install: **80 mm receipt**, **58 mm receipt**, **A5** or **A4**. They
-show the establishment name and logo, number and date (*Valid on …*), spot or zone (*to assign*), formula, pack,
-extras, total with the VAT breakdown, payment method and the QR code.
+show the establishment name and logo, the number and, large under it, the spot or zone (*to assign*), the date
+(*Valid on …*), formula, pack, extras, total with the VAT breakdown, payment method, the line **Not valid for tax
+purposes** (the fiscal document is the payment's, from the cash desk) and the QR code.
 
 <Screenshot name="admin-ticket-print" alt="Print preview of the ticket in the 80 mm receipt format" />
 

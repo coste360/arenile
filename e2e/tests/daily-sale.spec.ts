@@ -293,6 +293,12 @@ test.describe("daily sale", () => {
     const panel = page.getByTestId("assign-panel");
     await expect(panel).toBeVisible();
     await panel.getByRole("button", { name: /^Biglietto #001/ }).click();
+    // The free spots of the row are offered as large buttons too (phones).
+    await expect(
+      panel
+        .getByTestId("assign-targets")
+        .getByRole("button", { name: "Assegna alla postazione A1" }),
+    ).toBeVisible();
     await expect(spot(page, "A1")).toHaveAccessibleName(/Libero/);
     await spot(page, "A1").click();
     await expect(

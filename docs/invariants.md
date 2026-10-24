@@ -178,7 +178,7 @@ Verifica di sistema: `TestAcceptance_SimulatedDay` e `TestAcceptance_DemoSeed` (
 **INV-26 — Isolamento per stabilimento.**
 Nessuna query operativa viene eseguita senza `establishment_id` preso dal contesto autenticato; un
 utente o una chiave API di uno stabilimento non legge né modifica dati di un altro.
-Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Per M3 `TestInventoryService_PermissionsAndTenancy`, `TestBookingService_CrossTenantAndPermissions`, `TestCustomerService_UpdateOptimisticAndPermissions`, `TestPassService_CreateListAndUpdate` (tag `integration`). Stato: implemented (ogni tabella operativa di M3 è letta e scritta solo con `EstablishmentScope`).
+Verificata da: `TestEstablishments_RoundtripAndCrossTenant` (`internal/store`, tag `integration`), `TestService_APIKeysAndCrossTenant` (`internal/domain/auth`, tag `integration`), `TestHTTP_CrossTenantDenied` e `TestHTTPIntegration_CrossTenant` (`internal/http`); per M1/M2 `TestSeasonService_PermissionsAndTenancy`, `TestMappingIntegration_CrossTenantAndPermissions`, `TestMapsHTTP_CrossTenantAndPools`, `TestCatalogIntegration_CrossTenant`, `TestCrossTenant_Isolation` (`internal/domain/pricingconfig`), `TestApply_Permissions` (`internal/domain/setup`), tutti con tag `integration`. Per M3 `TestInventoryService_PermissionsAndTenancy`, `TestBookingService_CrossTenantAndPermissions`, `TestCustomerService_UpdateOptimisticAndPermissions`, `TestPassService_CreateListAndUpdate` (tag `integration`). Per la vendita giornaliera (ADR 0020) `TestDailySaleHTTP_CrossTenantAndIfMatch` (`internal/http/admin`, tag `integration`: biglietti, codice/QR, stampa, annullamento, assegnazione e varco di A da un'altra organizzazione → 404; postazione di un altro stabilimento nella vendita o nello spostamento → 400). Stato: implemented (ogni tabella operativa di M3 è letta e scritta solo con `EstablishmentScope`).
 
 **INV-27 — Permessi verificati nel dominio.**
 Ogni operazione di amministrazione verifica il permesso del ruolo (spec 16.1) nel servizio di dominio,
@@ -731,11 +731,12 @@ Verificata da: `TestMapsHTTP_DocumentFlow`, `TestMapsHTTP_IfMatchWildcard`, `Tes
 Ogni biglietto (vendita su postazione o zona, ingresso) prende il numero da `store.NextTicketNumber`: un solo upsert
 atomico su `daily_ticket_counters` (`INSERT ... ON CONFLICT DO UPDATE SET last_number = last_number + 1 RETURNING`)
 come ultima scrittura della transazione di vendita, che crea anche la prenotazione confermata (canale `desk`, servizio
-delle prenotazioni con audit e outbox) e il pagamento manuale (contanti solo con sessione di cassa aperta). Il numero
-riparte da 1 per ogni giorno di utilizzo nel fuso dello stabilimento (mai per un giorno passato), è unico per
-stabilimento su tutte le casse (`UNIQUE (establishment_id, ticket_date, ticket_number)`) e una vendita annullata dal
-database restituisce il numero; l'annullamento di un biglietto (`void`: cancellazione della prenotazione, rimborso
-tramite i pagamenti, audit) lo conserva, quindi gli unici buchi sono i biglietti annullati, che restano in elenco.
+delle prenotazioni con audit e outbox) e il pagamento manuale (contanti solo con sessione di cassa aperta). La
+sequenza è quella del giorno di validità (`ticket_date`, fuso dello stabilimento, mai un giorno passato), condivisa
+tra postazioni e ingressi: una vendita per un altro giorno prende il numero di quel giorno. È unica per stabilimento
+su tutte le casse (`UNIQUE (establishment_id, ticket_date, ticket_number)`) e una vendita annullata dal database
+restituisce il numero; l'annullamento di un biglietto (`void`: cancellazione della prenotazione, rimborso tramite i
+pagamenti, audit) lo conserva, quindi gli unici buchi sono i biglietti annullati, che restano in elenco.
 Verificata da: `TestConcurrency_DailyTicketNumbering` (200 vendite concorrenti su 3 casse: numeri 1..200),
 `TestDailySale_DayRolloverInEstablishmentTimezone`, `TestTicketing_VoidKeepsNumberAndRefunds`,
 `TestDailySale_SpotFirstCash` (`internal/domain/dailysale`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
@@ -756,23 +757,45 @@ Un biglietto zone-first si colloca su una postazione solo con la `Move` della su
 allocazione della nuova postazione (chiave unica di `spot_allocations`), aggiornamento condizionale del biglietto
 (`needs_assignment`, `zone_id`, `version`, mai su un biglietto annullato o già assegnato), audit ed evento outbox
 nella stessa transazione. Una postazione presa nel frattempo risponde 409 `assignment_conflict` e lascia il biglietto
-da assegnare con la capacità della zona intatta. L'assegnazione automatica procede per numero crescente con il motore
-greedy di spec 7.5 e applica una `Move` per biglietto. Mappa: `occupant_label` e `customer_display_name` sono il
-nome facoltativo del biglietto o il numero ("#037"), mai il cliente "al banco" condiviso; gli eventi SSE restano
-quelli della prenotazione (solo identificativi).
-Verificata da: `TestConcurrency_AssignSameSpot` (100 biglietti diversi sulla stessa postazione: uno solo vince),
+da assegnare con la capacità della zona intatta (il pool implicito conta sia le righe in attesa sia le postazioni
+collocate: la somma non cambia). L'assegnazione automatica procede per numero crescente con il motore greedy di spec
+7.5 e applica una `Move` per biglietto. La prenotazione di un biglietto si cambia **solo** dalle azioni del biglietto:
+`booking.Move`, `Update` e `Cancel` generici e l'assegnazione automatica delle righe in attesa (spec 7.5) la rifiutano
+o la saltano (`booking.ErrTicketOwned`, 409 `ticket_owned`), così `tickets` non diverge mai da `bookings`.
+Assegnazione e spostamento conservano il totale già incassato (`MoveInput.KeepPrice`: il prezzo del motore per la
+nuova postazione resta nel diff dell'audit, `price_kept`). Annullamento e assegnazione prendono i lock nello stesso
+ordine (prima la prenotazione, poi il biglietto): niente stallo tra un `void` e un'assegnazione concorrenti. Gli
+endpoint `assign`, `move` e `void` richiedono `If-Match` con la versione del biglietto (428/412, come INV-80);
+l'assegnazione automatica legge i biglietti nella stessa richiesta e ogni collocazione è un aggiornamento
+condizionale. Mappa: `occupant_label` e `customer_display_name` sono il nome facoltativo del biglietto o il numero
+("#037"), mai il cliente "al banco" condiviso; una postazione provvisoria porta l'indicatore "da assegnare"; gli
+eventi SSE restano quelli della prenotazione (solo identificativi).
+Verificata da: `TestConcurrency_AssignSameSpot` (100 biglietti diversi sulla stessa postazione: uno solo vince, il
+pool della zona resta pieno, i perdenti intatti), `TestConcurrency_VoidVsAssign` (100 coppie annulla/assegna
+concorrenti: ogni biglietto finisce annullato o assegnato, mai un errore inatteso),
+`TestTicketAssign_GenericBookingChangesRefused`, `TestTicketAssign_KeepsTicketPrice`,
 `TestTicketAssign_ZoneModeAssignAndMove`, `TestTicketAssign_ConflictOnTakenSpot`,
 `TestTicketAssign_SeatModeProvisionalSpot`, `TestTicketAutoAssign_FillsInNumberOrder`, `TestTicketMap_LabelsAndPending`
-(`internal/domain/ticketassign`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+(`internal/domain/ticketassign`, tag `integration`, SQLite e PostgreSQL), `TestDailySaleHTTP_CrossTenantAndIfMatch`,
+`TestDailySaleHTTP_SaleListPrintVoid` (`internal/http/admin`). Stato: implemented.
 
-**INV-84 — Biglietti d'ingresso: un solo ingresso per biglietto, capienza condivisa con l'online.**
+**INV-84 — Biglietti d'ingresso: un solo ingresso per biglietto (gruppo), capienza condivisa con l'online, QR non indovinabile.**
 I tipi di biglietto d'ingresso sono pack su una zona `quantity`: ogni vendita consuma il pool della zona (la capienza
-giornaliera condivisa con la vendita online, 409 `pool_exhausted`). Al varco `entered_at` si registra con un solo
-aggiornamento condizionale (`entered_at IS NULL AND status = 'valid'`): fra scansioni concorrenti dello stesso QR una
-sola ammette, le altre rispondono `already_entered`; un biglietto annullato o di un altro giorno non entra mai, e un
-biglietto già entrato non si annulla.
+giornaliera condivisa con la vendita online, 409 `pool_exhausted`). Una vendita è un gruppo che entra insieme da una
+sola zona (tipi di zone diverse sono rifiutati, 400): un biglietto, un QR, una scansione per il gruppo. Il QR porta il
+`gate_token` del biglietto (casuale, 128 bit, `UNIQUE`), mai il codice della prenotazione, che è sequenziale: al
+varco un codice della prenotazione o un numero del giorno da soli non fanno entrare (404); li risolve solo un
+inserimento manuale confermato dallo staff (`manual = true`, nel diff dell'audit). `entered_at` si registra con un
+solo aggiornamento condizionale (`entered_at IS NULL AND status = 'valid'`): fra scansioni concorrenti dello stesso QR
+una sola ammette, le altre rispondono `already_entered`; un biglietto annullato, di un altro giorno o la cui
+prenotazione non è più `confirmed`/`checked_in` non entra mai, e un biglietto già entrato non si annulla. La
+prenotazione di un biglietto si cancella solo con il `void` (INV-83), quindi biglietto e varco non divergono. Gli
+ingressi al varco scrivono l'audit ma non un evento outbox: non sono trasmessi in SSE né ai webhook (la prenotazione
+non cambia, INV-18).
 Verificata da: `TestConcurrency_EntryCheckInOnce` (100 scansioni concorrenti: un solo `admitted`),
-`TestEntrySale_GateAndCapacity` (`internal/domain/dailysale`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+`TestEntrySale_GateAndCapacity` (codice della prenotazione e numero da soli → non trovato, token → ammesso, manuale
+→ risolto, cancellazione e modifica generiche → `ticket_owned`; `internal/domain/dailysale`, tag `integration`,
+SQLite e PostgreSQL). Stato: implemented.
 
 **INV-85 — Telefono facoltativo ovunque; email obbligatoria solo dove porta conferma e link.**
 Nessun flusso rifiuta un cliente senza telefono: checkout pubblico (passo 4), nuovo cliente e cliente in linea della
