@@ -107,7 +107,10 @@ The applied conditions (deposit, balance, cancellation) are shown before confirm
 (**Terms applied**) and on the public page. If a request breaks the policy, the customer gets the reason (for example
 *Minimum lead time not met*, *Start weekday not allowed*).
 
-<Aside type="note" title="The panel can override">
-  At the desk staff can still confirm a booking outside the policy with **Book anyway**: the action stays in the
+<Aside type="note" title="The panel can override, but not approve">
+  Forcing never skips **approval**: a booking that requires it (policy with mandatory approval or a pack that
+  requires it) stays **Awaiting approval** until the owner or the manager approves it, even when forced or
+  already paid at the desk. At the desk staff can still confirm a booking outside the policy (lead time,
+  duration, start day...) with **Book anyway**: the action stays in the
   activity log.
 </Aside>

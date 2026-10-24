@@ -13,15 +13,15 @@ offline).
 
 ### Added
 
-- Contratto delle funzioni rinviate (ADR 0019), endpoint ancora `501 not_implemented`: modalità prova
-  (`/test-mode`, anteprima, eliminazione in blocco), rimborsi garantiti (`/refund-requests`), casse multiple
-  (`/cash-registers`, `register_id` sulle sessioni) e chiusura Z stampabile (`/cash-sessions/{id}/z-report`), prezzo
-  manuale degli abbonamenti (`/season-passes/{id}/price-override`), notifiche del pannello (`/notifications`),
-  storico dei tentativi webhook, esportazione elenchi CSV/XLSX (`/exports/{list}`, `format=xlsx` su report e
-  corrispettivi), importazione CSV di clienti e abbonamenti (`/imports`). Migrazione 00009 (entrambi i dialetti):
-  `bookings.test`, `payments.test`, `test_mode_settings`, `refund_requests`, `cash_registers` con "Cassa principale"
-  per ogni stabilimento, `webhook_delivery_attempts`, `import_jobs`, `admin_notifications`. I report escludono già
-  prenotazioni e pagamenti di prova. Pannello: pagine segnaposto Configurazione → Casse, Modalità prova, Importa dati.
+- Contratto delle funzioni rinviate (ADR 0019): modalità prova (`/test-mode`, anteprima, eliminazione in blocco),
+  rimborsi garantiti (`/refund-requests`), casse multiple (`/cash-registers`, `register_id` sulle sessioni) e
+  chiusura Z stampabile (`/cash-sessions/{id}/z-report`), prezzo manuale degli abbonamenti
+  (`/season-passes/{id}/price-override`), notifiche del pannello (`/notifications`), storico dei tentativi webhook,
+  esportazione elenchi CSV/XLSX (`/exports/{list}`, `format=xlsx` su report e corrispettivi), importazione CSV di
+  clienti e abbonamenti (`/imports`). Migrazione 00009 (entrambi i dialetti): `bookings.test`, `payments.test`,
+  `outbox_events.test`, `test_mode_settings`, `refund_requests`, `cash_registers` con "Cassa principale" per ogni
+  stabilimento, `webhook_delivery_attempts`, `import_jobs`, `admin_notifications`. Le singole funzioni sono
+  descritte nelle voci che seguono.
 - Mappa operativa: selezione multipla delle postazioni (pulsante "Seleziona", Maiusc/Ctrl-clic, rettangolo
   trascinato, anche al tocco) con conteggio e due azioni: **prenotazione di gruppo** (una prenotazione con una riga per
   postazione, prezzo dal motore, atomica) e **blocco** con motivo, periodo e fascia; "Blocca postazione" e "Sblocca"
@@ -357,6 +357,22 @@ offline).
 
 ### Changed
 
+- **Approvazione delle prenotazioni** (regola R3, ADR 0019 E, INV-78): **Approva**, e **Conferma** su una
+  prenotazione *Da approvare*, richiedono ora `establishment.configure` (titolare e gestore); con il solo
+  `bookings.write` (cassa, chiavi API con quel permesso) la risposta è `403`. **Rifiuta** resta con
+  `bookings.write`. La forzatura (**Conferma comunque**) scavalca solo le violazioni di policy, mai l'approvazione:
+  una prenotazione che la richiede nasce *Da approvare* anche se forzata o pagata subito in cassa. Il pannello
+  nasconde Approva e Conferma a chi non può approvare.
+- **Pagamenti online e modalità prova**: la configurazione Stripe (live o test) usata per un pagamento segue la
+  prenotazione, non l'interruttore della modalità prova: una prenotazione reale paga sempre con le chiavi live,
+  anche mentre la modalità prova è accesa, e una di prova sempre con quelle di test, anche dopo averla spenta. I
+  webhook sono verificati con entrambe le configurazioni e un evento verificato con un segreto non tocca mai un
+  intento dell'altra modalità; riconciliazione e rimborsi usano la modalità dell'intento. Un pagamento preso con
+  le chiavi di test è una riga di prova (nessun documento fiscale, fuori dai corrispettivi) qualunque sia la
+  prenotazione.
+- **Prezzo manuale degli abbonamenti**: spostare o modificare un abbonamento con prezzo manuale (anche dalla
+  cassa) **conserva** il prezzo manuale e aggiorna il prezzo da listino mostrato sotto di esso; prima la modifica
+  lo cancellava senza traccia. Solo "Imposta prezzo manuale" e "Torna al listino" (titolare e gestore) lo cambiano.
 - `If-Match` è obbligatorio su check-in, no-show, annullamento e spostamento di una prenotazione e sull'eliminazione
   di una mappa: senza l'header la risposta è `428 precondition_required` (le anteprime `dry_run` restano libere). Il
   pannello e la coda offline inviano sempre la versione letta (`*` per un check-in accodato dietro altre operazioni).
@@ -388,8 +404,6 @@ offline).
 
 - Le richieste annullate dal client (`context.Canceled`, ad esempio una pagina chiusa durante il caricamento) non
   sono più registrate come errori 500 nei log.
-- PostgreSQL: l'eliminazione delle prenotazioni di prova e il filtro dei webhook di prova non confrontano più una
-  stringa vuota o un id non UUID con una colonna `uuid` (errore `invalid input syntax for type uuid`).
 - Pannello, **Nuova prenotazione**: gli extra usano il nuovo controllo condiviso `QuantityStepper` (− valore +,
   sempre visibile e a larghezza fissa) dentro `ExtraList`/`ExtraRow` (nome su una riga, unità "per postazione /
   per prenotazione · al giorno" sotto, "max N" accanto al controllo). Prima il campo numerico veniva schiacciato

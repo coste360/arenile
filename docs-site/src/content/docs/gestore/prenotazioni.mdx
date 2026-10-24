@@ -70,7 +70,9 @@ attività** e l'evento corrispondente: lo **Storico** della prenotazione è semp
 </Steps>
 
 Se la richiesta non rispetta le [policy](/gestore/policy/), l'anteprima spiega perché. Puoi comunque procedere
-con **Conferma comunque (ignora le regole di prenotazione, registrato nel registro attività)**.
+con **Conferma comunque (ignora le regole di prenotazione, registrato nel registro attività)**. La forzatura non
+salta l'approvazione: se la policy o il pacchetto la richiedono, la prenotazione nasce **Da approvare** (anche se
+pagata subito in cassa) e solo il titolare o il gestore possono approvarla.
 
 <Aside type="tip">
   Se l'incasso non va a buon fine (ad esempio la cassa è chiusa e il metodo è contanti), la prenotazione viene
@@ -95,7 +97,7 @@ dura il blocco. Sotto:
 | Azione | Quando | Effetto |
 |---|---|---|
 | **Conferma** | Prenotazione in attesa | Conferma manuale: le postazioni restano occupate stabilmente |
-| **Approva** / **Rifiuta** | Da approvare | Confermata, oppure postazioni liberate e cliente avvisato |
+| **Approva** / **Rifiuta** | Da approvare | Confermata (solo titolare e gestore), oppure postazioni liberate e cliente avvisato |
 | **Check-in** | Solo nei giorni del soggiorno | Il cliente risulta presente |
 | **Non presentato** | Dal primo giorno del soggiorno | Le postazioni dei giorni futuri vengono liberate |
 | **Modifica date** | Confermata | Nuove date con ricalcolo del prezzo |

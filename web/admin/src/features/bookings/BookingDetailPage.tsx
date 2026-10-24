@@ -135,7 +135,15 @@ export function BookingDetailPage() {
     endsOn: b.ends_on,
     today: todayIso(),
   })
-    .filter((a) => (a === 'check-in' || a === 'no-show' ? perms.canOperate : perms.canWrite))
+    .filter((a) => {
+      if (a === 'check-in' || a === 'no-show') return perms.canOperate;
+      // Approval rule R3: approving, and confirming a booking awaiting
+      // approval, is the manager's decision (establishment.configure).
+      if (a === 'approve' || (a === 'confirm' && b.status === 'awaiting_approval')) {
+        return perms.canApprove;
+      }
+      return perms.canWrite;
+    })
     .sort((x, y) => actionRank(x) - actionRank(y));
   const active = ACTIVE_STATUSES.includes(b.status);
   const run = async (action: TransitionVars['action']) => {
