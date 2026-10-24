@@ -17,6 +17,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 - Repository pubblico: le GitHub Actions non conservano più binari o pacchetti desktop come artefatti (sarebbero
   scaricabili da chiunque). `release.yml` non costruisce più i pacchetti desktop, che si fanno nel repository privato
   delle build; il bundle dei binari server va solo al portale Coste360, quando configurato.
+- Documentazione e README: i pacchetti dell'app desktop sono indicati come disponibili, con il link a
+  [arenile.app/download](https://arenile.app/download/) (prima "in arrivo" sul portale Coste360).
 
 ## [1.0.0] - 2026-10-24
 

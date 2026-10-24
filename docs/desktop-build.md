@@ -7,9 +7,9 @@ app's own window (no browser needed) plus a tray icon. This page explains how to
 Distribution rule: the packages are **never** uploaded as GitHub release assets nor as Actions
 artifacts. This repository is public, and an Actions artifact of a public repository can be
 downloaded by anyone with a GitHub account. In this repository `desktop.yml` only builds and
-smoke tests the packages (pull requests and `workflow_dispatch`); the signed packages for the
-Coste360 download portal (login required) are built in the private build repository with the
-same scripts. GitHub carries the source code and these instructions only.
+smoke tests the packages (pull requests and `workflow_dispatch`); the signed packages are
+built in the private build repository with the same scripts and published on
+[arenile.app/download](https://arenile.app/download/). GitHub carries the source code and these instructions only.
 
 | OS | Package | Tool | Runner |
 | --- | --- | --- | --- |
@@ -24,8 +24,8 @@ Each package has a `.sha256` file next to it, and the portal bundle has a `check
 that covers every file. A package without a valid publisher signature always has `-unsigned` in
 its name. On macOS, a signed package that was not notarized has `-unnotarized` instead, and one
 whose notarization Apple had not finished within `NOTARY_TIMEOUT` has `-notarization-pending`
-(see [Notarization pending](#notarization-pending)). None of these may be published on the
-portal as a stable release.
+(see [Notarization pending](#notarization-pending)). None of these may be published on
+arenile.app/download as a stable release.
 
 ## Files
 
@@ -63,7 +63,7 @@ DESKTOP_TAGS=desktop make desktop-package-macos   # tray build (CGO), as in CI
 
 - **Build tags.** With `DESKTOP_TAGS` empty, the launcher has no CGO and no tray (it is
   headless and opens the browser). It cross-compiles from any OS, so it is handy for testing
-  the packaging. The packages for the portal use `DESKTOP_TAGS=desktop`: on macOS and Windows
+  the packaging. The published packages use `DESKTOP_TAGS=desktop`: on macOS and Windows
   this turns CGO on (panel window, tray, remote-mode webview: `-version` prints `(window)`)
   and the build must run on the native OS; on Linux the tray build stays CGO-free (tray over
   D-Bus, panel in the browser) and cross-compiles. On macOS, the host
@@ -135,7 +135,7 @@ With the `desktop` tag on macOS and Windows (`internal/desktop/shell`, ADR 0015 
 1. `macos` (`macos-latest`, arm64) is a matrix of three packages: `universal`
    (`MACOS_ARCHS="arm64 amd64"`, artifact `desktop-macos`), `arm64` (`desktop-macos-arm64`)
    and `x86_64` (`desktop-macos-x86_64`). The thin ones are about half the size of the
-   universal one, for the portal and for sending by hand. Each builds the binary, the `.app`
+   universal one, for arenile.app/download and for sending by hand. Each builds the binary, the `.app`
    and the `.dmg`, signs, notarizes and staples when the secrets are present, then checks the
    slices with `lipo -archs` and runs `-version` (the Intel build under Rosetta 2 when the
    runner has it). When notarization is still pending, the signed dmg is uploaded anyway and
@@ -254,8 +254,8 @@ the first downloads of a new certificate may still show a warning.
 
 ### Linux
 
-AppImages carry no publisher signature. Integrity comes from the sha256 checksums that the
-portal publishes. If a signature is needed later, a detached GPG signature
+AppImages carry no publisher signature. Integrity comes from the sha256 checksums published
+next to the packages. If a signature is needed later, a detached GPG signature
 (`gpg --detach-sign`) can be added in `package-linux.sh`, gated on a secret like the others.
 
 ## Installed layout and data
