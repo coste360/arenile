@@ -86,9 +86,16 @@ before the upgrade and start the previous version (see
 
 When a new version is out, owners and managers see **Arenile X is available** at the top of the panel, with
 **What's new** and **How to update** (Docker installs: it leads to this page; remember the backup, then
-`docker compose pull && docker compose up -d`) or **Download** (desktop app and binary). The notice closes with the
-**X** and comes back only for the next version. The installed version and the state of the check are also in the
-user menu, bottom left.
+`docker compose pull && docker compose up -d`) or **Download** (desktop app and binary). The notice appears a few seconds
+after the server starts, without reloading the page, closes with the **X** and comes back only for the next version.
+
+Everything is summed up in the **About Arenile** page (user menu at the bottom left, or **Details** in the notice):
+version in use, edition, state of the check with the time of the last check, latest published version with **What's
+new**, the **Check for updates** button to check right away (the server runs at most one check a minute) and the
+action to update: **How to update** with Docker, **Download Arenile X for …** (for example *for macOS (Apple Silicon)*) with the desktop app and the
+binary, plus **All versions and systems** ([arenile.app/download](https://arenile.app/download/)). In the desktop app
+the same page is also in the tray icon menu and in the **Arenile** menu on macOS, and the new version notification
+opens this page directly.
 
 The check is **on by default**: once a day Arenile reads the public file
 `https://updates.coste360.it/arenile/latest.json`. The request contains no data of the beach, no cookie and no
@@ -97,5 +104,5 @@ identifier: it reveals only the version, edition and operating system in the Use
 this information only for aggregate counts. It is not telemetry: `ARENILE_TELEMETRY` stays `false`.
 
 To turn it off set `ARENILE_UPDATE_CHECK=false` (no network call); `ARENILE_UPDATE_URL` points it to an internal
-mirror. When the check fails (no internet, server unreachable) the panel shows no error: the user menu only says
-"Couldn't check for updates automatically.".
+mirror. When the check fails (no internet, server unreachable) the panel shows no error: the user menu and **About
+Arenile** only say "Couldn't check for updates automatically.".

@@ -29,9 +29,17 @@ l'editore sia Coste360 SRL e scegli **Ulteriori informazioni → Esegui comunque
 
 - **Finestra propria**: su Windows e macOS il pannello si apre in una finestra dell'app, non nel browser; su Linux
   si apre nel browser predefinito. **Apri nel browser** è sempre disponibile.
+- **I link esterni si aprono nel browser**: la finestra mostra solo il pannello. Documentazione, Stripe, novità di
+  versione, download, email e anche le pagine pubbliche del lido (per esempio **Apri la pagina pubblica**) si aprono
+  nel browser predefinito, così nella finestra non resti mai fuori dal pannello. I file esportati (CSV, Excel, PDF)
+  si salvano nella cartella **Download**.
 - **Icona nella barra di sistema** (barra dei menu su macOS), con il menu: **Apri pannello**, **Apri nel browser**,
-  **Backup ora**, **Ripristina un backup…**, **Apri cartella dati**, **Avvio automatico all'accensione**,
-  **Modalità rete locale**, **Mostra QR rete locale**, **Esci**.
+  **Backup ora**, **Ripristina un backup…**, **Verifica aggiornamenti**, **Informazioni su Arenile**,
+  **Apri cartella dati**, **Avvio automatico all'accensione**, **Modalità rete locale**, **Mostra QR rete locale**,
+  **Esci**. Su macOS **Informazioni su Arenile** e **Verifica aggiornamenti…** sono anche nel menu **Arenile**.
+- **Notifiche**: backup, rete locale e nuove versioni compaiono come notifiche di sistema. Su macOS sono notifiche di
+  Arenile (al primo avviso il sistema chiede il permesso): un clic apre la pagina giusta del pannello, per esempio
+  **Informazioni su Arenile** per una nuova versione.
 - **Chiusura della finestra**: su macOS la finestra si nasconde e Arenile resta nella barra dei menu finché non
   scegli **Esci**. Su Windows chiudere la finestra chiude Arenile, a meno di attivare **Alla chiusura della finestra
   resta attivo nella barra di sistema** (consigliato se usi la rete locale).
@@ -79,12 +87,18 @@ Se il PC della cassa si rompe o viene rubato, i backup nella sua cartella sparis
 dei backup** su una chiavetta USB o su una cartella sincronizzata, oppure copia regolarmente un backup altrove.
 </Aside>
 
-### Avviso di nuova versione
+### Versione e aggiornamenti
 
-Quando esce una nuova versione compare in cima al pannello **È disponibile Arenile X** con **Novità** e **Scarica**
-(il pacchetto per il tuo sistema, da [arenile.app/download](https://arenile.app/download/)), più una notifica di
-sistema. Chiudi l'avviso con la **X**: torna solo per la versione successiva. Prima di installare fai un **Backup
-ora**.
+La pagina **Informazioni su Arenile** (menu utente in basso a sinistra, menu dell'icona, menu **Arenile** su macOS)
+mostra la versione in uso, l'edizione, lo stato del controllo degli aggiornamenti con l'ora dell'ultimo controllo e
+l'ultima versione pubblicata con le **Novità**. **Verifica aggiornamenti** controlla subito (anche dal menu
+dell'icona: il risultato arriva come notifica, per esempio "Arenile è aggiornato").
+
+Quando esce una nuova versione compare in cima al pannello **È disponibile Arenile X**, pochi secondi dopo l'avvio e
+senza ricaricare la pagina, più una notifica di sistema, una sola volta per versione. Il pulsante **Scarica Arenile X
+per …** (per esempio *per macOS (Apple Silicon)*) scarica il pacchetto giusto per il tuo PC; il download si apre nel browser predefinito.
+**Tutte le versioni e i sistemi** porta a [arenile.app/download](https://arenile.app/download/). Chiudi l'avviso con
+la **X**: torna solo per la versione successiva. Prima di installare fai un **Backup ora**.
 
 Il controllo è **acceso di default** e si spegne con **Controlla se esiste una nuova versione**. Una volta al giorno
 l'app legge l'ultima versione dal server di Coste360: la richiesta contiene solo versione, edizione e sistema

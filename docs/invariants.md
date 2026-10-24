@@ -928,7 +928,9 @@ Con `ARENILE_UPDATE_CHECK=false` (server) o l'impostazione `update_check` spenta
 di release (`dev`, `-dev.`), il job `updates.check` non fa alcuna richiesta. Quando è acceso la richiesta è un `GET`
 senza cookie né identificativi, con solo `arenile/<versione> (<edizione>; <os>/<arch>)` nell'User-Agent. Un
 controllo fallito non restituisce errori al job né all'API: `status` vale `unavailable` e l'ultimo risultato riuscito
-resta valido per 7 giorni.
-Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsSilentAndRetried`, `TestStatus_States`
+resta valido per 7 giorni. Lo stesso vale per la verifica su richiesta (`POST /api/admin/v1/system/update/check`,
+menu dell'app desktop, ADR 0026), che in più fa al massimo un controllo di rete al minuto e mai due insieme.
+Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsSilentAndRetried`, `TestStatus_States`,
+`TestCheckNow_Scenarios`, `TestCheckNow_DevBuildNoNetwork`, `TestConcurrency_CheckNow`
 (`internal/domain/update`), `TestUpdates_WiringAndNoNetworkWhenDisabled` (`internal/app`),
 `TestChecker_RequestCarriesOnlyTheUserAgent` (`internal/updates`). Stato: implemented.

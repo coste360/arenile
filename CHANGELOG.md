@@ -6,6 +6,39 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- Pagina **Informazioni su Arenile** (`/admin/informazioni`, dal menu dell'utente, dall'avviso di nuova versione, dal
+  menu dell'icona e dal menu **Arenile** dell'app desktop): versione in uso, edizione, stato del controllo degli
+  aggiornamenti con l'ora dell'ultimo controllo, ultima versione con le **Novità**, **Verifica aggiornamenti** e
+  l'azione per aggiornare: **Scarica Arenile X per &lt;sistema&gt;** (il pacchetto giusto, il download si apre nel
+  browser) con **Tutte le versioni e i sistemi**, oppure **Come aggiornare** con Docker. Le azioni sono per titolari
+  e gestori.
+- **Verifica aggiornamenti**: nuovo `POST /api/admin/v1/system/update/check` (titolari e gestori) che controlla subito
+  e restituisce lo stato aggiornato; il server esegue al massimo un controllo al minuto e nessuna chiamata di rete con
+  `ARENILE_UPDATE_CHECK=false`. `SystemUpdate` ha i nuovi campi `pending`, `last_attempt_at`, `os` e `arch`.
+- App desktop: **Verifica aggiornamenti** e **Informazioni su Arenile** nel menu dell'icona (e nel menu **Arenile** su
+  macOS); il risultato della verifica arriva come notifica ("Arenile è aggiornato", "È disponibile la versione X",
+  "Impossibile cercare automaticamente gli aggiornamenti.").
+
+### Corretto
+- App desktop: **Apri la pagina pubblica** (e ogni altro link che esce dal pannello, anche sullo stesso indirizzo come
+  `/b/<slug>`) apriva la pagina dentro la finestra dell'app, senza modo di tornare al pannello. Ora la finestra mostra
+  solo il pannello: link, `window.open`, form e reindirizzamenti verso altri siti o fuori da `/admin` si aprono nel
+  browser predefinito, su macOS e Windows, in modalità locale e remota; i download continuano a salvarsi nella
+  cartella Download (su macOS anche i PDF aperti dal pannello, come il report Z).
+- App desktop su macOS: le notifiche comparivano come "Script Editor" con la sua icona. Ora sono notifiche di Arenile
+  (nome e icona dell'app, visibili anche con la finestra in primo piano) e un clic apre la pagina giusta del pannello:
+  **Informazioni su Arenile** per una nuova versione, le impostazioni dell'app per i backup, **Rete locale** per gli
+  avvisi della rete locale.
+- App desktop: la notifica di nuova versione si ripeteva a ogni avvio. Ora ogni versione è notificata una sola volta
+  per installazione; una versione più recente viene notificata di nuovo.
+- L'avviso di nuova versione nel pannello compariva solo dopo aver ricaricato la pagina o dopo un'ora: finché il
+  server non ha fatto il primo controllo (30 secondi dopo l'avvio) il pannello rilegge lo stato ogni 15 secondi.
+
+### Modificato
+- L'avviso di nuova versione usa gli stessi pulsanti della pagina **Informazioni su Arenile** (**Scarica Arenile X per
+  &lt;sistema&gt;**, **Novità**) e porta ai **Dettagli**.
+
 ## [1.0.2] - 2026-10-25
 
 Versione di sola distribuzione: il codice è identico alla 1.0.1.

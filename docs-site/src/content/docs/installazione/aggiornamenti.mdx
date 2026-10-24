@@ -87,9 +87,16 @@ indietro **ripristina il backup** fatto prima dell'aggiornamento e avvia la vers
 
 Quando esce una nuova versione, titolari e gestori vedono in cima al pannello **È disponibile Arenile X** con
 **Novità** e **Come aggiornare** (installazione Docker: porta a questa pagina; ricordati del backup, poi
-`docker compose pull && docker compose up -d`) oppure **Scarica** (app desktop e binario). L'avviso si chiude con la
-**X** e torna solo per la versione successiva. Versione installata e stato del controllo sono anche nel menu
-dell'utente, in basso a sinistra.
+`docker compose pull && docker compose up -d`) oppure **Scarica** (app desktop e binario). L'avviso compare pochi secondi dopo
+l'avvio del server, senza ricaricare la pagina, si chiude con la **X** e torna solo per la versione successiva.
+
+Tutto è riassunto nella pagina **Informazioni su Arenile** (menu dell'utente in basso a sinistra, o **Dettagli**
+nell'avviso): versione in uso, edizione, stato del controllo con l'ora dell'ultimo controllo, ultima versione
+pubblicata con le **Novità**, il pulsante **Verifica aggiornamenti** per controllare subito (il server ne esegue al
+massimo uno al minuto) e l'azione per aggiornare: **Come aggiornare** con Docker, **Scarica Arenile X per
+…** (per esempio *per macOS (Apple Silicon)*) con l'app desktop e il binario, più **Tutte le versioni e i sistemi**
+([arenile.app/download](https://arenile.app/download/)). Nell'app desktop la stessa pagina è anche nel menu
+dell'icona e nel menu **Arenile** su macOS, e la notifica di nuova versione apre direttamente questa pagina.
 
 Il controllo è **acceso di default**: una volta al giorno Arenile legge il file pubblico
 `https://updates.coste360.it/arenile/latest.json`. La richiesta non contiene dati del lido, cookie né
@@ -99,4 +106,5 @@ queste informazioni solo per conteggi aggregati. Non è telemetria: `ARENILE_TEL
 
 Per spegnerlo imposta `ARENILE_UPDATE_CHECK=false` (nessuna chiamata di rete); con `ARENILE_UPDATE_URL` puoi
 puntare a un mirror interno. Se il controllo non riesce (niente internet, server non raggiungibile) il pannello non
-mostra errori: nel menu dell'utente compare solo "Impossibile cercare automaticamente gli aggiornamenti.".
+mostra errori: nel menu dell'utente e in **Informazioni su Arenile** compare solo "Impossibile cercare
+automaticamente gli aggiornamenti.".

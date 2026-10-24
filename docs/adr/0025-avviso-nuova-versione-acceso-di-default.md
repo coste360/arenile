@@ -1,6 +1,6 @@
 # 0025 — Avviso di nuova versione acceso di default
 
-- **Stato:** accettato
+- **Stato:** accettato (la verifica su richiesta è nell'ADR 0026)
 - **Data:** 2026-10-24
 - **Sezioni della specifica:** `docs/spec/29-edizione-desktop-e-app-mobile.md` (29.1, cambia "controllo della
   nuova versione solo se il gestore lo abilita"), `docs/spec/24-deploy-configurazione-e-operativita.md` (24.4)

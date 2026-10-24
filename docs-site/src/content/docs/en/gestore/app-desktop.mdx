@@ -29,9 +29,17 @@ publisher is Coste360 SRL and choose **More info → Run anyway**.
 
 - **Its own window**: on Windows and macOS the panel opens in a window of the app, not in the browser; on Linux it
   opens in the default browser. **Open in the browser** is always available.
+- **External links open in the browser**: the window shows the panel only. Documentation, Stripe, release notes,
+  downloads, email links and the public pages of the establishment too (for example **Open the public page**) open
+  in the default browser, so the window never leaves the panel. Exported files (CSV, Excel, PDF) are saved to the
+  **Downloads** folder.
 - **System tray icon** (menu bar on macOS), with the menu: **Open panel**, **Open in the browser**, **Back up
-  now**, **Restore a backup…**, **Open data folder**, **Start at login**, **Local network mode**, **Show local
-  network QR**, **Quit**.
+  now**, **Restore a backup…**, **Check for updates**, **About Arenile**, **Open data folder**, **Start at login**,
+  **Local network mode**, **Show local network QR**, **Quit**. On macOS **About Arenile** and **Check for
+  Updates…** are also in the **Arenile** menu.
+- **Notifications**: backups, local network and new versions show up as system notifications. On macOS they are
+  Arenile notifications (the system asks for permission the first time): a click opens the right page of the panel,
+  for example **About Arenile** for a new version.
 - **Closing the window**: on macOS the window hides and Arenile stays in the menu bar until you choose **Quit**. On
   Windows closing the window quits Arenile, unless you turn on **Keep running in the system tray when the window is
   closed** (recommended if you use the local network).
@@ -80,12 +88,18 @@ If the cash desk PC breaks or is stolen, the backups in its folder go with it. S
 stick or a synchronised folder, or regularly copy a backup elsewhere.
 </Aside>
 
-### New version notice
+### Version and updates
 
-When a new version is out, **Arenile X is available** appears at the top of the panel with **What's new** and
-**Download** (the package for your system, from [arenile.app/download](https://arenile.app/download/)), plus a system
-notification. Close the notice with the **X**: it comes back only for the next version. Make a **Backup now** before
-installing.
+The **About Arenile** page (user menu at the bottom left, tray icon menu, **Arenile** menu on macOS) shows the version
+in use, the edition, the state of the update check with the time of the last check, and the latest published version
+with **What's new**. **Check for updates** checks right away (also from the tray icon menu: the result arrives as a
+notification, for example "Arenile is up to date").
+
+When a new version is out, **Arenile X is available** appears at the top of the panel a few seconds after the start,
+without reloading the page, plus a system notification, once per version. **Download Arenile X for …** (for example *for macOS (Apple Silicon)*)
+downloads the right package for your PC; the download opens in the default browser. **All versions and systems**
+leads to [arenile.app/download](https://arenile.app/download/). Close the notice with the **X**: it comes back only
+for the next version. Make a **Backup now** before installing.
 
 The check is **on by default** and is turned off with **Check for a new version**. Once a day the app
 reads the latest version from the Coste360 server: the request carries only the version, edition and operating
