@@ -6,12 +6,15 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-Prima versione stabile in preparazione: **1.0.0**. Sono complete tutte le milestone della specifica: **M0 —
-Fondamenta**, **M1 — Inventario e mappa**, **M2 — Prezzi e policy**, **M3 — Prenotazioni dal pannello e cassa**,
-**M4 — Pagina pubblica e pagamenti online**, **M5 — Completamento della stagione** e **M6 — Edizione desktop**.
-Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con ticket numerati e i biglietti d'ingresso
-(ADR 0020) e la stampa ESC/POS su stampanti di rete dall'app desktop (ADR 0021). Le note di rilascio sono in
-[`docs/release-notes/1.0.md`](docs/release-notes/1.0.md).
+## [1.0.0] - 2026-10-24
+
+Prima versione stabile. Comprende tutte le milestone della specifica: **M0 — Fondamenta**, **M1 — Inventario e
+mappa**, **M2 — Prezzi e policy**, **M3 — Prenotazioni dal pannello e cassa**, **M4 — Pagina pubblica e pagamenti
+online**, **M5 — Completamento della stagione** e **M6 — Edizione desktop**; le funzioni rinviate (ADR 0019), la
+vendita giornaliera con ticket numerati e i biglietti d'ingresso (ADR 0020), la stampa ESC/POS su stampanti di rete
+dall'app desktop (ADR 0021), i testi delle email modificabili e i promemoria automatici (ADR 0022), la revisione
+della concessione d'uso (ADR 0023), il kit della mappa v3 "Moderno" (ADR 0024) e il lavoro sull'accessibilità
+(WCAG 2.1 AA). Le note di rilascio sono in [`docs/release-notes/1.0.md`](docs/release-notes/1.0.md).
 
 ### Added
 
@@ -803,4 +806,5 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 - Il recupero di una `Idempotency-Key` scaduta non può più cancellare la chiave appena rivendicata da una richiesta concorrente.
 - Il segreto di firma degli endpoint webhook è cifrato con l'id dell'endpoint come dato associato (AAD).
 
-[Unreleased]: https://github.com/coste360/arenile/commits/main
+[Unreleased]: https://github.com/coste360/arenile/compare/v1.0.0...main
+[1.0.0]: https://github.com/coste360/arenile/releases/tag/v1.0.0

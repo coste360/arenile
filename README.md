@@ -16,7 +16,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Fcoste360%2Farenile-2496ED?logo=docker&logoColor=white)](https://github.com/coste360/arenile/pkgs/container/arenile)
 [![SQLite | PostgreSQL](https://img.shields.io/badge/DB-SQLite%20%7C%20PostgreSQL-003B57?logo=sqlite&logoColor=white)](#architettura)
 [![CI](https://github.com/coste360/arenile/actions/workflows/ci.yml/badge.svg)](https://github.com/coste360/arenile/actions)
-[![Stato: M0-M6 completate, 1.0 in preparazione, nessun rilascio](https://img.shields.io/badge/stato-M0%E2%80%93M6%20completate%2C%201.0%20in%20preparazione-orange.svg)](#roadmap)
+[![Versione 1.0.0](https://img.shields.io/badge/versione-1.0.0-brightgreen.svg)](docs/release-notes/1.0.md)
 
 [arenile.app](https://arenile.app) · [Documentazione](https://docs.arenile.app)
 
@@ -35,7 +35,7 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 ---
 
 > [!IMPORTANT]
-> **Stato del progetto: tutte le milestone della specifica, da M0 (fondamenta) a M6 (edizione desktop), sono completate e verificate da test automatici (unitari, di integrazione su SQLite e PostgreSQL, di concorrenza e nel browser). È in preparazione la versione 1.0.0 ([note di rilascio](docs/release-notes/1.0.md)).**
+> **Stato del progetto: tutte le milestone della specifica, da M0 (fondamenta) a M6 (edizione desktop), sono completate e verificate da test automatici (unitari, di integrazione su SQLite e PostgreSQL, di concorrenza, di accessibilità e nel browser). La versione **1.0.0** è disponibile ([note di rilascio](docs/release-notes/1.0.md)).**
 > La [tabella di stato](#stato-delle-funzionalità) indica cosa è disponibile, con i limiti noti, e cosa è pianificato. Arenile è fornito così com'è, senza garanzie (vedi [LICENSE](LICENSE)): per un'installazione verificata e con assistenza scrivi a [Coste360](https://www.coste360.it/contatti). Segui il repository (*Watch → Releases*) per essere avvisato dei nuovi rilasci.
 
 **Arenile** è un **software gratuito per la gestione di stabilimenti balneari, con codice sorgente disponibile**, lidi, spiagge attrezzate e piscine all'aperto. Nasce per sostituire quaderno, fogli Excel e gestionali chiusi con uno strumento moderno che il gestore installa sul proprio server in pochi minuti, con i propri dati e senza pagare commissioni a nessuno su ogni prenotazione.
@@ -163,43 +163,43 @@ Guida completa e modello di dichiarazione di accessibilità da adattare: [docs.a
 
 ## Stato delle funzionalità
 
-Legenda: **Disponibile** = rilasciato e utilizzabile · **Completato** = implementato e coperto da test nel ramo di sviluppo, non ancora rilasciato · **Pianificato** = previsto, non ancora iniziato.
+Legenda: **Disponibile** = rilasciato e utilizzabile · **Pianificato** = previsto, non ancora iniziato.
 
-La prima versione, la **1.0.0**, è in preparazione ([note di rilascio](docs/release-notes/1.0.md)). Sono completate tutte le milestone da M0 a M6: inventario ed editor della mappa, prezzi e policy, il gestionale operativo del lido (mappa del giorno, planning, clienti, abbonamenti, cassa e corrispettivi), la pagina pubblica con pagamento online tramite Stripe Checkout, la stagione completa (rinnovi, lista d'attesa, crediti, report con esportazioni Excel, importazione CSV, notifiche, modalità prova, rimborsi garantiti, casse multiple) e l'edizione desktop. Si aggiungono la **vendita giornaliera** con ticket numerati e i **biglietti d'ingresso** con controllo al varco (ADR 0020) e la **stampa ESC/POS** su stampanti di rete dall'app desktop (ADR 0021). Limiti noti: il pagamento incorporato con Stripe Elements non c'è (solo Stripe Checkout); i promemoria del saldo e del giorno prima non vengono ancora inviati; la notifica al gestore per la chiusura di cassa con differenza e la modifica dei modelli email dal pannello non sono disponibili; i pagamenti tardivi sono sempre rimborsati e la penale di modifica prevista dalla policy non viene addebitata; il pagamento online dentro un `<iframe>` semplice (senza `embed.js`) non riporta l'esito nel widget; stampanti ESC/POS via USB o Bluetooth e il ponte di stampa per le installazioni su server sono rimandati a dopo la 1.0.
+La prima versione, la **1.0.0**, è disponibile ([note di rilascio](docs/release-notes/1.0.md)). Sono completate tutte le milestone da M0 a M6: inventario ed editor della mappa, prezzi e policy, il gestionale operativo del lido (mappa del giorno, planning, clienti, abbonamenti, cassa e corrispettivi), la pagina pubblica con pagamento online tramite Stripe Checkout, la stagione completa (rinnovi, lista d'attesa, crediti, report con esportazioni Excel, importazione CSV, notifiche, modalità prova, rimborsi garantiti, casse multiple) e l'edizione desktop. Si aggiungono la **vendita giornaliera** con ticket numerati e i **biglietti d'ingresso** con controllo al varco (ADR 0020) e la **stampa ESC/POS** su stampanti di rete dall'app desktop (ADR 0021). Limiti noti: il pagamento incorporato con Stripe Elements non c'è (solo Stripe Checkout); la notifica al gestore per la chiusura di cassa con differenza non è disponibile; i pagamenti tardivi sono sempre rimborsati e la penale di modifica prevista dalla policy non viene addebitata; il pagamento online dentro un `<iframe>` semplice (senza `embed.js`) non riporta l'esito nel widget; stampanti ESC/POS via USB o Bluetooth e il ponte di stampa per le installazioni su server sono rimandati a dopo la 1.0.
 
 | Area | Funzionalità | Milestone | Stato |
 |---|---|:-:|---|
 | Progetto | Specifica tecnica completa, licenza, governance, template issue/PR | M0 | Disponibile |
-| Fondamenta | Struttura del repository, Makefile, CI, Dockerfile, docker compose | M0 | Completato |
-| Fondamenta | Configurazione da variabili d'ambiente, CLI (`serve`, `migrate`, `admin`, `seed`, `backup`, `restore`, `version`) | M0 | Completato |
-| Fondamenta | Migrazioni SQLite e PostgreSQL, autenticazione e ruoli, audit log, outbox eventi, job runner | M0 | Completato |
-| Fondamenta | Contratto OpenAPI iniziale, SPA pannello e booking di base incorporate nel binario | M0 | Completato |
-| Agenti AI | `AGENTS.md`, `CLAUDE.md`, `.claude/` (regole, skill, subagent), devcontainer | M0 | Completato |
-| Prezzi | Motore prezzi come libreria pura (regole, condizioni, azioni, IVA, arrotondamento) | M0/M2 | Completato |
-| Policy | Motore delle policy come libreria pura (anticipo, durate, acconti, cancellazioni) | M0/M2 | Completato |
-| Inventario | Più stabilimenti dal pannello (creazione e selettore), impostazioni e tema, stagioni, periodi tariffari, chiusure, utenti e ruoli | M1 | Completato |
-| Mappa | Editor della mappa (annulla/ripeti, allineamento, rinumerazione, conflitti di versione), generatore di file, zone, postazioni, decorazioni, pool | M1 | Completato |
-| Catalogo | Componenti, pack, extra; configurazione guidata con 4 modelli e listino rapido | M1 | Completato |
-| Prezzi | Regole di prezzo, prezzi a durata fissa, codici promo, convenzioni, policy di prenotazione, simulatore, matrice di listino (esportazione CSV), verifica di copertura, copia di stagione | M2 | Completato |
-| Prenotazioni | Motore di disponibilità con allocazioni, hold, pool e quote; prenotazioni dal pannello con anteprima del prezzo, modifiche, spostamenti, cancellazioni con rimborso o credito | M3 | Completato |
-| Pannello | Pagina "Oggi", vista operativa della mappa, calendario planning, clienti (ricerca, esportazione e anonimizzazione GDPR), abbonamenti e rilasci con rivendita | M3 | Completato |
-| Cassa | Pagamenti manuali, rimborsi, vendite di cassa, cassa con apertura/chiusura e riepilogo Z stampabile, esportazione corrispettivi CSV/JSON | M3 | Completato |
-| Tempo reale | Aggiornamento della mappa via SSE con ripresa dopo la riconnessione (`Last-Event-ID`) | M3 | Completato |
-| Pagina pubblica | Booking online (posto, zona, quantità, anche misti), widget `embed.js` con ritorno dal pagamento nel sito ospitante, tema con anteprima dal vivo, condizioni versionate | M4 | Completato |
-| Pagamenti | Driver Stripe (Checkout), webhook firmato, riconciliazione ogni 15 minuti, rimborsi tramite Stripe, rimborso automatico dei pagamenti tardivi o doppi | M4 | Completato (pagamento incorporato con Stripe Elements: non disponibile) |
-| Clienti | Link magico e area di gestione, email transazionali (it/en/de/fr), QR, `.ics`, assegnazione automatica nelle zone `zone` | M4 | Completato (promemoria del saldo e del giorno prima: non ancora inviati) |
-| Stagione | Rinnovi abbonamenti con prelazione, lista d'attesa, crediti, cambio stagione, prezzo manuale degli abbonamenti | M5 | Completato |
-| Report | Report completi, confronto anni, esportazioni CSV/XLSX di report, corrispettivi ed elenchi; importazione CSV di clienti e abbonamenti | M5 | Completato |
-| Offline | PWA del pannello con offline limitato | M5 | Completato |
-| Integrazioni | Webhook in uscita configurabili con storico dei tentativi, chiavi API, notifiche nel pannello | M5 | Completato |
-| Pagamenti | Modalità prova, rimborsi garantiti alla cancellazione | M5 | Completato |
-| Cassa | Casse multiple, chiusura Z stampabile (A4 o 80 mm) | M5 | Completato |
-| Mappa | Selezione multipla, prenotazione di gruppo, blocco delle postazioni | M5 | Completato |
-| Lingue | Traduzioni inglese, tedesco, francese di pannello, pagina pubblica ed email | M5 | Completato |
-| Accessibilità | WCAG 2.1 AA sulla pagina pubblica, sul widget e sull'area del cliente: tastiera, lettori di schermo, elenco alternativo alla mappa, contrasto, movimento ridotto; axe su ogni passo e prenotazione da sola tastiera nei test end-to-end | — | Completato |
-| Vendita giornaliera | Ticket numerati del giorno su postazione o zona, assegnazione delle postazioni, biglietti d'ingresso con controllo al varco tramite QR (ADR 0020) | — | Completato |
-| Desktop | App desktop per Windows, macOS e Linux: server sul PC della cassa, backup, modalità rete locale, modalità remota con ponte fiscale; dispositivi abbinati con QR e token revocabili | M6 | Completato (pacchetti firmati da completare: firma per macOS pronta, Windows senza firma) |
-| Stampa | Stampanti termiche ESC/POS di rete (Wi-Fi/Ethernet) dall'app desktop: ticket, ricevute non fiscali, chiusura Z, cassetto (ADR 0021) | — | Completato (USB e Bluetooth dopo la 1.0) |
+| Fondamenta | Struttura del repository, Makefile, CI, Dockerfile, docker compose | M0 | Disponibile |
+| Fondamenta | Configurazione da variabili d'ambiente, CLI (`serve`, `migrate`, `admin`, `seed`, `backup`, `restore`, `version`) | M0 | Disponibile |
+| Fondamenta | Migrazioni SQLite e PostgreSQL, autenticazione e ruoli, audit log, outbox eventi, job runner | M0 | Disponibile |
+| Fondamenta | Contratto OpenAPI iniziale, SPA pannello e booking di base incorporate nel binario | M0 | Disponibile |
+| Agenti AI | `AGENTS.md`, `CLAUDE.md`, `.claude/` (regole, skill, subagent), devcontainer | M0 | Disponibile |
+| Prezzi | Motore prezzi come libreria pura (regole, condizioni, azioni, IVA, arrotondamento) | M0/M2 | Disponibile |
+| Policy | Motore delle policy come libreria pura (anticipo, durate, acconti, cancellazioni) | M0/M2 | Disponibile |
+| Inventario | Più stabilimenti dal pannello (creazione e selettore), impostazioni e tema, stagioni, periodi tariffari, chiusure, utenti e ruoli | M1 | Disponibile |
+| Mappa | Editor della mappa (annulla/ripeti, allineamento, rinumerazione, conflitti di versione), generatore di file, zone, postazioni, decorazioni, pool | M1 | Disponibile |
+| Catalogo | Componenti, pack, extra; configurazione guidata con 4 modelli e listino rapido | M1 | Disponibile |
+| Prezzi | Regole di prezzo, prezzi a durata fissa, codici promo, convenzioni, policy di prenotazione, simulatore, matrice di listino (esportazione CSV), verifica di copertura, copia di stagione | M2 | Disponibile |
+| Prenotazioni | Motore di disponibilità con allocazioni, hold, pool e quote; prenotazioni dal pannello con anteprima del prezzo, modifiche, spostamenti, cancellazioni con rimborso o credito | M3 | Disponibile |
+| Pannello | Pagina "Oggi", vista operativa della mappa, calendario planning, clienti (ricerca, esportazione e anonimizzazione GDPR), abbonamenti e rilasci con rivendita | M3 | Disponibile |
+| Cassa | Pagamenti manuali, rimborsi, vendite di cassa, cassa con apertura/chiusura e riepilogo Z stampabile, esportazione corrispettivi CSV/JSON | M3 | Disponibile |
+| Tempo reale | Aggiornamento della mappa via SSE con ripresa dopo la riconnessione (`Last-Event-ID`) | M3 | Disponibile |
+| Pagina pubblica | Booking online (posto, zona, quantità, anche misti), widget `embed.js` con ritorno dal pagamento nel sito ospitante, tema con anteprima dal vivo, condizioni versionate | M4 | Disponibile |
+| Pagamenti | Driver Stripe (Checkout), webhook firmato, riconciliazione ogni 15 minuti, rimborsi tramite Stripe, rimborso automatico dei pagamenti tardivi o doppi | M4 | Disponibile (pagamento incorporato con Stripe Elements: non disponibile) |
+| Clienti | Link magico e area di gestione, email transazionali (it/en/de/fr), QR, `.ics`, assegnazione automatica nelle zone `zone` | M4 | Disponibile (testi delle email modificabili dal pannello, promemoria automatici del saldo e del giorno prima) |
+| Stagione | Rinnovi abbonamenti con prelazione, lista d'attesa, crediti, cambio stagione, prezzo manuale degli abbonamenti | M5 | Disponibile |
+| Report | Report completi, confronto anni, esportazioni CSV/XLSX di report, corrispettivi ed elenchi; importazione CSV di clienti e abbonamenti | M5 | Disponibile |
+| Offline | PWA del pannello con offline limitato | M5 | Disponibile |
+| Integrazioni | Webhook in uscita configurabili con storico dei tentativi, chiavi API, notifiche nel pannello | M5 | Disponibile |
+| Pagamenti | Modalità prova, rimborsi garantiti alla cancellazione | M5 | Disponibile |
+| Cassa | Casse multiple, chiusura Z stampabile (A4 o 80 mm) | M5 | Disponibile |
+| Mappa | Selezione multipla, prenotazione di gruppo, blocco delle postazioni | M5 | Disponibile |
+| Lingue | Traduzioni inglese, tedesco, francese di pannello, pagina pubblica ed email | M5 | Disponibile |
+| Accessibilità | WCAG 2.1 AA sulla pagina pubblica, sul widget e sull'area del cliente: tastiera, lettori di schermo, elenco alternativo alla mappa, contrasto, movimento ridotto; axe su ogni passo e prenotazione da sola tastiera nei test end-to-end | — | Disponibile |
+| Vendita giornaliera | Ticket numerati del giorno su postazione o zona, assegnazione delle postazioni, biglietti d'ingresso con controllo al varco tramite QR (ADR 0020) | — | Disponibile |
+| Desktop | App desktop per Windows, macOS e Linux: server sul PC della cassa, backup, modalità rete locale, modalità remota con ponte fiscale; dispositivi abbinati con QR e token revocabili | M6 | Disponibile (pacchetti firmati da completare: firma per macOS pronta, Windows senza firma) |
+| Stampa | Stampanti termiche ESC/POS di rete (Wi-Fi/Ethernet) dall'app desktop: ticket, ricevute non fiscali, chiusura Z, cassetto (ADR 0021) | — | Disponibile (USB e Bluetooth dopo la 1.0) |
 | App mobile | App per lo staff in spiaggia (repository separato) sui token per dispositivo del core | M7 | Pianificato |
 | Dopo l'MVP | Satispay, registratori telematici, WhatsApp/SMS, app staff, bar con addebito sulla postazione | — | Pianificato |
 
@@ -514,7 +514,7 @@ Il dettaglio con i criteri di accettazione è nella sezione 28 della [specifica]
 - [x] **M5 — Completamento della stagione** *(completata nel ramo di sviluppo, parti A e B)*: rinnovi, lista d'attesa, crediti, report con esportazioni CSV ed Excel, importazione CSV, PWA offline, webhook con storico dei tentativi, chiavi API, notifiche nel pannello, traduzioni (it/en/de/fr), modalità prova, rimborsi garantiti, casse multiple, selezione multipla, prenotazione di gruppo e blocchi sulla mappa.
 - [x] **M6 — Edizione desktop** *(completata nel ramo di sviluppo; collaudo su Mac ripetibile con Playwright; firma per macOS pronta, pacchetti Windows ancora senza firma)*: app desktop con server locale, backup e ripristino, modalità rete locale, modalità remota con ponte fiscale, dispositivi abbinati, stampa ESC/POS su stampanti di rete (ADR 0021). I pacchetti desktop **non sono pubblicati su GitHub**: saranno scaricabili, previo accesso, dal portale Coste360; GitHub contiene i sorgenti e le istruzioni di build ([docs/desktop-build.md](docs/desktop-build.md)). L'immagine Docker resta pubblica su GHCR.
 - [x] **Vendita giornaliera e biglietti d'ingresso** (ADR 0020): ticket numerati del giorno su postazione o zona, assegnazione delle postazioni, biglietti d'ingresso per le spiagge libere attrezzate con controllo al varco.
-- [ ] **Versione 1.0.0** *(in preparazione, [note di rilascio](docs/release-notes/1.0.md))*: prima versione stabile, con i pacchetti desktop firmati per macOS.
+- [x] **Versione 1.0.0** *(rilasciata il 24 ottobre 2026, [note di rilascio](docs/release-notes/1.0.md))*: prima versione stabile.
 - [ ] **M7 — App mobile**: app per lo staff in spiaggia (repository separato) che usa l'abbinamento con QR e i token per dispositivo già presenti nel core.
 - **Dopo l'MVP**: Satispay e altri provider, driver per registratori telematici, WhatsApp e SMS, app per lo staff in spiaggia, bar e ristorante con addebito sulla postazione.
 
@@ -669,6 +669,6 @@ Se Arenile ti è utile, lascia una stella al repository e parlane con altri gest
 
 ## In English
 
-**Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. All milestones from M0 (foundations) to M6 (desktop edition) are complete and covered by automated tests, and version 1.0.0 is being prepared; it is provided as is, without warranty, and Coste360 offers verified installations with support; the project is developed by [Coste360 SRL](https://www.coste360.it/); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments (and open-air pools) that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release. Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md). Website: [arenile.app](https://arenile.app); documentation: [docs.arenile.app](https://docs.arenile.app).
+**Arenile** is a free, self-hosted, source-available management system for Italian beach establishments (*stabilimenti balneari*, lidos and beach clubs). It combines an interactive beach umbrella map, a cash desk, seasonal passes, a configurable pricing and booking-policy engine, and a mobile-first online booking page for umbrellas and sunbeds that can be embedded in any website via iframe or a one-line script. There are no booking commissions: online payments go through the operator's own Stripe account. It ships as a single Go binary and Docker image (`ghcr.io/coste360/arenile`) with SQLite by default and optional PostgreSQL, supports multiple establishments per installation, and requires no external services. All milestones from M0 (foundations) to M6 (desktop edition) are complete and covered by automated tests, and version 1.0.0 is available; it is provided as is, without warranty, and Coste360 offers verified installations with support; the project is developed by [Coste360 SRL](https://www.coste360.it/); see the [roadmap](#roadmap) for status. It is source-available under the [Business Source License 1.1](LICENSE): free for beach establishments (and open-air pools) that run it for themselves; offering it to third parties as a paid service (hosting, SaaS, installation, customisation, support, resale) requires a commercial license from Coste360 SRL. Each version converts to AGPL-3.0 or later three years after its first public release. Contributions are welcome under the [CLA](CLA.md): see [CONTRIBUTING.md](CONTRIBUTING.md). Website: [arenile.app](https://arenile.app); documentation: [docs.arenile.app](https://docs.arenile.app).
 
 The public booking page, the embedded widget and the customer's manage area target **WCAG 2.1 level AA**, as the European Accessibility Act expects for consumer online booking: keyboard-only operation, screen reader support with a list of spots as a non-visual alternative to the map, contrast in both themes (also on the beach's own colours), colour never the only cue in the calendar, the map (a lock on unavailable spots) and the list of spots, reduced motion, reflow down to 320 px and four languages, verified by axe on every public step and the manage page and by a keyboard-only end-to-end booking. See the [accessibility guide](https://docs.arenile.app/en/gestore/accessibilita/) for the known limits and an accessibility statement template.

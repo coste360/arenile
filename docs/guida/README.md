@@ -3,7 +3,7 @@
 Questa guida è pensata per chi gestisce un lido, una spiaggia attrezzata o uno stabilimento balneare e vuole installare e usare **Arenile**, il gestionale gratuito e a codice sorgente disponibile per la gestione della spiaggia, delle prenotazioni di ombrelloni e lettini e della cassa.
 
 > [!IMPORTANT]
-> Tutte le milestone da M0 a M6 sono completate e la versione 1.0.0 è in preparazione. Queste guide descrivono il funzionamento attuale e vengono aggiornate a ogni rilascio. Per un'installazione verificata e con assistenza scrivi a [Coste360](https://www.coste360.it/contatti). Lo stato delle funzionalità è nella [tabella del README](../../README.md#stato-delle-funzionalità).
+> Tutte le milestone da M0 a M6 sono completate e la versione 1.0.0 è disponibile. Queste guide descrivono il funzionamento attuale e vengono aggiornate a ogni rilascio. Per un'installazione verificata e con assistenza scrivi a [Coste360](https://www.coste360.it/contatti). Lo stato delle funzionalità è nella [tabella del README](../../README.md#stato-delle-funzionalità).
 
 ## Indice
 
