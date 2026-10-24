@@ -75,13 +75,13 @@ async function publicConfirmation(page: Page, _ctx: RunContext, _entry: ShotEntr
 const PREPARE: Record<string, Prepare> = {
   "admin-map-selection": async (page) => {
     // Selection only (no booking is created): E3 to E5 with Shift.
-    await page.getByRole("button", { name: "Selezione multipla delle postazioni" }).click();
+    await page.getByRole("button", { name: "Seleziona più postazioni" }).click();
     await page.getByRole("button", { name: /^Postazione E3:/ }).click();
     await page.getByRole("button", { name: /^Postazione E5:/ }).click({ modifiers: ["Shift"] });
     await expect(page.getByTestId("selection-bar")).toBeVisible();
   },
   "admin-map-block": async (page) => {
-    await page.getByRole("button", { name: "Selezione multipla delle postazioni" }).click();
+    await page.getByRole("button", { name: "Seleziona più postazioni" }).click();
     await page.getByRole("button", { name: /^Postazione E3:/ }).click();
     await page.getByRole("button", { name: /^Postazione E4:/ }).click({ modifiers: ["Shift"] });
     await page.getByTestId("selection-bar").getByRole("button", { name: "Blocca", exact: true }).click();

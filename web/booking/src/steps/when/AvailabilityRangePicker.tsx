@@ -84,6 +84,7 @@ export function AvailabilityRangePicker({
             open={open}
             onOpenChange={setOpen}
             contentId={contentId}
+            label={t('booking.when.dates')}
             slug={slug}
             value={value}
             min={min}

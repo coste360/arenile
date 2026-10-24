@@ -212,7 +212,7 @@
   },
   "select": {
     "toggle": "Seleziona",
-    "toggleAria": "Selezione multipla delle postazioni",
+    "toggleAria": "Seleziona più postazioni",
     "none": "Nessuna postazione selezionata",
     "count_one": "{{count}} postazione selezionata",
     "count_other": "{{count}} postazioni selezionate",

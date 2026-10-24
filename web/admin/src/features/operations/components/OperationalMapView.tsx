@@ -166,7 +166,9 @@ export function OperationalMapView({
   const mapRef = useRef<HTMLDivElement>(null);
   const pickedTicketId = assignment.picked?.id;
   useEffect(() => {
-    if (pickedTicketId) mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!pickedTicketId) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    mapRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }, [pickedTicketId]);
   const selectedIds = useMemo(
     () =>

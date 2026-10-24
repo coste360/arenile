@@ -127,6 +127,9 @@ describe('BookingPage', () => {
     expect(document.querySelector('input[type="date"]')).toBeNull();
     await user.click(trigger);
     const grid = await screen.findByRole('grid');
+    // The popover is a dialog named after the field, with a named legend.
+    expect(screen.getByRole('dialog', { name: 'Date del soggiorno' })).toContainElement(grid);
+    expect(screen.getByRole('list', { name: 'Disponibilità' })).toBeInTheDocument();
     const enabled = Array.from(grid.querySelectorAll<HTMLButtonElement>('button:not([disabled])'));
     expect(enabled.length).toBeGreaterThan(0);
     await user.click(enabled[0]!);
@@ -161,12 +164,14 @@ describe('BookingPage', () => {
           headers: { 'Content-Type': 'application/problem+json' },
         }),
     );
-    expect(await screen.findByRole('alert')).toHaveTextContent('Stabilimento non trovato.');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Stabilimento non trovato.' }),
+    ).toBeInTheDocument();
   });
 
   it('rejects invalid slugs without calling the API', () => {
     renderPage('/b/', ok());
-    expect(screen.getByRole('alert')).toHaveTextContent('Stabilimento non trovato.');
+    expect(screen.getByRole('status')).toHaveTextContent('Stabilimento non trovato.');
   });
 });
 

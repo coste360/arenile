@@ -111,7 +111,7 @@ export function ReportChart({
     <figure className="space-y-2">
       <ChartContainer config={config} className="aspect-auto h-64 w-full" aria-hidden="true">
         {kind === 'bar' ? (
-          <BarChart data={rows} margin={{ left: 0, right: 8 }}>
+          <BarChart accessibilityLayer={false} data={rows} margin={{ left: 0, right: 8 }}>
             {axes}
             {series.map((s) => (
               <Bar
@@ -123,7 +123,7 @@ export function ReportChart({
             ))}
           </BarChart>
         ) : (
-          <LineChart data={rows} margin={{ left: 0, right: 8 }}>
+          <LineChart accessibilityLayer={false} data={rows} margin={{ left: 0, right: 8 }}>
             {axes}
             {series.map((s) => (
               <Line

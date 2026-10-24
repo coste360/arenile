@@ -185,5 +185,7 @@ test("/b/lido-demo works at 320px width through the four steps", async ({
 
 test("unknown slug shows not found", async ({ page }) => {
   await page.goto("/b/questo-lido-non-esiste");
-  await expect(page.getByRole("alert")).toHaveText("Stabilimento non trovato.");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Stabilimento non trovato." }),
+  ).toBeVisible();
 });

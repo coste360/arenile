@@ -103,7 +103,8 @@ describe('DatePicker', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderWithI18n(<DatePicker aria-label="Inizio" value="2026-07-14" onChange={onChange} />);
-    const trigger = screen.getByRole('button', { name: 'Inizio' });
+    // The accessible name carries the visible date too (WCAG 2.5.3 Label in Name).
+    const trigger = screen.getByRole('button', { name: 'Inizio: 14/07/2026' });
     expect(trigger).toHaveTextContent('14/07/2026');
     await user.click(trigger);
     await user.click(await screen.findByRole('button', { name: /20 luglio 2026/i }));
@@ -115,11 +116,27 @@ describe('DatePicker', () => {
     const onChange = vi.fn();
     const year = new Date().getFullYear() + 3;
     renderWithI18n(<DatePicker aria-label="Data" value={`${year}-06-10`} onChange={onChange} />);
-    await user.click(screen.getByRole('button', { name: 'Data' }));
+    await user.click(screen.getByRole('button', { name: /^Data: / }));
     await user.click(
       await screen.findByRole('button', { name: new RegExp(`12 giugno ${year}`, 'i') }),
     );
     expect(onChange).toHaveBeenCalledWith(`${year}-06-12`);
+  });
+
+  it('adds the visible date to an aria-labelledby name', () => {
+    renderWithI18n(
+      <>
+        <span id="lbl">Scadenza</span>
+        <DatePicker aria-labelledby="lbl" value="2026-07-14" onChange={vi.fn()} />
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Scadenza 14/07/2026' })).toBeInTheDocument();
+  });
+
+  it('names an empty field with its label and the placeholder shown', () => {
+    renderWithI18n(<DatePicker aria-label="Scadenza" value={undefined} onChange={vi.fn()} />);
+    const trigger = screen.getByRole('button', { name: /^Scadenza: / });
+    expect(trigger.getAttribute('aria-label')).toContain(trigger.textContent?.trim() ?? '');
   });
 });
 

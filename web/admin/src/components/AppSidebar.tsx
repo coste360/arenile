@@ -75,7 +75,15 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" variant="inset" className="print:hidden">
+    // A complementary landmark: the switcher, the user menu and the signature
+    // live outside the two <nav>s and would otherwise sit outside any landmark.
+    <Sidebar
+      collapsible="icon"
+      variant="inset"
+      className="print:hidden"
+      role="complementary"
+      aria-label={t('ui.sidebar')}
+    >
       <SidebarHeader>
         <EstablishmentSwitcher />
       </SidebarHeader>

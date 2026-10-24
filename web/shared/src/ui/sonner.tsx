@@ -28,6 +28,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-text': 'var(--popover-foreground)',
           '--normal-border': 'var(--border)',
           '--border-radius': 'var(--radius)',
+          // Rich colours keep their tinted background and icon, but the text
+          // uses the theme foreground: sonner's own green/red/orange text is
+          // below 4.5:1 on its light backgrounds (WCAG 1.4.3).
+          '--success-text': 'var(--popover-foreground)',
+          '--error-text': 'var(--popover-foreground)',
+          '--warning-text': 'var(--popover-foreground)',
+          '--info-text': 'var(--popover-foreground)',
         } as React.CSSProperties
       }
       {...props}

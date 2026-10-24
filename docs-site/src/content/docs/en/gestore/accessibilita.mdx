@@ -1,0 +1,178 @@
+---
+title: Accessibility
+description: What Arenile does for the accessibility of online booking (WCAG 2.1 AA, European Accessibility Act), keyboard, screen readers, contrast, known limits and an accessibility statement template for the beach.
+sidebar:
+  order: 14.5
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+The booking page is where your customers meet the beach online: it has to work for people who use only the
+keyboard, a screen reader, zoom or an old phone. Arenile targets **WCAG 2.1 level AA** (the international
+guidelines referenced by the European standard EN 301 549) on the public page, on the widget embedded in your
+website and on the customer's "Manage your booking" area; the main flows of the panel are checked against the
+same criteria.
+
+This page says what is supported, how we verify it, what is **not** perfect yet and how to write your beach's
+accessibility statement.
+
+## Why it matters to you: the European Accessibility Act
+
+Since **28 June 2025** the European Accessibility Act (Directive (EU) 2019/882, transposed in Italy by Legislative
+Decree 82/2022) requires e-commerce services for consumers, online bookings included, to be accessible, and the
+provider to explain clearly how they are. **Microenterprises** providing services (fewer than 10 employees and an
+annual turnover or balance sheet of up to 2 million euro) are exempt from the obligations, but an accessible page
+is still a page more customers can use.
+
+<Aside type="caution">
+  Arenile gives you a tool designed and tested to be accessible, but the service remains the beach's
+  responsibility: it also depends on what you publish (texts, logo, colours, the website hosting the widget). Ask
+  your advisor whether and how the law applies to you.
+</Aside>
+
+## What is supported
+
+### Keyboard
+
+- The whole booking can be completed **without a mouse**: dates, spot, package and extras, customer details, terms
+  and confirmation. An automated test repeats it with the keyboard only on every code change.
+- **Calendar:** Enter opens it, the arrows move by one day, Page Down and Page Up by one month; Enter twice on the
+  same day picks a single day. Escape closes it and focus returns to the dates field.
+- **Map:** the map is a single tab stop; the arrows move from spot to spot, Home and End go to the first and last,
+  Enter or Space choose. The **Show as a list** button offers the same choice as a list of buttons.
+- Packages and time slots are option groups: Tab enters the group, the arrows change the choice.
+- **Focus is always visible** (a ring around the active element) and, on every step change, it moves to the title
+  of the new step; after the confirmation it goes to the title of the outcome.
+- Confirmation dialogs (for example "Cancel the booking") keep the focus while open, Escape closes them and focus
+  returns to the button that opened them.
+
+### Screen readers
+
+- The page has landmarks (header, main content, footer), headings in order and a **language** attribute that
+  follows the chosen language (Italian, English, German or French).
+- Every spot on the map has a full name, for example "Spot A1: Free, from €30.00"; unavailable spots are announced
+  as such and cannot be chosen.
+- The **list of spots**, grouped by row, is the non-visual alternative to the map: each button says spot, status
+  and the "from" price when shown.
+- Calendar days say whether they are full, closed, not bookable online or have the last spots.
+- Updates are announced without moving the cursor: the recalculated price, the time left to complete the booking
+  (announced at intervals, not every second), the payment outcome when it goes from "pending" to "confirmed".
+- Form errors are linked to their field and announced; on submit the cursor goes to the first field to fix. The
+  same holds for errors returned by the server in the panel.
+- Images and icons have a text alternative when they carry information (the QR code, for example) and are ignored
+  when they are only decorative.
+
+### Contrast and colour
+
+- Interface colours meet **4.5:1** contrast for text and **3:1** for field borders and the focus ring, in **light
+  and dark** theme; an automated test checks every colour pair.
+- When you choose your beach's main colour, Arenile works out the text colour on top of it (white or dark) so it
+  stays readable, whatever colour you pick.
+- In the calendar and in the list of spots colour is never the only cue: full or closed days are **struck
+  through** as well as dimmed, days with the last spots have a **dot** and the list writes each spot's status out.
+  For the map see the [known limits](#known-limits).
+
+### Motion, zoom and small screens
+
+- If the device asks for **reduced motion**, animations, transitions and scrolling become instant.
+- The page reads without horizontal scrolling down to **320 px** wide, that is with the browser zoomed to 200 % and
+  beyond (checked by an automated test at every step).
+- On the public page buttons and touch areas are at least **44 px** tall; small spots on the map zoom in on the
+  first tap so the customer does not pick the wrong one.
+
+### Languages
+
+The public page, the emails and the panel are in **Italian, English, German and French**. The texts you write
+(introduction, terms, emails) are shown in the customer's language only if you translated them: without a
+translation the customer sees your default language.
+
+## How we verify it
+
+- **axe-core** (the most widely used automated checker) runs on every code change against every booking step, the
+  calendar, the map and the list, the outcome, the customer area with its actions open and the cancel dialog, the
+  error pages and the main panel pages (Today, Map, Bookings, Cash desk, Quick sale, Tickets, Gate, public page,
+  payments and email settings). Serious or critical violations of WCAG 2.1 A and AA criteria block the release.
+- A **keyboard-only test** completes a booking from start to confirmation and checks at every step that focus is
+  visible and in the right place.
+- Dedicated tests check colour contrast in both themes, the 320 px width, the page language and reduced motion.
+
+## Known limits
+
+Plainly, what is not yet as we would like:
+
+- **The map is a drawing.** It works with a screen reader, but the list of spots is easier; on the map the
+  difference between free and unavailable spots is mostly given by tone (unavailable spots are dimmed). The full
+  status is in each spot's name and in the list.
+- **Names of the list buttons.** The spoken name of the list buttons joins spot and status with a dash the
+  visible text lacks ("A1 – Free" against "A1 Free"): voice control users saying the visible text may not be
+  recognised. It is the only automated check turned off, on that view, until it is fixed.
+- **Long lists.** In the list every free spot is a tab stop: on a beach with many spots it takes several Tab
+  presses to reach "Next" (Shift+Tab goes back).
+- **Online payment.** The payment page is Stripe's, not Arenile's: its accessibility depends on Stripe.
+- **Your content.** You write the logo, introduction, terms and emails: use clear sentences, do not put important
+  information only in an image and check the contrast of your logo on its background.
+- **The website hosting the widget.** Arenile is accessible inside its frame; the rest of your website depends on
+  whoever built it.
+- **Map editor.** Drawing the beach in the panel needs a mouse or touch; spot properties (name, row, illustration)
+  can also be edited with the keyboard in the side panel.
+- **No external audit yet.** Checks are automated and manual on the code; there has not yet been an audit with
+  people who use assistive technology. Reports are welcome (see below).
+
+## Accessibility statement template
+
+Publish the statement on the beach's website (for example on an "Accessibility" page linked from the footer or near
+the widget) and update it when something changes. Copy the template, replace the parts in square brackets and
+remove what does not apply.
+
+<Steps>
+
+1. Fill in the beach's name, the address of the booking page and the date.
+2. List any content of yours that is not accessible (for example a scanned PDF price list).
+3. Give a contact customers can report problems to and the time within which you answer.
+
+</Steps>
+
+```text
+Accessibility statement – [Beach name]
+
+[Company name] is committed to making its online booking service accessible, available at
+[https://…/b/beach-name] and on the website [https://www.beachname.com].
+
+Conformance
+The booking service uses Arenile, designed to meet WCAG 2.1 level AA (standard EN 301 549).
+The service is [partially conformant]: the content that is not accessible is listed below.
+
+How to use it
+- The whole booking can be completed with the keyboard only.
+- It works with screen readers; as an alternative to the map of spots there is a list,
+  opened with the "Show as a list" button.
+- Text meets minimum contrast, in the calendar and in the list of spots colour is not the
+  only way to show status, the page adapts to zoom up to 200 % and follows the device's "reduce motion"
+  preference.
+- It is available in Italian, English, German and French.
+
+Content that is not accessible
+- On the map of spots the difference between free and unavailable spots is shown mainly by
+  colour; the list of spots writes the status out.
+- Online payment happens on Stripe's page, whose accessibility depends on Stripe.
+- [Other content of the beach that is not accessible, for example: "The PDF price list is
+  not accessible; prices are shown during the booking anyway."]
+
+Alternatives
+If you cannot book online you can book by phone at [number], by email at [email address] or
+at the beach's cash desk, on the same terms.
+
+Feedback
+To report an accessibility problem or ask for information in an accessible format, write to
+[email address]. We answer within [10] working days.
+[If the service falls under the European Accessibility Act, also name the authority the
+customer can turn to if the answer is not satisfactory, as advised by your consultant.]
+
+Date of the statement: [dd/mm/yyyy]. Last updated: [dd/mm/yyyy].
+```
+
+## Reporting a problem in Arenile
+
+If you find an accessibility problem in the booking page or the panel, open an issue in the
+[repository](https://github.com/coste360/arenile/issues) with the page, the browser, the assistive technology you
+used and what you expected. Accessibility reports have the same priority as bugs.

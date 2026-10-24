@@ -62,8 +62,11 @@ export default function AvailabilityCalendar({
     const hi = isoToDate(max);
     if (lo) dis.push({ before: lo });
     if (hi) dis.push({ after: hi });
-    const mods: Record<string, Date[]> = { limited };
+    // Full, closed and not bookable days are struck through, not only greyed
+    // out: the state never relies on colour alone (WCAG 1.4.1).
+    const mods: Record<string, Date[]> = { limited, blocked };
     const cls: Record<string, string> = {
+      blocked: 'line-through',
       limited:
         'relative after:pointer-events-none after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-highlight',
     };
@@ -118,6 +121,7 @@ export default function AvailabilityCalendar({
             if (status === 'limited') return `${base}, ${t('when.dayLimited')}`;
             if (status === 'full') return `${base}, ${t('when.dayFull')}`;
             if (status === 'closed') return `${base}, ${t('when.dayClosed')}`;
+            if (status === 'unavailable') return `${base}, ${t('when.dayUnavailable')}`;
             return base;
           },
         }}
@@ -133,13 +137,16 @@ export default function AvailabilityCalendar({
           }
         }}
       />
-      <ul className="flex flex-wrap gap-x-4 gap-y-1 px-3 pb-3 text-xs text-muted-foreground">
+      <ul
+        aria-label={t('when.calendarLegend')}
+        className="flex flex-wrap gap-x-4 gap-y-1 px-3 pb-3 text-xs text-muted-foreground"
+      >
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-highlight" />
           {t('when.limited')}
         </li>
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="text-muted-foreground/60 line-through">
+          <span aria-hidden="true" className="text-muted-foreground line-through">
             12
           </span>
           {t('when.full')}

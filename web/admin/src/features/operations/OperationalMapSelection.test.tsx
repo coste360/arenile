@@ -41,7 +41,7 @@ describe('OperationalMapView multi-selection (ADR 0019 C)', () => {
     const user = userEvent.setup();
     setup();
     await screen.findByRole('button', { name: /Postazione A1/ });
-    await user.click(screen.getByRole('button', { name: 'Selezione multipla delle postazioni' }));
+    await user.click(screen.getByRole('button', { name: 'Seleziona più postazioni' }));
     const bar = screen.getByTestId('selection-bar');
     expect(within(bar).getByRole('status')).toHaveTextContent('Nessuna postazione selezionata');
     await user.click(spot('A1'));
@@ -65,16 +65,17 @@ describe('OperationalMapView multi-selection (ADR 0019 C)', () => {
     await screen.findByRole('button', { name: /Postazione A1/ });
     fireEvent.click(spot('A2'), { shiftKey: true });
     expect(screen.getByTestId('selection-bar')).toHaveTextContent('1 postazione selezionata');
-    expect(
-      screen.getByRole('button', { name: 'Selezione multipla delle postazioni' }),
-    ).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Seleziona più postazioni' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('opens the group booking sheet with every selected spot', async () => {
     const user = userEvent.setup();
     setup();
     await screen.findByRole('button', { name: /Postazione A1/ });
-    await user.click(screen.getByRole('button', { name: 'Selezione multipla delle postazioni' }));
+    await user.click(screen.getByRole('button', { name: 'Seleziona più postazioni' }));
     await user.click(spot('A1'));
     await user.click(spot('A2'));
     await user.click(spot('A3'));
@@ -96,7 +97,7 @@ describe('OperationalMapView multi-selection (ADR 0019 C)', () => {
       },
     });
     await screen.findByRole('button', { name: /Postazione A1/ });
-    await user.click(screen.getByRole('button', { name: 'Selezione multipla delle postazioni' }));
+    await user.click(screen.getByRole('button', { name: 'Seleziona più postazioni' }));
     await user.click(spot('A1'));
     await user.click(spot('A2'));
     await user.click(
