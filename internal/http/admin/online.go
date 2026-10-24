@@ -150,7 +150,8 @@ func (h *Handlers) RegenerateMagicLink(w http.ResponseWriter, r *http.Request, e
 
 func onlineFlowFromAPI(f api.OnlineFlowConfig) online.Config {
 	out := online.Config{
-		ShowRatePeriods: f.ShowRatePeriods, PromoCodesEnabled: f.PromoCodesEnabled, RequirePhone: f.RequirePhone,
+		// RequirePhone is deprecated (ADR 0020): the phone is optional everywhere.
+		ShowRatePeriods: f.ShowRatePeriods, PromoCodesEnabled: f.PromoCodesEnabled, RequirePhone: false,
 	}
 	for _, fm := range f.Formulas {
 		out.Formulas = append(out.Formulas, string(fm))
@@ -167,7 +168,7 @@ func onlineFlowFromAPI(f api.OnlineFlowConfig) online.Config {
 func onlineFlowToAPI(c online.Config) api.OnlineFlowConfig {
 	out := api.OnlineFlowConfig{
 		Formulas: make([]api.Formula, 0, len(c.Formulas)), Slots: make([]api.Slots, 0, len(c.Slots)),
-		ShowRatePeriods: c.ShowRatePeriods, PromoCodesEnabled: c.PromoCodesEnabled, RequirePhone: c.RequirePhone,
+		ShowRatePeriods: c.ShowRatePeriods, PromoCodesEnabled: c.PromoCodesEnabled, RequirePhone: false, // deprecated (ADR 0020)
 	}
 	for _, f := range c.Formulas {
 		out.Formulas = append(out.Formulas, api.Formula(f))

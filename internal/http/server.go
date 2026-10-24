@@ -250,6 +250,8 @@ func New(d Deps) http.Handler {
 		webhookHandlers: webhooks.New(d.Gateway, d.Clock, d.Log),
 		ops:             &ops{readiness: d.Readiness, version: d.Version},
 	}
+	srv.TicketAssign = newTicketAssign(d)        // ticketassign_wiring.go
+	srv.DailySale, srv.Tickets = newDailySale(d) // dailysale_wiring.go
 	api.HandlerWithOptions(srv, api.ChiServerOptions{
 		BaseRouter:       r,
 		ErrorHandlerFunc: bindErrorHandler,

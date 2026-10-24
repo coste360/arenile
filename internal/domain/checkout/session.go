@@ -223,9 +223,11 @@ func (s *Service) UpdateCustomer(ctx context.Context, slug, bookingID, token str
 }
 
 // validateCustomer checks step 4 beyond the customer rules: first and last
-// name and email are required on the public page, the phone when the
-// establishment asks for it (E.164 normalisation in the customer service).
-func validateCustomer(in CustomerInput, flow online.Config) error {
+// name and email are required on the public page (the email carries the
+// confirmation and the magic link); the phone is optional (ADR 0020: the
+// deprecated require_phone flag is ignored) and only checked when given
+// (E.164 normalisation in the customer service).
+func validateCustomer(in CustomerInput, _ online.Config) error {
 	ve := &configerr.ValidationError{}
 	if strings.TrimSpace(in.FirstName) == "" {
 		ve.Add("first_name", "Il nome è obbligatorio.")
@@ -236,10 +238,7 @@ func validateCustomer(in CustomerInput, flow online.Config) error {
 	if e := customer.NormalizeEmail(in.Email); e == "" || !customer.ValidEmail(e) {
 		ve.Add("email", "Indirizzo email non valido.")
 	}
-	switch phone := strings.TrimSpace(in.Phone); {
-	case phone == "" && flow.RequirePhone:
-		ve.Add("phone", "Il telefono è obbligatorio.")
-	case phone != "":
+	if phone := strings.TrimSpace(in.Phone); phone != "" {
 		if _, ok := customer.NormalizePhone(phone); !ok {
 			ve.Add("phone", "Numero di telefono non valido: usa il formato internazionale, es. +39 333 1234567.")
 		}

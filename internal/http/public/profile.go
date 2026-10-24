@@ -98,7 +98,7 @@ func (h *Handlers) onlineConfig(r *http.Request, slug string) (*api.PublicOnline
 	pe := p.Establishment
 	out := &api.PublicOnlineConfig{
 		Formulas: formulas(p.Formulas), HoldMinutes: p.HoldMinutes, MinDate: p.MinDate, MaxDate: p.MaxDate,
-		PromoCodesEnabled: pe.Flow.PromoCodesEnabled, RequirePhone: pe.Flow.RequirePhone, ShowRatePeriods: pe.Flow.ShowRatePeriods,
+		PromoCodesEnabled: pe.Flow.PromoCodesEnabled, RequirePhone: false, // deprecated (ADR 0020): phone optional ShowRatePeriods: pe.Flow.ShowRatePeriods,
 		ShowPricesOnMap: pe.Establishment.Theme.ShowPricesOnMap == nil || *pe.Establishment.Theme.ShowPricesOnMap,
 		Payment: api.PublicPaymentConfig{
 			Provider: pe.Provider, Online: pe.Online, Embedded: pe.Embedded, TestMode: pe.TestMode, PublishableKey: optStr(pe.PublishableKey),

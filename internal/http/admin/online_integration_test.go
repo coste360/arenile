@@ -72,7 +72,7 @@ func TestOnlineHTTP_SettingsAndTerms(t *testing.T) {
 		resp, body = manager.do(http.MethodPut, base+"/online-settings", in, map[string]string{"If-Match": `"1"`})
 		stExpect(t, resp, body, 200, "")
 		if resp.Header.Get("ETag") != `"2"` || body["allowed_embed_origins"].([]any)[0] != "https://www.lido-a.it" ||
-			body["theme"].(map[string]any)["primary_color"] != "#0e6ba8" || body["flow"].(map[string]any)["require_phone"] != true {
+			body["theme"].(map[string]any)["primary_color"] != "#0e6ba8" || body["flow"].(map[string]any)["require_phone"] != false {
 			t.Fatalf("updated %v %v", resp.Header, body)
 		}
 		resp, body = manager.do(http.MethodPut, base+"/online-settings", in, map[string]string{"If-Match": `"1"`})

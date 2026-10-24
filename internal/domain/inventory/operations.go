@@ -66,6 +66,9 @@ type OperationalBooking struct {
 	HasNotes           bool
 	// Version is the If-Match version for the actions offered on the map.
 	Version int64
+	// Ticket is the daily-sale ticket of the booking, nil when none
+	// (operations_tickets.go).
+	Ticket *OperationalTicket
 }
 
 // OperationalSpot is the state of a spot on the requested slot(s).
@@ -95,6 +98,8 @@ type PendingAssignment struct {
 	StartsOn            calendar.Date
 	EndsOn              calendar.Date
 	Slots               calendar.Slots
+	// Ticket is the daily-sale ticket of the booking, nil when none.
+	Ticket *OperationalTicket
 }
 
 // OperationsTotals are the counters of the day header.
@@ -334,6 +339,9 @@ func (s *Service) operationsDay(ctx context.Context, es store.EstablishmentScope
 		})
 	}
 	day.Totals.PendingAssignments = len(day.PendingAssignments)
+	if err := s.applyTicketMarks(ctx, es, day); err != nil {
+		return nil, err
+	}
 	mv, err := store.DayMovementsOn(ctx, s.d.DB, es, q.Date, ActiveStatuses)
 	if err != nil {
 		return nil, err

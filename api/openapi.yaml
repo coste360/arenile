@@ -16255,6 +16255,26 @@ components:
           allOf:
             - $ref: "#/components/schemas/Version"
           description: Versione della prenotazione per l'If-Match delle azioni dalla mappa (check-in, spostamento).
+        ticket:
+          $ref: "#/components/schemas/OperationalTicket"
+    OperationalTicket:
+      type: object
+      description: >-
+        Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il
+        nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE.
+      required: [number, label, needs_assignment]
+      properties:
+        number:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Progressivo del giorno.
+        label:
+          type: string
+          description: Numero formattato ("#037").
+        needs_assignment:
+          type: boolean
+          description: Vendita per zona non ancora collocata (nelle zone seat occupa una postazione provvisoria).
     OperationalSpot:
       type: object
       required: [spot_id, map_id, zone_id, label, status]
@@ -16324,6 +16344,8 @@ components:
           $ref: "#/components/schemas/Date"
         slots:
           $ref: "#/components/schemas/Slots"
+        ticket:
+          $ref: "#/components/schemas/OperationalTicket"
     OperationsTotals:
       type: object
       required: [spots, free, occupied, arrivals, departures, checked_in, balance_due_amount, pending_assignments]

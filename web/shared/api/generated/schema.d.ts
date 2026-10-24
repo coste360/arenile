@@ -6215,6 +6215,19 @@ export interface components {
             has_extras: boolean;
             /** @description Versione della prenotazione per l'If-Match delle azioni dalla mappa (check-in, spostamento). */
             version: components["schemas"]["Version"];
+            ticket?: components["schemas"]["OperationalTicket"];
+        };
+        /** @description Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE. */
+        OperationalTicket: {
+            /**
+             * Format: int64
+             * @description Progressivo del giorno.
+             */
+            number: number;
+            /** @description Numero formattato ("#037"). */
+            label: string;
+            /** @description Vendita per zona non ancora collocata (nelle zone seat occupa una postazione provvisoria). */
+            needs_assignment: boolean;
         };
         OperationalSpot: {
             /** Format: uuid */
@@ -6250,6 +6263,7 @@ export interface components {
             starts_on: components["schemas"]["Date"];
             ends_on: components["schemas"]["Date"];
             slots: components["schemas"]["Slots"];
+            ticket?: components["schemas"]["OperationalTicket"];
         };
         OperationsTotals: {
             spots: number;

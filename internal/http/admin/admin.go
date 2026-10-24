@@ -21,6 +21,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/catalog"
 	"github.com/coste360/arenile/internal/domain/credit"
 	"github.com/coste360/arenile/internal/domain/customer"
+	"github.com/coste360/arenile/internal/domain/dailysale"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/fiscal"
@@ -38,6 +39,8 @@ import (
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/domain/ticketassign"
+	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/fiscalbridge"
 	"github.com/coste360/arenile/internal/http/api"
@@ -106,6 +109,14 @@ type Handlers struct {
 	Renewals *renewal.Service
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
+
+	// Daily sale: ticket assignment (tickets_assign.go); own block.
+	TicketAssign *ticketassign.Service
+
+	// Daily sale: quick sale and entry sales (dailysale.go, entrytickets.go),
+	// tickets and entry ticket types (tickets.go, entrytickets.go); own block.
+	DailySale *dailysale.Service
+	Tickets   *ticketing.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.

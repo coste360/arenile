@@ -6190,6 +6190,9 @@ type OperationalBooking struct {
 	// Status Stato della prenotazione (spec 10.2).
 	Status BookingStatus `json:"status"`
 
+	// Ticket Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE.
+	Ticket *OperationalTicket `json:"ticket,omitempty"`
+
 	// TotalAmount Importo in centesimi di euro (IVA inclusa).
 	TotalAmount Money `json:"total_amount"`
 
@@ -6221,6 +6224,18 @@ type OperationalSpot struct {
 
 // OperationalSpotStatus Stato di una postazione nella vista operativa (spec 11.3).
 type OperationalSpotStatus string
+
+// OperationalTicket Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE.
+type OperationalTicket struct {
+	// Label Numero formattato ("#037").
+	Label string `json:"label"`
+
+	// NeedsAssignment Vendita per zona non ancora collocata (nelle zone seat occupa una postazione provvisoria).
+	NeedsAssignment bool `json:"needs_assignment"`
+
+	// Number Progressivo del giorno.
+	Number int64 `json:"number"`
+}
 
 // OperationsDay defines model for OperationsDay.
 type OperationsDay struct {
@@ -6433,8 +6448,11 @@ type PendingAssignment struct {
 	Slots Slots `json:"slots"`
 
 	// StartsOn Data di calendario `YYYY-MM-DD` nel fuso dello stabilimento.
-	StartsOn Date   `json:"starts_on"`
-	ZoneId   string `json:"zone_id"`
+	StartsOn Date `json:"starts_on"`
+
+	// Ticket Biglietto della vendita giornaliera della prenotazione (spec 14.3, ADR 0020). Se presente, occupant_label è il nome facoltativo del biglietto oppure il numero ("#037"). Solo API admin, mai negli eventi SSE.
+	Ticket *OperationalTicket `json:"ticket,omitempty"`
+	ZoneId string             `json:"zone_id"`
 }
 
 // Permission defines model for Permission.
