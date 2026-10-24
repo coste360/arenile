@@ -165,7 +165,7 @@ func summaryToAPI(d *booking.Detail, q *checkout.Quote, names checkout.Labels) a
 	out := api.PublicBookingSummary{
 		StartsOn: b.StartsOn, EndsOn: b.EndsOn, Slots: api.Slots(b.Slots), Formula: api.Formula(b.Formula),
 		Total: int64(b.TotalAmount), DepositDue: int64(b.DepositDue), Paid: int64(b.PaidAmount),
-		BalanceDue: int64(max(b.TotalAmount-b.PaidAmount, 0)), Lines: []api.PublicBookingLine{}, Extras: []api.PublicBookingExtra{},
+		BalanceDue: int64(b.BalanceDue()), Lines: []api.PublicBookingLine{}, Extras: []api.PublicBookingExtra{},
 	}
 	if q != nil {
 		out.Currency = q.Currency

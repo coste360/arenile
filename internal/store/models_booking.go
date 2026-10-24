@@ -107,7 +107,19 @@ type Booking struct {
 }
 
 // BalanceDue is what remains to be collected (never negative).
-func (b *Booking) BalanceDue() money.Cents { return max(b.TotalAmount-b.PaidAmount, 0) }
+func (b *Booking) BalanceDue() money.Cents { return BalanceDue(b.Status, b.TotalAmount, b.PaidAmount) }
+
+// BalanceDue is what remains to be collected on a booking in status: the
+// total less what was paid, never negative, and nothing on a booking that
+// was cancelled, expired or rejected (what it retained is final; a
+// cancellation never bills more afterwards).
+func BalanceDue(status string, total, paid money.Cents) money.Cents {
+	switch status {
+	case "cancelled", "expired", "rejected":
+		return 0
+	}
+	return max(total-paid, 0)
+}
 
 // CurrentPrice is the breakdown that prices the booking today: PriceCurrent
 // after a modification following the confirmation, PriceSnapshot otherwise

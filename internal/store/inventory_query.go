@@ -179,7 +179,9 @@ type BookingSummary struct {
 }
 
 // BalanceDue is what remains to be collected (never negative).
-func (b *BookingSummary) BalanceDue() money.Cents { return max(b.TotalAmount-b.PaidAmount, 0) }
+func (b *BookingSummary) BalanceDue() money.Cents {
+	return BalanceDue(b.Status, b.TotalAmount, b.PaidAmount)
+}
 
 func bookingSummarySelect(db bun.IDB, es EstablishmentScope) *bun.SelectQuery {
 	return db.NewSelect().TableExpr("bookings AS bk").
