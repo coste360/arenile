@@ -29,6 +29,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0019](0019-funzioni-rinviate.md) | Funzioni rinviate: modalità prova, rimborso garantito, azioni dalla mappa con If-Match obbligatorio, più casse e chiusura Z in HTML stampabile (nessuna libreria PDF), prezzo manuale degli abbonamenti, notifiche, tentativi webhook, XLSX, importazione CSV | accettato |
 | [0020](0020-vendita-giornaliera-e-telefono-facoltativo.md) | Vendita giornaliera con biglietti numerati per giorno (contatore atomico e vincolo unico), vendita per zona sui vincoli esistenti, biglietti d'ingresso su zone quantity, telefono facoltativo ovunque | accettato |
 | [0021](0021-stampa-escpos-di-rete.md) | Stampa ESC/POS su stampanti di rete (Wi-Fi/Ethernet, porta 9100) solo nell'edizione desktop in v1: codificatore e modelli lato server, instradamento per cassa, lavori di stampa idempotenti con riprova, interfaccia Driver per i ponti futuri | accettato |
+| [0022](0022-modelli-email-e-promemoria.md) | Testi delle email ai clienti modificabili (oggetto, apertura, chiusura, firma; segnaposto sicuri, blocchi fissi, solo le personalizzazioni nel database) e promemoria del giorno prima e del saldo come job in processo, una volta per prenotazione | accettato |
 
 ## Come aggiungere un ADR
 

@@ -1,6 +1,6 @@
 ---
 title: Email and notifications
-description: Sender, customer and manager notifications, confirmation email with QR code and calendar file, manage link, test email and delivery log.
+description: Sender, customer and manager notifications, editable email texts, automatic reminders, confirmation email with QR code and calendar file, manage link, test email and delivery log.
 sidebar:
   order: 13
 ---
@@ -43,8 +43,8 @@ deliverability set up **SPF, DKIM and DMARC** on the sender's domain.
     | Notification | When |
     |---|---|
     | **Confirmation** | Booking confirmed (after payment, approval or desk confirmation). Contains code, summary, inline **QR code**, **`.ics`** calendar file and the **manage link** |
-    | **Balance reminder** | *Coming soon*: the switch is visible but disabled, the email is not sent yet |
-    | **Day-before reminder** | *Coming soon*: the switch is visible but disabled |
+    | **Balance reminder** | Automatic, before the balance due date: set up in **Customer emails** (see below) |
+    | **Day-before reminder** | Automatic, the day before arrival: set up in **Customer emails** |
     | **Cancellation** | Booking cancelled or rejected |
     | **Refund** | Refund made |
   </TabItem>
@@ -91,16 +91,65 @@ From the [booking detail](/en/gestore/prenotazioni/) staff can:
 - **regenerate the link** (revoking the previous ones); the new link is shown **only once** so it can be shared from
   the desk, and can be emailed to the customer.
 
-## Templates
+## Customer emails: texts and reminders
 
-Email texts are Markdown templates, ready in Italian, English, German and French, with variables such as
-`{{booking.code}}`, `{{customer.first_name}}` and `{{manage_url}}`. The email is composed at send time with the
-booking's current data, as HTML and plain text, with the public page's colours and logo.
+**Where:** Configuration → **Customer emails**. **Who:** owners and managers (other roles see the page read-only).
 
-<Aside type="note">
-  Editing templates from the panel, per establishment, is planned but not available yet: the default templates are
-  used for now.
+### Automatic reminders
+
+| Reminder | When it is sent | Default |
+|---|---|---|
+| **Day before** | The day before the booking starts, at the chosen time | at 18:00 |
+| **Balance** | Before the balance due date set by the [policy](/en/gestore/policy/) ("N days before" or on arrival), with the chosen lead time (0 to 30 days) | 2 days before, at 10:00 |
+
+Times are in the establishment timezone, daylight saving time included. Each reminder is sent **only once** per
+booking, even if the server restarts or runs on several instances. It is not sent for test, cancelled or expired
+bookings, for customers without email and, for the balance, when nothing is left to pay (if the customer pays
+after the reminder was queued, the sending is cancelled). A booking made after the sending time does not get that
+day's reminder: it has just received its confirmation.
+
+<Aside type="caution">
+  If the server stays off for the whole day of a reminder, that reminder is not sent late the next day: better no
+  reminder than one arriving after the stay has started.
 </Aside>
+
+### Email texts
+
+For every customer email (confirmation, change, cancellation, request not accepted, request received, refund,
+manage link, balance and day-before reminders) and every language you can change the **subject**, **opening
+text**, **closing text** and **signature**.
+
+<Steps>
+
+1. Choose the **email** and the **language**.
+2. Edit the texts. **Insert placeholder** adds booking data into the selected field.
+3. Check the **preview**, updated while you type with a sample booking.
+4. **Send a test to me** to see it in your inbox, then **Save**.
+
+</Steps>
+
+| Placeholder | Becomes |
+|---|---|
+| `{nome}`, `{cognome}` | Customer first and last name |
+| `{codice}` | Booking code |
+| `{data}` | Dates of the stay |
+| `{postazione}` | Assigned spots |
+| `{stabilimento}` | Establishment name |
+| `{importo}` | Booking total (in the refund email: the refunded amount) |
+| `{saldo}` | Balance due |
+| `{scadenza}` | Balance due date (a date, or "on arrival") |
+
+Placeholders keep their Italian names in every language. Texts are **plain text**: an empty line separates
+paragraphs, no bold, links or HTML. A placeholder that is not in the list is flagged and cannot be saved. Limits:
+subject 200 characters on one line, opening and closing texts 2000, signature 500.
+
+These stay **fixed** and cannot be removed: QR code, summary with the amounts, balance notice, manage button and
+link, cancellation terms, calendar note and footer. Logo and colours come from the theme of the
+[public page](/en/gestore/pagina-pubblica/).
+
+**Restore default** goes back to the Arenile text for that email and language. Until you customise a text, you
+automatically get the improvements of the default texts with updates. Every save and restore is recorded in the
+audit log.
 
 ## Frequently asked questions
 
