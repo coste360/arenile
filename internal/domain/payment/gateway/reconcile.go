@@ -145,7 +145,7 @@ var errNoStatusCheck = errors.New("gateway: provider cannot look up payments")
 
 // lookup asks the provider for the current outcome of an intent.
 func (s *Service) lookup(ctx context.Context, es store.EstablishmentScope, pi *store.PaymentIntent) (*ext.PaymentEvent, *online.ProviderConfig, error) {
-	cfg, pp, err := s.provider(ctx, s.d.DB, es, pi.Provider)
+	cfg, pp, err := s.provider(ctx, s.d.DB, es, pi.Provider, pi.Mode)
 	if err != nil {
 		return nil, nil, err
 	}

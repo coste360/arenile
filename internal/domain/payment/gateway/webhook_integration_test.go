@@ -93,6 +93,89 @@ func TestPaymentWebhook_ConfirmsBooking(t *testing.T) {
 	})
 }
 
+// TestPaymentWebhook_ModeFollowsIntent (spec 15.4, INV-74): the provider
+// mode of a payment follows the booking, not the test-mode switch. A real
+// booking started before the switch pays through the live configuration
+// and its live-signed webhook still verifies and confirms it while test
+// mode is on; a test booking pays through the test configuration, its
+// payment is a test row (no fiscal document) and it still verifies after
+// the switch is off; a delivery verified with the secret of one mode never
+// touches an intent of the other.
+func TestPaymentWebhook_ModeFollowsIntent(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		e.settings.twoModes = true
+		real := e.held(0, "2027-07-10")
+		if real.Test {
+			t.Fatal("real booking flagged test")
+		}
+		liveRes := e.start(real)
+		if pi := e.intent(liveRes.IntentID); pi.Mode != store.ProviderModeLive {
+			t.Fatalf("real booking intent mode %q", pi.Mode)
+		}
+
+		e.setTestMode(true)
+		test := e.held(1, "2027-07-10")
+		if !test.Test {
+			t.Fatal("booking created in test mode not flagged")
+		}
+		testRes := e.start(test)
+		testPI := e.intent(testRes.IntentID)
+		if testPI.Mode != store.ProviderModeTest {
+			t.Fatalf("test booking intent mode %q", testPI.Mode)
+		}
+		// The live webhook of the real intent verifies with the live secret
+		// while test mode is on, and never with the test one.
+		livePI := e.intent(liveRes.IntentID)
+		payload := e.paidEvent(livePI.ExternalID)
+		if out, err := e.deliverSigned(e.f.Est.ID, payload, stripetest.WebhookSecret); err != nil || !out.Ignored {
+			t.Fatalf("live event verified by the test secret: %+v %v", out, err)
+		}
+		if e.reload(real.ID).Status != "held" {
+			t.Fatal("real booking confirmed by a test-signed delivery")
+		}
+		payload = e.srv.SessionEvent(e.evt(), "checkout.session.completed", livePI.ExternalID, e.f.Clock.Now())
+		if out, err := e.deliverSigned(e.f.Est.ID, payload, liveWebhookSecret); err != nil || out.Ignored || out.Duplicate {
+			t.Fatalf("live delivery: %+v %v", out, err)
+		}
+		if got := e.reload(real.ID); got.Status != "confirmed" || got.PaidAmount != real.TotalAmount {
+			t.Fatalf("real booking after live webhook: %+v", got)
+		}
+		livePI = e.intent(liveRes.IntentID)
+		pm, err := store.GetPayment(e.ctx, db, e.es, *livePI.PaymentID)
+		if err != nil || pm.Test {
+			t.Fatalf("real payment: %v test=%v", err, pm.Test)
+		}
+		if n := e.count("fiscal_documents", "payment_id = ?", pm.ID); n != 1 {
+			t.Fatalf("fiscal documents of the real payment: %d", n)
+		}
+
+		// The test intent verifies with the test secret after the switch is
+		// off; its payment is a test row without a fiscal document.
+		e.setTestMode(false)
+		if _, err := e.deliverSigned(e.f.Est.ID, e.paidEvent(testPI.ExternalID), "whsec_wrong"); !errors.Is(err, gateway.ErrSignatureInvalid) {
+			t.Fatalf("wrong secret: %v", err)
+		}
+		if out, err := e.deliverSigned(e.f.Est.ID, e.srv.SessionEvent(e.evt(), "checkout.session.completed", testPI.ExternalID, e.f.Clock.Now()), stripetest.WebhookSecret); err != nil || out.Ignored {
+			t.Fatalf("test delivery after the switch is off: %+v %v", out, err)
+		}
+		if got := e.reload(test.ID); got.Status != "confirmed" || !got.Test {
+			t.Fatalf("test booking after webhook: %+v", got)
+		}
+		testPI = e.intent(testRes.IntentID)
+		pm, err = store.GetPayment(e.ctx, db, e.es, *testPI.PaymentID)
+		if err != nil || !pm.Test {
+			t.Fatalf("test payment: %v test=%v", err, pm.Test)
+		}
+		if n := e.count("fiscal_documents", "payment_id = ?", pm.ID); n != 0 {
+			t.Fatalf("fiscal documents of the test payment: %d", n)
+		}
+		if n := e.count("webhook_events", "status = ? AND error = ?", store.WebhookEventIgnored, "mode_mismatch"); n != 1 {
+			t.Fatalf("mode_mismatch events: %d", n)
+		}
+	})
+}
+
 // TestPaymentWebhook_AtomicRollback (INV-18): a failure after the ledger
 // and the confirmation leaves nothing behind (no event row, booking still
 // held, no ledger row, no audit, no outbox), so the provider's retry

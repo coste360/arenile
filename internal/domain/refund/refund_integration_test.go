@@ -107,12 +107,12 @@ func (settings) cfg(es store.EstablishmentScope) *online.ProviderConfig {
 	return &online.ProviderConfig{EstablishmentID: es.ID(), Code: provider, Mode: store.ProviderModeTest, Online: true, Credentials: ext.Credentials{}}
 }
 
-func (s settings) ActiveProvider(_ context.Context, _ bun.IDB, es store.EstablishmentScope) (*online.ProviderConfig, error) {
+func (s settings) ActiveProvider(_ context.Context, _ bun.IDB, es store.EstablishmentScope, _ bool) (*online.ProviderConfig, error) {
 	return s.cfg(es), nil
 }
 
-func (s settings) ProviderConfig(_ context.Context, _ bun.IDB, es store.EstablishmentScope, code string) (*online.ProviderConfig, error) {
-	if code != provider {
+func (s settings) ProviderConfig(_ context.Context, _ bun.IDB, es store.EstablishmentScope, code, mode string) (*online.ProviderConfig, error) {
+	if code != provider || mode == store.ProviderModeLive {
 		return nil, store.ErrNotFound
 	}
 	return s.cfg(es), nil

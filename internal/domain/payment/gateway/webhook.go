@@ -1,10 +1,12 @@
 package gateway
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -40,8 +42,11 @@ const (
 // the handler). The establishment and the provider must exist and be
 // configured (ErrWebhookTarget otherwise); the driver verifies the
 // signature with the establishment's credentials (ErrSignatureInvalid).
-// After the commit, refunds scheduled by the event are sent to the
-// provider (best effort: reconciliation retries them).
+// Live and test configurations of the provider are both tried (spec 15.4:
+// the test-mode switch never decides which secret verifies a delivery),
+// and the one that verifies also fixes the mode of the intents the event
+// may touch. After the commit, refunds scheduled by the event are sent to
+// the provider (best effort: reconciliation retries them).
 func (s *Service) HandleWebhook(ctx context.Context, provider, establishmentID string, r *http.Request) (*WebhookOutcome, error) {
 	if _, err := uuid.Parse(establishmentID); err != nil {
 		return nil, ErrWebhookTarget
@@ -53,14 +58,30 @@ func (s *Service) HandleWebhook(ctx context.Context, provider, establishmentID s
 		}
 		return nil, fmt.Errorf("gateway: %w", err)
 	}
-	cfg, pp, err := s.provider(ctx, s.d.DB, es, provider)
+	candidates, pp, err := s.webhookCandidates(ctx, es, provider)
 	if err != nil {
-		if errors.Is(err, ErrProviderNotConfigured) {
-			return nil, ErrWebhookTarget
-		}
 		return nil, err
 	}
-	ev, err := pp.ParseWebhook(ctx, r, cfg.Credentials)
+	body, err := io.ReadAll(io.LimitReader(r.Body, MaxWebhookBody+1))
+	if err != nil || len(body) > MaxWebhookBody {
+		// Unreadable or oversized: the same answer the drivers give (an
+		// unverifiable delivery), never a server error.
+		s.d.Log.DebugContext(ctx, "gateway: webhook body rejected", "provider", provider, "establishment_id", es.ID())
+		return nil, ErrSignatureInvalid
+	}
+	var (
+		cfg *online.ProviderConfig
+		ev  *ext.PaymentEvent
+	)
+	for _, c := range candidates {
+		r.Body = io.NopCloser(bytes.NewReader(body))
+		ev, err = pp.ParseWebhook(ctx, r, c.Credentials)
+		if errors.Is(err, ext.ErrInvalidSignature) {
+			continue
+		}
+		cfg = c
+		break
+	}
 	switch {
 	case errors.Is(err, ext.ErrIgnoredEvent):
 		return &WebhookOutcome{Ignored: true}, nil
@@ -85,6 +106,30 @@ func (s *Service) HandleWebhook(ctx context.Context, provider, establishmentID s
 	}
 	s.executeRefunds(ctx, es, out.refunds)
 	return &WebhookOutcome{Duplicate: out.duplicate, Ignored: out.ignored}, nil
+}
+
+// webhookCandidates returns the configurations of provider for es a
+// delivery may be verified with (live first, then test; ErrWebhookTarget
+// when none exists) and its driver.
+func (s *Service) webhookCandidates(ctx context.Context, es store.EstablishmentScope, provider string) ([]*online.ProviderConfig, ext.PaymentProvider, error) {
+	var (
+		out []*online.ProviderConfig
+		pp  ext.PaymentProvider
+	)
+	for _, mode := range []string{store.ProviderModeLive, store.ProviderModeTest} {
+		cfg, drv, err := s.provider(ctx, s.d.DB, es, provider, mode)
+		if errors.Is(err, ErrProviderNotConfigured) {
+			continue
+		}
+		if err != nil {
+			return nil, nil, err
+		}
+		out, pp = append(out, cfg), drv
+	}
+	if len(out) == 0 {
+		return nil, nil, ErrWebhookTarget
+	}
+	return out, pp, nil
 }
 
 // applied is the outcome of apply.
@@ -168,6 +213,13 @@ func (s *Service) apply(ctx context.Context, es store.EstablishmentScope, provid
 		}
 		if err != nil {
 			return err
+		}
+		if cfg != nil && cfg.Mode != "" && pi.Mode != "" && pi.Mode != cfg.Mode {
+			// An event verified with the credentials of one mode never
+			// touches an intent of the other (spec 15.4, INV-74): a test
+			// delivery cannot confirm a real booking.
+			s.d.Log.WarnContext(ctx, "gateway: event mode does not match the intent", "provider", provider, "establishment_id", es.ID(), "event_id", eventID, "event_mode", cfg.Mode, "intent_mode", pi.Mode)
+			return s.ignore(ctx, tx, es, we, out, "mode_mismatch")
 		}
 		before := pi.Status
 		x := &txn{s: s, tx: tx, es: es, cfg: cfg, ev: ev, eventID: eventID, source: source, out: out}
@@ -390,6 +442,7 @@ func (x *txn) succeed(ctx context.Context, pi *store.PaymentIntent, amount money
 		return x.s.d.Ledger.RecordProviderPayment(ctx, x.tx, x.es, payment.ProviderPayment{
 			BookingID: b.ID, Provider: pi.Provider, ProviderRef: pi.ExternalID, Amount: amount,
 			Method: store.PaymentMethodCard, IntentID: pi.ID, EventID: x.eventID, NoConfirm: terminal,
+			Test: pi.Mode == store.ProviderModeTest,
 		})
 	}
 	res, err := x.inSavepoint(ctx, normal && x.s.d.HoldExpirer != nil, record)

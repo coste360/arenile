@@ -47,6 +47,10 @@ type ProviderPayment struct {
 	// NoConfirm records the money without confirming the booking (late
 	// payment whose resources are gone: the gateway schedules a refund).
 	NoConfirm bool
+	// Test marks a payment taken with test credentials (intent mode test):
+	// no real money moved, so no fiscal document and no corrispettivi
+	// (spec 15.4, INV-74), whatever the flag of the booking.
+	Test bool
 }
 
 // ProviderRefund is a refund executed (or confirmed) by an online provider.
@@ -108,7 +112,7 @@ func (s *Service) RecordProviderPayment(ctx context.Context, tx bun.IDB, es stor
 		Method: in.Method, Direction: store.PaymentDirectionIn, Amount: in.Amount, Status: store.PaymentSucceeded,
 		ProviderRef: &ref, Description: "Prenotazione online " + b.Code,
 		VATBreakdown: SplitBySnapshot(b.CurrentPrice(), in.Amount, info.defaultVAT), BusinessDate: info.today,
-		Metadata: meta, CreatedAt: now, UpdatedAt: now,
+		Metadata: meta, Test: in.Test, CreatedAt: now, UpdatedAt: now,
 	}
 	if err := s.insert(ctx, tx, es, pm); err != nil {
 		return nil, err
@@ -205,7 +209,7 @@ func (s *Service) RecordProviderRefund(ctx context.Context, tx bun.IDB, es store
 		Method: orig.Method, Direction: store.PaymentDirectionRefund, Amount: in.Amount, Status: store.PaymentSucceeded,
 		ProviderRef: &ref, RefundOfPaymentID: &orig.ID, Description: "Rimborso online prenotazione " + b.Code,
 		Note: truncate(strings.TrimSpace(in.Reason), maxNote), VATBreakdown: SplitByWeights(weights, in.Amount, info.defaultVAT),
-		BusinessDate: info.today, Metadata: meta, CreatedAt: now, UpdatedAt: now,
+		BusinessDate: info.today, Metadata: meta, Test: orig.Test, CreatedAt: now, UpdatedAt: now,
 	}
 	if err := s.insert(ctx, tx, es, pm); err != nil {
 		return nil, err
