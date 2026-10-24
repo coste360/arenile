@@ -74,6 +74,7 @@
     "void": "Ticket stornieren"
   },
   "printDialog": {
+    "thermalHint": "Belege gehen an den eingerichteten Thermodrucker; A5 und A4 werden über den Browser gedruckt.",
     "title": "Ticket {{number}} drucken",
     "titleLoading": "Ticket drucken",
     "description": "Vorschau, wie es aus dem Drucker kommt; das Format gilt nur für diesen Druck.",

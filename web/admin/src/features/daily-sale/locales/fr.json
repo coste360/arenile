@@ -74,6 +74,7 @@
     "void": "Annuler le billet"
   },
   "printDialog": {
+    "thermalHint": "Les tickets partent vers l'imprimante thermique configurée ; A5 et A4 s'impriment depuis le navigateur.",
     "title": "Impression du billet {{number}}",
     "titleLoading": "Impression du billet",
     "description": "Aperçu tel qu'il sortira de l'imprimante ; le format ne vaut que pour cette impression.",

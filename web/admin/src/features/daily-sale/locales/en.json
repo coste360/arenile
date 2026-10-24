@@ -74,6 +74,7 @@
     "void": "Void ticket"
   },
   "printDialog": {
+    "thermalHint": "Receipts go to the configured thermal printer; A5 and A4 print from the browser.",
     "title": "Print ticket {{number}}",
     "titleLoading": "Print ticket",
     "description": "Preview as it will come out of the printer; the format applies to this print only.",

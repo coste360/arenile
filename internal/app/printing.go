@@ -25,7 +25,7 @@ func (a *App) wirePrinting(aw *audit.Writer) {
 		Available:     a.cfg.Desktop() || a.opts.desktop != nil,
 		AllowLoopback: a.cfg.PrintersAllowLoopback,
 		Logos:         printing.HTTPLogoLoader{BaseURL: a.cfg.EffectiveBaseURL()},
-		Tickets:       ticketing.NewService(ticketing.Deps{DB: a.db, Clock: a.opts.clock, Log: a.log}),
+		Tickets:       ticketing.NewService(ticketing.Deps{DB: a.db, Clock: a.opts.clock, Audit: aw, Log: a.log}),
 	})
 }
 

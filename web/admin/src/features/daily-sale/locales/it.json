@@ -74,6 +74,7 @@
     "void": "Annulla biglietto"
   },
   "printDialog": {
+    "thermalHint": "Gli scontrini vanno alla stampante termica configurata; A5 e A4 si stampano dal browser.",
     "title": "Stampa del biglietto {{number}}",
     "titleLoading": "Stampa del biglietto",
     "description": "Anteprima come uscirà dalla stampante; il formato vale solo per questa stampa.",

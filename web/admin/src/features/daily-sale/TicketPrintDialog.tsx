@@ -59,14 +59,16 @@ export function TicketPrintDialog({
   const doPrint = async () => {
     if (!ticketId || !preview.data) return;
     const shownData = { ...preview.data, format: shown };
+    // A5/A4 are sheets for an office printer: always the browser.
+    const sheet = shown === 'a4' || shown === 'a5';
     if (mode === 'first') {
-      await printer.print(ticketId, () => shownData);
+      await printer.print(ticketId, () => shownData, undefined, sheet);
       return;
     }
     // Counted reprint first (audit, "Ristampa"), then the thermal printer
-    // when routed or the browser in the chosen format.
+    // when routed (receipt formats) or the browser in the chosen format.
     const data = await reprint.mutateAsync({ ticketId, format: shown });
-    await printer.print(ticketId, () => data);
+    await printer.print(ticketId, () => data, undefined, sheet);
   };
 
   return (
@@ -91,6 +93,9 @@ export function TicketPrintDialog({
             options={PRINT_FORMATS.map((f) => ({ value: f, label: t(`format.${f}`) }))}
             collapseOnNarrow
           />
+          {printer.thermal && (
+            <p className="text-sm text-muted-foreground">{t('printDialog.thermalHint')}</p>
+          )}
           <QueryState
             isLoading={preview.isPending && !!ticketId}
             error={preview.error}

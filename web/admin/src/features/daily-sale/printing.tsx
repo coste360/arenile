@@ -65,7 +65,8 @@ export type TicketPrintLoader = () => TicketPrintData | Promise<TicketPrintData>
  * `print(ticketId, load)` queues a thermal job, with the browser print as
  * the fallback if the job cannot be queued; otherwise it prints through the
  * browser exactly as before (`useTicketPrinter`). `load` is called only for
- * the browser print. `area` must be rendered once by the caller. The
+ * the browser print; `browserOnly` forces the browser (a sheet format
+ * picked in the preview). `area` must be rendered once by the caller. The
  * returned promise rejects when the browser print data cannot be loaded;
  * inside the thermal fallback the same failure goes to `onError`.
  */
@@ -74,6 +75,7 @@ export function useTicketOutput(registerId?: string): {
     ticketId: string,
     load: TicketPrintLoader,
     onError?: (error: unknown) => void,
+    browserOnly?: boolean,
   ) => Promise<void>;
   area: ReactNode;
   thermal: boolean;
@@ -83,8 +85,13 @@ export function useTicketOutput(registerId?: string): {
   const printDocument = usePrintDocument();
   const browserPrint = browser.print;
   const print = useCallback(
-    async (ticketId: string, load: TicketPrintLoader, onError?: (error: unknown) => void) => {
-      if (!thermal) {
+    async (
+      ticketId: string,
+      load: TicketPrintLoader,
+      onError?: (error: unknown) => void,
+      browserOnly = false,
+    ) => {
+      if (!thermal || browserOnly) {
         browserPrint(await load());
         return;
       }

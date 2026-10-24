@@ -94,7 +94,8 @@ export function usePrintDocument(watch?: WatchOptions) {
   const mode = usePanelMode();
   const desktop = mode === 'local' || mode === 'lan';
   const problemText = usePrintingProblemText();
-  const inFlight = useRef(false);
+  // Document being queued: a double click on it is one job; another document goes through.
+  const inFlight = useRef<string | null>(null);
 
   return useCallback(
     async (req: PrintRequest, fallback?: () => void): Promise<'escpos' | 'browser' | 'none'> => {
@@ -114,8 +115,8 @@ export function usePrintDocument(watch?: WatchOptions) {
       };
       const browserAction = fallback ? { label: t('print.browser'), onClick: fallback } : undefined;
       if (!desktop) return browser('server_edition');
-      if (inFlight.current) return 'escpos';
-      inFlight.current = true;
+      if (inFlight.current === req.documentId) return 'escpos';
+      inFlight.current = req.documentId;
       try {
         let route;
         try {
@@ -155,7 +156,7 @@ export function usePrintDocument(watch?: WatchOptions) {
         });
         return 'escpos';
       } finally {
-        inFlight.current = false;
+        if (inFlight.current === req.documentId) inFlight.current = null;
       }
     },
     [client, desktop, establishmentId, problemText, t, watch],

@@ -23,7 +23,8 @@ import (
 // and an entry ticket queued as daily_ticket jobs reach the network printer
 // with number, day, spot or "da assegnare", pack or ticket types, amount,
 // the QR of the gate token and the non-fiscal line; the drawer opens only
-// for cash; the holder name is never printed; a reprint says so; unknown
+// for the first print of a cash ticket (never on a reprint); the holder
+// name is never printed; a reprint says so; unknown
 // tickets are not found; the route is offered only on the desktop edition.
 func TestTicketing_PrintsOnThermalPrinter(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
@@ -140,6 +141,10 @@ func TestTicketing_PrintsOnThermalPrinter(t *testing.T) {
 		jobs = fp.WaitJobs(4, 5*time.Second)
 		if len(jobs) != 4 || !bytes.Contains(jobs[3], []byte("RISTAMPA")) || !bytes.Contains(jobs[3], []byte("BIGLIETTO #001")) {
 			t.Fatalf("reprint: %d jobs", len(jobs))
+		}
+		// A reprint of a cash ticket takes no money: the drawer stays closed.
+		if bytes.Contains(jobs[3], kick) {
+			t.Error("reprint opened the cash drawer")
 		}
 	})
 }
