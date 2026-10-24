@@ -35,10 +35,10 @@ export class AdminApi {
     return (await res.json()) as T;
   }
 
-  async post<T>(path: string, data: unknown): Promise<T> {
+  async post<T>(path: string, data: unknown, headers: Record<string, string> = {}): Promise<T> {
     const res = await this.request.post(`${ADMIN}${path}`, {
       data,
-      headers: { "X-CSRF-Token": this.csrf },
+      headers: { "X-CSRF-Token": this.csrf, ...headers },
     });
     if (!res.ok()) throw new ApiError("POST", path, res.status(), await res.text());
     return (await res.json()) as T;

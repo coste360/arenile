@@ -39,7 +39,12 @@ export async function seedDailySale(api: AdminApi, E: string, ctx: RunContext): 
   await sale({ spot_id: free[1]!.spot_id, payment: { method: "card" } });
   await sale({ spot_id: free[2]!.spot_id, slots: "AM", payment: { method: "cash" } });
   const voided = await sale({ spot_id: free[3]!.spot_id, payment: { method: "card" } });
-  await api.post(`${E}/tickets/${voided.ticket.id}/void`, { reason: "Cliente andato via", refund: "none" });
+  // The void requires If-Match with the ticket version (INV-80).
+  await api.post(
+    `${E}/tickets/${voided.ticket.id}/void`,
+    { reason: "Cliente andato via", refund: "none" },
+    { "If-Match": `"${voided.ticket.version}"` },
+  );
   await sale({ zone_id: standard.id, payment: { method: "card" } });
   await sale({ zone_id: standard.id, payment: { method: "cash" }, holder: { last_name: "Russo" } });
 
