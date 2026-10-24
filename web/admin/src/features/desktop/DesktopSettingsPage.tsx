@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { UpdateCheckStatus } from '../updates/UpdateCheckStatus';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -202,6 +203,7 @@ function SettingsForm({ initial }: { initial: DesktopSettings }) {
           >
             {(field) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
           </FieldRow>
+          <UpdateCheckStatus showSwitchSource={false} />
         </FormSection>
         <FormSection
           title={t('lan.title')}

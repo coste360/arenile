@@ -38,6 +38,8 @@ export function useUpdateDesktopSettings() {
       // The backup folder or the LAN mode may have changed.
       void qc.invalidateQueries({ queryKey: desktopKeys.backups });
       void qc.invalidateQueries({ queryKey: ['instance', 'meta'] });
+      // The update check may have been switched (ADR 0025).
+      void qc.invalidateQueries({ queryKey: ['instance', 'update'] });
     },
   });
 }

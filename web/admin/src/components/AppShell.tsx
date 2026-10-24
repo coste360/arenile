@@ -11,6 +11,7 @@ import { CommandMenu } from './CommandMenu';
 import { OfflineIndicator } from './OfflineIndicator';
 import { OfflineShell } from '../offline/OfflineShell';
 import { TestModeBanner } from '../features/test-mode/TestModeBanner';
+import { UpdateBanner } from '../features/updates/UpdateBanner';
 import { NotificationsMenu } from '../features/notifications/NotificationsMenu';
 
 /** Sidebar state persisted by shadcn's SidebarProvider in the `sidebar_state` cookie. */
@@ -55,6 +56,7 @@ export function AppShell() {
           </div>
         </header>
         <OfflineShell />
+        <UpdateBanner />
         <TestModeBanner />
         {me.data?.totp_enrolment_required && (
           <div className="px-4 pt-4 md:px-6">

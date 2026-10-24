@@ -1,0 +1,17 @@
+{
+  "banner": {
+    "title": "Arenile {{latest}} is available",
+    "current": "You are using version {{current}}. Make a backup before updating.",
+    "notes": "What's new",
+    "download": "Download",
+    "howTo": "How to update",
+    "dismiss": "Hide the notice for this version"
+  },
+  "status": {
+    "version": "Version {{current}}",
+    "enabled": "Update check: on",
+    "disabled": "Update check: off",
+    "unavailable": "Couldn't check for updates automatically.",
+    "upToDate": "Arenile is up to date."
+  }
+}

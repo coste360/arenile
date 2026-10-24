@@ -19,6 +19,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { ChevronsUpDownIcon, LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useOfflineLogout } from '../offline/useOfflineLogout';
+import { UpdateCheckStatus } from '../features/updates/UpdateCheckStatus';
+import { useSystemUpdate } from '../features/updates/api';
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -33,6 +35,7 @@ export function NavUser() {
   const offline = useOfflineLogout();
   const navigate = useNavigate();
   const { isMobile } = useSidebar();
+  const updates = useSystemUpdate();
   const name = me.data?.user?.name || me.data?.api_key?.name || '';
   const email = me.data?.user?.email ?? '';
 
@@ -89,6 +92,15 @@ export function NavUser() {
             </DropdownMenuLabel>
             <ThemeRadioItems />
             <DropdownMenuSeparator />
+            {/* Version and update check (ADR 0025): owners and managers only. */}
+            {updates.data && (
+              <>
+                <DropdownMenuLabel className="font-normal">
+                  <UpdateCheckStatus />
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem onSelect={onLogout} disabled={logout.isPending}>
               <LogOutIcon aria-hidden="true" />
               {t('auth.logout')}
