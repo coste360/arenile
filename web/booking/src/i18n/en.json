@@ -203,7 +203,6 @@
     },
     "customer": "Booked by",
     "linkExpires": "Link valid until {{date}}",
-
     "renewalBadge": "Renewal proposal",
     "payBalance": "Pay the balance",
     "payBalanceAmount": "Pay the balance of {{amount}}",
@@ -254,7 +253,19 @@
     "requestLinkSent": "If the details match a booking, you will receive a new link by email.",
     "linkInvalid": "The link is invalid or has expired.",
     "noActions": "For changes, please contact the beach club directly.",
-    "back": "Back to the booking"
+    "back": "Back to the booking",
+    "refund": {
+      "title": "Refund of {{amount}}",
+      "requestedAt": "Requested on {{date}}",
+      "completedAt": "Completed on {{date}}",
+      "status": {
+        "pending": "Refund in progress: we are sending it to your payment method.",
+        "processing": "Refund started: it will reach your payment method within a few days.",
+        "succeeded": "Refund completed to your payment method.",
+        "failed": "The refund needs a check: the establishment has been notified and will contact you if needed.",
+        "cancelled": "The refund was handled directly by the establishment."
+      }
+    }
   },
   "errors": {
     "hold_expired": "The time to complete the booking is over: please choose again.",

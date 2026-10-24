@@ -64,6 +64,18 @@ func (h *Handlers) GetPublicEstablishment(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
+	if h.TestMode != nil {
+		// Test mode banner (spec 15.4): only for the preview link (header
+		// forwarded by the booking page) or when public_enabled is on.
+		st, err := h.TestMode.Public(r.Context(), slug, previewToken(r))
+		if err != nil {
+			problem.Error(w, r, h.Log, err)
+			return
+		}
+		if st.Active {
+			out.TestMode = &st.Active
+		}
+	}
 
 	body, err := json.Marshal(out)
 	if err != nil {
@@ -74,7 +86,7 @@ func (h *Handlers) GetPublicEstablishment(w http.ResponseWriter, r *http.Request
 	tag := `"` + hex.EncodeToString(sum[:8]) + `"`
 	w.Header().Set("ETag", tag)
 	w.Header().Set("Cache-Control", "public, max-age=30")
-	w.Header().Set("Vary", "Accept-Encoding")
+	w.Header().Set("Vary", "Accept-Encoding, X-Arenile-Preview")
 	if params.IfNoneMatch != nil && etagMatches(*params.IfNoneMatch, tag) {
 		w.WriteHeader(http.StatusNotModified)
 		return

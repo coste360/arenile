@@ -208,7 +208,8 @@
       "spot": "Platz",
       "pool": "Menge",
       "zone": "Zone"
-    }
+    },
+    "refundInProgress": "Für diese Buchung läuft eine automatische Erstattung: Bitte warten Sie, bis sie abgeschlossen ist."
   },
   "actions": {
     "confirm": "Bestätigen",
@@ -380,13 +381,48 @@
         "modified": "Geändert",
         "moved": "Verlegt",
         "note_added": "Notiz hinzugefügt",
-        "completed": "Abgeschlossen"
+        "completed": "Abgeschlossen",
+        "refund_reserved": "Erstattung vorgemerkt",
+        "refund_succeeded": "Erstattung vom Anbieter bestätigt",
+        "refund_failed": "Erstattung fehlgeschlagen",
+        "refund_retried": "Erstattung erneut versucht"
       },
       "payment": {
         "recorded": "Zahlung erfasst",
         "succeeded": "Zahlung erfasst",
         "refunded": "Erstattung erfasst"
       }
+    }
+  },
+  "refunds": {
+    "title": "Automatische Erstattungen",
+    "description": "Erstattungen auf die Online-Zahlung, mit der Stornierung vorgemerkt und an den Zahlungsanbieter gesendet, bis er sie bestätigt.",
+    "requested": "Angefordert",
+    "retry": "Erneut versuchen",
+    "retried": "Erstattung von {{amount}} erneut gesendet.",
+    "retriedDone": "Erstattung von {{amount}} bestätigt.",
+    "completedAt": "Bestätigt am {{at}}",
+    "attempts_one": "{{count}} Versuch",
+    "attempts_other": "{{count}} Versuche",
+    "nextAttempt": "nächster Versuch {{at}}",
+    "statuses": {
+      "pending": "Wartet auf Versand",
+      "processing": "Wartet auf Bestätigung",
+      "succeeded": "Erstattet",
+      "failed": "Fehlgeschlagen",
+      "cancelled": "Storniert"
+    },
+    "errors": {
+      "provider_unavailable": "Zahlungsanbieter nicht erreichbar",
+      "provider_refused": "vom Zahlungsanbieter abgelehnt",
+      "provider_not_configured": "Zahlungsanbieter nicht konfiguriert",
+      "refund_not_supported": "der Anbieter erlaubt keine Erstattungen",
+      "not_online_payment": "keine Online-Zahlung",
+      "exceeds_refundable": "Betrag über dem erstattbaren",
+      "idempotency_mismatch": "widersprüchliche Anfrage",
+      "payment_missing": "Zahlung nicht gefunden",
+      "interrupted": "Versand unterbrochen",
+      "other": "unerwarteter Fehler"
     }
   }
 }

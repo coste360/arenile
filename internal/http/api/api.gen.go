@@ -6375,6 +6375,9 @@ type Payment struct {
 	ReceivedByUserId  *string       `json:"received_by_user_id,omitempty"`
 	RefundOfPaymentId *string       `json:"refund_of_payment_id,omitempty"`
 	Status            PaymentStatus `json:"status"`
+
+	// Test Incassato in modalità prova (spec 15.4): escluso da report, KPI, corrispettivi ed esportazioni.
+	Test *bool `json:"test,omitempty"`
 }
 
 // PaymentDirection defines model for PaymentDirection.

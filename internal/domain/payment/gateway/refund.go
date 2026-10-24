@@ -201,6 +201,13 @@ func (s *Service) RefundBooking(ctx context.Context, p *auth.Principal, establis
 		return nil, err
 	}
 	req.Actor = p.Actor(reqctx.From(ctx).ClientIP)
+	if req.BookingID != "" {
+		// ADR 0019: no manual provider refund while a guaranteed refund of
+		// the booking is open (the job owns it; 409 refund_in_progress).
+		if err := payment.CheckNoOpenRefundRequest(ctx, s.d.DB, es, req.BookingID); err != nil {
+			return nil, err
+		}
+	}
 	return s.RefundViaProvider(ctx, es, req)
 }
 

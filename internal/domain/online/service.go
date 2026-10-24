@@ -726,7 +726,7 @@ func (s *Service) ResolvePublic(ctx context.Context, slug string) (*PublicEstabl
 	if out.Terms, err = s.CurrentTerms(ctx, s.d.DB, es); err != nil {
 		return nil, err
 	}
-	active, err := store.GetActivePaymentProvider(ctx, s.d.DB, es)
+	active, err := effectivePaymentProvider(ctx, s.d.DB, es)
 	switch {
 	case err == nil:
 		out.Provider = active.Provider
@@ -758,7 +758,7 @@ func (s *Service) providerOnline(code string) bool {
 // provider of es; the "manual" configuration when none is active.
 // Implements gateway.ProviderSettings.
 func (s *Service) ActiveProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (*ProviderConfig, error) {
-	row, err := store.GetActivePaymentProvider(ctx, db, es)
+	row, err := effectivePaymentProvider(ctx, db, es)
 	if errors.Is(err, store.ErrNotFound) {
 		return manualConfig(es), nil
 	}
@@ -776,11 +776,65 @@ func (s *Service) ProviderConfig(ctx context.Context, db bun.IDB, es store.Estab
 	if provider == ProviderManual {
 		return manualConfig(es), nil
 	}
+	if row, err := testModeProvider(ctx, db, es, provider); err != nil || row != nil {
+		if err != nil {
+			return nil, err
+		}
+		return s.providerConfig(es, row)
+	}
 	row, err := store.LatestPaymentProviderSettings(ctx, db, es, provider)
 	if err != nil {
 		return nil, err
 	}
 	return s.providerConfig(es, row)
+}
+
+// effectivePaymentProvider is the provider row the payments of es use now.
+// Outside test mode it is the active row. In test mode (spec 15.4, ADR
+// 0019) it is the mode = test row of the active provider when that has
+// credentials, otherwise none (ErrNotFound: the manual driver), so that a
+// test booking never charges a real card.
+func effectivePaymentProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (*store.PaymentProviderSettings, error) {
+	active, err := store.GetActivePaymentProvider(ctx, db, es)
+	if err != nil {
+		return nil, err
+	}
+	on, err := store.TestModeEnabled(ctx, db, es)
+	if err != nil {
+		return nil, fmt.Errorf("online: %w", err)
+	}
+	if !on || active.Mode == store.ProviderModeTest {
+		return active, nil
+	}
+	row, err := testModeProvider(ctx, db, es, active.Provider)
+	if err != nil {
+		return nil, err
+	}
+	if row == nil {
+		return nil, store.ErrNotFound
+	}
+	return row, nil
+}
+
+// testModeProvider returns the mode = test settings of provider while test
+// mode is on and they hold credentials (webhooks of test payments verify with
+// them); nil otherwise.
+func testModeProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope, provider string) (*store.PaymentProviderSettings, error) {
+	on, err := store.TestModeEnabled(ctx, db, es)
+	if err != nil {
+		return nil, fmt.Errorf("online: %w", err)
+	}
+	if !on {
+		return nil, nil
+	}
+	row, err := store.GetPaymentProviderSettings(ctx, db, es, provider, store.ProviderModeTest)
+	if errors.Is(err, store.ErrNotFound) || (err == nil && row.Credentials == "") {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("online: %w", err)
+	}
+	return row, nil
 }
 
 func manualConfig(es store.EstablishmentScope) *ProviderConfig {

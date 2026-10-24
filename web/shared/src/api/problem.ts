@@ -41,6 +41,14 @@ export function problemMessageKey(error: unknown): string {
       return 'common.errors.cashSessionClosed';
     case 'cash_session_already_open':
       return 'common.errors.cashSessionAlreadyOpen';
+    case 'test_mode_preview_required':
+      return 'common.errors.testModePreviewRequired';
+    case 'import_invalid':
+      return 'common.errors.importInvalid';
+    case 'import_already_applied':
+      return 'common.errors.importAlreadyApplied';
+    case 'refund_in_progress':
+      return 'common.errors.refundInProgress';
     default:
       return 'common.errors.generic';
   }

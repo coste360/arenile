@@ -49,6 +49,7 @@ import { noteSchema, type NoteValues } from './booking.schema';
 import { CancelBookingDialog } from './detail/CancelBookingDialog';
 import { ChangeDatesDialog, MoveBookingDialog } from './detail/ChangeDialogs';
 import { RecordPaymentDialog, RefundDialog } from './detail/PaymentDialogs';
+import { RefundRequestsCard } from './detail/RefundRequestsCard';
 import {
   ACTIVE_STATUSES,
   availableActions,
@@ -259,6 +260,11 @@ export function BookingDetailPage() {
             canRefund={perms.canRefund && b.paid_amount > 0}
             onPay={() => setDialog('pay')}
             onRefund={() => setDialog('refund')}
+          />
+          <RefundRequestsCard
+            establishmentId={establishmentId}
+            booking={b}
+            canRetry={perms.canRefund}
           />
           <AllocationsCard booking={b} spotLabel={(id) => inventory.spotById.get(id)?.label} />
         </div>

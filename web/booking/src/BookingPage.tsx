@@ -7,7 +7,14 @@ import { Button } from '@arenile/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@arenile/shared/ui/card';
 import { Skeleton } from '@arenile/shared/ui/skeleton';
 import { Separator } from '@arenile/shared/ui/separator';
-import { InfoIcon, MailIcon, MapPinIcon, PhoneIcon, RotateCwIcon } from 'lucide-react';
+import {
+  FlaskConicalIcon,
+  InfoIcon,
+  MailIcon,
+  MapPinIcon,
+  PhoneIcon,
+  RotateCwIcon,
+} from 'lucide-react';
 import { useEffect } from 'react';
 // App icon and mono symbol only, not BrandLogo: that would bundle every logo variant into the
 // budgeted page.
@@ -201,6 +208,14 @@ export function BookingPage({ location, win = window, now = serverNow }: Booking
         </header>
       )}
       <main className="flex flex-1 flex-col">
+        {e.test_mode && (
+          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+            <Alert variant="warning">
+              <FlaskConicalIcon aria-hidden="true" />
+              <AlertDescription role="status">{t('booking.testMode')}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <BookingEnvProvider value={env}>
           {e.booking_enabled || location.preview ? (
             <Stepper

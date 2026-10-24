@@ -203,7 +203,6 @@
     },
     "customer": "Au nom de",
     "linkExpires": "Lien valable jusqu'au {{date}}",
-
     "renewalBadge": "Proposition de renouvellement",
     "payBalance": "Payer le solde",
     "payBalanceAmount": "Payer le solde de {{amount}}",
@@ -254,7 +253,19 @@
     "requestLinkSent": "Si les données correspondent à une réservation, vous recevrez un nouveau lien par e-mail.",
     "linkInvalid": "Le lien n'est pas valide ou a expiré.",
     "noActions": "Pour toute modification, contactez directement l'établissement.",
-    "back": "Retour à la réservation"
+    "back": "Retour à la réservation",
+    "refund": {
+      "title": "Remboursement de {{amount}}",
+      "requestedAt": "Demandé le {{date}}",
+      "completedAt": "Effectué le {{date}}",
+      "status": {
+        "pending": "Remboursement en cours : nous l’envoyons à votre moyen de paiement.",
+        "processing": "Remboursement lancé : il arrivera sur votre moyen de paiement d’ici quelques jours.",
+        "succeeded": "Remboursement effectué sur votre moyen de paiement.",
+        "failed": "Le remboursement doit être vérifié : l’établissement a été prévenu et vous contactera si nécessaire.",
+        "cancelled": "Le remboursement a été géré directement par l’établissement."
+      }
+    }
   },
   "errors": {
     "hold_expired": "Le temps pour finaliser la réservation est écoulé : choisissez à nouveau.",

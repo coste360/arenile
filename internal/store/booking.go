@@ -82,6 +82,10 @@ var bookingMutableColumns = []string{
 	"price_snapshot", "price_current", "total_amount", "deposit_due", "policy_snapshot", "promo_code_id", "agreement_id",
 	"hold_expires_at", "hold_id", "notes_customer", "notes_internal", "confirmed_at", "checked_in_at",
 	"cancelled_at", "cancel_reason", "version", "updated_at",
+	// Manual price of a season pass (00009, ADR 0019 E): written by the pass
+	// service, cleared by a re-pricing modification of the booking service.
+	"price_override_amount", "price_override_engine_amount", "price_override_reason",
+	"price_override_by_user_id", "price_override_at",
 }
 
 // UpdateBookingVersioned writes the mutable columns of b only when the stored
@@ -342,6 +346,8 @@ type BookingFilter struct {
 	Channel    string
 	SeasonPass *bool
 	BalanceDue *bool
+	// Test keeps only test-mode bookings (true) or only real ones (false).
+	Test *bool
 	// Q matches the code prefix or the customer search text (name, phone, email).
 	Q string
 }
@@ -410,6 +416,9 @@ func ListBookings(ctx context.Context, db bun.IDB, es EstablishmentScope, f Book
 		} else {
 			q = q.Where("bk.total_amount <= bk.paid_amount")
 		}
+	}
+	if f.Test != nil {
+		q = q.Where("bk.test = ?", *f.Test)
 	}
 	if s := strings.ToLower(strings.TrimSpace(escapeLike(f.Q))); s != "" {
 		q = q.Where("(LOWER(bk.code) LIKE ? OR cu.search_text LIKE ?)", s+"%", "%"+s+"%")

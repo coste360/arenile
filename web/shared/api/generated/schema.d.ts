@@ -6157,6 +6157,8 @@ export interface components {
             note?: string;
             /** Format: date-time */
             created_at: string;
+            /** @description Incassato in modalità prova (spec 15.4): escluso da report, KPI, corrispettivi ed esportazioni. */
+            test?: boolean;
         };
         PaymentList: {
             items: components["schemas"]["Payment"][];

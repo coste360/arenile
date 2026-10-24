@@ -41,6 +41,7 @@ import { PUBLIC_NS } from '../i18n';
 import type { BookingLocation } from '../location';
 import { CancelSection } from './CancelSection';
 import { ModifySection } from './ModifySection';
+import { RefundStatusNotice } from './RefundStatusNotice';
 import { ReleaseSection } from './ReleaseSection';
 import { RequestLinkForm } from './RequestLinkForm';
 import { resolveManageToken } from './token';
@@ -239,6 +240,13 @@ export function ManagePage({ location, win = window, now = Date.now }: ManagePag
           </CardContent>
         </Card>
 
+        {b.refund && (
+          <RefundStatusNotice
+            refund={b.refund}
+            currency={b.summary.currency}
+            timeZone={establishment?.timezone}
+          />
+        )}
         {renewal && (
           <Suspense fallback={<Skeleton aria-hidden="true" className="h-48 w-full" />}>
             <RenewalSection

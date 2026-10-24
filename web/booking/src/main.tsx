@@ -8,6 +8,7 @@ import { BookingPage } from './BookingPage';
 import { addPublicMessages } from './i18n';
 import { observeServerDate } from './flow/serverClock';
 import { parseBookingLocation } from './location';
+import { PREVIEW_HEADER, resolveTestPreviewToken } from './testPreview';
 import { ManagePage, WaitlistOfferPage } from './views';
 import '@arenile/shared/styles/globals.css';
 
@@ -28,6 +29,16 @@ async function bootstrap() {
       return undefined;
     },
   });
+  // Test-mode preview link (spec 15.4): every public request carries the token.
+  const previewToken = resolveTestPreviewToken(location.slug, window.location.search);
+  if (previewToken) {
+    api.use({
+      onRequest({ request }) {
+        request.headers.set(PREVIEW_HEADER, previewToken);
+        return request;
+      },
+    });
+  }
   const root = document.getElementById('root');
   if (!root) throw new Error('missing #root');
   createRoot(root).render(

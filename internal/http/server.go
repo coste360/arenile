@@ -18,6 +18,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/webhook"
 
 	"github.com/coste360/arenile/internal/domain/credit"
+	"github.com/coste360/arenile/internal/domain/refund"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
 	"github.com/coste360/arenile/internal/domain/waitlist"
@@ -37,6 +38,7 @@ import (
 	devicedomain "github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/fiscal"
+	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/domain/meta"
@@ -49,6 +51,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/domain/testmode"
 	"github.com/coste360/arenile/internal/fiscalbridge"
 	"github.com/coste360/arenile/internal/http/admin"
 	"github.com/coste360/arenile/internal/http/api"
@@ -130,6 +133,15 @@ type Deps struct {
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
 
+	// Deferred features A: test mode (nil = 501, never applies on public).
+	TestMode *testmode.Service
+
+	// Deferred features B: guaranteed refunds (nil = 501).
+	Refunds *refund.Service
+
+	// Deferred features F: CSV imports (nil = 501).
+	Imports *importer.Service
+
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
 	// SSEHeartbeat overrides the SSE heartbeat (tests).
@@ -199,7 +211,7 @@ func New(d Deps) http.Handler {
 			AdminFrameSources: pluginOrigins,
 			Log:               d.Log,
 		}),
-		middleware.OnPrefix("/api/", middleware.LimitBody(1<<20), middleware.RequireJSON),
+		middleware.OnPrefix("/api/", middleware.APIBody(1<<20, importUpload)),
 		middleware.OnPrefix("/api/admin/",
 			middleware.Authenticate(adminAuthenticator(d), d.Log),
 			middleware.APIKeyRateLimit(auth.NewRateLimiter(d.Clock, apiKeyBudget(d.APIKeyRequestsPerMinute), time.Minute)),
@@ -225,6 +237,11 @@ func New(d Deps) http.Handler {
 		})),
 	)
 
+	if d.Establishments != nil {
+		// Server-rendered link previews of /b/{slug} (deferred features F).
+		d.Static.SetBookingMeta(public.BookingPageMeta(d.Establishments, d.Extensions.TenantResolver, d.Log))
+	}
+
 	srv := &server{
 		Handlers: &admin.Handlers{
 			Auth: d.Auth, Establishments: d.Establishments, Log: d.Log, SecureCookies: d.SecureCookies,
@@ -237,6 +254,9 @@ func New(d Deps) http.Handler {
 			Reports: d.Reports, APIKeys: d.APIKeys, Webhooks: d.Webhooks,
 			Stream:   &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
 			Rollover: d.Rollover, Renewals: d.Renewals, Waitlist: d.Waitlist, Credits: d.Credits,
+			TestMode: d.TestMode,
+			Refunds:  d.Refunds,
+			Imports:  d.Imports,
 		},
 		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
 		desktopHandlers: &desktopHandlers{
@@ -246,6 +266,7 @@ func New(d Deps) http.Handler {
 			Establishments: d.Establishments, Online: d.Online, Checkout: d.Checkout,
 			TenantResolver: d.Extensions.TenantResolver, Log: d.Log,
 			Renewals: d.Renewals, Waitlist: d.Waitlist, Credits: d.Credits,
+			TestMode: d.TestMode,
 		},
 		webhookHandlers: webhooks.New(d.Gateway, d.Clock, d.Log),
 		ops:             &ops{readiness: d.Readiness, version: d.Version},
@@ -417,4 +438,18 @@ func apiKeyBudget(n int) int {
 		return middleware.DefaultAPIKeyRequestsPerMinute
 	}
 	return n
+}
+
+// importUpload is the CSV upload of POST /establishments/{id}/imports: a
+// raw text/csv body up to importer.MaxFileBytes (the other API requests
+// stay JSON only, 1 MiB).
+var importUpload = middleware.Upload{
+	Method: http.MethodPost,
+	Match: func(path string) bool {
+		rest, ok := strings.CutPrefix(path, "/api/admin/v1/establishments/")
+		id, tail, found := strings.Cut(rest, "/")
+		return ok && found && id != "" && tail == "imports"
+	},
+	MediaTypes: []string{"text/csv", "text/plain", "application/vnd.ms-excel"},
+	MaxBytes:   importer.MaxFileBytes,
 }

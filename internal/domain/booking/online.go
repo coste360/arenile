@@ -428,10 +428,12 @@ func refundablePaid(ctx context.Context, db bun.IDB, es store.EstablishmentScope
 // CancelAsCustomer cancels (or previews, in.DryRun) from the manage area
 // with the refund or credit of the policy snapshot (the customer may only
 // choose credit instead of the policy outcome, never a larger refund).
-// Credits are recorded at once; a money refund is left due (refund_due in
-// the audit diff): the checkout service then refunds through the payment
-// gateway. confirmed and awaiting_approval bookings only, until the first
-// day of the stay included.
+// Credits are recorded at once (the credit-paid part of a money refund
+// too, M5B); the rest of a money refund is reserved as guaranteed provider
+// refunds in the same transaction (CancelRefunds, ADR 0019: refund_reserved
+// in the audit diff) and what no provider payment can take is left due
+// (refund_due). confirmed and awaiting_approval bookings only, until the
+// first day of the stay included.
 func (s *Service) CancelAsCustomer(ctx context.Context, actor audit.Actor, es store.EstablishmentScope, bookingID string, in CancelInput) (*CancelResult, error) {
 	settle := SettlePolicy
 	if in.Settlement == SettleCredit {
@@ -520,7 +522,9 @@ func (s *Service) CancelAsCustomer(ctx context.Context, actor audit.Actor, es st
 					}
 				}
 				if rest := rf.Amount - creditPart; rest > 0 {
-					diff["refund_due"] = int64(rest)
+					if err := s.reserveRefund(ctx, tx, es, b, rest, store.RefundReasonCustomerCancellation, nil, diff, res); err != nil {
+						return nil, err
+					}
 				}
 				return o, nil
 			}
@@ -698,4 +702,31 @@ func (s *Service) DetailIn(ctx context.Context, db bun.IDB, es store.Establishme
 		return nil, notFound(err)
 	}
 	return s.loadDetail(ctx, db, es, b)
+}
+
+// reserveRefund reserves up to amount of a cancellation money refund as
+// guaranteed provider refunds (CancelRefunds) in tx and records the
+// outcome in the audit diff and in res: refund_reserved and
+// refund_request_ids for the reserved part, refund_due for the rest.
+// Without the port the whole amount stays due.
+func (s *Service) reserveRefund(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, amount money.Cents, reason string, by *string, diff map[string]any, res *CancelResult) error {
+	due := amount
+	res.RefundReserved, res.RefundRequestIDs = 0, nil
+	if s.d.CancelRefunds != nil {
+		reserved, ids, err := s.d.CancelRefunds.ReserveCancellationRefund(ctx, tx, es, b, amount, reason, by)
+		if err != nil {
+			return err
+		}
+		if reserved > 0 {
+			diff["refund_reserved"] = int64(reserved)
+			diff["refund_request_ids"] = ids
+			res.RefundReserved, res.RefundRequestIDs = reserved, ids
+			due -= reserved
+		}
+	}
+	res.RefundDue = due
+	if due > 0 {
+		diff["refund_due"] = int64(due)
+	}
+	return nil
 }

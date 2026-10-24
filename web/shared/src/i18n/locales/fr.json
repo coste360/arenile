@@ -31,7 +31,11 @@
       "invalidTransition": "Action non autorisée dans l'état actuel de la réservation.",
       "cashSessionClosed": "La session de caisse est fermée : ouvrez-en une pour enregistrer des paiements en espèces.",
       "cashSessionAlreadyOpen": "Une session de caisse est déjà ouverte.",
-      "policyViolation": "La demande ne respecte pas les règles de réservation."
+      "policyViolation": "La demande ne respecte pas les règles de réservation.",
+      "testModePreviewRequired": "Les réservations en ligne sont temporairement suspendues pendant que l'établissement teste le système. Réessayez plus tard ou contactez l'établissement.",
+      "importInvalid": "Le fichier n'est pas valide : consultez le rapport de validation.",
+      "importAlreadyApplied": "Ce fichier a déjà été importé : ses lignes sont déjà présentes.",
+      "refundInProgress": "Un remboursement automatique est en cours pour cette réservation : attendez qu'il se termine."
     },
     "languages": {
       "it": "Italiano",
@@ -238,7 +242,8 @@
       "pickHint": "Choisissez le premier et le dernier jour : pour une seule journée, touchez deux fois le même jour."
     },
     "season": "Saison {{year}} : du {{from}} au {{to}}",
-    "nextStepsSoon": "Emplacement, forfait et paiement en ligne arrivent bientôt : en attendant, contactez l’établissement."
+    "nextStepsSoon": "Emplacement, forfait et paiement en ligne arrivent bientôt : en attendant, contactez l’établissement.",
+    "testMode": "Mode test : cette réservation est un test, elle n'est pas valable et aucun paiement réel n'est débité."
   },
   "ui": {
     "close": "Fermer",

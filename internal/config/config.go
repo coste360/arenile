@@ -48,11 +48,17 @@ const (
 	// one address (hotel or beach Wi-Fi) and for automated runs.
 	EnvPublicReadsPerMinute     = "ARENILE_PUBLIC_READS_PER_MINUTE"
 	EnvPublicCreationsPerMinute = "ARENILE_PUBLIC_CREATIONS_PER_MINUTE"
-	EnvLogLevel                 = "ARENILE_LOG_LEVEL"
-	EnvTrustedProxies           = "ARENILE_TRUSTED_PROXIES"
-	EnvRequireTOTPForOwners     = "ARENILE_REQUIRE_TOTP_FOR_OWNERS"
-	EnvTelemetry                = "ARENILE_TELEMETRY"
-	EnvDev                      = "ARENILE_DEV"
+	// EnvRefundMaxAttempts bounds the provider attempts of a guaranteed
+	// refund before it is left failed for the manager (ADR 0019, default 10).
+	EnvRefundMaxAttempts = "ARENILE_REFUND_MAX_ATTEMPTS"
+	// EnvWebhookAttemptRetentionDays (ADR 0019 F): days the full webhook
+	// delivery attempt history is kept (default 30, 1-365).
+	EnvWebhookAttemptRetentionDays = "ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS"
+	EnvLogLevel                    = "ARENILE_LOG_LEVEL"
+	EnvTrustedProxies              = "ARENILE_TRUSTED_PROXIES"
+	EnvRequireTOTPForOwners        = "ARENILE_REQUIRE_TOTP_FOR_OWNERS"
+	EnvTelemetry                   = "ARENILE_TELEMETRY"
+	EnvDev                         = "ARENILE_DEV"
 	// EnvEdition is set by the desktop launcher (never by an operator):
 	// "desktop" is the loopback profile of the core, see Config.Desktop.
 	EnvEdition = "ARENILE_EDITION"
@@ -114,6 +120,10 @@ type Config struct {
 	// WebhooksAllowPrivate disables the private-address part of the SSRF
 	// protection of outgoing webhooks (event.EgressPolicy.AllowPrivate).
 	WebhooksAllowPrivate bool
+	// RefundMaxAttempts is ARENILE_REFUND_MAX_ATTEMPTS (guaranteed refunds).
+	RefundMaxAttempts int
+	// WebhookAttemptRetentionDays is ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS.
+	WebhookAttemptRetentionDays int
 
 	// BootstrapOwner is the optional first owner created by `serve` when the
 	// database has no users. Zero value means disabled.
@@ -206,6 +216,16 @@ func Parse(lookup Lookup) (Config, error) {
 			continue
 		}
 		*l.dst = n
+	}
+	if n, perr := strconv.Atoi(get(EnvRefundMaxAttempts, "10")); perr != nil || n < 1 || n > 100 {
+		errs = append(errs, fmt.Errorf("%s: must be a whole number between 1 and 100", EnvRefundMaxAttempts))
+	} else {
+		cfg.RefundMaxAttempts = n
+	}
+	if n, perr := strconv.Atoi(get(EnvWebhookAttemptRetentionDays, "30")); perr != nil || n < 1 || n > 365 {
+		errs = append(errs, fmt.Errorf("%s: must be a whole number of days between 1 and 365", EnvWebhookAttemptRetentionDays))
+	} else {
+		cfg.WebhookAttemptRetentionDays = n
 	}
 	if cfg.LogLevel, err = parseLevel(get(EnvLogLevel, "info")); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvLogLevel, err))

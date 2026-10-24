@@ -203,7 +203,6 @@
     },
     "customer": "Intestatario",
     "linkExpires": "Link valido fino al {{date}}",
-
     "renewalBadge": "Proposta di rinnovo",
     "payBalance": "Paga il saldo",
     "payBalanceAmount": "Paga il saldo di {{amount}}",
@@ -254,7 +253,19 @@
     "requestLinkSent": "Se i dati corrispondono a una prenotazione, riceverai un nuovo link via email.",
     "linkInvalid": "Il link non è valido o è scaduto.",
     "noActions": "Per modifiche contatta direttamente lo stabilimento.",
-    "back": "Torna alla prenotazione"
+    "back": "Torna alla prenotazione",
+    "refund": {
+      "title": "Rimborso di {{amount}}",
+      "requestedAt": "Richiesto il {{date}}",
+      "completedAt": "Eseguito il {{date}}",
+      "status": {
+        "pending": "Rimborso in corso: lo stiamo inviando al tuo metodo di pagamento.",
+        "processing": "Rimborso avviato: arriverà sul tuo metodo di pagamento in pochi giorni.",
+        "succeeded": "Rimborso eseguito sul tuo metodo di pagamento.",
+        "failed": "Il rimborso richiede una verifica: lo stabilimento è stato avvisato e ti contatterà se necessario.",
+        "cancelled": "Il rimborso è stato gestito direttamente dallo stabilimento."
+      }
+    }
   },
   "errors": {
     "hold_expired": "Il tempo per completare la prenotazione è scaduto: scegli di nuovo.",

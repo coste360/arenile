@@ -76,6 +76,12 @@ linters:
         - integrato
         - comando
         - continuare
+        - impossibile
+        - configurato
+        - modificato
+        - compreso
+        - presentato
+        - contanti
     errorlint:
       errorf: true
       asserts: true

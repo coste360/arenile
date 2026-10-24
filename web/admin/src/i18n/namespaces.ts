@@ -24,6 +24,7 @@ import seasonRolloverIt from '../features/season-rollover/locales/it.json';
 import setupWizardIt from '../features/setup-wizard/locales/it.json';
 import importsIt from '../features/imports/locales/it.json';
 import testModeIt from '../features/test-mode/locales/it.json';
+import notificationsIt from '../features/notifications/locales/it.json';
 
 type Messages = Record<string, unknown>;
 type Loader = () => Promise<{ default: Messages }>;
@@ -270,6 +271,15 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/test-mode/locales/en.json'),
       de: () => import('../features/test-mode/locales/de.json'),
       fr: () => import('../features/test-mode/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'notifications',
+    it: notificationsIt,
+    load: {
+      en: () => import('../features/notifications/locales/en.json'),
+      de: () => import('../features/notifications/locales/de.json'),
+      fr: () => import('../features/notifications/locales/fr.json'),
     },
   },
 ];

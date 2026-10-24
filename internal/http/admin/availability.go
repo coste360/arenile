@@ -157,6 +157,9 @@ func (h *Handlers) GetOperationsDay(w http.ResponseWriter, r *http.Request, esta
 				PaidAmount: int64(b.PaidAmount), BalanceDue: int64(b.BalanceDue), HasExtras: b.HasExtras, HasNotes: b.HasNotes,
 				Version: b.Version,
 			}
+			if b.Test {
+				os.Booking.Test = &b.Test
+			}
 		}
 		out.Spots[i] = os
 	}

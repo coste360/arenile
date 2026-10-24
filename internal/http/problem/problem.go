@@ -23,6 +23,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
@@ -416,8 +417,18 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, CashSessionClosed)
 	case errors.Is(err, cash.ErrSessionAlreadyOpen):
 		Write(w, r, CashSessionOpen)
+	case errors.Is(err, payment.ErrRefundInProgress):
+		Write(w, r, RefundInProgress)
 	case errors.Is(err, store.ErrConflict):
 		Write(w, r, Conflict)
+	case ClientGone(r, err):
+		// The client went away: nobody reads the response, and it is not
+		// a server error (no error log, 499 in the access log).
+		if log != nil {
+			log.DebugContext(r.Context(), "request cancelled by the client",
+				slog.String("request_id", reqctx.From(r.Context()).RequestID))
+		}
+		w.WriteHeader(StatusClientClosedRequest)
 	default:
 		if log != nil {
 			log.ErrorContext(r.Context(), "request failed", slog.String("error", err.Error()),

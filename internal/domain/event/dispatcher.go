@@ -68,6 +68,9 @@ func (d *Dispatcher) DispatchPending(ctx context.Context) (int, error) {
 			if ev.EstablishmentID == "" {
 				return nil
 			}
+			if test, err := testModeEvent(ctx, tx, ev); err != nil || test {
+				return err
+			}
 			endpoints, err := store.ListActiveWebhookEndpoints(ctx, tx, ev.EstablishmentID)
 			if err != nil {
 				return err

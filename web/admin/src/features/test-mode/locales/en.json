@@ -2,5 +2,57 @@
   "page": {
     "title": "Test mode",
     "description": "Try the public page and payments without polluting your data: test bookings are excluded from reports and corrispettivi and can be deleted in bulk."
+  },
+  "banner": {
+    "title": "Test mode is on",
+    "description": "Bookings and payments created now are test data: excluded from reports, KPIs, corrispettivi and exports. The public page accepts bookings only from the preview link.",
+    "descriptionPublic": "Bookings and payments created now are test data, including those made by customers on the public page: excluded from reports, KPIs, corrispettivi and exports.",
+    "manage": "Manage test mode"
+  },
+  "switch": {
+    "title": "Switch",
+    "description": "While test mode is on, everything created (panel, public page preview, API) is marked as test.",
+    "on": "On",
+    "off": "Off",
+    "enabled": "Test mode on",
+    "enabledHint": "Turn it off before you start working with real customers.",
+    "enabledSince": "On since {{when}}.",
+    "public": "Test bookings from customers too",
+    "publicHint": "Without this option the public page accepts bookings only from the preview link; real customers see a notice.",
+    "publicWarningTitle": "Not recommended once the public page is in use",
+    "publicWarning": "Real customers can book, but their bookings are test data: excluded from the figures and deletable in bulk.",
+    "enabledToast": "Test mode turned on",
+    "disabledToast": "Test mode turned off",
+    "savedPublic": "Setting saved"
+  },
+  "stripe": {
+    "configuredTitle": "Online payments with the test keys",
+    "configured": "Stripe automatically uses the test configuration while test mode is on: no real charges.",
+    "missingTitle": "No Stripe test keys",
+    "missing": "While test mode is on, online payments are disabled (pay on site). Add the test keys in Settings > Payments to try them."
+  },
+  "preview": {
+    "title": "Public page preview",
+    "description": "A signed link, valid for 2 hours, to make test bookings from the public page.",
+    "create": "Create preview link",
+    "renew": "New link",
+    "needsEnabled": "Turn test mode on to create the preview link.",
+    "hint": "Create the link and open it on this or another device.",
+    "urlLabel": "Preview link",
+    "copy": "Copy",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy the link",
+    "open": "Open",
+    "expires": "Expires on {{when}}."
+  },
+  "purge": {
+    "title": "Test bookings",
+    "description": "Permanently delete the test bookings with their allocations, payments and messages. Real bookings are never touched; the activity log stays.",
+    "action": "Delete test bookings",
+    "count": "Test bookings",
+    "confirmTitle": "Delete the test bookings?",
+    "confirmDescription": "{{bookings}} test bookings and {{payments}} test payments will be deleted. This cannot be undone.",
+    "confirm": "Delete",
+    "done": "Deleted {{bookings}} test bookings and {{payments}} test payments"
   }
 }

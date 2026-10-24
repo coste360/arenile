@@ -16358,6 +16358,9 @@ components:
         created_at:
           type: string
           format: date-time
+        test:
+          type: boolean
+          description: "Incassato in modalità prova (spec 15.4): escluso da report, KPI, corrispettivi ed esportazioni."
     PaymentList:
       type: object
       required: [items]

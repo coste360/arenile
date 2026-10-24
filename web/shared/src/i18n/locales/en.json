@@ -31,7 +31,11 @@
       "invalidTransition": "This action is not allowed in the current booking status.",
       "cashSessionClosed": "The cash session is closed: open one to record cash payments.",
       "cashSessionAlreadyOpen": "A cash session is already open.",
-      "policyViolation": "The request does not comply with the booking rules."
+      "policyViolation": "The request does not comply with the booking rules.",
+      "testModePreviewRequired": "Online booking is temporarily suspended while the establishment tests the system. Please try again later or contact the establishment.",
+      "importInvalid": "The file is not valid: check the validation report.",
+      "importAlreadyApplied": "This file has already been imported: its rows are already there.",
+      "refundInProgress": "An automatic refund is in progress for this booking: wait for it to finish."
     },
     "languages": {
       "it": "Italiano",
@@ -238,7 +242,8 @@
       "pickHint": "Pick the first and last day: for a single day, tap the same day twice."
     },
     "season": "Season {{year}}: from {{from}} to {{to}}",
-    "nextStepsSoon": "Spot, package and online payment are coming soon: for now, contact the establishment."
+    "nextStepsSoon": "Spot, package and online payment are coming soon: for now, contact the establishment.",
+    "testMode": "Test mode: this booking is a test, it is not valid and no real payment is charged."
   },
   "ui": {
     "close": "Close",

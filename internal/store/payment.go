@@ -222,6 +222,7 @@ func ListSucceededPayments(ctx context.Context, db bun.IDB, es EstablishmentScop
 	err := db.NewSelect().Model(&items).
 		Where("pm.establishment_id = ?", es.ID()).
 		Where("pm.status = ?", PaymentSucceeded).
+		Where("pm.test = ?", false). // test mode rows never reach the corrispettivi (INV-74)
 		Where("pm.business_date >= ?", from).
 		Where("pm.business_date <= ?", to).
 		OrderExpr("pm.business_date ASC, pm.id ASC").

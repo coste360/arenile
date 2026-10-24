@@ -39,15 +39,22 @@ func confirmed(e *checkouttest.Env, spot *store.Spot, day string) (*checkout.Ses
 	return s, link.Token
 }
 
-// paidOnline records an online (provider) payment of amount on a booking.
+// paidOnline records an online (provider) payment of amount on a booking:
+// the ledger row and its succeeded payment intent.
 func paidOnline(e *checkouttest.Env, bookingID string, amount money.Cents) {
 	e.T.Helper()
 	now := e.F.Clock.Now()
 	ref := "pi_" + bookingID
-	e.F.Insert(&store.Payment{
+	pm := &store.Payment{
 		ID: store.NewID(), EstablishmentID: e.F.Est.ID, BookingID: &bookingID, Provider: "stripe", Method: "card", Direction: "in",
 		Amount: amount, Status: "succeeded", ProviderRef: &ref, VATBreakdown: []store.VATShare{}, BusinessDate: calendar.In(now, time.UTC),
 		Metadata: map[string]any{}, CreatedAt: now, UpdatedAt: now,
+	}
+	e.F.Insert(pm)
+	e.F.Insert(&store.PaymentIntent{
+		ID: store.NewID(), EstablishmentID: e.F.Est.ID, BookingID: &bookingID, PaymentID: &pm.ID, Provider: "stripe", Mode: store.ProviderModeTest,
+		Kind: store.IntentKindPayment, ExternalID: "cs_" + pm.ID, ExternalRef: &ref, Status: store.IntentSucceeded, Amount: amount,
+		Currency: "EUR", Attempt: 1, RawEventIDs: []string{}, CreatedAt: now, UpdatedAt: now,
 	})
 	e.F.PayBooking(bookingID, amount)
 }
@@ -121,8 +128,16 @@ func TestManage_CancelRefundsThroughProvider(t *testing.T) {
 		if err != nil || !out.Result.Applied || out.RefundStatus != checkout.RefundProviderPending || out.Managed.Booking.Booking.Status != "cancelled" {
 			t.Fatalf("cancel %v %+v", err, out)
 		}
-		if len(e.Pay.Refunds) != 1 || e.Pay.Refunds[0].Amount != 2000 || e.Pay.Refunds[0].IdempotencyKey == "" {
+		if len(e.Pay.Refunds) != 1 || e.Pay.Refunds[0].Amount != 2000 || !strings.HasPrefix(e.Pay.Refunds[0].IdempotencyKey, "refund:"+s.BookingID+":") {
 			t.Fatalf("provider refunds %+v", e.Pay.Refunds)
+		}
+		// ADR 0019: the refund was reserved in the cancellation transaction
+		// and sent at once; the customer sees it in progress.
+		if r := out.Managed.Refund; r == nil || r.Status != store.RefundRequestProcessing || r.Amount != 2000 {
+			t.Fatalf("manage refund state %+v", out.Managed.Refund)
+		}
+		if n := e.Count((*store.RefundRequest)(nil), "booking_id = ?", s.BookingID); n != 1 {
+			t.Fatalf("refund requests: %d", n)
 		}
 		if e.Count((*store.SpotAllocation)(nil), "booking_id = ?", s.BookingID) != 0 {
 			t.Fatal("cancelled booking kept its spot")

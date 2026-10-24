@@ -36,6 +36,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/pass"
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
+	"github.com/coste360/arenile/internal/domain/refund"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/pkg/ext"
 )
@@ -62,6 +63,9 @@ type Env struct {
 	Customers *customer.Service
 	Payments  *payment.Service
 	Credits   *credit.Service
+	// Refunds is the real guaranteed refund service (ADR 0019) sending
+	// through the in-memory gateway Pay.
+	Refunds *refund.Service
 }
 
 const Slug = "lido-delfino"
@@ -107,16 +111,19 @@ func New(t testing.TB, db *store.DB, opts ...Options) *Env {
 	}
 	on := online.NewService(online.Deps{DB: db, Clock: c, Audit: aw, Outbox: ob, Keys: keys, Providers: testProviders{}, BaseURL: "https://prenota.example.org"})
 	e := &Env{
-		T: t, F: f, DB: db, Ctx: ctx, Online: on, Book: bk, Inv: inv, Pay: &Payments{}, Notify: &Notifier{db: db, clock: c},
+		T: t, F: f, DB: db, Ctx: ctx, Online: on, Book: bk, Inv: inv, Pay: &Payments{db: db, clock: c}, Notify: &Notifier{db: db, clock: c},
 		Customers: cust, Payments: pays, Credits: ledger,
 	}
 	e.ES, err = store.SystemEstablishmentScope(ctx, db, f.Est.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
+	e.Refunds = refund.NewService(refund.Deps{DB: db, Clock: c, Audit: aw, Sender: e.Pay})
+	bk.SetCancelRefunds(e.Refunds)
 	e.Svc = checkout.NewService(checkout.Deps{
 		DB: db, Clock: c, Settings: on, Inventory: inv, Pricer: f.Pricing, Bookings: bk, Payments: e.Pay, Notifier: e.Notify,
 		Passes: passes, HoldTTL: 10 * time.Minute, BaseURL: "https://prenota.example.org", CreatesPerEstablishment: -1,
+		Refunds: e.Refunds,
 	})
 	if _, err := on.Update(ctx, f.Owner, f.Est.ID, nil, online.Input{BookingEnabled: true, Flow: online.Config{PromoCodesEnabled: true}}); err != nil {
 		t.Fatal(err)
@@ -232,8 +239,13 @@ func (testDriver) Refund(context.Context, ext.RefundRequest) (*ext.RefundResult,
 	return nil, ext.ErrNotSupported
 }
 
-// fakePayments records the provider payments asked by checkout.
+// fakePayments records the provider payments asked by checkout. Its
+// refunds are stored as pending refund intents (deduplicated by
+// idempotency key, like the gateway), so guaranteed refund requests can
+// point to them.
 type Payments struct {
+	db      *store.DB
+	clock   interface{ Now() time.Time }
 	mu      sync.Mutex
 	Starts  []gateway.StartRequest
 	Refunds []gateway.RefundRequest
@@ -254,11 +266,31 @@ func (p *Payments) LatestForBooking(context.Context, bun.IDB, store.Establishmen
 	return nil, store.ErrNotFound
 }
 
-func (p *Payments) RefundViaProvider(_ context.Context, _ store.EstablishmentScope, req gateway.RefundRequest) (*store.PaymentIntent, error) {
+func (p *Payments) RefundViaProvider(ctx context.Context, es store.EstablishmentScope, req gateway.RefundRequest) (*store.PaymentIntent, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if req.IdempotencyKey != "" {
+		if ri, err := store.GetPaymentIntentByIdempotencyKey(ctx, p.db, es, req.IdempotencyKey); err == nil {
+			return ri, nil
+		}
+	}
 	p.Refunds = append(p.Refunds, req)
-	return &store.PaymentIntent{ID: store.NewID(), Status: store.IntentPending, Amount: req.Amount}, nil
+	ri := &store.PaymentIntent{ID: store.NewID(), Status: store.IntentPending, Amount: req.Amount}
+	pay, err := store.GetPaymentIntentByPaymentID(ctx, p.db, es, req.PaymentID)
+	if err != nil {
+		return ri, nil //nolint:nilerr // no intent to point to: in-memory only
+	}
+	now := p.clock.Now().UTC()
+	key := req.IdempotencyKey
+	*ri = store.PaymentIntent{
+		ID: ri.ID, BookingID: pay.BookingID, RefundOfIntentID: &pay.ID, Provider: pay.Provider, Mode: pay.Mode,
+		Kind: store.IntentKindRefund, ExternalID: "re_" + ri.ID, Status: store.IntentPending, Amount: req.Amount,
+		Currency: pay.Currency, Attempt: 1, IdempotencyKey: &key, RawEventIDs: []string{}, CreatedAt: now, UpdatedAt: now,
+	}
+	if err := store.InsertPaymentIntent(ctx, p.db, es, ri); err != nil {
+		return nil, err
+	}
+	return ri, nil
 }
 
 // fakeNotifier keeps magic links in magic_link_tokens (hash only, like

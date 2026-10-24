@@ -189,6 +189,10 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 		diff["forced"] = true
 		diff["violations"] = pr.res.Violations
 	}
+	// Approval rule R1/R4 (approval.go): force never waives the approval.
+	if err := s.checkModifyApproval(ctx, tx, p, es, b, pr.approval, in.Force, diff); err != nil {
+		return nil, err
+	}
 	res.PreviousTotal, res.NewTotal = b.TotalAmount, pr.res.Breakdown.Total
 
 	// Resources: release everything, rewrite the lines, allocate again.
@@ -240,6 +244,7 @@ func (s *Service) modifyLocked(ctx context.Context, tx bun.IDB, p *auth.Principa
 	if err := s.applyTotals(b, pr, now); err != nil {
 		return nil, err
 	}
+	res.NewTotal = b.TotalAmount // a kept manual price (ADR 0019 E)
 	if in.NotesCustomer != nil {
 		b.NotesCustomer = strings.TrimSpace(*in.NotesCustomer)
 		diff["notes_customer_changed"] = true
@@ -334,7 +339,17 @@ func (s *Service) rewriteRows(ctx context.Context, tx bun.IDB, es store.Establis
 // the breakdown that prices the booking (INV-12, ADR 0011) and payments split
 // their VAT on the current rate mix.
 func (s *Service) applyTotals(b *store.Booking, pr *priced, now time.Time) error {
+	if b.PriceOverrideEngineAmount != nil && *b.PriceOverrideEngineAmount == pr.res.Breakdown.Total {
+		// Manual price of a season pass (ADR 0019 E) and an engine total
+		// unchanged by the modification (notes, customer, same-price
+		// move): the override keeps pricing the pass.
+		return nil
+	}
 	b.TotalAmount = pr.res.Breakdown.Total
+	// A re-pricing modification that changes the engine total replaces a
+	// manual price of a season pass: the engine prices the new stay.
+	b.PriceOverrideAmount, b.PriceOverrideEngineAmount, b.PriceOverrideReason = nil, nil, nil
+	b.PriceOverrideByUserID, b.PriceOverrideAt = nil, nil
 	if pr.res.SeasonID != "" {
 		sid := pr.res.SeasonID
 		b.SeasonID = &sid
@@ -368,11 +383,11 @@ func (s *Service) Move(ctx context.Context, p *auth.Principal, establishmentID, 
 		return nil, configerr.Invalid("spot_id", "Campo obbligatorio.")
 	}
 	return s.changeInTx(ctx, p, establishmentID, id, in.ExpectedVersion, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
-		return s.moveLocked(ctx, tx, es, b, in, res)
+		return s.moveLocked(ctx, tx, p, es, b, in, res)
 	})
 }
 
-func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, in MoveInput, res *ChangeResult) (*outcome, error) {
+func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, b *store.Booking, in MoveInput, res *ChangeResult) (*outcome, error) {
 	st := Status(b.Status)
 	if !modifiable(st) {
 		return nil, ErrNotModifiable
@@ -414,6 +429,12 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, es store.Establish
 	}
 	pr, err := s.repriceAs(ctx, tx, es, b, st2, lines, bookingExtras, cat)
 	if err != nil {
+		return nil, err
+	}
+	// Approval rule R4 (approval.go): a move onto a spot whose policy needs
+	// approval is refused to the desk on a confirmed booking.
+	approvedDiff := map[string]any{}
+	if err := s.checkModifyApproval(ctx, tx, p, es, b, pr.approval, false, approvedDiff); err != nil {
 		return nil, err
 	}
 	res.PreviousTotal, res.NewTotal = b.TotalAmount, pr.res.Breakdown.Total
@@ -462,9 +483,13 @@ func (s *Service) moveLocked(ctx context.Context, tx bun.IDB, es store.Establish
 	if err := s.applyTotals(b, pr, now); err != nil {
 		return nil, err
 	}
+	res.NewTotal = b.TotalAmount // a kept manual price (ADR 0019 E)
 	diff := map[string]any{
 		"line_id": in.LineID, "from_spot_id": prevSpot, "to_spot_id": in.SpotID, "from": from.String(),
 		"previous_total": int64(res.PreviousTotal), "new_total": int64(res.NewTotal),
+	}
+	for k, v := range approvedDiff {
+		diff[k] = v
 	}
 	return &outcome{action: actionMoved, event: eventModified, diff: diff, alloc: mergeAlloc(released, allocated)}, nil
 }
