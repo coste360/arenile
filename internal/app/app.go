@@ -63,6 +63,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
 	"github.com/coste360/arenile/internal/domain/testmode"
+	"github.com/coste360/arenile/internal/domain/update"
 	"github.com/coste360/arenile/internal/fiscalbridge"
 	httpserver "github.com/coste360/arenile/internal/http"
 	"github.com/coste360/arenile/internal/http/sse"
@@ -84,6 +85,9 @@ type options struct {
 	// public API (0 = spec 17.2 defaults).
 	publicReads, publicCreations int
 	desktop                      control.Control
+	// Update notice (ADR 0025): desktop notification and test client.
+	updateNotify func(latest string)
+	updateClient *http.Client
 }
 
 // Option configures New.
@@ -174,6 +178,8 @@ type App struct {
 	Imports *importer.Service
 	// ESC/POS network printing (wired by wirePrinting, see printing.go).
 	Printing *printing.Service
+	// Update notice (wired by wireUpdates, see updates.go; ADR 0025).
+	Updates *update.Service
 
 	mu    sync.Mutex
 	addr  string
@@ -295,6 +301,7 @@ func (a *App) wire() error {
 	a.wireRefunds(aw)
 	a.wireImports(aw)
 	a.wirePrinting(aw)
+	a.wireUpdates()
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -319,7 +326,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.refundJobs(), a.importJobs(), a.printingJobs()) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.refundJobs(), a.importJobs(), a.printingJobs(), a.Updates.Jobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -341,6 +348,7 @@ func (a *App) wire() error {
 		Refunds:        a.Refunds,
 		Imports:        a.Imports,
 		Printing:       a.Printing,
+		Updates:        a.Updates,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

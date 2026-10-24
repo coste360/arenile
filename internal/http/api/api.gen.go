@@ -3288,6 +3288,48 @@ func (e StreamTopic) Valid() bool {
 	}
 }
 
+// Defines values for SystemUpdateHowToUpdate.
+const (
+	SystemUpdateHowToUpdateBinary  SystemUpdateHowToUpdate = "binary"
+	SystemUpdateHowToUpdateDesktop SystemUpdateHowToUpdate = "desktop"
+	SystemUpdateHowToUpdateDocker  SystemUpdateHowToUpdate = "docker"
+)
+
+// Valid indicates whether the value is a known member of the SystemUpdateHowToUpdate enum.
+func (e SystemUpdateHowToUpdate) Valid() bool {
+	switch e {
+	case SystemUpdateHowToUpdateBinary:
+		return true
+	case SystemUpdateHowToUpdateDesktop:
+		return true
+	case SystemUpdateHowToUpdateDocker:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SystemUpdateStatus.
+const (
+	SystemUpdateStatusDisabled    SystemUpdateStatus = "disabled"
+	SystemUpdateStatusOk          SystemUpdateStatus = "ok"
+	SystemUpdateStatusUnavailable SystemUpdateStatus = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the SystemUpdateStatus enum.
+func (e SystemUpdateStatus) Valid() bool {
+	switch e {
+	case SystemUpdateStatusDisabled:
+		return true
+	case SystemUpdateStatusOk:
+		return true
+	case SystemUpdateStatusUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TeamScope.
 const (
 	TeamScopeEstablishment TeamScope = "establishment"
@@ -5469,7 +5511,7 @@ type DesktopSettings struct {
 	// LanPort Porta del listener sulla rete locale (default 8443).
 	LanPort *int `json:"lan_port,omitempty"`
 
-	// UpdateCheck Controllo della nuova versione (falso di default: nessuna chiamata di rete).
+	// UpdateCheck Controllo della nuova versione (vero di default, ADR 0025): una richiesta al giorno al file pubblico della versione più recente, senza dati dello stabilimento né identificativi. Falso = nessuna chiamata di rete.
 	UpdateCheck bool `json:"update_check"`
 }
 
@@ -10015,6 +10057,43 @@ type StripeSettingsInput struct {
 	// WebhookSecret Assente = invariato; vuoto = cancella. Mai restituito.
 	WebhookSecret *string `json:"webhook_secret,omitempty"`
 }
+
+// SystemUpdate Stato dell'avviso di nuova versione (ADR 0025). `latest`, `published_at`, `release_notes_url` e `download_url` sono presenti solo dopo un controllo riuscito negli ultimi 7 giorni.
+type SystemUpdate struct {
+	// CheckEnabled Vero se il controllo degli aggiornamenti è attivo.
+	CheckEnabled bool `json:"check_enabled"`
+
+	// CheckedAt Ultimo controllo riuscito (UTC).
+	CheckedAt *time.Time `json:"checked_at,omitempty"`
+
+	// Current Versione in esecuzione (tag di release, `dev` in sviluppo).
+	Current string `json:"current"`
+
+	// DownloadUrl Edizione desktop: il pacchetto per il sistema operativo e l'architettura in uso, oppure la pagina dei download. Installazione con il binario: l'archivio per il sistema in uso. Assente con Docker.
+	DownloadUrl *string `json:"download_url,omitempty"`
+
+	// HowToUpdate Come si aggiorna questa installazione (sceglie l'azione proposta dal pannello).
+	HowToUpdate SystemUpdateHowToUpdate `json:"how_to_update"`
+
+	// Latest Ultima versione pubblicata.
+	Latest      *string    `json:"latest,omitempty"`
+	PublishedAt *time.Time `json:"published_at,omitempty"`
+
+	// ReleaseNotesUrl Pagina con le novità della versione.
+	ReleaseNotesUrl *string `json:"release_notes_url,omitempty"`
+
+	// Status `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
+	Status SystemUpdateStatus `json:"status"`
+
+	// UpdateAvailable Vero se `latest` è più recente di `current` e il controllo è attivo.
+	UpdateAvailable bool `json:"update_available"`
+}
+
+// SystemUpdateHowToUpdate Come si aggiorna questa installazione (sceglie l'azione proposta dal pannello).
+type SystemUpdateHowToUpdate string
+
+// SystemUpdateStatus `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
+type SystemUpdateStatus string
 
 // TeamMember Utente con accesso allo stabilimento; role è il ruolo efficace qui.
 type TeamMember struct {
@@ -15023,6 +15102,9 @@ type ServerInterface interface {
 	// StreamEvents Flusso SSE degli eventi di uno stabilimento
 	// (GET /api/admin/v1/stream)
 	StreamEvents(w http.ResponseWriter, r *http.Request, params StreamEventsParams)
+	// GetSystemUpdate Avviso di nuova versione di Arenile
+	// (GET /api/admin/v1/system/update)
+	GetSystemUpdate(w http.ResponseWriter, r *http.Request)
 	// ListDesktopBackups Backup presenti nella cartella dei backup
 	// (GET /api/desktop/v1/backups)
 	ListDesktopBackups(w http.ResponseWriter, r *http.Request)
@@ -16844,6 +16926,12 @@ func (_ Unimplemented) GetMeta(w http.ResponseWriter, r *http.Request) {
 // StreamEvents Flusso SSE degli eventi di uno stabilimento
 // (GET /api/admin/v1/stream)
 func (_ Unimplemented) StreamEvents(w http.ResponseWriter, r *http.Request, params StreamEventsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GetSystemUpdate Avviso di nuova versione di Arenile
+// (GET /api/admin/v1/system/update)
+func (_ Unimplemented) GetSystemUpdate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -35097,6 +35185,20 @@ func (siw *ServerInterfaceWrapper) StreamEvents(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
+// GetSystemUpdate operation middleware
+func (siw *ServerInterfaceWrapper) GetSystemUpdate(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSystemUpdate(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListDesktopBackups operation middleware
 func (siw *ServerInterfaceWrapper) ListDesktopBackups(w http.ResponseWriter, r *http.Request) {
 
@@ -37986,6 +38088,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/admin/v1/meta", wrapper.GetMeta)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/admin/v1/system/update", wrapper.GetSystemUpdate)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/admin/v1/establishments/{establishmentId}/devices/pairing-codes", wrapper.CreateDevicePairingCode)

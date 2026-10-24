@@ -43,6 +43,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
 	"github.com/coste360/arenile/internal/domain/testmode"
+	"github.com/coste360/arenile/internal/domain/update"
 	"github.com/coste360/arenile/internal/domain/ticketassign"
 	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/domain/waitlist"
@@ -131,6 +132,8 @@ type Handlers struct {
 	Tickets   *ticketing.Service
 	// ESC/POS network printing (printing.go, ADR 0021); own block.
 	Printing *printing.Service
+	// Update notice (system_update.go, ADR 0025); own block, nil = 501.
+	Updates *update.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.

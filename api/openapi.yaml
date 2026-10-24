@@ -8851,6 +8851,33 @@ paths:
               schema:
                 $ref: "#/components/schemas/Meta"
 
+  /api/admin/v1/system/update:
+    get:
+      operationId: getSystemUpdate
+      tags: [meta]
+      summary: Avviso di nuova versione di Arenile
+      description: >-
+        ADR 0025. Restituisce la versione in esecuzione e, se il controllo degli aggiornamenti è attivo
+        (`ARENILE_UPDATE_CHECK`, default vero; nell'edizione desktop l'impostazione `update_check`), l'ultima
+        versione pubblicata letta dal processo in background una volta al giorno. Non fa chiamate di rete
+        durante la richiesta: risponde dalla copia in memoria. Leggibile dai titolari e dai gestori (permesso
+        `establishment.configure` su almeno uno stabilimento); le chiavi API non hanno accesso. Le versioni di
+        sviluppo (`dev`, `-dev.`) non controllano mai.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Stato degli aggiornamenti
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemUpdate"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
   /api/admin/v1/establishments/{establishmentId}/devices/pairing-codes:
     post:
       operationId: createDevicePairingCode
@@ -21980,6 +22007,54 @@ components:
           type: string
           minLength: 1
           maxLength: 120
+    SystemUpdate:
+      type: object
+      description: >-
+        Stato dell'avviso di nuova versione (ADR 0025). `latest`, `published_at`, `release_notes_url` e
+        `download_url` sono presenti solo dopo un controllo riuscito negli ultimi 7 giorni.
+      required: [current, status, update_available, how_to_update, check_enabled]
+      properties:
+        current:
+          type: string
+          description: Versione in esecuzione (tag di release, `dev` in sviluppo).
+        status:
+          type: string
+          enum: [ok, unavailable, disabled]
+          description: >-
+            `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo
+            controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per
+            l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli
+            ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
+        latest:
+          type: string
+          description: Ultima versione pubblicata.
+        update_available:
+          type: boolean
+          description: Vero se `latest` è più recente di `current` e il controllo è attivo.
+        published_at:
+          type: string
+          format: date-time
+        release_notes_url:
+          type: string
+          format: uri
+          description: Pagina con le novità della versione.
+        download_url:
+          type: string
+          format: uri
+          description: >-
+            Edizione desktop: il pacchetto per il sistema operativo e l'architettura in uso, oppure la pagina
+            dei download. Installazione con il binario: l'archivio per il sistema in uso. Assente con Docker.
+        how_to_update:
+          type: string
+          enum: [desktop, docker, binary]
+          description: Come si aggiorna questa installazione (sceglie l'azione proposta dal pannello).
+        check_enabled:
+          type: boolean
+          description: Vero se il controllo degli aggiornamenti è attivo.
+        checked_at:
+          type: string
+          format: date-time
+          description: Ultimo controllo riuscito (UTC).
     DesktopSettings:
       type: object
       required: [backup_dir, backup_retention, backup_daily, backup_on_exit, update_check, autostart, lan_enabled]
@@ -22000,7 +22075,10 @@ components:
           type: boolean
         update_check:
           type: boolean
-          description: "Controllo della nuova versione (falso di default: nessuna chiamata di rete)."
+          description: >-
+            Controllo della nuova versione (vero di default, ADR 0025): una richiesta al giorno al file pubblico
+            della versione più recente, senza dati dello stabilimento né identificativi. Falso = nessuna chiamata
+            di rete.
         autostart:
           type: boolean
           description: Avvio automatico all'accensione del PC.

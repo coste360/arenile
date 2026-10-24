@@ -18,12 +18,13 @@ const (
 )
 
 // DefaultSettings returns the settings of a fresh installation: daily and
-// on-exit backups in <dataDir>/backups, no update check, no autostart, LAN
-// mode off.
+// on-exit backups in <dataDir>/backups, update check on (ADR 0025), no
+// autostart, LAN mode off. A settings file saved before ADR 0025 has no
+// update_check field and gets the default (on); an explicit false stays.
 func DefaultSettings(dataDir string) control.Settings {
 	return control.Settings{
 		BackupDir: filepath.Join(dataDir, "backups"), BackupRetention: DefaultBackupRetention,
-		BackupDaily: true, BackupOnExit: true, LANPort: DefaultLANPort,
+		BackupDaily: true, BackupOnExit: true, LANPort: DefaultLANPort, UpdateCheck: true,
 	}
 }
 

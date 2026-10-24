@@ -56,6 +56,7 @@ function startInstance() {
     ARENILE_BASE_URL: base,
     ARENILE_SECRET_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=', // test-only key
     ARENILE_TELEMETRY: 'false',
+    ARENILE_UPDATE_CHECK: 'false',
     ARENILE_LOG_LEVEL: 'warn',
     ARENILE_ADMIN_PASSWORD: 'Lighthouse-Owner-2026!',
   };

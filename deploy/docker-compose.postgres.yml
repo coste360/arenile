@@ -75,6 +75,8 @@ services:
       ARENILE_TRUSTED_PROXIES: "${ARENILE_TRUSTED_PROXIES:-}"
       ARENILE_REQUIRE_TOTP_FOR_OWNERS: "${ARENILE_REQUIRE_TOTP_FOR_OWNERS:-false}"
       ARENILE_TELEMETRY: "${ARENILE_TELEMETRY:-false}"
+      # Avviso di nuova versione nel pannello (ADR 0025): false per disattivarlo.
+      ARENILE_UPDATE_CHECK: "${ARENILE_UPDATE_CHECK:-true}"
       # Primo utente owner, creato all'avvio solo se il database non ha utenti
       # (l'immagine è distroless e non ha una shell per "admin create").
       ARENILE_BOOTSTRAP_OWNER_EMAIL: "${ARENILE_BOOTSTRAP_OWNER_EMAIL:-}"

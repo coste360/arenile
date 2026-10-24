@@ -144,7 +144,7 @@ var messages = map[string][2]string{
 	// Notifications (launcher.go, remote/mode.go).
 	"notify.lan_not_started":   {"Modalità rete locale non avviata: controlla le impostazioni.", "Local network mode not started: check the settings."},
 	"notify.daily_backup_fail": {"Backup giornaliero non riuscito: controlla la cartella dei backup.", "Daily backup failed: check the backup folder."},
-	"notify.update":            {"È disponibile la versione %s: scaricala dal portale Coste360.", "Version %s is available: download it from the Coste360 portal."},
+	"notify.update":            {"È disponibile la versione %s: apri il pannello per scaricarla.", "Version %s is available: open the panel to download it."},
 	"notify.fatal":             {"Arenile si è fermato per un errore: riaprilo. Dettagli nella cartella dati (logs).", "Arenile stopped because of an error: open it again. Details in the data folder (logs)."},
 	"notify.restore_fail":      {"Ripristino non riuscito: i dati attuali non sono stati modificati.", "Restore failed: the current data was not changed."},
 	"notify.restore_ok":        {"Ripristino completato: ricarica la pagina del pannello.", "Restore completed: reload the panel page."},

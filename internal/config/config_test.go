@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/coste360/arenile/internal/updates"
 )
 
 func env(m map[string]string) Lookup {
@@ -109,12 +111,40 @@ func TestParse_Invalid(t *testing.T) {
 		{"short key", map[string]string{EnvSecretKey: base64.StdEncoding.EncodeToString([]byte("too short"))}},
 		{"non base64 key", map[string]string{EnvSecretKey: "%%%"}},
 		{"bootstrap owner without password", map[string]string{EnvBootstrapOwnerEmail: "a@b.it", EnvBootstrapOwnerName: "A", EnvBootstrapOwnerOrg: "Lido"}},
+		{"bad update check", map[string]string{EnvUpdateCheck: "sometimes"}},
+		{"bad update url", map[string]string{EnvUpdateURL: "updates.example.com/latest.json"}},
+		{"bad install", map[string]string{EnvInstall: "snap"}},
 		{"bootstrap owner without org", map[string]string{EnvBootstrapOwnerEmail: "a@b.it", EnvBootstrapOwnerName: "A", EnvAdminPassword: "x"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := Parse(env(tt.env)); !errors.Is(err, ErrInvalid) {
 				t.Fatalf("want ErrInvalid, got %v", err)
+			}
+		})
+	}
+}
+
+func TestParse_UpdateCheck(t *testing.T) {
+	tests := []struct {
+		name        string
+		env         map[string]string
+		wantCheck   bool
+		wantURL     string
+		wantInstall string
+	}{
+		{"defaults: on, Coste360 file, binary", nil, true, updates.DefaultURL, InstallBinary},
+		{"off", map[string]string{EnvUpdateCheck: "false"}, false, updates.DefaultURL, InstallBinary},
+		{"mirror and docker", map[string]string{EnvUpdateURL: "https://mirror.example.com/latest.json", EnvInstall: "Docker"}, true, "https://mirror.example.com/latest.json", InstallDocker},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := Parse(env(tt.env))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if cfg.UpdateCheck != tt.wantCheck || cfg.UpdateURL != tt.wantURL || cfg.Install != tt.wantInstall || cfg.Telemetry {
+				t.Fatalf("got check=%v url=%q install=%q telemetry=%v", cfg.UpdateCheck, cfg.UpdateURL, cfg.Install, cfg.Telemetry)
 			}
 		})
 	}

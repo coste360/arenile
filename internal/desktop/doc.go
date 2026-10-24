@@ -12,7 +12,7 @@
 //
 // Pure functions hold the decisions and are table-tested on every OS:
 // DataDir, DesktopConfig, BackupFileName/ParseBackupFileName,
-// PruneCandidates, DailyDue, CompareVersions, LaunchAgentPlist,
+// PruneCandidates, DailyDue, LaunchAgentPlist,
 // XDGAutostartEntry, WindowsRunValue, OpenCommand, NotifyCommand,
 // TrayIconPNG. The imperative shell around them is small and injected:
 //
@@ -21,7 +21,8 @@
 //     FileSecretStore 0600), Autostart (strategy per OS: LaunchAgent plist,
 //     HKCU Run value through RunKey, XDG autostart entry), BackupStore
 //     (Backuper on the shared store.BackupSQLite/RestoreSQLiteFile);
-//   - clock.Clock for the scheduler, http.Client for the update check.
+//   - clock.Clock for the scheduler, http.Client for the update check of
+//     the core (internal/domain/update, app.WithUpdateHTTPClient).
 //
 // # Files
 //
@@ -30,7 +31,8 @@
 //     reused> -> app.New(cfg, app.WithDesktop(runtime)) (the same bootstrap
 //     as `arenile serve`, migrations included) -> panel (app window of the
 //     shell build, else browser) on /admin/ or /admin/first-run#token=...
-//     -> tray menu, daily backups, update check, restore = stop, replace,
+//     -> tray menu, daily backups, native notification of a new version
+//     (app.WithUpdateNotifier), restore = stop, replace,
 //     start -> exit backup after the stop.
 //   - activate.go: the single-instance activation listener (a second
 //     launch brings the running window to the front).
@@ -44,7 +46,7 @@
 //     panel URL for a second launch), the remembered port.
 //   - keyring.go, secret.go: secret key stores and ResolveSecretKey (never
 //     generates a new key for an existing database).
-//   - autostart*.go, open.go, icon.go, logfile.go, updates.go, paths.go,
+//   - autostart*.go, open.go, icon.go, logfile.go, paths.go,
 //     settings.go, firstrun.go, lan.go: see each type.
 //
 // # Invariants (docs/invariants.md INV-57, INV-59, INV-60)
@@ -54,8 +56,10 @@
 //   - /api/desktop/v1 is reachable only from loopback (middleware
 //     LoopbackOnly checks the TCP peer, not X-Forwarded-For, and the Host
 //     header against DNS rebinding); first-run needs the one-time token.
-//   - No network call to Coste360 or anywhere else unless the operator
-//     enables the update check (ARENILE_TELEMETRY stays false).
+//   - No network call to Coste360 or anywhere else except the daily update
+//     check (ADR 0025: on by default, off with the update_check setting;
+//     version, edition and OS/arch in the User-Agent only). Telemetry
+//     (ARENILE_TELEMETRY) stays false.
 //   - Payments: manual driver only; no public page (meta capabilities and
 //     the panel's DesktopOnlineNotice).
 //   - Logs never contain the first-run token, the secret key or personal

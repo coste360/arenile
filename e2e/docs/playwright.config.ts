@@ -83,6 +83,8 @@ export default defineConfig({
           ARENILE_SECRET_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
           ARENILE_LOG_LEVEL: "warn",
           ARENILE_TELEMETRY: "false",
+          // No update check (ADR 0025): screenshots never show the update banner.
+          ARENILE_UPDATE_CHECK: "false",
           // Emails of the demo flows go to files, never to the network.
           ARENILE_MAIL_DIR: join(dataDir, "mail"),
           // Parallel captures from one address (spec 17.2 limits are per IP).
