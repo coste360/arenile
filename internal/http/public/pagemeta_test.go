@@ -72,7 +72,7 @@ func TestPageMetaOf_Scenarios(t *testing.T) {
 }
 
 func TestBookingPageMeta_Resolver(t *testing.T) {
-	f := BookingPageMeta(fakeProfiles{"lido-sole": {Slug: "lido-sole", Name: "Lido Sole", DefaultLocale: "it"}}, nil, nil)
+	f := BookingPageMeta(fakeProfiles{"lido-sole": {Slug: "lido-sole", Name: "Lido Sole", DefaultLocale: "it"}}, nil, "", nil)
 	req := httptest.NewRequest(http.MethodGet, "/b/lido-sole", nil)
 	req.Host = "prenota.lido.test"
 	req = req.WithContext(reqctx.With(req.Context(), &reqctx.Info{HTTPS: true}))
@@ -82,5 +82,11 @@ func TestBookingPageMeta_Resolver(t *testing.T) {
 	}
 	if _, ok := f(req, "missing"); ok {
 		t.Fatal("unknown slug resolved")
+	}
+	// With ARENILE_BASE_URL the forged Host header is ignored.
+	f = BookingPageMeta(fakeProfiles{"lido-sole": {Slug: "lido-sole", Name: "Lido Sole", DefaultLocale: "it"}}, nil, "https://prenota.lido.it/", nil)
+	req.Host = "evil.example"
+	if m, ok := f(req, "lido-sole"); !ok || m.URL != "https://prenota.lido.it/b/lido-sole" || m.Image != "https://prenota.lido.it/b/og-image.png" {
+		t.Fatalf("meta with base url %+v ok %v", m, ok)
 	}
 }

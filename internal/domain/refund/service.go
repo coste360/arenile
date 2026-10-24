@@ -569,7 +569,7 @@ func (s *Service) notifyFailed(ctx context.Context, tx bun.IDB, es store.Establi
 		code = b.Code
 	}
 	_, err := store.InsertRefundFailedNotification(ctx, tx, es, &store.AdminNotification{
-		ID: store.NewID(), Kind: NotificationKindRefundFailed, Severity: "error", Audience: store.NotificationAudienceOwner,
+		ID: store.NewID(), Kind: NotificationKindRefundFailed, Severity: "error", Audience: store.NotificationAudienceManager,
 		Params: map[string]string{
 			"refund_request_id": rr.ID, "booking_id": rr.BookingID, "booking_code": code,
 			"amount": strconv.FormatInt(int64(rr.Amount), 10), "attempts": strconv.Itoa(rr.Attempts),

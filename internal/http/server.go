@@ -144,6 +144,9 @@ type Deps struct {
 
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
+	// PublicBaseURL is ARENILE_BASE_URL as configured ("" when unset): the
+	// origin of the server-rendered link previews of the public page.
+	PublicBaseURL string
 	// SSEHeartbeat overrides the SSE heartbeat (tests).
 	SSEHeartbeat time.Duration
 	// PublicReadsPerMinute and PublicCreationsPerMinute override the public
@@ -239,7 +242,7 @@ func New(d Deps) http.Handler {
 
 	if d.Establishments != nil {
 		// Server-rendered link previews of /b/{slug} (deferred features F).
-		d.Static.SetBookingMeta(public.BookingPageMeta(d.Establishments, d.Extensions.TenantResolver, d.Log))
+		d.Static.SetBookingMeta(public.BookingPageMeta(d.Establishments, d.Extensions.TenantResolver, d.PublicBaseURL, d.Log))
 	}
 
 	srv := &server{

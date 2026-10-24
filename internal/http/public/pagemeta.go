@@ -43,8 +43,15 @@ const (
 
 // BookingPageMeta returns the resolver of the public page previews. The
 // tenant resolver (multi-tenant hosting) is honoured like on the API: a
-// slug that is not the host's tenant keeps the default page.
-func BookingPageMeta(profiles PublicProfiles, tenants ext.TenantResolver, log *slog.Logger) static.PageMetaFunc {
+// slug that is not the host's tenant keeps the default page. baseURL is
+// ARENILE_BASE_URL: when set (and no tenant resolver maps hosts to
+// establishments) og:url and og:image are built on it, never on the Host
+// header a client can forge.
+func BookingPageMeta(profiles PublicProfiles, tenants ext.TenantResolver, baseURL string, log *slog.Logger) static.PageMetaFunc {
+	origin := ""
+	if tenants == nil {
+		origin = trimOrigin(baseURL)
+	}
 	return func(r *http.Request, slug string) (static.PageMeta, bool) {
 		if profiles == nil {
 			return static.PageMeta{}, false
@@ -61,8 +68,21 @@ func BookingPageMeta(profiles PublicProfiles, tenants ext.TenantResolver, log *s
 			}
 			return static.PageMeta{}, false
 		}
+		if origin != "" {
+			return PageMetaOf(e, origin), true
+		}
 		return PageMetaOf(e, requestOrigin(r)), true
 	}
+}
+
+// trimOrigin reduces a configured base URL to scheme://host ("" when it is
+// not an absolute http(s) URL).
+func trimOrigin(base string) string {
+	u, err := url.Parse(strings.TrimSpace(base))
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return ""
+	}
+	return u.Scheme + "://" + u.Host
 }
 
 // PageMetaOf builds the preview of an establishment: "<name> – <title>" in

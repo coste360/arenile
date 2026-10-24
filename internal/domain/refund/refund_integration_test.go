@@ -320,8 +320,8 @@ func TestRefund_ProviderDownThenUp(t *testing.T) {
 	})
 }
 
-// TestRefund_DeadLetterThenRetry: attempts exhausted -> failed with an
-// owner notification (no personal data) and an audit; a non-failed
+// TestRefund_DeadLetterThenRetry: attempts exhausted -> failed with a
+// manager notification (no personal data) and an audit; a non-failed
 // request cannot be retried; the manual retry sends it at once with a
 // working provider, exactly once.
 func TestRefund_DeadLetterThenRetry(t *testing.T) {
@@ -347,8 +347,17 @@ func TestRefund_DeadLetterThenRetry(t *testing.T) {
 		if err := db.NewSelect().Model(&n).Where("establishment_id = ?", e.F.Est.ID).Where("kind = ?", refund.NotificationKindRefundFailed).Scan(e.Ctx); err != nil {
 			t.Fatal(err)
 		}
-		if n.Audience != store.NotificationAudienceOwner || n.Severity != "error" || n.Params["refund_request_id"] != rr.ID || n.Params["amount"] != "2000" {
+		if n.Audience != store.NotificationAudienceManager || n.Severity != "error" || n.Params["refund_request_id"] != rr.ID || n.Params["amount"] != "2000" {
 			t.Fatalf("notification %+v", n)
+		}
+		// Whoever can press Riprova (refunds.issue: the manager too) sees it;
+		// the desk does not.
+		es, _ := store.SystemEstablishmentScope(e.Ctx, db, e.F.Est.ID)
+		if page, err := store.ListAdminNotifications(e.Ctx, db, es, false, store.NotificationVisibility{Manager: true}, "", 10); err != nil || len(page.Items) != 1 {
+			t.Fatalf("manager list: %v %d", err, len(page.Items))
+		}
+		if page, err := store.ListAdminNotifications(e.Ctx, db, es, false, store.NotificationVisibility{}, "", 10); err != nil || len(page.Items) != 0 {
+			t.Fatalf("staff list: %v %d", err, len(page.Items))
 		}
 		for k := range n.Params {
 			switch k {

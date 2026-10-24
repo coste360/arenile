@@ -340,6 +340,7 @@ func (a *App) wire() error {
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),
 		Extensions:     x,
+		PublicBaseURL:  a.cfg.BaseURL,
 
 		PublicReadsPerMinute:     cmp.Or(a.opts.publicReads, a.cfg.PublicReadsPerMinute),
 		PublicCreationsPerMinute: cmp.Or(a.opts.publicCreations, a.cfg.PublicCreationsPerMinute),

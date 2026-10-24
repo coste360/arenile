@@ -159,6 +159,9 @@ type ImportJob struct {
 const (
 	NotificationAudienceStaff = "staff"
 	NotificationAudienceOwner = "owner"
+	// NotificationAudienceManager: whoever can act on refunds (refunds.issue:
+	// owner and manager), e.g. a guaranteed refund that needs a manual retry.
+	NotificationAudienceManager = "manager"
 )
 
 // AdminNotification is an in-panel notification of an establishment.

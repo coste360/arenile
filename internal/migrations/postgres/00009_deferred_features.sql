@@ -169,7 +169,7 @@ CREATE TABLE admin_notifications (
     kind             text NOT NULL,
     severity         text NOT NULL DEFAULT 'info' CHECK (severity IN ('info', 'warning', 'error')),
     -- owner = only users with users.manage; staff = everyone with bookings.read.
-    audience         text NOT NULL DEFAULT 'staff' CHECK (audience IN ('staff', 'owner')),
+    audience         text NOT NULL DEFAULT 'staff' CHECK (audience IN ('staff', 'owner', 'manager')),
     params           jsonb NOT NULL DEFAULT '{}',
     resource_type    text,
     resource_id      text,

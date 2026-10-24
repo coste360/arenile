@@ -85,8 +85,13 @@ func ParseCell(s string) Cell {
 		}
 		return Int(n)
 	}
-	if len(frac) != 2 || !allDigits(frac) {
+	// One or two decimals ("5,5" VAT rates, "12,50" amounts) are numbers
+	// (hundredths): a column of rates must sort and sum in Excel.
+	if len(frac) == 0 || len(frac) > 2 || !allDigits(frac) {
 		return Text(s)
+	}
+	if len(frac) == 1 {
+		frac += "0"
 	}
 	n, err := strconv.ParseInt(intPart+frac, 10, 64)
 	if err != nil {

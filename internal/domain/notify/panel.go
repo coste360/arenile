@@ -22,7 +22,8 @@ import (
 // idempotent. Params hold ids, counts and non-personal labels only (never
 // emails, phones or tokens): the panel composes title and text from the i18n
 // keys of the kind. Read state is shared by the staff of the establishment.
-// Visibility: bookings.read; audience owner only with users.manage.
+// Visibility: bookings.read; audience owner only with users.manage, audience
+// manager only with refunds.issue.
 
 // Notification kinds (api.NotificationKind).
 const (
@@ -98,6 +99,13 @@ func (s *Service) Notify(ctx context.Context, tx bun.IDB, es store.Establishment
 	return ok, nil
 }
 
+// visibility is what p sees besides the staff notifications: owner rows
+// with users.manage, manager rows (failed guaranteed refunds, ADR 0019 B)
+// with refunds.issue.
+func visibility(p *auth.Principal, es store.EstablishmentScope) store.NotificationVisibility {
+	return store.NotificationVisibility{Owner: p.Can(es, auth.PermUsersManage), Manager: p.Can(es, auth.PermRefundsIssue)}
+}
+
 // PanelList is a page of notifications with the unread count.
 type PanelList struct {
 	Items       []store.AdminNotification
@@ -111,12 +119,12 @@ func (s *Service) ListPanel(ctx context.Context, p *auth.Principal, establishmen
 	if err != nil {
 		return nil, err
 	}
-	owner := p.Can(es, auth.PermUsersManage)
-	page, err := store.ListAdminNotifications(ctx, s.d.DB, es, unreadOnly, owner, cursor, limit)
+	v := visibility(p, es)
+	page, err := store.ListAdminNotifications(ctx, s.d.DB, es, unreadOnly, v, cursor, limit)
 	if err != nil {
 		return nil, err
 	}
-	n, err := store.CountUnreadAdminNotifications(ctx, s.d.DB, es, owner)
+	n, err := store.CountUnreadAdminNotifications(ctx, s.d.DB, es, v)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +137,7 @@ func (s *Service) MarkPanelRead(ctx context.Context, p *auth.Principal, establis
 	if err != nil {
 		return err
 	}
-	return store.MarkAdminNotificationRead(ctx, s.d.DB, es, id, p.UserID, p.Can(es, auth.PermUsersManage), s.now())
+	return store.MarkAdminNotificationRead(ctx, s.d.DB, es, id, p.UserID, visibility(p, es), s.now())
 }
 
 // MarkAllPanelRead marks every visible notification as read.
@@ -138,7 +146,7 @@ func (s *Service) MarkAllPanelRead(ctx context.Context, p *auth.Principal, estab
 	if err != nil {
 		return err
 	}
-	_, err = store.MarkAllAdminNotificationsRead(ctx, s.d.DB, es, p.UserID, p.Can(es, auth.PermUsersManage), s.now())
+	_, err = store.MarkAllAdminNotificationsRead(ctx, s.d.DB, es, p.UserID, visibility(p, es), s.now())
 	return err
 }
 

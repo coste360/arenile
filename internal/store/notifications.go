@@ -9,8 +9,9 @@ import (
 )
 
 // Repository of the in-panel notifications (admin_notifications, 00009,
-// ADR 0019 F). Owner-audience rows are visible only when includeOwner (the
-// caller holds users.manage); read state is shared by the staff.
+// ADR 0019 F). Owner-audience rows are visible only to users.manage,
+// manager-audience rows to refunds.issue (NotificationVisibility); read
+// state is shared by the staff.
 
 // InsertAdminNotification inserts n for es unless a row with the same
 // dedupe key exists (producers are idempotent). It reports whether a row
@@ -31,16 +32,32 @@ func InsertAdminNotification(ctx context.Context, db bun.IDB, es EstablishmentSc
 	return k > 0, nil
 }
 
-func notificationAudience(q *bun.SelectQuery, includeOwner bool) *bun.SelectQuery {
-	if includeOwner {
-		return q
+// NotificationVisibility is what a principal may see besides the staff
+// notifications: Owner (users.manage) and Manager (refunds.issue) rows.
+type NotificationVisibility struct {
+	Owner   bool
+	Manager bool
+}
+
+// audiences lists the audience values visible to v.
+func (v NotificationVisibility) audiences() []string {
+	out := []string{NotificationAudienceStaff}
+	if v.Owner {
+		out = append(out, NotificationAudienceOwner)
 	}
-	return q.Where("an.audience = ?", NotificationAudienceStaff)
+	if v.Manager {
+		out = append(out, NotificationAudienceManager)
+	}
+	return out
+}
+
+func notificationAudience(q *bun.SelectQuery, v NotificationVisibility) *bun.SelectQuery {
+	return q.Where("an.audience IN (?)", bun.In(v.audiences()))
 }
 
 // ListAdminNotifications returns a page of the notifications of es, newest
 // first (UUIDv7 id order).
-func ListAdminNotifications(ctx context.Context, db bun.IDB, es EstablishmentScope, unreadOnly, includeOwner bool, cursor string, limit int) (Page[AdminNotification], error) {
+func ListAdminNotifications(ctx context.Context, db bun.IDB, es EstablishmentScope, unreadOnly bool, v NotificationVisibility, cursor string, limit int) (Page[AdminNotification], error) {
 	if err := es.mustBeValid(); err != nil {
 		return Page[AdminNotification]{}, err
 	}
@@ -53,7 +70,7 @@ func ListAdminNotifications(ctx context.Context, db bun.IDB, es EstablishmentSco
 	}
 	var items []AdminNotification
 	q := db.NewSelect().Model(&items).Where("an.establishment_id = ?", es.ID())
-	q = notificationAudience(q, includeOwner)
+	q = notificationAudience(q, v)
 	if unreadOnly {
 		q = q.Where("an.read_at IS NULL")
 	}
@@ -72,12 +89,12 @@ func ListAdminNotifications(ctx context.Context, db bun.IDB, es EstablishmentSco
 }
 
 // CountUnreadAdminNotifications counts the unread notifications of es.
-func CountUnreadAdminNotifications(ctx context.Context, db bun.IDB, es EstablishmentScope, includeOwner bool) (int64, error) {
+func CountUnreadAdminNotifications(ctx context.Context, db bun.IDB, es EstablishmentScope, v NotificationVisibility) (int64, error) {
 	if err := es.mustBeValid(); err != nil {
 		return 0, err
 	}
 	q := db.NewSelect().Model((*AdminNotification)(nil)).Where("an.establishment_id = ?", es.ID()).Where("an.read_at IS NULL")
-	n, err := notificationAudience(q, includeOwner).Count(ctx)
+	n, err := notificationAudience(q, v).Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("store: count admin notifications: %w", err)
 	}
@@ -86,13 +103,13 @@ func CountUnreadAdminNotifications(ctx context.Context, db bun.IDB, es Establish
 
 // MarkAdminNotificationRead marks one notification of es as read (no-op when
 // already read). ErrNotFound when it does not exist or is not visible.
-func MarkAdminNotificationRead(ctx context.Context, db bun.IDB, es EstablishmentScope, id, userID string, includeOwner bool, at time.Time) error {
+func MarkAdminNotificationRead(ctx context.Context, db bun.IDB, es EstablishmentScope, id, userID string, v NotificationVisibility, at time.Time) error {
 	if err := es.mustBeValid(); err != nil {
 		return err
 	}
 	var n AdminNotification
 	q := db.NewSelect().Model(&n).Where("an.id = ?", id).Where("an.establishment_id = ?", es.ID())
-	if err := notificationAudience(q, includeOwner).Scan(ctx); err != nil {
+	if err := notificationAudience(q, v).Scan(ctx); err != nil {
 		return wrapRead("get admin notification", err)
 	}
 	if n.ReadAt != nil {
@@ -106,16 +123,14 @@ func MarkAdminNotificationRead(ctx context.Context, db bun.IDB, es Establishment
 
 // MarkAllAdminNotificationsRead marks every visible unread notification of es
 // as read and returns how many.
-func MarkAllAdminNotificationsRead(ctx context.Context, db bun.IDB, es EstablishmentScope, userID string, includeOwner bool, at time.Time) (int64, error) {
+func MarkAllAdminNotificationsRead(ctx context.Context, db bun.IDB, es EstablishmentScope, userID string, v NotificationVisibility, at time.Time) (int64, error) {
 	if err := es.mustBeValid(); err != nil {
 		return 0, err
 	}
 	q := db.NewUpdate().Model((*AdminNotification)(nil)).
 		Set("read_at = ?", at).Set("read_by_user_id = ?", notificationUser(userID)).
 		Where("establishment_id = ?", es.ID()).Where("read_at IS NULL")
-	if !includeOwner {
-		q = q.Where("audience = ?", NotificationAudienceStaff)
-	}
+	q = q.Where("audience IN (?)", bun.In(v.audiences()))
 	res, err := q.Exec(ctx)
 	if err != nil {
 		return 0, wrapWrite("mark admin notifications read", err)

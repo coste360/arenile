@@ -10126,7 +10126,8 @@ paths:
       description: >-
         Avvisi per il gestore (endpoint webhook disattivato, rimborso fallito, importazione completata...).
         Lo stato letto è condiviso dallo staff dello stabilimento. Permesso bookings.read; le notifiche con
-        audience owner solo a chi ha users.manage.
+        audience owner solo a chi ha users.manage, quelle con audience manager (rimborso garantito non riuscito)
+        solo a chi ha refunds.issue.
       security:
         - cookieAuth: []
         - bearerAuth: []

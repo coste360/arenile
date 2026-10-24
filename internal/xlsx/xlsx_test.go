@@ -51,7 +51,11 @@ func TestParseCell_Table(t *testing.T) {
 		{"-7", Int(-7)},
 		{"0", Int(0)},
 		{"00123", Text("00123")},
-		{"12,5", Text("12,5")},
+		{"12,5", Decimal2(1250)},
+		{"5,5", Decimal2(550)},
+		{"-0,5", Decimal2(-50)},
+		{"1,234", Text("1,234")},
+		{"12,", Text("12,")},
 		{"1.234,56", Text("1.234,56")},
 		{"31/12/2027", Date(2027, time.December, 31)},
 		{"31/02/2027", Text("31/02/2027")},
@@ -193,4 +197,29 @@ func TestWriter_TextProperty(t *testing.T) {
 			t.Fatalf("rows %d", len(rows))
 		}
 	})
+}
+
+// TestFromCSV_RatesAreNumbers: a corrispettivi file mixes integer and
+// one-decimal VAT rates ("22", "5,5") in the same column: every rate is a
+// number cell (the column sorts and sums in Excel), never a text cell.
+func TestFromCSV_RatesAreNumbers(t *testing.T) {
+	src := "Aliquota;Imponibile;Imposta\n22;1000,00;220,00\n5,5;200,00;11,00\n10;50,00;5,00\n"
+	var buf bytes.Buffer
+	if err := FromCSV(&buf, strings.NewReader(src), "Corrispettivi"); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := ReadSheet(buf.Bytes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]string{"A2": "22", "A3": "5.50", "A4": "10", "C3": "11.00"}
+	for _, r := range rows[1:] {
+		for _, c := range r {
+			if w, ok := want[c.Ref]; ok {
+				if c.Type == "inlineStr" || c.Value != w {
+					t.Fatalf("%s = %q (%s), want number %q", c.Ref, c.Value, c.Type, w)
+				}
+			}
+		}
+	}
 }
