@@ -36,3 +36,6 @@ coverage.out
 
 # stray local builds
 /arenile
+
+# TypeScript incremental build info
+*.tsbuildinfo
