@@ -33,6 +33,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/printing"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
 	"github.com/coste360/arenile/internal/domain/season"
@@ -106,6 +107,9 @@ type Handlers struct {
 	Renewals *renewal.Service
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
+
+	// ESC/POS network printing (printing.go, ADR 0021); own block.
+	Printing *printing.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.

@@ -645,3 +645,30 @@ Prenotazioni e pagamenti creati in modalità prova (`bookings.test`, `payments.t
 query dei report; le loro allocazioni contano come libere. Lo stesso vale per corrispettivi, KPI ed esportazioni.
 Verificata da: `TestReportQueries_TestBookingsExcluded` (`internal/store`, tag `integration`, SQLite e PostgreSQL).
 Stato: implemented per i report; corrispettivi, KPI ed esportazioni a carico del costruttore A.
+
+## Stampa ESC/POS su stampanti di rete (ADR 0021)
+
+**INV-75 — Un lavoro di stampa per chiave, stampato una volta.**
+Una richiesta di stampa con la stessa chiave di idempotenza (header `Idempotency-Key` o chiave derivata
+`<tipo>:<documento>:<stampante>`) crea al più un lavoro per stabilimento (indice unico
+`print_jobs (establishment_id, idempotency_key)`, `INSERT ... ON CONFLICT DO NOTHING`): le richieste successive
+ricevono il lavoro esistente. La consegna prende il lavoro con un aggiornamento condizionato e un lease
+(`queued` → `printing`, `locked_until`); l'esito si scrive solo se il lease è ancora quello del lavoratore, quindi più
+consegne concorrenti stampano il lavoro una volta sola; dopo `max_attempts` tentativi falliti (attese 5 s, 15 s,
+1 min, 5 min) il lavoro è `failed` e si riprova solo a mano. `printed_at` è valorizzato se e solo se lo stato è
+`printed` (CHECK della migrazione 00011).
+Verificata da: `TestConcurrency_PrintJobOnce` (100 richieste e 100 consegne in parallelo, SQLite e PostgreSQL),
+`TestService_RetryBackoffAndFailure`, `TestService_JobRoutingEndToEnd` (`internal/domain/printing`, tag
+`integration`), `TestMigration00011_PrintingSchema` (`internal/store`). Stato: implemented.
+
+**INV-76 — La stampa non raggiunge mai indirizzi pubblici e funziona solo nell'edizione desktop.**
+L'host di una stampante è un indirizzo privato o di rete locale (RFC 1918, 100.64/10, loopback, link-local, ULA
+IPv6) o un nome che si risolve solo in tali indirizzi, controllato al salvataggio (`422 printer_address_not_allowed`)
+e di nuovo sull'indirizzo effettivamente contattato a ogni connessione (`Dialer.Control`), così il server non
+diventa un proxy TCP verso Internet. Sull'edizione server verifica, pagina di prova, creazione e riprova dei lavori
+rispondono `409 printing_unavailable`, il job di consegna non è registrato e la risoluzione dell'instradamento non è
+mai `ready`. Log e `last_error` contengono solo id, tipo documento e classe dell'errore di rete, mai il contenuto
+stampato né dati dei clienti.
+Verificata da: `TestAllowedIP_Scenarios`, `TestCheckHost_Scenarios`, `TestNetworkDriver_Errors`
+(`internal/domain/printing`), `TestService_ServerEditionAndDelete` e `TestHTTPIntegration_Printing` (tag
+`integration`). Stato: implemented.

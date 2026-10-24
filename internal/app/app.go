@@ -56,6 +56,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/printing"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
@@ -159,6 +160,9 @@ type App struct {
 	Renewals *renewal.Service
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
+
+	// ESC/POS network printing (wired by wirePrinting, see printing.go).
+	Printing *printing.Service
 
 	mu    sync.Mutex
 	addr  string
@@ -276,6 +280,7 @@ func (a *App) wire() error {
 	})
 	a.wireSeason(aw, deliverer)
 	a.wireRenewals(aw)
+	a.wirePrinting(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -300,7 +305,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs()) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.printingJobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -318,6 +323,7 @@ func (a *App) wire() error {
 		Desktop: a.opts.desktop, DesktopUsers: usersCounter{db: a.db},
 		Reports: a.Reports, APIKeys: a.APIKeys, Webhooks: a.Webhooks,
 		Rollover: a.Rollover, Renewals: a.Renewals, Waitlist: a.Waitlist, Credits: a.Credits,
+		Printing:       a.Printing,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

@@ -20,11 +20,15 @@
 //     again before every dial (DNS may change): ErrAddressNotAllowed.
 //   - Routing: rule of the cash register, else the default rule of the
 //     document kind (register_id NULL); an explicit printer_id wins. No rule
-//     → ErrRouteMissing. Inactive printer → ErrPrinterInactive.
+//     → ErrRouteMissing. Inactive printer → ErrPrinterInactive. ResolveRoute
+//     re-probes a printer whose status is stale (unreachable > 10 s,
+//     reachable > 1 min, probe capped at 1.5 s) so print buttons fall back
+//     to the browser only when the printer is really off.
 //   - Enqueue: the service renders the payload (templates + escpos) at
 //     enqueue time and inserts a print_jobs row (status queued,
 //     next_attempt_at = now). The idempotency key is the Idempotency-Key
-//     header or "<kind>:<document id>:<printer id>"; the unique index
+//     header or "<kind>:<document id>:<printer id>" (a fresh key for test
+//     pages); the unique index
 //     (establishment_id, idempotency_key) makes a concurrent duplicate return
 //     the existing job (TestConcurrency_PrintJobOnce: 100 parallel enqueues
 //     → one row, printed once).
@@ -41,7 +45,14 @@
 //   - Clock: time comes from the injected clock.Clock; tests use clock.Fake
 //     and an in-process fake TCP printer.
 //
-// # Extension point
+// # Extension points
+//
+// Documents: payment receipts and cash Z summaries are built here from the
+// store; daily-sale tickets come from a TicketSource (Deps.Tickets) that
+// the daily-sale feature implements with templates.TicketDoc. The
+// establishment logo is fetched through a LogoLoader (HTTPLogoLoader:
+// https URLs or instance paths), dithered once per printer and paper width
+// and cached in printers.logo_raster.
 //
 // Driver abstracts how bytes reach a printer. v1 registers only the
 // network driver (store.PrinterDriverNetwork). A future bridge driver (the

@@ -46,6 +46,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/printing"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
@@ -129,6 +130,9 @@ type Deps struct {
 	Renewals *renewal.Service
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
+
+	// ESC/POS network printing (ADR 0021); nil answers 501.
+	Printing *printing.Service
 
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
@@ -237,6 +241,7 @@ func New(d Deps) http.Handler {
 			Reports: d.Reports, APIKeys: d.APIKeys, Webhooks: d.Webhooks,
 			Stream:   &sse.Server{Bus: d.Bus, Heartbeat: d.SSEHeartbeat, Log: d.Log},
 			Rollover: d.Rollover, Renewals: d.Renewals, Waitlist: d.Waitlist, Credits: d.Credits,
+			Printing: d.Printing,
 		},
 		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
 		desktopHandlers: &desktopHandlers{
