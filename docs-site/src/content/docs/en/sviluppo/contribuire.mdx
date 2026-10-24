@@ -37,7 +37,7 @@ The `Makefile` is the only supported interface:
 | `make check` | After every change: generated code up to date, lint, tests (under 2 minutes) |
 | `make test` | Go unit tests and Vitest (no Docker, no network) |
 | `make test-db` | Integration on SQLite and PostgreSQL (ephemeral container) |
-| `make test-race` | `TestConcurrency_*` concurrency tests with `-race` |
+| `make test-race` | `TestConcurrency_*` concurrency tests with `-race`, on SQLite and PostgreSQL (ephemeral container) |
 | `make e2e` | Playwright end-to-end tests |
 | `make check-full` | Before the pull request: `check` + `test-db` + `test-race` + `e2e` |
 | `make docs-dev`, `make docs-build`, `make docs-screenshots` | This documentation site |

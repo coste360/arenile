@@ -56,7 +56,7 @@ Il `Makefile` è l'unica interfaccia supportata. Le verifiche principali:
 Note sui test:
 - `make test` esegue i test unitari Go e Vitest: non devono richiedere Docker né rete.
 - I test di integrazione su database usano il build tag `integration`; quelli su PostgreSQL vengono eseguiti quando è impostata `ARENILE_TEST_POSTGRES_URL` (`make test-db` avvia il container).
-- I test di concorrenza si chiamano `TestConcurrency_*` ed eseguono con `-race` (`make test-race`).
+- I test di concorrenza si chiamano `TestConcurrency_*` ed eseguono con `-race` su SQLite e PostgreSQL (`make test-race` avvia lo stesso container di `make test-db`).
 - I test di prestazioni verificano il numero di query SQL di ogni operazione (niente N+1) e registrano i tempi nel log; i limiti di tempo valgono solo con `ARENILE_PERF_BUDGETS=1`, su una macchina nota (i runner CI condivisi e `-race` li rendono instabili).
 
 ## Flusso di lavoro
