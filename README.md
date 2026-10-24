@@ -30,6 +30,14 @@ Mappa ombrelloni interattiva, prenotazione ombrelloni online e prenotazioni senz
 [Roadmap](#roadmap) ·
 [FAQ](#domande-frequenti)
 
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs-site/src/assets/screenshots/dark/admin-map-selection.webp">
+  <img src="docs-site/src/assets/screenshots/light/admin-map-selection.webp" alt="Mappa del giorno nel pannello di Arenile: ombrelloni colorati per stato con il cognome dell'occupante" width="900">
+</picture>
+
+
 </div>
 
 ---
@@ -67,6 +75,28 @@ Perché scegliere Arenile come software di gestione dello stabilimento balneare,
 ## Funzionalità
 
 Panoramica delle aree funzionali previste dalla specifica. Lo stato di ciascuna è nella [tabella di stato](#stato-delle-funzionalità).
+
+<table>
+  <tr>
+    <td width="40%"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs-site/src/assets/screenshots/dark/admin-map-editor.webp">
+  <img src="docs-site/src/assets/screenshots/light/admin-map-editor.webp" alt="Editor della mappa con le zone colorate e il generatore di file" width="100%">
+</picture></td>
+    <td width="40%"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs-site/src/assets/screenshots/dark/admin-today.webp">
+  <img src="docs-site/src/assets/screenshots/light/admin-today.webp" alt="Pagina Oggi del pannello: arrivi, saldi da incassare e postazioni da assegnare" width="100%">
+</picture></td>
+    <td width="20%"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs-site/src/assets/screenshots/dark/public-where-mobile.webp">
+  <img src="docs-site/src/assets/screenshots/light/public-where-mobile.webp" alt="Pagina pubblica di prenotazione da smartphone, scelta della postazione sulla mappa" width="100%">
+</picture></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Editor della mappa</sub></td>
+    <td align="center"><sub>Oggi, la giornata in un colpo d'occhio</sub></td>
+    <td align="center"><sub>Prenotazione online da smartphone</sub></td>
+  </tr>
+</table>
 
 ### Mappa ombrelloni interattiva
 - **Editor della mappa della spiaggia** con griglia e snapping, generatore di file ("8 file da 15 ombrelloni, numerazione A–Z"), rotazione, allineamento, annulla/ripeti.
