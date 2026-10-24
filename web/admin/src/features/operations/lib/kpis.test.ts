@@ -80,6 +80,9 @@ describe('netTakings', () => {
       netTakings([p(3000, 'in'), p(1999, 'in'), p(500, 'refund'), p(700, 'in', 'failed')]),
     ).toBe(4499);
   });
+  it('leaves out payments taken in test mode (INV-74)', () => {
+    expect(netTakings([p(3000, 'in'), { ...p(1000, 'in'), test: true }])).toBe(3000);
+  });
 });
 
 describe('chartRows', () => {

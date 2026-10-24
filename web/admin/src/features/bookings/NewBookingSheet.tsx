@@ -62,6 +62,8 @@ export interface NewBookingSheetProps {
   defaults?: NewBookingDefaults;
   /** Called with the new booking id once created (default: a toast linking to it). */
   onCreated?: (bookingId: string) => void;
+  /** Sheet title (default "Nuova prenotazione"; the map's group booking names itself). */
+  title?: string;
 }
 
 /**
@@ -78,13 +80,14 @@ export function NewBookingSheet({
   onOpenChange,
   defaults,
   onCreated,
+  title,
 }: NewBookingSheetProps) {
   const { t } = useTranslation('bookings');
   return (
     <FormSheet
       open={open}
       onOpenChange={onOpenChange}
-      title={t('new.title')}
+      title={title ?? t('new.title')}
       description={t('new.description')}
       size="lg"
       padded={false}

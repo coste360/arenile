@@ -215,7 +215,8 @@ export function createOfflineRuntime(options: OfflineRuntimeOptions): OfflineRun
       // A check-in queued behind other operations on the same booking
       // cannot know the version the server will have when its turn comes
       // (an earlier one may be refused): the state transition guards it
-      // (confirmed -> checked_in, 409 otherwise), so If-Match is dropped.
+      // (confirmed -> checked_in, 409 otherwise), so its version is dropped
+      // and the sender uses If-Match "*" (the header is mandatory).
       if (input.kind === 'check_in' && input.ifMatch) {
         const { ifMatch, ...rest } = input;
         const queued = queue.getSnapshot().some((o) => o.bookingId === input.bookingId);

@@ -5,9 +5,15 @@ import {
   SPOT_INDICATORS,
   SpotList,
   MAP_LABEL_MODES,
+  EMPTY_SELECTION,
+  pruneSelection,
+  selectLasso,
+  selectSpot,
   type MapGeometry,
   type MapLabelMode,
   type MapSpot,
+  type Selection,
+  type SpotActivateModifiers,
 } from '@arenile/shared/map';
 import { cn } from '@arenile/shared/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
@@ -20,12 +26,14 @@ import {
 } from '@arenile/shared/ui/input-group';
 import { useMe } from '@arenile/shared/api';
 import { Tabs, TabsContent } from '@arenile/shared/ui/tabs';
+import { Toggle } from '@arenile/shared/ui/toggle';
 import { ResponsiveTabsList, SegmentedControl } from '@arenile/shared/ui/patterns';
-import { ArrowRightLeftIcon, SearchIcon, XIcon } from 'lucide-react';
+import { ArrowRightLeftIcon, ListChecksIcon, SearchIcon, XIcon } from 'lucide-react';
 import { lazy, Suspense, useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { occupantCaptions, occupantFullName, useLabelMode } from '../lib/occupant';
 import type { OperationsPermissions } from '../lib/permissions';
+import { canMultiSelect, selectableSpotIds, selectionActions } from '../lib/multiSelect';
 import {
   OPERATIONAL_LEGEND,
   indicatorsBySpot,
@@ -37,7 +45,9 @@ import {
   type OperationsDay,
   type SlotChoice,
 } from '../lib/status';
+import { BlockSpotsDialog } from './BlockSpotsDialog';
 import { MoveDialog } from './MoveDialog';
+import { SelectionBar } from './SelectionBar';
 import { SpotSheet } from './SpotSheet';
 
 // The booking sheet belongs to the bookings feature: load it on first use.
@@ -62,6 +72,8 @@ interface NewBookingDefaults {
   startsOn: string;
   endsOn: string;
   slots: SlotChoice;
+  /** Opened from the multi-selection: one booking with a line per spot. */
+  group?: boolean;
 }
 
 /**
@@ -71,6 +83,14 @@ interface NewBookingDefaults {
  * spot, then confirm a dry-run preview). A list view grouped by row is the
  * alternative for screen readers and small screens. Live updates come from
  * the SSE stream invalidating the day query; this component only renders.
+ *
+ * Multi-selection (ADR 0019 C): "Seleziona" (or Shift/Ctrl-click on a free
+ * spot) switches to selection mode, where a tap toggles a spot, Shift adds
+ * the range from the last one and a drag draws a selection rectangle; the
+ * bar then books the spots as one group booking (one booking, a line per
+ * spot, priced by the engine, atomic on the server) or blocks them.
+ * Only spots bookable for the slot shown can be selected; spots that stop
+ * being bookable (booked by someone else, live) drop out of the selection.
  */
 export function OperationalMapView({
   establishmentId,
@@ -91,6 +111,9 @@ export function OperationalMapView({
   const [moveSource, setMoveSource] = useState<OperationalSpot | null>(null);
   const [moveTarget, setMoveTarget] = useState<{ spotId: string; label: string } | null>(null);
   const [newBooking, setNewBooking] = useState<NewBookingDefaults | null>(null);
+  const [selecting, setSelecting] = useState(false);
+  const [rawSelection, setSelection] = useState<Selection>(EMPTY_SELECTION);
+  const [blockSpots, setBlockSpots] = useState<{ id: string; label: string }[] | null>(null);
 
   const spots = useMemo(() => day?.spots ?? [], [day]);
   const byId = useMemo(() => new Map(spots.map((s) => [s.spot_id, s])), [spots]);
@@ -105,9 +128,29 @@ export function OperationalMapView({
   const me = useMe();
   const [labelMode, setLabelMode] = useLabelMode(me.data?.user?.id);
   const matches = useMemo(() => searchSpots(spots, deferredQuery), [spots, deferredQuery]);
+  const selectable = useMemo(() => selectableSpotIds(spots, slot), [spots, slot]);
+  const isSelectable = useCallback((id: string) => selectable.has(id), [selectable]);
+  // Derived, not an effect: a spot booked meanwhile (SSE) leaves the selection at once.
+  const selection = useMemo(
+    () => pruneSelection(rawSelection, isSelectable),
+    [rawSelection, isSelectable],
+  );
+  const spotOrder = useMemo(() => geometry.spots.map((s) => s.id), [geometry.spots]);
+  const multi = canMultiSelect(permissions);
   const selectedIds = useMemo(
-    () => [selectedId, moveSource?.spot_id].filter((v): v is string => !!v),
-    [selectedId, moveSource],
+    () =>
+      selecting
+        ? [...selection.ids]
+        : [selectedId, moveSource?.spot_id].filter((v): v is string => !!v),
+    [selecting, selection, selectedId, moveSource],
+  );
+  const selectedSpots = useMemo(
+    () => selection.ids.map((id) => byId.get(id)).filter((s): s is OperationalSpot => !!s),
+    [selection, byId],
+  );
+  const labelOf = useMemo(
+    () => new Map(geometry.spots.map((s) => [s.id, s.label])),
+    [geometry.spots],
   );
 
   const spotDescription = useCallback(
@@ -125,7 +168,7 @@ export function OperationalMapView({
   );
 
   const activate = useCallback(
-    (spot: MapSpot) => {
+    (spot: MapSpot, mods?: SpotActivateModifiers) => {
       const op = byId.get(spot.id);
       if (moveSource) {
         if (spot.id === moveSource.spot_id) return;
@@ -133,11 +176,51 @@ export function OperationalMapView({
         setMoveTarget({ spotId: spot.id, label: spot.label });
         return;
       }
+      // Shift/Ctrl-click on a selectable spot starts the selection directly.
+      if (selecting || (multi && mods && isSelectable(spot.id))) {
+        if (!selecting) {
+          setSelecting(true);
+          setSheetOpen(false);
+        }
+        setSelection((cur) =>
+          selectSpot(pruneSelection(cur, isSelectable), spot.id, mods, spotOrder, isSelectable),
+        );
+        return;
+      }
       setSelectedId(spot.id);
       setSheetOpen(true);
     },
-    [byId, moveSource, slot],
+    [byId, moveSource, slot, selecting, multi, isSelectable, spotOrder],
   );
+
+  const onLassoSelect = useCallback(
+    (ids: string[], mods: SpotActivateModifiers) =>
+      setSelection((cur) =>
+        selectLasso(pruneSelection(cur, isSelectable), ids.filter(isSelectable), mods),
+      ),
+    [isSelectable],
+  );
+  const exitSelection = () => {
+    setSelecting(false);
+    setSelection(EMPTY_SELECTION);
+  };
+  const toggleSelecting = (on: boolean) => {
+    if (on) {
+      endMove();
+      setSheetOpen(false);
+      setSelecting(true);
+    } else exitSelection();
+  };
+  const openGroupBooking = () =>
+    setNewBooking({
+      spotIds: [...selection.ids],
+      startsOn: date,
+      endsOn: date,
+      slots: slot,
+      group: true,
+    });
+  const openBlock = (ids: readonly string[]) =>
+    setBlockSpots(ids.map((id) => ({ id, label: labelOf.get(id) ?? id })));
 
   const startMove = (spot: OperationalSpot) => {
     setSheetOpen(false);
@@ -151,12 +234,21 @@ export function OperationalMapView({
     setSheetOpen(false);
     setNewBooking({ spotIds: [spot.spot_id], startsOn: date, endsOn: date, slots: slot });
   };
+  const blockFromSheet = (spot: OperationalSpot) => {
+    setSheetOpen(false);
+    openBlock([spot.spot_id]);
+  };
 
   const selected = selectedId ? (byId.get(selectedId) ?? null) : null;
   const searching = deferredQuery.trim().length > 0;
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div
+      className={cn('space-y-3', className)}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && selecting && !newBooking && !blockSpots) exitSelection();
+      }}
+    >
       <div className="flex flex-wrap items-center gap-3">
         <InputGroup className="w-full sm:max-w-sm">
           <InputGroupAddon>
@@ -187,10 +279,33 @@ export function OperationalMapView({
             </InputGroupAddon>
           )}
         </InputGroup>
+        {multi && (
+          <Toggle
+            variant="outline"
+            pressed={selecting}
+            onPressedChange={toggleSelecting}
+            aria-label={t('select.toggleAria')}
+            data-testid="select-mode"
+          >
+            <ListChecksIcon aria-hidden="true" />
+            {t('select.toggle')}
+          </Toggle>
+        )}
         <p role="status" aria-live="polite" className="text-sm text-muted-foreground">
           {searching ? t('search.results', { count: matches.length }) : ''}
         </p>
       </div>
+
+      {selecting && (
+        <SelectionBar
+          labels={selection.ids.map((id) => labelOf.get(id) ?? id)}
+          actions={selectionActions(selectedSpots, slot, permissions)}
+          onGroupBooking={openGroupBooking}
+          onBlock={() => openBlock(selection.ids)}
+          onClear={() => setSelection(EMPTY_SELECTION)}
+          onExit={exitSelection}
+        />
+      )}
 
       {moveSource && (
         <Alert>
@@ -248,6 +363,8 @@ export function OperationalMapView({
             highlightedIds={matches}
             spotIndicators={indicators}
             onSpotActivate={activate}
+            lasso={selecting}
+            onLassoSelect={onLassoSelect}
             spotDescription={spotDescription}
             spotCaptions={canSeeCustomers ? captions : undefined}
             labelMode={labelMode}
@@ -296,7 +413,22 @@ export function OperationalMapView({
         onOpenChange={setSheetOpen}
         onNewBooking={openNewBooking}
         onStartMove={startMove}
+        onBlock={blockFromSheet}
       />
+      {blockSpots && (
+        <BlockSpotsDialog
+          establishmentId={establishmentId}
+          spots={blockSpots}
+          date={date}
+          slot={slot}
+          open
+          onOpenChange={(v) => !v && setBlockSpots(null)}
+          onDone={() => {
+            setBlockSpots(null);
+            if (selecting) exitSelection();
+          }}
+        />
+      )}
       {moveSource && moveTarget && (
         <MoveDialog
           establishmentId={establishmentId}
@@ -315,6 +447,11 @@ export function OperationalMapView({
             open
             onOpenChange={(v) => !v && setNewBooking(null)}
             defaults={newBooking}
+            title={
+              newBooking.group
+                ? t('select.groupTitle', { count: newBooking.spotIds.length })
+                : undefined
+            }
           />
         </Suspense>
       )}

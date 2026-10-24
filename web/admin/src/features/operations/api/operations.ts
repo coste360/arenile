@@ -207,19 +207,19 @@ export function invalidateOperational(qc: QueryClient, establishmentId: string):
 
 /**
  * Check-in of a confirmed booking (operations.run). `version` is sent as
- * If-Match: a booking changed since the map was read answers 412 instead
- * of being checked in blindly.
+ * If-Match (mandatory, 428 without it; ADR 0019 C): a booking changed since
+ * the map was read answers 412 instead of being checked in blindly.
  */
 export function useCheckIn(establishmentId: string) {
   const client = useApiClient();
   const qc = useQueryClient();
-  return useMutation<BookingDetail, ApiProblem, { bookingId: string; version?: number }>({
+  return useMutation<BookingDetail, ApiProblem, { bookingId: string; version: number }>({
     mutationFn: ({ bookingId, version }) =>
       call(() =>
         client.POST(`${EST}/bookings/{bookingId}/check-in`, {
           params: {
             path: { establishmentId, bookingId },
-            ...(version !== undefined ? { header: { 'If-Match': ifMatch(version) } } : {}),
+            header: { 'If-Match': ifMatch(version) },
           },
           body: {},
         }),
@@ -276,24 +276,23 @@ export interface MoveLineVars {
   /** First day moved (default: the whole line). */
   from?: string;
   dryRun?: boolean;
-  /** Booking version read with the preview, sent as If-Match on the apply. */
-  version?: number;
+  /** Booking version read with the map, sent as If-Match (mandatory on the apply). */
+  version: number;
 }
 
 /**
  * Moves a booking line to another spot (POST /move); dryRun previews
- * conflicts and price. With `version` the apply carries If-Match, so a
- * booking changed between the preview and the apply answers 412 instead of
- * moving with a price difference other than the one shown.
+ * conflicts and price. The version is always sent as If-Match (the apply
+ * answers 428 without it, ADR 0019 C), so a booking changed between the
+ * read and the apply answers 412 instead of moving with a price difference
+ * other than the one shown.
  */
 export function moveLine(client: ApiClient, establishmentId: string, vars: MoveLineVars) {
   return call(() =>
     client.POST(`${EST}/bookings/{bookingId}/move`, {
       params: {
         path: { establishmentId, bookingId: vars.bookingId },
-        ...(vars.version !== undefined && !vars.dryRun
-          ? { header: { 'If-Match': ifMatch(vars.version) } }
-          : {}),
+        header: { 'If-Match': ifMatch(vars.version) },
       },
       body: {
         line_id: vars.lineId,
@@ -313,5 +312,53 @@ export function useMoveLine(establishmentId: string) {
     onSuccess: (res) => {
       if (res.applied) invalidateOperational(qc, establishmentId);
     },
+  });
+}
+
+type SpotBlockCreate = Schemas['SpotBlockCreate'];
+type SpotBlockList = Schemas['SpotBlockList'];
+
+export interface CreateSpotBlocksVars {
+  body: SpotBlockCreate;
+  /** Same key while the request does not change: a double submit blocks once. */
+  idempotencyKey: string;
+}
+
+/**
+ * Blocks one or more spots on a date range and slot (POST /spot-blocks,
+ * operations.run; spec 11.3, ADR 0019 C). One block per spot, all or
+ * nothing: 409 spot_unavailable when one of them is occupied.
+ */
+export function useCreateSpotBlocks(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<SpotBlockList, ApiProblem, CreateSpotBlocksVars>({
+    mutationFn: ({ body, idempotencyKey }) =>
+      call(() =>
+        client.POST(`${EST}/spot-blocks`, {
+          params: {
+            path: { establishmentId },
+            header: { 'Idempotency-Key': idempotencyKey },
+          },
+          body,
+        }),
+      ),
+    onSuccess: () => invalidateOperational(qc, establishmentId),
+  });
+}
+
+/** Removes a manual block (DELETE /spot-blocks/{id}): the spot is bookable again. */
+export function useDeleteSpotBlock(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return useMutation<void, ApiProblem, { blockId: string }>({
+    mutationFn: async ({ blockId }) => {
+      await call(() =>
+        client.DELETE(`${EST}/spot-blocks/{blockId}`, {
+          params: { path: { establishmentId, blockId } },
+        }),
+      );
+    },
+    onSuccess: () => invalidateOperational(qc, establishmentId),
   });
 }

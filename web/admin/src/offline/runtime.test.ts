@@ -149,7 +149,7 @@ describe('OfflineRuntime_Queue', () => {
     expect(listener).toHaveBeenCalledWith(expect.objectContaining({ sent: 1, conflicts: 1 }));
   });
 
-  it('drops If-Match from a check-in queued behind another operation on the same booking', async () => {
+  it('sends If-Match * for a check-in queued behind another operation on the same booking', async () => {
     const online = { value: false };
     const { runtime, queryClient, fetchMock } = setup(
       {
@@ -195,7 +195,7 @@ describe('OfflineRuntime_Queue', () => {
       `${API}/bookings/b1/check-in`,
       `${API}/bookings/b2/check-in`,
     ]);
-    expect(calls[1]!.headers.get('If-Match')).toBeNull();
+    expect(calls[1]!.headers.get('If-Match')).toBe('*');
     expect(calls[2]!.headers.get('If-Match')).toBe('"7"');
   });
 

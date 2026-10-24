@@ -723,7 +723,7 @@ func (d *day) moveBookings(n int) {
 		if target == "" {
 			continue
 		}
-		r := d.c.post("moveBooking", d.e.path("/bookings/"+b.id+"/move"), api.BookingMoveRequest{LineId: b.lineID, SpotId: target})
+		r := d.c.do("moveBooking", http.MethodPost, d.e.path("/bookings/"+b.id+"/move"), api.BookingMoveRequest{LineId: b.lineID, SpotId: target}, ifMatch(b.version))
 		if !r.ok() {
 			d.refused("moveBooking", r)
 			continue
@@ -759,7 +759,7 @@ func (d *day) cancelBookings(n int) {
 			amount := b.paid
 			in.RefundAmount, in.RefundMethod = &amount, &method
 		}
-		r := d.c.post("cancelBooking", d.e.path("/bookings/"+b.id+"/cancel"), in)
+		r := d.c.do("cancelBooking", http.MethodPost, d.e.path("/bookings/"+b.id+"/cancel"), in, ifMatch(b.version))
 		if !r.ok() {
 			d.refused("cancelBooking", r)
 			continue
@@ -775,7 +775,7 @@ func (d *day) cancelBookings(n int) {
 	}
 	// Cancelling twice is an invalid transition.
 	if len(d.expectCancelled) > 0 {
-		r := d.c.post("cancelBooking", d.e.path("/bookings/"+d.expectCancelled[0]+"/cancel"), api.BookingCancelRequest{})
+		r := d.c.do("cancelBooking", http.MethodPost, d.e.path("/bookings/"+d.expectCancelled[0]+"/cancel"), api.BookingCancelRequest{}, map[string]string{"If-Match": "*"})
 		if r.Status != http.StatusConflict || r.Problem.Type != "invalid_transition" {
 			d.c.must(r, "second cancel")
 			d.t.Fatalf("second cancel: %s", r)
@@ -898,7 +898,7 @@ func (d *day) checkIns(n int) {
 		if !b.from.Equal(d.e.today) {
 			continue
 		}
-		r := d.c.post("checkInBooking", d.e.path("/bookings/"+b.id+"/check-in"), api.BookingActionRequest{})
+		r := d.c.do("checkInBooking", http.MethodPost, d.e.path("/bookings/"+b.id+"/check-in"), api.BookingActionRequest{}, ifMatch(b.version))
 		if !r.ok() {
 			d.refused("checkInBooking", r)
 			continue

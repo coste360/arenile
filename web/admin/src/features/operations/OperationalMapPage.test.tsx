@@ -167,7 +167,10 @@ describe('OperationalMapPage', () => {
     expect(moves[0]).toEqual({ line_id: 'l1', spot_id: 's1', dry_run: true });
     expect(moves[1]).toEqual({ line_id: 'l1', spot_id: 's1', dry_run: false });
     await waitFor(() => expect(screen.queryByText('Sposta da A2')).toBeNull());
-    expect(callsTo(fetchMock, 'POST', `${API}/bookings/b1/move`)).toHaveLength(2);
+    const sent = callsTo(fetchMock, 'POST', `${API}/bookings/b1/move`) as Request[];
+    expect(sent).toHaveLength(2);
+    // If-Match is mandatory on map writes (428 otherwise): preview and apply carry the version read.
+    for (const r of sent) expect(r.headers.get('If-Match')).toBe('"1"');
   });
 
   it('highlights search matches and announces the count', async () => {

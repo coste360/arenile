@@ -111,7 +111,9 @@
     "move": "Move",
     "collect": "Collect",
     "openDetail": "Open details",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "block": "Block spot",
+    "unblock": "Unblock"
   },
   "release": {
     "title": "Release spot {{label}}?",
@@ -177,5 +179,44 @@
     "anonymous": "Anonymous customer",
     "anonymousShort": "Anonymous",
     "aria": "occupied by {{name}}"
+  },
+  "block": {
+    "titleOne": "Block spot {{label}}",
+    "titleMany_one": "Block {{count}} spot",
+    "titleMany_other": "Block {{count}} spots",
+    "description": "Blocked spots cannot be booked in the chosen period and slot.",
+    "spots": "Spots",
+    "period": "Period",
+    "slots": "Slot",
+    "reason": "Reason",
+    "optional": "(optional)",
+    "reasonPlaceholder": "E.g. umbrella maintenance",
+    "confirm": "Block",
+    "doneOne": "Spot {{label}} blocked.",
+    "doneMany_one": "{{count}} spot blocked.",
+    "doneMany_other": "{{count}} spots blocked.",
+    "removeTitle": "Unblock spot {{label}}?",
+    "removeDescription": "The block is removed for its whole period: the spot can be booked again.",
+    "removed": "Spot {{label}} unblocked.",
+    "errors": {
+      "period": "Choose the period.",
+      "order": "The end date cannot be before the start date.",
+      "reason": "At most 200 characters."
+    }
+  },
+  "select": {
+    "toggle": "Select",
+    "toggleAria": "Select several spots",
+    "none": "No spot selected",
+    "count_one": "{{count}} spot selected",
+    "count_other": "{{count}} spots selected",
+    "hint": "Tap free spots or drag a rectangle on the map.",
+    "hintKeys": "For a range hold",
+    "groupBooking": "Group booking",
+    "block": "Block",
+    "clear": "Clear",
+    "exit": "Exit selection",
+    "groupTitle_one": "Group booking ({{count}} spot)",
+    "groupTitle_other": "Group booking ({{count}} spots)"
   }
 }

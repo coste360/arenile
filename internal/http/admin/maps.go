@@ -50,11 +50,13 @@ func (h *Handlers) CreateMap(w http.ResponseWriter, r *http.Request, establishme
 
 // DeleteMap implements DELETE /establishments/{establishmentId}/maps/{mapId}.
 func (h *Handlers) DeleteMap(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, mapID api.MapID, params api.DeleteMapParams) {
-	expected, err := ParseIfMatch(params.IfMatch)
+	// If-Match is mandatory (428 without it, ADR 0019 C); "*" deletes any version.
+	im, err := RequireIfMatch(params.IfMatch)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return
 	}
+	expected := bkExpected(im)
 	if err := h.Mapping.DeleteMap(r.Context(), principalOf(r), establishmentID, mapID, expected); err != nil {
 		problem.Error(w, r, h.Log, err)
 		return

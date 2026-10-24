@@ -36,3 +36,15 @@ export {
 } from './captions';
 export { INDICATOR_CLASSES, SPOT_INDICATORS, type SpotIndicator } from './indicators';
 export * from './kit';
+export {
+  EMPTY_SELECTION,
+  pruneSelection,
+  rangeIds,
+  selectLasso,
+  selectSpot,
+  spotsInRect,
+  toggleId,
+  type MapRect,
+  type Selection,
+  type SpotActivateModifiers,
+} from './selection';

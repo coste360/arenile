@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type MouseEvent,
   type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +57,7 @@ import { MapGlyph } from './MapGlyph';
 import { MapLegend } from './MapLegend';
 import { MapZoomControls } from './MapZoomControls';
 import { ShapeElement } from './shapes';
+import { spotsInRect, type MapRect, type SpotActivateModifiers } from './selection';
 import type { MapDecoration, MapGeometry, MapSpot, SpotStatus } from './types';
 
 export interface BeachMapProps {
@@ -73,8 +75,19 @@ export interface BeachMapProps {
   highlightedIds?: readonly string[];
   /** Overlay indicators per spot id (extra, note, VIP); repeat them in `spotDescription`. */
   spotIndicators?: Readonly<Record<string, readonly SpotIndicator[]>>;
-  /** Called on click, tap, Enter or Space on a spot. */
-  onSpotActivate?: (spot: MapSpot) => void;
+  /**
+   * Called on click, tap, Enter or Space on a spot, with the modifier keys
+   * held (Shift, Ctrl/Cmd) for multi-selection (see `./selection`).
+   */
+  onSpotActivate?: (spot: MapSpot, modifiers?: SpotActivateModifiers) => void;
+  /**
+   * Lasso selection (operational map multi-select): while true, a one-finger
+   * or mouse drag draws a rectangle instead of panning, and on release
+   * `onLassoSelect` receives the active spots whose centre is inside (map
+   * order). Pinch, wheel and the zoom buttons still zoom; taps still activate.
+   */
+  lasso?: boolean;
+  onLassoSelect?: (spotIds: string[], modifiers: SpotActivateModifiers) => void;
   /**
    * Public seat picker: only spots in these statuses can be activated; the
    * others stay readable (aria-label with their status) but are
@@ -178,9 +191,18 @@ interface SpotProps {
   tooltip: string | undefined;
   /** False when the status is not pickable (public picker): aria-disabled, no activation. */
   pickable: boolean;
-  onActivate?: (spot: MapSpot) => void;
+  onActivate?: (spot: MapSpot, modifiers?: SpotActivateModifiers) => void;
   /** Pointer activation (click / tap); defaults to `onActivate`. */
-  onPointerActivate?: (spot: MapSpot) => void;
+  onPointerActivate?: (spot: MapSpot, modifiers?: SpotActivateModifiers) => void;
+}
+
+function modifiersOf(e: {
+  shiftKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+}): SpotActivateModifiers | undefined {
+  const toggleKey = e.ctrlKey || e.metaKey;
+  return e.shiftKey || toggleKey ? { shiftKey: e.shiftKey, toggleKey } : undefined;
 }
 
 /** Check mark on a selected spot: the choice reads at a glance, not only as a ring. */
@@ -226,16 +248,19 @@ const Spot = memo(function Spot({
   const fontSize = labelFontSize(S, 0.2, unitsPerPixel, 0.42);
   const badgeR = Math.min(Math.max(S * 0.12, 6.5 * unitsPerPixel), S * 0.2);
   const dotR = Math.min(Math.max(S * 0.085, 4.5 * unitsPerPixel), S * 0.14);
-  const activate = () => {
-    if (!disabled) onActivate?.(spot);
+  // Modifiers are passed only when held: plain activations keep the one-argument call.
+  const call = (fn: SpotProps['onActivate'], mods: SpotActivateModifiers | undefined) => {
+    if (disabled || !fn) return;
+    if (mods) fn(spot, mods);
+    else fn(spot);
   };
-  const pointerActivate = () => {
-    if (!disabled) (onPointerActivate ?? onActivate)?.(spot);
-  };
+  const activate = (mods?: SpotActivateModifiers) => call(onActivate, mods);
+  const pointerActivate = (e: MouseEvent<SVGGElement>) =>
+    call(onPointerActivate ?? onActivate, modifiersOf(e));
   const onKeyDown = (e: KeyboardEvent<SVGGElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      activate();
+      activate(modifiersOf(e));
     }
   };
   return (
@@ -437,7 +462,8 @@ const NAV_KEYS: Record<string, 'prev' | 'next' | 'first' | 'last'> = {
  *
  * Keyboard: the map is one tab stop (the first selected spot, else the first
  * spot); arrows, PageUp/PageDown and Home/End move between spots, Enter or
- * Space activate one, Tab leaves the map.
+ * Space activate one (with Shift or Ctrl/Cmd for multi-selection), Tab
+ * leaves the map. With `lasso`, a drag selects a rectangle of spots.
  */
 export function BeachMap({
   geometry,
@@ -447,6 +473,8 @@ export function BeachMap({
   highlightedIds,
   spotIndicators,
   onSpotActivate,
+  lasso = false,
+  onLassoSelect,
   pickableStatuses,
   minTapTargetPx,
   zoomSlider = true,
@@ -535,12 +563,13 @@ export function BeachMap({
   useLayoutEffect(() => {
     tapRef.current = { view, fitUnitsPerPixel, vb, minTapTargetPx, onSpotActivate };
   });
-  const onPointerActivate = useCallback((spot: MapSpot) => {
+  const onPointerActivate = useCallback((spot: MapSpot, mods?: SpotActivateModifiers) => {
     const c = tapRef.current;
     const size = spotArtSize(spot.shape);
     const onScreen = (size / c.fitUnitsPerPixel) * c.view.scale;
     if (!c.minTapTargetPx || onScreen >= c.minTapTargetPx || c.view.scale >= MAX_SCALE) {
-      c.onSpotActivate?.(spot);
+      if (mods) c.onSpotActivate?.(spot, mods);
+      else c.onSpotActivate?.(spot);
       return;
     }
     setView(centerOn(c.vb, spot, (c.view.scale * c.minTapTargetPx * 1.15) / onScreen));
@@ -589,14 +618,48 @@ export function BeachMap({
     return [...present];
   }, [legendStatuses, geometry.spots, statusOf]);
 
+  // Lasso rectangle in map coordinates while a selection drag is in progress.
+  const [lassoRect, setLassoRect] = useState<MapRect | null>(null);
+  const lassoRef = useRef({ lasso, onLassoSelect, view, spots: geometry.spots });
+  useLayoutEffect(() => {
+    lassoRef.current = { lasso, onLassoSelect, view, spots: geometry.spots };
+  });
+  /** Client point to map coordinates (inverse of the viewport transform). */
+  const toMap = (clientX: number, clientY: number, v: Transform): Point => {
+    const p = clientToViewBox(svgRef.current, vb, clientX, clientY);
+    return { x: (p.x - v.x) / v.scale, y: (p.y - v.y) / v.scale };
+  };
+
   useGesture(
     {
-      onDrag: ({ delta: [dx, dy], pinching, cancel, tap }) => {
+      onDrag: ({ delta: [dx, dy], pinching, cancel, tap, initial, xy, last, event }) => {
         if (pinching) {
           cancel();
+          setLassoRect(null);
           return;
         }
         if (tap) return;
+        const l = lassoRef.current;
+        if (l.lasso) {
+          const a = toMap(initial[0], initial[1], l.view);
+          const b = toMap(xy[0], xy[1], l.view);
+          const rect = { x0: a.x, y0: a.y, x1: b.x, y1: b.y };
+          if (!last) {
+            setLassoRect(rect);
+            return;
+          }
+          setLassoRect(null);
+          const e = event as unknown as {
+            shiftKey?: boolean;
+            ctrlKey?: boolean;
+            metaKey?: boolean;
+          };
+          l.onLassoSelect?.(spotsInRect(l.spots, rect), {
+            shiftKey: !!e.shiftKey,
+            toggleKey: !!(e.ctrlKey || e.metaKey),
+          });
+          return;
+        }
         const k = pixelRatio(svgRef.current, vb);
         setView((v) => ({ ...v, x: v.x + dx * k, y: v.y + dy * k }));
       },
@@ -668,7 +731,11 @@ export function BeachMap({
         role="group"
         aria-labelledby={titleId}
         aria-describedby={showLegend ? legendId : undefined}
-        className="block h-auto w-full touch-none rounded-lg bg-muted/40 select-none"
+        className={cn(
+          'block h-auto w-full touch-none rounded-lg bg-muted/40 select-none',
+          lasso && 'cursor-crosshair',
+        )}
+        data-lasso={lasso || undefined}
         // Dynamic geometry: the drawing keeps the map's aspect ratio up to the
         // caller-provided maximum CSS height.
         style={{ aspectRatio: `${vb.width} / ${vb.height}`, maxHeight: height }}
@@ -724,6 +791,20 @@ export function BeachMap({
             );
           })}
           {showCaptions && <CaptionLayer layouts={captions.out} highlighted={highlighted} />}
+          {lassoRect && (
+            <rect
+              data-testid="beach-map-lasso"
+              x={Math.min(lassoRect.x0, lassoRect.x1)}
+              y={Math.min(lassoRect.y0, lassoRect.y1)}
+              width={Math.abs(lassoRect.x1 - lassoRect.x0)}
+              height={Math.abs(lassoRect.y1 - lassoRect.y0)}
+              className="fill-primary/15 stroke-primary"
+              strokeWidth={1.5 * unitsPerPixel}
+              strokeDasharray={`${4 * unitsPerPixel} ${3 * unitsPerPixel}`}
+              pointerEvents="none"
+              aria-hidden="true"
+            />
+          )}
         </g>
       </svg>
       {labelsHidden && (

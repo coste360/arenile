@@ -112,6 +112,36 @@ describe('BeachMap', () => {
     expect(onActivate).toHaveBeenCalledTimes(3);
   });
 
+  it('passes Shift and Ctrl/Cmd to onSpotActivate for multi-selection', async () => {
+    const user = userEvent.setup();
+    const onActivate = vi.fn();
+    renderWithI18n(<BeachMap geometry={geometry} onSpotActivate={onActivate} />);
+    const a2 = screen.getByRole('button', { name: 'Postazione A2: Libero' });
+    fireEvent.click(a2, { shiftKey: true });
+    expect(onActivate).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's2' }), {
+      shiftKey: true,
+      toggleKey: false,
+    });
+    fireEvent.click(a2, { metaKey: true });
+    expect(onActivate).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's2' }), {
+      shiftKey: false,
+      toggleKey: true,
+    });
+    a2.focus();
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onActivate).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's2' }), {
+      shiftKey: true,
+      toggleKey: false,
+    });
+  });
+
+  it('marks the drawing as a lasso surface when lasso is on', () => {
+    const { container, rerender } = renderWithI18n(<BeachMap geometry={geometry} />);
+    expect(container.querySelector('svg[data-lasso]')).toBeNull();
+    rerender(<BeachMap geometry={geometry} lasso onLassoSelect={() => undefined} />);
+    expect(container.querySelector('svg[data-lasso="true"]')).not.toBeNull();
+  });
+
   it('is one tab stop: a roving tabindex moved with arrows, PageUp/PageDown and Home/End', () => {
     const { container } = renderWithI18n(<BeachMap geometry={geometry} selectedIds={['s2']} />);
     const svg = container.querySelector('svg[role="group"]') as SVGSVGElement;

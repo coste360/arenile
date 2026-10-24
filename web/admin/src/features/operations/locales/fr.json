@@ -111,7 +111,9 @@
     "move": "Déplacer",
     "collect": "Encaisser",
     "openDetail": "Ouvrir le détail",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "block": "Bloquer l’emplacement",
+    "unblock": "Débloquer"
   },
   "release": {
     "title": "Libérer l'emplacement {{label}} ?",
@@ -177,5 +179,44 @@
     "anonymous": "Client anonyme",
     "anonymousShort": "Anonyme",
     "aria": "occupé par {{name}}"
+  },
+  "block": {
+    "titleOne": "Bloquer l’emplacement {{label}}",
+    "titleMany_one": "Bloquer {{count}} emplacement",
+    "titleMany_other": "Bloquer {{count}} emplacements",
+    "description": "Les emplacements bloqués ne sont pas réservables sur la période et le créneau choisis.",
+    "spots": "Emplacements",
+    "period": "Période",
+    "slots": "Créneau",
+    "reason": "Motif",
+    "optional": "(facultatif)",
+    "reasonPlaceholder": "Ex. entretien du parasol",
+    "confirm": "Bloquer",
+    "doneOne": "Emplacement {{label}} bloqué.",
+    "doneMany_one": "{{count}} emplacement bloqué.",
+    "doneMany_other": "{{count}} emplacements bloqués.",
+    "removeTitle": "Débloquer l’emplacement {{label}} ?",
+    "removeDescription": "Le blocage est supprimé sur toute sa période : l’emplacement redevient réservable.",
+    "removed": "Emplacement {{label}} débloqué.",
+    "errors": {
+      "period": "Choisissez la période.",
+      "order": "La date de fin ne peut pas précéder la date de début.",
+      "reason": "200 caractères au maximum."
+    }
+  },
+  "select": {
+    "toggle": "Sélectionner",
+    "toggleAria": "Sélection multiple des emplacements",
+    "none": "Aucun emplacement sélectionné",
+    "count_one": "{{count}} emplacement sélectionné",
+    "count_other": "{{count}} emplacements sélectionnés",
+    "hint": "Touchez les emplacements libres ou tracez un rectangle sur le plan.",
+    "hintKeys": "Pour une plage, maintenez",
+    "groupBooking": "Réservation de groupe",
+    "block": "Bloquer",
+    "clear": "Vider",
+    "exit": "Quitter la sélection",
+    "groupTitle_one": "Réservation de groupe ({{count}} emplacement)",
+    "groupTitle_other": "Réservation de groupe ({{count}} emplacements)"
   }
 }

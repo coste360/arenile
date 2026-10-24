@@ -1,4 +1,4 @@
-import { EmptyState, Page, QueryState } from '@arenile/shared/ui/patterns';
+import { EmptyState, Page, QueryState, useMediaQuery } from '@arenile/shared/ui/patterns';
 import { Button } from '@arenile/shared/ui/button';
 import { Link } from '@tanstack/react-router';
 import { MapIcon } from 'lucide-react';
@@ -16,7 +16,15 @@ import { useSelectedMap } from './lib/useSelectedMap';
  * slot, from `?date=&slot=`. Spots are coloured by status; a tap opens the
  * quick sheet with the actions; the stream keeps it live.
  */
+/**
+ * On wide screens the page uses the whole width (AppShell) and the drawing
+ * may grow taller too, so more spots are readable without zooming.
+ */
+const WIDE_QUERY = '(min-width: 1280px)';
+const WIDE_MAP_HEIGHT = '78vh';
+
 export function OperationalMapPage() {
+  const wide = useMediaQuery(WIDE_QUERY);
   const { t } = useTranslation('operations');
   const establishmentId = useRequiredEstablishmentId();
   const { date, slot, today, setDay } = useDaySearch();
@@ -71,6 +79,7 @@ export function OperationalMapPage() {
               date={date}
               slot={slot}
               permissions={permissions}
+              height={wide ? WIDE_MAP_HEIGHT : undefined}
             />
           )}
         </>

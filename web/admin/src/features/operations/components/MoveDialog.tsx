@@ -67,13 +67,13 @@ export function MoveDialog({
     lineId: booking?.line_id ?? '',
     spotId: target.spotId,
     from: date > (booking?.starts_on ?? date) ? date : undefined,
-    version: booking?.version,
+    version: booking?.version ?? 0,
   };
   const preview = useQuery<BookingChangeResult, ApiProblem>({
     // Outside the SSE-invalidated areas: applying the move must not re-run the preview.
     queryKey: ['move-preview', establishmentId, vars],
     queryFn: () => moveLine(client, establishmentId, { ...vars, dryRun: true }),
-    enabled: open && !!vars.bookingId && !!vars.lineId,
+    enabled: open && !!vars.bookingId && !!vars.lineId && vars.version > 0,
     retry: shouldRetry,
     gcTime: 0,
   });

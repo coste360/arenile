@@ -33,7 +33,7 @@ func (h *Handlers) ListBookings(w http.ResponseWriter, r *http.Request, establis
 		problem.Error(w, r, h.Log, err)
 		return
 	}
-	f := store.BookingFilter{From: params.From, To: params.To, SeasonPass: params.SeasonPass, BalanceDue: params.BalanceDue}
+	f := store.BookingFilter{From: params.From, To: params.To, SeasonPass: params.SeasonPass, BalanceDue: params.BalanceDue, Test: params.Test}
 	if params.Status != nil {
 		for _, s := range *params.Status {
 			f.Statuses = append(f.Statuses, string(s))
@@ -169,9 +169,25 @@ func bkExpected(im IfMatch) *int64 {
 	return &v
 }
 
-// bkAction decodes the optional BookingActionRequest and the If-Match header.
-func (h *Handlers) bkAction(w http.ResponseWriter, r *http.Request, ifMatch *string) (booking.ActionInput, bool) {
-	expected, err := ParseIfMatch(ifMatch)
+// bkRequireIfMatch is the precondition of the actions launched from the
+// operational map (check-in, no-show, cancel, move; ADR 0019 C): a missing
+// If-Match is 428 precondition_required, "*" means any version. A dry run
+// writes nothing, so it accepts a missing header.
+func bkRequireIfMatch(h *string, dryRun bool) (*int64, error) {
+	if dryRun {
+		return ParseIfMatch(h)
+	}
+	im, err := RequireIfMatch(h)
+	if err != nil {
+		return nil, err
+	}
+	return bkExpected(im), nil
+}
+
+// bkAction decodes the optional BookingActionRequest and the If-Match header
+// (mandatory when required is true).
+func (h *Handlers) bkAction(w http.ResponseWriter, r *http.Request, ifMatch *string, required bool) (booking.ActionInput, bool) {
+	expected, err := bkRequireIfMatch(ifMatch, !required)
 	if err != nil {
 		problem.Error(w, r, h.Log, err)
 		return booking.ActionInput{}, false
@@ -192,7 +208,12 @@ func (h *Handlers) bkAction(w http.ResponseWriter, r *http.Request, ifMatch *str
 type bkActionFn func(in booking.ActionInput) (*booking.Detail, error)
 
 func (h *Handlers) bkRunAction(w http.ResponseWriter, r *http.Request, ifMatch *string, fn bkActionFn) {
-	in, ok := h.bkAction(w, r, ifMatch)
+	h.bkRunActionIf(w, r, ifMatch, false, fn)
+}
+
+// bkRunActionIf is bkRunAction with a mandatory If-Match when required is true.
+func (h *Handlers) bkRunActionIf(w http.ResponseWriter, r *http.Request, ifMatch *string, required bool, fn bkActionFn) {
+	in, ok := h.bkAction(w, r, ifMatch, required)
 	if !ok {
 		return
 	}
@@ -213,14 +234,14 @@ func (h *Handlers) ConfirmBooking(w http.ResponseWriter, r *http.Request, establ
 
 // CheckInBooking implements POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/check-in.
 func (h *Handlers) CheckInBooking(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, id api.BookingID, params api.CheckInBookingParams) {
-	h.bkRunAction(w, r, params.IfMatch, func(in booking.ActionInput) (*booking.Detail, error) {
+	h.bkRunActionIf(w, r, params.IfMatch, true, func(in booking.ActionInput) (*booking.Detail, error) {
 		return h.Bookings.CheckIn(r.Context(), principalOf(r), establishmentID, id, in)
 	})
 }
 
 // MarkBookingNoShow implements POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/no-show.
 func (h *Handlers) MarkBookingNoShow(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, id api.BookingID, params api.MarkBookingNoShowParams) {
-	h.bkRunAction(w, r, params.IfMatch, func(in booking.ActionInput) (*booking.Detail, error) {
+	h.bkRunActionIf(w, r, params.IfMatch, true, func(in booking.ActionInput) (*booking.Detail, error) {
 		return h.Bookings.MarkNoShow(r.Context(), principalOf(r), establishmentID, id, in)
 	})
 }
@@ -241,13 +262,13 @@ func (h *Handlers) RejectBooking(w http.ResponseWriter, r *http.Request, establi
 
 // CancelBooking implements POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/cancel.
 func (h *Handlers) CancelBooking(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, id api.BookingID, params api.CancelBookingParams) {
-	expected, err := ParseIfMatch(params.IfMatch)
-	if err != nil {
-		problem.Error(w, r, h.Log, err)
-		return
-	}
 	var req api.BookingCancelRequest
 	if !decode(w, r, &req) {
+		return
+	}
+	expected, err := bkRequireIfMatch(params.IfMatch, pcBoolOr(req.DryRun, false))
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
 		return
 	}
 	in := booking.CancelInput{
@@ -274,13 +295,13 @@ func (h *Handlers) CancelBooking(w http.ResponseWriter, r *http.Request, establi
 
 // MoveBooking implements POST /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/move.
 func (h *Handlers) MoveBooking(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, id api.BookingID, params api.MoveBookingParams) {
-	expected, err := ParseIfMatch(params.IfMatch)
-	if err != nil {
-		problem.Error(w, r, h.Log, err)
-		return
-	}
 	var req api.BookingMoveRequest
 	if !decode(w, r, &req) {
+		return
+	}
+	expected, err := bkRequireIfMatch(params.IfMatch, pcBoolOr(req.DryRun, false))
+	if err != nil {
+		problem.Error(w, r, h.Log, err)
 		return
 	}
 	res, err := h.Bookings.Move(r.Context(), principalOf(r), establishmentID, id, booking.MoveInput{
@@ -465,7 +486,16 @@ func BookingSummaryToAPI(b *store.BookingRow) api.BookingSummary {
 		TotalAmount: int64(b.TotalAmount), PaidAmount: int64(b.PaidAmount), DepositDue: int64(b.DepositDue),
 		BalanceDue: int64(b.BalanceDue()), IsSeasonPass: b.IsSeasonPass, HoldExpiresAt: utcPtr(b.HoldExpiresAt),
 		SpotLabels: nonNil(b.SpotLabels), CreatedAt: b.CreatedAt.UTC(), Version: b.Version,
+		Test: testFlag(b.Test),
 	}
+}
+
+// testFlag maps the test-mode flag of a row: present only when true.
+func testFlag(t bool) *bool {
+	if !t {
+		return nil
+	}
+	return &t
 }
 
 func bkCustomerToAPI(c *store.Customer) api.Customer {
@@ -486,6 +516,7 @@ func bkPaymentToAPI(p *store.Payment, code string) api.Payment {
 		Provider: p.Provider, Status: api.PaymentStatus(p.Status), CreatedAt: p.CreatedAt.UTC(),
 		BookingId: p.BookingID, CashSessionId: p.CashSessionID, ProviderRef: p.ProviderRef,
 		ReceivedByUserId: p.ReceivedByUserID, RefundOfPaymentId: p.RefundOfPaymentID,
+		Test: testFlag(p.Test),
 	}
 	if code != "" {
 		out.BookingCode = &code
@@ -516,6 +547,7 @@ func BookingDetailToAPI(d *booking.Detail) api.BookingDetail {
 		Customer: bkCustomerToAPI(&d.Customer), NextStatuses: []api.BookingStatus{},
 		Lines: []api.BookingLine{}, Extras: []api.BookingExtra{}, Allocations: []api.BookingAllocation{},
 		Payments: []api.Payment{}, History: []api.BookingHistoryEntry{},
+		Test: testFlag(b.Test),
 	}
 	for _, n := range st.NextStatuses() {
 		out.NextStatuses = append(out.NextStatuses, api.BookingStatus(n))
@@ -590,6 +622,9 @@ func BookingDetailToAPI(d *booking.Detail) api.BookingDetail {
 			}
 		}
 		out.History = append(out.History, he)
+	}
+	if len(d.RefundRequests) > 0 {
+		out.Refunds = refundRequestsToAPI(d.RefundRequests, b.Code)
 	}
 	return out
 }

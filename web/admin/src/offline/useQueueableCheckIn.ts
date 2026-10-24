@@ -23,8 +23,8 @@ const CHANGED_AREAS: readonly EstablishmentArea[] = [
 
 export interface QueueableCheckInVars {
   bookingId: string;
-  /** Booking version read with the map, sent as If-Match. */
-  version?: number;
+  /** Booking version read with the map, sent as If-Match (mandatory, ADR 0019 C). */
+  version: number;
   /** Shown in the offline queue (spot label and booking code). */
   label?: string;
 }
@@ -52,7 +52,7 @@ export function useQueueableCheckIn(establishmentId: string) {
   return useMutation<CheckInOutcome, ApiProblem, QueueableCheckInVars>({
     mutationFn: async ({ bookingId, version, label }) => {
       const idempotencyKey = defaultNewId();
-      const ifMatch = version !== undefined ? `"${version}"` : undefined;
+      const ifMatch = `"${version}"`;
       const enqueue = async (): Promise<CheckInOutcome> => ({
         queued: true,
         operation: await (runtime as NonNullable<typeof runtime>).enqueue({
@@ -61,7 +61,7 @@ export function useQueueableCheckIn(establishmentId: string) {
           bookingId,
           label: label ?? '',
           idempotencyKey,
-          ...(ifMatch ? { ifMatch } : {}),
+          ifMatch,
         }),
       });
       if (runtime && !navigator.onLine) return enqueue();
@@ -72,7 +72,7 @@ export function useQueueableCheckIn(establishmentId: string) {
               path: { establishmentId, bookingId },
               header: {
                 'Idempotency-Key': idempotencyKey,
-                ...(ifMatch ? { 'If-Match': ifMatch } : {}),
+                'If-Match': ifMatch,
               },
             },
             body: {},

@@ -18,10 +18,12 @@ import { Spinner } from '@arenile/shared/ui/spinner';
 import { Link } from '@tanstack/react-router';
 import {
   ArrowRightLeftIcon,
+  BanIcon,
   CalendarMinusIcon,
   CalendarPlusIcon,
   CircleAlertIcon,
   ExternalLinkIcon,
+  LockOpenIcon,
   LogInIcon,
   PlusIcon,
   UndoIcon,
@@ -35,7 +37,7 @@ import { usePackName } from '../../bookings/usePackName';
 import { OfflineSpotActions } from '../../../offline/OfflineSpotActions';
 import { spotLabel } from '../../../offline/labels';
 import { useQueueableCheckIn } from '../../../offline/useQueueableCheckIn';
-import { useReleaseDay, useRevokeRelease } from '../api/operations';
+import { useDeleteSpotBlock, useReleaseDay, useRevokeRelease } from '../api/operations';
 import type { OperationsPermissions } from '../lib/permissions';
 import { spotActions } from '../lib/actions';
 import {
@@ -56,6 +58,8 @@ export interface SpotSheetProps {
   onOpenChange: (open: boolean) => void;
   onNewBooking: (spot: OperationalSpot) => void;
   onStartMove: (spot: OperationalSpot) => void;
+  /** "Blocca postazione" (operations.run): opens the block dialog for this spot. */
+  onBlock?: (spot: OperationalSpot) => void;
 }
 
 function Row({ label, children }: { label: ReactNode; children: ReactNode }) {
@@ -82,6 +86,7 @@ export function SpotSheet({
   onOpenChange,
   onNewBooking,
   onStartMove,
+  onBlock,
 }: SpotSheetProps) {
   const { t } = useTranslation('operations');
   const problemText = useProblemText();
@@ -89,6 +94,7 @@ export function SpotSheet({
   const checkIn = useQueueableCheckIn(establishmentId);
   const release = useReleaseDay(establishmentId);
   const revoke = useRevokeRelease(establishmentId);
+  const unblock = useDeleteSpotBlock(establishmentId);
   const [error, setError] = useState<string | null>(null);
 
   const onOpen = (v: boolean) => {
@@ -266,6 +272,32 @@ export function SpotSheet({
                 <Button variant="outline">
                   <UndoIcon aria-hidden="true" />
                   {t('actions.revokeRelease')}
+                </Button>
+              }
+            />
+          )}
+          {actions.block && onBlock && (
+            <Button variant="outline" onClick={() => onBlock(spot)}>
+              <BanIcon aria-hidden="true" />
+              {t('actions.block')}
+            </Button>
+          )}
+          {actions.unblock && spot.block_id && (
+            <ConfirmDialog
+              title={t('block.removeTitle', { label: spot.label })}
+              description={t('block.removeDescription')}
+              confirmLabel={t('actions.unblock')}
+              errorText={problemText}
+              onConfirm={() =>
+                unblock.mutateAsync({ blockId: spot.block_id as string }).then(() => {
+                  toast.success(t('block.removed', { label: spot.label }));
+                  onOpen(false);
+                })
+              }
+              trigger={
+                <Button variant="outline">
+                  <LockOpenIcon aria-hidden="true" />
+                  {t('actions.unblock')}
                 </Button>
               }
             />
