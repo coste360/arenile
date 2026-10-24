@@ -179,6 +179,30 @@ describe('ManagePage', () => {
     }
   });
 
+  it('shows the status of the refund of a cancelled booking in the customer language', async () => {
+    renderManage({
+      [`GET ${MANAGE}`]: () =>
+        json(
+          200,
+          booking({
+            status: 'cancelled',
+            allowed: { pay_balance: false, modify: false, cancel: false, release_days: false },
+            refund: {
+              status: 'succeeded',
+              amount: 2700,
+              requested_at: '2099-06-20T08:00:00Z',
+              completed_at: '2099-06-20T08:00:05Z',
+            },
+          }),
+        ),
+    });
+    const notice = await screen.findByText(/Rimborso di 27,00\s€/);
+    expect(notice).toBeInTheDocument();
+    expect(screen.getByText('Rimborso eseguito sul tuo metodo di pagamento.')).toBeInTheDocument();
+    expect(screen.getByText(/Eseguito il 20\/06\/2099/)).toBeInTheDocument();
+    expect(screen.queryByText(/manage\.refund/)).not.toBeInTheDocument();
+  });
+
   it('previews a change of dates before applying it', async () => {
     const user = userEvent.setup();
     renderManage({

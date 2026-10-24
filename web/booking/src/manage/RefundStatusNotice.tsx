@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { BanknoteIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatMoney, intlLocale } from '../flow/format';
+import { PUBLIC_NS } from '../i18n';
 
 type ManageRefundStatus = Schemas['ManageRefundStatus'];
 
@@ -20,7 +21,7 @@ export function RefundStatusNotice({
   currency: string;
   timeZone?: string;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(PUBLIC_NS);
   const locale = intlLocale(i18n.language);
   const date = (iso: string | undefined) => formatInstantDate(iso, { locale, timeZone });
   return (
