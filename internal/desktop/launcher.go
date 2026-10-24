@@ -23,6 +23,7 @@ import (
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/config"
 	"github.com/coste360/arenile/internal/desktop/control"
+	"github.com/coste360/arenile/internal/domain/update"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/updates"
 )
@@ -49,7 +50,20 @@ const (
 	MenuLAN       = "lan"
 	MenuLANQR     = "lan_qr"
 	MenuRestore   = "restore"
+	MenuUpdates   = "check_updates"
+	MenuAbout     = "about"
 	MenuQuit      = "quit"
+)
+
+// Panel pages opened by the tray menu and by a click on a notification
+// (PageNotifier).
+const (
+	// PageAbout is "Versione e aggiornamenti" (Informazioni su Arenile).
+	PageAbout = "/admin/informazioni"
+	// PageDesktop is the desktop settings page (backups, restore).
+	PageDesktop = "/admin/desktop"
+	// PageLAN is the local network page (QR code).
+	PageLAN = "/admin/rete-locale"
 )
 
 // MenuItem is an entry of the tray menu (labels from T: Italian source,
@@ -82,6 +96,14 @@ type UI interface {
 	Notify(title, message string)
 	// Quit ends Run.
 	Quit()
+}
+
+// PageNotifier is implemented by UIs whose notifications can be clicked
+// (native notifications on macOS): a click shows the panel at url (an
+// absolute panel URL, e.g. the "Versione e aggiornamenti" page for a new
+// version). Other UIs get Notify; their notifications open nothing.
+type PageNotifier interface {
+	NotifyPage(title, message, url string)
 }
 
 // BrowserOpener is implemented by UIs that show the panel in their own
@@ -177,19 +199,88 @@ type Launcher struct {
 	fatal    error
 	activate *ActivationServer
 	// notifiedVersion is the last version shown in a native update
-	// notification: a restart of the core (restore) does not repeat it.
+	// notification, also kept in notify-state.json (NotifyState) so that
+	// neither a restart of the core (restore) nor of the app repeats it.
 	notifyMu        sync.Mutex
 	notifiedVersion string
+	// manualCheck is set while "Verifica aggiornamenti" runs: its own
+	// result notification replaces the automatic one.
+	manualCheck atomic.Bool
 }
 
-// notifyUpdate shows the native notification of a new version once.
+// notifyUpdate shows the native notification of a new version at most
+// once per version and installation: the last announced version is kept
+// in the data dir; only a newer one is announced again.
 func (l *Launcher) notifyUpdate(latest string) {
+	if l.markUpdateNotified(latest) && l.ui != nil && !l.manualCheck.Load() {
+		l.notifyPage(T("notify.update", latest), PageAbout)
+	}
+}
+
+// markUpdateNotified records latest as announced and reports whether it
+// was not announced before (newer than the last announced version).
+func (l *Launcher) markUpdateNotified(latest string) bool {
 	l.notifyMu.Lock()
-	seen := l.notifiedVersion == latest
+	defer l.notifyMu.Unlock()
+	last := l.notifiedVersion
+	if st := LoadNotifyState(l.dataDir); last == "" || (st.UpdateNotified != "" && updates.CompareVersions(st.UpdateNotified, last) > 0) {
+		last = st.UpdateNotified
+	}
+	if last != "" && updates.CompareVersions(latest, last) <= 0 {
+		return false
+	}
 	l.notifiedVersion = latest
-	l.notifyMu.Unlock()
-	if !seen && l.ui != nil {
-		l.ui.Notify("Arenile", T("notify.update", latest))
+	if err := SaveNotifyState(l.dataDir, NotifyState{UpdateNotified: latest}); err != nil && l.log != nil {
+		l.log.Warn("desktop: update notification state not saved", slog.String("error", err.Error()))
+	}
+	return true
+}
+
+// notifyPage shows a notification that, when clicked (PageNotifier),
+// opens the panel at page (a path such as PageAbout); "" just shows it.
+func (l *Launcher) notifyPage(message, page string) {
+	if pn, ok := l.ui.(PageNotifier); ok && page != "" && l.cfg.BaseURL != "" {
+		pn.NotifyPage("Arenile", message, l.cfg.BaseURL+page)
+		return
+	}
+	l.ui.Notify("Arenile", message)
+}
+
+// checkUpdatesNow is "Verifica aggiornamenti" of the tray and app menus:
+// the check runs at once (debounced by the update service) and the result
+// is a notification; a new version opens "Versione e aggiornamenti" when
+// the notification is clicked.
+func (l *Launcher) checkUpdatesNow() {
+	l.mu.Lock()
+	srv := l.srv
+	l.mu.Unlock()
+	if srv == nil || srv.app.Updates == nil {
+		return
+	}
+	l.manualCheck.Store(true)
+	st := srv.app.Updates.Check(context.Background())
+	l.manualCheck.Store(false)
+	msg, page := UpdateCheckMessage(st)
+	if st.UpdateAvailable {
+		l.markUpdateNotified(st.Latest)
+	}
+	l.notifyPage(msg, page)
+}
+
+// UpdateCheckMessage is the notification of a manual update check and the
+// page its click opens (pure).
+func UpdateCheckMessage(st update.Status) (message, page string) {
+	switch {
+	case st.State == update.StateDisabled && !st.CheckEnabled:
+		return T("notify.update_disabled"), PageDesktop
+	case st.State == update.StateDisabled:
+		return T("notify.update_dev", st.Current), PageAbout
+	case st.UpdateAvailable:
+		return T("notify.update", st.Latest), PageAbout
+	case st.State == update.StateUnavailable || st.Latest == "":
+		return T("notify.update_unavailable"), PageAbout
+	default:
+		return T("notify.update_none", st.Current), PageAbout
 	}
 }
 
@@ -441,7 +532,7 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 	if settings.LANEnabled {
 		if err := l.rt.StartLAN(ctx, settings.LANPort); err != nil {
 			log.Warn("desktop LAN mode not started", slog.String("error", err.Error()))
-			l.ui.Notify("Arenile", T("notify.lan_not_started"))
+			l.notifyPage(T("notify.lan_not_started"), PageDesktop)
 		} else {
 			l.warnCertRenewal()
 		}
@@ -457,7 +548,7 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Go(func() {
 		sched := &Scheduler{Runtime: l.rt, Clock: l.o.Clock, Log: log, Tick: l.o.ScheduleTick, OnFailure: func(error) {
-			l.ui.Notify("Arenile", T("notify.daily_backup_fail"))
+			l.notifyPage(T("notify.daily_backup_fail"), PageDesktop)
 		}}
 		_ = sched.Run(bgCtx)
 	})
@@ -706,11 +797,13 @@ func (l *Launcher) menu() []MenuItem {
 		}, MenuItem{
 			// Always present (disabled while off): the tray keeps the item order.
 			ID: MenuLANQR, Label: T("menu.lan_qr"), Disabled: !s.LANEnabled,
-			OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + "/admin/rete-locale") },
+			OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + PageLAN) },
 		})
 	}
 	items = append(items,
-		MenuItem{ID: MenuRestore, Label: T("menu.restore"), OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + "/admin/desktop") }},
+		MenuItem{ID: MenuRestore, Label: T("menu.restore"), OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + PageDesktop) }},
+		MenuItem{ID: MenuUpdates, Label: T("menu.check_updates"), OnClick: func() { go l.checkUpdatesNow() }},
+		MenuItem{ID: MenuAbout, Label: T("menu.about"), OnClick: func() { _ = l.ui.OpenURL(l.cfg.BaseURL + PageAbout) }},
 		MenuItem{ID: MenuQuit, Label: T("menu.quit"), OnClick: l.ui.Quit},
 	)
 	return items
@@ -741,7 +834,7 @@ func (l *Launcher) certRenewalSoon() (bool, string) {
 // the new one, so the operator plans it (spec 29.1).
 func (l *Launcher) warnCertRenewal() {
 	if soon, at := l.certRenewalSoon(); soon {
-		l.ui.Notify("Arenile", T("notify.cert_renewal", at))
+		l.notifyPage(T("notify.cert_renewal", at), PageLAN)
 	}
 }
 
@@ -749,10 +842,10 @@ func (l *Launcher) backupNow() {
 	b, err := l.rt.BackupNow(context.Background(), control.BackupManual)
 	if err != nil {
 		l.log.Error("desktop manual backup failed", slog.String("error", err.Error()))
-		l.ui.Notify("Arenile", T("notify.backup_fail"))
+		l.notifyPage(T("notify.backup_fail"), PageDesktop)
 		return
 	}
-	l.ui.Notify("Arenile", T("notify.backup_ok", b.Name))
+	l.notifyPage(T("notify.backup_ok", b.Name), PageDesktop)
 }
 
 func (l *Launcher) toggle(change func(*control.Settings)) {

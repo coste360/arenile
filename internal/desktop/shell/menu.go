@@ -10,6 +10,7 @@ type Action string
 // Menu actions.
 const (
 	ActionAbout         Action = "about"
+	ActionCheckUpdates  Action = "check_updates"
 	ActionSettings      Action = "settings"
 	ActionHide          Action = "hide"
 	ActionHideOthers    Action = "hide_others"
@@ -67,13 +68,17 @@ type Menu struct {
 var separator = MenuEntry{Separator: true}
 
 // AppMenu is the macOS menu bar of the window in the launcher locale
-// (pure apart from the locale): Arenile (Informazioni, Impostazioni,
-// Nascondi, Esci), Modifica, Vista, Finestra.
+// (pure apart from the locale): Arenile (Informazioni, Verifica
+// aggiornamenti, Impostazioni, Nascondi, Esci), Modifica, Vista, Finestra.
+// "Informazioni su Arenile" opens the panel page "Versione e
+// aggiornamenti" (version, update status, download), not the bare
+// standard About panel.
 func AppMenu() []Menu {
 	t := desktop.T
 	return []Menu{
 		{Role: RoleApp, Title: "Arenile", Entries: []MenuEntry{
-			{Action: ActionAbout, Label: t("app.about"), Selector: "orderFrontStandardAboutPanel:"},
+			{Action: ActionAbout, Label: t("app.about")},
+			{Action: ActionCheckUpdates, Label: t("app.updates")},
 			separator,
 			{Action: ActionSettings, Label: t("app.settings"), Key: ","},
 			separator,
@@ -116,6 +121,8 @@ func AppMenu() []Menu {
 // Commands are the Go handlers of the menu entries without a Selector.
 type Commands struct {
 	Quit          func()
+	OpenAbout     func()
+	CheckUpdates  func()
 	OpenSettings  func()
 	OpenInBrowser func()
 	Reload        func()
@@ -130,6 +137,10 @@ func (c Commands) Handler(a Action) (fn func(), ok bool) {
 	switch a {
 	case ActionQuit:
 		h = c.Quit
+	case ActionAbout:
+		h = c.OpenAbout
+	case ActionCheckUpdates:
+		h = c.CheckUpdates
 	case ActionSettings:
 		h = c.OpenSettings
 	case ActionOpenInBrowser:

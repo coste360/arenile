@@ -100,6 +100,8 @@ func TestAppMenu_EveryEntryIsWired(t *testing.T) {
 	calls := map[string]int{}
 	cmd := Commands{
 		Quit:          func() { calls["quit"]++ },
+		OpenAbout:     func() { calls["about"]++ },
+		CheckUpdates:  func() { calls["updates"]++ },
 		OpenSettings:  func() { calls["settings"]++ },
 		OpenInBrowser: func() { calls["browser"]++ },
 		Reload:        func() { calls["reload"]++ },
@@ -409,5 +411,69 @@ func TestController_MacClosesToMenuBar(t *testing.T) {
 	c.SaveFrame()
 	if _, err := os.Stat(filepath.Join(c.o.DataDir, stateFileName)); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("state written without a frame: %v", err)
+	}
+}
+
+// "Informazioni su Arenile" and "Verifica aggiornamenti" of the app menu,
+// and the click on a native notification (deep link to its page).
+func TestController_AboutUpdatesAndNotificationClick(t *testing.T) {
+	checks := 0
+	c := NewController(Options{GOOS: "darwin", DataDir: t.TempDir(), CheckUpdates: func() { checks++ }})
+	n := &fakeNative{}
+	c.ShowPanel("http://127.0.0.1:1/admin/")
+	c.Attach(n)
+	n.take()
+	c.OnMenuAction(ActionAbout)
+	eq(t, n.take(), "navigate http://127.0.0.1:1/admin/informazioni", "show")
+	c.OnMenuAction(ActionCheckUpdates)
+	if checks != 1 {
+		t.Fatalf("check updates: %d", checks)
+	}
+	eq(t, n.take())
+
+	// A notification click: its panel page, otherwise just the window.
+	c.OnNotificationClick("http://127.0.0.1:1/admin/desktop")
+	eq(t, n.take(), "navigate http://127.0.0.1:1/admin/desktop", "show")
+	c.OnNotificationClick("")
+	eq(t, n.take(), "show")
+	for _, bad := range []string{"https://evil.example/admin/", "http://127.0.0.1:1/b/lido", "file:///etc/passwd", "/admin/x"} {
+		c.OnNotificationClick(bad)
+		eq(t, n.take(), "show")
+	}
+
+	// Without a launcher check (remote mode) the menu opens the page.
+	r := NewController(Options{GOOS: "darwin", DataDir: t.TempDir(), SettingsPath: "/admin/"})
+	rn := &fakeNative{}
+	r.ShowPanel("http://127.0.0.1:2/admin/")
+	r.Attach(rn)
+	rn.take()
+	r.OnMenuAction(ActionCheckUpdates)
+	eq(t, rn.take(), "navigate http://127.0.0.1:2/admin/informazioni", "show")
+}
+
+func TestNotifyWith_FallbackSelection(t *testing.T) {
+	tests := []struct {
+		name         string
+		native       func(title, message, target string, fallback func()) bool
+		wantFallback int
+	}{
+		{"no native path (Linux, Windows, dev binary)", nil, 1},
+		{"no app bundle", func(string, string, string, func()) bool { return false }, 1},
+		{"shown natively", func(string, string, string, func()) bool { return true }, 0},
+		{"denied later", func(_, _, _ string, fb func()) bool { fb(); return true }, 1},
+	}
+	for _, tt := range tests {
+		fallbacks := 0
+		err := notifyWith(tt.native, func() error { fallbacks++; return nil }, "Arenile", "m", "http://127.0.0.1:1/admin/informazioni")
+		if err != nil || fallbacks != tt.wantFallback {
+			t.Errorf("%s: fallbacks %d err %v", tt.name, fallbacks, err)
+		}
+	}
+	got := make(chan string, 1)
+	SetNotificationHandler(func(target string) { got <- target })
+	defer SetNotificationHandler(nil)
+	notificationClicked("http://127.0.0.1:1/admin/informazioni")
+	if v := <-got; v != "http://127.0.0.1:1/admin/informazioni" {
+		t.Fatalf("click target %q", v)
 	}
 }

@@ -40,7 +40,24 @@ func newUI(log *slog.Logger, o uiOptions) desktop.UI {
 		OpenBrowser:  u.OpenInBrowser,
 		Notify:       tray.Notify,
 		DownloadsDir: shell.DownloadsDir(home),
+		// App menu "Verifica aggiornamenti": the launcher's tray entry.
+		CheckUpdates: func() { tray.menuAction(desktop.MenuUpdates) },
 		Log:          log,
+	})
+	// A click on a native notification (macOS) shows the window at its
+	// page ("Versione e aggiornamenti" for a new version), or just the
+	// window; the browser when the window could not be created.
+	shell.SetNotificationHandler(func(page string) {
+		u.mu.Lock()
+		fb := u.fallback
+		u.mu.Unlock()
+		if fb {
+			if page != "" {
+				_ = u.OpenInBrowser(page)
+			}
+			return
+		}
+		u.ctrl.OnNotificationClick(page)
 	})
 	return u
 }

@@ -74,7 +74,7 @@ func (webviewWindow) Open(ctx context.Context, o WindowOptions) error {
 		GOOS: runtime.GOOS, SettingsPath: "/admin/",
 		Quit:         func() { w.Dispatch(w.Terminate) },
 		OpenBrowser:  o.OpenExternal,
-		Notify:       func(t, m string) { _ = desktop.Notify(context.Background(), runtime.GOOS, t, m) },
+		Notify:       func(t, m string) { _ = shell.Notify(context.Background(), runtime.GOOS, t, m, "") },
 		DownloadsDir: shell.DownloadsDir(home),
 	})
 	ctl.ShowPanel(o.URL)

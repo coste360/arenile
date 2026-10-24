@@ -74,6 +74,13 @@ type Options struct {
 	DownloadsDir string
 	// SettingsPath is the panel path of "Impostazioni" (desktop settings).
 	SettingsPath string
+	// AboutPath is the panel path of "Informazioni su Arenile" (version
+	// and updates, desktop.PageAbout by default).
+	AboutPath string
+	// CheckUpdates runs "Verifica aggiornamenti" (the launcher's manual
+	// check, result as a notification); nil opens AboutPath, where the
+	// panel has the same button (remote mode: the instance checks).
+	CheckUpdates func()
 	Log          *slog.Logger
 }
 
@@ -98,7 +105,10 @@ func NewController(o Options) *Controller {
 		o.Log = slog.New(slog.DiscardHandler)
 	}
 	if o.SettingsPath == "" {
-		o.SettingsPath = "/admin/desktop"
+		o.SettingsPath = desktop.PageDesktop
+	}
+	if o.AboutPath == "" {
+		o.AboutPath = desktop.PageAbout
 	}
 	return &Controller{o: o, state: LoadState(o.DataDir)}
 }
@@ -155,6 +165,25 @@ func (c *Controller) ShowPanel(target string) {
 	n.Show()
 }
 
+// ShowPath shows the panel page at path (e.g. desktop.PageAbout) on the
+// origin of the panel; nothing before the panel URL is known.
+func (c *Controller) ShowPath(path string) {
+	if o := c.origin(); o != "" {
+		c.ShowPanel(o + path)
+	}
+}
+
+// OnNotificationClick handles a click on a native notification: the panel
+// page it carries (an absolute URL on the panel origin), or just the
+// window. A target on another origin is never navigated to.
+func (c *Controller) OnNotificationClick(target string) {
+	if target != "" && desktop.ClassifyLink(c.Current(), target) == desktop.LinkPanelPage {
+		c.ShowPanel(target)
+		return
+	}
+	c.OnReopen()
+}
+
 // Current is the URL last navigated to.
 func (c *Controller) Current() string {
 	c.mu.Lock()
@@ -194,13 +223,16 @@ func (c *Controller) OnReopen() {
 
 // Commands wires the menu actions to the controller.
 func (c *Controller) Commands() Commands {
+	openAbout := func() { c.ShowPath(c.o.AboutPath) }
+	check := c.o.CheckUpdates
+	if check == nil {
+		check = openAbout
+	}
 	return Commands{
-		Quit: c.quit,
-		OpenSettings: func() {
-			if o := c.origin(); o != "" {
-				c.ShowPanel(o + c.o.SettingsPath)
-			}
-		},
+		Quit:         c.quit,
+		OpenAbout:    openAbout,
+		CheckUpdates: check,
+		OpenSettings: func() { c.ShowPath(c.o.SettingsPath) },
 		OpenInBrowser: func() { c.openBrowser(c.Current()) },
 		Reload: func() {
 			if n := c.nativeWindow(); n != nil {

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/coste360/arenile/internal/desktop"
+	"github.com/coste360/arenile/internal/desktop/shell"
 )
 
 // headlessUI implements desktop.UI without a tray: it opens the panel in
@@ -22,7 +23,10 @@ type headlessUI struct {
 	quit    chan struct{}
 }
 
-var _ desktop.UI = (*headlessUI)(nil)
+var (
+	_ desktop.UI           = (*headlessUI)(nil)
+	_ desktop.PageNotifier = (*headlessUI)(nil)
+)
 
 func newHeadlessUI(log *slog.Logger, browser bool) *headlessUI {
 	return &headlessUI{log: log, browser: browser, quit: make(chan struct{})}
@@ -56,10 +60,16 @@ func (h *headlessUI) OpenFolder(path string) error {
 	return desktop.OpenFolder(context.Background(), runtime.GOOS, path)
 }
 
-func (h *headlessUI) Notify(title, message string) {
+func (h *headlessUI) Notify(title, message string) { h.NotifyPage(title, message, "") }
+
+// NotifyPage implements desktop.PageNotifier: on macOS desktop builds the
+// notification is native (Arenile name and icon) and a click opens page
+// (shell.SetNotificationHandler, set by the tray and window UIs);
+// elsewhere it is the plain desktop.Notify.
+func (h *headlessUI) NotifyPage(title, message, page string) {
 	h.log.Info("arenile desktop: notification", slog.String("title", title), slog.String("message", message))
 	if h.browser {
-		_ = desktop.Notify(context.Background(), runtime.GOOS, title, message)
+		_ = shell.Notify(context.Background(), runtime.GOOS, title, message, page)
 	}
 }
 

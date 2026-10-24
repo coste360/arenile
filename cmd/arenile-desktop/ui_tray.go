@@ -11,6 +11,7 @@ import (
 	"fyne.io/systray"
 
 	"github.com/coste360/arenile/internal/desktop"
+	"github.com/coste360/arenile/internal/desktop/shell"
 )
 
 // newTrayUI returns the tray UI (fyne.io/systray, Apache-2.0: CGO on macOS,
@@ -21,7 +22,15 @@ func newTrayUI(log *slog.Logger, o uiOptions) desktop.UI {
 	if o.noTray {
 		return h
 	}
-	return &trayUI{headlessUI: h}
+	t := &trayUI{headlessUI: h}
+	// A click on a native notification (macOS) opens its panel page in the
+	// browser, where this build shows the panel.
+	shell.SetNotificationHandler(func(page string) {
+		if page != "" {
+			_ = t.OpenURL(page)
+		}
+	})
+	return t
 }
 
 // trayUI shows the menu in the system tray. The menu items are created
@@ -139,6 +148,24 @@ func (t *trayUI) listen(id string, mi *systray.MenuItem) {
 		if fn != nil {
 			fn()
 		}
+	}
+}
+
+// menuAction runs the handler of the tray menu item id: the macOS app
+// menu reuses the launcher's entries ("Verifica aggiornamenti").
+func (t *trayUI) menuAction(id string) {
+	t.mu.Lock()
+	fn := t.handlers[id]
+	if fn == nil {
+		for _, it := range t.pending {
+			if it.ID == id {
+				fn = it.OnClick
+			}
+		}
+	}
+	t.mu.Unlock()
+	if fn != nil {
+		fn()
 	}
 }
 

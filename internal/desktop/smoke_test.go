@@ -206,7 +206,7 @@ func TestSmoke_DesktopLauncherHeadless(t *testing.T) {
 	for i := 0; len(ui.menuIDs()) == 0 && i < 100; i++ {
 		time.Sleep(20 * time.Millisecond) // OnReady runs just before the tray
 	}
-	if ids := strings.Join(ui.menuIDs(), ","); ids != "open,backup,data_dir,autostart,restore,quit" {
+	if ids := strings.Join(ui.menuIDs(), ","); ids != "open,backup,data_dir,autostart,restore,check_updates,about,quit" {
 		t.Fatalf("menu %s", ids)
 	}
 	info, err := ReadInstanceInfo(dataDir)
