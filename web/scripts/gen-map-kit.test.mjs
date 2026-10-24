@@ -88,9 +88,9 @@ describe('normaliseManifest', () => {
   });
 
   it('fails when a file is not in the manifest or an entry has no file', () => {
-    expect(() =>
-      normaliseManifest(base([entry('gazebo')]), ['gazebo.svg', 'extra.svg']),
-    ).toThrow(/not listed/);
+    expect(() => normaliseManifest(base([entry('gazebo')]), ['gazebo.svg', 'extra.svg'])).toThrow(
+      /not listed/,
+    );
     expect(() =>
       normaliseManifest(base([entry('gazebo')]), ['gazebo.svg'], NORMALISE.classic),
     ).toThrow(/NORMALISE/);
@@ -138,8 +138,9 @@ describe('fill profile (v3 kits)', () => {
     );
     expect(r.usesState).toBe(true);
     expect(r.corner).toEqual([]);
-    expect(fill('<rect x="40" y="40" width="10" height="10" fill="var(--beach-ink, #263746)"/>'))
-      .toMatchObject({ usesState: false });
+    expect(
+      fill('<rect x="40" y="40" width="10" height="10" fill="var(--beach-ink, #263746)"/>'),
+    ).toMatchObject({ usesState: false });
   });
 
   it.each([
@@ -158,9 +159,18 @@ describe('fill profile (v3 kits)', () => {
   it.each([
     ['a rect inside the corner', '<rect x="100" y="4" width="8" height="8"/>'],
     ['a full-bleed background', '<rect x="0" y="0" width="120" height="120"/>'],
-    ['a transformed circle', '<g transform="translate(12 12) scale(2)"><circle cx="44" cy="2" r="3"/></g>'],
-    ['a stroke reaching in', '<path d="M60 20H91" fill="none" stroke="var(--beach-ink, #000)" stroke-width="6"/>'],
-    ['an arc bulging in', '<path d="M80 30A20 20 0 0 1 120 30" fill="none" stroke="var(--beach-ink, #000)" stroke-width="2"/>'],
+    [
+      'a transformed circle',
+      '<g transform="translate(12 12) scale(2)"><circle cx="44" cy="2" r="3"/></g>',
+    ],
+    [
+      'a stroke reaching in',
+      '<path d="M60 20H91" fill="none" stroke="var(--beach-ink, #000)" stroke-width="6"/>',
+    ],
+    [
+      'an arc bulging in',
+      '<path d="M80 30A20 20 0 0 1 120 30" fill="none" stroke="var(--beach-ink, #000)" stroke-width="2"/>',
+    ],
   ])('finds %s in the indicator corner', (_name, body) => {
     expect(fill(body).corner.length).toBeGreaterThan(0);
   });
@@ -250,4 +260,3 @@ describe('generate (real kits)', () => {
     }
   });
 });
-

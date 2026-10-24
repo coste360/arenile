@@ -20,7 +20,7 @@ for previews (`MapKitPreview`). `useMapKit()` reads it; unknown values fall back
    - modern (`fill` style): an outline ring, invisible at rest; the art paints its status part with
      `--beach-state`, set on its group by `STATUS_CLASSES[status].state`. The badge sits in the corner the kit
      keeps empty (`badgeOffset`). A literal colour override falls back to the halo.
-   Blocked spots get a diagonal bar (`BlockedBar`) in both kits.
+     Blocked spots get a diagonal bar (`BlockedBar`) in both kits.
 4. `kit/MapKitDefs` — the ONE hidden `<svg><defs>` of the page with only the symbols in use, per kit
    (+ badge glyphs).
 

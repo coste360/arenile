@@ -170,11 +170,9 @@ describe('EstablishmentSettingsPage', () => {
     renderApp(PATH, {
       ...baseRoutes('owner'),
       [`GET ${API}`]: () =>
-        json(
-          200,
-          establishment({ theme: { primary_color: '#0e6ba8', map_kit: 'classic' } }),
-          { ETag: '"3"' },
-        ),
+        json(200, establishment({ theme: { primary_color: '#0e6ba8', map_kit: 'classic' } }), {
+          ETag: '"3"',
+        }),
       [`PATCH ${API}`]: async (req) => {
         const body = (await req.json()) as Record<string, unknown>;
         bodies.push(body);

@@ -112,7 +112,9 @@ describe('BeachMap with the kit', () => {
     expect(href('X1')).toBeNull(); // custom without asset: plain footprint
     // Walkway of 180 units = 3 tiles at the same scale; flag variant sets --beach-flag.
     const walkway = container.querySelector('[data-decoration="walkway"]') as Element;
-    expect(walkway.querySelectorAll('use[href="#ark-modern-passerella_verticale"]')).toHaveLength(3);
+    expect(walkway.querySelectorAll('use[href="#ark-modern-passerella_verticale"]')).toHaveLength(
+      3,
+    );
     const flag = container.querySelector('[data-decoration="custom"] use') as Element;
     expect(flag.parentElement).toHaveClass('[--beach-flag:var(--beach-flag-red)]');
     // The flag is named with its colour and captioned, so the sea state is not colour-only.
@@ -218,7 +220,9 @@ describe('BeachMap with the kit', () => {
     const elapsed = performance.now() - t0;
     expect(container.querySelectorAll('use[data-asset="ombrellone_2_lettini"]')).toHaveLength(1000);
     await waitFor(() =>
-      expect(document.querySelectorAll('symbol[id="ark-modern-ombrellone_2_lettini"]')).toHaveLength(1),
+      expect(
+        document.querySelectorAll('symbol[id="ark-modern-ombrellone_2_lettini"]'),
+      ).toHaveLength(1),
     );
     // jsdom is ~10x slower than a browser and neither lays out nor paints: the
     // bound only catches accidental O(n^2) work. Real pan/zoom timings are
