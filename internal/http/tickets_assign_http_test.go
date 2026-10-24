@@ -31,8 +31,14 @@ func TestHTTP_TicketAssignRoutes(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("auto-assign: %d %v", resp.StatusCode, body)
 	}
+	// Assign, move and void require If-Match (428 without it, INV-80).
 	resp, body = c.do(http.MethodPost, base+"/tickets/"+missing+"/assign", map[string]any{"spot_id": missing}, csrf)
+	assertProblem(t, resp, body, http.StatusPreconditionRequired, "precondition_required")
+	withVersion := map[string]string{"X-CSRF-Token": c.csrf(), "If-Match": "*"}
+	resp, body = c.do(http.MethodPost, base+"/tickets/"+missing+"/assign", map[string]any{"spot_id": missing}, withVersion)
 	assertProblem(t, resp, body, http.StatusNotFound, "not_found")
-	resp, body = c.do(http.MethodPost, base+"/tickets/"+missing+"/move", map[string]any{"spot_id": "x"}, csrf)
+	resp, body = c.do(http.MethodPost, base+"/tickets/"+missing+"/move", map[string]any{"spot_id": "x"}, withVersion)
 	assertProblem(t, resp, body, http.StatusBadRequest, "validation_failed")
+	resp, body = c.do(http.MethodPost, base+"/tickets/"+missing+"/void", map[string]any{"reason": "x"}, withVersion)
+	assertProblem(t, resp, body, http.StatusNotFound, "not_found")
 }
