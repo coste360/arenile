@@ -30,13 +30,18 @@ import {
   KIT_BY_ID,
   MapBackdrop,
   MapKitDefs,
+  MapKitProvider,
   MapLabel,
   SpotArt,
   StatusBadge,
+  badgeOffset,
   decorationAsset,
   geometryKitIds,
+  resolveMapKit,
   spotArtSize,
   spotAsset,
+  useMapKit,
+  type MapKitKey,
 } from './kit';
 import {
   MIN_LABEL_PX,
@@ -130,6 +135,11 @@ export interface BeachMapProps {
    * the height it needs instead of leaving empty space above and below.
    */
   height?: string;
+  /**
+   * Illustration kit (theme.map_kit; ADR 0024); default: the kit of the
+   * nearest MapKitProvider (the establishment's), else the default kit.
+   */
+  kit?: string | null;
 }
 
 interface Point {
@@ -194,6 +204,8 @@ interface SpotProps {
   onActivate?: (spot: MapSpot, modifiers?: SpotActivateModifiers) => void;
   /** Pointer activation (click / tap); defaults to `onActivate`. */
   onPointerActivate?: (spot: MapSpot, modifiers?: SpotActivateModifiers) => void;
+  /** Kit drawn (badge position: the modern kit keeps its top-right corner free). */
+  kit: MapKitKey;
 }
 
 function modifiersOf(e: {
@@ -242,12 +254,14 @@ const Spot = memo(function Spot({
   pickable,
   onActivate,
   onPointerActivate,
+  kit,
 }: SpotProps) {
   const disabled = spot.active === false || !onActivate || !pickable;
   const S = spotArtSize(spot.shape);
   const fontSize = labelFontSize(S, 0.2, unitsPerPixel, 0.42);
   const badgeR = Math.min(Math.max(S * 0.12, 6.5 * unitsPerPixel), S * 0.2);
   const dotR = Math.min(Math.max(S * 0.085, 4.5 * unitsPerPixel), S * 0.14);
+  const corner = S * badgeOffset(kit);
   // Modifiers are passed only when held: plain activations keep the one-argument call.
   const call = (fn: SpotProps['onActivate'], mods: SpotActivateModifiers | undefined) => {
     if (disabled || !fn) return;
@@ -275,7 +289,10 @@ const Spot = memo(function Spot({
       data-highlighted={highlighted === undefined ? undefined : String(highlighted)}
       className={cn(
         'outline-none focus-visible:[&>:first-child]:stroke-ring focus-visible:[&>:first-child]:stroke-4',
-        disabled ? 'cursor-default' : 'cursor-pointer',
+        disabled
+          ? 'cursor-default'
+          : // Modern kit: the outline ring appears on hover over the filled art.
+            'cursor-pointer hover:[&>[data-ring]]:stroke-map-spot-selected/60',
         highlighted === false && 'opacity-30',
       )}
       onClick={pointerActivate}
@@ -295,12 +312,12 @@ const Spot = memo(function Spot({
         muted={status === 'unavailable'}
       />
       {selected ? (
-        <SelectedBadge x={spot.x + S * 0.34} y={spot.y - S * 0.34} r={badgeR * 1.25} />
+        <SelectedBadge x={spot.x + corner} y={spot.y - corner} r={badgeR * 1.25} />
       ) : (
         <StatusBadge
           status={status}
-          x={spot.x + S * 0.34}
-          y={spot.y - S * 0.34}
+          x={spot.x + corner}
+          y={spot.y - corner}
           r={badgeR}
           color={color}
         />
@@ -488,8 +505,11 @@ export function BeachMap({
   title,
   className,
   height = '60vh',
+  kit: kitProp,
 }: BeachMapProps) {
   const { t } = useTranslation();
+  const contextKit = useMapKit();
+  const kit = kitProp ? resolveMapKit(kitProp) : contextKit;
   const svgRef = useRef<SVGSVGElement>(null);
   const titleId = useId();
   const legendId = useId();
@@ -706,113 +726,117 @@ export function BeachMap({
   };
 
   return (
-    <div className={cn('flex flex-col', className)} data-testid="beach-map">
-      {/* Legend and zoom controls above the drawing: visible without scrolling past the map. */}
-      <div className="mb-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
-        {showLegend && <MapLegend id={legendId} statuses={legend} statusColors={statusColors} />}
-        {toolbar}
-        <MapZoomControls
-          className="ml-auto w-fit"
-          scale={view.scale}
-          min={MIN_SCALE}
-          max={MAX_SCALE}
-          onZoomIn={() => setView((v) => zoomAt(v, center, 1.25))}
-          onZoomOut={() => setView((v) => zoomAt(v, center, 0.8))}
-          onFit={() => setView(IDENTITY)}
-          onScaleChange={
-            zoomSlider ? (scale) => setView((v) => zoomAt(v, center, scale / v.scale)) : undefined
-          }
-        />
-      </div>
-      <svg
-        ref={svgRef}
-        viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
-        preserveAspectRatio="xMidYMid meet"
-        role="group"
-        aria-labelledby={titleId}
-        aria-describedby={showLegend ? legendId : undefined}
-        className={cn(
-          'block h-auto w-full touch-none rounded-lg bg-muted/40 select-none',
-          lasso && 'cursor-crosshair',
-        )}
-        data-lasso={lasso || undefined}
-        // Dynamic geometry: the drawing keeps the map's aspect ratio up to the
-        // caller-provided maximum CSS height.
-        style={{ aspectRatio: `${vb.width} / ${vb.height}`, maxHeight: height }}
-        onKeyDown={onKeyDown}
-      >
-        <title id={titleId}>{accessibleTitle}</title>
-        <g transform={transformAttr(view)} data-testid="beach-map-viewport">
-          <MapBackdrop geometry={geometry} seaLabel={t('map.sea')} />
-          {(geometry.decorations ?? []).map((d) => (
-            <Decoration
-              key={d.id}
-              decoration={d}
-              unitsPerPixel={unitsPerPixel}
-              // A flag without a label is captioned with its colour, so the
-              // sea state never relies on the colour alone.
-              label={
-                d.label ??
-                (d.variant && KIT_BY_ID.get(decorationAsset(d) ?? '')?.variants?.includes(d.variant)
-                  ? t(`map.flag.${d.variant}`, { defaultValue: d.variant })
-                  : '')
-              }
-              name={decorationName(d)}
-            />
-          ))}
-          {geometry.spots.map((spot) => {
-            const status = statusOf(spot);
-            const extra = spotDescription?.(spot);
-            const aria = t('map.spotAria', {
-              label: spot.label,
-              status: t(`map.status.${status}`),
-            });
-            const caption = showCaptions ? captions.out.get(spot.id) : undefined;
-            const ariaLabel = extra ? `${aria}, ${extra}` : aria;
-            return (
-              <Spot
-                key={spot.id}
-                spot={spot}
-                status={status}
-                color={statusColors?.[status]}
-                selected={selected.has(spot.id)}
-                highlighted={highlighted ? highlighted.has(spot.id) : undefined}
-                indicators={spotIndicators?.[spot.id]}
-                focusable={spot.id === focusableId}
-                unitsPerPixel={unitsPerPixel}
-                ariaLabel={ariaLabel}
-                showCode={labelMode !== 'customer' || !showCaptions || !caption}
-                // Only the description (full occupant name): the name itself is the aria-label.
-                tooltip={spotCaptions?.[spot.id] ? extra : undefined}
-                pickable={!pickable || pickable.has(status)}
-                onActivate={onSpotActivate}
-                onPointerActivate={minTapTargetPx ? onPointerActivate : undefined}
-              />
-            );
-          })}
-          {showCaptions && <CaptionLayer layouts={captions.out} highlighted={highlighted} />}
-          {lassoRect && (
-            <rect
-              data-testid="beach-map-lasso"
-              x={Math.min(lassoRect.x0, lassoRect.x1)}
-              y={Math.min(lassoRect.y0, lassoRect.y1)}
-              width={Math.abs(lassoRect.x1 - lassoRect.x0)}
-              height={Math.abs(lassoRect.y1 - lassoRect.y0)}
-              className="fill-primary/15 stroke-primary"
-              strokeWidth={1.5 * unitsPerPixel}
-              strokeDasharray={`${4 * unitsPerPixel} ${3 * unitsPerPixel}`}
-              pointerEvents="none"
-              aria-hidden="true"
-            />
+    <MapKitProvider kit={kit}>
+      <div className={cn('flex flex-col', className)} data-testid="beach-map" data-map-kit={kit}>
+        {/* Legend and zoom controls above the drawing: visible without scrolling past the map. */}
+        <div className="mb-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+          {showLegend && <MapLegend id={legendId} statuses={legend} statusColors={statusColors} />}
+          {toolbar}
+          <MapZoomControls
+            className="ml-auto w-fit"
+            scale={view.scale}
+            min={MIN_SCALE}
+            max={MAX_SCALE}
+            onZoomIn={() => setView((v) => zoomAt(v, center, 1.25))}
+            onZoomOut={() => setView((v) => zoomAt(v, center, 0.8))}
+            onFit={() => setView(IDENTITY)}
+            onScaleChange={
+              zoomSlider ? (scale) => setView((v) => zoomAt(v, center, scale / v.scale)) : undefined
+            }
+          />
+        </div>
+        <svg
+          ref={svgRef}
+          viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
+          preserveAspectRatio="xMidYMid meet"
+          role="group"
+          aria-labelledby={titleId}
+          aria-describedby={showLegend ? legendId : undefined}
+          className={cn(
+            'block h-auto w-full touch-none rounded-lg bg-muted/40 select-none',
+            lasso && 'cursor-crosshair',
           )}
-        </g>
-      </svg>
-      {labelsHidden && (
-        <p className="mt-1 text-xs text-muted-foreground" data-testid="beach-map-zoom-hint">
-          {t('map.zoomHint')}
-        </p>
-      )}
-      <MapKitDefs ids={kitIds} />
-    </div>
+          data-lasso={lasso || undefined}
+          // Dynamic geometry: the drawing keeps the map's aspect ratio up to the
+          // caller-provided maximum CSS height.
+          style={{ aspectRatio: `${vb.width} / ${vb.height}`, maxHeight: height }}
+          onKeyDown={onKeyDown}
+        >
+          <title id={titleId}>{accessibleTitle}</title>
+          <g transform={transformAttr(view)} data-testid="beach-map-viewport">
+            <MapBackdrop geometry={geometry} seaLabel={t('map.sea')} />
+            {(geometry.decorations ?? []).map((d) => (
+              <Decoration
+                key={d.id}
+                decoration={d}
+                unitsPerPixel={unitsPerPixel}
+                // A flag without a label is captioned with its colour, so the
+                // sea state never relies on the colour alone.
+                label={
+                  d.label ??
+                  (d.variant &&
+                  KIT_BY_ID.get(decorationAsset(d) ?? '')?.variants?.includes(d.variant)
+                    ? t(`map.flag.${d.variant}`, { defaultValue: d.variant })
+                    : '')
+                }
+                name={decorationName(d)}
+              />
+            ))}
+            {geometry.spots.map((spot) => {
+              const status = statusOf(spot);
+              const extra = spotDescription?.(spot);
+              const aria = t('map.spotAria', {
+                label: spot.label,
+                status: t(`map.status.${status}`),
+              });
+              const caption = showCaptions ? captions.out.get(spot.id) : undefined;
+              const ariaLabel = extra ? `${aria}, ${extra}` : aria;
+              return (
+                <Spot
+                  key={spot.id}
+                  spot={spot}
+                  status={status}
+                  color={statusColors?.[status]}
+                  selected={selected.has(spot.id)}
+                  highlighted={highlighted ? highlighted.has(spot.id) : undefined}
+                  indicators={spotIndicators?.[spot.id]}
+                  focusable={spot.id === focusableId}
+                  unitsPerPixel={unitsPerPixel}
+                  ariaLabel={ariaLabel}
+                  showCode={labelMode !== 'customer' || !showCaptions || !caption}
+                  // Only the description (full occupant name): the name itself is the aria-label.
+                  tooltip={spotCaptions?.[spot.id] ? extra : undefined}
+                  pickable={!pickable || pickable.has(status)}
+                  onActivate={onSpotActivate}
+                  onPointerActivate={minTapTargetPx ? onPointerActivate : undefined}
+                  kit={kit}
+                />
+              );
+            })}
+            {showCaptions && <CaptionLayer layouts={captions.out} highlighted={highlighted} />}
+            {lassoRect && (
+              <rect
+                data-testid="beach-map-lasso"
+                x={Math.min(lassoRect.x0, lassoRect.x1)}
+                y={Math.min(lassoRect.y0, lassoRect.y1)}
+                width={Math.abs(lassoRect.x1 - lassoRect.x0)}
+                height={Math.abs(lassoRect.y1 - lassoRect.y0)}
+                className="fill-primary/15 stroke-primary"
+                strokeWidth={1.5 * unitsPerPixel}
+                strokeDasharray={`${4 * unitsPerPixel} ${3 * unitsPerPixel}`}
+                pointerEvents="none"
+                aria-hidden="true"
+              />
+            )}
+          </g>
+        </svg>
+        {labelsHidden && (
+          <p className="mt-1 text-xs text-muted-foreground" data-testid="beach-map-zoom-hint">
+            {t('map.zoomHint')}
+          </p>
+        )}
+        <MapKitDefs ids={kitIds} />
+      </div>
+    </MapKitProvider>
   );
 }

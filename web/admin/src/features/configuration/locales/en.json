@@ -81,7 +81,8 @@
       "general": "General",
       "languages": "Languages",
       "publicPage": "Public page",
-      "pricing": "Prices and VAT"
+      "pricing": "Prices and VAT",
+      "map": "Map"
     }
   },
   "embed": {
@@ -130,6 +131,22 @@
       "similarColors": "Primary and accent colours are too similar: choose more distinct colours."
     },
     "previewBadge": "Available"
+  },
+  "mapKit": {
+    "title": "Map style",
+    "description": "The illustration kit the panel and the public page draw the map with. It applies to every map of the establishment.",
+    "field": "Illustration kit",
+    "hint": "Spots and elements stay the same: only the drawing changes, and you can switch back at any time.",
+    "kits": {
+      "modern": {
+        "name": "Modern",
+        "description": "Solid one-colour icons: every spot takes the colour of its status, with the symbol in the corner. Recommended."
+      },
+      "classic": {
+        "name": "Classic",
+        "description": "Detailed drawings in natural colours: the status is a coloured halo around the spot."
+      }
+    }
   },
   "pricingSettings": {
     "title": "Pricing settings",

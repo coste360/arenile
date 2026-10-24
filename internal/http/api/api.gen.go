@@ -3231,6 +3231,24 @@ func (e ThemeFontFamily) Valid() bool {
 	}
 }
 
+// Defines values for ThemeMapKit.
+const (
+	Classic ThemeMapKit = "classic"
+	Modern  ThemeMapKit = "modern"
+)
+
+// Valid indicates whether the value is a known member of the ThemeMapKit enum.
+func (e ThemeMapKit) Valid() bool {
+	switch e {
+	case Classic:
+		return true
+	case Modern:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ThemeRadius.
 const (
 	ThemeRadiusLg   ThemeRadius = "lg"
@@ -5246,7 +5264,7 @@ type Decimal = string
 
 // Decoration Elemento decorativo non prenotabile.
 type Decoration struct {
-	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	// Asset Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 	Asset *KitAsset      `json:"asset,omitempty"`
 	Id    string         `json:"id"`
 	Kind  DecorationKind `json:"kind"`
@@ -5265,7 +5283,7 @@ type Decoration struct {
 
 // DecorationInput defines model for DecorationInput.
 type DecorationInput struct {
-	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	// Asset Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 	Asset *KitAsset `json:"asset,omitempty"`
 
 	// Id Assente = nuovo elemento.
@@ -6189,7 +6207,7 @@ type IntRange struct {
 	Min *int `json:"min,omitempty"`
 }
 
-// KitAsset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+// KitAsset Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 type KitAsset = string
 
 // LeadTimeBucket Fasce di anticipo: stesso giorno, 1-3, 4-7, 8-14, 15-30, 31-60, oltre 60 giorni.
@@ -8435,7 +8453,7 @@ type PublicSelection struct {
 
 // PublicSpot defines model for PublicSpot.
 type PublicSpot struct {
-	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	// Asset Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 	Asset *KitAsset `json:"asset,omitempty"`
 	Id    string    `json:"id"`
 
@@ -9116,7 +9134,7 @@ type RowGeneratorRequest struct {
 	// Apply false = anteprima; true = aggiunge le postazioni alla mappa (richiede If-Match).
 	Apply *bool `json:"apply,omitempty"`
 
-	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	// Asset Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 	Asset *KitAsset `json:"asset,omitempty"`
 
 	// Capacity Quantità per codice componente (es. {"umbrella": 1, "sunbed": 2}).
@@ -9671,7 +9689,7 @@ type Slots string
 type Spot struct {
 	Active bool `json:"active"`
 
-	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	// Asset Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 	Asset      *KitAsset `json:"asset,omitempty"`
 	Attributes []string  `json:"attributes"`
 
@@ -9749,7 +9767,7 @@ type SpotBlockList struct {
 type SpotInput struct {
 	Active *bool `json:"active,omitempty"`
 
-	// Asset Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
+	// Asset Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
 	Asset      *KitAsset `json:"asset,omitempty"`
 	Attributes *[]string `json:"attributes,omitempty"`
 
@@ -9986,13 +10004,19 @@ type Theme struct {
 	FontFamily        *ThemeFontFamily              `json:"font_family,omitempty"`
 	HideHeaderInEmbed *bool                         `json:"hide_header_in_embed,omitempty"`
 	LogoUrl           *string                       `json:"logo_url,omitempty"`
-	PrimaryColor      *string                       `json:"primary_color,omitempty"`
-	Radius            *ThemeRadius                  `json:"radius,omitempty"`
-	ShowPricesOnMap   *bool                         `json:"show_prices_on_map,omitempty"`
+
+	// MapKit Kit di illustrazioni della mappa (ADR 0024), per pannello e pagina pubblica: `modern` (v3, stato sul disegno) o `classic` (v2.1, stato nell'alone). Assente = `modern`. Gli id delle illustrazioni sono gli stessi nei due kit, quindi cambiarlo non tocca le mappe salvate.
+	MapKit          *ThemeMapKit `json:"map_kit,omitempty"`
+	PrimaryColor    *string      `json:"primary_color,omitempty"`
+	Radius          *ThemeRadius `json:"radius,omitempty"`
+	ShowPricesOnMap *bool        `json:"show_prices_on_map,omitempty"`
 }
 
 // ThemeFontFamily defines model for Theme.FontFamily.
 type ThemeFontFamily string
+
+// ThemeMapKit Kit di illustrazioni della mappa (ADR 0024), per pannello e pagina pubblica: `modern` (v3, stato sul disegno) o `classic` (v2.1, stato nell'alone). Assente = `modern`. Gli id delle illustrazioni sono gli stessi nei due kit, quindi cambiarlo non tocca le mappe salvate.
+type ThemeMapKit string
 
 // ThemeRadius defines model for Theme.Radius.
 type ThemeRadius string

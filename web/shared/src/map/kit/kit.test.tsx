@@ -5,8 +5,10 @@ import { BeachMap } from '../BeachMap';
 import type { MapGeometry, MapSpot, SpotStatus } from '../types';
 import {
   KIT_MANIFEST,
+  MapKitProvider,
   decorationAsset,
   geometryKitIds,
+  resolveMapKit,
   snapTileCentre,
   snapTileLength,
   spotAsset,
@@ -104,13 +106,13 @@ describe('BeachMap with the kit', () => {
     const { container } = renderWithI18n(<BeachMap geometry={geometry} />);
     const href = (id: string) =>
       screen.getByRole('button', { name: new RegExp(id) }).querySelector('use[data-asset]');
-    expect(href('A1')?.getAttribute('href')).toBe('#ark-ombrellone_2_lettini');
-    expect(href('A2')?.getAttribute('href')).toBe('#ark-ombrellone_3_lettini');
-    expect(href('G1')?.getAttribute('href')).toBe('#ark-gazebo');
+    expect(href('A1')?.getAttribute('href')).toBe('#ark-modern-ombrellone_2_lettini');
+    expect(href('A2')?.getAttribute('href')).toBe('#ark-modern-ombrellone_3_lettini');
+    expect(href('G1')?.getAttribute('href')).toBe('#ark-modern-gazebo');
     expect(href('X1')).toBeNull(); // custom without asset: plain footprint
     // Walkway of 180 units = 3 tiles at the same scale; flag variant sets --beach-flag.
     const walkway = container.querySelector('[data-decoration="walkway"]') as Element;
-    expect(walkway.querySelectorAll('use[href="#ark-passerella_verticale"]')).toHaveLength(3);
+    expect(walkway.querySelectorAll('use[href="#ark-modern-passerella_verticale"]')).toHaveLength(3);
     const flag = container.querySelector('[data-decoration="custom"] use') as Element;
     expect(flag.parentElement).toHaveClass('[--beach-flag:var(--beach-flag-red)]');
     // The flag is named with its colour and captioned, so the sea state is not colour-only.
@@ -119,8 +121,8 @@ describe('BeachMap with the kit', () => {
     expect(container.querySelector('[data-decoration="custom"]')?.textContent).toContain('rossa');
   });
 
-  it('draws the halo as a ring around the art, larger than the art box', () => {
-    const { container } = renderWithI18n(<BeachMap geometry={geometry} />);
+  it('classic: draws the halo as a ring around the art, larger than the art box', () => {
+    const { container } = renderWithI18n(<BeachMap geometry={geometry} kit="classic" />);
     const a1 = screen.getByRole('button', { name: /A1/ });
     const halo = a1.querySelector('[data-halo]') as SVGCircleElement;
     const art = a1.querySelector('use[data-asset]') as SVGUseElement;
@@ -131,13 +133,13 @@ describe('BeachMap with the kit', () => {
     expect(container.querySelectorAll('[data-halo]')).toHaveLength(4);
   });
 
-  it('renders the status as halo + badge outside the art', () => {
+  it('classic: renders the status as halo + badge outside the art', () => {
     const statuses: Record<string, SpotStatus> = {
       A1: 'present',
       A2: 'to_collect',
       G1: 'booked_online',
     };
-    renderWithI18n(<BeachMap geometry={geometry} statuses={statuses} />);
+    renderWithI18n(<BeachMap geometry={geometry} statuses={statuses} kit="classic" />);
     const a1 = screen.getByRole('button', { name: /A1: Presente/ });
     expect(a1.querySelector('[data-halo]')).toHaveClass('fill-status-present');
     expect(a1.querySelector('[data-badge="present"] use')).toHaveAttribute(
@@ -166,11 +168,11 @@ describe('BeachMap with the kit', () => {
         <BeachMap geometry={other} />
       </>,
     );
-    await waitFor(() => expect(document.querySelector('#ark-gazebo')).not.toBeNull());
+    await waitFor(() => expect(document.querySelector('#ark-modern-gazebo')).not.toBeNull());
     view.rerender(<BeachMap geometry={other} />);
     expect(screen.getAllByTestId('map-kit-defs')).toHaveLength(1);
-    await waitFor(() => expect(document.querySelector('#ark-amaca')).not.toBeNull());
-    expect(document.querySelector('#ark-gazebo')).toBeNull();
+    await waitFor(() => expect(document.querySelector('#ark-modern-amaca')).not.toBeNull());
+    expect(document.querySelector('#ark-modern-gazebo')).toBeNull();
     // The sprite lives on <body>, outside the subtree of the map that leads.
     expect(screen.getByTestId('map-kit-defs').parentElement).toBe(document.body);
   });
@@ -189,21 +191,21 @@ describe('BeachMap with the kit', () => {
     );
     const sprites = screen.getAllByTestId('map-kit-defs');
     expect(sprites).toHaveLength(1);
-    await waitFor(() => expect(sprites[0]?.querySelector('#ark-amaca')).not.toBeNull());
+    await waitFor(() => expect(sprites[0]?.querySelector('#ark-modern-amaca')).not.toBeNull());
     const symbols = [...(sprites[0] as Element).querySelectorAll('symbol[id^="ark-"]')]
       .map((s) => s.id)
       .filter((id) => !id.startsWith('ark-badge-'));
     expect(symbols).toEqual([
-      'ark-amaca',
-      'ark-bandiera_mare',
-      'ark-gazebo',
-      'ark-ombrellone_2_lettini',
-      'ark-ombrellone_3_lettini',
-      'ark-passerella_orizzontale',
-      'ark-passerella_verticale',
+      'ark-modern-amaca',
+      'ark-modern-bandiera_mare',
+      'ark-modern-gazebo',
+      'ark-modern-ombrellone_2_lettini',
+      'ark-modern-ombrellone_3_lettini',
+      'ark-modern-passerella_orizzontale',
+      'ark-modern-passerella_verticale',
     ]);
     // The symbol keeps the theme variables of the kit.
-    expect(sprites[0]?.querySelector('#ark-gazebo')?.innerHTML).toContain('var(--beach-');
+    expect(sprites[0]?.querySelector('#ark-modern-gazebo')?.innerHTML).toContain('var(--beach-');
   });
 
   it('1,000 spots: one <use> each and one symbol in total (performance budget)', async () => {
@@ -216,11 +218,92 @@ describe('BeachMap with the kit', () => {
     const elapsed = performance.now() - t0;
     expect(container.querySelectorAll('use[data-asset="ombrellone_2_lettini"]')).toHaveLength(1000);
     await waitFor(() =>
-      expect(document.querySelectorAll('symbol[id="ark-ombrellone_2_lettini"]')).toHaveLength(1),
+      expect(document.querySelectorAll('symbol[id="ark-modern-ombrellone_2_lettini"]')).toHaveLength(1),
     );
     // jsdom is ~10x slower than a browser and neither lays out nor paints: the
     // bound only catches accidental O(n^2) work. Real pan/zoom timings are
     // measured in a browser (docs/adr/0012-kit-mappa.md, Verifiche).
     expect(elapsed).toBeLessThan(4000);
+  });
+});
+
+describe('modern kit (fill style, ADR 0024)', () => {
+  const statuses: Record<string, SpotStatus> = {
+    A1: 'present',
+    A2: 'blocked',
+    G1: 'booked_online',
+  };
+
+  it('is the default and paints the status on the art through --beach-state, no halo', () => {
+    const { container } = renderWithI18n(<BeachMap geometry={geometry} statuses={statuses} />);
+    expect(screen.getByTestId('beach-map')).toHaveAttribute('data-map-kit', 'modern');
+    expect(container.querySelector('[data-halo]')).toBeNull();
+    const a1 = screen.getByRole('button', { name: /A1: Presente/ });
+    expect(a1.querySelector('[data-state="present"]')).toHaveClass(
+      '[--beach-state:var(--status-present)]',
+    );
+    // Free spots get the free token, the ring stays invisible until hover, focus or selection.
+    const x1 = screen.getByRole('button', { name: /X1/ });
+    expect(x1.querySelector('[data-state="free"]')).toHaveClass(
+      '[--beach-state:var(--status-free)]',
+    );
+    expect(x1.firstElementChild).toHaveAttribute('data-ring');
+    expect(x1.firstElementChild).toHaveClass('stroke-transparent');
+    // Badges keep their glyphs and sit in the indicator corner the kit leaves empty.
+    const badge = a1.querySelector('[data-badge="present"] circle') as Element;
+    const S = 40 * 1.3;
+    expect(Number(badge.getAttribute('cx'))).toBeCloseTo(40 + S * 0.383);
+    expect(Number(badge.getAttribute('cy'))).toBeCloseTo(60 - S * 0.383);
+  });
+
+  it('draws a diagonal bar on blocked spots, a cue that does not rely on colour', () => {
+    renderWithI18n(<BeachMap geometry={geometry} statuses={statuses} />);
+    expect(
+      screen.getByRole('button', { name: /A2: Bloccato/ }).querySelector('[data-blocked-bar]'),
+    ).not.toBeNull();
+    expect(
+      screen.getByRole('button', { name: /A1/ }).querySelector('[data-blocked-bar]'),
+    ).toBeNull();
+  });
+
+  it('outlines a selected spot with a band and a dark ring visible on any fill', () => {
+    renderWithI18n(<BeachMap geometry={geometry} statuses={statuses} selectedIds={['G1']} />);
+    const g1 = screen.getByRole('button', { name: /G1/ });
+    expect(g1.firstElementChild).toHaveClass('stroke-background');
+    expect(g1.querySelector('.stroke-map-spot-selected')).not.toBeNull();
+  });
+
+  it('two maps with different kits share one sprite without clashing ids', async () => {
+    renderWithI18n(
+      <>
+        <BeachMap geometry={geometry} kit="modern" />
+        <BeachMap geometry={geometry} kit="classic" />
+      </>,
+    );
+    const sprite = screen.getByTestId('map-kit-defs');
+    await waitFor(() => {
+      expect(sprite.querySelector('#ark-modern-gazebo')).not.toBeNull();
+      expect(sprite.querySelector('#ark-classic-gazebo')).not.toBeNull();
+    });
+    // Same asset id, different art.
+    expect(sprite.querySelector('#ark-modern-gazebo')?.innerHTML).toContain('--beach-state');
+    expect(sprite.querySelector('#ark-classic-gazebo')?.innerHTML).not.toContain('--beach-state');
+  });
+
+  it('follows the MapKitProvider, and an unknown stored value falls back to the default', () => {
+    const { unmount } = renderWithI18n(
+      <MapKitProvider kit="classic">
+        <BeachMap geometry={geometry} />
+      </MapKitProvider>,
+    );
+    expect(screen.getByTestId('beach-map')).toHaveAttribute('data-map-kit', 'classic');
+    unmount();
+    renderWithI18n(
+      <MapKitProvider kit="vintage">
+        <BeachMap geometry={geometry} />
+      </MapKitProvider>,
+    );
+    expect(screen.getByTestId('beach-map')).toHaveAttribute('data-map-kit', 'modern');
+    expect(resolveMapKit(null)).toBe('modern');
   });
 });

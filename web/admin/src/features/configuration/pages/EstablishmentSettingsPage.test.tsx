@@ -137,6 +137,60 @@ describe('EstablishmentSettingsPage', () => {
     expect(screen.getByTestId('theme-preview').style.getPropertyValue('--primary')).toBe('#ffff00');
   });
 
+  it('chooses the map kit with a preview of each, keeping the rest of the theme', async () => {
+    const user = userEvent.setup();
+    const bodies: Record<string, unknown>[] = [];
+    renderApp(PATH, {
+      ...baseRoutes('owner'),
+      [`PATCH ${API}`]: async (req) => {
+        const body = (await req.json()) as Record<string, unknown>;
+        bodies.push(body);
+        return json(200, establishment({ ...body, version: 4 }), { ETag: '"4"' });
+      },
+    });
+    await user.click(await screen.findByRole('tab', { name: 'Mappa' }));
+    const section = await screen.findByRole('region', { name: 'Stile della mappa' });
+    // No choice stored yet: the default kit (modern) is selected.
+    const modern = within(section).getByRole('radio', { name: /Moderno/ });
+    const classic = within(section).getByRole('radio', { name: /Classico/ });
+    expect(modern).toBeChecked();
+    expect(section.querySelector('[data-map-kit-preview="modern"]')).not.toBeNull();
+    expect(section.querySelector('[data-map-kit-preview="classic"]')).not.toBeNull();
+    await user.click(classic);
+    await user.click(within(section).getByRole('button', { name: 'Salva' }));
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect(bodies[0]).toEqual({
+      theme: { primary_color: '#0e6ba8', accent_color: '#f2b134', map_kit: 'classic' },
+    });
+  });
+
+  it('saving the public page theme keeps the chosen map kit', async () => {
+    const user = userEvent.setup();
+    const bodies: Record<string, unknown>[] = [];
+    renderApp(PATH, {
+      ...baseRoutes('owner'),
+      [`GET ${API}`]: () =>
+        json(
+          200,
+          establishment({ theme: { primary_color: '#0e6ba8', map_kit: 'classic' } }),
+          { ETag: '"3"' },
+        ),
+      [`PATCH ${API}`]: async (req) => {
+        const body = (await req.json()) as Record<string, unknown>;
+        bodies.push(body);
+        return json(200, establishment({ ...body, version: 4 }), { ETag: '"4"' });
+      },
+    });
+    await user.click(await screen.findByRole('tab', { name: 'Pagina pubblica' }));
+    const theme = await screen.findByRole('region', { name: 'Tema della pagina pubblica' });
+    const primary = within(theme).getByLabelText('Colore principale');
+    await user.clear(primary);
+    await user.type(primary, '#123456');
+    await user.click(within(theme).getByRole('button', { name: 'Salva' }));
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect((bodies[0]?.theme as Record<string, unknown>).map_kit).toBe('classic');
+  });
+
   it('shows the embed snippets of spec 12.1', async () => {
     const user = userEvent.setup();
     renderApp(PATH, baseRoutes('owner'));

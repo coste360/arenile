@@ -14,6 +14,7 @@ import (
 
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/domain/pricing"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -256,6 +257,9 @@ func ValidateTheme(t store.Theme, ve *configerr.ValidationError) store.Theme {
 	}
 	if t.Radius != "" && !slices.Contains(ThemeRadii, t.Radius) {
 		ve.Add("theme.radius", "Valori ammessi: none, sm, md, lg.")
+	}
+	if t.MapKit != "" && !slices.Contains(mapping.MapKits, t.MapKit) {
+		ve.Add("theme.map_kit", "Valori ammessi: "+strings.Join(mapping.MapKits, ", ")+".")
 	}
 	for locale, texts := range t.CustomTexts {
 		field := "theme.custom_texts." + locale

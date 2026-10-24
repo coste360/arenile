@@ -1,4 +1,5 @@
 import { DEFAULT_ACCENT, DEFAULT_PRIMARY } from '@arenile/shared/theme';
+import { MAP_KIT_KEYS, resolveMapKit } from '@arenile/shared/map';
 import type { Establishment } from '@arenile/shared/api';
 import { z } from 'zod';
 import type { EstablishmentUpdate } from '../api/establishment';
@@ -192,6 +193,8 @@ export function themePatch(v: ThemeValues, current: Establishment): Establishmen
       radius: v.radius,
       show_prices_on_map: v.show_prices_on_map,
       hide_header_in_embed: v.hide_header_in_embed,
+      // Chosen in its own section (Mappa): the theme is replaced as a whole, so keep it.
+      ...(current.theme?.map_kit ? { map_kit: current.theme.map_kit } : {}),
       custom_texts: customTexts,
     },
   };
@@ -204,6 +207,24 @@ export const themeAliases = {
   'theme.font_family': 'font_family',
   'theme.radius': 'radius',
 };
+
+// ---- Map kit (ADR 0024) ----------------------------------------------------------
+
+export const mapKitSchema = z.object({ map_kit: z.enum(MAP_KIT_KEYS) });
+
+export type MapKitValues = z.infer<typeof mapKitSchema>;
+
+/** Missing (never chosen) or unknown values show the default kit, the one the maps draw. */
+export function toMapKitValues(e: Establishment): MapKitValues {
+  return { map_kit: resolveMapKit(e.theme?.map_kit) };
+}
+
+/** The theme is replaced as a whole: every other theme field is carried over. */
+export function mapKitPatch(v: MapKitValues, current: Establishment): EstablishmentUpdate {
+  return { theme: { ...current.theme, map_kit: v.map_kit } };
+}
+
+export const mapKitAliases = { 'theme.map_kit': 'map_kit' };
 
 // ---- Pricing settings (spec 8.1, 8.5) ------------------------------------------
 

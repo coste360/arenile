@@ -81,7 +81,8 @@
       "general": "Allgemein",
       "languages": "Sprachen",
       "publicPage": "Öffentliche Seite",
-      "pricing": "Preise und MwSt."
+      "pricing": "Preise und MwSt.",
+      "map": "Karte"
     }
   },
   "embed": {
@@ -130,6 +131,22 @@
       "similarColors": "Haupt- und Akzentfarbe sind zu ähnlich: Wählen Sie deutlicher unterschiedliche Farben."
     },
     "previewBadge": "Verfügbar"
+  },
+  "mapKit": {
+    "title": "Kartenstil",
+    "description": "Der Illustrationssatz, mit dem Verwaltung und öffentliche Seite die Karte zeichnen. Er gilt für alle Karten des Strandbads.",
+    "field": "Illustrationssatz",
+    "hint": "Plätze und Elemente bleiben gleich: Nur die Zeichnung ändert sich, und Sie können jederzeit zurückwechseln.",
+    "kits": {
+      "modern": {
+        "name": "Modern",
+        "description": "Flächige einfarbige Symbole: Jeder Platz hat die Farbe seines Status, mit dem Symbol in der Ecke. Empfohlen."
+      },
+      "classic": {
+        "name": "Klassisch",
+        "description": "Detaillierte Zeichnungen in natürlichen Farben: Der Status ist ein farbiger Ring um den Platz."
+      }
+    }
   },
   "pricingSettings": {
     "title": "Preiseinstellungen",

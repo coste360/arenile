@@ -4552,6 +4552,11 @@ export interface components {
             radius?: "none" | "sm" | "md" | "lg";
             show_prices_on_map?: boolean;
             hide_header_in_embed?: boolean;
+            /**
+             * @description Kit di illustrazioni della mappa (ADR 0024), per pannello e pagina pubblica: `modern` (v3, stato sul disegno) o `classic` (v2.1, stato nell'alone). Assente = `modern`. Gli id delle illustrazioni sono gli stessi nei due kit, quindi cambiarlo non tocca le mappe salvate.
+             * @enum {string}
+             */
+            map_kit?: "modern" | "classic";
             /** @description Testi personalizzati per lingua, es. {"it": {"intro": "..."}}. */
             custom_texts?: {
                 [key: string]: {
@@ -4704,7 +4709,7 @@ export interface components {
          * @enum {string}
          */
         SpotKind: "umbrella" | "gazebo" | "tent" | "palm" | "custom" | "sunbed" | "daybed" | "cabana" | "hammock";
-        /** @description Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili. */
+        /** @description Illustrazione del kit mappa (id di assets/map-kits/*\/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente = illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili. */
         KitAsset: string;
         /** @description Variante di colore dell'illustrazione, se l'illustrazione ne prevede (bandiera_mare: green, yellow, red). */
         DecorationVariant: string;

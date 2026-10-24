@@ -106,6 +106,10 @@ const PREPARE: Record<string, Prepare> = {
     await page.getByTestId("notifications-bell").click();
     await expect(page.getByRole("dialog").or(page.locator("[data-radix-popper-content-wrapper]")).first()).toBeVisible();
   },
+  "admin-map-kit": async (page) => {
+    await page.getByRole("tab", { name: "Mappa" }).click();
+    await expect(page.locator('[data-map-kit-preview="classic"] use').first()).toBeAttached();
+  },
   "admin-report-exports": async (page) => {
     await page.getByRole("button", { name: "Esporta elenchi" }).click();
     await expect(page.getByRole("menu")).toBeVisible();

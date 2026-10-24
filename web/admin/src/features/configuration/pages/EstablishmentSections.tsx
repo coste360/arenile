@@ -1,6 +1,17 @@
 import type { Establishment } from '@arenile/shared/api';
 import { Button } from '@arenile/shared/ui/button';
-import { FieldDescription, FieldSeparator } from '@arenile/shared/ui/field';
+import {
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+  Field as UiField,
+} from '@arenile/shared/ui/field';
+import { MAP_KIT_KEYS, MapKitPreview } from '@arenile/shared/map';
+import { RadioGroup, RadioGroupItem } from '@arenile/shared/ui/radio-group';
 import { Input } from '@arenile/shared/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@arenile/shared/ui/input-group';
 import { Spinner } from '@arenile/shared/ui/spinner';
@@ -13,11 +24,12 @@ import {
   CodeIcon,
   GlobeIcon,
   LanguagesIcon,
+  MapIcon,
   PaletteIcon,
   ReceiptTextIcon,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useController, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useEstablishmentSection } from '../api/useEstablishmentSection';
 import { EmbedSnippet } from '../components/EmbedSnippet';
@@ -42,6 +54,9 @@ import {
   generalAliases,
   generalPatch,
   generalSchema,
+  mapKitAliases,
+  mapKitPatch,
+  mapKitSchema,
   pricingSettingsAliases,
   pricingSettingsPatch,
   pricingSettingsSchema,
@@ -51,6 +66,7 @@ import {
   themePatch,
   themeSchema,
   toGeneralValues,
+  toMapKitValues,
   toPricingSettingsValues,
   toPublicPageValues,
   toThemeValues,
@@ -560,6 +576,75 @@ export function ThemeSection({
             name={establishment.name}
             intro={values.intro?.[establishment.default_locale]}
           />
+        </div>
+      </SettingsCard>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+/**
+ * Illustration kit of the maps (ADR 0024): panel and public page, chosen with
+ * a live preview of each kit. The asset ids are the same in every kit, so the
+ * choice never touches the saved maps.
+ */
+export function MapKitSection({ establishment, version, onVersion, readOnly }: SectionProps) {
+  const { t } = useTranslation('configuration');
+  const form = useForm({
+    resolver: zodResolver(mapKitSchema),
+    defaultValues: toMapKitValues(establishment),
+  });
+  const s = useEstablishmentSection({
+    establishmentId: establishment.id,
+    form,
+    version,
+    onVersion,
+    toPatch: mapKitPatch,
+    toValues: toMapKitValues,
+    aliases: mapKitAliases,
+  });
+  const { field } = useController({ control: form.control, name: 'map_kit' });
+  return (
+    <form noValidate onSubmit={s.submit}>
+      <SettingsCard
+        id="map-kit"
+        icon={MapIcon}
+        title={t('mapKit.title')}
+        description={t('mapKit.description')}
+        footer={
+          !readOnly && (
+            <SaveRow readOnly={readOnly} pending={s.pending} dirty={form.formState.isDirty} />
+          )
+        }
+      >
+        <div className="space-y-4">
+          <FormAlert state={s.alert} onReload={s.reload} />
+          <FieldSet>
+            <FieldLegend variant="label">{t('mapKit.field')}</FieldLegend>
+            <RadioGroup
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={readOnly}
+              className="grid gap-4 lg:grid-cols-2"
+            >
+              {MAP_KIT_KEYS.map((kit) => (
+                <FieldLabel key={kit} htmlFor={`map-kit-${kit}`}>
+                  <UiField orientation="vertical" data-map-kit-option={kit}>
+                    <div className="flex items-start gap-3">
+                      <FieldContent>
+                        <FieldTitle>{t(`mapKit.kits.${kit}.name`)}</FieldTitle>
+                        <FieldDescription>{t(`mapKit.kits.${kit}.description`)}</FieldDescription>
+                      </FieldContent>
+                      <RadioGroupItem value={kit} id={`map-kit-${kit}`} />
+                    </div>
+                    <MapKitPreview kit={kit} className="border" />
+                  </UiField>
+                </FieldLabel>
+              ))}
+            </RadioGroup>
+            <FieldDescription>{t('mapKit.hint')}</FieldDescription>
+          </FieldSet>
         </div>
       </SettingsCard>
     </form>

@@ -4,6 +4,8 @@ import { STATUS_CLASSES } from '../colors';
 import type { Shape, SpotStatus } from '../types';
 import { CAPTION_CHAR_EM, graphemeCount, labelPillWidth } from '../captions';
 import { kitSymbolId } from './assets';
+import { mapKitInfo, useMapKit } from './context';
+import type { MapKitKey } from './generated/manifest';
 import { isTileAsset, spotArtSize, tileLayout } from './geometry';
 import { STATUS_BADGES, badgeSymbolId } from './status';
 
@@ -31,11 +33,15 @@ export interface KitUseProps {
   className?: string;
 }
 
-/** One kit illustration: a <use> of the shared sprite symbol (no inline SVG copy). */
+/**
+ * One kit illustration: a <use> of the shared sprite symbol (no inline SVG
+ * copy), in the kit of the nearest MapKitProvider.
+ */
 export function KitUse({ asset, x, y, size, className }: KitUseProps) {
+  const kit = useMapKit();
   return (
     <use
-      href={`#${kitSymbolId(asset)}`}
+      href={`#${kitSymbolId(kit, asset)}`}
       x={x}
       y={y}
       width={size}
@@ -57,7 +63,7 @@ export interface SpotArtProps {
   rotation?: number | null;
   /** Kit asset; null draws the plain footprint (custom spots without asset). */
   asset: string | null;
-  /** Halo colour: a status (theme token classes) or a literal colour. */
+  /** Status colour: a status (theme token classes) or a literal colour. */
   status?: SpotStatus;
   color?: string;
   /** Strong tint (booked, held...), faint (free) or outline (editor zones: light fill + ring). */
@@ -77,14 +83,45 @@ export interface SpotArtProps {
 export const HALO_SCALE = 1.08;
 
 /**
- * The art of a spot over its status halo. The halo (first child, so focus
- * styles of the parent can target it) is a tinted disc or rounded square
- * larger than the art itself (HALO_SCALE x the art box, which is already
- * SPOT_ART_SCALE x the footprint): booking status lives in this ring and
- * tint, never in the illustration, so the art stays the same and the status
- * reads around it in every state.
+ * Side of the outline ring of the modern kit, as a fraction of the art box:
+ * the v3 art stays inside 12..108 of its 120-unit viewBox (0.8), so the
+ * ring sits just outside the drawing and never covers the coloured body.
  */
-export const SpotArt = memo(function SpotArt({
+export const RING_SCALE = 0.94;
+
+/**
+ * Centre of the corner badge, as a fraction of the art box from its centre:
+ * classic draws it over the art (0.34); the modern kit keeps the indicator
+ * corner (x 92-120, y 0-28 of 120) empty, centred at 106,14, i.e. 0.383.
+ */
+export function badgeOffset(kit: MapKitKey): number {
+  return mapKitInfo(kit).style === 'fill' ? 0.383 : 0.34;
+}
+
+/**
+ * The art of a spot with its booking status.
+ *
+ * Classic kit (`halo` style, ADR 0012): the halo (first child, so focus
+ * styles of the parent can target it) is a tinted disc or rounded square
+ * larger than the art (HALO_SCALE x the art box, which is already
+ * SPOT_ART_SCALE x the footprint); the status lives in this ring and tint,
+ * never in the illustration.
+ *
+ * Modern kit (`fill` style, ADR 0024): the art paints its status part with
+ * `--beach-state`, set here to the status token, so the umbrella itself is
+ * the status colour. The first child is an outline ring with no fill that
+ * appears for selection, search matches, hover and keyboard focus (a
+ * background-coloured band under a dark ring, visible on any fill). A
+ * literal `color` (editor zone colours, panel overrides) cannot reach a CSS
+ * variable without inline styles, so it is drawn as a classic halo.
+ */
+export const SpotArt = memo(function SpotArt(props: SpotArtProps) {
+  const kit = useMapKit();
+  if (mapKitInfo(kit).style === 'fill' && !props.color) return <FilledSpotArt {...props} />;
+  return <HaloSpotArt {...props} />;
+});
+
+function HaloSpotArt({
   x,
   y,
   shape,
@@ -147,29 +184,139 @@ export const SpotArt = memo(function SpotArt({
       <g transform={rotate(rotation, x, y)} className={cn(muted && 'opacity-40 grayscale')}>
         {asset ? (
           <KitUse asset={asset} x={x - S / 2} y={y - S / 2} size={S} />
-        ) : isRect ? (
-          <rect
-            x={x - shape.w / 2}
-            y={y - shape.h / 2}
-            width={shape.w}
-            height={shape.h}
-            rx={Math.min(shape.w, shape.h) * 0.18}
-            className="fill-beach-canvas stroke-beach-ink"
-            strokeWidth={Math.min(shape.w, shape.h) * 0.05}
-          />
         ) : (
-          <circle
-            cx={x}
-            cy={y}
-            r={shape.w * 0.42}
+          <PlainFootprint
+            x={x}
+            y={y}
+            shape={shape}
             className="fill-beach-canvas stroke-beach-ink"
-            strokeWidth={shape.w * 0.05}
           />
         )}
       </g>
+      {status === 'blocked' && <BlockedBar x={x} y={y} size={S} />}
     </>
   );
-});
+}
+
+function FilledSpotArt({
+  x,
+  y,
+  shape,
+  rotation,
+  asset,
+  status = 'free',
+  emphasis,
+  muted,
+  haloClassName,
+}: SpotArtProps) {
+  const S = spotArtSize(shape);
+  const classes = STATUS_CLASSES[status];
+  const isRect = shape.type === 'rect';
+  const ring = S * RING_SCALE;
+  const ringProps = {
+    fill: 'none',
+    pointerEvents: 'none' as const,
+    strokeDasharray: muted && !emphasis ? `${S * 0.05} ${S * 0.04}` : undefined,
+  };
+  const ringShape = (className: string, strokeWidth: number, extra?: Record<string, string>) =>
+    isRect ? (
+      <rect
+        {...extra}
+        {...ringProps}
+        x={x - ring / 2}
+        y={y - ring / 2}
+        width={ring}
+        height={ring}
+        rx={ring * 0.22}
+        transform={rotate(rotation, x, y)}
+        className={className}
+        strokeWidth={strokeWidth}
+      />
+    ) : (
+      <circle
+        {...extra}
+        {...ringProps}
+        cx={x}
+        cy={y}
+        r={ring / 2}
+        className={className}
+        strokeWidth={strokeWidth}
+      />
+    );
+  return (
+    <>
+      {/* First child: the outline band the parent's hover and focus styles target. */}
+      {ringShape(
+        cn(emphasis ? 'stroke-background' : 'stroke-transparent', haloClassName),
+        emphasis ? S * 0.12 : S * 0.08,
+        { 'data-ring': '' },
+      )}
+      {emphasis && ringShape('stroke-map-spot-selected', S * 0.055)}
+      <g
+        transform={rotate(rotation, x, y)}
+        data-state={status}
+        className={cn(classes.state, muted && 'opacity-40 grayscale')}
+      >
+        {asset ? (
+          <KitUse asset={asset} x={x - S / 2} y={y - S / 2} size={S} />
+        ) : (
+          <PlainFootprint
+            x={x}
+            y={y}
+            shape={shape}
+            className={cn(classes.fill, 'stroke-beach-ink')}
+          />
+        )}
+      </g>
+      {status === 'blocked' && <BlockedBar x={x} y={y} size={S} />}
+    </>
+  );
+}
+
+/** The footprint itself, for custom spots without an illustration. */
+function PlainFootprint({
+  x,
+  y,
+  shape,
+  className,
+}: {
+  x: number;
+  y: number;
+  shape: Shape;
+  className: string;
+}) {
+  return shape.type === 'rect' ? (
+    <rect
+      x={x - shape.w / 2}
+      y={y - shape.h / 2}
+      width={shape.w}
+      height={shape.h}
+      rx={Math.min(shape.w, shape.h) * 0.18}
+      className={className}
+      strokeWidth={Math.min(shape.w, shape.h) * 0.05}
+    />
+  ) : (
+    <circle cx={x} cy={y} r={shape.w * 0.42} className={className} strokeWidth={shape.w * 0.05} />
+  );
+}
+
+/**
+ * Diagonal bar across a blocked spot: a cue that does not rely on colour
+ * (grey reads like "free" or "unavailable" for many colour-blind users and on
+ * greyscale tablets), drawn by the app over the art, never inside it. A
+ * background-coloured band under a foreground line keeps it visible on any
+ * art and in both themes.
+ */
+export function BlockedBar({ x, y, size }: { x: number; y: number; size: number }) {
+  const h = size * 0.3;
+  const d = `M ${x - h} ${y - h} L ${x + h} ${y + h}`;
+  return (
+    <g data-blocked-bar="" pointerEvents="none" aria-hidden="true" strokeLinecap="round">
+      <path d={d} className="fill-none stroke-background" strokeWidth={size * 0.13} />
+      <path d={d} className="fill-none stroke-foreground" strokeWidth={size * 0.06} />
+    </g>
+  );
+}
 
 export interface StatusBadgeProps {
   status: SpotStatus;
@@ -319,6 +466,7 @@ export interface KitThumbnailProps {
  * copies. Render a <MapKitDefs ids> with the same ids next to it.
  */
 export function KitThumbnail({ asset, className, variant }: KitThumbnailProps) {
+  const kit = useMapKit();
   return (
     <svg
       viewBox="0 0 120 120"
@@ -326,7 +474,7 @@ export function KitThumbnail({ asset, className, variant }: KitThumbnailProps) {
       focusable="false"
       className={cn('shrink-0', flagClass(variant), className)}
     >
-      <use href={`#${kitSymbolId(asset)}`} width={120} height={120} />
+      <use href={`#${kitSymbolId(kit, asset)}`} width={120} height={120} />
     </svg>
   );
 }

@@ -7,6 +7,7 @@ export { sampleGeometry, sampleStatuses } from './sample';
 export * from './editing';
 export { ShapeElement, shapeSize, type ShapeElementProps } from './shapes';
 export { MapLegend, type MapLegendProps } from './MapLegend';
+export { MapKitPreview, type MapKitPreviewProps } from './MapKitPreview';
 export { MapZoomControls, type MapZoomControlsProps } from './MapZoomControls';
 export { MapGlyph, type MapGlyphProps } from './MapGlyph';
 export {

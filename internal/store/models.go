@@ -124,7 +124,8 @@ type Geo struct {
 	Lon float64 `json:"lon"`
 }
 
-// Theme is the public page theme (spec 12.5).
+// Theme is the public page theme (spec 12.5). MapKit is the map illustration
+// kit of the establishment, panel included (ADR 0024); empty = mapping.DefaultMapKit.
 type Theme struct {
 	LogoURL           string                       `json:"logo_url,omitempty"`
 	PrimaryColor      string                       `json:"primary_color,omitempty"`
@@ -133,6 +134,7 @@ type Theme struct {
 	Radius            string                       `json:"radius,omitempty"`
 	ShowPricesOnMap   *bool                        `json:"show_prices_on_map,omitempty"`
 	HideHeaderInEmbed *bool                        `json:"hide_header_in_embed,omitempty"`
+	MapKit            string                       `json:"map_kit,omitempty"`
 	CustomTexts       map[string]map[string]string `json:"custom_texts,omitempty"`
 }
 

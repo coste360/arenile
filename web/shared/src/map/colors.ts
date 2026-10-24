@@ -1,16 +1,16 @@
 import type { SpotStatus } from './types';
 
 /**
- * Default status palette as hex values, for contrast computations and for
- * consumers that need a literal colour (e.g. the map editor palette). The
- * same values are the `--status-*` CSS variables of styles/globals.css, which
- * the renderer uses through STATUS_CLASSES (a test keeps them in sync).
- * Colours are always paired with a text label in the legend, never conveyed
- * by colour alone.
+ * Default status palette (light scheme) as hex values, for contrast
+ * computations and for consumers that need a literal colour (e.g. the map
+ * editor palette). The same values are the `--status-*` CSS variables of
+ * styles/globals.css, which the renderer uses through STATUS_CLASSES (a test
+ * keeps them in sync). Colours are always paired with a text label in the
+ * legend and a badge glyph on the map, never conveyed by colour alone.
  */
 export const DEFAULT_STATUS_COLORS: Record<SpotStatus, string> = {
-  free: '#22c55e',
-  booked_online: '#2563eb',
+  free: '#15803d',
+  booked_online: '#0284c7',
   booked_desk: '#7c3aed',
   season: '#0f766e',
   season_released: '#5eead4',
@@ -20,6 +20,22 @@ export const DEFAULT_STATUS_COLORS: Record<SpotStatus, string> = {
   blocked: '#6b7280',
   renewal_hold: '#db2777',
   unavailable: '#d1d5db',
+};
+
+/**
+ * Dark-scheme palette: the light values lifted where they would not reach
+ * 3:1 on the dark sand (the modern kit fills the spot body with them).
+ */
+export const DARK_STATUS_COLORS: Record<SpotStatus, string> = {
+  ...DEFAULT_STATUS_COLORS,
+  free: '#22c55e',
+  booked_online: '#3b82f6',
+  booked_desk: '#a78bfa',
+  season: '#14b8a6',
+  to_collect: '#f87171',
+  present: '#c7d2fe',
+  blocked: '#9ca3af',
+  renewal_hold: '#f472b6',
 };
 
 export interface StatusClasses {
@@ -33,6 +49,11 @@ export interface StatusClasses {
   stroke: string;
   /** Text colour of glyphs drawn on the status colour (currentColor of badge glyphs). */
   fg: string;
+  /**
+   * Sets `--beach-state` to the status colour (Tailwind arbitrary property on
+   * the theme token): the modern kit paints the status part of its art with it.
+   */
+  state: string;
   /** Name of the CSS variable, for rare non-class uses. */
   cssVar: string;
 }
@@ -45,6 +66,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-free',
     stroke: 'stroke-status-free',
     fg: 'text-status-free-foreground',
+    state: '[--beach-state:var(--status-free)]',
     cssVar: '--status-free',
   },
   booked_online: {
@@ -53,6 +75,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-booked-online',
     stroke: 'stroke-status-booked-online',
     fg: 'text-status-booked-online-foreground',
+    state: '[--beach-state:var(--status-booked-online)]',
     cssVar: '--status-booked-online',
   },
   booked_desk: {
@@ -61,6 +84,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-booked-desk',
     stroke: 'stroke-status-booked-desk',
     fg: 'text-status-booked-desk-foreground',
+    state: '[--beach-state:var(--status-booked-desk)]',
     cssVar: '--status-booked-desk',
   },
   season: {
@@ -69,6 +93,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-season',
     stroke: 'stroke-status-season',
     fg: 'text-status-season-foreground',
+    state: '[--beach-state:var(--status-season)]',
     cssVar: '--status-season',
   },
   season_released: {
@@ -77,6 +102,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-season-released',
     stroke: 'stroke-status-season-released',
     fg: 'text-status-season-released-foreground',
+    state: '[--beach-state:var(--status-season-released)]',
     cssVar: '--status-season-released',
   },
   hold: {
@@ -85,6 +111,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-hold',
     stroke: 'stroke-status-hold',
     fg: 'text-status-hold-foreground',
+    state: '[--beach-state:var(--status-hold)]',
     cssVar: '--status-hold',
   },
   to_collect: {
@@ -93,6 +120,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-to-collect',
     stroke: 'stroke-status-to-collect',
     fg: 'text-status-to-collect-foreground',
+    state: '[--beach-state:var(--status-to-collect)]',
     cssVar: '--status-to-collect',
   },
   present: {
@@ -101,6 +129,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-present',
     stroke: 'stroke-status-present',
     fg: 'text-status-present-foreground',
+    state: '[--beach-state:var(--status-present)]',
     cssVar: '--status-present',
   },
   blocked: {
@@ -109,6 +138,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-blocked',
     stroke: 'stroke-status-blocked',
     fg: 'text-status-blocked-foreground',
+    state: '[--beach-state:var(--status-blocked)]',
     cssVar: '--status-blocked',
   },
   renewal_hold: {
@@ -117,6 +147,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-renewal-hold',
     stroke: 'stroke-status-renewal-hold',
     fg: 'text-status-renewal-hold-foreground',
+    state: '[--beach-state:var(--status-renewal-hold)]',
     cssVar: '--status-renewal-hold',
   },
   unavailable: {
@@ -125,6 +156,7 @@ export const STATUS_CLASSES: Record<SpotStatus, StatusClasses> = {
     bg: 'bg-status-unavailable',
     stroke: 'stroke-status-unavailable',
     fg: 'text-status-unavailable-foreground',
+    state: '[--beach-state:var(--status-unavailable)]',
     cssVar: '--status-unavailable',
   },
 };

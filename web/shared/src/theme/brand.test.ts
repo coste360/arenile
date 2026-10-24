@@ -182,3 +182,50 @@ describe('brand defaults', () => {
     }
   });
 });
+
+/**
+ * Map status colours on the sand (ADR 0024): the modern kit fills the spot
+ * body with --status-*, so the body itself must stand out from the beach
+ * (WCAG 1.4.11, 3:1 for graphical objects) in both schemes. Hold, season
+ * pass released and unavailable are tints by design (and carry a badge or
+ * the greyed art); every other status reaches 3:1. "Booked online" and
+ * "present" are both blue: they also differ in lightness (2:1), so they stay
+ * apart for colour-blind users.
+ */
+const STRONG_STATUSES = [
+  'free',
+  'booked-online',
+  'booked-desk',
+  'season',
+  'to-collect',
+  'present',
+  'blocked',
+  'renewal-hold',
+];
+
+describe.each([
+  ['light', light],
+  ['dark', dark],
+])('map status colours, %s scheme', (_, vars) => {
+  const sand = color(vars, 'beach-sand-soft');
+
+  it.each(STRONG_STATUSES)('%s reaches 3:1 on the sand', (status) => {
+    expect(contrastRatio(color(vars, `status-${status}`), sand)).toBeGreaterThanOrEqual(3);
+  });
+
+  it('free (Libero) reaches 3:1 on the sand and on the map backdrop', () => {
+    for (const bg of ['beach-sand-soft', 'map-sand']) {
+      expect(contrastRatio(color(vars, 'status-free'), color(vars, bg))).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('booked online and present differ in lightness by at least 2:1', () => {
+    expect(
+      contrastRatio(color(vars, 'status-booked-online'), color(vars, 'status-present')),
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it('the selection outline reaches 3:1 on the sand', () => {
+    expect(contrastRatio(color(vars, 'map-spot-selected'), sand)).toBeGreaterThanOrEqual(3);
+  });
+});

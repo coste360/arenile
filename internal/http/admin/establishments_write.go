@@ -114,6 +114,9 @@ func ThemeFromAPI(t api.Theme) store.Theme {
 	if t.Radius != nil {
 		out.Radius = string(*t.Radius)
 	}
+	if t.MapKit != nil {
+		out.MapKit = string(*t.MapKit)
+	}
 	if t.CustomTexts != nil {
 		out.CustomTexts = *t.CustomTexts
 	}

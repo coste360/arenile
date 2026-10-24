@@ -388,6 +388,10 @@ func ThemeToAPI(t store.Theme) api.Theme {
 		rd := api.ThemeRadius(t.Radius)
 		out.Radius = &rd
 	}
+	if t.MapKit != "" {
+		mk := api.ThemeMapKit(t.MapKit)
+		out.MapKit = &mk
+	}
 	if len(t.CustomTexts) > 0 {
 		ct := t.CustomTexts
 		out.CustomTexts = &ct

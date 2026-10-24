@@ -219,7 +219,7 @@ func TestEstablishmentHTTP_CreateUpdateArchive(t *testing.T) {
 		path := "/api/admin/v1/establishments/" + e.estA.ID
 		patch := map[string]any{
 			"name": "Lido A Mare", "allowed_embed_origins": []string{"https://www.lido-a.it/"},
-			"theme":    map[string]any{"primary_color": "#0E6BA8", "font_family": "Inter", "radius": "md"},
+			"theme":    map[string]any{"primary_color": "#0E6BA8", "font_family": "Inter", "radius": "md", "map_kit": "classic"},
 			"settings": map[string]any{"pricing": map[string]any{"half_day_factor": "0.6", "rounding": "euro", "default_vat_rate_bp": 2200, "local_holidays": []string{"2027-06-24"}, "recurring_local_holidays": []string{"08-16"}}, "default_policy": map[string]any{"max_lead_time_days": 90}},
 		}
 		resp, body = manager.do(http.MethodPatch, path, patch, map[string]string{"If-Match": `"1"`})
@@ -230,6 +230,10 @@ func TestEstablishmentHTTP_CreateUpdateArchive(t *testing.T) {
 		pricingOut := body["settings"].(map[string]any)["pricing"].(map[string]any)
 		if pricingOut["half_day_factor"] != "0.6" || pricingOut["rounding"] != "euro" || len(pricingOut["recurring_local_holidays"].([]any)) != 1 {
 			t.Fatalf("settings %v", body["settings"])
+		}
+		// The map kit is stored in the theme and returned as chosen (ADR 0024).
+		if body["theme"].(map[string]any)["map_kit"] != "classic" {
+			t.Fatalf("theme %v", body["theme"])
 		}
 		if origins := body["allowed_embed_origins"].([]any); origins[0] != "https://www.lido-a.it" {
 			t.Fatalf("origins %v", origins)

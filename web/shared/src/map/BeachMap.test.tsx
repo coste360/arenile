@@ -278,7 +278,7 @@ describe('operational overlays (additive props)', () => {
     renderWithI18n(<BeachMap geometry={geometry} highlightedIds={['s2']} />);
     const a2 = screen.getByRole('button', { name: /A2/ });
     expect(a2).toHaveAttribute('data-highlighted', 'true');
-    expect(a2.querySelector('circle')).toHaveClass('stroke-map-spot-selected');
+    expect(a2.querySelector('.stroke-map-spot-selected')).not.toBeNull();
     expect(screen.getByRole('button', { name: /A1/ })).toHaveAttribute('data-highlighted', 'false');
     expect(screen.getByRole('button', { name: /A1/ })).toHaveClass('opacity-30');
   });

@@ -1,9 +1,15 @@
-import { KIT_ASSET_IDS, KIT_MANIFEST, type KitAsset, type KitAssetId } from './generated/manifest';
+import {
+  KIT_ASSET_IDS,
+  KIT_MANIFEST,
+  type KitAsset,
+  type KitAssetId,
+  type MapKitKey,
+} from './generated/manifest';
 
 /**
  * Beach map kit catalogue helpers (docs/adr/0012-kit-mappa.md). The data is
- * generated from assets/beach-map-kit by `make gen`; this file only adds
- * lookups and the default illustration of each kind.
+ * generated from assets/map-kits by `make gen` (the same catalogue in every
+ * kit); this file only adds lookups and the default illustration of each kind.
  */
 
 export const KIT_BY_ID: ReadonlyMap<string, KitAsset> = new Map(KIT_MANIFEST.map((a) => [a.id, a]));
@@ -14,9 +20,9 @@ export function isKitAssetId(id: string | null | undefined): id is KitAssetId {
   return !!id && IDS.has(id);
 }
 
-/** `id` of the <symbol> of an asset in the shared sprite. */
-export function kitSymbolId(id: string): string {
-  return `ark-${id}`;
+/** `id` of the <symbol> of an asset of a kit in the shared sprite. */
+export function kitSymbolId(kit: MapKitKey, id: string): string {
+  return `ark-${kit}-${id}`;
 }
 
 /** Illustration of a spot whose `asset` is empty, by kind (custom: none, plain shape). */

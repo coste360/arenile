@@ -137,6 +137,7 @@ export default function SeatMapPicker({
       ) : (
         <BeachMap
           geometry={model.geometry}
+          kit={establishment.theme.map_kit}
           statuses={model.statuses}
           selectedIds={selected}
           pickableStatuses={PICKABLE}

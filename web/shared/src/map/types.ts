@@ -25,7 +25,7 @@ export interface MapSpot {
   row_label?: string | null;
   number?: number | null;
   kind: SpotKind | (string & {});
-  /** Kit illustration (assets/beach-map-kit); empty = default of the kind. */
+  /** Kit illustration (assets/map-kits); empty = default of the kind. */
   asset?: string | null;
   x: number;
   y: number;

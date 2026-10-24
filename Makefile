@@ -44,7 +44,7 @@ HAS_WEB_LCK := $(wildcard web/package-lock.json)
 HAS_E2E     := $(wildcard e2e/package.json)
 HAS_E2E_LCK := $(wildcard e2e/package-lock.json)
 HAS_API     := $(wildcard api/openapi.yaml)
-HAS_KIT     := $(wildcard assets/beach-map-kit/manifest.json)
+HAS_KIT     := $(wildcard assets/map-kits/*/manifest.json)
 HAS_DOCS    := $(wildcard docs-site/package.json)
 HAS_DOCS_LCK:= $(wildcard docs-site/package-lock.json)
 

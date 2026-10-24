@@ -77,7 +77,7 @@ func ReorientTransform(from, to string) Transform {
 
 // Walkway tiles of the map kit (manifest "tile": true, ADR 0012): modular
 // pieces drawn at KIT_TILE scale whose edges sit on a 60-unit grid. Keep in
-// sync with assets/beach-map-kit/manifest.json
+// sync with assets/map-kits/*/manifest.json
 // (TestReorient_TileAssetsAreKitAssets checks they exist).
 const (
 	kitTileSide       = 60.0

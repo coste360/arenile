@@ -81,7 +81,8 @@
       "general": "Général",
       "languages": "Langues",
       "publicPage": "Page publique",
-      "pricing": "Prix et TVA"
+      "pricing": "Prix et TVA",
+      "map": "Plan"
     }
   },
   "embed": {
@@ -130,6 +131,22 @@
       "similarColors": "Les couleurs principale et d'accent sont trop proches : choisissez des couleurs plus distinctes."
     },
     "previewBadge": "Disponible"
+  },
+  "mapKit": {
+    "title": "Style du plan",
+    "description": "Le jeu d’illustrations avec lequel le panneau et la page publique dessinent le plan. Il s’applique à tous les plans de l’établissement.",
+    "field": "Jeu d’illustrations",
+    "hint": "Les emplacements et les éléments restent les mêmes : seul le dessin change, et vous pouvez revenir en arrière à tout moment.",
+    "kits": {
+      "modern": {
+        "name": "Moderne",
+        "description": "Icônes pleines d’une seule couleur : chaque emplacement prend la couleur de son statut, avec le symbole dans le coin. Recommandé."
+      },
+      "classic": {
+        "name": "Classique",
+        "description": "Dessins détaillés aux couleurs naturelles : le statut est un halo coloré autour de l’emplacement."
+      }
+    }
   },
   "pricingSettings": {
     "title": "Paramètres de prix",

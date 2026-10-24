@@ -1,0 +1,979 @@
+{
+  "name": "Arenile — Beach Map kit (stile pieno monocolore)",
+  "version": "3.0.0",
+  "viewBox": "0 0 120 120",
+  "total": 107,
+  "indicatorSlot": {
+    "x": 92,
+    "y": 0,
+    "width": 28,
+    "height": 28,
+    "note": "Angolo in alto a destra lasciato libero per badge e indicatori"
+  },
+  "stateVariable": "--beach-state",
+  "assets": [
+    {
+      "id": "ombrellone_navy",
+      "label": "Ombrellone navy",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_navy.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_sabbia",
+      "label": "Ombrellone sabbia",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_sabbia.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_salvia",
+      "label": "Ombrellone salvia",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_salvia.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_corallo",
+      "label": "Ombrellone corallo",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_corallo.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_1_lettini",
+      "label": "Ombrellone + 1 lettino",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_1_lettini.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_2_lettini",
+      "label": "Ombrellone + 2 lettini",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_2_lettini.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_3_lettini",
+      "label": "Ombrellone + 3 lettini",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_3_lettini.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_4_lettini",
+      "label": "Ombrellone + 4 lettini",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_4_lettini.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_2_sdraio",
+      "label": "Ombrellone + 2 sdraio",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_2_sdraio.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_2_sedie",
+      "label": "Ombrellone + 2 sedie regista",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_2_sedie.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_chiuso",
+      "label": "Ombrellone chiuso",
+      "category": "Postazioni",
+      "type": "asset",
+      "file": "svg/ombrellone_chiuso.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "lettino",
+      "label": "Lettino",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/lettino.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "lettino_orizzontale",
+      "label": "Lettino orizzontale",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/lettino_orizzontale.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "sdraio",
+      "label": "Sdraio",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/sdraio.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "sedia_regista",
+      "label": "Sedia regista",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/sedia_regista.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "lettino_matrimoniale",
+      "label": "Lettino matrimoniale",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/lettino_matrimoniale.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "daybed",
+      "label": "Daybed",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/daybed.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "gazebo",
+      "label": "Gazebo",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/gazebo.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "gazebo_lettini",
+      "label": "Gazebo + 2 lettini",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/gazebo_lettini.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "gazebo_matrimoniale",
+      "label": "Gazebo con daybed",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/gazebo_matrimoniale.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "cabana",
+      "label": "Cabana",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/cabana.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_verticale",
+      "label": "Passerella verticale",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_verticale.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_orizzontale",
+      "label": "Passerella orizzontale",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_orizzontale.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_angolo",
+      "label": "Passerella angolo",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_angolo.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_t",
+      "label": "Passerella T",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_t.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_croce",
+      "label": "Passerella croce",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_croce.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_curva",
+      "label": "Passerella curva",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_curva.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_terminale",
+      "label": "Passerella terminale",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_terminale.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "passerella_ingresso",
+      "label": "Passerella ingresso",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/passerella_ingresso.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "pedana_legno",
+      "label": "Pedana in legno",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/pedana_legno.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "rampa_accessibile",
+      "label": "Rampa accessibile",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/rampa_accessibile.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "gradini",
+      "label": "Gradini",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/gradini.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "pontile",
+      "label": "Pontile",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/pontile.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "staccionata",
+      "label": "Staccionata",
+      "category": "Percorsi",
+      "type": "structure",
+      "file": "svg/staccionata.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "bar",
+      "label": "Bar / chiosco",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/bar.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "ristorante",
+      "label": "Ristorante",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/ristorante.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "reception",
+      "label": "Reception",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/reception.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "cassa",
+      "label": "Cassa / ticket",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/cassa.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "deposito",
+      "label": "Deposito",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/deposito.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "cabina",
+      "label": "Cabina",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/cabina.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "cabina_spogliatoio",
+      "label": "Cabina spogliatoio",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/cabina_spogliatoio.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "cabina_accessibile",
+      "label": "Cabina accessibile",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/cabina_accessibile.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "cabine_multiple",
+      "label": "Fila di cabine",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/cabine_multiple.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "pergola",
+      "label": "Pergola",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/pergola.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "piscina",
+      "label": "Piscina",
+      "category": "Strutture",
+      "type": "structure",
+      "file": "svg/piscina.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "doccia",
+      "label": "Doccia",
+      "category": "Servizi",
+      "type": "structure",
+      "file": "svg/doccia.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "doccia_doppia",
+      "label": "Doccia doppia",
+      "category": "Servizi",
+      "type": "structure",
+      "file": "svg/doccia_doppia.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "wc",
+      "label": "WC",
+      "category": "Servizi",
+      "type": "structure",
+      "file": "svg/wc.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "wc_accessibile",
+      "label": "WC accessibile",
+      "category": "Servizi",
+      "type": "structure",
+      "file": "svg/wc_accessibile.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "lavapiedi",
+      "label": "Lavapiedi",
+      "category": "Servizi",
+      "type": "structure",
+      "file": "svg/lavapiedi.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "primo_soccorso",
+      "label": "Primo soccorso",
+      "category": "Servizi",
+      "type": "structure",
+      "file": "svg/primo_soccorso.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "torretta_bagnino",
+      "label": "Torretta bagnino",
+      "category": "Salvataggio",
+      "type": "structure",
+      "file": "svg/torretta_bagnino.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "pattino_salvataggio",
+      "label": "Pattino salvataggio",
+      "category": "Salvataggio",
+      "type": "structure",
+      "file": "svg/pattino_salvataggio.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "gommone_salvataggio",
+      "label": "Gommone salvataggio",
+      "category": "Salvataggio",
+      "type": "structure",
+      "file": "svg/gommone_salvataggio.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "salvagente",
+      "label": "Salvagente",
+      "category": "Salvataggio",
+      "type": "structure",
+      "file": "svg/salvagente.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "salvagente_palo",
+      "label": "Salvagente su palo",
+      "category": "Salvataggio",
+      "type": "structure",
+      "file": "svg/salvagente_palo.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "boa",
+      "label": "Boa",
+      "category": "Salvataggio",
+      "type": "structure",
+      "file": "svg/boa.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "bandiera",
+      "label": "Bandiera",
+      "category": "Salvataggio",
+      "type": "structure",
+      "file": "svg/bandiera.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "kayak",
+      "label": "Kayak",
+      "category": "Nautica",
+      "type": "structure",
+      "file": "svg/kayak.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "sup",
+      "label": "SUP",
+      "category": "Nautica",
+      "type": "structure",
+      "file": "svg/sup.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "pedalo",
+      "label": "Pedalò",
+      "category": "Nautica",
+      "type": "structure",
+      "file": "svg/pedalo.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "beach_volley",
+      "label": "Campo beach volley",
+      "category": "Sport e relax",
+      "type": "structure",
+      "file": "svg/beach_volley.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "beach_tennis",
+      "label": "Campo beach tennis",
+      "category": "Sport e relax",
+      "type": "structure",
+      "file": "svg/beach_tennis.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "beach_soccer",
+      "label": "Campo beach soccer",
+      "category": "Sport e relax",
+      "type": "structure",
+      "file": "svg/beach_soccer.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "area_giochi",
+      "label": "Area giochi",
+      "category": "Sport e relax",
+      "type": "structure",
+      "file": "svg/area_giochi.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "area_yoga",
+      "label": "Area yoga",
+      "category": "Sport e relax",
+      "type": "structure",
+      "file": "svg/area_yoga.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "area_massaggi",
+      "label": "Area massaggi",
+      "category": "Sport e relax",
+      "type": "structure",
+      "file": "svg/area_massaggi.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "tavolo_2_sedie",
+      "label": "Tavolo + 2 sedie",
+      "category": "Arredi",
+      "type": "structure",
+      "file": "svg/tavolo_2_sedie.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "tavolo_4_sedie",
+      "label": "Tavolo + 4 sedie",
+      "category": "Arredi",
+      "type": "structure",
+      "file": "svg/tavolo_4_sedie.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "tavolo_6_sedie",
+      "label": "Tavolo + 6 sedie",
+      "category": "Arredi",
+      "type": "structure",
+      "file": "svg/tavolo_6_sedie.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "panchina",
+      "label": "Panchina",
+      "category": "Arredi",
+      "type": "structure",
+      "file": "svg/panchina.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "cestino",
+      "label": "Cestino",
+      "category": "Arredi",
+      "type": "structure",
+      "file": "svg/cestino.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "illuminazione",
+      "label": "Illuminazione",
+      "category": "Arredi",
+      "type": "structure",
+      "file": "svg/illuminazione.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "palma",
+      "label": "Palma",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/palma.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "palma_piccola",
+      "label": "Palma piccola",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/palma_piccola.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "albero",
+      "label": "Albero",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/albero.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "fioriera",
+      "label": "Fioriera",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/fioriera.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "fioriera_rotonda",
+      "label": "Fioriera rotonda",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/fioriera_rotonda.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "fioriera_lunga",
+      "label": "Fioriera lunga",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/fioriera_lunga.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "sabbia",
+      "label": "Sabbia",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/sabbia.svg",
+      "stateful": false,
+      "cornerFree": false
+    },
+    {
+      "id": "mare",
+      "label": "Mare",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/mare.svg",
+      "stateful": false,
+      "cornerFree": false
+    },
+    {
+      "id": "linea_costa",
+      "label": "Linea di costa",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/linea_costa.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "duna",
+      "label": "Duna",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/duna.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "scoglio",
+      "label": "Scoglio",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/scoglio.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "confine",
+      "label": "Confine",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/confine.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "confine_tratteggiato",
+      "label": "Confine tratteggiato",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/confine_tratteggiato.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "zona_prenotabile",
+      "label": "Zona prenotabile",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/zona_prenotabile.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "zona_non_disponibile",
+      "label": "Zona non disponibile",
+      "category": "Ambiente",
+      "type": "decoration",
+      "file": "svg/zona_non_disponibile.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "ingresso",
+      "label": "Ingresso",
+      "category": "Segnaletica",
+      "type": "structure",
+      "file": "svg/ingresso.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "check_in",
+      "label": "Check-in",
+      "category": "Segnaletica",
+      "type": "structure",
+      "file": "svg/check_in.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "punto_mappa",
+      "label": "Punto mappa",
+      "category": "Segnaletica",
+      "type": "structure",
+      "file": "svg/punto_mappa.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "non_disponibile",
+      "label": "Non disponibile",
+      "category": "Segnaletica",
+      "type": "structure",
+      "file": "svg/non_disponibile.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "parcheggio",
+      "label": "Parcheggio",
+      "category": "Segnaletica",
+      "type": "structure",
+      "file": "svg/parcheggio.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "biciclette",
+      "label": "Biciclette",
+      "category": "Segnaletica",
+      "type": "structure",
+      "file": "svg/biciclette.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_paglia",
+      "label": "Ombrellone in paglia / palapa",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_paglia.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "tenda_righe",
+      "label": "Tenda da spiaggia a righe",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/tenda_righe.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_quadrato",
+      "label": "Ombrellone quadrato / a vela",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_quadrato.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "ombrellone_tavolino",
+      "label": "Ombrellone con tavolino",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/ombrellone_tavolino.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "amaca",
+      "label": "Amaca",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/amaca.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "pouf",
+      "label": "Pouf / bean bag",
+      "category": "Postazioni",
+      "type": "bookable",
+      "file": "svg/pouf.svg",
+      "stateful": true,
+      "cornerFree": true
+    },
+    {
+      "id": "dae",
+      "label": "Defibrillatore DAE",
+      "category": "Servizi",
+      "type": "asset",
+      "file": "svg/dae.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "sedia_job",
+      "label": "Sedia JOB / sedia mare per disabili",
+      "category": "Servizi",
+      "type": "asset",
+      "file": "svg/sedia_job.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "fontanella",
+      "label": "Fontanella acqua potabile",
+      "category": "Servizi",
+      "type": "asset",
+      "file": "svg/fontanella.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "area_cani",
+      "label": "Area cani / bau beach",
+      "category": "Servizi",
+      "type": "structure",
+      "file": "svg/area_cani.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "corridoio_lancio",
+      "label": "Corridoio di lancio",
+      "category": "Nautica",
+      "type": "structure",
+      "file": "svg/corridoio_lancio.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "bandiera_mare",
+      "label": "Bandiera stato del mare",
+      "category": "Segnaletica",
+      "type": "asset",
+      "file": "svg/bandiera_mare.svg",
+      "stateful": false,
+      "cornerFree": true
+    },
+    {
+      "id": "rosa_venti",
+      "label": "Rosa dei venti / nord",
+      "category": "Segnaletica",
+      "type": "asset",
+      "file": "svg/rosa_venti.svg",
+      "stateful": false,
+      "cornerFree": true
+    }
+  ]
+}

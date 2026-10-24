@@ -12885,6 +12885,13 @@ components:
           type: boolean
         hide_header_in_embed:
           type: boolean
+        map_kit:
+          type: string
+          enum: [modern, classic]
+          description: >-
+            Kit di illustrazioni della mappa (ADR 0024), per pannello e pagina pubblica: `modern`
+            (v3, stato sul disegno) o `classic` (v2.1, stato nell'alone). Assente = `modern`. Gli id
+            delle illustrazioni sono gli stessi nei due kit, quindi cambiarlo non tocca le mappe salvate.
         custom_texts:
           type: object
           description: "Testi personalizzati per lingua, es. {\"it\": {\"intro\": \"...\"}}."
@@ -13178,7 +13185,7 @@ components:
       type: string
       pattern: ^[a-z][a-z0-9_]{0,63}$
       description: >-
-        Illustrazione del kit mappa (id di assets/beach-map-kit/manifest.json, ADR 0012). Assente =
+        Illustrazione del kit mappa (id di assets/map-kits/*/manifest.json, uguali in ogni kit; ADR 0012, 0024). Assente =
         illustrazione predefinita del tipo. Le postazioni accettano solo illustrazioni prenotabili.
     DecorationVariant:
       type: string

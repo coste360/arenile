@@ -8,7 +8,7 @@ import (
 
 // The beach map kit (docs/adr/0012-kit-mappa.md): every spot and decoration
 // may name the illustration it is drawn with. The lists of valid ids are
-// generated from assets/beach-map-kit/manifest.json into kitassets_gen.go by
+// generated from assets/map-kits/*/manifest.json into kitassets_gen.go by
 // `make gen`, so the backend and the renderer always agree on the catalogue.
 
 // IsKitBookableAsset reports whether id is a kit illustration a spot may use.

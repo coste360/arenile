@@ -53,6 +53,7 @@
     { "name": "admin-closures", "section": "gestore", "route": "/admin/e/{est}/config/closures", "viewport": "desktop", "description": "Giorni di chiusura." },
     { "name": "admin-team", "section": "gestore", "route": "/admin/e/{est}/config/team", "viewport": "desktop", "description": "Utenti dello stabilimento e ruoli." },
     { "name": "admin-establishment", "section": "gestore", "route": "/admin/e/{est}/config/establishment", "viewport": "desktop", "description": "Dati dello stabilimento, fuso orario e lingue." },
+    { "name": "admin-map-kit", "section": "gestore", "route": "/admin/e/{est}/config/establishment", "viewport": "desktop", "description": "Stabilimento, scheda Mappa: scelta del kit di illustrazioni (Moderno o Classico) con l'anteprima di ciascuno (ADR 0024)." },
     { "name": "admin-maps-list", "section": "gestore", "route": "/admin/e/{est}/maps", "viewport": "desktop", "description": "Elenco delle mappe dello stabilimento." },
     { "name": "admin-map-editor", "section": "gestore", "route": "/admin/e/{est}/maps/{mapId}", "viewport": "desktop", "description": "Editor della mappa con il kit grafico Coste360." },
     { "name": "admin-setup-wizard", "section": "gestore", "route": "/admin/e/{est}/setup", "viewport": "desktop", "description": "Configurazione guidata del primo avvio." },

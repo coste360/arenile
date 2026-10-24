@@ -6,6 +6,7 @@ import {
   Building2Icon,
   GlobeIcon,
   LanguagesIcon,
+  MapIcon,
   ReceiptTextIcon,
   SparklesIcon,
   type LucideIcon,
@@ -16,6 +17,7 @@ import { useConfigContext } from '../api/useConfigContext';
 import { ConfigPage } from '../components/ConfigPage';
 import {
   GeneralSection,
+  MapKitSection,
   PricingSettingsSection,
   PublicPageSection,
   ThemeSection,
@@ -25,10 +27,11 @@ const TABS: { id: string; icon: LucideIcon }[] = [
   { id: 'general', icon: Building2Icon },
   { id: 'languages', icon: LanguagesIcon },
   { id: 'publicPage', icon: GlobeIcon },
+  { id: 'map', icon: MapIcon },
   { id: 'pricing', icon: ReceiptTextIcon },
 ];
 
-/** Configurazione → Stabilimento (spec 15.1, 12.5, 8.1/8.5), one tab per area. */
+/** Configurazione → Stabilimento (spec 15.1, 12.5, 8.1/8.5, ADR 0024), one tab per area. */
 export function EstablishmentSettingsPage() {
   const { t } = useTranslation('configuration');
   const ctx = useConfigContext();
@@ -98,6 +101,9 @@ export function EstablishmentSettingsPage() {
         >
           <PublicPageSection {...props} />
           <ThemeSection {...props} />
+        </TabsContent>
+        <TabsContent value="map" forceMount hidden={tab !== 'map'}>
+          <MapKitSection {...props} />
         </TabsContent>
         <TabsContent value="pricing" forceMount hidden={tab !== 'pricing'}>
           <PricingSettingsSection {...props} />

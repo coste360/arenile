@@ -81,7 +81,8 @@
       "general": "Generale",
       "languages": "Lingue",
       "publicPage": "Pagina pubblica",
-      "pricing": "Prezzi e IVA"
+      "pricing": "Prezzi e IVA",
+      "map": "Mappa"
     }
   },
   "embed": {
@@ -130,6 +131,22 @@
       "similarColors": "Colore principale e di accento sono troppo simili: scegli colori più distinti."
     },
     "previewBadge": "Disponibile"
+  },
+  "mapKit": {
+    "title": "Stile della mappa",
+    "description": "Il kit di illustrazioni con cui il pannello e la pagina pubblica disegnano la mappa. Vale per tutte le mappe dello stabilimento.",
+    "field": "Kit di illustrazioni",
+    "hint": "Le postazioni e gli elementi restano gli stessi: cambia solo il disegno, e puoi tornare indietro in ogni momento.",
+    "kits": {
+      "modern": {
+        "name": "Moderno",
+        "description": "Icone piene a un colore: ogni postazione prende il colore del suo stato, con il simbolo nell’angolo. Consigliato."
+      },
+      "classic": {
+        "name": "Classico",
+        "description": "Disegni dettagliati con i colori naturali: lo stato è un alone colorato attorno alla postazione."
+      }
+    }
   },
   "pricingSettings": {
     "title": "Impostazioni dei prezzi",

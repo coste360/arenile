@@ -91,7 +91,13 @@
   --sidebar-border: rgb(148 163 184 / 0.35);
   --sidebar-ring: #185482;
 
-  /* Beach map (spec 11.1). Status colours always come with a text label. */
+  /*
+   * Beach map (spec 11.1). Status colours always come with a text label and,
+   * on the map, a badge glyph. The modern kit paints the spot body with them
+   * (--beach-state, ADR 0024), so the statuses that must stand out reach 3:1
+   * on the sand (--beach-sand-soft) in both schemes, and "booked online" and
+   * "present" differ in lightness by 2:1, not by hue alone (brand.test.ts).
+   */
   --map-sand: #f8edd3;
   --map-sea: #7cc4e8;
   --map-sea-label: #0c4a6e;
@@ -100,10 +106,10 @@
   --map-decoration-label: #5b4a2a;
   --map-spot-stroke: rgb(17 24 39 / 0.35);
   --map-spot-selected: #111827;
-  --status-free: #22c55e;
-  --status-free-foreground: #111827;
-  --status-booked-online: #2563eb;
-  --status-booked-online-foreground: #ffffff;
+  --status-free: #15803d;
+  --status-free-foreground: #ffffff;
+  --status-booked-online: #0284c7;
+  --status-booked-online-foreground: #000000;
   --status-booked-desk: #7c3aed;
   --status-booked-desk-foreground: #ffffff;
   --status-season: #0f766e;
@@ -124,7 +130,7 @@
   --status-unavailable-foreground: #111827;
 
   /*
-   * Beach map kit (assets/beach-map-kit/beach-tokens.css, ADR 0012): the kit
+   * Beach map kits (beach-tokens.css of each kit in assets/map-kits, ADR 0012 and 0024): the kit
    * illustrations read these through var(--beach-*, fallback) inside <use>,
    * so they follow light and dark mode. Values from the kit; the dark sand is
    * a touch deeper than the kit's so the map sits below cards and popovers.
@@ -151,6 +157,9 @@
   --beach-flag-yellow: #e5b20b;
   --beach-flag-red: #d6453d;
   --beach-flag: var(--beach-flag-green);
+  /* Neutral status part of the modern kit where the app sets no status
+     (cabins drawn as decorations, the editor): the kit's own "free" grey. */
+  --beach-state-free: #7c8794;
 }
 
 .dark {
@@ -228,6 +237,25 @@
   --beach-flag-green: #5cbf7d;
   --beach-flag-yellow: #f2c94c;
   --beach-flag-red: #ef6b62;
+  --beach-state-free: #8a96a2;
+
+  /* Status colours lifted for the dark sand (3:1, see :root). */
+  --status-free: #22c55e;
+  --status-free-foreground: #111827;
+  --status-booked-online: #3b82f6;
+  --status-booked-online-foreground: #111827;
+  --status-booked-desk: #a78bfa;
+  --status-booked-desk-foreground: #111827;
+  --status-season: #14b8a6;
+  --status-season-foreground: #111827;
+  --status-to-collect: #f87171;
+  --status-to-collect-foreground: #111827;
+  --status-present: #c7d2fe;
+  --status-present-foreground: #111827;
+  --status-blocked: #9ca3af;
+  --status-blocked-foreground: #111827;
+  --status-renewal-hold: #f472b6;
+  --status-renewal-hold-foreground: #111827;
 }
 
 /* Elements themed by applyTheme() outside <html> (the theme preview of the panel). */
