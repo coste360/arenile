@@ -77,7 +77,13 @@
   `bookings.read`. Selettore **Etichette: Codice / Cliente / Entrambi** memorizzato per utente; i nomi sono
   troncati allo spazio tra le postazioni vicine e nascosti, con l'invito a ingrandire, quando non sarebbero
   leggibili (minimo 9 px) senza sovrapporsi. Nome completo nel tooltip e nel nome accessibile. Gli eventi SSE
-  restano senza dati personali: la mappa rilegge la vista del giorno.
+  restano senza dati personali: la mappa rilegge la vista del giorno. Le prenotazioni della vendita giornaliera
+  (spec 14.3) mostrano il cognome indicato sul biglietto oppure il numero del biglietto (`#037`), mai il cliente
+  condiviso "Cliente al banco".
+- **Da assegnare:** pannello sopra la mappa con i biglietti venduti per zona del giorno, in ordine di numero; tocco su
+  un biglietto, poi su una postazione libera della sua zona (allocazione atomica, 409 se presa nel frattempo);
+  **Assegna automaticamente** con il motore di spec 7.5. Su una postazione libera la scheda rapida offre anche
+  **Vendi giornata**.
 - **Tocco su una postazione:** scheda rapida con cliente, periodo, pack, extra, saldo; azioni: nuova prenotazione, check-in, incassa, sposta, rilascia giorno, blocca, apri dettaglio.
 - **Trascinamento** di una prenotazione su un'altra postazione: anteprima del conflitto, conferma, ricalcolo prezzo se cambia la categoria.
 - **Selezione multipla** per prenotazioni di gruppo.

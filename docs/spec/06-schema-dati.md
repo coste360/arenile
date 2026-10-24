@@ -227,7 +227,7 @@ Convenzioni: ogni tabella ha `id` (UUIDv7), `created_at`, `updated_at`. Le tabel
 | establishment_id | uuid | |
 | first_name, last_name | text | |
 | email | text null | Indicizzato, lowercase |
-| phone | text null | E.164 |
+| phone | text null | E.164; sempre facoltativo (ADR 0020), usato per la deduplica solo se presente |
 | locale | text | |
 | notes | text | Solo interne |
 | tags | json | `vip`, `storico`, ecc. |

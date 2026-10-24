@@ -631,3 +631,64 @@ Verificata da: `TestConcurrency_WaitlistOffer` (100 consegne concorrenti dello s
 solo hold), `TestWaitlist_CancellationOffersToFirstEntryAndAcceptGoesToCheckout`,
 `TestWaitlist_ExpiredOfferMovesToNextEntry`, `TestWaitlist_PanelOperations`, `TestWaitlist_PublicJoinAndAnonymisation`
 (`internal/domain/waitlist`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+
+## Vendita giornaliera e biglietti (spec 14.3 — ADR 0020)
+
+INV-73…79 sono riservati a un altro ramo.
+
+**INV-80 — Vendita giornaliera: numero progressivo del giorno unico, senza duplicati né buchi.**
+Ogni biglietto (vendita su postazione o zona, ingresso) prende il numero da `store.NextTicketNumber`: un solo upsert
+atomico su `daily_ticket_counters` (`INSERT ... ON CONFLICT DO UPDATE SET last_number = last_number + 1 RETURNING`)
+come ultima scrittura della transazione di vendita, che crea anche la prenotazione confermata (canale `desk`, servizio
+delle prenotazioni con audit e outbox) e il pagamento manuale (contanti solo con sessione di cassa aperta). Il numero
+riparte da 1 per ogni giorno di utilizzo nel fuso dello stabilimento (mai per un giorno passato), è unico per
+stabilimento su tutte le casse (`UNIQUE (establishment_id, ticket_date, ticket_number)`) e una vendita annullata dal
+database restituisce il numero; l'annullamento di un biglietto (`void`: cancellazione della prenotazione, rimborso
+tramite i pagamenti, audit) lo conserva, quindi gli unici buchi sono i biglietti annullati, che restano in elenco.
+Verificata da: `TestConcurrency_DailyTicketNumbering` (200 vendite concorrenti su 3 casse: numeri 1..200),
+`TestDailySale_DayRolloverInEstablishmentTimezone`, `TestTicketing_VoidKeepsNumberAndRefunds`,
+`TestDailySale_SpotFirstCash` (`internal/domain/dailysale`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-81 — Vendita per zona: la capacità si consuma alla vendita, mai più biglietti dei posti.**
+Una vendita zone-first consuma subito la capacità con i vincoli esistenti, mai con controlli applicativi: nelle zone
+`zone` la riga resta `pending` sul pool implicito (aggiornamento condizionale di `pool_usage`, 409 `zone_full`); nelle
+zone `seat` la prenotazione occupa in modo provvisorio l'ultima postazione libera (`tickets.provisional_spot_id`,
+chiave unica di `spot_allocations`), provando la precedente in un savepoint se un'altra cassa l'ha presa; senza
+postazioni libere risponde 409 `zone_full`. Il biglietto resta "da assegnare" (INV-82).
+Verificata da: `TestConcurrency_ZoneFirstCapacity` (100 vendite concorrenti su una zona seat di 4 posti e una zona
+zone di 2: vincono esattamente 4 e 2), `TestDailySale_ZoneFirst` (`internal/domain/dailysale`, tag `integration`,
+SQLite e PostgreSQL). Stato: implemented.
+
+**INV-82 — Vendita giornaliera: assegnazione dei biglietti "da assegnare" atomica e senza doppie occupazioni.**
+Un biglietto zone-first si colloca su una postazione solo con la `Move` della sua prenotazione
+(`booking.MoveThen`): rilascio dell'uso del pool della zona (zone mode) o della postazione provvisoria (seat mode),
+allocazione della nuova postazione (chiave unica di `spot_allocations`), aggiornamento condizionale del biglietto
+(`needs_assignment`, `zone_id`, `version`, mai su un biglietto annullato o già assegnato), audit ed evento outbox
+nella stessa transazione. Una postazione presa nel frattempo risponde 409 `assignment_conflict` e lascia il biglietto
+da assegnare con la capacità della zona intatta. L'assegnazione automatica procede per numero crescente con il motore
+greedy di spec 7.5 e applica una `Move` per biglietto. Mappa: `occupant_label` e `customer_display_name` sono il
+nome facoltativo del biglietto o il numero ("#037"), mai il cliente "al banco" condiviso; gli eventi SSE restano
+quelli della prenotazione (solo identificativi).
+Verificata da: `TestConcurrency_AssignSameSpot` (100 biglietti diversi sulla stessa postazione: uno solo vince),
+`TestTicketAssign_ZoneModeAssignAndMove`, `TestTicketAssign_ConflictOnTakenSpot`,
+`TestTicketAssign_SeatModeProvisionalSpot`, `TestTicketAutoAssign_FillsInNumberOrder`, `TestTicketMap_LabelsAndPending`
+(`internal/domain/ticketassign`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-83 — Biglietti d'ingresso: un solo ingresso per biglietto, capienza condivisa con l'online.**
+I tipi di biglietto d'ingresso sono pack su una zona `quantity`: ogni vendita consuma il pool della zona (la capienza
+giornaliera condivisa con la vendita online, 409 `pool_exhausted`). Al varco `entered_at` si registra con un solo
+aggiornamento condizionale (`entered_at IS NULL AND status = 'valid'`): fra scansioni concorrenti dello stesso QR una
+sola ammette, le altre rispondono `already_entered`; un biglietto annullato o di un altro giorno non entra mai, e un
+biglietto già entrato non si annulla.
+Verificata da: `TestConcurrency_EntryCheckInOnce` (100 scansioni concorrenti: un solo `admitted`),
+`TestEntrySale_GateAndCapacity` (`internal/domain/dailysale`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+
+**INV-84 — Telefono facoltativo ovunque; email obbligatoria solo dove porta conferma e link.**
+Nessun flusso rifiuta un cliente senza telefono: checkout pubblico (passo 4), nuovo cliente e cliente in linea della
+nuova prenotazione, modifica cliente, import. Il flag `require_phone` resta nel contratto come deprecato e vale sempre
+false (lettura e scrittura). Il telefono, se presente, è validato e normalizzato (E.164) e partecipa alla deduplica;
+vuoto non vale mai come chiave di deduplica. L'email resta obbligatoria nel checkout pubblico (conferma e link magico).
+Verificata da: `TestValidateCustomer_PhoneOptional` (`internal/domain/checkout`), `TestValidate_PhoneOptional`
+(`internal/domain/customer`), `TestOnlineHTTP_SettingsAndTerms` (`internal/http/admin`, tag `integration`), e2e
+`phone optional` (`e2e/tests/daily-sale.spec.ts`). Stato: implemented.

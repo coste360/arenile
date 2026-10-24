@@ -33,7 +33,8 @@ Le righe del documento derivano dallo snapshot del prezzo (scorporo IVA per aliq
   schermata con *dove* (postazione precisa oppure solo zona/fila), fascia (giornata, mattina, pomeriggio), pack,
   extra, prezzo dal motore per quel giorno, pagamento contanti o carta (driver manuale; i contanti richiedono una
   sessione di cassa aperta) e nome facoltativo per l'etichetta in mappa. Nasce una prenotazione confermata (canale
-  `desk`) tramite il servizio delle prenotazioni.
+  `desk`) tramite il servizio delle prenotazioni, sul cliente condiviso "Cliente al banco" (spec 10.6); nessun
+  telefono né email.
 - **Numero progressivo del giorno:** riparte da 1 ogni giorno nel fuso dello stabilimento, unico per stabilimento su
   tutte le casse e i dispositivi; garantito dal database (contatore per stabilimento e giorno aggiornato con un upsert
   atomico nella transazione di vendita, più `UNIQUE (establishment_id, ticket_date, ticket_number)`). Buchi solo per

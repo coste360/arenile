@@ -1,0 +1,67 @@
+---
+title: Biglietti d'ingresso e controllo accessi
+description: Biglietti d'ingresso per spiaggia libera attrezzata e piscina (Adulto, Ridotto, Bambino), prezzo per periodo, capienza giornaliera condivisa con l'online e controllo al varco con il QR.
+sidebar:
+  order: 26.6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Biglietti d'ingresso** (tipi), **Vendita rapida** → scheda **Ingressi** (vendita),
+**Vendita rapida** → **Varco** (controllo). **Chi:** gestori e proprietari configurano; cassieri vendono e
+controllano.
+
+Per la spiaggia libera attrezzata o la piscina non si vende un ombrellone ma un **ingresso**. Arenile li vende con
+la stessa numerazione giornaliera dei ticket e li controlla all'ingresso leggendo il QR: **un solo ingresso per
+biglietto**.
+
+## Prima di iniziare
+
+<Steps>
+
+1. Una [zona](/gestore/zone/) in modalità **quantità** (ad esempio *Spiaggia libera attrezzata*) con il suo
+   [pool](/gestore/pool/): la capacità del pool è la **capienza del giorno**, condivisa con le vendite online.
+2. Un componente del [catalogo](/gestore/catalogo/) che consuma quel pool e un **pack** per ogni tipo di ingresso
+   (ad esempio *Ingresso adulto*), con il prezzo nel [listino](/gestore/prezzi/) per periodo tariffario.
+
+</Steps>
+
+## Tipi di ingresso
+
+In **Biglietti d'ingresso** → **Nuovo tipo**: **Codice** (ad esempio `adulto`, non si cambia dopo), **Nome** e
+**Descrizione** nelle lingue dello stabilimento, **Pack**, **Zona**, **Ordine** e **Attivo**. Solo i tipi attivi
+compaiono nella vendita. Un tipo già venduto non si elimina: si disattiva.
+
+<Screenshot name="admin-entry-types" alt="Configurazione dei biglietti d'ingresso con i tipi Adulto e Bambino" />
+
+## Vendere gli ingressi
+
+<Steps>
+
+1. **Vendita rapida** → scheda **Ingressi**.
+2. Scegli la **Fascia** (giornata intera, mattina, pomeriggio) e le quantità per tipo con i pulsanti + e −.
+3. Arenile mostra il totale dal listino e i **posti rimasti**; a capienza esaurita la vendita si blocca.
+4. Nome facoltativo, poi **Contanti** (con la cassa aperta e il resto) o **Carta** e **Incassa**.
+
+</Steps>
+
+<Screenshot name="admin-entry-sale" alt="Vendita rapida, scheda Ingressi: quantità per tipo, posti rimasti e totale" />
+
+Un solo biglietto copre tutte le persone della vendita (*3 persone*) e si stampa come gli altri ticket. Se due casse
+vendono l'ultimo posto nello stesso istante, una sola vendita passa: la capienza la controlla il database.
+
+## Controllo al varco
+
+**Vendita rapida** → **Varco** (o dalla ricerca dei comandi) apre la pagina per il telefono del personale.
+
+<Screenshot name="admin-entry-gate-mobile" alt="Varco sul telefono: lettura del QR o codice del biglietto scritto a mano" />
+
+- **Avvia fotocamera** e inquadra il QR del biglietto, oppure scrivi il **Codice del biglietto** e **Verifica**.
+- Esiti: **Ingresso valido** (con numero e persone), **Già entrato** (con l'ora del primo ingresso), **Biglietto
+  annullato**, **Biglietto di un altro giorno**, **Biglietto non trovato**. Il telefono vibra a ogni esito.
+- La stessa lettura ripetuta nei 4 secondi successivi viene ignorata: niente doppi esiti se il QR resta inquadrato.
+
+<Aside type="tip" title="Senza fotocamera">
+  Se il browser non legge i QR o la fotocamera non è autorizzata, il campo del codice resta sempre disponibile.
+</Aside>

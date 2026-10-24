@@ -7,7 +7,7 @@
 2. POST quote                   → prezzo e policy (nessuna scrittura)
 3. POST bookings (hold)         → crea prenotazione in stato held, occupa con hold,
                                   restituisce booking_id, hold_expires_at, client_secret
-4. PATCH bookings/{id}/customer → dati cliente, consensi
+4. PATCH bookings/{id}/customer → dati cliente (nome, cognome, email; telefono facoltativo), consensi
 5. POST bookings/{id}/pay       → crea il pagamento sul provider (o conferma senza pagamento)
 6. webhook provider             → pagamento riuscito ⇒ status confirmed, hold → booking
 7. GET  bookings/{id}           → la pagina interroga lo stato fino a confirmed
@@ -54,5 +54,15 @@ Ogni transizione è un metodo del servizio `booking`, scrive l'audit log e pubbl
 - Quando una richiesta non trova disponibilità, il cliente può iscriversi alla lista d'attesa.
 - Ogni rilascio di allocazioni pubblica un evento; un job verifica le iscrizioni compatibili in ordine cronologico e invia una notifica con un link che crea un hold riservato per un tempo limitato.
 
----
+### 10.6 Vendita giornaliera al banco
 
+- La vendita rapida (spec 14.3) crea la prenotazione direttamente in stato `confirmed` (canale `desk`) con il servizio
+  `booking`, come le prenotazioni del pannello: audit ed evento outbox nella stessa transazione del pagamento manuale e
+  del biglietto numerato. Le vendite senza cliente sono registrate su un cliente condiviso "Cliente al banco" creato al
+  primo uso; il nome facoltativo resta sul biglietto.
+- L'annullamento di un biglietto è la cancellazione della prenotazione (`cancelled`) con rimborso tramite i pagamenti
+  o senza rimborso; il biglietto conserva il numero ed è segnato annullato.
+- L'assegnazione di un biglietto venduto per zona e ogni spostamento successivo sono una `Move` della prenotazione
+  (spec 7.5, INV-82).
+
+---

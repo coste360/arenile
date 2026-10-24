@@ -1,0 +1,65 @@
+---
+title: Entry tickets and gate control
+description: Entry tickets for the equipped free beach and the pool (Adult, Reduced, Child), price by period, daily capacity shared with online sales and QR check at the gate.
+sidebar:
+  order: 26.6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Entry tickets** (types), **Quick sale** → **Entries** tab (sale), **Quick sale** →
+**Gate** (check). **Who:** managers and owners configure; cashiers sell and check.
+
+For an equipped free beach or a pool you sell an **entry**, not an umbrella. Arenile sells entries with the same daily
+numbering as tickets and checks them at the entrance by reading the QR code: **one entry per ticket**.
+
+## Before you start
+
+<Steps>
+
+1. A [zone](/en/gestore/zone/) in **quantity** mode (for example *Equipped free beach*) with its
+   [pool](/en/gestore/pool/): the pool capacity is the **daily capacity**, shared with online sales.
+2. A [catalog](/en/gestore/catalogo/) component that uses that pool and a **pack** for each entry type (for example
+   *Adult entry*), priced in the [price list](/en/gestore/prezzi/) by rate period.
+
+</Steps>
+
+## Entry types
+
+In **Entry tickets** → **New type**: **Code** (for example `adulto`, fixed after creation), **Name** and
+**Description** in the establishment languages, **Pack**, **Zone**, **Order** and **Active**. Only active types appear
+in the sale. A type that was already sold cannot be deleted: deactivate it.
+
+<Screenshot name="admin-entry-types" alt="Entry ticket configuration with the Adult and Child types" />
+
+## Selling entries
+
+<Steps>
+
+1. **Quick sale** → **Entries** tab.
+2. Choose the **Slot** (full day, morning, afternoon) and the quantities per type with the + and − buttons.
+3. Arenile shows the total from the price list and the **places left**; when capacity runs out the sale is blocked.
+4. Optional name, then **Cash** (with the register open and the change) or **Card** and **Collect**.
+
+</Steps>
+
+<Screenshot name="admin-entry-sale" alt="Quick sale, Entries tab: quantities per type, places left and total" />
+
+One ticket covers everybody in the sale (*3 people*) and prints like the other tickets. If two registers sell the last
+place at the same moment, only one sale goes through: the database checks the capacity.
+
+## Gate control
+
+**Quick sale** → **Gate** (or the command search) opens the page for the staff phone.
+
+<Screenshot name="admin-entry-gate-mobile" alt="Gate on a phone: QR reading or the ticket code typed by hand" />
+
+- **Start camera** and frame the ticket's QR code, or type the **Ticket code** and **Check**.
+- Results: **Valid entry** (with number and people), **Already entered** (with the time of the first entry), **Ticket
+  voided**, **Ticket for another day**, **Ticket not found**. The phone vibrates on each result.
+- The same reading repeated within 4 seconds is ignored: no double results while the QR stays in frame.
+
+<Aside type="tip" title="Without a camera">
+  If the browser cannot read QR codes or the camera is not allowed, the code field is always available.
+</Aside>

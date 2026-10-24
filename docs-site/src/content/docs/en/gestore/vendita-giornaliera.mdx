@@ -1,0 +1,94 @@
+---
+title: Daily sale and tickets
+description: Quick desk sale for walk-in customers, on a spot or only on a zone, with the daily numbered ticket, receipt or A4 print, reprint, void and the list of the day's tickets.
+sidebar:
+  order: 26.2
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Operations → **Quick sale** (also from the **Quick sale** button of the **Cash desk**) or from the
+**Map**: tap a free spot and choose **Sell day ticket**. **Who:** cashiers, managers and owners.
+
+The daily sale is built for walk-in customers: one screen, a few taps, no mandatory personal data. Every sale creates
+a **confirmed** desk booking (the same as panel bookings: history, payments and reports see it) and a **daily
+numbered ticket** with a QR code.
+
+<Screenshot name="admin-daily-sale" alt="Quick sale: where, formula, pack, extras, total with VAT and payment" />
+
+## Selling a day
+
+<Steps>
+
+1. **Where**: pick a precise **Spot** or **Zone only** (for example *Front row*). Each zone shows how many free
+   places it has for the chosen slot.
+2. **Formula**: **Full day**, **Morning** or **Afternoon**. The day is today; from the map of another day the sale is
+   for that day.
+3. **Pack** and **Extras** (with the + and − buttons). The **Total** comes from the day's price list, with VAT shown.
+4. **Name on the ticket** (optional): only last and first name for the map label. No phone, no email.
+5. Take the payment in **Cash** (the [cash desk](/en/gestore/cassa/) must be open; enter the **Cash received** to see
+   the **Change**) or by **Card**.
+
+</Steps>
+
+The ticket is issued at once: the **Ticket issued** box shows the big number (**#037**), with **Reprint** and **New
+sale**. When automatic printing is on, the print starts too.
+
+<Screenshot name="admin-daily-sale-map" alt="Day map with the Sell day panel open on a free spot" />
+
+On the desk computer, shortcuts speed things up: **1**, **2**, **3** for the slot, **P** spot, **Z** zone, **C** cash,
+**K** card. On a phone, total and payment stay pinned at the bottom of the screen.
+
+<Aside type="caution" title="No sales offline">
+  Only the server guarantees availability (database constraints): offline the quick sale is disabled so the same
+  place is never sold twice.
+</Aside>
+
+## The ticket number
+
+- It starts again from **#001** every morning (establishment time zone) and is unique for the establishment: several
+  registers and devices never produce the same number twice.
+- A **voided** ticket keeps its number, marked *Voided*: the only case where the sequence has a visible gap.
+- The QR code holds the booking code: staff check it with their phone.
+
+## Printing
+
+Tickets print from the browser, no software to install: **80 mm receipt**, **58 mm receipt**, **A5** or **A4**. They
+show the establishment name and logo, number and date (*Valid on …*), spot or zone (*to assign*), formula, pack,
+extras, total with the VAT breakdown, payment method and the QR code.
+
+<Screenshot name="admin-ticket-print" alt="Print preview of the ticket in the 80 mm receipt format" />
+
+**Reprint** produces the same copy marked *Reprint* and is recorded in the history.
+
+In **Today's tickets** → **Settings** (managers and owners) choose the **Default print format**, **Print right after
+the sale** and **Sale by zone**; they apply to every register.
+
+## Today's tickets
+
+**Where:** Operations → **Today's tickets**. The tickets issued on a day with **Number**, **Time**, **Spot or zone**,
+**Formula**, **Name**, **Status** (*Assigned*, *To assign*, *Issued*, *Entered*, *Voided*), **Amount** and
+**Method**.
+
+<Screenshot name="admin-tickets" alt="Today's tickets: summary, ticket list and takings by VAT rate" />
+
+- The **Day summary** counts issued tickets, takings by method, tickets to assign and voided ones.
+- **Takings by VAT rate**: the same amounts as the cash session and the [daily takings](/en/gestore/corrispettivi/);
+  voided tickets are left out.
+- **Export CSV** downloads the day's list (`;` separator, euro amounts with a decimal comma).
+- For each ticket: **Print**/**Reprint**, **Assign** or **Move** (see [Spot assignment](/en/gestore/assegnazione-ombrelloni/))
+  and **Void ticket**.
+
+## Voiding a ticket
+
+<Steps>
+
+1. **Void ticket** on the ticket's row.
+2. Write the **Reason** (required, kept in the history).
+3. Choose the **Refund**: **Refund with the same method** (cash out of the open register or a recorded card
+   reversal), **Credit to the customer** (only for a ticket of a customer on file) or **No refund**.
+
+</Steps>
+
+The spot or the place in the zone becomes free again; the ticket keeps its number and is marked as voided.

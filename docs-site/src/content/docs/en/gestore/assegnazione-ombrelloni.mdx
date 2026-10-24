@@ -1,0 +1,60 @@
+---
+title: Spot assignment
+description: Tickets sold by zone "to assign", assignment with a tap on the day map, automatic assignment, moves and map labels.
+sidebar:
+  order: 26.4
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** day **Map** (computer and phone), **Today** → **To do**, **Today's tickets**. **Who:** cashiers, managers
+and owners.
+
+When there is a queue at the desk it pays to sell **only the zone** ("Front row") and pick the umbrella later. The
+sale takes a place of the zone at once, so you never sell more tickets than places; the ticket stays **To assign**
+until you put it on a spot.
+
+<Aside type="note" title="Seat zones and zone zones">
+  In zones sold **by zone** the place comes out of the zone capacity. In zones sold **by seat** Arenile provisionally
+  holds the last free spot of the zone: on the map you see it taken by the ticket number until you choose the right
+  one.
+</Aside>
+
+## Assigning with a tap
+
+<Screenshot name="admin-assign-panel" alt="Day map with the To assign panel and the zone's tickets" />
+
+<Steps>
+
+1. Open the day **Map**: the **To assign** panel lists the tickets in number order (#037 …).
+2. Tap a ticket: the free spots of its zone are highlighted.
+3. Tap a free spot of the zone. Arenile confirms *Ticket #037 assigned to spot A4*.
+
+</Steps>
+
+If another register took that spot in the meantime, Arenile says so (*The spot was just taken: choose another one*)
+and the ticket stays to assign: the database checks it, not the browser.
+
+## Automatic assignment
+
+**Assign automatically** places the tickets to assign, in number order, on the free spots of their zone with the same
+rule as the automatic assignment of zone bookings (see [Zones](/en/gestore/zone/)). Tickets that find no place stay in
+the panel (*2 tickets assigned, 1 without a free spot*).
+
+## Today and Today's tickets
+
+- **Today** → **To do** → **To assign** also lists the zone tickets, with the number and **Assign on the map**.
+- In **Today's tickets** the **Assign** button opens the spot choice; for an assigned ticket **Move** puts it on another
+  free spot (also later in the day).
+
+## Map labels
+
+Spots taken by a ticket show the **last name** given at the sale or, without a name, the ticket **number** (**#037**).
+The **Labels** switch (Code / Customer / Both) applies to tickets too, as to other bookings (see
+[Day map](/en/gestore/mappa-del-giorno/)).
+
+<Aside type="caution" title="Different price category">
+  If you move a ticket to a spot of another price category, the booking total is recalculated but the amount printed
+  on the ticket stays the one collected: settle any difference at the cash desk.
+</Aside>

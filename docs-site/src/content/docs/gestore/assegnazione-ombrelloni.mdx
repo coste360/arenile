@@ -1,0 +1,62 @@
+---
+title: Assegnazione ombrelloni
+description: Biglietti venduti per zona "da assegnare", assegnazione con un tocco sulla mappa del giorno, assegnazione automatica, spostamenti ed etichette in mappa.
+sidebar:
+  order: 26.4
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** **Mappa** del giorno (computer e telefono), **Oggi** → **Da fare**, **Ticket del giorno**. **Chi:**
+cassieri, gestori e proprietari.
+
+Quando al banco c'è la fila conviene vendere **solo la zona** ("Prima fila") e scegliere l'ombrellone dopo. La
+vendita occupa subito un posto della zona, quindi non si vendono mai più biglietti dei posti disponibili; il
+biglietto resta **Da assegnare** finché non lo metti su una postazione.
+
+<Aside type="note" title="Zone a posto e zone a zona">
+  Nelle zone vendute **a zona** il posto è preso dalla capacità della zona. Nelle zone **a posto** Arenile tiene da
+  parte in modo provvisorio l'ultima postazione libera della zona: in mappa la vedi occupata dal numero del
+  biglietto finché non scegli quella giusta.
+</Aside>
+
+## Assegnare con un tocco
+
+<Screenshot name="admin-assign-panel" alt="Mappa del giorno con il pannello Da assegnare e i biglietti della zona" />
+
+<Steps>
+
+1. Apri la **Mappa** del giorno: il pannello **Da assegnare** elenca i biglietti in ordine di numero (#037 …).
+2. Tocca un biglietto: le postazioni libere della sua zona sono evidenziate.
+3. Tocca una postazione libera della zona. Arenile conferma *Biglietto #037 assegnato alla postazione A4*.
+
+</Steps>
+
+Se nel frattempo un'altra cassa ha preso quella postazione, Arenile lo dice (*La postazione è stata appena
+occupata: scegline un'altra*) e il biglietto resta da assegnare: il controllo lo fa il database, non il browser.
+
+## Assegnazione automatica
+
+**Assegna automaticamente** mette i biglietti da assegnare, in ordine di numero, sulle postazioni libere della loro
+zona con lo stesso criterio dell'assegnazione automatica delle prenotazioni a zona (vedi
+[Zone](/gestore/zone/)). I biglietti che non trovano posto restano nel pannello (*2 biglietti assegnati, 1 senza
+posto libero*).
+
+## Oggi e Ticket del giorno
+
+- In **Oggi** → **Da fare** → **Da assegnare** compaiono anche i biglietti per zona, con il numero e **Assegna sulla
+  mappa**.
+- In **Ticket del giorno** il pulsante **Assegna** apre la scelta della postazione; per un biglietto già assegnato
+  **Sposta** lo porta su un'altra postazione libera (anche più tardi nella giornata).
+
+## Etichette in mappa
+
+Le postazioni occupate da un biglietto mostrano il **cognome** indicato alla vendita oppure, senza nome, il
+**numero** del biglietto (**#037**). Il selettore **Etichette** (Codice / Cliente / Entrambi) vale anche per i
+biglietti, come per le altre prenotazioni (vedi [Mappa del giorno](/gestore/mappa-del-giorno/)).
+
+<Aside type="caution" title="Cambio di categoria di prezzo">
+  Se sposti un biglietto su una postazione di un'altra categoria di prezzo, il totale della prenotazione si
+  ricalcola ma l'importo stampato sul biglietto resta quello incassato: regola l'eventuale differenza dalla cassa.
+</Aside>

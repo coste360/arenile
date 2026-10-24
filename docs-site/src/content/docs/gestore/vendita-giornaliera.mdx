@@ -1,0 +1,97 @@
+---
+title: Vendita giornaliera e ticket
+description: Vendita rapida al banco per chi arriva in giornata, su una postazione o solo su una zona, con biglietto numerato del giorno, stampa su scontrino o A4, ristampa, annullamento e Ticket del giorno.
+sidebar:
+  order: 26.2
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Operatività → **Vendita rapida** (anche dal pulsante **Vendita rapida** della **Cassa**) oppure dalla
+**Mappa**: tocca una postazione libera e scegli **Vendi giornata**. **Chi:** cassieri, gestori e proprietari.
+
+La vendita giornaliera è pensata per il cliente di passaggio: una sola schermata, pochi tocchi, nessun dato
+personale obbligatorio. Ogni vendita crea una prenotazione **confermata** dal banco (la stessa delle prenotazioni
+del pannello: storico, incassi e report la vedono) e un **biglietto numerato del giorno** con il QR.
+
+<Screenshot name="admin-daily-sale" alt="Vendita rapida: dove, formula, pack, extra, totale con IVA e pagamento" />
+
+## Vendere una giornata
+
+<Steps>
+
+1. **Dove**: scegli una **Postazione** precisa oppure **Solo zona** (ad esempio *Prima fila*). Ogni zona mostra
+   quanti posti liberi ha per la fascia scelta.
+2. **Formula**: **Giornata intera**, **Mattina** o **Pomeriggio**. Il giorno è oggi; dalla mappa di un altro
+   giorno la vendita vale per quel giorno.
+3. **Pack** ed **Extra** (con i pulsanti + e −). Il **Totale** arriva dal listino del giorno, con l'IVA indicata.
+4. **Nome sul biglietto** (facoltativo): solo cognome e nome per l'etichetta in mappa. Nessun telefono, nessuna
+   email.
+5. Incassa con **Contanti** (serve la [cassa](/gestore/cassa/) aperta; inserisci i **Contanti ricevuti** per
+   vedere il **Resto**) oppure con **Carta**.
+
+</Steps>
+
+Il biglietto esce subito: il riquadro **Biglietto emesso** mostra il numero grande (**#037**), con **Ristampa**
+e **Nuova vendita**. Se la stampa automatica è attiva parte anche la stampa.
+
+<Screenshot name="admin-daily-sale-map" alt="Mappa del giorno con il pannello Vendi giornata aperto su una postazione libera" />
+
+Sul computer della cassa le scorciatoie velocizzano il banco: **1**, **2**, **3** per la fascia, **P** postazione,
+**Z** zona, **C** contanti, **K** carta. Sul telefono totale e pagamento restano in fondo allo schermo.
+
+<Aside type="caution" title="Senza connessione non si vende">
+  La disponibilità la garantisce solo il server (vincoli del database): offline la vendita rapida è disattivata
+  per non vendere due volte lo stesso posto.
+</Aside>
+
+## Il numero del biglietto
+
+- Riparte da **#001** ogni mattina (fuso orario dello stabilimento) ed è unico per lo stabilimento: più casse e più
+  dispositivi non producono mai due volte lo stesso numero.
+- Un biglietto **annullato** conserva il suo numero, segnato come *Annullato*: è l'unico caso in cui la sequenza ha
+  un buco visibile.
+- Il QR contiene il codice della prenotazione: si controlla dal telefono del personale.
+
+## Stampa
+
+Il biglietto si stampa dal browser, senza programmi da installare: **Scontrino 80 mm**, **Scontrino 58 mm**,
+**A5** o **A4**. Contiene nome e logo dello stabilimento, numero e data (*Valido il …*), postazione o zona
+(*da assegnare*), formula, pack, extra, totale con il dettaglio IVA, metodo di pagamento e il QR.
+
+<Screenshot name="admin-ticket-print" alt="Anteprima di stampa del biglietto nel formato scontrino 80 mm" />
+
+**Ristampa** produce la stessa copia con la scritta *Ristampa* ed è registrata nello storico.
+
+In **Ticket del giorno** → **Impostazioni** (gestori e proprietari) scegli il **Formato di stampa predefinito**,
+**Stampa subito dopo la vendita** e **Vendita per zona**; valgono per tutte le casse.
+
+## Ticket del giorno
+
+**Dove:** Operatività → **Ticket del giorno**. L'elenco dei biglietti emessi in un giorno con **Numero**, **Ora**,
+**Postazione o zona**, **Formula**, **Nome**, **Stato** (*Assegnato*, *Da assegnare*, *Emesso*, *Entrato*,
+*Annullato*), **Importo** e **Metodo**.
+
+<Screenshot name="admin-tickets" alt="Ticket del giorno: riepilogo, elenco dei biglietti e corrispettivi per aliquota" />
+
+- Il **Riepilogo del giorno** conta emessi, incasso per metodo, biglietti da assegnare e annullati.
+- **Corrispettivi per aliquota**: gli stessi importi della sessione di cassa e dei
+  [corrispettivi](/gestore/corrispettivi/); gli annullati sono esclusi.
+- **Esporta CSV** scarica l'elenco del giorno (separatore `;`, importi in euro con la virgola).
+- Per ogni biglietto: **Stampa**/**Ristampa**, **Assegna** o **Sposta** (vedi
+  [Assegnazione ombrelloni](/gestore/assegnazione-ombrelloni/)) e **Annulla biglietto**.
+
+## Annullare un biglietto
+
+<Steps>
+
+1. **Annulla biglietto** sulla riga del biglietto.
+2. Scrivi il **Motivo** (obbligatorio, resta nello storico).
+3. Scegli il **Rimborso**: **Rimborsa con lo stesso metodo** (contanti in uscita dalla cassa aperta o storno carta
+   registrato), **Accredita al cliente** (solo per un biglietto intestato a un cliente in anagrafica) o **Nessun
+   rimborso**.
+
+</Steps>
+
+La postazione o il posto nella zona tornano liberi, il biglietto mantiene il numero ed è segnato come annullato.

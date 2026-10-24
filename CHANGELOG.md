@@ -20,9 +20,32 @@ offline).
   `zone_full`, `assignment_conflict`, `ticket_number_conflict`, `ticket_voided`, `ticket_already_entered`,
   `price_changed`. Migrazione **00010** (SQLite e PostgreSQL): `daily_ticket_counters` (numero progressivo del
   giorno con upsert atomico), `tickets` con `UNIQUE (establishment_id, ticket_date, ticket_number)`,
-  `entry_ticket_types`, `daily_sale_settings`. Le operazioni rispondono 501 finché i servizi non sono pronti;
-  voci di menu Vendita rapida, Ticket del giorno e Biglietti d'ingresso.
+  `entry_ticket_types`, `daily_sale_settings`; voci di menu Vendita rapida, Ticket del giorno e Biglietti
+  d'ingresso.
+- **Assegnazione dei biglietti da assegnare** (ADR 0020, INV-82): lista "Da assegnare" del giorno, assegnazione a
+  una postazione libera della zona e spostamento tramite la `Move` della prenotazione (atomici, 409
+  `assignment_conflict` se la postazione è stata presa), assegnazione automatica in ordine di numero con il motore di
+  spec 7.5; la vista operativa del giorno espone il biglietto (`ticket`: numero, etichetta "#037", da assegnare) e
+  l'etichetta dell'occupante diventa il nome facoltativo o il numero.
+- **Vendita giornaliera e biglietti** (ADR 0020, INV-80, INV-81, INV-83): vendita rapida su postazione o zona con
+  prezzo dal motore, pagamento contanti/carta col driver manuale (contanti solo con cassa aperta, resto calcolato) e
+  cliente "al banco" con nome facoltativo; numero progressivo del giorno unico su tutte le casse; vendita per zona che
+  consuma subito la capacità; Ticket del giorno con riepilogo per metodo e aliquota ed esportazione CSV; dati di
+  stampa, ristampa, annullamento che conserva il numero con rimborso tramite i pagamenti; tipi di biglietto
+  d'ingresso, vendita di ingressi sul pool condiviso con l'online e controllo al varco con un solo ingresso per QR. Gli
+  incassi entrano nelle sessioni di cassa e nei corrispettivi per aliquota.
 - Telefono **facoltativo ovunque** (checkout pubblico e pannello): `require_phone` è deprecato e vale sempre false.
+- Pannello: **Vendita rapida** con le schede **Ombrelloni** e **Ingressi** (biglietti d'ingresso con stampa automatica)
+  e il collegamento al **Varco**; mappa, Oggi e Cassa collegati alla vendita giornaliera; stampa del biglietto su
+  scontrino 80/58 mm, A5 e A4 con QR; pannello **Da assegnare** sulla mappa; **Impostazioni** dei biglietti (formato
+  di stampa predefinito, stampa automatica, vendita per zona) in Ticket del giorno. Le postazioni dei biglietti
+  mostrano il cognome o il numero anche nel nome accessibile e nel tooltip (non più "Cliente al banco"); la vendita
+  rapida propone solo i pack ammessi nella zona scelta (mai quelli degli ingressi). Le impostazioni della pagina
+  pubblica non mostrano più "Telefono obbligatorio"; i moduli cliente chiedono solo il cognome.
+- Documentazione: guide "Vendita giornaliera e ticket", "Assegnazione ombrelloni" e "Biglietti d'ingresso e controllo
+  accessi" (it, en) con screenshot; cassa, clienti, prenotazioni e pagina pubblica aggiornate per il telefono
+  facoltativo. Test end-to-end della vendita su postazione e per zona, assegnazione, annullamento, ingressi e varco,
+  checkout pubblico e nuovo cliente senza telefono.
 
 - App desktop per macOS: oltre al `.dmg` universale, la CI produce i `.dmg` **solo Apple Silicon**
   (`_macos_arm64`) e **solo Intel** (`_macos_x86_64`), circa metà dimensione, ognuno firmato, notarizzato e
