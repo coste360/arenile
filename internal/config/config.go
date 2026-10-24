@@ -60,6 +60,10 @@ const (
 	// loopback and private addresses, for self-hosted LAN receivers.
 	// Default: true with ARENILE_DEV, false otherwise.
 	EnvWebhooksAllowPrivate = "ARENILE_WEBHOOKS_ALLOW_PRIVATE"
+	// EnvPrintersAllowLoopback (ADR 0021) lets a network printer have a
+	// loopback address (a fake or virtual printer on this PC): development
+	// and tests only. Default: true with ARENILE_DEV, false otherwise.
+	EnvPrintersAllowLoopback = "ARENILE_PRINTERS_ALLOW_LOOPBACK"
 
 	// First-owner bootstrap (ADR 0006): when all four are set and the
 	// database has no users, `serve` creates the owner once at startup.
@@ -114,6 +118,9 @@ type Config struct {
 	// WebhooksAllowPrivate disables the private-address part of the SSRF
 	// protection of outgoing webhooks (event.EgressPolicy.AllowPrivate).
 	WebhooksAllowPrivate bool
+	// PrintersAllowLoopback admits loopback printer addresses
+	// (printing.AddressPolicy.AllowLoopback).
+	PrintersAllowLoopback bool
 
 	// BootstrapOwner is the optional first owner created by `serve` when the
 	// database has no users. Zero value means disabled.
@@ -188,6 +195,9 @@ func Parse(lookup Lookup) (Config, error) {
 	}
 	if cfg.WebhooksAllowPrivate, err = parseBool(get(EnvWebhooksAllowPrivate, strconv.FormatBool(cfg.Dev))); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvWebhooksAllowPrivate, err))
+	}
+	if cfg.PrintersAllowLoopback, err = parseBool(get(EnvPrintersAllowLoopback, strconv.FormatBool(cfg.Dev))); err != nil {
+		errs = append(errs, fmt.Errorf("%s: %w", EnvPrintersAllowLoopback, err))
 	}
 	if cfg.HoldTTL, err = time.ParseDuration(get(EnvHoldTTL, "10m")); err != nil || cfg.HoldTTL <= 0 {
 		errs = append(errs, fmt.Errorf("%s: must be a positive duration like 10m", EnvHoldTTL))

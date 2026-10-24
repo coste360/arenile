@@ -23,13 +23,15 @@ const (
 )
 
 // NetworkDriver sends raw ESC/POS bytes over TCP (port 9100, "JetDirect").
-// Every connection is checked at dial time against AllowedIP, on the
-// address actually dialled, so a host name that starts resolving to a
+// Every connection is checked at dial time against the AddressPolicy, on
+// the address actually dialled, so a host name that starts resolving to a
 // public address is refused (no TCP proxy towards the Internet).
 type NetworkDriver struct {
 	DialTimeout   time.Duration // default 3 s
 	WriteTimeout  time.Duration // default 10 s
 	StatusTimeout time.Duration // wait for the DLE EOT answer, default 800 ms
+	// AllowLoopback admits 127/8 and ::1 (development and tests only).
+	AllowLoopback bool
 }
 
 var _ Driver = NetworkDriver{}
@@ -42,7 +44,7 @@ func (d NetworkDriver) dial(ctx context.Context, t Target) (net.Conn, error) {
 	if dt <= 0 {
 		dt = DefaultDialTimeout
 	}
-	dialer := net.Dialer{Timeout: dt, Control: guardPrivate}
+	dialer := net.Dialer{Timeout: dt, Control: guardAddress(AddressPolicy{AllowLoopback: d.AllowLoopback})}
 	conn, err := dialer.DialContext(ctx, "tcp", net.JoinHostPort(t.Host, strconv.Itoa(t.Port)))
 	if err != nil {
 		if errors.Is(err, ErrAddressNotAllowed) {
@@ -53,17 +55,20 @@ func (d NetworkDriver) dial(ctx context.Context, t Target) (net.Conn, error) {
 	return conn, nil
 }
 
-// guardPrivate refuses a connection to a disallowed address (Dialer.Control).
-func guardPrivate(_, address string, _ syscall.RawConn) error {
-	host, _, err := net.SplitHostPort(address)
-	if err != nil {
-		return ErrAddressNotAllowed
+// guardAddress refuses a connection to an address pol disallows
+// (Dialer.Control, on the resolved address).
+func guardAddress(pol AddressPolicy) func(network, address string, c syscall.RawConn) error {
+	return func(_, address string, _ syscall.RawConn) error {
+		host, _, err := net.SplitHostPort(address)
+		if err != nil {
+			return ErrAddressNotAllowed
+		}
+		ip, err := netip.ParseAddr(host)
+		if err != nil || !pol.Allowed(ip) {
+			return ErrAddressNotAllowed
+		}
+		return nil
 	}
-	ip, err := netip.ParseAddr(host)
-	if err != nil || !AllowedIP(ip) {
-		return ErrAddressNotAllowed
-	}
-	return nil
 }
 
 // Send implements Driver: one connection, the whole payload, then close.

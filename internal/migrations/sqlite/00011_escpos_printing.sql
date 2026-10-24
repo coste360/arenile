@@ -15,9 +15,10 @@
 --     in-process job runner with retries and backoff. idempotency_key is
 --     unique per establishment: the same print request never creates two
 --     jobs; the claim (queued -> printing) is a conditional update with a
---     lease (locked_until), so a job is sent by one worker at a time.
---     payload may be purged after printing (retention); last_error never
---     contains personal data.
+--     lease (locked_until), so a job is sent by one worker at a time (an
+--     expired lease is reclaimed: at-least-once delivery). payload is nulled
+--     30 days after the job ends (job printing.retention, the row stays as
+--     history); last_error never contains personal data.
 -- 00010 is reserved by the daily sale branch.
 
 -- +goose Up

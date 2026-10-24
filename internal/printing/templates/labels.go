@@ -49,6 +49,7 @@ const (
 	lblPhone         = "phone"
 	lblVATNumber     = "vat_number"
 	lblNone          = "none"
+	lblCopy          = "copy"
 )
 
 // labels are the printed strings per language (it is the source language).
@@ -67,7 +68,7 @@ var labels = map[string]map[string]string{
 		lblChars: "caratteri", lblCodepage: "Codepage", lblCharset: "Caratteri", lblStyles: "Stili",
 		lblBold: "Grassetto", lblDouble: "Doppia", lblColumns: "Colonne", lblSample: "Ombrellone A12",
 		lblTestOK: "Se leggi questa pagina la stampante funziona.", lblPhone: "Tel.", lblVATNumber: "P.IVA",
-		lblNone: "nessuno",
+		lblNone: "nessuno", lblCopy: "COPIA",
 	},
 	"en": {
 		lblTicket: "TICKET", lblServiceDay: "Day", lblIssued: "Issued", lblZone: "Zone",
@@ -83,7 +84,7 @@ var labels = map[string]map[string]string{
 		lblChars: "characters", lblCodepage: "Codepage", lblCharset: "Characters", lblStyles: "Styles",
 		lblBold: "Bold", lblDouble: "Double", lblColumns: "Columns", lblSample: "Umbrella A12",
 		lblTestOK: "If you can read this page the printer works.", lblPhone: "Tel.", lblVATNumber: "VAT no.",
-		lblNone: "none",
+		lblNone: "none", lblCopy: "COPY",
 	},
 	"de": {
 		lblTicket: "TICKET", lblServiceDay: "Tag", lblIssued: "Ausgestellt", lblZone: "Zone",
@@ -99,7 +100,7 @@ var labels = map[string]map[string]string{
 		lblChars: "Zeichen", lblCodepage: "Codepage", lblCharset: "Zeichen", lblStyles: "Stile",
 		lblBold: "Fett", lblDouble: "Doppelt", lblColumns: "Spalten", lblSample: "Schirm A12",
 		lblTestOK: "Wenn Sie diese Seite lesen, funktioniert der Drucker.", lblPhone: "Tel.", lblVATNumber: "USt-IdNr.",
-		lblNone: "keine",
+		lblNone: "keine", lblCopy: "KOPIE",
 	},
 	"fr": {
 		lblTicket: "BILLET", lblServiceDay: "Jour", lblIssued: "Émis", lblZone: "Zone",
@@ -115,7 +116,7 @@ var labels = map[string]map[string]string{
 		lblChars: "caractères", lblCodepage: "Codepage", lblCharset: "Caractères", lblStyles: "Styles",
 		lblBold: "Gras", lblDouble: "Double", lblColumns: "Colonnes", lblSample: "Parasol A12",
 		lblTestOK: "Si vous lisez cette page, l'imprimante fonctionne.", lblPhone: "Tél.", lblVATNumber: "N° TVA",
-		lblNone: "aucun",
+		lblNone: "aucun", lblCopy: "COPIE",
 	},
 }
 

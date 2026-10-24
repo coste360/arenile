@@ -1,21 +1,35 @@
 package printing
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/escpos"
 	"github.com/coste360/arenile/internal/jobs"
 	"github.com/coste360/arenile/internal/store"
 )
 
-// JobDeliver is the name of the delivery job (desktop edition only).
-const JobDeliver = "printing.deliver"
+// Jobs of the desktop edition: delivery and payload retention.
+const (
+	JobDeliver   = "printing.deliver"
+	JobRetention = "printing.retention"
+)
+
+// PayloadRetention is how long the rendered payload of a finished job
+// (printed, failed, cancelled) is kept for manual retries and support;
+// after that the payload is nulled and the row stays as history.
+const PayloadRetention = 30 * 24 * time.Hour
+
+// deliverParallel caps the printers served at the same time by one run.
+const deliverParallel = 4
 
 // Backoff is the delay before the retry following the n-th failed attempt
 // (1-based): 5 s, 15 s, 1 min, then 5 min.
@@ -43,9 +57,10 @@ type JobInput struct {
 }
 
 // Enqueue renders a document and queues it for its printer (cash.operate,
-// desktop edition). idemKey is the Idempotency-Key header; when empty the
-// key is "<kind>:<document id>:<printer id>". created is false when a job
-// with the same key already existed (it is returned unchanged).
+// desktop edition). idemKey is the Idempotency-Key header: the same key
+// returns the existing job unchanged (created false); the same key with
+// another document kind, document or printer is ErrIdempotencyKeyReused.
+// Without a key every request is a new job (a deliberate reprint).
 func (s *Service) Enqueue(ctx context.Context, p *auth.Principal, establishmentID string, in JobInput, idemKey string) (job *store.PrintJob, created bool, err error) {
 	es, err := p.Authorize(ctx, s.d.DB, establishmentID, auth.PermCashOperate)
 	if err != nil {
@@ -76,11 +91,12 @@ func (s *Service) enqueue(ctx context.Context, es store.EstablishmentScope, p *a
 		ve.Add("document_kind", "Tipo di documento non valido.")
 	}
 	in.DocumentID = strings.TrimSpace(in.DocumentID)
-	if in.DocumentKind == store.PrintDocTestPage {
+	switch {
+	case in.DocumentKind == store.PrintDocTestPage:
 		in.DocumentID = ""
-	} else if in.DocumentID == "" {
+	case in.DocumentID == "":
 		ve.Add("document_id", "Obbligatorio per questo documento.")
-	} else if !validID(in.DocumentID) {
+	case !validID(in.DocumentID):
 		ve.Add("document_id", "Identificativo non valido.")
 	}
 	if in.Copies != nil && (*in.Copies < 1 || *in.Copies > 3) {
@@ -134,13 +150,19 @@ func (s *Service) enqueue(ctx context.Context, es store.EstablishmentScope, p *a
 
 	key := idemKey
 	if key == "" {
-		if in.DocumentKind == store.PrintDocTestPage {
-			key = in.DocumentKind + ":" + pr.ID + ":" + store.NewID()
-		} else {
-			key = in.DocumentKind + ":" + in.DocumentID + ":" + pr.ID
-		}
+		// No client key: a fresh one, so a reprint without header is a new job.
+		key = in.DocumentKind + ":" + store.NewID()
+	}
+	same := func(j *store.PrintJob) bool {
+		// The key is bound to the request: kind, document and printer
+		// (unless the printer has been deleted meanwhile).
+		return j.DocumentKind == in.DocumentKind && deref(j.DocumentID) == in.DocumentID &&
+			(j.PrinterID == nil || *j.PrinterID == pr.ID)
 	}
 	if j, err := store.GetPrintJobByKey(ctx, s.d.DB, es, key); err == nil {
+		if !same(j) {
+			return nil, false, ErrIdempotencyKeyReused
+		}
 		return j, false, nil
 	} else if !errors.Is(err, store.ErrNotFound) {
 		return nil, false, err
@@ -170,7 +192,13 @@ func (s *Service) enqueue(ctx context.Context, es store.EstablishmentScope, p *a
 	if !inserted {
 		// A concurrent request with the same key won the unique index.
 		existing, err := store.GetPrintJobByKey(ctx, s.d.DB, es, key)
-		return existing, false, err
+		if err != nil {
+			return nil, false, err
+		}
+		if !same(existing) {
+			return nil, false, ErrIdempotencyKeyReused
+		}
+		return existing, false, nil
 	}
 	s.d.Log.InfoContext(ctx, "print job queued", slog.String("job_id", j.ID), slog.String("printer_id", pr.ID),
 		slog.String("kind", j.DocumentKind), slog.Int("copies", copies))
@@ -214,6 +242,9 @@ func (s *Service) ListJobs(ctx context.Context, p *auth.Principal, establishment
 	es, err := p.Authorize(ctx, s.d.DB, establishmentID, auth.PermCashOperate)
 	if err != nil {
 		return JobPage{}, err
+	}
+	if f.PrinterID != "" && !validID(f.PrinterID) {
+		return JobPage{}, configerr.Invalid("printer_id", "Identificativo non valido.")
 	}
 	page, err := store.ListPrintJobs(ctx, s.d.DB, es, f, cursor, limit)
 	if err != nil {
@@ -289,55 +320,141 @@ func (s *Service) RetryJob(ctx context.Context, p *auth.Principal, establishment
 	return store.GetPrintJob(ctx, s.d.DB, es, id)
 }
 
-// Jobs returns the delivery job on the desktop edition (none otherwise).
+// Jobs returns the delivery and retention jobs on the desktop edition
+// (none otherwise).
 func (s *Service) Jobs() []jobs.Job {
 	if !s.d.Available {
 		return nil
 	}
-	return []jobs.Job{{
-		Name: JobDeliver, Interval: 2 * time.Second, RunOnStart: true, Timeout: 5 * time.Minute, Wake: s.wake,
-		Run: func(ctx context.Context) error {
-			_, err := s.DeliverDue(ctx, 20)
-			return err
+	return []jobs.Job{
+		{
+			Name: JobDeliver, Interval: 2 * time.Second, RunOnStart: true, Timeout: 5 * time.Minute, Wake: s.wake,
+			Run: func(ctx context.Context) error {
+				_, err := s.DeliverDue(ctx, 20)
+				return err
+			},
 		},
-	}}
+		{
+			Name: JobRetention, Interval: time.Hour, RunOnStart: true, Timeout: 5 * time.Minute,
+			Run: func(ctx context.Context) error {
+				_, err := s.PurgePayloads(ctx)
+				return err
+			},
+		},
+	}
+}
+
+// PurgePayloads nulls the payload of the jobs finished more than
+// PayloadRetention ago (printed slips carry operator names and booking
+// codes: not kept forever, not in backups). Returns how many were purged.
+func (s *Service) PurgePayloads(ctx context.Context) (int64, error) {
+	n, err := store.PurgePrintJobPayloads(ctx, s.d.DB, s.now().Add(-PayloadRetention))
+	if err != nil {
+		return 0, err
+	}
+	if n > 0 {
+		s.d.Log.InfoContext(ctx, "print job payloads purged", slog.Int64("jobs", n))
+	}
+	return n, nil
 }
 
 // DeliverDue sends up to limit due jobs and returns how many were printed.
 // Each job is claimed with a conditional update and a lease, so concurrent
-// runners (or a crash mid-send) never print a job twice in normal
-// operation; a job whose lease expired is retried.
+// runners never send a job at the same time; a job whose lease expired (a
+// worker crashed mid-send) is retried, which is at-least-once delivery.
+// Jobs are grouped by printer: printers are served in parallel (up to
+// deliverParallel at a time), each one in order, and a printer that fails
+// to answer skips its remaining jobs for this run, so a bar printer that
+// is off never holds up the cash desk one.
 func (s *Service) DeliverDue(ctx context.Context, limit int) (int, error) {
-	ids, err := store.DuePrintJobs(ctx, s.d.DB, s.now(), limit)
+	due, err := store.DuePrintJobs(ctx, s.d.DB, s.now(), limit)
 	if err != nil {
 		return 0, err
 	}
+	var groups [][]string
+	index := map[string]int{}
+	for _, d := range due {
+		key := deref(d.PrinterID)
+		if key == "" {
+			// Printer deleted: fails fast in its own group.
+			groups = append(groups, []string{d.ID})
+			continue
+		}
+		i, ok := index[key]
+		if !ok {
+			i = len(groups)
+			index[key] = i
+			groups = append(groups, nil)
+		}
+		groups[i] = append(groups[i], d.ID)
+	}
+	var (
+		mu       sync.Mutex
+		printed  int
+		firstErr error
+		wg       sync.WaitGroup
+		sem      = make(chan struct{}, deliverParallel)
+	)
+	for _, g := range groups {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func() {
+			defer wg.Done()
+			defer func() { <-sem }()
+			n, err := s.deliverGroup(ctx, g)
+			mu.Lock()
+			printed += n
+			if err != nil && firstErr == nil {
+				firstErr = err
+			}
+			mu.Unlock()
+		}()
+	}
+	wg.Wait()
+	return printed, firstErr
+}
+
+// deliverGroup sends the jobs of one printer in order and stops at the
+// first network failure (the remaining jobs stay due for the next run).
+func (s *Service) deliverGroup(ctx context.Context, ids []string) (int, error) {
 	printed := 0
 	for _, id := range ids {
 		if ctx.Err() != nil {
 			return printed, ctx.Err()
 		}
-		ok, err := s.deliver(ctx, id)
+		res, err := s.deliver(ctx, id)
 		if err != nil {
 			return printed, err
 		}
-		if ok {
+		switch res {
+		case deliverPrinted:
 			printed++
+		case deliverUnreachable:
+			return printed, nil
 		}
 	}
 	return printed, nil
 }
 
+// deliverResult is the outcome of one delivery attempt.
+type deliverResult int
+
+const (
+	deliverSkipped     deliverResult = iota // claimed by another worker, cancelled or failed for good
+	deliverPrinted                          // sent and marked printed
+	deliverUnreachable                      // the printer did not answer: skip its other jobs this run
+)
+
 // deliver claims and sends one job.
-func (s *Service) deliver(ctx context.Context, id string) (bool, error) {
+func (s *Service) deliver(ctx context.Context, id string) (deliverResult, error) {
 	now := s.now()
 	lease := now.Add(s.d.Lease).Truncate(time.Millisecond)
 	j, err := store.ClaimPrintJob(ctx, s.d.DB, id, now, lease)
 	if errors.Is(err, store.ErrNotFound) {
-		return false, nil // another worker has it
+		return deliverSkipped, nil // another worker has it
 	}
 	if err != nil {
-		return false, err
+		return deliverSkipped, err
 	}
 	log := s.d.Log.With(slog.String("job_id", j.ID), slog.String("kind", j.DocumentKind))
 	fail := func(msg string, retry bool) error {
@@ -352,39 +469,74 @@ func (s *Service) deliver(ctx context.Context, id string) (bool, error) {
 		return err
 	}
 	if j.PrinterID == nil || len(j.Payload) == 0 {
-		return false, fail("printer deleted", false)
+		return deliverSkipped, fail("printer deleted", false)
 	}
 	pr, err := store.GetPrinterByID(ctx, s.d.DB, *j.PrinterID)
 	if errors.Is(err, store.ErrNotFound) {
-		return false, fail("printer deleted", false)
+		return deliverSkipped, fail("printer deleted", false)
 	}
 	if err != nil {
-		return false, err
+		return deliverSkipped, err
 	}
 	log = log.With(slog.String("printer_id", pr.ID))
 	if !pr.Active {
-		return false, fail("printer inactive", false)
+		return deliverSkipped, fail("printer inactive", false)
 	}
 	drv, ok := s.d.Drivers[pr.Driver]
 	if !ok {
-		return false, fail("no driver "+pr.Driver, false)
+		return deliverSkipped, fail("no driver "+pr.Driver, false)
+	}
+	payload := j.Payload
+	if j.Attempts > 0 {
+		// A retry may reprint a slip that partly went out (at-least-once):
+		// never open the drawer a second time.
+		payload = stripDrawerKick(payload)
 	}
 	sendCtx, cancel := context.WithTimeout(ctx, min(s.d.Lease, DefaultDialTimeout+DefaultWriteTimeout+2*time.Second))
-	sendErr := drv.Send(sendCtx, Target{Host: pr.Host, Port: pr.Port}, j.Payload)
+	sendErr := drv.Send(sendCtx, Target{Host: pr.Host, Port: pr.Port}, payload)
 	cancel()
 	at := s.now()
 	if sendErr != nil {
 		msg := technical(sendErr)
-		_ = store.SetPrinterHealth(ctx, s.d.DB, pr.ID, store.PrinterHealth{Status: store.PrinterStatusUnreachable, CheckedAt: at, LastError: &msg})
-		return false, fail(msg, !errors.Is(sendErr, ErrAddressNotAllowed))
+		if err := store.SetPrinterHealth(ctx, s.d.DB, pr.ID, store.PrinterHealth{Status: store.PrinterStatusUnreachable, CheckedAt: at, LastError: &msg}); err != nil {
+			log.WarnContext(ctx, "printer health not saved", slog.String("error", err.Error()))
+		}
+		if err := fail(msg, !errors.Is(sendErr, ErrAddressNotAllowed)); err != nil {
+			return deliverSkipped, err
+		}
+		return deliverUnreachable, nil
 	}
 	done, err := store.FinishPrintJobPrinted(ctx, s.d.DB, j.ID, lease, at)
 	if err != nil {
-		return false, err
+		return deliverSkipped, err
 	}
-	_ = store.SetPrinterHealth(ctx, s.d.DB, pr.ID, store.PrinterHealth{Status: store.PrinterStatusReachable, CheckedAt: at, Success: true})
-	if done {
-		log.InfoContext(ctx, "print job printed", slog.Int("attempt", j.Attempts+1))
+	if err := store.SetPrinterHealth(ctx, s.d.DB, pr.ID, store.PrinterHealth{Status: store.PrinterStatusReachable, CheckedAt: at, Success: true}); err != nil {
+		log.WarnContext(ctx, "printer health not saved", slog.String("error", err.Error()))
 	}
-	return done, nil
+	if !done {
+		return deliverSkipped, nil
+	}
+	log.InfoContext(ctx, "print job printed", slog.Int("attempt", j.Attempts+1))
+	return deliverPrinted, nil
+}
+
+// drawerKicks are the ESC p pulses the templates emit (pin 2 and pin 5).
+var drawerKicks = [][]byte{{escpos.ESC, 'p', 0, 25, 250}, {escpos.ESC, 'p', 1, 25, 250}}
+
+// stripDrawerKick removes the cash drawer pulses from a rendered payload.
+func stripDrawerKick(payload []byte) []byte {
+	out := payload
+	for _, k := range drawerKicks {
+		out = bytes.ReplaceAll(out, k, nil)
+	}
+	return out
+}
+
+// deref returns *p or the zero value.
+func deref[T any](p *T) T {
+	var zero T
+	if p == nil {
+		return zero
+	}
+	return *p
 }

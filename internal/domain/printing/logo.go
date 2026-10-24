@@ -29,6 +29,13 @@ type LogoLoader interface {
 // Logo raster bounds: two thirds of the printable width, 160 dots high.
 const maxLogoHeight = 160
 
+// logoRetryAfter is how long a failed logo fetch is remembered per printer:
+// an offline lido with an https logo URL must not wait on every print.
+const logoRetryAfter = 10 * time.Minute
+
+// logoFetchTimeout bounds one logo fetch at enqueue time.
+const logoFetchTimeout = 3 * time.Second
+
 func logoMaxWidth(paperWidthMM int) int { return escpos.MaxDots(paperWidthMM) * 2 / 3 / 8 * 8 }
 
 // logo returns the cached raster of the establishment logo for pr,
@@ -49,13 +56,20 @@ func (s *Service) logo(ctx context.Context, pr *store.Printer, est *store.Establ
 	if s.d.Logos == nil {
 		return nil
 	}
-	lctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	if v, ok := s.logoFailed.Load(pr.ID); ok {
+		if at, ok := v.(time.Time); ok && s.now().Sub(at) < logoRetryAfter {
+			return nil // recent failure: print without the logo, retry later
+		}
+	}
+	lctx, cancel := context.WithTimeout(ctx, logoFetchTimeout)
 	defer cancel()
 	img, err := s.d.Logos.LoadLogo(lctx, src)
 	if err != nil {
+		s.logoFailed.Store(pr.ID, s.now())
 		s.logError(ctx, "printer logo not loaded", pr.ID, err)
 		return nil
 	}
+	s.logoFailed.Delete(pr.ID)
 	r := escpos.Dither(img, logoMaxWidth(pr.PaperWidthMM), maxLogoHeight)
 	enc := escpos.EncodeRaster(r)
 	if enc == nil {
@@ -71,7 +85,8 @@ func (s *Service) logo(ctx context.Context, pr *store.Printer, est *store.Establ
 
 // HTTPLogoLoader fetches logos over HTTP(S): absolute https:// URLs, or
 // paths starting with "/" resolved against BaseURL (the instance itself).
-// At most 2 MiB of PNG, JPEG or GIF.
+// Redirects are followed only towards https URLs (at most 3). At most
+// 2 MiB of PNG, JPEG or GIF.
 type HTTPLogoLoader struct {
 	Client  *http.Client
 	BaseURL string
@@ -80,7 +95,19 @@ type HTTPLogoLoader struct {
 // maxLogoBytes bounds the downloaded logo.
 const maxLogoBytes = 2 << 20
 
-var errLogoURL = errors.New("printing: unsupported logo url")
+var (
+	errLogoURL      = errors.New("printing: unsupported logo url")
+	errLogoRedirect = errors.New("printing: logo redirect refused")
+)
+
+// checkLogoRedirect is the http.Client.CheckRedirect of the logo loader:
+// https only, three hops at most (no downgrade to http or other schemes).
+func checkLogoRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) >= 3 || req.URL.Scheme != "https" {
+		return errLogoRedirect
+	}
+	return nil
+}
 
 // LoadLogo implements LogoLoader.
 func (l HTTPLogoLoader) LoadLogo(ctx context.Context, logoURL string) (image.Image, error) {
@@ -102,7 +129,7 @@ func (l HTTPLogoLoader) LoadLogo(ctx context.Context, logoURL string) (image.Ima
 	}
 	c := l.Client
 	if c == nil {
-		c = &http.Client{Timeout: 5 * time.Second}
+		c = &http.Client{Timeout: logoFetchTimeout, CheckRedirect: checkLogoRedirect}
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 	if err != nil {

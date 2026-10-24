@@ -15,9 +15,13 @@
 // # Rules
 //
 //   - Address: Printer.Host must be a private/LAN address (RFC 1918,
-//     100.64/10, link-local, loopback, IPv6 ULA/link-local) or a hostname
-//     that resolves only to such addresses, checked on create/update and
-//     again before every dial (DNS may change): ErrAddressNotAllowed.
+//     100.64/10, link-local, IPv6 ULA/link-local) or a hostname that
+//     resolves only to such addresses, checked on create/update and again
+//     before every dial (DNS may change): ErrAddressNotAllowed. Loopback is
+//     admitted only by AddressPolicy.AllowLoopback (development and tests,
+//     ARENILE_PRINTERS_ALLOW_LOOPBACK); cloud metadata addresses never.
+//     Printers can be added or changed only where they can print (desktop
+//     edition): ErrUnavailable otherwise.
 //   - Routing: rule of the cash register, else the default rule of the
 //     document kind (register_id NULL); an explicit printer_id wins. No rule
 //     → ErrRouteMissing. Inactive printer → ErrPrinterInactive. ResolveRoute
@@ -27,18 +31,26 @@
 //   - Enqueue: the service renders the payload (templates + escpos) at
 //     enqueue time and inserts a print_jobs row (status queued,
 //     next_attempt_at = now). The idempotency key is the Idempotency-Key
-//     header or "<kind>:<document id>:<printer id>" (a fresh key for test
-//     pages); the unique index
-//     (establishment_id, idempotency_key) makes a concurrent duplicate return
-//     the existing job (TestConcurrency_PrintJobOnce: 100 parallel enqueues
-//     → one row, printed once).
+//     header, bound to the request (kind, document, printer): the same key
+//     returns the existing job, the same key for another request is
+//     ErrIdempotencyKeyReused, no key is a new job (a deliberate reprint).
+//     The unique index (establishment_id, idempotency_key) makes a
+//     concurrent duplicate return the existing job
+//     (TestConcurrency_PrintJobOnce: 100 parallel enqueues → one row, sent
+//     once).
 //   - Deliver: the job runner claims due jobs with a conditional update
 //     (queued → printing, locked_until = now + lease) so one worker sends a
-//     job; Driver.Send with dial/write timeouts (3 s dial, 10 s write); on
-//     success printed + printed_at + printer status reachable; on error
+//     job at a time; jobs are grouped by printer and printers served in
+//     parallel, a printer that does not answer skips its remaining jobs for
+//     the run. Driver.Send with dial/write timeouts (3 s dial, 10 s write);
+//     on success printed + printed_at + printer status reachable; on error
 //     attempts+1, backoff (5 s, 15 s, 1 m, 5 m) and back to queued, then
 //     failed after max_attempts; printer status unreachable + last_error.
-//     retryPrintJob resets a failed job to queued with the same payload.
+//     Delivery is at-least-once: a job whose lease expired mid-send is
+//     reclaimed (attempt counted) and resent without the drawer kick.
+//     RetryJob resets a failed job to queued with the same payload. The
+//     payload of finished jobs is nulled after PayloadRetention
+//     (printing.retention job).
 //   - Privacy: logs carry job id, printer id, kind and the error class only:
 //     never the payload, the host is fine (LAN address, not personal data),
 //     never customer names, emails or phones. last_error is technical.

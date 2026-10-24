@@ -105,6 +105,14 @@ func TestTemplates_Golden(t *testing.T) {
 					Difference:   -200,
 				}, layout(w))
 			}},
+			{"receipt_copies", func() ([]byte, error) {
+				l := layout(w)
+				l.Copies, l.KickDrawerPin, l.Lang = 2, 2, "en"
+				return Receipt(ReceiptDoc{
+					Header: hdr, Number: "7F3K0042", IssuedAt: issued, Location: rome,
+					Lines: []Line{{Label: "Deposit ARN-7F3K", Amount: 15000}}, Total: 15000, PaymentMethod: "Cash",
+				}, l)
+			}},
 			{"z_draft", func() ([]byte, error) {
 				return ZSummary(ZSummaryDoc{Header: hdr, Register: "Cassa principale", OpenedAt: issued, Location: rome, OpeningFloat: 5000}, layout(w))
 			}},
@@ -129,10 +137,10 @@ func TestTemplates_Golden(t *testing.T) {
 // the paper allows: commands are stripped before measuring.
 func assertWidth(t *testing.T, b []byte, w int) {
 	t.Helper()
-	max := DefaultCharsPerLine(w)
+	limit := DefaultCharsPerLine(w)
 	for _, line := range strings.Split(string(stripCommands(b)), "\n") {
-		if len(line) > max {
-			t.Fatalf("line longer than %d: %q", max, line)
+		if len(line) > limit {
+			t.Fatalf("line longer than %d: %q", limit, line)
 		}
 	}
 }

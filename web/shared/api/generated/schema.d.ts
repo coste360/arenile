@@ -3852,13 +3852,13 @@ export interface paths {
         };
         /**
          * Stampanti ESC/POS di rete dello stabilimento
-         * @description Permesso cash.operate. `escpos_available` è true solo nell'edizione desktop (locale o rete locale: il server è nello stabilimento e raggiunge la stampante); sull'edizione server (VPS/Docker) è false con `unavailable_reason` server_edition e la stampa ripiega su quella del browser. La configurazione si può comunque preparare su entrambe le edizioni.
+         * @description Permesso cash.operate. `escpos_available` è true solo nell'edizione desktop (locale o rete locale: il server è nello stabilimento e raggiunge la stampante); sull'edizione server (VPS/Docker) è false con `unavailable_reason` server_edition, non si aggiungono stampanti e la stampa ripiega su quella del browser. `tickets_available` dice se i biglietti della vendita giornaliera si possono stampare (sorgente dei biglietti collegata): finché è false l'instradamento di daily_ticket non è offerto.
          */
         get: operations["listPrinters"];
         put?: never;
         /**
          * Aggiungi una stampante di rete
-         * @description Permesso establishment.configure. `host` è un indirizzo IP privato o di rete locale (RFC 1918, link-local, ULA IPv6, loopback) o un nome che si risolve solo in indirizzi privati; altrimenti 422 printer_address_not_allowed. Nome già usato → 409 conflict.
+         * @description Permesso establishment.configure, solo edizione desktop (edizione server → 409 printing_unavailable). `host` è un indirizzo IP privato o di rete locale (RFC 1918, 100.64/10, link-local, ULA IPv6) o un nome che si risolve solo in tali indirizzi; loopback solo con `ARENILE_PRINTERS_ALLOW_LOOPBACK` (sviluppo e test), mai gli indirizzi dei metadati cloud; altrimenti 422 printer_address_not_allowed. Nome già usato → 409 conflict.
          */
         post: operations["createPrinter"];
         delete?: never;
@@ -3881,7 +3881,7 @@ export interface paths {
         get: operations["getPrinter"];
         /**
          * Modifica la stampante
-         * @description Permesso establishment.configure. Stesse regole di createPrinter. Cambiare larghezza carta o `print_logo` invalida il logo raster in cache.
+         * @description Permesso establishment.configure, solo edizione desktop. Stesse regole di createPrinter. Cambiare larghezza carta o `print_logo` invalida il logo raster in cache.
          */
         put: operations["updatePrinter"];
         post?: never;
@@ -3994,7 +3994,7 @@ export interface paths {
         put?: never;
         /**
          * Stampa un documento su stampante ESC/POS
-         * @description Permesso cash.operate. Il server compone il documento (ricevuta di pagamento non fiscale, riepilogo chiusura Z, biglietto della vendita giornaliera, pagina di prova) e lo accoda verso la stampante indicata o instradata. L'header Idempotency-Key (o, in sua assenza, la chiave derivata `<document_kind>:<document_id>:<printer>`) garantisce che una ristampa accidentale non produca un secondo lavoro: stessa chiave → stesso lavoro (200). Per ristampare di proposito si usa una chiave nuova. Edizione server → 409 printing_unavailable; nessuna regola né printer_id → 409 print_route_missing; documento inesistente → 404.
+         * @description Permesso cash.operate. Il server compone il documento (ricevuta di pagamento non fiscale, riepilogo chiusura Z, biglietto della vendita giornaliera, pagina di prova) e lo accoda verso la stampante indicata o instradata. Con l'header Idempotency-Key una richiesta ripetuta (doppio clic, rete lenta) restituisce lo stesso lavoro (200); la stessa chiave per un altro documento, tipo o stampante → 422 idempotency_key_reused. Senza header ogni richiesta è un nuovo lavoro (ristampa voluta). La consegna è "almeno una volta": un lavoro il cui lease scade a metà invio viene rispedito (senza riaprire il cassetto). Edizione server → 409 printing_unavailable; nessuna regola né printer_id → 409 print_route_missing; documento inesistente → 404; daily_ticket senza sorgente dei biglietti → 400.
          */
         post: operations["createPrintJob"];
         delete?: never;
@@ -8880,7 +8880,8 @@ export interface components {
             codepage?: components["schemas"]["PrinterCodepage"];
             codepage_table?: number;
             cut_mode?: components["schemas"]["PrinterCutMode"];
-            feed_lines?: number;
+            /** @default 3 */
+            feed_lines: number;
             print_logo?: boolean;
             /** @enum {integer} */
             drawer_pin?: 2 | 5;
@@ -8891,6 +8892,8 @@ export interface components {
             /** @description true solo nell'edizione desktop. */
             escpos_available: boolean;
             unavailable_reason?: components["schemas"]["PrinterUnavailableReason"];
+            /** @description true quando i biglietti della vendita giornaliera si possono stampare (sorgente collegata). */
+            tickets_available?: boolean;
         };
         PrinterCheckResult: {
             status: components["schemas"]["PrinterStatus"];

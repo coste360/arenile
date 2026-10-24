@@ -5,6 +5,7 @@ package printertest
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net"
 	"strconv"
@@ -63,7 +64,13 @@ func StartOn(t testing.TB, port int, opts ...Option) (*Printer, error) {
 func (p *Printer) Host() string { return "127.0.0.1" }
 
 // Port is the listening port.
-func (p *Printer) Port() int { return p.ln.Addr().(*net.TCPAddr).Port }
+func (p *Printer) Port() int {
+	addr, ok := p.ln.Addr().(*net.TCPAddr)
+	if !ok {
+		return 0
+	}
+	return addr.Port
+}
 
 // Addr is host:port.
 func (p *Printer) Addr() string { return net.JoinHostPort(p.Host(), strconv.Itoa(p.Port())) }
@@ -106,7 +113,7 @@ func (p *Printer) handle(c net.Conn) {
 			}
 		}
 		if err != nil {
-			if err != io.EOF && buf.Len() == 0 {
+			if !errors.Is(err, io.EOF) && buf.Len() == 0 {
 				return
 			}
 			break

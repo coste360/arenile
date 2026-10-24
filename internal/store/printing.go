@@ -333,12 +333,18 @@ func RetryPrintJob(ctx context.Context, db bun.IDB, es EstablishmentScope, id st
 	return nil
 }
 
-// DuePrintJobs returns the ids of the jobs to deliver at now, oldest due
-// first: queued jobs whose next attempt is due and printing jobs whose
-// lease expired (a worker crashed mid-send).
-func DuePrintJobs(ctx context.Context, db bun.IDB, now time.Time, limit int) ([]string, error) {
-	var ids []string
-	err := db.NewSelect().Model((*PrintJob)(nil)).Column("id").
+// DuePrintJob is a job ready for a delivery attempt.
+type DuePrintJob struct {
+	ID        string  `bun:"id"`
+	PrinterID *string `bun:"printer_id"`
+}
+
+// DuePrintJobs returns the jobs to deliver at now, oldest due first:
+// queued jobs whose next attempt is due and printing jobs whose lease
+// expired (a worker crashed mid-send).
+func DuePrintJobs(ctx context.Context, db bun.IDB, now time.Time, limit int) ([]DuePrintJob, error) {
+	var ids []DuePrintJob
+	err := db.NewSelect().Model((*PrintJob)(nil)).Column("id", "printer_id").
 		WhereGroup(" AND ", func(q *bun.SelectQuery) *bun.SelectQuery {
 			return q.WhereGroup(" OR ", func(q *bun.SelectQuery) *bun.SelectQuery {
 				return q.Where("status = ? AND next_attempt_at <= ?", PrintJobQueued, now)
@@ -355,10 +361,13 @@ func DuePrintJobs(ctx context.Context, db bun.IDB, now time.Time, limit int) ([]
 
 // ClaimPrintJob takes the job for one delivery attempt: the conditional
 // update (queued and due, or printing with an expired lease → printing with
-// a new lease) succeeds for exactly one of concurrent workers. It returns
-// the claimed job, or ErrNotFound when another worker has it.
+// a new lease) succeeds for exactly one of concurrent workers. Reclaiming
+// an expired lease counts the lost attempt (the bytes may have reached the
+// printer). It returns the claimed job, or ErrNotFound when another worker
+// has it.
 func ClaimPrintJob(ctx context.Context, db bun.IDB, id string, now, leaseUntil time.Time) (*PrintJob, error) {
 	res, err := db.NewUpdate().Model((*PrintJob)(nil)).
+		Set("attempts = CASE WHEN status = ? THEN attempts + 1 ELSE attempts END", PrintJobPrinting).
 		Set("status = ?", PrintJobPrinting).Set("locked_until = ?", leaseUntil).Set("updated_at = ?", now).
 		Where("id = ?", id).
 		WhereGroup(" AND ", func(q *bun.UpdateQuery) *bun.UpdateQuery {
@@ -410,4 +419,18 @@ func FinishPrintJobFailed(ctx context.Context, db bun.IDB, id string, lease, now
 	}
 	n, _ := res.RowsAffected()
 	return n == 1, nil
+}
+
+// PurgePrintJobPayloads nulls the payload of the printed, failed and
+// cancelled jobs last updated before cutoff (retention); the rows stay as
+// history. Returns how many were purged.
+func PurgePrintJobPayloads(ctx context.Context, db bun.IDB, cutoff time.Time) (int64, error) {
+	res, err := db.NewUpdate().Model((*PrintJob)(nil)).Set("payload = NULL").
+		Where("status IN (?)", bun.List([]string{PrintJobPrinted, PrintJobFailed, PrintJobCancelled})).
+		Where("updated_at < ?", cutoff).Where("payload IS NOT NULL").Exec(ctx)
+	if err != nil {
+		return 0, wrapWrite("purge print job payloads", err)
+	}
+	n, _ := res.RowsAffected()
+	return n, nil
 }

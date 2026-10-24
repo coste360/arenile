@@ -286,8 +286,8 @@ func TestPage(d TestPageDoc, l Layout) ([]byte, error) {
 }
 
 // render validates the layout and writes Copies copies of: init, logo,
-// header, body, mono mark, feed, cut. The drawer kicks once, after the
-// first copy.
+// header, "COPIA" mark on the copies after the first, body, mono mark,
+// feed, cut. The drawer kicks once, after the first copy.
 func render(l Layout, h Header, body func(e *escpos.Encoder)) ([]byte, error) {
 	if err := validate(&l); err != nil {
 		return nil, err
@@ -299,6 +299,9 @@ func render(l Layout, h Header, body func(e *escpos.Encoder)) ([]byte, error) {
 			e.Align(escpos.Center).Raster(*l.Logo).Align(escpos.Left)
 		}
 		header(e, l.Lang, h)
+		if i > 0 {
+			e.Align(escpos.Center).Bold(true).Line("*** " + label(l.Lang, lblCopy) + " ***").Bold(false).Align(escpos.Left)
+		}
 		body(e)
 		e.Feed(1).Align(escpos.Center).FontB(true).Line("Arenile").FontB(false).Align(escpos.Left)
 		e.Feed(l.FeedLines).Cut(l.Cut)

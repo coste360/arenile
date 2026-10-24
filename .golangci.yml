@@ -76,6 +76,8 @@ linters:
         - integrato
         - comando
         - continuare
+        - identificativo
+        - contanti
     errorlint:
       errorf: true
       asserts: true

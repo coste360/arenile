@@ -25,7 +25,7 @@ import (
 func TestHTTPIntegration_Printing(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
 		e := newEnv(t, db)
-		desktop := printing.NewService(printing.Deps{DB: e.db, Clock: e.clock, Audit: audit.NewWriter(e.clock), Available: true})
+		desktop := printing.NewService(printing.Deps{DB: e.db, Clock: e.clock, Audit: audit.NewWriter(e.clock), Available: true, AllowLoopback: true})
 		server := printing.NewService(printing.Deps{DB: e.db, Clock: e.clock, Audit: audit.NewWriter(e.clock)})
 		mount := func(svc *printing.Service) *httptest.Server {
 			srv := httptest.NewServer(httpserver.New(httpserver.Deps{
@@ -89,12 +89,14 @@ func TestHTTPIntegration_Printing(t *testing.T) {
 		if resp.StatusCode != 200 || body["ready"] != true || body["copies"] != float64(2) || body["printer"].(map[string]any)["id"] != printerID {
 			t.Fatalf("resolve: %d %v", resp.StatusCode, body)
 		}
-		resp, body = c.do(http.MethodGet, base+"/print-routes/resolve?document_kind=cash_z", nil, nil)
+		_, body = c.do(http.MethodGet, base+"/print-routes/resolve?document_kind=cash_z", nil, nil)
 		if body["ready"] != false || body["reason"] != "no_route" {
 			t.Fatalf("resolve without route: %v", body)
 		}
 		resp, body = c.do(http.MethodPost, base+"/print-jobs", map[string]any{"document_kind": "cash_z", "document_id": printerID}, hdr())
 		assertProblem(t, resp, body, 409, "print_route_missing")
+		resp, body = c.do(http.MethodGet, base+"/print-jobs?printer_id=foo", nil, nil)
+		assertProblem(t, resp, body, 400, "validation_failed")
 
 		// "Stampa di prova" reaches the printer.
 		resp, body = c.do(http.MethodPost, base+"/printers/"+printerID+"/test-print", nil, hdr("Idempotency-Key", "test-print-0001"))
@@ -108,6 +110,13 @@ func TestHTTPIntegration_Printing(t *testing.T) {
 			t.Fatalf("create job: %d %v", resp.StatusCode, body)
 		}
 		routedID := body["id"].(string)
+		// The same key again: the stored response is replayed (same job, no second print).
+		resp, body = c.do(http.MethodPost, base+"/print-jobs", map[string]any{"document_kind": "test_page"}, hdr("Idempotency-Key", "print-job-0001"))
+		if resp.StatusCode != 202 || body["id"] != routedID || resp.Header.Get("Idempotent-Replayed") != "true" {
+			t.Fatalf("same key: %d %v", resp.StatusCode, body)
+		}
+		resp, body = c.do(http.MethodPost, base+"/print-jobs", map[string]any{"document_kind": "cash_z", "document_id": printerID}, hdr("Idempotency-Key", "print-job-0001"))
+		assertProblem(t, resp, body, 422, "idempotency_key_reused")
 		if _, err := desktop.DeliverDue(t.Context(), 10); err != nil {
 			t.Fatal(err)
 		}
@@ -133,12 +142,14 @@ func TestHTTPIntegration_Printing(t *testing.T) {
 			t.Fatal(body)
 		}
 		resp, body = c.do(http.MethodGet, base+"/printers", nil, nil)
-		if resp.StatusCode != 200 || body["escpos_available"] != false || body["unavailable_reason"] != "server_edition" {
+		if resp.StatusCode != 200 || body["escpos_available"] != false || body["unavailable_reason"] != "server_edition" || body["tickets_available"] != false {
 			t.Fatalf("server list: %d %v", resp.StatusCode, body)
 		}
+		resp, body = c.do(http.MethodPost, base+"/printers", map[string]any{"name": "Bar", "host": "10.0.0.20", "paper_width_mm": 58}, hdr())
+		assertProblem(t, resp, body, 409, "printing_unavailable")
 		resp, body = c.do(http.MethodPost, base+"/printers/"+printerID+"/test-print", nil, hdr())
 		assertProblem(t, resp, body, 409, "printing_unavailable")
-		resp, body = c.do(http.MethodGet, base+"/print-routes/resolve?document_kind=test_page", nil, nil)
+		_, body = c.do(http.MethodGet, base+"/print-routes/resolve?document_kind=test_page", nil, nil)
 		if body["ready"] != false || body["reason"] != "server_edition" {
 			t.Fatalf("server resolve: %v", body)
 		}

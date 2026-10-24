@@ -74,6 +74,8 @@ test.beforeAll(async () => {
   const env = {
     ...process.env,
     ARENILE_EDITION: "desktop",
+    // The fake printer listens on loopback, refused in production.
+    ARENILE_PRINTERS_ALLOW_LOOPBACK: "true",
     ARENILE_ADDR: `127.0.0.1:${desktopPort}`,
     ARENILE_BASE_URL: desktopURL,
     ARENILE_DATA_DIR: dataDir,
@@ -165,7 +167,7 @@ test("desktop edition: add a network printer and the test print reaches it", asy
     sheet.getByText(/Sono ammessi solo indirizzi della rete locale/),
   ).toBeVisible();
 
-  // The fake printer listens on loopback (allowed: the server is on this PC).
+  // The fake printer listens on loopback (ARENILE_PRINTERS_ALLOW_LOOPBACK, test only).
   await sheet.getByLabel("Indirizzo IP o nome host").fill("127.0.0.1");
   await sheet
     .getByRole("textbox", { name: "Porta", exact: true })

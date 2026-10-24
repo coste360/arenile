@@ -19,17 +19,43 @@ type Resolver interface {
 // cgnat is the shared address space of RFC 6598 (some LANs and VPNs use it).
 var cgnat = netip.MustParsePrefix("100.64.0.0/10")
 
-// AllowedIP reports whether ip is a private or local-network address:
-// RFC 1918, RFC 6598 (100.64/10), loopback, link-local, IPv6 ULA
-// (fc00::/7) and link-local (fe80::/10). Unspecified, multicast and public
-// addresses are refused.
-func AllowedIP(ip netip.Addr) bool {
+// Cloud metadata endpoints live in link-local space: never a printer.
+var metadata = []netip.Addr{
+	netip.MustParseAddr("169.254.169.254"), // AWS, GCP, Azure, OpenStack
+	netip.MustParseAddr("fd00:ec2::254"),   // AWS IPv6
+}
+
+// AddressPolicy decides which addresses a printer may have. The zero value
+// is the production policy: LAN addresses only. AllowLoopback admits
+// 127/8 and ::1 for development and tests (a fake printer on this PC,
+// ARENILE_PRINTERS_ALLOW_LOOPBACK), never by default: a printer is another
+// device, and loopback would expose local services to LF-terminated bytes.
+type AddressPolicy struct {
+	AllowLoopback bool
+}
+
+// Allowed reports whether ip is a private or local-network address: RFC
+// 1918, RFC 6598 (100.64/10), link-local, IPv6 ULA (fc00::/7) and
+// link-local (fe80::/10), plus loopback with AllowLoopback. Unspecified,
+// multicast, public and cloud-metadata addresses are refused.
+func (p AddressPolicy) Allowed(ip netip.Addr) bool {
 	ip = ip.Unmap().WithZone("")
 	if !ip.IsValid() || ip.IsUnspecified() || ip.IsMulticast() {
 		return false
 	}
-	return ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || (ip.Is4() && cgnat.Contains(ip))
+	for _, m := range metadata {
+		if ip == m {
+			return false
+		}
+	}
+	if ip.IsLoopback() {
+		return p.AllowLoopback
+	}
+	return ip.IsPrivate() || ip.IsLinkLocalUnicast() || (ip.Is4() && cgnat.Contains(ip))
 }
+
+// AllowedIP is AddressPolicy{}.Allowed: the production rule.
+func AllowedIP(ip netip.Addr) bool { return AddressPolicy{}.Allowed(ip) }
 
 // NormalizeHost trims and validates the syntax of a printer host: an IPv4
 // or IPv6 literal (brackets removed, zone kept) or a DNS name.
@@ -58,13 +84,13 @@ func NormalizeHost(host string) (string, error) {
 	return strings.ToLower(h), nil
 }
 
-// CheckHost verifies that host is (or resolves only to) allowed addresses:
-// ErrAddressNotAllowed otherwise, a validation error when a name does not
-// resolve. Called on create/update; the network driver checks again the
-// address it actually dials (DNS may change).
-func CheckHost(ctx context.Context, r Resolver, host string) error {
+// CheckHost verifies that host is (or resolves only to) addresses allowed
+// by pol: ErrAddressNotAllowed otherwise, a validation error when a name
+// does not resolve. Called on create/update; the network driver checks
+// again the address it actually dials (DNS may change).
+func CheckHost(ctx context.Context, r Resolver, host string, pol AddressPolicy) error {
 	if ip, err := netip.ParseAddr(host); err == nil {
-		if !AllowedIP(ip) {
+		if !pol.Allowed(ip) {
 			return ErrAddressNotAllowed
 		}
 		return nil
@@ -79,7 +105,7 @@ func CheckHost(ctx context.Context, r Resolver, host string) error {
 		return configerr.Invalid("host", "Nome host non trovato nella rete locale: usa l'indirizzo IP della stampante.")
 	}
 	for _, a := range addrs {
-		if !AllowedIP(a) {
+		if !pol.Allowed(a) {
 			return fmt.Errorf("%w: %s resolves to a public address", ErrAddressNotAllowed, host)
 		}
 	}

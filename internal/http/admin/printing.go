@@ -29,6 +29,8 @@ func (h *Handlers) printingError(w http.ResponseWriter, r *http.Request, err err
 		problem.Write(w, r, problem.Conflict, problem.Detail("La stampante è disattivata."))
 	case errors.Is(err, printing.ErrInvalidTransition):
 		problem.Write(w, r, problem.InvalidTransition, problem.Detail("Si può riprovare solo un lavoro non riuscito."))
+	case errors.Is(err, printing.ErrIdempotencyKeyReused):
+		problem.Write(w, r, problem.IdempotencyKeyReused)
 	case errors.Is(err, printing.ErrNotFound):
 		problem.Write(w, r, problem.NotFound)
 	default:
@@ -54,7 +56,8 @@ func (h *Handlers) ListPrinters(w http.ResponseWriter, r *http.Request, establis
 		h.printingError(w, r, err)
 		return
 	}
-	out := api.PrinterList{Items: make([]api.Printer, len(ps)), EscposAvailable: h.Printing.Available()}
+	tickets := h.Printing.TicketsAvailable()
+	out := api.PrinterList{Items: make([]api.Printer, len(ps)), EscposAvailable: h.Printing.Available(), TicketsAvailable: &tickets}
 	for i := range ps {
 		out.Items[i] = PrinterToAPI(&ps[i])
 	}

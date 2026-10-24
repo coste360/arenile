@@ -8,6 +8,7 @@ import (
 	"errors"
 	"image"
 	"image/color"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -50,12 +51,17 @@ type fixture struct {
 type fakeLogos struct {
 	mu    sync.Mutex
 	calls int
+	fail  bool
 }
 
 func (f *fakeLogos) LoadLogo(context.Context, string) (image.Image, error) {
 	f.mu.Lock()
 	f.calls++
+	fail := f.fail
 	f.mu.Unlock()
+	if fail {
+		return nil, errors.New("dial tcp: no route to host")
+	}
 	img := image.NewGray(image.Rect(0, 0, 100, 40))
 	for i := range img.Pix {
 		img.Pix[i] = 0
@@ -100,12 +106,12 @@ func newFixture(t *testing.T, db *store.DB, available bool) *fixture {
 	}
 	f := &fixture{ctx: ctx, db: db, clock: c, est: est, estB: estB, logos: &fakeLogos{}, tickets: &fakeTickets{}}
 	f.svc = printing.NewService(printing.Deps{
-		DB: db, Clock: c, Audit: aw, Available: available, Logos: f.logos, Tickets: f.tickets,
+		DB: db, Clock: c, Audit: aw, Available: available, Logos: f.logos, Tickets: f.tickets, AllowLoopback: true,
 		Drivers: map[string]printing.Driver{printing.DriverNetwork: printing.NetworkDriver{
-			DialTimeout: time.Second, WriteTimeout: 2 * time.Second, StatusTimeout: 100 * time.Millisecond,
+			DialTimeout: time.Second, WriteTimeout: 2 * time.Second, StatusTimeout: 100 * time.Millisecond, AllowLoopback: true,
 		}},
 	})
-	f.owner = principal(t, ctx, db, res.User.ID)
+	f.owner = principal(ctx, t, db, res.User.ID)
 	f.cashier = f.member(t, "cassa@lido-a.it", res.Organization.ID, &est.ID, auth.RoleCashier)
 	f.ownerB = f.member(t, "owner@lido-b.it", orgB.ID, nil, auth.RoleOwner)
 	return f
@@ -122,10 +128,10 @@ func (f *fixture) member(t *testing.T, email, orgID string, estID *string, role 
 	if err := store.InsertMembership(f.ctx, f.db, m); err != nil {
 		t.Fatal(err)
 	}
-	return principal(t, f.ctx, f.db, u.ID)
+	return principal(f.ctx, t, f.db, u.ID)
 }
 
-func principal(t *testing.T, ctx context.Context, db *store.DB, userID string) *auth.Principal {
+func principal(ctx context.Context, t *testing.T, db *store.DB, userID string) *auth.Principal {
 	t.Helper()
 	ms, err := store.ListUserMemberships(ctx, db, userID)
 	if err != nil {
@@ -283,7 +289,7 @@ func TestService_RoutesAndResolve(t *testing.T) {
 		if err != nil || len(saved.Routes) != 3 || saved.Version == rs.Version {
 			t.Fatalf("saved: %+v %v", saved, err)
 		}
-		dup := append(routes, printing.Route{DocumentKind: store.PrintDocCashZ, PrinterID: bar.ID})
+		dup := append(slices.Clone(routes), printing.Route{DocumentKind: store.PrintDocCashZ, PrinterID: bar.ID})
 		if _, err := f.svc.UpdateRoutes(f.ctx, f.owner, f.est.ID, nil, dup); !errors.Is(err, configerr.ErrValidation) {
 			t.Fatalf("duplicate rule: %v", err)
 		}
@@ -369,13 +375,17 @@ func TestService_JobRoutingEndToEnd(t *testing.T) {
 			t.Fatalf("unknown payment: %v", err)
 		}
 
-		receipt, created, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocPaymentReceipt, DocumentID: pm.ID}, "")
+		receipt, created, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocPaymentReceipt, DocumentID: pm.ID}, "key-receipt")
 		if err != nil || !created || receipt.Status != store.PrintJobQueued {
 			t.Fatalf("receipt: %+v %v", receipt, err)
 		}
-		again, created, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocPaymentReceipt, DocumentID: pm.ID}, "")
+		again, created, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocPaymentReceipt, DocumentID: pm.ID}, "key-receipt")
 		if err != nil || created || again.ID != receipt.ID {
-			t.Fatalf("derived key must dedupe: %+v %v", again, err)
+			t.Fatalf("same key must return the same job: %+v %v", again, err)
+		}
+		// The key is bound to the request: another document with it is refused.
+		if _, _, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocCashZ, DocumentID: cs.ID}, "key-receipt"); !errors.Is(err, printing.ErrIdempotencyKeyReused) {
+			t.Fatalf("key reused for another document: %v", err)
 		}
 		z, _, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocCashZ, DocumentID: cs.ID}, "")
 		if err != nil {
@@ -438,6 +448,15 @@ func TestService_JobRoutingEndToEnd(t *testing.T) {
 		page, err := f.svc.ListJobs(f.ctx, f.cashier, f.est.ID, store.PrintJobFilter{Status: store.PrintJobPrinted}, "", 3)
 		if err != nil || len(page.Items) != 3 || page.NextCursor == "" || page.PrinterNames[pr.ID] != "Cassa" || page.Items[0].Payload != nil {
 			t.Fatalf("list: %d items next %q names %v", len(page.Items), page.NextCursor, page.PrinterNames)
+		}
+		if _, err := f.svc.ListJobs(f.ctx, f.cashier, f.est.ID, store.PrintJobFilter{PrinterID: "not-a-uuid"}, "", 3); !errors.Is(err, configerr.ErrValidation) {
+			t.Fatalf("malformed printer filter: %v", err)
+		}
+		// Without a key every request is a new job: a deliberate reprint.
+		r1, c1, err1 := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocPaymentReceipt, DocumentID: pm.ID}, "")
+		r2, c2, err2 := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocPaymentReceipt, DocumentID: pm.ID}, "")
+		if err1 != nil || err2 != nil || !c1 || !c2 || r1.ID == r2.ID {
+			t.Fatalf("reprint without key: %v %v %v %v", c1, c2, err1, err2)
 		}
 	})
 }
@@ -525,12 +544,19 @@ func TestService_ServerEditionAndDelete(t *testing.T) {
 		if _, _, err := srv.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocTestPage, PrinterID: &pr.ID}, ""); !errors.Is(err, printing.ErrUnavailable) {
 			t.Fatalf("enqueue: %v", err)
 		}
-		if len(srv.Jobs()) != 0 || len(f.svc.Jobs()) != 1 {
-			t.Fatal("delivery job only on the desktop edition")
+		if len(srv.Jobs()) != 0 || len(f.svc.Jobs()) != 2 {
+			t.Fatal("delivery and retention jobs only on the desktop edition")
 		}
-		// Configuration works on the server edition.
-		if _, err := srv.CreatePrinter(f.ctx, f.owner, f.est.ID, printing.PrinterInput{Name: "Bar", Host: "10.0.0.20", PaperWidthMM: 58}); err != nil {
-			t.Fatal(err)
+		// No printers on the server edition (nothing could print there); the
+		// existing configuration stays readable and removable.
+		if _, err := srv.CreatePrinter(f.ctx, f.owner, f.est.ID, printing.PrinterInput{Name: "Bar", Host: "10.0.0.20", PaperWidthMM: 58}); !errors.Is(err, printing.ErrUnavailable) {
+			t.Fatalf("server create: %v", err)
+		}
+		if _, err := srv.UpdatePrinter(f.ctx, f.owner, f.est.ID, pr.ID, nil, printing.PrinterInput{Name: "Bar", Host: "10.0.0.20", PaperWidthMM: 58}); !errors.Is(err, printing.ErrUnavailable) {
+			t.Fatalf("server update: %v", err)
+		}
+		if got, err := srv.ListPrinters(f.ctx, f.cashier, f.est.ID, true); err != nil || len(got) != 1 {
+			t.Fatalf("server list: %d %v", len(got), err)
 		}
 		// Check on desktop.
 		res, err := f.svc.CheckPrinter(f.ctx, f.cashier, f.est.ID, pr.ID)
@@ -663,7 +689,7 @@ func TestService_DraftZLiveTotals(t *testing.T) {
 				ID: store.NewID(), Provider: "manual", Method: p.method, Direction: store.PaymentDirectionIn, Amount: p.amount,
 				Status: store.PaymentSucceeded, CashSessionID: &cs.ID, BusinessDate: calendar.New(2027, 7, 1), Metadata: map[string]any{},
 				VATBreakdown: []store.VATShare{{RateBP: 2200, Gross: p.amount, Taxable: taxable, Tax: tax}},
-				CreatedAt: f.clock.Now(), UpdatedAt: f.clock.Now(),
+				CreatedAt:    f.clock.Now(), UpdatedAt: f.clock.Now(),
 			}
 			if err := store.InsertPayment(f.ctx, db, es, pm); err != nil {
 				t.Fatal(err)
@@ -696,6 +722,96 @@ func TestService_DraftZLiveTotals(t *testing.T) {
 		}
 		if bytes.Contains(slip, euro("100,00")) && !bytes.Contains(slip, []byte("Fondo cassa")) {
 			t.Error("opening float printed as the expected cash")
+		}
+	})
+}
+
+// TestService_LeaseReclaimAndRetention: a job whose lease expired mid-send
+// (worker crash) is reclaimed as a new attempt and resent without the
+// drawer kick (at-least-once delivery, INV-75); payloads of finished jobs
+// are nulled after PayloadRetention.
+func TestService_LeaseReclaimAndRetention(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := newFixture(t, db, true)
+		fp := printertest.Start(t)
+		pin := 2
+		pr := f.printer(t, "Cassa", fp, func(in *printing.PrinterInput) { in.DrawerPin = &pin })
+		es := f.scope(t)
+		now := f.clock.Now()
+		pm := &store.Payment{
+			ID: store.NewID(), Provider: "manual", Method: store.PaymentMethodCash, Direction: store.PaymentDirectionIn,
+			Amount: 1000, Status: "succeeded", Description: "Lettino", BusinessDate: calendar.New(2027, 7, 1), Metadata: map[string]any{},
+			CreatedAt: now, UpdatedAt: now,
+		}
+		if err := store.InsertPayment(f.ctx, db, es, pm); err != nil {
+			t.Fatal(err)
+		}
+		kick := true
+		j, _, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocPaymentReceipt, DocumentID: pm.ID, PrinterID: &pr.ID, KickDrawer: &kick}, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Contains(j.Payload, []byte{escpos.ESC, 'p'}) {
+			t.Fatal("receipt rendered without the drawer kick")
+		}
+		// Simulate a worker that claimed the job and died: lease in the past.
+		expired := now.Add(-time.Minute)
+		if _, err := db.NewUpdate().Model((*store.PrintJob)(nil)).Set("status = ?", store.PrintJobPrinting).Set("locked_until = ?", expired).
+			Where("id = ?", j.ID).Exec(f.ctx); err != nil {
+			t.Fatal(err)
+		}
+		if n := f.deliver(t); n != 1 {
+			t.Fatalf("reclaimed delivery printed %d", n)
+		}
+		got, _ := f.svc.GetJob(f.ctx, f.cashier, f.est.ID, j.ID)
+		if got.Status != store.PrintJobPrinted || got.Attempts != 2 {
+			t.Fatalf("reclaimed job: status %s attempts %d", got.Status, got.Attempts)
+		}
+		jobs := fp.WaitJobs(1, 5*time.Second)
+		if len(jobs) != 1 || !bytes.Contains(jobs[0], []byte("RICEVUTA")) || bytes.Contains(jobs[0], []byte{escpos.ESC, 'p'}) {
+			t.Fatal("the resent slip must print without opening the drawer again")
+		}
+
+		// Retention: the payload goes after PayloadRetention, the row stays.
+		if n, err := f.svc.PurgePayloads(f.ctx); err != nil || n != 0 {
+			t.Fatalf("purge too early: %d %v", n, err)
+		}
+		f.clock.Advance(printing.PayloadRetention + time.Hour)
+		if n, err := f.svc.PurgePayloads(f.ctx); err != nil || n != 1 {
+			t.Fatalf("purge: %d %v", n, err)
+		}
+		got, err = f.svc.GetJob(f.ctx, f.cashier, f.est.ID, j.ID)
+		if err != nil || got.Status != store.PrintJobPrinted || got.Payload != nil {
+			t.Fatalf("purged job: %+v %v", got, err)
+		}
+	})
+}
+
+// TestService_LogoFailureCached: a logo that cannot be fetched is not
+// retried on every print (negative cache), and prints resume with it once
+// the cache expires.
+func TestService_LogoFailureCached(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := newFixture(t, db, true)
+		fp := printertest.Start(t)
+		pr := f.printer(t, "Cassa", fp, func(in *printing.PrinterInput) { in.PrintLogo = true })
+		f.logos.fail = true
+		for range 3 {
+			if _, _, err := f.svc.TestPrint(f.ctx, f.cashier, f.est.ID, pr.ID, ""); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if f.logos.calls != 1 {
+			t.Fatalf("logo fetched %d times while failing, want 1", f.logos.calls)
+		}
+		f.logos.fail = false
+		f.clock.Advance(11 * time.Minute)
+		if _, _, err := f.svc.TestPrint(f.ctx, f.cashier, f.est.ID, pr.ID, ""); err != nil {
+			t.Fatal(err)
+		}
+		got, _ := f.svc.GetPrinter(f.ctx, f.owner, f.est.ID, pr.ID)
+		if f.logos.calls != 2 || len(got.LogoRaster) == 0 {
+			t.Fatalf("after the cache expired: calls %d, raster %d", f.logos.calls, len(got.LogoRaster))
 		}
 	})
 }

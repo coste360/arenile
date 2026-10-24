@@ -20,6 +20,9 @@ var (
 	ErrNotFound = errors.New("printing: not found")
 	// ErrInvalidTransition: retry of a job that is not failed (409 invalid_transition).
 	ErrInvalidTransition = errors.New("printing: invalid print job transition")
+	// ErrIdempotencyKeyReused: the Idempotency-Key of an existing job sent
+	// for another document or printer (422 idempotency_key_reused).
+	ErrIdempotencyKeyReused = errors.New("printing: idempotency key reused for another request")
 )
 
 // Target identifies the printer a Driver talks to.

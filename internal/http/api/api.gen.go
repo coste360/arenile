@@ -7327,8 +7327,11 @@ type PrinterInputDrawerPin int
 // PrinterList defines model for PrinterList.
 type PrinterList struct {
 	// EscposAvailable true solo nell'edizione desktop.
-	EscposAvailable   bool                      `json:"escpos_available"`
-	Items             []Printer                 `json:"items"`
+	EscposAvailable bool      `json:"escpos_available"`
+	Items           []Printer `json:"items"`
+
+	// TicketsAvailable true quando i biglietti della vendita giornaliera si possono stampare (sorgente collegata).
+	TicketsAvailable  *bool                     `json:"tickets_available,omitempty"`
 	UnavailableReason *PrinterUnavailableReason `json:"unavailable_reason,omitempty"`
 }
 

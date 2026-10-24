@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 
@@ -42,12 +43,19 @@ type Deps struct {
 	Tickets TicketSource
 	// Lease bounds one delivery attempt (default 1 minute).
 	Lease time.Duration
+	// AllowLoopback admits loopback printer addresses (development and
+	// tests: ARENILE_PRINTERS_ALLOW_LOOPBACK). Applied to the default
+	// network driver; explicit Drivers carry their own policy.
+	AllowLoopback bool
 }
 
 // Service configures printers and routes and delivers print jobs.
 type Service struct {
 	d    Deps
 	wake chan struct{}
+	// logoFailed remembers, per printer id, when the last logo fetch
+	// failed, so an unreachable logo URL does not delay every print.
+	logoFailed sync.Map
 }
 
 // NewService returns a Service.
@@ -62,7 +70,7 @@ func NewService(d Deps) *Service {
 		d.Audit = audit.NewWriter(d.Clock)
 	}
 	if d.Drivers == nil {
-		d.Drivers = map[string]Driver{DriverNetwork: NetworkDriver{}}
+		d.Drivers = map[string]Driver{DriverNetwork: NetworkDriver{AllowLoopback: d.AllowLoopback}}
 	}
 	if d.Lease <= 0 {
 		d.Lease = time.Minute
@@ -72,6 +80,13 @@ func NewService(d Deps) *Service {
 
 // Available reports whether ESC/POS printing works on this edition.
 func (s *Service) Available() bool { return s.d.Available }
+
+// TicketsAvailable reports whether daily-sale tickets can be printed (a
+// TicketSource is wired).
+func (s *Service) TicketsAvailable() bool { return s.d.Tickets != nil }
+
+// policy is the address policy of this instance.
+func (s *Service) policy() AddressPolicy { return AddressPolicy{AllowLoopback: s.d.AllowLoopback} }
 
 func (s *Service) now() time.Time { return s.d.Clock.Now().UTC() }
 
@@ -189,17 +204,21 @@ func (s *Service) printer(ctx context.Context, es store.EstablishmentScope, id s
 
 var errNameTaken = fmt.Errorf("%w: a printer with this name already exists", configerr.ErrConflict)
 
-// CreatePrinter adds a printer (establishment.configure). The host must be
-// a private address (ErrAddressNotAllowed); works on both editions.
+// CreatePrinter adds a printer (establishment.configure, desktop edition:
+// ErrUnavailable on the server edition, where nothing could be printed).
+// The host must be a private address (ErrAddressNotAllowed).
 func (s *Service) CreatePrinter(ctx context.Context, p *auth.Principal, establishmentID string, in PrinterInput) (*store.Printer, error) {
 	es, err := p.Authorize(ctx, s.d.DB, establishmentID, auth.PermEstablishmentConfigure)
 	if err != nil {
 		return nil, err
 	}
+	if !s.d.Available {
+		return nil, ErrUnavailable
+	}
 	if err := in.normalize(); err != nil {
 		return nil, err
 	}
-	if err := CheckHost(ctx, s.d.Resolver, in.Host); err != nil {
+	if err := CheckHost(ctx, s.d.Resolver, in.Host, s.policy()); err != nil {
 		return nil, err
 	}
 	now := s.now()
@@ -227,18 +246,21 @@ func (s *Service) CreatePrinter(ctx context.Context, p *auth.Principal, establis
 }
 
 // UpdatePrinter replaces the configuration of a printer
-// (establishment.configure). expected is the If-Match version (nil = any).
-// Changing paper width, logo flag or host resets the cached logo and the
-// reachability status.
+// (establishment.configure, desktop edition). expected is the If-Match
+// version (nil = any). Changing paper width, logo flag or host resets the
+// cached logo and the reachability status.
 func (s *Service) UpdatePrinter(ctx context.Context, p *auth.Principal, establishmentID, id string, expected *int64, in PrinterInput) (*store.Printer, error) {
 	es, err := p.Authorize(ctx, s.d.DB, establishmentID, auth.PermEstablishmentConfigure)
 	if err != nil {
 		return nil, err
 	}
+	if !s.d.Available {
+		return nil, ErrUnavailable
+	}
 	if err := in.normalize(); err != nil {
 		return nil, err
 	}
-	if err := CheckHost(ctx, s.d.Resolver, in.Host); err != nil {
+	if err := CheckHost(ctx, s.d.Resolver, in.Host, s.policy()); err != nil {
 		return nil, err
 	}
 	pr, err := s.printer(ctx, es, id)
