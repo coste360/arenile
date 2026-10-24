@@ -1,4 +1,4 @@
-import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Cookie, type Page } from "@playwright/test";
 
 export const DEMO_SLUG = "lido-demo";
 
@@ -22,13 +22,33 @@ export async function demoEstablishment(
   return (await res.json()) as { name: string; slug: string };
 }
 
-/** Signs in to the panel as the demo owner. */
+/**
+ * Session cookies of the last sign-in of this worker. The server allows 30
+ * login attempts per IP every 15 minutes (spec 22): reusing the session
+ * keeps the whole suite (two projects, parallel workers) under the limit.
+ */
+let ownerCookies: Cookie[] | undefined;
+
+/** Signs in to the panel as the demo owner (reusing this worker's session when still valid). */
 export async function login(page: Page): Promise<void> {
+  if (ownerCookies) {
+    await page.context().addCookies(ownerCookies);
+    await page.goto("/admin/");
+    await page.waitForLoadState("domcontentloaded");
+    const me = await page.request.get("/api/admin/v1/auth/me");
+    if (me.ok()) {
+      await expect(page).not.toHaveURL(/\/login/);
+      return;
+    }
+    // Logged out meanwhile (a test signed out): sign in again.
+    await page.context().clearCookies();
+  }
   await page.goto("/admin/login");
   await page.getByLabel("Email").fill(DEMO_OWNER_EMAIL);
   await page.getByLabel("Password").fill(DEMO_OWNER_PASSWORD);
   await page.getByRole("button", { name: "Accedi" }).click();
   await expect(page).not.toHaveURL(/\/login/);
+  ownerCookies = await page.context().cookies();
 }
 
 /** Establishment switcher in the sidebar header ("Arenile Stabilimento: <name>"). */
