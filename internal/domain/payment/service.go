@@ -192,6 +192,11 @@ type RefundRequest struct {
 	CreditSource string
 	// CreditExpiresOn is the expiry of the credit (nil = never).
 	CreditExpiresOn *calendar.Date
+	// RefuseOpenRequests refuses the refund (ErrRefundInProgress) while a
+	// guaranteed refund request of the booking is open; checked under the
+	// booking lock (the manual panel refund sets it, the cancellation that
+	// creates the request does not).
+	RefuseOpenRequests bool
 }
 
 // ---- helpers ------------------------------------------------------------------
@@ -578,10 +583,8 @@ func (s *Service) RefundBooking(ctx context.Context, p *auth.Principal, ip, esta
 		return nil, err
 	}
 	want := samePayment(&req.BookingID, store.PaymentDirectionRefund, req.Method, req.Amount)
+	req.RefuseOpenRequests = true
 	return s.runIdempotent(ctx, es, req.IdempotencyKey, want, func(ctx context.Context, tx bun.Tx) (*Result, error) {
-		if err := CheckNoOpenRefundRequest(ctx, tx, es, req.BookingID); err != nil {
-			return nil, err
-		}
 		return s.refund(ctx, tx, p, ip, es, req)
 	})
 }
@@ -589,8 +592,10 @@ func (s *Service) RefundBooking(ctx context.Context, p *auth.Principal, ip, esta
 // CheckNoOpenRefundRequest is ErrRefundInProgress while a guaranteed
 // refund of the booking (refund_requests: pending, processing or failed,
 // ADR 0019) is open: a manual refund from the panel would race with it.
-// The cancellation itself (credit-paid part, M5B) and the refund job do
-// not go through this check.
+// Call it with the booking locked (INV-75): a cancellation committing
+// between the check and the refund would otherwise slip through. The
+// cancellation itself (credit-paid part, M5B) and the refund job do not go
+// through this check.
 func CheckNoOpenRefundRequest(ctx context.Context, db bun.IDB, es store.EstablishmentScope, bookingID string) error {
 	open, err := store.HasOpenRefundRequest(ctx, db, es, bookingID)
 	if err != nil {
@@ -654,6 +659,12 @@ func (s *Service) refund(ctx context.Context, tx bun.IDB, p *auth.Principal, ip 
 	}
 	if r, err := replay(ctx, tx, es, req.IdempotencyKey, samePayment(&req.BookingID, store.PaymentDirectionRefund, req.Method, req.Amount)); err != nil || r != nil {
 		return r, err
+	}
+	if req.RefuseOpenRequests {
+		// Under the booking lock taken by LoadForPayment (INV-75).
+		if err := CheckNoOpenRefundRequest(ctx, tx, es, b.ID); err != nil {
+			return nil, err
+		}
 	}
 	info, err := s.establishment(ctx, tx, es)
 	if err != nil {

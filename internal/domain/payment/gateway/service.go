@@ -293,6 +293,11 @@ type RefundRequest struct {
 	// Actor is the audit actor (zero value = system; the checkout passes
 	// the customer, RefundBooking the staff principal).
 	Actor audit.Actor
+	// RefuseOpenRequests refuses the refund while a guaranteed refund
+	// request of the booking is open (payment.ErrRefundInProgress), checked
+	// under the booking lock (INV-75). The manual panel refund sets it; the
+	// refund job, which sends those requests, does not.
+	RefuseOpenRequests bool
 }
 
 // ReportQuery filters the reconciliation report.

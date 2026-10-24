@@ -38,6 +38,14 @@ const (
 	checkInterval = 2 * time.Minute
 )
 
+// IdempotencyWindow is how long a provider is assumed to remember an
+// idempotency key (Stripe: 24 hours). A refund intent still created (the
+// provider's answer was lost) is never resent with the same key after it:
+// the provider could treat the resend as a new refund. The request is dead
+// lettered (idempotency_window_elapsed) for a manual reconciliation on the
+// provider's dashboard before Riprova.
+const IdempotencyWindow = 24 * time.Hour
+
 // backoffSteps is the delay before attempt n+1 after attempt n failed
 // (index n-1); later attempts wait the last step.
 var backoffSteps = []time.Duration{time.Minute, 5 * time.Minute, 30 * time.Minute, 2 * time.Hour, 6 * time.Hour, 12 * time.Hour}
@@ -350,6 +358,11 @@ func (s *Service) send(ctx context.Context, es store.EstablishmentScope, rr *sto
 	if err != nil {
 		return err
 	}
+	if stale, err := s.staleIntent(ctx, es, key, now); err != nil {
+		return err
+	} else if stale != nil {
+		return s.fail(ctx, es, rr.ID, rr.Version, "idempotency_window_elapsed", true, stale.ID)
+	}
 	ri, serr := s.d.Sender.RefundViaProvider(ctx, es, gateway.RefundRequest{
 		BookingID: rr.BookingID, PaymentID: *pay.PaymentID, Amount: rr.Amount, Reason: rr.Reason,
 		IdempotencyKey: key, Actor: audit.SystemActor,
@@ -366,6 +379,46 @@ func (s *Service) send(ctx context.Context, es store.EstablishmentScope, rr *sto
 		return s.fail(ctx, es, rr.ID, rr.Version, errorCode(serr), permanent(serr), linkIntent(ri))
 	}
 	return s.observe(ctx, es, rr.ID, rr.Version, ri, "")
+}
+
+// staleIntent returns the refund intent under key when it is still created
+// (the provider's answer was lost) and older than IdempotencyWindow, after
+// marking it failed (failure_reason idempotency_window_elapsed): the key is
+// never reused past the window (INV-75). nil otherwise.
+func (s *Service) staleIntent(ctx context.Context, es store.EstablishmentScope, key string, now time.Time) (*store.PaymentIntent, error) {
+	ri, err := store.GetPaymentIntentByIdempotencyKey(ctx, s.d.DB, es, key)
+	if errors.Is(err, store.ErrNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("refund: %w", err)
+	}
+	if ri.Status != store.IntentCreated || now.Sub(ri.CreatedAt) <= IdempotencyWindow {
+		return nil, nil
+	}
+	err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
+		cur, err := store.LockPaymentIntent(ctx, tx, es, ri.ID)
+		if err != nil {
+			return err
+		}
+		if cur.Status != store.IntentCreated {
+			return nil
+		}
+		reason := "idempotency_window_elapsed"
+		cur.Status, cur.FailureReason, cur.UpdatedAt = store.IntentFailed, &reason, now
+		if err := store.UpdatePaymentIntent(ctx, tx, es, cur, "status", "failure_reason"); err != nil {
+			return err
+		}
+		return s.d.Audit.Record(ctx, tx, audit.Entry{
+			EstablishmentID: es.ID(), Actor: audit.SystemActor, Action: "payment.refund_failed",
+			EntityType: "payment_intent", EntityID: cur.ID,
+			Diff: map[string]any{"failure_reason": reason, "idempotency_window_hours": int(IdempotencyWindow.Hours())},
+		})
+	})
+	if err != nil {
+		return nil, fmt.Errorf("refund: stale intent: %w", err)
+	}
+	return ri, nil
 }
 
 // keyFor is the idempotency key of the next send of rr: the key of its

@@ -370,6 +370,15 @@ offline).
   intento dell'altra modalità; riconciliazione e rimborsi usano la modalità dell'intento. Un pagamento preso con
   le chiavi di test è una riga di prova (nessun documento fiscale, fuori dai corrispettivi) qualunque sia la
   prenotazione.
+- **Rimborsi garantiti**: la notifica "Rimborso non riuscito" è visibile a chi può rimborsare (titolare e gestore),
+  non solo al titolare; una chiave di idempotenza non viene più rinviata al provider oltre 24 ore (la richiesta passa a
+  `failed` con `idempotency_window_elapsed` per la riconciliazione manuale prima di Riprova); il controllo
+  `refund_in_progress` di un rimborso manuale avviene sotto il lock della prenotazione.
+- **Prenotazioni da approvare**: la conferma al banco di un rinnovo segue la regola di approvazione; una prenotazione
+  da approvare già pagata al banco non scade più da sola (il blocco viene rinnovato finché il gestore non decide).
+- **Importa dati**: nessuna importazione con la modalità prova accesa (409); i pacchetti che richiedono approvazione
+  sono rifiutati riga per riga; il contenuto del file è cancellato appena l'importazione è applicata, fallita o
+  scartata. Le notifiche "Importazione completata / non riuscita" non esistono: l'esito è nello storico.
 - **Prezzo manuale degli abbonamenti**: spostare o modificare un abbonamento con prezzo manuale (anche dalla
   cassa) **conserva** il prezzo manuale e aggiorna il prezzo da listino mostrato sotto di esso; prima la modifica
   lo cancellava senza traccia. Solo "Imposta prezzo manuale" e "Torna al listino" (titolare e gestore) lo cambiano.
