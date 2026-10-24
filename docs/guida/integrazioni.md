@@ -116,9 +116,8 @@ La guida completa, con esempi in Node.js, Python, Go e PHP, un vettore di prova 
   consegna resta **fallita** nel registro (non viene più ritentata da sola).
 - I **redirect non vengono seguiti**: un `3xx` conta come errore. Correggi l'URL nel pannello.
 - Dopo **20 errori consecutivi** l'endpoint viene **disattivato** automaticamente (stato *disattivato*, con il motivo);
-  il fatto finisce nel registro attività e nel log del server. Per ora **non arriva un'email** al proprietario (è
-  previsto dalla specifica 18.2 e sarà aggiunto in M5 parte B): controlla la pagina *Webhook* dopo un'interruzione del
-  ricevitore. Quando il ricevitore è di nuovo a posto, riattivalo: il contatore riparte da zero.
+  il fatto finisce nel registro attività e nel log del server, e il titolare riceve una **notifica nel pannello** e
+  un'**email** (se la notifica al gestore per gli errori dei webhook è attiva, come da impostazione predefinita). Ogni tentativo (codice HTTP, durata, errore) resta visibile nel dettaglio della consegna. Quando il ricevitore è di nuovo a posto, riattivalo: il contatore riparte da zero.
 - La **query string** dell'URL (dove spesso si mette un token del ricevitore) non compare nel registro attività né
   nell'elenco della pagina *Webhook*: lì vedi `…/arenile?…`. L'URL completo resta nel modulo di modifica. Meglio
   comunque affidarsi alla firma `Arenile-Signature` che a un token nell'URL.

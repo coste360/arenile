@@ -3,7 +3,7 @@
 Questa guida spiega come installare il gestionale Arenile sul tuo server, come proteggerlo con HTTPS, come fare backup e ripristino e come aggiornarlo.
 
 > [!NOTE]
-> Arenile è in sviluppo (milestone M0). L'immagine `ghcr.io/coste360/arenile` verrà pubblicata al primo rilascio; fino ad allora si può compilare dai sorgenti (vedi il [README](../../README.md#sviluppo)). Le istruzioni seguenti descrivono l'installazione prevista.
+> Arenile non è ancora stato rilasciato (la versione 1.0.0 è in preparazione). L'immagine `ghcr.io/coste360/arenile` verrà pubblicata al primo rilascio; fino ad allora si può compilare dai sorgenti (vedi il [README](../../README.md#sviluppo)). Le istruzioni seguenti descrivono l'installazione prevista.
 
 ## Indice
 
@@ -79,7 +79,7 @@ Nessun altro servizio è necessario: niente Redis, niente code esterne, niente o
      /arenile admin create --email titolare@mio-lido.it --name "Mario Rossi" --org "Lido Esempio"
    ```
 
-5. Apri `https://prenota.mio-lido.it/admin/` e accedi. Nella versione attuale (M0) il pannello offre l'accesso e l'elenco degli stabilimenti; la configurazione guidata (dati dello stabilimento, modello di mappa, listino rapido, pagina pubblica, pagamenti) arriva con la milestone M1.
+5. Apri `https://prenota.mio-lido.it/admin/` e accedi. Al primo accesso la configurazione guidata ti accompagna tra dati dello stabilimento, modello di mappa, listino rapido, pagina pubblica e pagamenti; tutto si rifinisce poi dal pannello.
 
 Per esplorare il programma con dati di esempio puoi caricare lo stabilimento dimostrativo: `docker compose exec arenile /arenile seed demo`. Fallo su un'istanza di prova, non su quella di produzione.
 
@@ -126,7 +126,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath \
 
 ## Coolify e CapRover
 
-Il repository prevede template pronti in `deploy/coolify/` e `deploy/caprover/` (in preparazione nella milestone M0).
+Il repository contiene template pronti in `deploy/coolify/` e `deploy/caprover/`.
 
 **Coolify**
 1. Crea una nuova risorsa *Docker Compose* e incolla il `docker-compose.yml` di questa guida (o il template di `deploy/coolify/`).

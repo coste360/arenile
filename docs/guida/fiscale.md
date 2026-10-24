@@ -21,8 +21,8 @@ Il modulo fiscale è progettato con un'interfaccia a driver (`FiscalDriver`), co
 
 | Driver | Comportamento | Stato |
 |---|---|---|
-| `none` | Nessuna emissione: il gestore usa il proprio registratore telematico separatamente. È il **default**. | Pianificato (M3) |
-| `export` | Esportazione giornaliera dei corrispettivi per aliquota IVA e metodo di pagamento, in CSV e PDF, da consegnare al commercialista. | Pianificato (M3) |
+| `none` | Nessuna emissione: il gestore usa il proprio registratore telematico separatamente. È il **default**. | Completato |
+| `export` | Esportazione dei corrispettivi giornalieri o mensili per aliquota IVA e metodo di pagamento, in CSV, JSON ed Excel, da consegnare al commercialista. | Completato (come esportazione dalla cassa, non come driver separato) |
 | Registratori telematici | Un driver per ciascuna famiglia di protocollo, che invia al dispositivo le righe da emettere. | Dopo l'MVP, come contributi della community |
 
 Ogni emissione o errore di un driver viene tracciato. Le righe del documento derivano dallo **snapshot del prezzo** salvato con la prenotazione, con lo scorporo dell'IVA per aliquota.

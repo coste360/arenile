@@ -59,8 +59,8 @@ imponibile e imposta per aliquota il riferimento è l'**export giornaliero** dei
 sempre per giorno, aliquota e metodo; l'export raggruppato per mese scorpora per mese e può differire di qualche
 centesimo (il lordo coincide sempre). Vedi anche la [nota fiscale](fiscale.md).
 
-## Cosa manca ancora
+## Excel, elenchi e prenotazioni di prova
 
-Le esportazioni di **elenco** (prenotazioni, clienti, pagamenti, corrispettivi) e il formato **XLSX** previsti dalla
-specifica 15.3 arrivano con M5 parte B; le prenotazioni di prova (15.4) saranno escluse quando esisterà la modalità
-prova.
+Ogni report ha anche **Esporta Excel** (XLSX, stesse colonne del CSV) e i corrispettivi hanno **Scarica Excel**. Da
+**Esporta elenchi** scarichi clienti, prenotazioni, abbonamenti e incassi in XLSX o CSV. Le prenotazioni fatte in
+**modalità prova** sono escluse da report, KPI, corrispettivi ed esportazioni.
