@@ -6,6 +6,14 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
+### Aggiunto
+- Avviso di nuova versione (ADR 0025): titolari e gestori vedono in cima al pannello "È disponibile Arenile X" con
+  **Novità** e **Scarica** (app desktop, il pacchetto per il proprio sistema) o **Come aggiornare** (Docker), chiudibile
+  per versione. Il controllo è acceso di default su tutte le edizioni e si spegne con `ARENILE_UPDATE_CHECK=false` o
+  dalle impostazioni dell'app desktop: una richiesta al giorno a `https://updates.coste360.it/arenile/latest.json`
+  (`ARENILE_UPDATE_URL`) con solo versione, edizione e sistema nell'User-Agent, nessun identificativo né dato del
+  lido; non è telemetria. Un controllo fallito non è mai un errore. Nuovo `GET /api/admin/v1/system/update`.
+
 ### Corretto
 - Configurazione → Tutti gli stabilimenti: tolto il riquadro provvisorio "Sezione in preparazione · Disponibile dalla
   milestone M1" rimasto dalla prima milestone; il titolare trova il pulsante **Nuovo stabilimento** nell'elenco, anche

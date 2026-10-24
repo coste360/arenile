@@ -63,7 +63,9 @@ and the expected format: better not to start than to start misconfigured.
 | Variable | Default | Description |
 |---|---|---|
 | `ARENILE_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error`. Logs are JSON and never contain emails, phone numbers, tokens or secrets in clear. |
-| `ARENILE_TELEMETRY` | `false` | No telemetry by default: Arenile does not contact external services. |
+| `ARENILE_TELEMETRY` | `false` | No telemetry by default. |
+| `ARENILE_UPDATE_CHECK` | `true` | New version notice in the panel: once a day it reads the public file of the latest version from the Coste360 server. The request carries only the version, edition and operating system (and, like any request, the IP address); it is not telemetry. `false` = no network call. See [Upgrades](/en/installazione/aggiornamenti/#new-version-notice). |
+| `ARENILE_UPDATE_URL` | `https://updates.coste360.it/arenile/latest.json` | File read by the new version check, for example an internal mirror. |
 
 ## First user
 

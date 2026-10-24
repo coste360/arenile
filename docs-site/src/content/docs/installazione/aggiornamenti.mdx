@@ -82,3 +82,21 @@ indietro **ripristina il backup** fatto prima dell'aggiornamento e avvia la vers
   `arenile migrate status` mostra le migrazioni applicate e quelle in attesa; con
   `ARENILE_AUTO_MIGRATE=false` puoi applicarle a mano con `arenile migrate up` prima di avviare il server.
 </Aside>
+
+## Avviso di nuova versione
+
+Quando esce una nuova versione, titolari e gestori vedono in cima al pannello **È disponibile Arenile X** con
+**Novità** e **Come aggiornare** (installazione Docker: porta a questa pagina; ricordati del backup, poi
+`docker compose pull && docker compose up -d`) oppure **Scarica** (app desktop e binario). L'avviso si chiude con la
+**X** e torna solo per la versione successiva. Versione installata e stato del controllo sono anche nel menu
+dell'utente, in basso a sinistra.
+
+Il controllo è **acceso di default**: una volta al giorno Arenile legge il file pubblico
+`https://updates.coste360.it/arenile/latest.json`. La richiesta non contiene dati del lido, cookie né
+identificativi: rivela solo la versione, l'edizione e il sistema operativo nell'User-Agent (per esempio
+`arenile/1.0.1 (server; linux/amd64)`) e, come ogni richiesta HTTP, l'indirizzo IP al server di Coste360, che usa
+queste informazioni solo per conteggi aggregati. Non è telemetria: `ARENILE_TELEMETRY` resta `false`.
+
+Per spegnerlo imposta `ARENILE_UPDATE_CHECK=false` (nessuna chiamata di rete); con `ARENILE_UPDATE_URL` puoi
+puntare a un mirror interno. Se il controllo non riesce (niente internet, server non raggiungibile) il pannello non
+mostra errori: nel menu dell'utente compare solo "Impossibile cercare automaticamente gli aggiornamenti.".

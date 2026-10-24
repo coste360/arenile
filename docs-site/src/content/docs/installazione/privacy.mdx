@@ -65,6 +65,15 @@ cancellato appena l'importazione è applicata, fallita o scartata, e comunque do
 applicata. Fino ad allora il suo contenuto non è coperto dall'anonimizzazione di un singolo cliente né
 dall'esportazione dei suoi dati: scarta i file che non userai.
 
+### Controllo degli aggiornamenti
+
+Per mostrare l'avviso di nuova versione, ogni installazione (server e app desktop) legge una volta al giorno un
+file pubblico dal server di Coste360. La richiesta non contiene dati dei clienti né del lido, cookie o
+identificativi: rivela solo versione, edizione e sistema operativo (User-Agent) e, come ogni richiesta HTTP,
+l'indirizzo IP dell'installazione. Coste360 usa queste informazioni solo per conteggi aggregati. Si spegne con
+`ARENILE_UPDATE_CHECK=false` o dalle impostazioni dell'app desktop (vedi
+[Aggiornamenti](/installazione/aggiornamenti/#avviso-di-nuova-versione)).
+
 ## Cosa devi fare tu
 
 <Steps>

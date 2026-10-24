@@ -32,6 +32,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0022](0022-modelli-email-e-promemoria.md) | Testi delle email ai clienti modificabili (oggetto, apertura, chiusura, firma; segnaposto sicuri, blocchi fissi, solo le personalizzazioni nel database) e promemoria del giorno prima e del saldo come job in processo, una volta per prenotazione | accettato |
 | [0023](0023-revisione-concessione-d-uso.md) | Revisione legale della concessione d'uso: servizi a terzi e prodotti sostitutivi distinti, widget e installazione in un clic consentiti, consorzi, hotel, piscine all'aperto, aiuto gratuito | accettato |
 | [0024](0024-kit-mappa-v3-e-scelta-del-kit.md) | Kit mappa v3 "Moderno" predefinito e "Classico" (v2.1) come alternativa, scelti per stabilimento nel tema (`theme.map_kit`, nessuna migrazione); generatore multi-kit con regole per profilo; stato sul disegno con `--beach-state`, palette degli stati per tema, barra sul bloccato | accettato |
+| [0025](0025-avviso-nuova-versione-acceso-di-default.md) | Avviso di nuova versione acceso di default su tutte le edizioni (`ARENILE_UPDATE_CHECK`, impostazione desktop): un GET al giorno di un file pubblico di Coste360 con solo versione, edizione e sistema nell'User-Agent, nessun identificativo, non è telemetria; esito fallito mai mostrato come errore | accettato |
 
 ## Come aggiungere un ADR
 

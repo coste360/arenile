@@ -65,6 +65,15 @@ needed: it is deleted as soon as the import is applied, failed or discarded, and
 never applied. Until then its contents are not covered by the anonymisation of a single customer nor by the export
 of their data: discard the files you will not use.
 
+### Update check
+
+To show the new version notice, every installation (server and desktop app) reads a public file from the Coste360
+server once a day. The request contains no data of customers or of the beach, no cookie and no identifier: it
+reveals only the version, edition and operating system (User-Agent) and, like any HTTP request, the IP address of
+the installation. Coste360 uses this information only for aggregate counts. Turn it off with
+`ARENILE_UPDATE_CHECK=false` or from the desktop app settings (see
+[Upgrades](/en/installazione/aggiornamenti/#new-version-notice)).
+
 ## What you must do
 
 <Steps>

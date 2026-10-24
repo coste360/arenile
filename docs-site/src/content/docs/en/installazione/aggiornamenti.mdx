@@ -81,3 +81,21 @@ before the upgrade and start the previous version (see
   `arenile migrate status` shows applied and pending migrations; with `ARENILE_AUTO_MIGRATE=false` you can apply
   them by hand with `arenile migrate up` before starting the server.
 </Aside>
+
+## New version notice
+
+When a new version is out, owners and managers see **Arenile X is available** at the top of the panel, with
+**What's new** and **How to update** (Docker installs: it leads to this page; remember the backup, then
+`docker compose pull && docker compose up -d`) or **Download** (desktop app and binary). The notice closes with the
+**X** and comes back only for the next version. The installed version and the state of the check are also in the
+user menu, bottom left.
+
+The check is **on by default**: once a day Arenile reads the public file
+`https://updates.coste360.it/arenile/latest.json`. The request contains no data of the beach, no cookie and no
+identifier: it reveals only the version, edition and operating system in the User-Agent (for example
+`arenile/1.0.1 (server; linux/amd64)`) and, like any HTTP request, the IP address to the Coste360 server, which uses
+this information only for aggregate counts. It is not telemetry: `ARENILE_TELEMETRY` stays `false`.
+
+To turn it off set `ARENILE_UPDATE_CHECK=false` (no network call); `ARENILE_UPDATE_URL` points it to an internal
+mirror. When the check fails (no internet, server unreachable) the panel shows no error: the user menu only says
+"Couldn't check for updates automatically.".

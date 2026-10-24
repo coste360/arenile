@@ -920,3 +920,15 @@ Verificata da: `TestValidateTexts_Scenarios`, `TestPlainTextHTML_EscapesAndParag
 `TestRender_EditableTextsEscaped`, `TestDefaultTexts_ValidInEveryLocale` (`internal/domain/notify`),
 `TestEmailTemplates_EditorUseCases` (tag `integration`), `TestEmailTemplatesHTTP_ValidationAndETag`
 (`internal/http/admin`), `TestMigration00012_EmailTemplateOverrides` (`internal/store`). Stato: implemented.
+
+## Avviso di nuova versione (ADR 0025)
+
+**INV-98 — Nessuna chiamata di rete per gli aggiornamenti quando il controllo è spento, e mai un errore all'utente.**
+Con `ARENILE_UPDATE_CHECK=false` (server) o l'impostazione `update_check` spenta (app desktop), e con una versione non
+di release (`dev`, `-dev.`), il job `updates.check` non fa alcuna richiesta. Quando è acceso la richiesta è un `GET`
+senza cookie né identificativi, con solo `arenile/<versione> (<edizione>; <os>/<arch>)` nell'User-Agent. Un
+controllo fallito non restituisce errori al job né all'API: `status` vale `unavailable` e l'ultimo risultato riuscito
+resta valido per 7 giorni.
+Verificata da: `TestRefresh_NoNetworkWhenDisabledOrDev`, `TestRefresh_FailureIsSilentAndRetried`, `TestStatus_States`
+(`internal/domain/update`), `TestUpdates_WiringAndNoNetworkWhenDisabled` (`internal/app`),
+`TestChecker_RequestCarriesOnlyTheUserAgent` (`internal/updates`). Stato: implemented.
