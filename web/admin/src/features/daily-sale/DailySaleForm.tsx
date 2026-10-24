@@ -15,6 +15,7 @@ import {
   QuantityStepper,
   SegmentedControl,
   useExtraUnitText,
+  useMediaQuery,
   useQuantityMaxText,
 } from '@arenile/shared/ui/patterns';
 import { Separator } from '@arenile/shared/ui/separator';
@@ -135,6 +136,8 @@ export function DailySaleForm({
   const fetchPrint = useFetchTicketPrint(establishmentId);
   const printer = useTicketPrinter();
   const problemText = useSaleProblemText();
+  // Tailwind `lg`: the summary column sits next to the form.
+  const wide = useMediaQuery('(min-width: 1024px)');
   const keyRef = useRef(new StableKey());
 
   const [values, setValues] = useState<SaleValues>(() =>
@@ -311,7 +314,9 @@ export function DailySaleForm({
 
   // Figures and alerts of the sale: on a phone they sit in the body (the
   // sticky bar keeps only the total and the two pay buttons, about one row),
-  // on a wide screen in the summary column next to the form.
+  // on a wide screen in the summary column next to the form. Rendered once
+  // (never twice hidden by CSS): the tendered input and the alerts must be
+  // unique for assistive technologies and keyboard focus.
   const details = (
     <>
       {quote.data && quote.data.breakdown.vat.length > 0 && (
@@ -414,7 +419,7 @@ export function DailySaleForm({
           {total !== undefined ? formatCents(total) : '—'}
         </p>
       </div>
-      <div className="hidden space-y-3 lg:block">{details}</div>
+      {wide && <div className="space-y-3">{details}</div>}
       <div className="grid grid-cols-2 gap-3">
         <PayButton
           method="cash"
@@ -609,7 +614,7 @@ export function DailySaleForm({
           </div>
           <p className="text-xs text-muted-foreground">{t('sale.holderHint')}</p>
         </fieldset>
-        <div className="space-y-3 lg:hidden">{details}</div>
+        {!wide && <div className="space-y-3">{details}</div>}
       </div>
       {summary}
       {printer.area}

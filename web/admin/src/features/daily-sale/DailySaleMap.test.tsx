@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
@@ -96,14 +96,16 @@ describe('daily sale on the day map', () => {
     await user.click(chip);
     expect(chip).toHaveAttribute('aria-pressed', 'true');
     expect(within(panel).getByRole('status')).toHaveTextContent(
-      'Tocca una postazione libera di Prima fila per il biglietto #041.',
+      'Tocca una postazione evidenziata di Prima fila (sulla mappa o qui sotto) per il biglietto #041.',
     );
     // A4 is free but in another zone: refused locally, nothing sent.
-    await user.click(screen.getByRole('button', { name: /Postazione A4/ }));
+    // Keyboard activation: a pointer tap on a small spot zooms in first.
+    fireEvent.keyDown(screen.getByRole('button', { name: /Postazione A4/ }), { key: 'Enter' });
     expect(await screen.findByText('Scegli una postazione della zona Prima fila.')).toBeVisible();
     expect(callsTo(fetchMock, 'POST', `${API}/tickets/t41/assign`)).toHaveLength(0);
     // A1 is free in the zone: assigned atomically by the server, no spot sheet.
-    await user.click(screen.getByRole('button', { name: /Postazione A1/ }));
+    // Keyboard activation: a pointer tap on a small spot zooms in first.
+    fireEvent.keyDown(screen.getByRole('button', { name: /Postazione A1/ }), { key: 'Enter' });
     await waitFor(() =>
       expect(callsTo(fetchMock, 'POST', `${API}/tickets/t41/assign`)).toHaveLength(1),
     );
@@ -168,7 +170,8 @@ describe('daily sale on the day map', () => {
     });
     const panel = await screen.findByTestId('assign-panel');
     await user.click(within(panel).getByRole('button', { name: /Biglietto #041/ }));
-    await user.click(screen.getByRole('button', { name: /Postazione A1/ }));
+    // Keyboard activation: a pointer tap on a small spot zooms in first.
+    fireEvent.keyDown(screen.getByRole('button', { name: /Postazione A1/ }), { key: 'Enter' });
     expect(
       await screen.findByText("La postazione è stata appena occupata: scegline un'altra."),
     ).toBeVisible();

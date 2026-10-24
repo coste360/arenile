@@ -87,7 +87,9 @@ describe('Cash Z print with ESC/POS (desktop edition)', () => {
     });
     // Wait for the panel mode (meta) before printing.
     await waitFor(() => expect(callsTo(fetchMock, 'GET', '/api/admin/v1/meta')).toHaveLength(1));
-    await user.click(await screen.findByRole('button', { name: 'Stampa riepilogo' }));
+    // The summary print lives in the header overflow menu ("Altro").
+    await user.click(await screen.findByRole('button', { name: 'Altro' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Stampa riepilogo' }));
     expect(await screen.findByText('Inviato a Cassa bar')).toBeInTheDocument();
     expect(bodies).toEqual([{ document_kind: 'cash_z', document_id: 's1' }]);
     const post = callsTo(fetchMock, 'POST', `${API}/print-jobs`)[0]!;
@@ -111,7 +113,9 @@ describe('Cash Z print with ESC/POS (desktop edition)', () => {
       ),
     );
     await waitFor(() => expect(callsTo(fetchMock, 'GET', '/api/admin/v1/meta')).toHaveLength(1));
-    await user.click(await screen.findByRole('button', { name: 'Stampa riepilogo' }));
+    // The summary print lives in the header overflow menu ("Altro").
+    await user.click(await screen.findByRole('button', { name: 'Altro' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Stampa riepilogo' }));
     await waitFor(() => expect(print).toHaveBeenCalledOnce());
     expect(
       await screen.findByText('Nessuna stampante termica configurata per questo documento.'),

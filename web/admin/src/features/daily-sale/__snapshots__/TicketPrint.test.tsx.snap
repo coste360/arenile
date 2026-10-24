@@ -39,6 +39,12 @@ exports[`TicketPrint > lays out the 80 mm receipt (snapshot) 1`] = `
       #037
     </p>
     <p
+      class="font-bold text-xl"
+      data-testid="print-place"
+    >
+      Postazione A1
+    </p>
+    <p
       class="font-bold"
     >
       Valido il 14/07/2026
@@ -53,20 +59,6 @@ exports[`TicketPrint > lays out the 80 mm receipt (snapshot) 1`] = `
   <dl
     class="space-y-0.5"
   >
-    <div
-      class="flex flex-wrap items-baseline justify-between gap-x-3"
-    >
-      <dt
-        class="min-w-0"
-      >
-        Dove
-      </dt>
-      <dd
-        class="ml-auto text-right tabular-nums"
-      >
-        Postazione A1
-      </dd>
-    </div>
     <div
       class="flex flex-wrap items-baseline justify-between gap-x-3"
     >
@@ -170,6 +162,12 @@ exports[`TicketPrint > lays out the 80 mm receipt (snapshot) 1`] = `
       </dd>
     </div>
   </dl>
+  <p
+    class="mt-1 text-center font-bold uppercase"
+    data-testid="print-non-fiscal"
+  >
+    Non valido ai fini fiscali
+  </p>
   <hr
     class="my-2 border-dashed border-current"
   />
@@ -253,6 +251,12 @@ exports[`TicketPrint > lays out the A4 sheet (snapshot) 1`] = `
       #037
     </p>
     <p
+      class="font-bold text-2xl"
+      data-testid="print-place"
+    >
+      Postazione A1
+    </p>
+    <p
       class="font-bold"
     >
       Valido il 14/07/2026
@@ -267,20 +271,6 @@ exports[`TicketPrint > lays out the A4 sheet (snapshot) 1`] = `
   <dl
     class="space-y-0.5"
   >
-    <div
-      class="flex flex-wrap items-baseline justify-between gap-x-3"
-    >
-      <dt
-        class="min-w-0"
-      >
-        Dove
-      </dt>
-      <dd
-        class="ml-auto text-right tabular-nums"
-      >
-        Postazione A1
-      </dd>
-    </div>
     <div
       class="flex flex-wrap items-baseline justify-between gap-x-3"
     >
@@ -384,6 +374,12 @@ exports[`TicketPrint > lays out the A4 sheet (snapshot) 1`] = `
       </dd>
     </div>
   </dl>
+  <p
+    class="mt-1 text-center font-bold uppercase"
+    data-testid="print-non-fiscal"
+  >
+    Non valido ai fini fiscali
+  </p>
   <hr
     class="my-2 border-dashed border-current"
   />

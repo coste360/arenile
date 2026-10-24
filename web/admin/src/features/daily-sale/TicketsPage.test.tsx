@@ -80,7 +80,7 @@ describe('TicketsPage (Ticket del giorno)', () => {
     expect(within(rows[0] as HTMLElement).getAllByText('Da assegnare')).toHaveLength(2);
     expect(within(rows[1] as HTMLElement).getByText('10:05')).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).getByText('A1')).toBeInTheDocument();
-    expect(within(rows[2] as HTMLElement).getByText('Annullato')).toBeInTheDocument();
+    expect(within(rows[2] as HTMLElement).getAllByText('Annullato')).toHaveLength(2);
     expect(screen.getByText('Contanti 30,00 € · Carta 30,00 €', { exact: false })).toBeVisible();
     expect(screen.getByText('IVA 22%')).toBeInTheDocument();
     const req = callsTo(fetchMock, 'GET', `${API}/tickets`)[0] as Request;
