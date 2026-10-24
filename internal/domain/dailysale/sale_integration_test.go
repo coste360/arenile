@@ -405,6 +405,63 @@ func TestEntrySale_GateAndCapacity(t *testing.T) {
 	})
 }
 
+// TestTicketing_SummaryIsByDayOfUse: the day summary counts the tickets
+// valid on the day (ticket_date), not the money taken on it. An advance
+// sale made today for a later day sits in that day's summary and in today's
+// cash session and corrispettivi; a void without refund leaves the summary
+// but not the takings. The cash desk and the corrispettivi reconcile the
+// money; the ticket summary is a by-day-of-use view (spec 14.3).
+func TestTicketing_SummaryIsByDayOfUse(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db)
+		f, ctx, est := e.f, e.f.Ctx, e.f.Est.ID
+		session := e.openSession("")
+		todaySale, err := e.sales.CreateDaily(ctx, f.Cashier, est, e.spotSale(f.Spots[0]))
+		if err != nil {
+			t.Fatal(err)
+		}
+		advance := e.spotSale(f.Spots[1])
+		advance.Date = bookingtest.D("2027-07-12")
+		adv, err := e.sales.CreateDaily(ctx, f.Cashier, est, advance)
+		if err != nil || adv.Ticket.TicketNumber != 1 || !adv.Ticket.TicketDate.Equal(bookingtest.D("2027-07-12")) {
+			t.Fatalf("advance sale takes the numbering of its day: %v %+v", err, adv.Ticket)
+		}
+		summary := func(d string) ticketing.Summary {
+			l, err := e.tickets.List(ctx, f.Viewer, est, ticketing.ListInput{Date: bookingtest.D(d)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			return l.Summary
+		}
+		if s := summary(day); s.Issued != 1 || s.Total != bookingtest.BasePerDay {
+			t.Fatalf("today's summary %+v", s)
+		}
+		if s := summary("2027-07-12"); s.Issued != 1 || s.Total != bookingtest.BasePerDay {
+			t.Fatalf("later day's summary %+v", s)
+		}
+		// The money of both sales is in today's cash session.
+		d, err := e.cash.Get(ctx, f.Cashier, est, session.ID)
+		if err != nil || d.Summary.Takings[store.PaymentMethodCash] != 2*bookingtest.BasePerDay {
+			t.Fatalf("session takings %v %+v", err, d.Summary.Takings)
+		}
+		// A void without refund leaves the day summary; the takings stay.
+		if _, err := e.tickets.Void(ctx, f.Manager, est, todaySale.Ticket.ID, ticketing.VoidInput{Reason: "x", Refund: ticketing.VoidNone}); err != nil {
+			t.Fatal(err)
+		}
+		if s := summary(day); s.Issued != 0 || s.Voided != 1 || s.Total != 0 {
+			t.Fatalf("today's summary after the void %+v", s)
+		}
+		d, _ = e.cash.Get(ctx, f.Cashier, est, session.ID)
+		if d.Summary.Takings[store.PaymentMethodCash] != 2*bookingtest.BasePerDay {
+			t.Fatalf("takings after a void without refund %+v", d.Summary.Takings)
+		}
+		rep, err := e.fiscal.Corrispettivi(ctx, f.Owner, est, fiscal.CorrispettiviQuery{From: bookingtest.D(day), To: bookingtest.D(day)})
+		if err != nil || rep.GrandTotal != 2*bookingtest.BasePerDay {
+			t.Fatalf("corrispettivi of the day of payment %v %+v", err, rep)
+		}
+	})
+}
+
 func ptrDate(s string) *calendar.Date {
 	d := bookingtest.D(s)
 	return &d

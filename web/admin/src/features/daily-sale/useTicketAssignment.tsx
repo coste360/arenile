@@ -3,12 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { localize } from '../configuration/lib/i18nText';
 import type { OperationalSpot, SlotChoice } from '../operations/lib/status';
-import {
-  useAssignTicket,
-  useAutoAssignTickets,
-  useUnassignedTickets,
-  type Ticket,
-} from './api';
+import { useAssignTicket, useAutoAssignTickets, useUnassignedTickets, type Ticket } from './api';
 import { AssignPanel } from './AssignPanel';
 import { assignmentTargets, autoAssignSummary } from './lib';
 import { useSaleProblemText } from './useSaleProblemText';
@@ -68,7 +63,11 @@ export function useTicketAssignment({
     const spot = byId.get(spotId);
     const zone = localize(picked.zone_name, i18n.language || 'it', 'it');
     if (!spot || !targets.some((s) => s.spot_id === spotId)) {
-      toast.error(spot && spot.zone_id !== picked.zone_id ? t('assign.wrongZone', { zone }) : t('assign.notFree'));
+      toast.error(
+        spot && spot.zone_id !== picked.zone_id
+          ? t('assign.wrongZone', { zone })
+          : t('assign.notFree'),
+      );
       return true;
     }
     const ticket = picked;

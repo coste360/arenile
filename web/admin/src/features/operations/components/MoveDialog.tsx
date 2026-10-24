@@ -98,7 +98,10 @@ export function MoveDialog({
       onError: (e: ApiProblem) => setError(problemText(e)),
     };
     if (ticket) {
-      moveTicket.mutate({ ticketId: ticket.id, spotId: target.spotId, version: ticket.version }, callbacks);
+      moveTicket.mutate(
+        { ticketId: ticket.id, spotId: target.spotId, version: ticket.version },
+        callbacks,
+      );
       return;
     }
     move.mutate({ ...vars, dryRun: false }, callbacks);

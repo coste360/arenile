@@ -110,7 +110,7 @@
   },
   "tickets": {
     "title": "Tickets des Tages",
-    "description": "Am Tag ausgestellte Tickets mit Nummer, Uhrzeit, Platz oder Zone, Status, Betrag und Zahlungsart; CSV-Export.",
+    "description": "Am Tag gültige Tickets mit Nummer, Uhrzeit, Platz oder Zone, Status, Betrag und Zahlungsart; CSV-Export. Die Übersicht gilt pro Gültigkeitstag: Kasse und Tageseinnahmen folgen dem Zahltag.",
     "col": {
       "number": "Nummer",
       "time": "Uhrzeit",
@@ -140,7 +140,7 @@
     "listTitle": "Tickets",
     "empty": "Keine Tickets für diesen Tag.",
     "vatTitle": "Einnahmen nach Steuersatz",
-    "vatDescription": "Dieselben Beträge wie in der Kassensitzung und im Tagesabschluss; stornierte Tickets sind ausgeschlossen."
+    "vatDescription": "An diesem Tag gültige Tickets, stornierte ausgenommen. Ein Vorverkauf oder eine Erstattung an einem anderen Tag steht in Kasse und Tageseinnahmen des Zahltags."
   },
   "state": {
     "assigned": "Zugewiesen",

@@ -382,9 +382,7 @@ export function OperationalMapView({
             <div className="flex flex-wrap items-start gap-x-6 gap-y-2">
               <MapLegend statuses={OPERATIONAL_LEGEND} />
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {t('indicator.legend')}
-                </p>
+                <p className="text-xs font-medium text-muted-foreground">{t('indicator.legend')}</p>
                 <ul className="flex flex-wrap gap-3 text-xs">
                   {SPOT_INDICATORS.map((kind) => (
                     <li
@@ -417,28 +415,28 @@ export function OperationalMapView({
               spotDescription={spotDescription}
               spotCaptions={canSeeCustomers ? captions : undefined}
               labelMode={labelMode}
-            toolbar={
-              canSeeCustomers ? (
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
-                    {t('labels.label')}
-                  </span>
-                  <SegmentedControl
-                    label={t('labels.label')}
-                    value={labelMode}
-                    onValueChange={(v) => setLabelMode(v as MapLabelMode)}
-                    options={MAP_LABEL_MODES.map((m) => ({ value: m, label: t(`labels.${m}`) }))}
-                    collapseOnNarrow
-                    className="sm:w-auto"
-                  />
-                </div>
-              ) : undefined
-            }
-            legendStatuses={OPERATIONAL_LEGEND}
-            showLegend={false}
-            title={t('map.aria', { name: geometry.name ?? '', date, slot: t(`slot.${slot}`) })}
-            height={height}
-          />
+              toolbar={
+                canSeeCustomers ? (
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="hidden text-xs font-medium text-muted-foreground sm:inline">
+                      {t('labels.label')}
+                    </span>
+                    <SegmentedControl
+                      label={t('labels.label')}
+                      value={labelMode}
+                      onValueChange={(v) => setLabelMode(v as MapLabelMode)}
+                      options={MAP_LABEL_MODES.map((m) => ({ value: m, label: t(`labels.${m}`) }))}
+                      collapseOnNarrow
+                      className="sm:w-auto"
+                    />
+                  </div>
+                ) : undefined
+              }
+              legendStatuses={OPERATIONAL_LEGEND}
+              showLegend={false}
+              title={t('map.aria', { name: geometry.name ?? '', date, slot: t(`slot.${slot}`) })}
+              height={height}
+            />
           </div>
         </TabsContent>
         <TabsContent value="list">

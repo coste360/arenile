@@ -203,8 +203,6 @@ describe('DailySaleForm (Vendita rapida)', () => {
     // Inside the form and nothing on top: K sells by card.
     card.focus();
     await user.keyboard('k');
-    await waitFor(() =>
-      expect(callsTo(fetchMock, 'POST', `${API}/daily-sales`)).toHaveLength(1),
-    );
+    await waitFor(() => expect(callsTo(fetchMock, 'POST', `${API}/daily-sales`)).toHaveLength(1));
   });
 });

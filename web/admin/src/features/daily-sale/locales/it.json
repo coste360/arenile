@@ -110,7 +110,7 @@
   },
   "tickets": {
     "title": "Ticket del giorno",
-    "description": "Biglietti emessi nel giorno con numero, ora, postazione o zona, stato, importo e metodo; esportazione CSV.",
+    "description": "Biglietti validi nel giorno con numero, ora, postazione o zona, stato, importo e metodo; esportazione CSV. Il riepilogo è per giorno di validità: cassa e corrispettivi seguono la data dell'incasso.",
     "col": {
       "number": "Numero",
       "time": "Ora",
@@ -140,7 +140,7 @@
     "listTitle": "Biglietti",
     "empty": "Nessun biglietto per questo giorno.",
     "vatTitle": "Corrispettivi per aliquota",
-    "vatDescription": "Gli stessi importi della sessione di cassa e dei corrispettivi; gli annullati sono esclusi."
+    "vatDescription": "Biglietti validi in questo giorno, annullati esclusi. Una vendita anticipata o un rimborso di un altro giorno stanno nella cassa e nei corrispettivi del giorno dell'incasso."
   },
   "state": {
     "assigned": "Assegnato",

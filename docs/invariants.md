@@ -739,7 +739,9 @@ restituisce il numero; l'annullamento di un biglietto (`void`: cancellazione del
 pagamenti, audit) lo conserva, quindi gli unici buchi sono i biglietti annullati, che restano in elenco.
 Verificata da: `TestConcurrency_DailyTicketNumbering` (200 vendite concorrenti su 3 casse: numeri 1..200),
 `TestDailySale_DayRolloverInEstablishmentTimezone`, `TestTicketing_VoidKeepsNumberAndRefunds`,
-`TestDailySale_SpotFirstCash` (`internal/domain/dailysale`, tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+`TestDailySale_SpotFirstCash`, `TestTicketing_SummaryIsByDayOfUse` (una vendita anticipata prende la numerazione del suo
+giorno e sta nel riepilogo di quel giorno, mentre l'incasso sta nella cassa e nei corrispettivi di oggi; `internal/domain/dailysale`,
+tag `integration`, SQLite e PostgreSQL). Stato: implemented.
 
 **INV-82 — Vendita per zona: la capacità si consuma alla vendita, mai più biglietti dei posti.**
 Una vendita zone-first consuma subito la capacità con i vincoli esistenti, mai con controlli applicativi: nelle zone

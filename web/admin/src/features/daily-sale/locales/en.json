@@ -110,7 +110,7 @@
   },
   "tickets": {
     "title": "Today's tickets",
-    "description": "Tickets issued on the day with number, time, spot or zone, state, amount and method; CSV export.",
+    "description": "Tickets valid on the day with number, time, spot or zone, state, amount and method; CSV export. The summary is by day of validity: cash desk and tax totals follow the day of payment.",
     "col": {
       "number": "Number",
       "time": "Time",
@@ -140,7 +140,7 @@
     "listTitle": "Tickets",
     "empty": "No tickets for this day.",
     "vatTitle": "Takings by VAT rate",
-    "vatDescription": "The same amounts as the cash session and the daily takings report; voided tickets are excluded."
+    "vatDescription": "Tickets valid on this day, voided ones excluded. An advance sale or a refund on another day sits in the cash desk and tax totals of the day of payment."
   },
   "state": {
     "assigned": "Assigned",

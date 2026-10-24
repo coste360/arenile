@@ -110,7 +110,7 @@
   },
   "tickets": {
     "title": "Billets du jour",
-    "description": "Billets émis dans la journée avec numéro, heure, emplacement ou zone, état, montant et moyen de paiement ; export CSV.",
+    "description": "Billets valables le jour avec numéro, heure, emplacement ou zone, état, montant et mode ; export CSV. Le récapitulatif est par jour de validité : caisse et recettes suivent le jour de l'encaissement.",
     "col": {
       "number": "Numéro",
       "time": "Heure",
@@ -140,7 +140,7 @@
     "listTitle": "Billets",
     "empty": "Aucun billet pour ce jour.",
     "vatTitle": "Recettes par taux de TVA",
-    "vatDescription": "Les mêmes montants que la session de caisse et les recettes journalières ; les billets annulés sont exclus."
+    "vatDescription": "Billets valables ce jour, annulés exclus. Une vente anticipée ou un remboursement un autre jour figurent dans la caisse et les recettes du jour de l'encaissement."
   },
   "state": {
     "assigned": "Attribué",
