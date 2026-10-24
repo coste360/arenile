@@ -118,6 +118,18 @@ async function seedLido(page: Page, name: string): Promise<Lido> {
     prices,
   });
 
+  // The default policy closes same-day full days at 13:00 (only the afternoon
+  // after that): keep the walk-in sale open all day so the tests do not depend
+  // on the hour they run at.
+  await send(page, "POST", `${api}/policies`, {
+    season_id: season.id,
+    name: "Cassa tutto il giorno",
+    scope: { channels: ["desk"] },
+    rules: { same_day_booking: { enabled: true, until: "23:59" } },
+    priority: 100,
+    active: true,
+  });
+
   const map = await getJSON(page.request, `${api}/maps/${applied.map_id}`);
   const spotList = (map.spots ?? map.document?.spots ?? []) as {
     id: string;
