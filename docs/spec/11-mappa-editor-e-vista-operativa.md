@@ -7,12 +7,17 @@
 - Fino a 1.000 elementi devono restare fluidi su un tablet di fascia media. Oltre questa soglia si usa la virtualizzazione per settori, non prevista nell'MVP.
 - Ogni postazione è un `<g>` accessibile: `role="button"`, `aria-label` con etichetta e stato, focus da tastiera.
 - La pagina pubblica offre sempre un'alternativa a elenco (per fila) per lettori di schermo e schermi piccoli.
-- **Illustrazioni** (ADR 0012): postazioni ed elementi sono disegnati con il kit Coste360 (`assets/beach-map-kit`),
-  un solo sprite `<symbol>` per pagina e un `<use>` per elemento; il disegno di una postazione è 1,3 volte la
-  sua impronta, che resta l'area cliccabile. Il tema chiaro/scuro passa dalle variabili `--beach-*`.
-- **Stato sovrapposto, mai nel disegno:** un anello colorato intorno al disegno (tinta forte per gli stati da
-  gestire, appena accennata per i liberi) e un badge d'angolo con un glifo per ogni stato prenotato (globo
-  online, banco cassa, spunta presente, stella abbonato, ecc.), così la mappa si legge anche senza colori.
+- **Illustrazioni** (ADR 0012, 0024): postazioni ed elementi sono disegnati con un kit Coste360
+  (`assets/map-kits`), un solo sprite `<symbol>` per pagina e un `<use>` per elemento; il disegno di una
+  postazione è 1,3 volte la sua impronta, che resta l'area cliccabile. Il tema chiaro/scuro passa dalle variabili
+  `--beach-*`. Lo stabilimento sceglie il kit (`theme.map_kit`): **Moderno** (v3, predefinito) o **Classico**
+  (v2.1), con gli stessi id delle illustrazioni, quindi la scelta non tocca le mappe salvate.
+- **Stato:** nel kit Moderno il corpo della postazione prende il colore dello stato (`--beach-state`, dalla
+  palette degli stati dell'app, ≥ 3:1 sulla sabbia per gli stati da gestire nei due temi) e un anello di contorno
+  compare per passaggio del mouse, focus e selezione; nel Classico lo stato è un anello colorato intorno al
+  disegno (tinta forte per gli stati da gestire, appena accennata per i liberi). In entrambi un badge d'angolo ha
+  un glifo per ogni stato prenotato (globo online, banco cassa, spunta presente, stella abbonato, ecc.) e le
+  postazioni bloccate hanno una barra diagonale, così la mappa si legge anche senza colori.
 - La legenda e i controlli di zoom stanno sopra il disegno; il disegno mantiene le proporzioni della mappa fino a
   un'altezza massima, così sul telefono non lascia spazio vuoto, e un avviso rimanda allo zoom o all'elenco
   quando le etichette scendono sotto i 9 px.

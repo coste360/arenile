@@ -1,6 +1,6 @@
 ---
 title: Mappe ed editor
-description: Disegna la spiaggia con il kit grafico Coste360 - generatore di file, postazioni, passerelle modulari, bandiera, lato del mare e riorientamento, allineamenti, rinumerazione e scorciatoie da tastiera.
+description: Disegna la spiaggia con il kit grafico Coste360 - stile Moderno o Classico, generatore di file, postazioni, passerelle modulari, bandiera, lato del mare e riorientamento, allineamenti, rinumerazione e scorciatoie da tastiera.
 sidebar:
   order: 5
 ---
@@ -18,6 +18,38 @@ bagnino, bandiera, WC, defibrillatore…). La stessa mappa diventa la vista oper
 della nuova prenotazione e la mappa che i clienti vedono online.
 
 <LiveMap />
+
+## Stile della mappa
+
+**Dove:** Configurazione → **Stabilimento** → scheda **Mappa**. Arenile ha due kit di illustrazioni Coste360, con
+gli stessi elementi: scegli quello con cui pannello e pagina pubblica disegnano **tutte** le mappe dello
+stabilimento.
+
+<Screenshot name="admin-map-kit" alt="Scheda Mappa dello stabilimento con i kit Moderno e Classico e l'anteprima di ciascuno" />
+
+| Kit | Come si legge lo stato |
+|---|---|
+| **Moderno** (predefinito) | Icone piene a un colore: l'ombrellone, il lettino o il gazebo **prende il colore del suo stato** (verde libero, azzurro prenotato online, viola prenotato in cassa, rosso da incassare…). Il simbolo dello stato sta nell'angolo in alto a destra, che il disegno lascia libero. Strutture e servizi sono tessere a un colore (bar, docce, WC, primo soccorso). |
+| **Classico** | Disegni dettagliati con i colori naturali: lo stato è un **alone colorato** attorno alla postazione, con lo stesso simbolo nell'angolo. È il kit delle versioni precedenti. |
+
+<Steps>
+
+1. Apri **Configurazione → Stabilimento** e la scheda **Mappa**.
+2. Confronta le due anteprime: mostrano la stessa fila di postazioni nei principali stati.
+3. Scegli **Moderno** o **Classico** e premi **Salva**. Mappa del giorno, editor, nuova prenotazione e pagina
+   pubblica usano subito il nuovo stile.
+
+</Steps>
+
+<Aside type="tip" title="Le mappe non cambiano">
+  Postazioni, elementi, etichette e prenotazioni restano gli stessi: cambia solo il disegno, e puoi tornare
+  indietro quando vuoi. Gli stabilimenti che non hanno mai scelto usano il kit **Moderno**.
+</Aside>
+
+In entrambi i kit lo stato non si affida al solo colore: ogni stato prenotato ha il suo simbolo nell'angolo (globo
+online, banco cassa, spunta presente, stella abbonato, euro da incassare…) e le postazioni **bloccate** hanno anche
+una barra diagonale. Nel kit Moderno, al passaggio del mouse, con la tastiera e quando selezioni una postazione
+compare un contorno scuro attorno al disegno.
 
 ## Elenco delle mappe
 
@@ -72,7 +104,8 @@ sono **modifiche non salvate**.
 
 ### Il kit di elementi
 
-La tavolozza propone le illustrazioni originali del **kit Coste360**, con ricerca e categorie: **Postazioni**,
+La tavolozza propone le illustrazioni originali del **kit Coste360** scelto per lo stabilimento (Moderno o
+Classico), con ricerca e categorie: **Postazioni**,
 **Percorsi**, **Strutture**, **Servizi**, **Salvataggio**, **Nautica**, **Sport e relax**, **Arredi**,
 **Ambiente**, **Segnaletica**. Qualche esempio:
 

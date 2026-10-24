@@ -50,7 +50,7 @@ import { FileTree, Aside } from '@astrojs/starlight/components';
   - booking/ public page and embed.js
   - shared/ API client, shadcn UI, map with the kit
 - assets/
-  - beach-map-kit/ original map illustrations (ADR 0012)
+  - map-kits/ original map illustration kits, modern and classic (ADR 0012, 0024)
 - docs/ specification, ADRs, architecture, invariants, glossary
 - docs-site/ this site (Astro Starlight)
 - e2e/ Playwright tests
@@ -80,7 +80,7 @@ import { FileTree, Aside } from '@astrojs/starlight/components';
 |---|---|
 | `internal/http/api/*.gen.go` | `api/openapi.yaml` (oapi-codegen) |
 | `web/shared/api/generated/**` | `api/openapi.yaml` (openapi-typescript) |
-| `web/shared/src/map/kit/generated/**`, `internal/domain/mapping/kitassets_gen.go` | `assets/beach-map-kit` (`web/scripts/gen-map-kit.mjs`) |
+| `web/shared/src/map/kit/generated/**`, `internal/domain/mapping/kitassets_gen.go` | `assets/map-kits` (`web/scripts/gen-map-kit.mjs`) |
 
 ## Migrations
 

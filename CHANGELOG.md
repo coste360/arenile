@@ -15,6 +15,15 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Added
 
+- **Kit mappa v3 "Moderno"** di Coste360 (ADR 0024): icone piene a un colore in cui il corpo di ogni postazione
+  prende il colore del suo stato (tutti gli 11 stati dell'app, tramite `--beach-state`), badge nell'angolo che il
+  kit lascia libero, anello di contorno per passaggio del mouse, focus e selezione visibile su ogni colore. Il kit
+  v2.1 resta disponibile come **"Classico"** (alone sotto il disegno). Si sceglie per stabilimento in
+  **Configurazione → Stabilimento → Mappa**, con l'anteprima dei due kit; vale per pannello e pagina pubblica.
+  Contratto: `Theme.map_kit` (`modern` | `classic`, assente = `modern`), nessuna migrazione.
+- Barra diagonale sulle postazioni **bloccate** in entrambi i kit, oltre al badge: lo stato non dipende dal colore.
+
+
 - Contratto della **vendita giornaliera** (ADR 0020, spec 14.3): API `daily-sales` (preventivo e vendita su
   postazione o zona, pagamento contanti/carta, nome facoltativo), `tickets` (Ticket del giorno con riepilogo ed
   esportazione CSV, dati di stampa, ristampa, annullamento con rimborso, assegnazione, spostamento, assegnazione
@@ -430,6 +439,17 @@ Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con tick
 
 ### Changed
 
+- Kit della mappa spostati in `assets/map-kits/<chiave>/` (`modern` v3.0, `classic` v2.1, ognuno con `NOTICE.md`);
+  il generatore `web/scripts/gen-map-kit.mjs` gestisce tutti i kit, pretende lo stesso catalogo in ognuno e
+  applica regole per profilo (v3: solo `g/path/rect/circle/ellipse`, colori solo `var(--beach-*, fallback)`,
+  angolo degli indicatori vuoto tranne mare e sabbia, stato con `--beach-state`); simboli `ark-<kit>-<id>` in un
+  chunk pigro per kit (ADR 0024).
+- Colori degli stati della mappa per tema (ADR 0024): **Libero** `#15803d` nel chiaro (3:1 sulla sabbia, prima
+  2,1:1) e **Prenotato online** `#0284c7`, distinguibile da **Presente** anche in luminosità; nel tema scuro gli
+  stati da gestire hanno valori propri che arrivano a 3:1 sulla sabbia scura. Legenda, planning e grafici seguono.
+- **Aggiornamento:** gli stabilimenti esistenti non hanno ancora scelto un kit e passano al **Moderno**; le mappe
+  salvate non cambiano (stessi id delle illustrazioni). Per tornare al disegno precedente scegliete **Classico** in
+  Configurazione → Stabilimento → Mappa.
 - Licenza: adottato il testo della concessione d'uso rivisto dal legale (ADR 0023). Restano gratuiti gli
   stabilimenti gestiti direttamente, comprese le piscine all'aperto; sono chiariti widget e link nei siti, installazione
   "in un clic", consorzi e associazioni, hotel e aiuto gratuito; il divieto riguarda i servizi a terzi e i prodotti

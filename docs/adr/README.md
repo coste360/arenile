@@ -19,7 +19,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0009](0009-ui-kit-shadcn.md) | UI kit: shadcn/ui, niente CSS custom | accettato |
 | [0010](0010-scelte-m3.md) | Scelte di M3: allocazioni cancellate al rilascio, hold del pannello, abbonamenti come prenotazioni, registro unico dei pagamenti, topic SSE | accettato |
 | [0011](0011-revisione-m3.md) | Revisione di M3: quota online anche sul canale `api`, `price_current` per le prenotazioni modificate dopo la conferma, hold confermati sotto lock e puliti per intero, check-in solo nel soggiorno, deviazioni dichiarate dalla spec 11.3 | accettato |
-| [0012](0012-kit-mappa.md) | Kit di illustrazioni della mappa: `<symbol>`/`<use>`, stato sovrapposto, campi `asset`/`variant`, provenienza | accettato |
+| [0012](0012-kit-mappa.md) | Kit di illustrazioni della mappa: `<symbol>`/`<use>`, stato sovrapposto, campi `asset`/`variant`, provenienza | accettato, in parte sostituito da [0024](0024-kit-mappa-v3-e-scelta-del-kit.md) |
 | [0013](0013-scelte-m4.md) | Scelte di M4: percorsi pubblici e sessione di checkout, webhook, cliente provvisorio, link magici, `payment_intents`, capacità facoltative dei driver, Stripe senza SDK, email | accettato |
 | [0014](0014-pagamenti-online-m4.md) | Pagamenti online di M4: SDK Stripe ufficiale, webhook unico percorso di conferma, pagamenti tardivi e doppi rimborsati, rimborsi prenotati e registrati alla conferma, riconciliazione per intent | accettato |
 | [0015](0015-scelte-m6.md) | Scelte di M6: `/meta` pubblico, token per dispositivo ristretti allo stabilimento, abbinamento con QR, API desktop solo da loopback, ponte fiscale con long polling, launcher headless senza tag e tray con il tag `desktop` (CGO solo su macOS e Windows) | accettato |
@@ -30,6 +30,7 @@ richiede un nuovo ADR che sostituisce il precedente (il vecchio passa a "sostitu
 | [0020](0020-vendita-giornaliera-e-telefono-facoltativo.md) | Vendita giornaliera con biglietti numerati per giorno (contatore atomico e vincolo unico), vendita per zona sui vincoli esistenti, biglietti d'ingresso su zone quantity, telefono facoltativo ovunque | accettato |
 | [0021](0021-stampa-escpos-di-rete.md) | Stampa ESC/POS su stampanti di rete (Wi-Fi/Ethernet, porta 9100) solo nell'edizione desktop in v1: codificatore e modelli lato server, instradamento per cassa, lavori di stampa idempotenti con riprova, interfaccia Driver per i ponti futuri | accettato |
 | [0023](0023-revisione-concessione-d-uso.md) | Revisione legale della concessione d'uso: servizi a terzi e prodotti sostitutivi distinti, widget e installazione in un clic consentiti, consorzi, hotel, piscine all'aperto, aiuto gratuito | accettato |
+| [0024](0024-kit-mappa-v3-e-scelta-del-kit.md) | Kit mappa v3 "Moderno" predefinito e "Classico" (v2.1) come alternativa, scelti per stabilimento nel tema (`theme.map_kit`, nessuna migrazione); generatore multi-kit con regole per profilo; stato sul disegno con `--beach-state`, palette degli stati per tema, barra sul bloccato | accettato |
 
 ## Come aggiungere un ADR
 

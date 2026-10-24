@@ -265,11 +265,14 @@ Verificata da: `TestMappingIntegration_ReferencedZoneCannotBeDeleted`, `TestMapp
 **INV-48 — Illustrazioni della mappa solo dal kit, sanificate al build.**
 `asset` di una postazione è vuoto o un id prenotabile del kit (`KitBookableAssets`), `asset` di una decorazione
 è vuoto o un id del kit, `variant` è ammessa solo se l'illustrazione la prevede (`KitAssetVariants`); le liste
-sono generate da `assets/beach-map-kit/manifest.json`, quindi backend e renderer conoscono lo stesso catalogo.
+sono generate da `assets/map-kits/*/manifest.json`, quindi backend e renderer conoscono lo stesso catalogo.
+Ogni kit ha lo stesso catalogo (id, categoria, tipo), quindi `theme.map_kit` cambia solo il disegno e mai la
+validità di una mappa salvata; il generatore fallisce altrimenti (`checkSameCatalogue`).
 Il frontend inietta solo i corpi `<symbol>` generati, che il generatore ha già filtrato con una allowlist (la
-generazione fallisce su script, handler, riferimenti esterni). ADR 0012.
+generazione fallisce su script, handler, riferimenti esterni). ADR 0012, ADR 0024.
 Verificata da: `TestValidateDocument_Cases`, `TestKitAssets_GeneratedListsAreSortedAndDisjoint`,
-`TestMappingIntegration_KitAssets` (`internal/domain/mapping`), `web/scripts/gen-map-kit.test.mjs` e `gen-check`
+`TestMappingIntegration_KitAssets` (`internal/domain/mapping`), `web/scripts/gen-map-kit.test.mjs` (anche
+"catalogue check across kits") e `gen-check`
 in `make check`. Stato: implemented.
 
 ## Operatività del pannello e cassa (spec 14, 21, 28 — M3)

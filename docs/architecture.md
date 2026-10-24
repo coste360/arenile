@@ -91,7 +91,7 @@ incorporate con `embed.FS` (ADR 0001). Il database è SQLite di default, Postgre
 | `internal/calendar` | `Date` (`YYYY-MM-DD`), intervalli, fasce `AM`/`PM`/`FULL` | — |
 | `pkg/ext` | Interfacce pubbliche stabili: `PaymentProvider`, `FiscalDriver`, `EventSink`, `ConcessionDataProvider`, `TenantResolver`, `AuthProvider`, `Notifier`, `BotProtection`, `EventBus`, `Extensions` | — |
 | `api/openapi.yaml` | Contratto API OpenAPI 3.1, fonte di verità (ADR 0005) | — |
-| `web/admin`, `web/booking`, `web/shared` | SPA del pannello, pagina pubblica (budget 150 KB gzip), pacchetto condiviso con client generato in `web/shared/api/generated/` e renderer della mappa con il kit di illustrazioni (`web/shared/src/map`, sprite `<symbol>` generato in `map/kit/generated/` da `assets/beach-map-kit`, ADR 0012) | — |
+| `web/admin`, `web/booking`, `web/shared` | SPA del pannello, pagina pubblica (budget 150 KB gzip), pacchetto condiviso con client generato in `web/shared/api/generated/` e renderer della mappa con il kit di illustrazioni (`web/shared/src/map`, sprite `<symbol>` generato in `map/kit/generated/` da `assets/map-kits`, ADR 0012) | — |
 
 Regole di dipendenza:
 - `internal/domain/*` non importa `net/http`, `internal/http/*` né driver SQL (usa `bun.IDB` per partecipare alle transazioni; l'IP per l'audit arriva da `internal/reqctx`).
@@ -259,7 +259,7 @@ totale:   5 sconti (convenzione → promo → automatici)
 ```
 api/openapi.yaml ──make gen──► internal/http/api/api.gen.go
                          └───► web/shared/api/generated/schema.d.ts
-assets/beach-map-kit ──make gen (web/scripts/gen-map-kit.mjs)──► web/shared/src/map/kit/generated/
+assets/map-kits ──make gen (web/scripts/gen-map-kit.mjs)──► web/shared/src/map/kit/generated/
                                                           └───► internal/domain/mapping/kitassets_gen.go
 web/ ──npm --prefix web run build──► web/admin/dist, web/booking/dist (+ embed.js)
      ──copia──► internal/http/static/{admin,booking}

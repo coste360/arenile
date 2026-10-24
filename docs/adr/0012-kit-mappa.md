@@ -1,6 +1,7 @@
 # 0012 — Kit di illustrazioni della mappa: `<symbol>`/`<use>`, stato sovrapposto, campo `asset`
 
-- **Stato:** accettato
+- **Stato:** accettato; in parte sostituito da [ADR 0024](0024-kit-mappa-v3-e-scelta-del-kit.md) (provenienza
+  e cartella dei kit, generatore multi-kit, stato sul disegno nel kit moderno)
 - **Data:** 2026-10-23
 - **Sezioni della specifica:** `docs/spec/11-mappa-editor-e-vista-operativa.md`,
   `docs/spec/12-pagina-pubblica-e-widget-incorporabile.md`, `docs/spec/06-schema-dati.md`
