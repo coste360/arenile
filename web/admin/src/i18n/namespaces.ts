@@ -28,6 +28,7 @@ import notificationsIt from '../features/notifications/locales/it.json';
 // Daily sale and entry tickets (ADR 0020).
 import dailySaleIt from '../features/daily-sale/locales/it.json';
 import entryTicketsIt from '../features/entry-tickets/locales/it.json';
+import printersIt from '../features/printers/locales/it.json';
 
 type Messages = Record<string, unknown>;
 type Loader = () => Promise<{ default: Messages }>;
@@ -302,6 +303,16 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/entry-tickets/locales/en.json'),
       de: () => import('../features/entry-tickets/locales/de.json'),
       fr: () => import('../features/entry-tickets/locales/fr.json'),
+    },
+  },
+  // ESC/POS network printers (ADR 0021).
+  {
+    ns: 'printers',
+    it: printersIt,
+    load: {
+      en: () => import('../features/printers/locales/en.json'),
+      de: () => import('../features/printers/locales/de.json'),
+      fr: () => import('../features/printers/locales/fr.json'),
     },
   },
 ];

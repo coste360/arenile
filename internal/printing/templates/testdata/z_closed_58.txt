@@ -1,0 +1,31 @@
+<1b>@<1b>t<13><1b>a<01><1b>E<01><1d>!<11>Lido Azzurro<0a>
+<1d>!<00><1b>E<00>Lungomare Caio Duilio 12, Gaeta<0a>
+(LT)<0a>
+P.IVA 01234567890<0a>
+Tel. 0771 123456<0a>
+<1b>a<00>================================<0a>
+<1b>a<01><1b>E<01>CHIUSURA DI CASSA (Z)<0a>
+<1b>E<00><1b>a<00>Cassa                  Cassa bar<0a>
+Sessione                89ABCDEF<0a>
+Apertura        14/08/2026 09:35<0a>
+Chiusura        14/08/2026 19:35<0a>
+Operatori: Anna, Marco<0a>
+--------------------------------<0a>
+Fondo cassa             <d5> 100,00<0a>
+--------------------------------<0a>
+<1b>E<01>Atteso per metodo<0a>
+<1b>E<00>Contanti                <d5> 450,00<0a>
+Carta                 <d5> 1.234,50<0a>
+<1b>E<01>Totale atteso         <d5> 1.684,50<0a>
+<1b>E<00>--------------------------------<0a>
+<1b>E<01>Movimenti<0a>
+<1b>E<00>Prelievo per banca     <d5> -200,00<0a>
+--------------------------------<0a>
+<1b>E<01>Contato<0a>
+<1b>E<00>Contanti                <d5> 448,00<0a>
+Carta                 <d5> 1.234,50<0a>
+<1b>E<01>Totale contato        <d5> 1.682,50<0a>
+<1b>E<00>================================<0a>
+<1b>E<01><1d>!<01>DIFFERENZA               <d5> -2,00<0a>
+<1d>!<00><1b>E<00><1b>d<01><1b>a<01><1b>M<01>Arenile<0a>
+<1b>M<00><1b>a<00><1b>d<03><1d>V<01>

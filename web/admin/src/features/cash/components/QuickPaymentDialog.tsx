@@ -19,6 +19,7 @@ import {
   useRecordBookingPayment,
   type BookingSummary,
 } from '../api';
+import { usePrintDocument, usePrintReady } from '../../printers';
 import { DESK_METHODS, type PaymentMethod } from '../lib/totals';
 import { quickPaymentSchema, type QuickPaymentValues } from '../schemas';
 import type { CashContext } from '../useCashContext';
@@ -32,11 +33,14 @@ import { CashField } from './fields';
 export function QuickPaymentDialog({
   ctx,
   sessionId,
+  registerId,
   open,
   onOpenChange,
 }: {
   ctx: Pick<CashContext, 'establishmentId' | 'money'>;
   sessionId: string;
+  /** Register of the session: selects the receipt printer (ADR 0021). */
+  registerId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -59,6 +63,7 @@ export function QuickPaymentDialog({
             key={booking.id}
             ctx={ctx}
             sessionId={sessionId}
+            registerId={registerId}
             booking={booking}
             onBack={() => setBooking(null)}
             onDone={() => change(false)}
@@ -169,12 +174,14 @@ function BookingSearch({
 function PaymentForm({
   ctx,
   sessionId,
+  registerId,
   booking,
   onBack,
   onDone,
 }: {
   ctx: Pick<CashContext, 'establishmentId' | 'money'>;
   sessionId: string;
+  registerId?: string;
   booking: BookingSummary;
   onBack: () => void;
   onDone: () => void;
@@ -182,6 +189,9 @@ function PaymentForm({
   const { t } = useTranslation('cash');
   const [idempotencyKey] = useState(newIdempotencyKey);
   const record = useRecordBookingPayment(ctx.establishmentId);
+  // Non-fiscal receipt on the thermal printer, offered only when one is ready.
+  const receiptReady = usePrintReady('payment_receipt', registerId);
+  const printDocument = usePrintDocument();
   const form = useForm<QuickPaymentValues>({
     resolver: zodResolver(quickPaymentSchema),
     defaultValues: {
@@ -194,7 +204,7 @@ function PaymentForm({
   const submit = form.handleSubmit(async (v) => {
     try {
       const amount = v.amount as number;
-      await record.mutateAsync({
+      const payment = await record.mutateAsync({
         bookingId: booking.id,
         idempotencyKey,
         body: {
@@ -204,7 +214,23 @@ function PaymentForm({
           ...(v.note.trim() ? { note: v.note.trim() } : {}),
         },
       });
-      toast.success(t('quickPay.recorded', { amount: ctx.money(amount), code: booking.code }));
+      toast.success(
+        t('quickPay.recorded', { amount: ctx.money(amount), code: booking.code }),
+        receiptReady
+          ? {
+              action: {
+                label: t('receipt.action', { ns: 'printers' }),
+                // No browser layout for the receipt: errors are reported, nothing else prints.
+                onClick: () =>
+                  void printDocument({
+                    kind: 'payment_receipt',
+                    documentId: payment.id,
+                    registerId,
+                  }),
+              },
+            }
+          : undefined,
+      );
       onDone();
     } catch {
       // Rendered from record.error.

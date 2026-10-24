@@ -298,6 +298,7 @@ Tutta la configurazione avviene tramite variabili d'ambiente, compatibili con Do
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (equivale a `arenile serve --dev`); mai in produzione |
 | `ARENILE_EDITION` | `server` | `desktop` è il profilo loopback impostato dall'app desktop (non dall'operatore): base URL facoltativo, cookie `Secure` solo sulle richieste TLS |
+| `ARENILE_PRINTERS_ALLOW_LOOPBACK` | `false` (`true` con `ARENILE_DEV`) | Ammette una stampante ESC/POS con indirizzo di loopback (stampante virtuale sullo stesso PC, sviluppo e test; ADR 0021) |
 | `ARENILE_WEBHOOKS_ALLOW_PRIVATE` | `false` (`true` con `ARENILE_DEV`) | Permette ai webhook in uscita di raggiungere indirizzi privati e di loopback (ricevitori sulla stessa rete locale); link-local e metadati cloud restano bloccati. Vedi [integrazioni](docs/guida/integrazioni.md) |
 | `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `ARENILE_BOOTSTRAP_OWNER_NAME`, `ARENILE_BOOTSTRAP_OWNER_ORG` | vuoto | Primo utente owner creato all'avvio solo se il database non ha utenti (servono tutte e tre più `ARENILE_ADMIN_PASSWORD`) |
 | `ARENILE_ADMIN_PASSWORD` | vuoto | Password del primo owner, o per `arenile admin create` senza prompt |

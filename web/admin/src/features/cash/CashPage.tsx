@@ -45,6 +45,7 @@ import { SessionView } from './components/SessionView';
 import { ZPdfButton } from './components/ZPdfButton';
 import { ZReport } from './components/ZReport';
 import { printZReport, zReportUrl } from './lib/zreport';
+import { usePrintDocument } from '../printers';
 import { useCashContext, type CashContext } from './useCashContext';
 import {
   pickRegister,
@@ -87,11 +88,18 @@ export function CashPage() {
   const [closedId, setClosedId] = useState<string | undefined>();
   const [printDetail, setPrintDetail] = useState<CashSessionDetail | null>(null);
 
+  const printDocument = usePrintDocument();
   // Render the Z summary into the print-only area synchronously, then print.
-  const print = (d: CashSessionDetail) => {
+  const browserPrint = (d: CashSessionDetail) => {
     flushSync(() => setPrintDetail(d));
     window.print();
   };
+  // ESC/POS on the routed thermal printer (desktop edition), browser otherwise (ADR 0021).
+  const print = (d: CashSessionDetail) =>
+    void printDocument(
+      { kind: 'cash_z', documentId: d.session.id, registerId: d.session.register_id },
+      () => browserPrint(d),
+    );
 
   if (ctx.loading) {
     return <QueryState isLoading error={null} rows={4} />;
@@ -293,6 +301,7 @@ export function CashPage() {
           <QuickPaymentDialog
             ctx={ctx}
             sessionId={detail.session.id}
+            registerId={detail.session.register_id}
             open={dialog === 'pay'}
             onOpenChange={(o) => setDialog(o ? 'pay' : null)}
           />

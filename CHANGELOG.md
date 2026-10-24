@@ -102,6 +102,28 @@ offline).
 - Pagina pubblica: meta Open Graph per stabilimento generati dal server (titolo, descrizione, immagine = logo
   dello stabilimento o immagine Arenile) per le anteprime di WhatsApp e social.
 - Mappa operativa a tutta larghezza (e più alta) sugli schermi larghi.
+- Stampa ESC/POS su stampanti termiche di rete (Wi-Fi/Ethernet, TCP 9100) nell'edizione desktop (ADR 0021):
+  Configurazione → **Stampanti** (voce visibile solo nell'edizione desktop; indirizzo solo di rete locale, mai
+  loopback né metadati cloud salvo `ARENILE_PRINTERS_ALLOW_LOOPBACK` per sviluppo e test; carta 58/80 mm, codepage
+  CP858 predefinita, taglio, avanzamento 3 righe, logo retinato in cache, cassetto pin 2/5, verifica raggiungibilità,
+  **Stampa di prova**), instradamento per documento e cassa (chiusura Z, ricevuta di pagamento non fiscale, biglietto
+  della vendita giornaliera) e ultime stampe con riprova. Lavori accodati già composti; `Idempotency-Key` legata alla
+  richiesta (stessa chiave → stesso lavoro, stessa chiave per un altro documento → `422 idempotency_key_reused`, senza
+  chiave ogni richiesta è una ristampa); consegna per stampante in parallelo con lease, timeout e nuovi tentativi (5
+  s, 15 s, 1 min, 5 min), "almeno una volta" (un invio interrotto viene rispedito senza riaprire il cassetto);
+  contenuto delle stampe concluse cancellato dopo 30 giorni; nessun dato personale nei log. Con 2-3 copie, dalla
+  seconda in poi la dicitura **COPIA**. In Cassa **Stampa riepilogo** (anche a cassa aperta, con i totali correnti) e
+  **Stampa chiusura Z** usano la stampante termica quando è pronta, altrimenti la stampa del browser con un avviso;
+  dopo un incasso si può stampare la ricevuta (solo termica). La **Vendita rapida** (stampa automatica) e il **Ticket
+  del giorno** (ristampa) mandano il biglietto alla stampante termica quando l'instradamento del biglietto giornaliero
+  è pronto, altrimenti la stampa del browser: numero #NNN, giorno, zona e postazione o "da assegnare", pacchetto,
+  importo, QR (lo stesso del biglietto stampato dal browser: il codice del varco per gli ingressi) e la riga "Non
+  valido ai fini fiscali". Sull'edizione server la pagina spiega che serve l'app desktop, non si aggiungono stampanti
+  (`409 printing_unavailable`) e la chiusura si stampa dal browser. Codificatore `internal/escpos` (puro Go, fixture
+  di byte), modelli `internal/printing/templates` (ricevuta, riepilogo Z, pagina di prova, biglietto `TicketDoc`
+  alimentato dai biglietti della vendita giornaliera), servizio `internal/domain/printing` (interfaccia `Driver`,
+  driver `network`), migrazione 00011 (entrambi i dialetti). Guida "Stampanti e ESC/POS" (it/en), invarianti INV-86 e
+  INV-87. USB, Bluetooth e ponte per il VPS non sono inclusi.
 
 - App desktop per macOS: oltre al `.dmg` universale, la CI produce i `.dmg` **solo Apple Silicon**
   (`_macos_arm64`) e **solo Intel** (`_macos_x86_64`), circa metà dimensione, ognuno firmato, notarizzato e

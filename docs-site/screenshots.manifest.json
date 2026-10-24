@@ -63,6 +63,8 @@
     { "name": "admin-api-keys", "section": "gestore", "route": "/admin/e/{est}/config/api-keys", "viewport": "desktop", "description": "Chiavi API: elenco con permessi, ultimo uso e scadenza (M5)." },
     { "name": "admin-webhooks", "section": "gestore", "route": "/admin/e/{est}/config/webhooks", "viewport": "desktop", "description": "Webhook: endpoint, eventi scelti, stato e ultima consegna (M5)." },
     { "name": "admin-devices", "section": "gestore", "route": "/admin/e/{est}/config/devices", "viewport": "desktop", "description": "Dispositivi abbinati con utente, ultimo utilizzo e stato (M6)." },
+    { "name": "admin-printers", "section": "gestore", "route": "/admin/e/{est}/config/printers", "viewport": "desktop", "description": "Stampanti sull'edizione server: la stampa ESC/POS è spiegata (app desktop) e si stampa dal browser (ADR 0021)." },
+    { "name": "admin-printers-desktop", "section": "gestore", "route": "/admin/e/{est}/config/printers", "viewport": "desktop", "description": "Stampanti nell'app desktop: stampante di rete raggiungibile, instradamento e ultime stampe (dati simulati, ADR 0021)." },
 
     { "name": "public-when-mobile", "section": "pagina-pubblica", "route": "/b/{slug}", "viewport": "mobile", "auth": false, "description": "Pagina pubblica, passo \"Quando\" su smartphone." },
     { "name": "public-when-desktop", "section": "pagina-pubblica", "route": "/b/{slug}", "viewport": "desktop", "auth": false, "description": "Pagina pubblica, passo \"Quando\" su desktop." },

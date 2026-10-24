@@ -163,7 +163,8 @@
       "cashRegisters": "Cash registers",
       "imports": "Import data",
       "testMode": "Test mode",
-      "entryTickets": "Entry tickets"
+      "entryTickets": "Entry tickets",
+      "printers": "Printers"
     },
     "operations": "Operations",
     "configGroup": "Configuration",

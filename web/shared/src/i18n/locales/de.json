@@ -163,7 +163,8 @@
       "cashRegisters": "Kassen",
       "imports": "Daten importieren",
       "testMode": "Testmodus",
-      "entryTickets": "Eintrittskarten"
+      "entryTickets": "Eintrittskarten",
+      "printers": "Drucker"
     },
     "operations": "Tagesgeschäft",
     "configGroup": "Konfiguration",

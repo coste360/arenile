@@ -58,6 +58,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/printing"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
@@ -171,6 +172,8 @@ type App struct {
 
 	// Deferred features F: CSV imports (wired by wireImports, see imports.go).
 	Imports *importer.Service
+	// ESC/POS network printing (wired by wirePrinting, see printing.go).
+	Printing *printing.Service
 
 	mu    sync.Mutex
 	addr  string
@@ -291,6 +294,7 @@ func (a *App) wire() error {
 	a.wireTestMode(aw)
 	a.wireRefunds(aw)
 	a.wireImports(aw)
+	a.wirePrinting(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -315,7 +319,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.refundJobs(), a.importJobs()) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.refundJobs(), a.importJobs(), a.printingJobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -336,6 +340,7 @@ func (a *App) wire() error {
 		TestMode:       a.TestMode,
 		Refunds:        a.Refunds,
 		Imports:        a.Imports,
+		Printing:       a.Printing,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),

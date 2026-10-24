@@ -36,6 +36,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
 	"github.com/coste360/arenile/internal/domain/refund"
+	"github.com/coste360/arenile/internal/domain/printing"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
 	"github.com/coste360/arenile/internal/domain/season"
@@ -128,6 +129,8 @@ type Handlers struct {
 	// tickets and entry ticket types (tickets.go, entrytickets.go); own block.
 	DailySale *dailysale.Service
 	Tickets   *ticketing.Service
+	// ESC/POS network printing (printing.go, ADR 0021); own block.
+	Printing *printing.Service
 }
 
 // Login implements POST /api/admin/v1/auth/login.

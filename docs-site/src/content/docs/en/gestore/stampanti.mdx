@@ -1,0 +1,120 @@
+---
+title: Printers and ESC/POS
+description: Network thermal printers (Wi-Fi or Ethernet) with the desktop app - setup, test print, routing per cash register, cash drawer, receipts and Z reports, fallback to browser printing.
+sidebar:
+  order: 27.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Printers**. **Who:** managers and owners configure printers and routing;
+cashiers see the status, check the connection and send the test print.
+
+Arenile prints **non-fiscal payment receipts** and **cash closings (Z)** straight to the ESC/POS thermal
+printers on the beach network, with no print dialog, with paper cut and cash drawer opening. **Daily tickets**
+will use the same printers once the daily sale arrives: until then the *Daily ticket* document is not offered
+for routing.
+
+<Aside type="caution" title="Available with the desktop app">
+ESC/POS printing works when Arenile runs on the establishment's computer: with the [desktop
+app](/en/gestore/app-desktop/), LAN mode included. The server must reach the printer on the beach network,
+which an online server (VPS or Docker) cannot do. On a server installation the Printers page explains this (the
+entry is not in the Configuration menu): the cash closing prints **from the browser**, as always, while the
+non-fiscal receipt exists only on the thermal printer.
+</Aside>
+
+<Screenshot name="admin-printers-desktop" alt="Printers page in the desktop app: a reachable network printer with Check and Test print, document routing and the latest prints" />
+
+## Supported printers
+
+Any **ESC/POS** thermal printer with a **network** interface (Ethernet or Wi-Fi) that accepts direct printing
+on TCP port **9100** (RAW, also called JetDirect or AppSocket). We designed it for:
+
+| Brand | Typical models | Notes |
+| --- | --- | --- |
+| Epson | TM-T20II/III, TM-T88V/VI/VII, TM-m30 | ESC/POS reference; CP858 character table = 19 |
+| Xprinter | XP-58, XP-80, XP-Q200 (LAN/Wi-Fi versions) | Some models use different table numbers |
+| Rongta | RP80, RP326, RP850 (LAN/Wi-Fi) | Epson compatible |
+| Bixolon | SRP-330, SRP-350, SRP-E300 | Epson compatible |
+| Others | "Generic ESC/POS" 58 or 80 mm printers | Try the test print |
+
+<Aside type="note" title="Not in this version">
+**USB** or **Bluetooth** printers and printing from an online installation through a bridge on the cash desk
+computer are not supported yet: in those cases you print from the browser. **Daily ticket** printing comes with
+the daily sale.
+</Aside>
+
+## Connecting the printer
+
+<Steps>
+
+1. Connect the printer to the beach network (Ethernet cable to the router, or Wi-Fi with the maker's utility).
+2. Find its **IP address**: hold **FEED** while switching it on to print the self-test page, or look at the
+   router's device list. Give it a **fixed IP** in the router so the address never changes.
+3. In Arenile open **Configuration → Printers** and press **Add printer**.
+4. Enter **Name** (e.g. *Bar till*), **IP address or host name** and **Port** (almost always 9100).
+5. Choose the **Paper width** (58 or 80 mm): **Characters per line** follows (32 or 48).
+6. Press **Save**, then **Check**: the status becomes **Reachable**.
+7. Press **Test print**: out comes a page with the establishment name, the printer address, accented letters,
+   the € sign, the styles, a QR code and the cut.
+
+</Steps>
+
+Only **local network addresses** are accepted (192.168.x.x, 10.x.x.x, 172.16-31.x.x): a public address is
+refused, even a host name that points outside the network. The same goes for the computer's own address
+(127.0.0.1) and for cloud service addresses: the printer is another device. Developers testing with a virtual
+printer on the same PC set `ARENILE_PRINTERS_ALLOW_LOOPBACK=true`.
+
+## Printer options
+
+- **Character table**: **CP858** (default) prints € and accented letters on almost every printer. If odd
+  symbols come out instead of *à è é*, try another **Table number (ESC t)** from the manual. Characters the
+  table lacks are replaced (*€* becomes *EUR* on CP437).
+- **Paper cut**: full, partial or none; **Feed lines** before the cut.
+- **Print the logo**: the establishment logo converted to black and white (dithered) for thermal paper.
+- **Cash drawer**: if the drawer is connected to the printer (RJ11 cable), choose the **pin** (2 is the
+  standard). It opens at the end of the print when the routing rule says so.
+- **Active**: an inactive printer receives no prints.
+
+## Routing: which printer for which document
+
+In **Routing** choose, for each document, the printer and the number of **Copies**:
+
+- a rule for **All registers** is the default;
+- a rule for one **register** wins over the default (e.g. the bar prints on its own printer);
+- **Open drawer** opens the drawer at the end of the print (printers with a drawer only, once even when the
+  print is resent);
+- with **Copies** 2 or 3, the second copy onwards carries a **COPY** mark at the top.
+
+Without a rule the closing prints from the browser and the receipt is not offered. Press **Save routing** to
+apply the changes.
+
+## Printing from the cash desk
+
+In [Cash desk](/en/gestore/cassa/) the **Print summary** and **Print Z report** buttons use the thermal
+printer when there is a rule and the printer is active and reachable: *Sent to Bar till* appears. Otherwise the
+browser print opens with a notice explaining why (no printer configured, printer inactive or unreachable). After
+a **Take payment**, if a receipt printer is ready, the confirmation offers **Print receipt** (a **non-fiscal**
+receipt).
+
+## Latest prints and retries
+
+**Latest prints** lists every print with its outcome. If the printer is off or offline, Arenile retries on its
+own after 5 seconds, 15 seconds, 1 minute and 5 minutes; then the print is **Failed** and you can press
+**Retry**. While one printer is not answering, queued prints for the other printers still go out. A double
+click on the same button creates one print; pressing **Print summary** again later is a deliberate reprint and
+creates another. If Arenile is closed right while sending a print, it resends it on restart (it may come out
+twice, without opening the drawer again). The content of finished prints is deleted after 30 days; only the row
+with the outcome remains.
+
+<Screenshot name="admin-printers" alt="Printers page on a server installation: notice that ESC/POS printing is available with the desktop app" />
+
+## Troubleshooting
+
+- **Unreachable**: check that the printer is on, on the same network as the computer running Arenile, and that
+  its IP has not changed (self-test page).
+- **Wrong letters**: change **Table number (ESC t)** or **Character table**.
+- **Text too wide or too narrow**: fix **Characters per line** (32 on 58 mm, 48 on 80 mm; some 80 mm printers
+  use 42).
+- **The drawer does not open**: try the other pin and check that the rule has **Open drawer**.

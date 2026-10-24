@@ -1,0 +1,192 @@
+{
+  "page": {
+    "title": "Drucker",
+    "description": "ESC/POS-Thermodrucker im Netzwerk (WLAN oder Ethernet) für nicht-fiskalische Belege und Kassenabschlüsse sowie für Tagestickets, sobald der Tagesverkauf aktiv ist: Adresse, Papierbreite, Schnitt, Kassenlade, Zuordnung pro Kasse und Testdruck. Verfügbar mit der Desktop-App."
+  },
+  "add": "Drucker hinzufügen",
+  "actions": "Aktionen",
+  "inactive": "Deaktiviert",
+  "editAria": "Drucker {{name}} bearbeiten",
+  "unavailable": {
+    "title": "ESC/POS-Druck ist mit der Desktop-App verfügbar",
+    "description": "Netzwerk-Thermodrucker funktionieren, wenn Arenile auf dem Computer des Betriebs läuft (Desktop-App, auch im LAN-Modus), weil der Drucker im Strandnetz erreichbar sein muss. Auf dieser Installation wird der Kassenabschluss über den Browser gedruckt; nicht-fiskalische Belege benötigen die Desktop-App mit einem Thermodrucker."
+  },
+  "list": {
+    "title": "Eingerichtete Drucker",
+    "description": "ESC/POS-Drucker im lokalen Netz (TCP-Port 9100). Prüfen testet die Verbindung, ohne zu drucken.",
+    "empty": "Keine Drucker",
+    "emptyHint": "Fügen Sie den Drucker mit seiner IP-Adresse hinzu: Sie steht auf dem Selbsttest-Ausdruck (FEED beim Einschalten gedrückt halten) oder in der Geräteliste des Routers.",
+    "emptyServer": "Mit der Desktop-App können Sie WLAN- oder Ethernet-Thermodrucker verbinden."
+  },
+  "form": {
+    "addTitle": "Neuer Drucker",
+    "editTitle": "Drucker bearbeiten",
+    "description": "ESC/POS-Thermodrucker im Strandnetz (WLAN oder Ethernet)."
+  },
+  "sections": {
+    "paper": "Papier und Zeichen",
+    "extras": "Logo und Kassenlade"
+  },
+  "fields": {
+    "name": "Name",
+    "namePlaceholder": "Z. B. Barkasse",
+    "host": "IP-Adresse oder Hostname",
+    "hostHint": "Nur Adressen im lokalen Netz (z. B. 192.168.1.50). Tipp: Geben Sie dem Drucker im Router eine feste IP.",
+    "port": "Port",
+    "portHint": "Fast immer 9100 (RAW / JetDirect).",
+    "paperWidth": "Papierbreite",
+    "charsPerLine": "Zeichen pro Zeile",
+    "charsPerLineHint": "32 bei 58-mm-Papier, 48 bei 80-mm-Papier (Schrift A).",
+    "codepage": "Zeichentabelle",
+    "codepageHint": "CP858 druckt € und Akzente auf fast allen Druckern.",
+    "codepageTable": "Tabellennummer (ESC t)",
+    "codepageTableHint": "Leer lassen für den Epson-Standardwert; manche Drucker verwenden andere Nummern (siehe Handbuch).",
+    "codepageTableAuto": "Automatisch",
+    "cutMode": "Papierschnitt",
+    "feedLines": "Vorschubzeilen",
+    "feedLinesHint": "Leerzeilen vor dem Schnitt (0-10).",
+    "drawer": "Kassenlade",
+    "drawerHint": "Mit dem RJ11-Kabel am Drucker angeschlossen: öffnet sich am Ende des Drucks, wenn die Regel es vorsieht.",
+    "printLogo": "Logo drucken",
+    "printLogoHint": "Das Logo des Betriebs, für Thermopapier in Schwarzweiß umgewandelt.",
+    "active": "Aktiv",
+    "activeHint": "Ein deaktivierter Drucker erhält keine Drucke: Dokumente gehen an den Browser.",
+    "status": "Status"
+  },
+  "paper": {
+    "58": "58 mm",
+    "80": "80 mm"
+  },
+  "codepage": {
+    "cp858": "CP858 (Westeuropa mit €)",
+    "cp437": "CP437 (USA, ohne €)",
+    "cp850": "CP850 (Westeuropa)",
+    "cp852": "CP852 (Mitteleuropa)",
+    "cp1252": "Windows-1252"
+  },
+  "cut": {
+    "full": "Vollschnitt",
+    "partial": "Teilschnitt",
+    "none": "Kein Schnitt"
+  },
+  "drawer": {
+    "none": "Keine Kassenlade",
+    "pin2": "Pin 2 (Standard)",
+    "pin5": "Pin 5"
+  },
+  "status": {
+    "unknown": "Nicht geprüft",
+    "reachable": "Erreichbar",
+    "unreachable": "Nicht erreichbar",
+    "checkedAt": "Geprüft {{time}}"
+  },
+  "check": {
+    "action": "Prüfen",
+    "aria": "Verbindung zu {{name}} prüfen",
+    "reachable": "{{name}} ist erreichbar",
+    "unreachable": "{{name}} antwortet nicht",
+    "latency": "Antwort in {{ms}} ms"
+  },
+  "test": {
+    "action": "Testdruck",
+    "aria": "Testdruck auf {{name}}",
+    "queued": "Testdruck an {{name}} gesendet"
+  },
+  "delete": {
+    "aria": "Drucker {{name}} löschen",
+    "message": "Der Drucker {{name}} und seine Zuordnungsregeln werden gelöscht; Drucke in der Warteschlange werden storniert."
+  },
+  "toast": {
+    "created": "Drucker {{name}} hinzugefügt",
+    "saved": "Drucker {{name}} gespeichert"
+  },
+  "validation": {
+    "required": "Pflichtfeld",
+    "host": "Ungültige Adresse",
+    "hostPublic": "Nur Adressen im lokalen Netz sind erlaubt (z. B. 192.168.x.x, 10.x.x.x)",
+    "port": "Port zwischen 1 und 65535",
+    "chars": "Zwischen 24 und 64 Zeichen",
+    "feed": "Zwischen 0 und 10 Zeilen",
+    "table": "Zahl zwischen 0 und 255",
+    "nameTaken": "Ein Drucker mit diesem Namen existiert bereits",
+    "printerRequired": "Wählen Sie einen Drucker",
+    "duplicateRoute": "Für dieses Dokument und diese Kasse gibt es bereits eine Regel"
+  },
+  "kind": {
+    "daily_ticket": "Tagesticket",
+    "cash_z": "Kassenabschluss (Z)",
+    "payment_receipt": "Zahlungsbeleg",
+    "test_page": "Testseite"
+  },
+  "routing": {
+    "title": "Zuordnung",
+    "description": "Welcher Drucker welches Dokument druckt. Eine Regel für eine Kasse geht der Regel für alle Kassen vor; ohne Regel wird über den Browser gedruckt.",
+    "add": "Regel hinzufügen",
+    "empty": "Keine Regeln",
+    "emptyHint": "Fügen Sie eine Regel hinzu, um Kassenabschlüsse und Belege auf dem Thermodrucker zu drucken.",
+    "emptyNoPrinter": "Fügen Sie zuerst einen Drucker hinzu.",
+    "document": "Dokument",
+    "register": "Kasse",
+    "allRegisters": "Alle Kassen",
+    "printer": "Drucker",
+    "choosePrinter": "Drucker auswählen",
+    "inactivePrinter": "{{name}} (deaktiviert)",
+    "copies": "Kopien",
+    "kickDrawer": "Kassenlade öffnen",
+    "remove": "Regel {{index}} entfernen",
+    "rowAria": "Regel {{index}}: {{document}}",
+    "save": "Zuordnung speichern",
+    "discard": "Änderungen verwerfen",
+    "saved": "Zuordnung gespeichert"
+  },
+  "jobs": {
+    "title": "Letzte Drucke",
+    "description": "Fehlgeschlagene Drucke werden automatisch wiederholt (5 s, 15 s, 1 min, 5 min); danach können Sie sie manuell wiederholen.",
+    "empty": "Noch keine Drucke",
+    "when": "Wann",
+    "document": "Dokument",
+    "printer": "Drucker",
+    "printerDeleted": "Drucker gelöscht",
+    "status": "Ergebnis",
+    "copies_one": "{{count}} Kopie",
+    "copies_other": "{{count}} Kopien",
+    "attempts": "Versuch {{attempts}} von {{max}}",
+    "retry": "Wiederholen",
+    "retryAria": "Druck wiederholen: {{document}}",
+    "retried": "Druck erneut eingereiht"
+  },
+  "jobStatus": {
+    "queued": "In Warteschlange",
+    "printing": "Wird gedruckt",
+    "printed": "Gedruckt",
+    "failed": "Fehlgeschlagen",
+    "cancelled": "Storniert"
+  },
+  "problem": {
+    "printing_unavailable": "ESC/POS-Druck ist nur mit der Desktop-App verfügbar.",
+    "printer_address_not_allowed": "Die Druckeradresse liegt nicht im lokalen Netz.",
+    "print_route_missing": "Für dieses Dokument ist kein Drucker eingerichtet."
+  },
+  "fallback": {
+    "title": "Druck über den Browser",
+    "server_edition": "Der Thermodrucker wird mit der Desktop-App verwendet.",
+    "no_route": "Für dieses Dokument ist kein Thermodrucker eingerichtet.",
+    "printer_inactive": "Der Thermodrucker ist deaktiviert.",
+    "printer_unreachable": "Der Thermodrucker antwortet nicht: Prüfen Sie, ob er eingeschaltet und verbunden ist.",
+    "error": "Der Thermodrucker konnte nicht erreicht werden."
+  },
+  "print": {
+    "sent": "An {{name}} gesendet",
+    "failed": "Druck auf {{name}} fehlgeschlagen",
+    "browser": "Über den Browser drucken",
+    "notPrinted": "{{document}} nicht gedruckt"
+  },
+  "receipt": {
+    "action": "Beleg drucken"
+  },
+  "hint": {
+    "title": "Thermodrucker",
+    "description": "Mit der Desktop-App druckt Arenile nicht-fiskalische Belege und Kassenabschlüsse (und Tagestickets, sobald der Tagesverkauf aktiv ist) auf den WLAN- oder Ethernet-ESC/POS-Druckern des Strandbads.",
+    "action": "Drucker einrichten"
+  }
+}

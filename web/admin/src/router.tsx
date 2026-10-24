@@ -424,6 +424,13 @@ const cashRegistersRoute = createRoute({
   component: lazyRouteComponent(() => import('./features/cash'), 'CashRegistersPage'),
 });
 
+// ---- ESC/POS network printers (ADR 0021) --------------------------------------
+const printersRoute = createRoute({
+  getParentRoute: () => establishmentRoute,
+  path: 'config/printers',
+  component: lazyRouteComponent(() => import('./features/printers'), 'PrintersPage'),
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   firstRunRoute,
@@ -480,6 +487,7 @@ const routeTree = rootRoute.addChildren([
       testModeRoute,
       importsRoute,
       cashRegistersRoute,
+      printersRoute,
     ]),
   ]),
 ]);

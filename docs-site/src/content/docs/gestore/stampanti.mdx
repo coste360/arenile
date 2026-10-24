@@ -1,0 +1,121 @@
+---
+title: Stampanti e ESC/POS
+description: Stampanti termiche di rete (Wi-Fi o Ethernet) con l'app desktop - configurazione, stampa di prova, instradamento per cassa, cassetto portadenaro, ricevute e chiusure Z, ripiego sulla stampa dal browser.
+sidebar:
+  order: 27.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Stampanti**. **Chi:** gestori e proprietari configurano stampanti e
+instradamento; i cassieri vedono lo stato, verificano la connessione e lanciano la stampa di prova.
+
+Arenile stampa **ricevute di pagamento non fiscali** e **chiusure di cassa (Z)** direttamente sulle stampanti
+termiche ESC/POS collegate alla rete del lido, senza finestre di stampa e con taglio della carta e apertura del
+cassetto. I **biglietti giornalieri** useranno le stesse stampanti quando arriverà la vendita giornaliera: fino ad
+allora il documento *Biglietto giornaliero* non compare tra quelli instradabili.
+
+<Aside type="caution" title="Disponibile con l'app desktop">
+La stampa ESC/POS funziona quando Arenile gira sul computer dello stabilimento: con l'[app
+desktop](/gestore/app-desktop/), anche in modalità rete locale. Il server deve raggiungere la stampante sulla
+rete del lido, cosa che un server online (VPS o Docker) non può fare. Su un'installazione server la pagina
+Stampanti lo spiega (la voce non compare nel menu Configurazione): la chiusura di cassa si stampa **dal
+browser**, come sempre, mentre la ricevuta non fiscale esiste solo sulla stampante termica.
+</Aside>
+
+<Screenshot name="admin-printers-desktop" alt="Pagina Stampanti nell'app desktop: una stampante di rete raggiungibile con Verifica e Stampa di prova, l'instradamento dei documenti e le ultime stampe" />
+
+## Stampanti supportate
+
+Qualsiasi stampante termica **ESC/POS** con interfaccia **di rete** (Ethernet o Wi-Fi) che accetta stampe
+dirette sulla porta TCP **9100** (RAW, chiamata anche JetDirect o AppSocket). Le abbiamo pensate per:
+
+| Marca | Modelli tipici | Note |
+| --- | --- | --- |
+| Epson | TM-T20II/III, TM-T88V/VI/VII, TM-m30 | Riferimento ESC/POS; tabella caratteri CP858 = 19 |
+| Xprinter | XP-58, XP-80, XP-Q200 (versioni LAN/Wi-Fi) | Alcuni modelli usano numeri di tabella diversi |
+| Rongta | RP80, RP326, RP850 (LAN/Wi-Fi) | Compatibili Epson |
+| Bixolon | SRP-330, SRP-350, SRP-E300 | Compatibili Epson |
+| Altre | Stampanti "ESC/POS generiche" 58 o 80 mm | Prova con la stampa di prova |
+
+<Aside type="note" title="Non in questa versione">
+Stampanti **USB** o **Bluetooth** e la stampa da un'installazione online tramite un ponte sul computer della
+cassa non sono ancora supportate: in quei casi si stampa dal browser. La stampa dei **biglietti giornalieri**
+arriva con la vendita giornaliera.
+</Aside>
+
+## Collegare la stampante
+
+<Steps>
+
+1. Collega la stampante alla rete del lido (cavo Ethernet al router, oppure Wi-Fi con l'utility del produttore).
+2. Trova il suo **indirizzo IP**: tieni premuto **FEED** mentre la accendi per stampare la pagina di autotest,
+   oppure guarda l'elenco dei dispositivi nel router. Conviene assegnarle un **IP fisso** dal router, così
+   l'indirizzo non cambia.
+3. In Arenile apri **Configurazione → Stampanti** e premi **Aggiungi stampante**.
+4. Indica **Nome** (es. *Banco bar*), **Indirizzo IP o nome host** e **Porta** (quasi sempre 9100).
+5. Scegli **Larghezza carta** (58 o 80 mm): i **Caratteri per riga** si aggiornano (32 o 48).
+6. Premi **Salva**, poi **Verifica**: lo stato diventa **Raggiungibile**.
+7. Premi **Stampa di prova**: esce una pagina con nome dello stabilimento, indirizzo della stampante,
+   lettere accentate, il simbolo €, gli stili, un QR code e il taglio.
+
+</Steps>
+
+Sono accettati **solo indirizzi della rete locale** (192.168.x.x, 10.x.x.x, 172.16-31.x.x): un indirizzo
+pubblico viene rifiutato, anche se è un nome host che punta fuori dalla rete. Lo stesso vale per l'indirizzo del
+computer stesso (127.0.0.1) e per gli indirizzi dei servizi cloud: la stampante è un altro dispositivo. Chi
+sviluppa o fa test con una stampante virtuale sullo stesso PC imposta `ARENILE_PRINTERS_ALLOW_LOOPBACK=true`.
+
+## Opzioni della stampante
+
+- **Tabella caratteri**: **CP858** (predefinita) stampa € e lettere accentate su quasi tutte le stampanti. Se
+  al posto di *à è é* escono simboli strani, prova un altro **Numero tabella (ESC t)** indicato nel manuale.
+  I caratteri che la tabella non ha vengono sostituiti (*€* diventa *EUR* su CP437).
+- **Taglio carta**: completo, parziale o nessuno; **Righe di avanzamento** prima del taglio.
+- **Stampa il logo**: il logo dello stabilimento convertito in bianco e nero (retinato) per la carta termica.
+- **Cassetto portadenaro**: se il cassetto è collegato alla stampante (cavo RJ11), scegli il **pin** (2 è lo
+  standard). Si apre a fine stampa quando la regola di instradamento lo prevede.
+- **Attiva**: una stampante disattivata non riceve stampe.
+
+## Instradamento: quale stampante per quale documento
+
+Nella sezione **Instradamento** scegli, per ogni documento, la stampante e il numero di **Copie**:
+
+- una regola per **Tutte le casse** vale come predefinita;
+- una regola per una **cassa** precisa vale prima di quella predefinita (es. il bar stampa sulla sua stampante);
+- **Apri cassetto** apre il cassetto a fine stampa (solo per le stampanti con cassetto, una volta sola anche se
+  la stampa viene rispedita);
+- con **Copie** 2 o 3, dalla seconda in poi la stampa porta in testa la dicitura **COPIA**.
+
+Senza una regola la chiusura si stampa dal browser e la ricevuta non viene proposta. Premi **Salva
+instradamento** per applicare le modifiche.
+
+## Stampare dalla cassa
+
+In [Cassa](/gestore/cassa/) i pulsanti **Stampa riepilogo** e **Stampa chiusura Z** usano la stampante
+termica quando c'è una regola e la stampante è attiva e raggiungibile: compare *Inviato a Banco bar*.
+Altrimenti si apre la stampa del browser con un avviso che spiega il motivo (nessuna stampante configurata,
+stampante disattivata o non raggiungibile). Dopo un **Incassa**, se è pronta una stampante per le ricevute,
+il messaggio di conferma offre **Stampa ricevuta** (ricevuta **non fiscale**).
+
+## Ultime stampe e nuovi tentativi
+
+La sezione **Ultime stampe** mostra ogni stampa con il suo esito. Se la stampante è spenta o fuori rete,
+Arenile riprova da solo dopo 5 secondi, 15 secondi, 1 minuto e 5 minuti; poi la stampa risulta **Non
+riuscita** e puoi premere **Riprova**. Mentre una stampante non risponde, le stampe in coda per le altre
+stampanti partono lo stesso. Un doppio clic sullo stesso pulsante crea una sola stampa; premere di nuovo
+**Stampa riepilogo** più tardi è una ristampa voluta e ne crea un'altra. Se Arenile viene chiuso proprio
+mentre sta inviando una stampa, alla riapertura la rispedisce (potrebbe uscire due volte, senza riaprire il
+cassetto). Il contenuto delle stampe concluse viene cancellato dopo 30 giorni; resta solo la riga con l'esito.
+
+<Screenshot name="admin-printers" alt="Pagina Stampanti su un'installazione server: avviso che la stampa ESC/POS è disponibile con l'app desktop" />
+
+## Risolvere i problemi
+
+- **Non raggiungibile**: controlla che la stampante sia accesa, sulla stessa rete del computer con Arenile e
+  che l'IP non sia cambiato (pagina di autotest).
+- **Lettere sbagliate**: cambia **Numero tabella (ESC t)** o **Tabella caratteri**.
+- **Testo troppo largo o troppo stretto**: correggi **Caratteri per riga** (32 su 58 mm, 48 su 80 mm; alcune
+  stampanti da 80 mm usano 42).
+- **Il cassetto non si apre**: prova l'altro pin e verifica che la regola abbia **Apri cassetto**.

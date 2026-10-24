@@ -163,7 +163,8 @@
       "cashRegisters": "Caisses",
       "imports": "Importer des données",
       "testMode": "Mode test",
-      "entryTickets": "Billets d'entrée"
+      "entryTickets": "Billets d'entrée",
+      "printers": "Imprimantes"
     },
     "operations": "Exploitation",
     "configGroup": "Configuration",

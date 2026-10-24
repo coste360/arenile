@@ -1,0 +1,192 @@
+{
+  "page": {
+    "title": "Stampanti",
+    "description": "Stampanti termiche ESC/POS di rete (Wi-Fi o Ethernet) per ricevute non fiscali e chiusure di cassa, e per i biglietti giornalieri quando la vendita giornaliera sarà attiva: indirizzo, larghezza carta, taglio, cassetto, instradamento per cassa e stampa di prova. Disponibile con l'app desktop."
+  },
+  "add": "Aggiungi stampante",
+  "actions": "Azioni",
+  "inactive": "Disattivata",
+  "editAria": "Modifica la stampante {{name}}",
+  "unavailable": {
+    "title": "Stampa ESC/POS disponibile con l'app desktop",
+    "description": "Le stampanti termiche di rete si usano quando Arenile gira sul computer dello stabilimento (app desktop, anche in modalità rete locale), perché deve raggiungere la stampante sulla rete del lido. Su questa installazione la chiusura di cassa si stampa dal browser; le ricevute non fiscali richiedono l'app desktop con una stampante termica."
+  },
+  "list": {
+    "title": "Stampanti configurate",
+    "description": "Stampanti ESC/POS raggiungibili sulla rete locale (porta TCP 9100). Verifica controlla la connessione senza stampare.",
+    "empty": "Nessuna stampante",
+    "emptyHint": "Aggiungi la stampante con il suo indirizzo IP: lo trovi sullo scontrino di autotest (tieni premuto FEED all'accensione) o nella lista dei dispositivi del router.",
+    "emptyServer": "Con l'app desktop puoi collegare stampanti termiche Wi-Fi o Ethernet."
+  },
+  "form": {
+    "addTitle": "Nuova stampante",
+    "editTitle": "Modifica stampante",
+    "description": "Stampante termica ESC/POS collegata alla rete del lido (Wi-Fi o Ethernet)."
+  },
+  "sections": {
+    "paper": "Carta e caratteri",
+    "extras": "Logo e cassetto"
+  },
+  "fields": {
+    "name": "Nome",
+    "namePlaceholder": "Es. Cassa bar",
+    "host": "Indirizzo IP o nome host",
+    "hostHint": "Solo indirizzi della rete locale (es. 192.168.1.50). Consiglio: assegna alla stampante un IP fisso dal router.",
+    "port": "Porta",
+    "portHint": "Quasi sempre 9100 (RAW / JetDirect).",
+    "paperWidth": "Larghezza carta",
+    "charsPerLine": "Caratteri per riga",
+    "charsPerLineHint": "32 per carta da 58 mm, 48 per carta da 80 mm (font A).",
+    "codepage": "Tabella caratteri",
+    "codepageHint": "CP858 stampa € e lettere accentate su quasi tutte le stampanti.",
+    "codepageTable": "Numero tabella (ESC t)",
+    "codepageTableHint": "Lascia vuoto per il valore standard Epson; alcune stampanti cinesi usano numeri diversi (vedi manuale).",
+    "codepageTableAuto": "Automatico",
+    "cutMode": "Taglio carta",
+    "feedLines": "Righe di avanzamento",
+    "feedLinesHint": "Righe vuote prima del taglio (0-10).",
+    "drawer": "Cassetto portadenaro",
+    "drawerHint": "Collegato alla stampante con il cavo RJ11: si apre a fine stampa quando la regola lo prevede.",
+    "printLogo": "Stampa il logo",
+    "printLogoHint": "Il logo dello stabilimento, convertito in bianco e nero per la carta termica.",
+    "active": "Attiva",
+    "activeHint": "Una stampante disattivata non riceve stampe: i documenti vanno al browser.",
+    "status": "Stato"
+  },
+  "paper": {
+    "58": "58 mm",
+    "80": "80 mm"
+  },
+  "codepage": {
+    "cp858": "CP858 (Europa occidentale con €)",
+    "cp437": "CP437 (USA, senza €)",
+    "cp850": "CP850 (Europa occidentale)",
+    "cp852": "CP852 (Europa centrale)",
+    "cp1252": "Windows-1252"
+  },
+  "cut": {
+    "full": "Taglio completo",
+    "partial": "Taglio parziale",
+    "none": "Nessun taglio"
+  },
+  "drawer": {
+    "none": "Nessun cassetto",
+    "pin2": "Pin 2 (standard)",
+    "pin5": "Pin 5"
+  },
+  "status": {
+    "unknown": "Non verificata",
+    "reachable": "Raggiungibile",
+    "unreachable": "Non raggiungibile",
+    "checkedAt": "Verificata {{time}}"
+  },
+  "check": {
+    "action": "Verifica",
+    "aria": "Verifica la connessione con {{name}}",
+    "reachable": "{{name}} è raggiungibile",
+    "unreachable": "{{name}} non risponde",
+    "latency": "Risposta in {{ms}} ms"
+  },
+  "test": {
+    "action": "Stampa di prova",
+    "aria": "Stampa di prova su {{name}}",
+    "queued": "Stampa di prova inviata a {{name}}"
+  },
+  "delete": {
+    "aria": "Elimina la stampante {{name}}",
+    "message": "La stampante {{name}} e le sue regole di instradamento saranno eliminate; le stampe in coda saranno annullate."
+  },
+  "toast": {
+    "created": "Stampante {{name}} aggiunta",
+    "saved": "Stampante {{name}} salvata"
+  },
+  "validation": {
+    "required": "Campo obbligatorio",
+    "host": "Indirizzo non valido",
+    "hostPublic": "Sono ammessi solo indirizzi della rete locale (es. 192.168.x.x, 10.x.x.x)",
+    "port": "Porta tra 1 e 65535",
+    "chars": "Tra 24 e 64 caratteri",
+    "feed": "Tra 0 e 10 righe",
+    "table": "Numero tra 0 e 255",
+    "nameTaken": "Esiste già una stampante con questo nome",
+    "printerRequired": "Scegli una stampante",
+    "duplicateRoute": "Esiste già una regola per questo documento e questa cassa"
+  },
+  "kind": {
+    "daily_ticket": "Biglietto giornaliero",
+    "cash_z": "Chiusura di cassa (Z)",
+    "payment_receipt": "Ricevuta di pagamento",
+    "test_page": "Pagina di prova"
+  },
+  "routing": {
+    "title": "Instradamento",
+    "description": "Quale stampante stampa ogni documento. Una regola per una cassa vale prima di quella per tutte le casse; senza regola il documento si stampa dal browser.",
+    "add": "Aggiungi regola",
+    "empty": "Nessuna regola",
+    "emptyHint": "Aggiungi una regola per stampare chiusure di cassa e ricevute sulla stampante termica.",
+    "emptyNoPrinter": "Aggiungi prima una stampante.",
+    "document": "Documento",
+    "register": "Cassa",
+    "allRegisters": "Tutte le casse",
+    "printer": "Stampante",
+    "choosePrinter": "Scegli una stampante",
+    "inactivePrinter": "{{name}} (disattivata)",
+    "copies": "Copie",
+    "kickDrawer": "Apri cassetto",
+    "remove": "Rimuovi la regola {{index}}",
+    "rowAria": "Regola {{index}}: {{document}}",
+    "save": "Salva instradamento",
+    "discard": "Annulla modifiche",
+    "saved": "Instradamento salvato"
+  },
+  "jobs": {
+    "title": "Ultime stampe",
+    "description": "Le stampe non riuscite vengono ritentate automaticamente (5 s, 15 s, 1 min, 5 min); poi puoi riprovare a mano.",
+    "empty": "Ancora nessuna stampa",
+    "when": "Quando",
+    "document": "Documento",
+    "printer": "Stampante",
+    "printerDeleted": "Stampante eliminata",
+    "status": "Esito",
+    "copies_one": "{{count}} copia",
+    "copies_other": "{{count}} copie",
+    "attempts": "Tentativo {{attempts}} di {{max}}",
+    "retry": "Riprova",
+    "retryAria": "Riprova la stampa: {{document}}",
+    "retried": "Stampa rimessa in coda"
+  },
+  "jobStatus": {
+    "queued": "In coda",
+    "printing": "In stampa",
+    "printed": "Stampato",
+    "failed": "Non riuscito",
+    "cancelled": "Annullato"
+  },
+  "problem": {
+    "printing_unavailable": "La stampa ESC/POS è disponibile solo con l'app desktop.",
+    "printer_address_not_allowed": "L'indirizzo della stampante non è nella rete locale.",
+    "print_route_missing": "Nessuna stampante configurata per questo documento."
+  },
+  "fallback": {
+    "title": "Stampa dal browser",
+    "server_edition": "La stampante termica si usa con l'app desktop.",
+    "no_route": "Nessuna stampante termica configurata per questo documento.",
+    "printer_inactive": "La stampante termica è disattivata.",
+    "printer_unreachable": "La stampante termica non risponde: controlla che sia accesa e in rete.",
+    "error": "Impossibile contattare la stampante termica."
+  },
+  "print": {
+    "sent": "Inviato a {{name}}",
+    "failed": "Stampa non riuscita su {{name}}",
+    "browser": "Stampa dal browser",
+    "notPrinted": "{{document}} non stampato"
+  },
+  "receipt": {
+    "action": "Stampa ricevuta"
+  },
+  "hint": {
+    "title": "Stampanti termiche",
+    "description": "Con l'app desktop Arenile stampa ricevute non fiscali e chiusure di cassa (e, quando sarà attiva la vendita giornaliera, i biglietti) sulle stampanti ESC/POS Wi-Fi o Ethernet del lido.",
+    "action": "Configura le stampanti"
+  }
+}

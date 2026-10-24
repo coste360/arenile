@@ -32,6 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useInstantFormat } from '../../establishment';
+import { PrintersHint } from '../printers';
 import { useInstanceMeta } from '../../lib/meta';
 import {
   type DesktopBackup,
@@ -107,6 +108,7 @@ export function DesktopSettingsPage() {
         />
       )}
       <BackupsSection />
+      <PrintersHint />
     </Page>
   );
 }

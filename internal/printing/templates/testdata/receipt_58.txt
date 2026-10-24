@@ -1,0 +1,21 @@
+<1b>@<1b>t<13><1b>a<01><1b>E<01><1d>!<11>Lido Azzurro<0a>
+<1d>!<00><1b>E<00>Lungomare Caio Duilio 12, Gaeta<0a>
+(LT)<0a>
+P.IVA 01234567890<0a>
+Tel. 0771 123456<0a>
+<1b>a<00>================================<0a>
+<1b>a<01><1b>E<01>RICEVUTA NON FISCALE<0a>
+<1b>E<00><1b>a<00>N.                      7F3K0042<0a>
+Data            14/08/2026 09:35<0a>
+Codice                  ARN-7F3K<0a>
+--------------------------------<0a>
+Acconto prenotazione    <d5> 150,00<0a>
+ARN-7F3K<0a>
+--------------------------------<0a>
+<1b>E<01><1d>!<01>TOTALE                  <d5> 150,00<0a>
+<1d>!<00><1b>E<00>IVA 22% su <d5> 122,95      <d5> 27,05<0a>
+Pagamento                  Carta<0a>
+Operatore                   Anna<0a>
+<1b>d<01><1b>a<01>Documento non fiscale<0a>
+<1b>a<00><1b>d<01><1b>a<01><1b>M<01>Arenile<0a>
+<1b>M<00><1b>a<00><1b>d<03><1d>V<01>

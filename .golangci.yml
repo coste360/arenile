@@ -81,6 +81,7 @@ linters:
         - modificato
         - compreso
         - presentato
+        - identificativo
         - contanti
     errorlint:
       errorf: true
