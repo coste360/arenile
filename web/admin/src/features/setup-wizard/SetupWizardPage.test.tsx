@@ -339,16 +339,18 @@ describe('SetupWizardPage', () => {
     expect(await stepHeading()).toHaveTextContent('Passo 1 di 6');
   });
 
-  it('shows the payments step with Stripe coming soon', async () => {
+  it('shows the payments step with the link to set up Stripe', async () => {
     const user = userEvent.setup();
     renderApp(PATH, routes());
     await stepHeading();
     const nav = screen.getByRole('navigation', { name: 'Passi della configurazione' });
     await user.click(within(nav).getByRole('button', { name: /Pagamenti/ }));
-    expect(screen.getByLabelText(/Pagamento manuale/)).toBeChecked();
-    expect(screen.getByLabelText(/Stripe/)).toBeDisabled();
-    expect(screen.getByText('Disponibile a breve.')).toBeInTheDocument();
-    expect(screen.queryByText(/M4/)).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'In cassa' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Configura i pagamenti online' })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/\/e\/[^/]+\/config\/payments$/),
+    );
+    expect(screen.queryByText(/In arrivo|Disponibile a breve|M4/)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Concludi la configurazione' }));
     expect(
       await screen.findByRole('heading', { name: 'Configurazione completata' }),

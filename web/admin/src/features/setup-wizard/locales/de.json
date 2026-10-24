@@ -98,12 +98,12 @@
     "intro": "Aktivieren Sie Online-Buchungen, wählen Sie die Farben und kopieren Sie den Code für Ihre Website."
   },
   "payments": {
-    "intro": "Wählen Sie, wie Sie kassieren.",
-    "method": "Zahlungsart",
-    "manual": "Manuelle Zahlung",
-    "manualHint": "Kassiert an der Kasse (bar, Karte, Überweisung); Online-Buchungen werden vor Ort bezahlt.",
-    "stripe": "Stripe (Online-Zahlung)",
-    "stripeLater": "Bald verfügbar."
+    "intro": "So nehmen Sie Zahlungen an: An der Kasse ist nichts einzurichten; für Online-Zahlungen verbinden Sie Ihr Stripe-Konto.",
+    "manual": "An der Kasse",
+    "manualHint": "Bar, Kartenterminal oder Überweisung, an der Kasse erfasst. Sofort bereit.",
+    "stripe": "Online mit Stripe",
+    "stripeHint": "Gäste zahlen per Karte auf der öffentlichen Seite; die Buchung wird erst nach Zahlungseingang bestätigt. Das geht auch später.",
+    "stripeSetup": "Online-Zahlungen einrichten"
   },
   "finished": {
     "title": "Einrichtung abgeschlossen",

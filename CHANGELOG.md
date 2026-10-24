@@ -10,6 +10,8 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 - Configurazione → Tutti gli stabilimenti: tolto il riquadro provvisorio "Sezione in preparazione · Disponibile dalla
   milestone M1" rimasto dalla prima milestone; il titolare trova il pulsante **Nuovo stabilimento** nell'elenco, anche
   quando è vuoto (prima si raggiungeva solo dal selettore in alto).
+- Configurazione guidata, passo Pagamenti: Stripe non è più mostrato disattivato con "In arrivo · Disponibile a breve";
+  il passo spiega che in cassa è tutto pronto e porta con **Configura i pagamenti online** alla pagina di Stripe.
 
 ### Modificato
 - Repository pubblico: le GitHub Actions non conservano più binari o pacchetti desktop come artefatti (sarebbero

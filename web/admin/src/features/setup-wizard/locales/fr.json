@@ -98,12 +98,12 @@
     "intro": "Activez les réservations en ligne, choisissez les couleurs et copiez le code à coller dans votre site."
   },
   "payments": {
-    "intro": "Choisissez comment encaisser.",
-    "method": "Mode de paiement",
-    "manual": "Paiement manuel",
-    "manualHint": "Encaissé à la caisse (espèces, carte, virement) ; les réservations en ligne sont réglées sur place.",
-    "stripe": "Stripe (paiement en ligne)",
-    "stripeLater": "Bientôt disponible."
+    "intro": "Comment vous encaissez : rien à configurer à la caisse ; pour faire payer les réservations en ligne, connectez votre compte Stripe.",
+    "manual": "À la caisse",
+    "manualHint": "Espèces, terminal de paiement ou virement, enregistrés à la caisse. Prêt tout de suite.",
+    "stripe": "En ligne avec Stripe",
+    "stripeHint": "Le client paie par carte sur la page publique ; la réservation n'est confirmée qu'à réception du paiement. Vous pouvez le faire plus tard.",
+    "stripeSetup": "Configurer les paiements en ligne"
   },
   "finished": {
     "title": "Configuration terminée",

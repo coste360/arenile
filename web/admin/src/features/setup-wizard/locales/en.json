@@ -98,12 +98,12 @@
     "intro": "Turn on online bookings, choose the colours and copy the code to paste into your website."
   },
   "payments": {
-    "intro": "Choose how you collect payments.",
-    "method": "Payment method",
-    "manual": "Manual payment",
-    "manualHint": "Collected at the desk (cash, card, bank transfer); online bookings are paid on site.",
-    "stripe": "Stripe (online payment)",
-    "stripeLater": "Available soon."
+    "intro": "How you take payments: nothing to set up at the desk; to take payment for online bookings, connect your Stripe account.",
+    "manual": "At the desk",
+    "manualHint": "Cash, card terminal or bank transfer, recorded at the cash desk. Ready now.",
+    "stripe": "Online with Stripe",
+    "stripeHint": "Customers pay by card on the public page; the booking is confirmed only once the payment arrives. You can do this later too.",
+    "stripeSetup": "Set up online payments"
   },
   "finished": {
     "title": "Setup completed",

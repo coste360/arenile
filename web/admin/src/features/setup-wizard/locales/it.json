@@ -98,12 +98,12 @@
     "intro": "Attiva le prenotazioni online, scegli i colori e copia il codice da incollare sul tuo sito."
   },
   "payments": {
-    "intro": "Scegli come incassare.",
-    "method": "Metodo di pagamento",
-    "manual": "Pagamento manuale",
-    "manualHint": "Incassi in cassa (contanti, POS, bonifico); le prenotazioni online restano da saldare in loco.",
-    "stripe": "Stripe (pagamento online)",
-    "stripeLater": "Disponibile a breve."
+    "intro": "Come incassi: in cassa non serve configurare niente; per far pagare online le prenotazioni collega il tuo account Stripe.",
+    "manual": "In cassa",
+    "manualHint": "Contanti, POS o bonifico, registrati dalla cassa. Pronto subito.",
+    "stripe": "Online con Stripe",
+    "stripeHint": "Il cliente paga con carta sulla pagina pubblica; la prenotazione è confermata solo a pagamento ricevuto. Puoi farlo anche più tardi.",
+    "stripeSetup": "Configura i pagamenti online"
   },
   "finished": {
     "title": "Configurazione completata",
