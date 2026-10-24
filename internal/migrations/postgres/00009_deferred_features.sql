@@ -122,6 +122,12 @@ UPDATE cash_sessions SET register_id = (
 );
 CREATE UNIQUE INDEX cash_sessions_register_open_uidx ON cash_sessions (register_id) WHERE closed_at IS NULL;
 CREATE INDEX cash_sessions_register_opened_idx ON cash_sessions (register_id, opened_at);
+-- INV-73: every session belongs to a register of its own establishment
+-- (the backfill above gave every row its register).
+ALTER TABLE cash_sessions ALTER COLUMN register_id SET NOT NULL;
+ALTER TABLE cash_registers ADD CONSTRAINT cash_registers_establishment_id_key UNIQUE (establishment_id, id);
+ALTER TABLE cash_sessions ADD CONSTRAINT cash_sessions_register_establishment_fkey
+    FOREIGN KEY (establishment_id, register_id) REFERENCES cash_registers (establishment_id, id);
 
 CREATE TABLE webhook_delivery_attempts (
     id               uuid PRIMARY KEY,
@@ -186,6 +192,8 @@ CREATE INDEX admin_notifications_unread_idx ON admin_notifications (establishmen
 DROP TABLE admin_notifications;
 DROP TABLE import_jobs;
 DROP TABLE webhook_delivery_attempts;
+ALTER TABLE cash_sessions DROP CONSTRAINT cash_sessions_register_establishment_fkey;
+ALTER TABLE cash_registers DROP CONSTRAINT cash_registers_establishment_id_key;
 DROP INDEX cash_sessions_register_opened_idx;
 DROP INDEX cash_sessions_register_open_uidx;
 ALTER TABLE cash_sessions DROP COLUMN register_id;

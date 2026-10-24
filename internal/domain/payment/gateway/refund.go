@@ -135,6 +135,15 @@ func (s *Service) reserveRefund(ctx context.Context, tx bun.IDB, es store.Establ
 	if _, err := store.LockBooking(ctx, tx, es, *pay.BookingID); err != nil {
 		return nil, fmt.Errorf("gateway: %w", err)
 	}
+	if req.RefuseOpenRequests {
+		// ADR 0019: no manual provider refund while a guaranteed refund of
+		// the booking is open (the job owns it; 409 refund_in_progress).
+		// Under the booking lock, so a cancellation committing meanwhile
+		// cannot slip through (INV-75).
+		if err := payment.CheckNoOpenRefundRequest(ctx, tx, es, *pay.BookingID); err != nil {
+			return nil, err
+		}
+	}
 	pp, ok := s.d.Providers.PaymentProvider(pay.Provider)
 	if !ok {
 		return nil, ErrProviderNotConfigured
@@ -201,13 +210,7 @@ func (s *Service) RefundBooking(ctx context.Context, p *auth.Principal, establis
 		return nil, err
 	}
 	req.Actor = p.Actor(reqctx.From(ctx).ClientIP)
-	if req.BookingID != "" {
-		// ADR 0019: no manual provider refund while a guaranteed refund of
-		// the booking is open (the job owns it; 409 refund_in_progress).
-		if err := payment.CheckNoOpenRefundRequest(ctx, s.d.DB, es, req.BookingID); err != nil {
-			return nil, err
-		}
-	}
+	req.RefuseOpenRequests = true // checked under the booking lock in reserveRefund
 	return s.RefundViaProvider(ctx, es, req)
 }
 

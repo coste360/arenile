@@ -17,7 +17,7 @@
   },
   "upload": {
     "title": "Nouvelle importation",
-    "description": "Chargez un fichier CSV (UTF-8 ou Windows, séparateur ; ou ,), au maximum 5 Mo et 20 000 lignes. Le fichier ne modifie aucune donnée avant votre confirmation.",
+    "description": "Chargez un fichier CSV (UTF-8 ou Windows, séparateur ; ou ,), au maximum 5 Mo et 2 000 lignes (500 pour les abonnements). Le fichier ne modifie aucune donnée avant votre confirmation.",
     "kind": "Contenu du fichier",
     "columns": {
       "customers": "Colonnes reconnues : cognome (nom, obligatoire), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. Les noms anglais et ceux des logiciels les plus courants sont aussi acceptés.",

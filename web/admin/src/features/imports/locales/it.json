@@ -17,7 +17,7 @@
   },
   "upload": {
     "title": "Nuova importazione",
-    "description": "Carica un file CSV (UTF-8 o Windows, separatore ; o ,), al massimo 5 MB e 20.000 righe. Il file non tocca i dati finché non confermi.",
+    "description": "Carica un file CSV (UTF-8 o Windows, separatore ; o ,), al massimo 5 MB e 2.000 righe (500 per gli abbonamenti). Il file non tocca i dati finché non confermi.",
     "kind": "Cosa contiene il file",
     "columns": {
       "customers": "Colonne riconosciute: cognome (obbligatoria), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. Sono accettati anche i nomi inglesi e quelli dei gestionali più diffusi.",

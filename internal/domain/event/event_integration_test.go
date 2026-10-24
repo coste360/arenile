@@ -300,7 +300,7 @@ func count(t *testing.T, db *store.DB, table string) int {
 // TestDispatcher_TestModeEventsNotDelivered (INV-74): the events of a test
 // booking are flagged when they are written, so they never reach the
 // outgoing webhooks, even when the purge deleted the booking before the
-// dispatcher ran; the events of a real booking are delivered. The sinks and
+// dispatcher ran; the events of a realBk booking are delivered. The sinks and
 // the bus still see every event (the panel shows test rows).
 func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
 	storetest.Each(t, func(t *testing.T, db *store.DB) {
@@ -376,7 +376,7 @@ func TestDispatcher_TestModeEventsNotDelivered(t *testing.T) {
 			}
 		}
 		if !realDelivered {
-			t.Fatal("the events of the real booking were not scheduled")
+			t.Fatal("the events of the realBk booking were not scheduled")
 		}
 		if len(sink.events) < 2 {
 			t.Fatalf("sinks received %d events, want every event (test ones included)", len(sink.events))

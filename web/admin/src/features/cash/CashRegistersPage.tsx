@@ -60,42 +60,51 @@ export function CashRegistersPage() {
     );
   }
 
+  const status = (r: CashRegister) =>
+    !r.active ? (
+      <StatusBadge tone="neutral">{t('registersPage.inactive')}</StatusBadge>
+    ) : r.open_session_id ? (
+      <StatusBadge tone="success">{t('registersPage.sessionOpen')}</StatusBadge>
+    ) : (
+      <StatusBadge tone="info">{t('registersPage.sessionClosed')}</StatusBadge>
+    );
+  // On phones the secondary columns are hidden (meta.hideBelow) and the
+  // name cell stacks code and status, so the row actions stay on screen.
   const columns: ColumnDef<CashRegister>[] = [
     {
       accessorKey: 'name',
       meta: { label: t('registersPage.fields.name') },
       header: t('registersPage.fields.name'),
       cell: ({ row }) => (
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{row.original.name}</span>
-          {row.original.is_default && (
-            <StatusBadge tone="neutral">{t('registersPage.default')}</StatusBadge>
-          )}
+        <span className="flex flex-col gap-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="font-medium">{row.original.name}</span>
+            {row.original.is_default && (
+              <StatusBadge tone="neutral">{t('registersPage.default')}</StatusBadge>
+            )}
+          </span>
+          <span className="flex flex-wrap items-center gap-2 sm:hidden">
+            {status(row.original)}
+            <span className="font-mono text-xs text-muted-foreground">{row.original.code}</span>
+          </span>
         </span>
       ),
     },
     {
       accessorKey: 'code',
-      meta: { label: t('registersPage.fields.code') },
+      meta: { label: t('registersPage.fields.code'), hideBelow: 'sm' },
       header: t('registersPage.fields.code'),
       cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span>,
     },
     {
       id: 'status',
-      meta: { label: t('registersPage.fields.status') },
+      meta: { label: t('registersPage.fields.status'), hideBelow: 'sm' },
       header: t('registersPage.fields.status'),
-      cell: ({ row }) =>
-        !row.original.active ? (
-          <StatusBadge tone="neutral">{t('registersPage.inactive')}</StatusBadge>
-        ) : row.original.open_session_id ? (
-          <StatusBadge tone="success">{t('registersPage.sessionOpen')}</StatusBadge>
-        ) : (
-          <StatusBadge tone="info">{t('registersPage.sessionClosed')}</StatusBadge>
-        ),
+      cell: ({ row }) => status(row.original),
     },
     {
       accessorKey: 'sort_order',
-      meta: { label: t('registersPage.fields.sortOrder'), align: 'right' },
+      meta: { label: t('registersPage.fields.sortOrder'), align: 'right', hideBelow: 'md' },
       header: t('registersPage.fields.sortOrder'),
     },
     {

@@ -124,6 +124,25 @@ UPDATE cash_sessions SET register_id = (
 );
 CREATE UNIQUE INDEX cash_sessions_register_open_uidx ON cash_sessions (register_id) WHERE closed_at IS NULL;
 CREATE INDEX cash_sessions_register_opened_idx ON cash_sessions (register_id, opened_at);
+-- INV-73: every session belongs to a register of its own establishment.
+-- SQLite cannot add NOT NULL or a composite foreign key to an existing
+-- column, so triggers enforce both (PostgreSQL uses constraints).
+-- +goose StatementBegin
+CREATE TRIGGER cash_sessions_register_required_ins BEFORE INSERT ON cash_sessions
+WHEN NEW.register_id IS NULL
+    OR (SELECT r.establishment_id FROM cash_registers r WHERE r.id = NEW.register_id) IS NOT NEW.establishment_id
+BEGIN
+    SELECT RAISE(ABORT, 'cash_sessions.register_id must name a register of the same establishment');
+END;
+-- +goose StatementEnd
+-- +goose StatementBegin
+CREATE TRIGGER cash_sessions_register_required_upd BEFORE UPDATE OF register_id, establishment_id ON cash_sessions
+WHEN NEW.register_id IS NULL
+    OR (SELECT r.establishment_id FROM cash_registers r WHERE r.id = NEW.register_id) IS NOT NEW.establishment_id
+BEGIN
+    SELECT RAISE(ABORT, 'cash_sessions.register_id must name a register of the same establishment');
+END;
+-- +goose StatementEnd
 
 CREATE TABLE webhook_delivery_attempts (
     id               TEXT PRIMARY KEY,
@@ -188,6 +207,8 @@ CREATE INDEX admin_notifications_unread_idx ON admin_notifications (establishmen
 DROP TABLE admin_notifications;
 DROP TABLE import_jobs;
 DROP TABLE webhook_delivery_attempts;
+DROP TRIGGER cash_sessions_register_required_upd;
+DROP TRIGGER cash_sessions_register_required_ins;
 DROP INDEX cash_sessions_register_opened_idx;
 DROP INDEX cash_sessions_register_open_uidx;
 ALTER TABLE cash_sessions DROP COLUMN register_id;

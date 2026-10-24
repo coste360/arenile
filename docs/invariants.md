@@ -635,10 +635,13 @@ solo hold), `TestWaitlist_CancellationOffersToFirstEntryAndAcceptGoesToCheckout`
 **INV-73 — Una sola sessione aperta per cassa.**
 Ogni stabilimento ha una cassa predefinita attiva (indice unico parziale su `cash_registers.is_default`) e al massimo
 una sessione aperta per cassa (`cash_sessions_register_open_uidx` su `register_id` con `closed_at IS NULL`, accanto
-all'indice di 00003 sul codice). La migrazione 00009 assegna `register_id` a ogni sessione esistente.
+all'indice di 00003 sul codice). La migrazione 00009 assegna `register_id` a ogni sessione esistente e da allora lo
+schema esige che ogni sessione abbia una cassa **dello stesso stabilimento**: `NOT NULL` e chiave esterna composta
+`(establishment_id, register_id)` su PostgreSQL, trigger equivalenti su SQLite.
 Il servizio cassa apre solo casse attive e tiene il lock della riga della cassa durante l'apertura, così disattivazione
 e apertura non si sovrappongono; la cassa predefinita creata in modo pigro è unica anche sotto concorrenza.
-Verificata da: `TestMigration00009_CashRegisterBackfill` (`internal/store`), `TestConcurrency_OpenSessionPerRegister`,
+Verificata da: `TestMigration00009_CashRegisterBackfill` (`internal/store`, anche sessione senza cassa o con cassa di
+un altro stabilimento rifiutata), `TestConcurrency_OpenSessionPerRegister`,
 `TestCashRegisters_TwoOpenSessionsReconcile`, `TestCashRegisters_CRUD` (`internal/domain/cash`), tutti con tag
 `integration`, SQLite e PostgreSQL. Stato: implemented.
 
@@ -666,19 +669,31 @@ ancora rimborsato. Un indice unico su `(booking_id, payment_intent_id)` delle ri
 richieste vive per lo stesso pagamento; l'invio al provider usa una chiave di idempotenza fissa per ciclo e un
 reclamo condizionale della riga, quindi anche con più istanze e ritentativi il provider esegue il rimborso una volta.
 Finché una richiesta è viva un rimborso manuale o una seconda cancellazione sono rifiutati (409
-`refund_in_progress`). Tentativi esauriti → `failed`, notifica al titolare, riprova manuale.
+`refund_in_progress`); il controllo avviene **sotto il lock della prenotazione** (`payment.refund`,
+`gateway.reserveRefund`), mai prima, così una cancellazione che si conclude nel frattempo non lascia passare il
+rimborso manuale. Una stessa chiave di idempotenza non viene mai rinviata al provider oltre la sua finestra
+(`refund.IdempotencyWindow`, 24 ore): un intento rimasto `created` più a lungo è segnato `failed`
+(`idempotency_window_elapsed`) e la richiesta passa a `failed` per la riconciliazione manuale sul cruscotto del
+provider prima di **Riprova**, che usa una chiave nuova. Tentativi esauriti → `failed`, notifica a titolare e gestore
+(audience `manager`: chi ha `refunds.issue`), riprova manuale.
 Verificata da: `TestConcurrency_CancelRefundOnce` (100 tentativi paralleli tra cancellazioni e invii: una richiesta, un rimborso),
-`TestRefund_ProviderDownThenUp`, `TestRefund_DeadLetterThenRetry`, `TestRefund_ReserveCapsAtProviderPayments`,
-`TestRefund_PanelCancellation` (`internal/domain/refund`, tag `integration`, SQLite e PostgreSQL), `TestBackoff_Steps`,
-`TestCycle_RetryStartsNewCycle`, `TestIntentKey_DerivedAfterRefusal`. Stato: implemented.
+`TestRefund_ProviderDownThenUp`, `TestRefund_DeadLetterThenRetry`, `TestRefund_IdempotencyWindowElapsed`,
+`TestRefund_ReserveCapsAtProviderPayments`, `TestRefund_PanelCancellation` (`internal/domain/refund`, tag
+`integration`, SQLite e PostgreSQL), `TestBackoff_Steps`, `TestCycle_RetryStartsNewCycle`,
+`TestIntentKey_DerivedAfterRefusal`. Stato: implemented.
 
 **INV-76 — La purga di prova non tocca mai una riga reale.**
 L'eliminazione in blocco delle prenotazioni di prova avviene in un'unica transazione, rilascia prima i contatori dei
 pool e cancella solo righe con `test = true` o appartenenti a una prenotazione di prova (pagamenti, intent, documenti,
 richieste di rimborso, messaggi, righe di credito); il saldo crediti dei clienti coinvolti è ricalcolato dal registro
-e non diventa mai negativo; il registro attività resta.
+e non diventa mai negativo; il registro attività resta. Se un credito generato da una prenotazione di prova è già
+stato speso su una prenotazione reale, la purga (anche in `dry_run`) è rifiutata con 409 finché i crediti di quei
+clienti non sono corretti: il valore di prova non entra mai nell'incassato reale.
 Verificata da: `TestAcceptance_TestMode` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL: la
-prenotazione reale e il suo pagamento restano, le postazioni di prova tornano libere). Stato: implemented.
+prenotazione reale e il suo pagamento restano, le postazioni di prova tornano libere),
+`TestPurge_RefusedWhenTestCreditSpentByRealBooking`, `TestConcurrency_PurgeVsCreate` (100 operazioni parallele tra
+creazioni di prova e purghe: la prenotazione reale intatta, nessuna prenotazione di prova lasciata a metà;
+`internal/domain/testmode`). Stato: implemented.
 
 **INV-77 — Prezzo manuale degli abbonamenti: solo il gestore, sempre tracciato, snapshot intatto.**
 Solo `establishment.configure` (titolare, gestore) imposta o toglie il prezzo manuale di un abbonamento, con motivo
@@ -698,9 +713,13 @@ implemented.
 Una prenotazione che richiede approvazione (policy `approval_required` o pacchetto `requires_approval`) arriva a
 `confirmed` solo con **Approva** da chi ha `establishment.configure`; la forzatura scavalca solo le violazioni di
 policy, mai l'approvazione; una modifica che introduce l'obbligo di approvazione è rifiutata a chi non può approvare
-(regole R1–R5, ADR 0019 E).
-Verificata da: `TestDecideApproval_Rules` (`internal/domain/booking`), `TestApprovalRule_DeskCannotBypass`
-(tag `integration`, SQLite e PostgreSQL). Stato: implemented.
+(regole R1–R5, ADR 0019 E). Vale anche per la conferma al banco di un rinnovo (`ConfirmRenewal`). Una prenotazione
+in attesa di approvazione **già pagata al banco** non scade mai da sola: allo scadere del blocco lo sweeper lo rinnova
+(audit `booking.hold_extended`, motivo `awaiting_approval_paid`) e la decisione resta al gestore (approva, o rifiuta
+e rimborsa); l'importazione CSV rifiuta i pacchetti che richiedono approvazione.
+Verificata da: `TestDecideApproval_Rules` (`internal/domain/booking`), `TestApprovalRule_DeskCannotBypass`,
+`TestApprovalRule_RenewalAndPaidAwaitingNotExpired` (tag `integration`, SQLite e PostgreSQL),
+`TestImport_SeasonPasses_ApprovalPackRefused` (`internal/domain/importer`). Stato: implemented.
 
 **INV-79 — Importazione CSV: tutto o niente, lo stesso file una volta.**
 L'applicazione di un'importazione è un'unica transazione: al primo errore non cambia nessun dato e il lavoro passa a

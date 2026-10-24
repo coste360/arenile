@@ -176,9 +176,19 @@ func TestMigration00003_ModelsRoundtrip(t *testing.T) {
 		}
 		insert(release()) // a revoked release no longer blocks a new one
 
+		registers := map[string]string{}
+		for i, code := range []string{store.DefaultCashRegister, "bar"} {
+			r := &store.CashRegister{
+				ID: store.NewID(), EstablishmentID: est.ID, Code: code, Name: code, Active: true, IsDefault: i == 0,
+				SortOrder: i, Version: 1, CreatedAt: t0, UpdatedAt: t0,
+			}
+			insert(r)
+			registers[code] = r.ID
+		}
 		session := func(register string) *store.CashSession {
+			rid := registers[register]
 			return &store.CashSession{
-				ID: store.NewID(), EstablishmentID: est.ID, Register: register, OpenedAt: t0, OpeningFloat: 10000,
+				ID: store.NewID(), EstablishmentID: est.ID, Register: register, RegisterID: &rid, OpenedAt: t0, OpeningFloat: 10000,
 				ExpectedTotals: store.MethodTotals{"cash": 10000}, Version: 1, CreatedAt: t0, UpdatedAt: t0,
 			}
 		}

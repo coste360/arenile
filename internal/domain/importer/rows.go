@@ -336,3 +336,11 @@ func parseSlots(s string) (calendar.Slots, bool) {
 	}
 	return calendar.SlotsFull, false
 }
+
+// MaxRowsFor is the row limit of a file of kind.
+func MaxRowsFor(kind string) int {
+	if kind == store.ImportKindSeasonPasses {
+		return MaxPassRows
+	}
+	return MaxRows
+}

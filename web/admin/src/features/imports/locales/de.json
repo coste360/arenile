@@ -17,7 +17,7 @@
   },
   "upload": {
     "title": "Neuer Import",
-    "description": "Laden Sie eine CSV-Datei hoch (UTF-8 oder Windows, Trennzeichen ; oder ,), höchstens 5 MB und 20.000 Zeilen. Die Datei ändert keine Daten, bevor Sie bestätigen.",
+    "description": "Laden Sie eine CSV-Datei hoch (UTF-8 oder Windows, Trennzeichen ; oder ,), höchstens 5 MB und 2.000 Zeilen (500 bei Abonnements). Die Datei ändert keine Daten, bevor Sie bestätigen.",
     "kind": "Inhalt der Datei",
     "columns": {
       "customers": "Erkannte Spalten: cognome (Nachname, Pflicht), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. Englische Namen und die der gängigsten Programme werden ebenfalls akzeptiert.",

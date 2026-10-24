@@ -51,7 +51,10 @@ func (s *Service) Jobs() []jobs.Job {
 
 // ExpireHolds expires the booking holds whose time is over and returns how
 // many bookings it expired. Each booking is one transaction (status,
-// release, audit, booking.expired).
+// release, audit, booking.expired). A booking awaiting approval that was
+// paid (at the desk, rule R2) is left to the manager: expiring it would
+// keep the customer's money on an expired booking (only online money has
+// an automatic refund, INV-51).
 func (s *Service) ExpireHolds(ctx context.Context) (int, error) {
 	now := s.now()
 	refs, err := store.ListExpiredBookingHolds(ctx, s.d.DB, now, expireBatch)
@@ -64,10 +67,19 @@ func (s *Service) ExpireHolds(ctx context.Context) (int, error) {
 		if err != nil {
 			continue
 		}
+		extended := false
 		err = store.RunInTx(ctx, s.d.DB, func(ctx context.Context, tx bun.Tx) error {
 			_, err := s.mutateInTx(ctx, tx, audit.SystemActor, es, ref.ID, nil, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
 				if b.HoldExpiresAt == nil || b.HoldExpiresAt.After(now) {
 					return nil, errSkip
+				}
+				if Status(b.Status) == StatusAwaitingApproval && b.PaidAmount > 0 {
+					// Money collected at the desk (rule R2) is never left on
+					// an expired booking without a refund: the hold is renewed
+					// and the booking waits for the manager, who approves or
+					// rejects (and refunds).
+					extended = true
+					return s.renewApprovalHoldLocked(ctx, tx, es, b)
 				}
 				if err := Transition(Status(b.Status), StatusExpired); err != nil {
 					return nil, errSkip
@@ -77,7 +89,7 @@ func (s *Service) ExpireHolds(ctx context.Context) (int, error) {
 			return err
 		})
 		switch {
-		case errors.Is(err, errSkip):
+		case errors.Is(err, errSkip), extended && err == nil:
 		case err != nil:
 			s.d.Log.ErrorContext(ctx, "booking hold expiry failed", slog.String("booking_id", ref.ID), slog.String("error", err.Error()))
 		default:
@@ -85,6 +97,26 @@ func (s *Service) ExpireHolds(ctx context.Context) (int, error) {
 		}
 	}
 	return n, nil
+}
+
+// renewApprovalHoldLocked extends the approval hold of a paid booking
+// awaiting approval by another ApprovalTTL (audit booking.hold_extended,
+// reason awaiting_approval_paid): its resources stay taken until the
+// manager decides.
+func (s *Service) renewApprovalHoldLocked(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
+	until := s.now().Add(s.d.ApprovalTTL)
+	if err := s.d.Inventory.ExtendHold(ctx, tx, es, b.ID, until); err != nil {
+		return nil, err
+	}
+	prev := time.Time{}
+	if b.HoldExpiresAt != nil {
+		prev = *b.HoldExpiresAt
+	}
+	b.HoldExpiresAt = &until
+	return &outcome{action: actionHoldExtended, event: eventModified, diff: map[string]any{
+		"hold_expires_at": until.Format(time.RFC3339), "previous_hold_expires_at": prev.Format(time.RFC3339),
+		"reason": "awaiting_approval_paid", "paid_amount": int64(b.PaidAmount),
+	}}, nil
 }
 
 // expireLocked moves the locked booking b to expired: resources released,

@@ -59,7 +59,8 @@
     "close": "Kasse schließen",
     "print": "Übersicht drucken",
     "printZ": "Z-Bericht drucken",
-    "dailySale": "Schnellverkauf"
+    "dailySale": "Schnellverkauf",
+    "more": "Mehr"
   },
   "open": {
     "title": "Kasse öffnen",

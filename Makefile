@@ -219,40 +219,15 @@ endif
 
 .PHONY: test-db
 test-db: ## Test di integrazione su SQLite e PostgreSQL (container effimero)
-	@set -euo pipefail; \
-	if [ -n "$${ARENILE_TEST_POSTGRES_URL:-}" ]; then \
-		echo "test-db: using ARENILE_TEST_POSTGRES_URL from the environment"; \
-		go test -tags=integration $(PKG); \
-		exit 0; \
-	fi; \
-	if ! command -v docker >/dev/null 2>&1 || ! docker info >/dev/null 2>&1; then \
-		echo "WARNING: docker not available: running integration tests on SQLite only" >&2; \
-		go test -tags=integration $(PKG); \
-		exit 0; \
-	fi; \
-	cid="$$(docker run -d --rm \
-		-e POSTGRES_USER=arenile -e POSTGRES_PASSWORD=arenile -e POSTGRES_DB=arenile_test \
-		-p 127.0.0.1::5432 $(POSTGRES_IMAGE) \
-		-c fsync=off -c synchronous_commit=off -c full_page_writes=off -c max_connections=200)"; \
-	trap 'docker rm -f "$$cid" >/dev/null 2>&1 || true' EXIT INT TERM; \
-	port="$$(docker port "$$cid" 5432/tcp | head -n1 | sed 's/.*://')"; \
-	echo "test-db: postgres container $${cid:0:12} on 127.0.0.1:$$port"; \
-	ready=0; \
-	for _ in $$(seq 1 60); do \
-		if docker exec "$$cid" pg_isready -U arenile -d arenile_test -h 127.0.0.1 >/dev/null 2>&1; then ready=1; break; fi; \
-		sleep 1; \
-	done; \
-	if [ "$$ready" != 1 ]; then echo "test-db: postgres did not become ready" >&2; docker logs "$$cid" >&2 || true; exit 1; fi; \
-	ARENILE_TEST_POSTGRES_URL="postgres://arenile:arenile@127.0.0.1:$$port/arenile_test?sslmode=disable" \
-		go test -tags=integration $(PKG)
+	@POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-db go test -tags=integration $(PKG)
 
 .PHONY: test-race
-test-race: ## Test di concorrenza TestConcurrency_* con -race (fallisce se non ne trova nessuno)
+test-race: ## Test di concorrenza TestConcurrency_* con -race su SQLite e PostgreSQL (container effimero; fallisce se non ne trova nessuno)
 	@set -euo pipefail; \
 	n="$$(go test -tags=integration -list '^TestConcurrency' ./internal/... | grep -c '^TestConcurrency' || true)"; \
 	if [ "$${n:-0}" -eq 0 ]; then echo "test-race: nessun test TestConcurrency_* trovato" >&2; exit 1; fi; \
 	echo "test-race: $$n test di concorrenza"; \
-	go test -race -tags=integration -run '^TestConcurrency' ./internal/...
+	POSTGRES_IMAGE=$(POSTGRES_IMAGE) scripts/with-postgres.sh test-race go test -race -tags=integration -run '^TestConcurrency' ./internal/...
 
 .PHONY: e2e
 e2e: web-build ## Test end-to-end Playwright con server di prova e dati demo

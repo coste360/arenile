@@ -37,9 +37,12 @@ i dialetti) e le scelte trasversali scritte.
   anche con più istanze) e le attese crescono 1 min, 5 min, 30 min, 2 h, 6 h, 12 h fino a
   `ARENILE_REFUND_MAX_ATTEMPTS` (default 10). La chiave di idempotenza verso il provider è derivata dalla richiesta
   e dal ciclo: **Riprova** dopo `failed` apre un nuovo ciclo con una chiave nuova, mentre i ritentativi dello
-  stesso ciclo riusano la stessa (il provider non esegue due volte). Il webhook di conferma porta la richiesta a
-  `succeeded`. Una seconda cancellazione o un rimborso manuale mentre ce n'è uno automatico in corso è rifiutato
-  (409 `refund_in_progress`). Test: `TestRefund_ProviderDownThenUp`, `TestRefund_DeadLetterThenRetry`,
+  stesso ciclo riusano la stessa (il provider non esegue due volte), ma mai oltre la finestra di idempotenza del
+  provider (`refund.IdempotencyWindow`, 24 ore come Stripe): un intento rimasto `created` più a lungo è segnato
+  `failed` (`idempotency_window_elapsed`) e la richiesta va in `failed` per una riconciliazione manuale prima di
+  Riprova. Il webhook di conferma porta la richiesta a `succeeded`. Una seconda cancellazione o un rimborso manuale
+  mentre ce n'è uno automatico in corso è rifiutato (409 `refund_in_progress`), con il controllo sotto il lock della
+  prenotazione. La notifica di rimborso fallito ha audience `manager` (chi ha `refunds.issue`: titolare e gestore). Test: `TestRefund_ProviderDownThenUp`, `TestRefund_DeadLetterThenRetry`,
   `TestConcurrency_CancelRefundOnce`, `TestRefund_PanelCancellation`.
 - **C. Azioni dalla mappa**: il blocco usa `spot_blocks` (00003) e `POST /spot-blocks`; la prenotazione di gruppo è
   `POST /bookings` con più righe (già atomica, prezzo dal motore, `quote` per l'anteprima): nessun nuovo endpoint.

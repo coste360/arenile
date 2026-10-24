@@ -505,3 +505,105 @@ func TestRefund_PanelCancellation(t *testing.T) {
 		}
 	})
 }
+
+// TestRefund_IdempotencyWindowElapsed (INV-75): a refund intent left
+// created (the provider never answered) is resent with the same key within
+// refund.IdempotencyWindow, never after it: past the window the intent is
+// marked failed, the request is dead lettered with
+// idempotency_window_elapsed (manager notification) and a manual Riprova
+// sends a new key. The provider never moves the money twice.
+func TestRefund_IdempotencyWindowElapsed(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db, 10)
+		id := e.confirmed(1, "2027-07-20")
+		e.paidOnline(id, 2000)
+		e.prov.down.Store(true)
+		e.cancel(id)
+		e.run() // attempt 1: the intent stays created
+		rr := e.only(id)
+		if rr.Status != store.RefundRequestPending || rr.Attempts != 1 || rr.RefundIntentID == nil {
+			t.Fatalf("after attempt 1: %+v", rr)
+		}
+		first := *rr.RefundIntentID
+		e.F.Clock.Advance(2 * time.Hour)
+		e.run() // attempt 2, same key, still inside the window
+		if calls := e.prov.calls.Load(); calls != 2 {
+			t.Fatalf("provider calls %d, want 2", calls)
+		}
+		e.F.Clock.Advance(refund.IdempotencyWindow)
+		e.run() // past the window: no resend, dead letter
+		if calls := e.prov.calls.Load(); calls != 2 {
+			t.Fatalf("provider called past the idempotency window (%d calls)", calls)
+		}
+		rr = e.only(id)
+		if rr.Status != store.RefundRequestFailed || rr.LastError == nil || *rr.LastError != "idempotency_window_elapsed" || rr.NextAttemptAt != nil {
+			t.Fatalf("past the window: %+v", rr)
+		}
+		pi, err := store.GetPaymentIntent(e.Ctx, db, e.ES, first)
+		if err != nil || pi.Status != store.IntentFailed || pi.FailureReason == nil || *pi.FailureReason != "idempotency_window_elapsed" {
+			t.Fatalf("stale intent: %v %+v", err, pi)
+		}
+		if n, err := db.NewSelect().Model((*store.AdminNotification)(nil)).Where("kind = ?", refund.NotificationKindRefundFailed).Count(e.Ctx); err != nil || n != 1 {
+			t.Fatalf("notifications %d %v", n, err)
+		}
+
+		// After the manual reconciliation the manager retries: a new key.
+		e.prov.down.Store(false)
+		if _, err := e.rf.Retry(e.Ctx, e.F.Manager, "", e.F.Est.ID, rr.ID); err != nil {
+			t.Fatalf("retry: %v", err)
+		}
+		e.run()
+		rr = e.only(id)
+		if rr.Status != store.RefundRequestSucceeded || rr.RefundIntentID == nil || *rr.RefundIntentID == first {
+			t.Fatalf("after retry: %+v", rr)
+		}
+		if n, total := e.prov.refunds(); n != 1 || total != 2000 {
+			t.Fatalf("provider moved %d refunds for %d", n, total)
+		}
+	})
+}
+
+// TestConcurrency_RefundJobSendOnce (INV-75): 100 parallel runs of the
+// refund job on one pending request send it to the provider exactly once
+// (the conditional claim of the row serialises the workers) and the
+// provider moves the money once.
+func TestConcurrency_RefundJobSendOnce(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db, 10)
+		id := e.confirmed(1, "2027-07-20")
+		e.paidOnline(id, 2000)
+		e.cancel(id)
+		var wg sync.WaitGroup
+		start := make(chan struct{})
+		errs := make(chan error, 100)
+		for range 100 {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				if _, err := e.rf.RunDue(e.Ctx); err != nil {
+					errs <- err
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		close(errs)
+		for err := range errs {
+			t.Fatalf("run: %v", err)
+		}
+		if calls := e.prov.calls.Load(); calls != 1 {
+			t.Fatalf("provider called %d times, want 1", calls)
+		}
+		if n, total := e.prov.refunds(); n != 1 || total != 2000 {
+			t.Fatalf("provider moved %d refunds for %d", n, total)
+		}
+		rr := e.only(id)
+		if rr.Status != store.RefundRequestSucceeded || rr.Attempts != 1 {
+			t.Fatalf("request %+v", rr)
+		}
+		if n, total := e.ledgerRefunds(id); n != 1 || total != 2000 {
+			t.Fatalf("ledger refunds %d for %d", n, total)
+		}
+	})
+}

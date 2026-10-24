@@ -7,9 +7,13 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/coste360/arenile/internal/calendar"
+	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/availability"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
+	"github.com/coste360/arenile/internal/domain/event"
+	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/store"
 	"github.com/coste360/arenile/internal/store/storetest"
 )
@@ -138,6 +142,85 @@ func TestConcurrency_GroupBookingOverlap(t *testing.T) {
 		// The overlapping spot is allocated once per slot, whoever won.
 		if n := f.Count((*store.SpotAllocation)(nil), "spot_id = ?", f.Spots[1].ID); n != 2 {
 			t.Errorf("A2 allocations = %d, want 2", n)
+		}
+	})
+}
+
+// TestConcurrency_SpotBlocksVsGroupBooking (INV-01, ADR 0019 C): 100
+// parallel attempts on the same day, half group bookings of A1+A2+A3 and
+// half multi-spot blocks of A2+A3 from the map. Exactly one attempt wins,
+// each side all or nothing: a winning group holds its three spots, a
+// winning block its two, and no (spot, date, slot) is ever allocated twice.
+func TestConcurrency_SpotBlocksVsGroupBooking(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		r := newReal(f)
+		inv := inventory.NewService(inventory.Deps{DB: db, Clock: f.Clock, Audit: audit.NewWriter(f.Clock), Outbox: event.NewOutbox(f.Clock)})
+		day := calendar.MustParse("2027-07-10")
+		var (
+			wg                   sync.WaitGroup
+			mu                   sync.Mutex
+			groupWins, blockWins int
+			conflicts            int
+			other                []error
+		)
+		start := make(chan struct{})
+		for i := range parallel {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				var err error
+				group := i%2 == 0
+				if group {
+					_, err = r.svc.Create(f.Ctx, f.Cashier, f.Est.ID, groupInput(f, "2027-07-10", f.Spots[0], f.Spots[1], f.Spots[2]))
+				} else {
+					_, err = inv.CreateSpotBlocks(f.Ctx, f.Staff, f.Est.ID, inventory.SpotBlockInput{
+						SpotIDs: []string{f.Spots[1].ID, f.Spots[2].ID}, StartsOn: day, EndsOn: day, Slots: calendar.SlotsFull, Reason: "manutenzione",
+					})
+				}
+				mu.Lock()
+				defer mu.Unlock()
+				var ce *availability.ConflictError
+				switch {
+				case err == nil && group:
+					groupWins++
+				case err == nil:
+					blockWins++
+				case errors.As(err, &ce) && errors.Is(err, availability.ErrSpotUnavailable):
+					conflicts++
+				default:
+					other = append(other, err)
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		if len(other) > 0 {
+			t.Fatalf("unexpected errors (%d), first: %v", len(other), other[0])
+		}
+		if groupWins+blockWins != 1 || conflicts != parallel-1 {
+			t.Fatalf("group wins %d, block wins %d, conflicts %d", groupWins, blockWins, conflicts)
+		}
+		wantAlloc, wantKind := 4, store.AllocationBlock
+		if groupWins == 1 {
+			wantAlloc, wantKind = 6, store.AllocationBooking
+		}
+		if n := f.Count((*store.SpotAllocation)(nil), ""); n != wantAlloc {
+			t.Errorf("allocations = %d, want %d", n, wantAlloc)
+		}
+		if n := f.Count((*store.SpotAllocation)(nil), "kind = ?", wantKind); n != wantAlloc {
+			t.Errorf("allocations of kind %s = %d, want %d", wantKind, n, wantAlloc)
+		}
+		var distinct int
+		if err := db.NewSelect().TableExpr("(SELECT DISTINCT spot_id, date, slot FROM spot_allocations) AS d").ColumnExpr("COUNT(*)").Scan(f.Ctx, &distinct); err != nil {
+			t.Fatal(err)
+		}
+		if distinct != wantAlloc {
+			t.Errorf("distinct (spot, date, slot) = %d, allocations %d (INV-01)", distinct, wantAlloc)
+		}
+		if n := f.Count((*store.SpotBlock)(nil), ""); n != blockWins*2 {
+			t.Errorf("spot_blocks = %d, want %d", n, blockWins*2)
 		}
 	})
 }

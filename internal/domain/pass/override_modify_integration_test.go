@@ -91,7 +91,7 @@ func TestPriceOverride_DeskModifyCannotClear(t *testing.T) {
 		if err := json.Unmarshal(b.CurrentPrice(), &cur); err != nil || cur.Total != b.TotalAmount {
 			t.Fatalf("INV-12: price_current total %d != total_amount %d (%v)", cur.Total, b.TotalAmount, err)
 		}
-		if n := e.count(t, "audit_log", "entity_id = ? AND action = ? AND diff LIKE ?", pid, "booking.moved", "%price_override_kept%"); n != 1 {
+		if n := e.count(t, "audit_log", "entity_id = ? AND action = ? AND CAST(diff AS TEXT) LIKE ?", pid, "booking.moved", "%price_override_kept%"); n != 1 {
 			t.Fatalf("booking.moved audit with price_override_kept: %d", n)
 		}
 		if n := e.count(t, "audit_log", "entity_id = ? AND action = ?", pid, "season_pass.price_override_cleared"); n != 0 {

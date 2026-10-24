@@ -54,7 +54,9 @@ func (s *Service) ExtendHold(ctx context.Context, tx bun.IDB, actor audit.Actor,
 // ConfirmRenewal confirms the held or pending_payment booking of a renewal
 // accepted at the desk (manual driver, spec 13.2, INV-19): the hold
 // allocations become season allocations. Online acceptances are confirmed
-// by the payment webhook (ConfirmFromPayment), never here.
+// by the payment webhook (ConfirmFromPayment), never here. The approval
+// rule applies as to any confirmation (R2, INV-78): a renewal whose pack
+// or policy requires approval waits in awaiting_approval for the manager.
 func (s *Service) ConfirmRenewal(ctx context.Context, tx bun.IDB, actor audit.Actor, es store.EstablishmentScope, bookingID, note string) (*Detail, error) {
 	return s.mutateInTx(ctx, tx, actor, es, bookingID, nil, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
 		st := Status(b.Status)
@@ -67,7 +69,16 @@ func (s *Service) ConfirmRenewal(ctx context.Context, tx bun.IDB, actor audit.Ac
 		if b.HoldExpiresAt == nil || !b.HoldExpiresAt.After(s.now()) {
 			return nil, availability.ErrHoldExpired
 		}
-		o, err := s.confirmLocked(ctx, tx, es, b, note, false)
+		needed, err := s.needsApproval(ctx, tx, es, b)
+		if err != nil {
+			return nil, err
+		}
+		var o *outcome
+		if DecideApproval(ApprovalCase{Op: ApprovalOnConfirm, From: st, Needed: needed}) == ApprovalAwait {
+			o, err = s.awaitApprovalLocked(ctx, tx, es, b, "renewal")
+		} else {
+			o, err = s.confirmLocked(ctx, tx, es, b, note, false)
+		}
 		if err != nil {
 			return nil, err
 		}

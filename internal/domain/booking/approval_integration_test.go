@@ -5,7 +5,9 @@ package booking_test
 import (
 	"errors"
 	"testing"
+	"time"
 
+	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
 	"github.com/coste360/arenile/internal/domain/booking"
 	"github.com/coste360/arenile/internal/domain/booking/bookingtest"
@@ -108,6 +110,70 @@ func TestApprovalRule_DeskCannotBypass(t *testing.T) {
 		notes := "ok"
 		if _, err := f.Svc.Update(f.Ctx, f.Cashier, f.Est.ID, base.Booking.ID, nil, booking.PatchInput{NotesInternal: &notes}); err != nil {
 			t.Fatalf("cashier patch of approved booking: %v", err)
+		}
+	})
+}
+
+// TestApprovalRule_RenewalAndPaidAwaitingNotExpired (INV-78): the desk
+// confirmation of a renewal follows rule R2 (a pack needing approval waits
+// for the manager); a booking awaiting approval that was paid at the desk
+// is not expired by the hold sweeper (the money would stay on an expired
+// booking without a refund), an unpaid one is.
+func TestApprovalRule_RenewalAndPaidAwaitingNotExpired(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := bookingtest.New(t, db)
+		es, err := store.SystemEstablishmentScope(f.Ctx, f.DB, f.Est.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// A renewal of a pack needing approval, accepted at the desk: awaiting.
+		ren := f.Input(f.Spots[0], "2027-07-10", "2027-07-11")
+		ren.Lines[0].PackID, ren.Status = f.VIP.ID, booking.StatusHeld
+		r, err := f.Svc.Create(f.Ctx, f.Cashier, f.Est.ID, ren)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := f.Svc.ConfirmRenewal(f.Ctx, f.DB, audit.SystemActor, es, r.Booking.ID, "")
+		if err != nil || got.Booking.Status != string(booking.StatusAwaitingApproval) {
+			t.Fatalf("renewal of an approval pack: %v %+v", err, got)
+		}
+		// A renewal of a normal pack is confirmed.
+		plain := f.Input(f.Spots[1], "2027-07-10", "2027-07-11")
+		plain.Status = booking.StatusHeld
+		p, err := f.Svc.Create(f.Ctx, f.Cashier, f.Est.ID, plain)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, err := f.Svc.ConfirmRenewal(f.Ctx, f.DB, audit.SystemActor, es, p.Booking.ID, ""); err != nil || got.Booking.Status != string(booking.StatusConfirmed) {
+			t.Fatalf("renewal of a normal pack: %v %+v", err, got)
+		}
+
+		// Paid at the desk and awaiting approval: the sweeper leaves it.
+		paid := f.Input(f.Spots[2], "2027-07-10", "2027-07-11")
+		paid.Lines[0].PackID, paid.Status = f.VIP.ID, booking.StatusHeld
+		pb, err := f.Svc.Create(f.Ctx, f.Cashier, f.Est.ID, paid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		f.PayBooking(pb.Booking.ID, pb.Booking.TotalAmount)
+		if err := f.Svc.ConfirmFromPayment(f.Ctx, f.DB, f.Cashier, es, pb.Booking.ID, &store.Payment{ID: store.NewID(), Provider: "manual"}); err != nil {
+			t.Fatal(err)
+		}
+		f.Clock.Advance(booking.DefaultApprovalTTL + time.Hour)
+		if _, err := f.Svc.ExpireHolds(f.Ctx); err != nil {
+			t.Fatal(err)
+		}
+		b, _ := store.GetBooking(f.Ctx, f.DB, es, pb.Booking.ID)
+		if b.Status != string(booking.StatusAwaitingApproval) || b.PaidAmount != pb.Booking.TotalAmount {
+			t.Fatalf("paid awaiting booking after the sweeper: %s paid %d", b.Status, b.PaidAmount)
+		}
+		// The unpaid one (the renewal above) expired.
+		if rb, _ := store.GetBooking(f.Ctx, f.DB, es, r.Booking.ID); rb.Status != string(booking.StatusExpired) {
+			t.Fatalf("unpaid awaiting booking after the sweeper: %s", rb.Status)
+		}
+		// The manager still decides: Approve confirms it.
+		if got, err := f.Svc.Approve(f.Ctx, f.Manager, f.Est.ID, pb.Booking.ID, booking.ActionInput{}); err != nil || got.Booking.Status != string(booking.StatusConfirmed) {
+			t.Fatalf("approve paid awaiting: %v %+v", err, got)
 		}
 	})
 }

@@ -1,6 +1,6 @@
 ---
 title: Notifiche del pannello
-description: La campanella in alto con gli avvisi su webhook disattivati, rimborsi non riusciti e importazioni, con email al titolare per gli avvisi importanti.
+description: La campanella in alto con gli avvisi su webhook disattivati e rimborsi non riusciti, con email al titolare per gli avvisi importanti.
 sidebar:
   order: 31.5
 ---
@@ -22,8 +22,10 @@ condiviso dallo staff: se un collega ha già visto l'avviso, risulta letto anche
 | Notifica | Quando | Dove porta |
 | --- | --- | --- |
 | **Webhook disattivato** | Un endpoint webhook è stato disattivato in automatico dopo troppe consegne fallite di fila. Arriva anche un'**email ai titolari** (se le email al gestore per gli errori dei webhook sono attive in [Email e notifiche](/gestore/email/)). | [Chiavi API e webhook](/gestore/chiavi-api-e-webhook/) |
-| **Rimborso non riuscito** | Un [rimborso automatico](/gestore/prenotazioni/#rimborsi-automatici) ha esaurito i tentativi. | La prenotazione, dove puoi riprovare |
-| **Importazione completata / non riuscita** | L'esito di un'[importazione](/gestore/importa-dati/). | Importa dati |
+| **Rimborso non riuscito** | Un [rimborso automatico](/gestore/prenotazioni/#rimborsi-automatici) ha esaurito i tentativi. La vedono titolare e gestore (chi può rimborsare). | La prenotazione, dove puoi riprovare |
+
+L'esito di un'[importazione](/gestore/importa-dati/) non arriva come notifica: lo trovi nello storico
+importazioni.
 
 Le notifiche contengono solo codici ed etichette (ad esempio l'host dell'endpoint o il codice della prenotazione),
 mai email, telefoni o altri dati personali dei clienti.

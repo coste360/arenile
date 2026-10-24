@@ -59,7 +59,8 @@
     "close": "Chiudi cassa",
     "print": "Stampa riepilogo",
     "printZ": "Stampa chiusura Z",
-    "dailySale": "Vendita rapida"
+    "dailySale": "Vendita rapida",
+    "more": "Altro"
   },
   "open": {
     "title": "Apri la cassa",

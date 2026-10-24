@@ -92,6 +92,25 @@ func TestMigration00009_CashRegisterBackfill(t *testing.T) {
 		if _, err := db.NewInsert().Model(dup).Exec(ctx); !store.IsUniqueViolation(err) {
 			t.Fatalf("second open session: want unique violation, got %v", err)
 		}
+		// INV-73: a session without a register, or with a register of
+		// another establishment, is refused by the schema.
+		if _, err := db.ExecContext(ctx,
+			`INSERT INTO cash_sessions (id, establishment_id, register, opened_at, opening_float,
+			 expected_totals, notes, version, created_at, updated_at)
+			 VALUES (?, ?, 'ghost', ?, 0, '{}', '', 1, ?, ?)`, store.NewID(), est.ID, t0, t0, t0); err == nil {
+			t.Fatal("session without register_id accepted")
+		}
+		_, other, err := store.CreateOrganizationWithEstablishment(ctx, db, "Org 2", "lido-cr2", "Lido CR2", t0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		foreign := &store.CashSession{
+			ID: store.NewID(), EstablishmentID: other.ID, Register: "main", RegisterID: &regs[1].ID, OpenedAt: t0,
+			ExpectedTotals: store.MethodTotals{}, Version: 1, CreatedAt: t0, UpdatedAt: t0,
+		}
+		if _, err := db.NewInsert().Model(foreign).Exec(ctx); err == nil {
+			t.Fatal("session on a register of another establishment accepted")
+		}
 		// A second default register is rejected.
 		def2 := &store.CashRegister{
 			ID: store.NewID(), EstablishmentID: est.ID, Code: "spiaggia", Name: "Spiaggia",

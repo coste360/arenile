@@ -419,6 +419,23 @@ offline).
   intento dell'altra modalità; riconciliazione e rimborsi usano la modalità dell'intento. Un pagamento preso con
   le chiavi di test è una riga di prova (nessun documento fiscale, fuori dai corrispettivi) qualunque sia la
   prenotazione.
+- **Rimborsi garantiti**: la notifica "Rimborso non riuscito" è visibile a chi può rimborsare (titolare e gestore),
+  non solo al titolare; una chiave di idempotenza non viene più rinviata al provider oltre 24 ore (la richiesta passa a
+  `failed` con `idempotency_window_elapsed` per la riconciliazione manuale prima di Riprova); il controllo
+  `refund_in_progress` di un rimborso manuale avviene sotto il lock della prenotazione.
+- **Prenotazioni da approvare**: la conferma al banco di un rinnovo segue la regola di approvazione; una prenotazione
+  da approvare già pagata al banco non scade più da sola (il blocco viene rinnovato finché il gestore non decide).
+- **Modalità prova**: l'eliminazione delle prenotazioni di prova è rifiutata (409, anche in anteprima) se un
+  credito generato da una prenotazione di prova è già stato speso su una prenotazione reale; prima veniva
+  compensato in automatico lasciando valore di prova nell'incassato reale.
+- **Casse**: lo schema esige che ogni sessione di cassa appartenga a una cassa dello stesso stabilimento (`NOT NULL`
+  e chiave esterna composta su PostgreSQL, trigger su SQLite).
+- **Importa dati**: limite di 2.000 righe per file (500 per gli abbonamenti) al posto di 20.000: anteprima e
+  applicazione girano in un'unica transazione dentro la richiesta (misurate ~1,6 ms per cliente e ~4,5 ms per
+  abbonamento su SQLite), così un file pieno resta ben sotto il timeout del server e non blocca a lungo la cassa.
+  Nessuna importazione con la modalità prova accesa (409); i pacchetti che richiedono approvazione
+  sono rifiutati riga per riga; il contenuto del file è cancellato appena l'importazione è applicata, fallita o
+  scartata. Le notifiche "Importazione completata / non riuscita" non esistono: l'esito è nello storico.
 - **Prezzo manuale degli abbonamenti**: spostare o modificare un abbonamento con prezzo manuale (anche dalla
   cassa) **conserva** il prezzo manuale e aggiorna il prezzo da listino mostrato sotto di esso; prima la modifica
   lo cancellava senza traccia. Solo "Imposta prezzo manuale" e "Torna al listino" (titolare e gestore) lo cambiano.

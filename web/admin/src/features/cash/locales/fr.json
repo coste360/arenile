@@ -59,7 +59,8 @@
     "close": "Clôturer la caisse",
     "print": "Imprimer le récapitulatif",
     "printZ": "Imprimer le ticket Z",
-    "dailySale": "Vente rapide"
+    "dailySale": "Vente rapide",
+    "more": "Plus"
   },
   "open": {
     "title": "Ouvrir la caisse",
