@@ -340,8 +340,10 @@ func TestService_JobRoutingEndToEnd(t *testing.T) {
 		pr := f.printer(t, "Cassa", fp, func(in *printing.PrinterInput) { in.DrawerPin, in.PrintLogo = &pin, true })
 		es := f.scope(t)
 		now := f.clock.Now()
+		// Every session belongs to a register (migration 00009, ADR 0019).
+		regID := f.register(t, "cassa")
 		cs := &store.CashSession{
-			ID: store.NewID(), Register: "main", OpenedAt: now, OpeningFloat: 10000,
+			ID: store.NewID(), Register: "cassa", RegisterID: &regID, OpenedAt: now, OpeningFloat: 10000,
 			ExpectedTotals: store.MethodTotals{"cash": 45000, "card": 12000}, Version: 1, CreatedAt: now, UpdatedAt: now,
 		}
 		if err := store.InsertCashSession(f.ctx, db, es, cs); err != nil {
