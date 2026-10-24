@@ -9,10 +9,12 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	goruntime "runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -22,6 +24,7 @@ import (
 	"github.com/coste360/arenile/internal/config"
 	"github.com/coste360/arenile/internal/desktop/control"
 	"github.com/coste360/arenile/internal/store"
+	"github.com/coste360/arenile/internal/updates"
 )
 
 // Mode is the desktop app mode chosen at first start (spec 29.1).
@@ -136,12 +139,16 @@ type Options struct {
 	NewLAN func(LANDeps) LANMode
 	// Remote is the remote mode (internal/desktop/remote), optional.
 	Remote RemoteMode
-	// UpdateURL and HTTPClient configure the opt-in update check.
+	// UpdateURL and HTTPClient configure the update check of the core
+	// (ADR 0025, on by default, setting update_check). UpdateURL defaults
+	// to ARENILE_UPDATE_URL, then updates.DefaultURL.
 	UpdateURL  string
 	HTTPClient *http.Client
-	// ScheduleTick and UpdateTick drive the background loops (tests).
+	// UpdateCheckEnvOff turns the update check off whatever the setting
+	// (ARENILE_UPDATE_CHECK=false in the environment: acceptance runs).
+	UpdateCheckEnvOff bool
+	// ScheduleTick drives the backup scheduler (tests).
 	ScheduleTick <-chan time.Time
-	UpdateTick   <-chan time.Time
 	// OnReady is called once the local server listens (tests).
 	OnReady func(StartInfo)
 }
@@ -169,6 +176,21 @@ type Launcher struct {
 	setupURL string // first-run URL while no owner exists
 	fatal    error
 	activate *ActivationServer
+	// notifiedVersion is the last version shown in a native update
+	// notification: a restart of the core (restore) does not repeat it.
+	notifyMu        sync.Mutex
+	notifiedVersion string
+}
+
+// notifyUpdate shows the native notification of a new version once.
+func (l *Launcher) notifyUpdate(latest string) {
+	l.notifyMu.Lock()
+	seen := l.notifiedVersion == latest
+	l.notifiedVersion = latest
+	l.notifyMu.Unlock()
+	if !seen && l.ui != nil {
+		l.ui.Notify("Arenile", T("notify.update", latest))
+	}
 }
 
 // NewLauncher returns a Launcher.
@@ -183,7 +205,11 @@ func NewLauncher(o Options) *Launcher {
 		o.Version = "dev"
 	}
 	if o.UpdateURL == "" {
-		o.UpdateURL = DefaultUpdateURL
+		o.UpdateURL = os.Getenv(config.EnvUpdateURL)
+	}
+	o.UpdateURL = UpdateURL(o.UpdateURL)
+	if !o.UpdateCheckEnvOff {
+		o.UpdateCheckEnvOff = UpdateCheckOff(os.Getenv(config.EnvUpdateCheck))
 	}
 	return &Launcher{o: o}
 }
@@ -288,7 +314,7 @@ func (l *Launcher) activateRunning(ctx context.Context) error {
 // them, Safari first) while TLS requests on the LAN listener still get it
 // (middleware.CookieSecure). ARENILE_DEV stays false: no development
 // behaviour ever ships on a desktop install.
-func DesktopConfig(dataDir string, port int, secretKey []byte) (config.Config, error) {
+func DesktopConfig(dataDir string, port int, secretKey []byte, updateURL string) (config.Config, error) {
 	addr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
 	env := map[string]string{
 		config.EnvAddr:        addr,
@@ -299,8 +325,30 @@ func DesktopConfig(dataDir string, port int, secretKey []byte) (config.Config, e
 		config.EnvTelemetry:   "false",
 		config.EnvEdition:     config.EditionDesktop,
 		config.EnvLogLevel:    "info",
+		// The update check itself is the update_check setting (ADR 0025).
+		config.EnvUpdateURL: updateURL,
 	}
 	return config.Parse(func(k string) (string, bool) { v, ok := env[k]; return v, ok })
+}
+
+// UpdateURL returns u when it is an absolute http(s) URL, otherwise the
+// default (pure): a wrong ARENILE_UPDATE_URL must never stop the app.
+func UpdateURL(u string) string {
+	p, err := url.Parse(strings.TrimSpace(u))
+	if err != nil || (p.Scheme != "http" && p.Scheme != "https") || p.Host == "" {
+		return updates.DefaultURL
+	}
+	return strings.TrimSpace(u)
+}
+
+// UpdateCheckOff reports whether an ARENILE_UPDATE_CHECK value turns the
+// update check off (pure; unset or unparsable keeps the setting in charge).
+func UpdateCheckOff(v string) bool {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "0", "false", "no", "off":
+		return true
+	}
+	return false
 }
 
 func (l *Launcher) secretStores() []SecretStore {
@@ -357,9 +405,11 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 			log.Warn("desktop state not saved", slog.String("error", err.Error()))
 		}
 	}
-	if l.cfg, err = DesktopConfig(l.dataDir, port, key); err != nil {
+	if l.cfg, err = DesktopConfig(l.dataDir, port, key, l.o.UpdateURL); err != nil {
 		return err
 	}
+	// The update_check setting decides; the environment can only turn it off.
+	l.cfg.UpdateCheck = !l.o.UpdateCheckEnvOff
 
 	deps := RuntimeDeps{
 		DataDir:           l.dataDir,
@@ -411,15 +461,6 @@ func (l *Launcher) runLocal(ctx context.Context) error {
 		}}
 		_ = sched.Run(bgCtx)
 	})
-	wg.Go(func() {
-		u := UpdateChecker{URL: l.o.UpdateURL, Current: l.o.Version, Client: l.o.HTTPClient, Log: log}
-		RunUpdateChecks(bgCtx, u, func() bool {
-			s, _ := l.rt.Settings(bgCtx)
-			return s.UpdateCheck
-		}, func(latest string) {
-			l.ui.Notify("Arenile", T("notify.update", latest))
-		}, l.o.UpdateTick)
-	})
 	wg.Go(func() { l.supervise(bgCtx) })
 	uiDone := make(chan struct{})
 	go func() {
@@ -462,7 +503,8 @@ func (s *server) stop() error {
 func (l *Launcher) start(ctx context.Context) error {
 	a, err := app.New(l.cfg,
 		app.WithDesktop(l.rt), app.WithLogger(l.log), app.WithVersion(l.o.Version),
-		app.WithClock(l.o.Clock), app.WithoutSignalHandling())
+		app.WithClock(l.o.Clock), app.WithoutSignalHandling(),
+		app.WithUpdateHTTPClient(l.o.HTTPClient), app.WithUpdateNotifier(l.notifyUpdate))
 	if err != nil {
 		return fmt.Errorf("desktop: start the server: %w", err)
 	}

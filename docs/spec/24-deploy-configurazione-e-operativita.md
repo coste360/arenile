@@ -88,6 +88,9 @@ Variante `docker-compose.postgres.yml` con servizio PostgreSQL e `DATABASE_URL`.
 | `ARENILE_TRUSTED_PROXIES` | vuoto | CIDR dei proxy per l'IP reale |
 | `ARENILE_REQUIRE_TOTP_FOR_OWNERS` | `false` | |
 | `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default |
+| `ARENILE_UPDATE_CHECK` | `true` | Avviso di nuova versione nel pannello (ADR 0025): un GET al giorno del file pubblico dell'ultima versione, con solo versione, edizione e sistema nell'User-Agent. Non è telemetria. `false` = nessuna chiamata di rete |
+| `ARENILE_UPDATE_URL` | `https://updates.coste360.it/arenile/latest.json` | File letto dal controllo della nuova versione (server e app desktop), per esempio un mirror interno |
+| `ARENILE_INSTALL` | `binary` | `docker` nell'immagine ufficiale (impostato dall'immagine, non dall'operatore): l'avviso propone `docker compose pull` invece del download |
 | `ARENILE_DEV` | `false` | Modalità sviluppo (ADR 0006): `ARENILE_BASE_URL` facoltativo, chiave generata in `dev-secret.key`. Mai in produzione |
 | `ARENILE_EDITION` | `server` | `desktop`: profilo loopback dell'app desktop (sezione 29.1), impostato dal launcher e non dall'operatore. `ARENILE_BASE_URL` facoltativo, cookie senza `Secure` su `http://127.0.0.1` ma con `Secure` sulle richieste TLS della rete locale; nessun comportamento di sviluppo |
 | `ARENILE_BOOTSTRAP_OWNER_EMAIL`, `_NAME`, `_ORG` | vuoto | Primo owner creato da `serve` solo se non esistono utenti (ADR 0006); richiedono `ARENILE_ADMIN_PASSWORD` |

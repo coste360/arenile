@@ -63,7 +63,9 @@ variabile e il formato atteso: meglio non partire che partire configurato male.
 | Variabile | Predefinito | Descrizione |
 |---|---|---|
 | `ARENILE_LOG_LEVEL` | `info` | `debug`, `info`, `warn` o `error`. I log sono JSON e non contengono mai email, telefoni, token o segreti in chiaro. |
-| `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default: Arenile non contatta servizi esterni. |
+| `ARENILE_TELEMETRY` | `false` | Nessuna telemetria di default. |
+| `ARENILE_UPDATE_CHECK` | `true` | Avviso di nuova versione nel pannello: una volta al giorno legge il file pubblico dell'ultima versione dal server di Coste360. La richiesta contiene solo versione, edizione e sistema operativo (e, come ogni richiesta, l'indirizzo IP); non è telemetria. `false` = nessuna chiamata di rete. Vedi [Aggiornamenti](/installazione/aggiornamenti/#avviso-di-nuova-versione). |
+| `ARENILE_UPDATE_URL` | `https://updates.coste360.it/arenile/latest.json` | File letto dal controllo della nuova versione, per esempio un mirror interno. |
 
 ## Primo utente
 

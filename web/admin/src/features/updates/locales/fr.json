@@ -1,0 +1,18 @@
+{
+  "banner": {
+    "title": "Arenile {{latest}} est disponible",
+    "current": "Vous utilisez la version {{current}}. Faites une sauvegarde avant de mettre à jour.",
+    "notes": "Nouveautés",
+    "download": "Télécharger",
+    "howTo": "Comment mettre à jour",
+    "dismiss": "Masquer l'avis pour cette version"
+  },
+  "status": {
+    "version": "Version {{current}}",
+    "enabled": "Vérification des mises à jour : activée",
+    "disabled": "Vérification des mises à jour : désactivée",
+    "unavailable": "Impossible de rechercher automatiquement les mises à jour.",
+    "upToDate": "Arenile est à jour.",
+    "devBuild": "Version de développement : aucune vérification des mises à jour."
+  }
+}

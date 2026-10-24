@@ -53,6 +53,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
 	"github.com/coste360/arenile/internal/domain/testmode"
+	"github.com/coste360/arenile/internal/domain/update"
 	"github.com/coste360/arenile/internal/fiscalbridge"
 	"github.com/coste360/arenile/internal/http/admin"
 	"github.com/coste360/arenile/internal/http/api"
@@ -144,6 +145,8 @@ type Deps struct {
 	Imports *importer.Service
 	// ESC/POS network printing (ADR 0021); nil answers 501.
 	Printing *printing.Service
+	// Update notice (ADR 0025); nil answers 501.
+	Updates *update.Service
 
 	// Extensions contribute routes, a tenant resolver and admin UI plugins.
 	Extensions ext.Extensions
@@ -264,6 +267,7 @@ func New(d Deps) http.Handler {
 			Refunds:  d.Refunds,
 			Imports:  d.Imports,
 			Printing: d.Printing,
+			Updates:  d.Updates,
 		},
 		deviceHandlers: &deviceHandlers{Devices: d.Devices, FiscalBridge: d.FiscalBridge, Log: d.Log},
 		desktopHandlers: &desktopHandlers{

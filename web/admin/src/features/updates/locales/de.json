@@ -1,0 +1,18 @@
+{
+  "banner": {
+    "title": "Arenile {{latest}} ist verfügbar",
+    "current": "Sie verwenden Version {{current}}. Erstellen Sie vor dem Update eine Sicherung.",
+    "notes": "Neuigkeiten",
+    "download": "Herunterladen",
+    "howTo": "So aktualisieren Sie",
+    "dismiss": "Hinweis für diese Version ausblenden"
+  },
+  "status": {
+    "version": "Version {{current}}",
+    "enabled": "Update-Prüfung: aktiv",
+    "disabled": "Update-Prüfung: deaktiviert",
+    "unavailable": "Updates konnten nicht automatisch gesucht werden.",
+    "upToDate": "Arenile ist auf dem neuesten Stand.",
+    "devBuild": "Entwicklungsversion: keine Update-Prüfung."
+  }
+}

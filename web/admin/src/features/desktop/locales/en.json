@@ -18,13 +18,13 @@
   },
   "system": {
     "title": "Startup and updates",
-    "description": "Arenile does not connect to the internet unless you enable it.",
+    "description": "Arenile connects to the internet only to check whether a new version exists, and you can turn that off.",
     "autostart": "Start Arenile when the computer starts",
     "autostartHint": "Only for the current operating system user.",
     "keepRunningInTray": "Keep running in the system tray when the window is closed",
     "keepRunningInTrayHint": "On Windows the window is hidden and Arenile keeps serving the panel (also to the local network); quit it from the tray icon. On macOS the app always stays in the menu bar until you choose Quit.",
     "updateCheck": "Check for a new version",
-    "updateCheckHint": "Once a day it reads the latest version number from the Coste360 website, without sending any data of the beach."
+    "updateCheckHint": "Once a day it reads the latest version number from the Coste360 server. The request carries only the version, edition and operating system (and, like any request, the IP address), used only for aggregate counts: no data of the beach and no identifier."
   },
   "lan": {
     "title": "Local network mode",

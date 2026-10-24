@@ -43,7 +43,7 @@ La documentazione (M4) presenta questa tabella nella pagina "Scegli come install
 - Primo avvio: creazione guidata dell'utente owner nella finestra dell'app (nessun comando da terminale), poi configurazione guidata (sezione 15.2).
 - `ARENILE_SECRET_KEY` generata al primo avvio e salvata nel portachiavi del sistema operativo (fallback: file nella cartella dati con permessi ristretti). `ARENILE_BASE_URL` non è richiesto.
 - Backup automatico giornaliero e alla chiusura, con retention configurabile, su una cartella a scelta (anche una chiavetta USB). Ripristino dal menu.
-- Aggiornamenti: controllo della nuova versione **solo se il gestore lo abilita** (nessuna chiamata di rete di default, coerente con `ARENILE_TELEMETRY=false`).
+- Aggiornamenti: controllo della nuova versione **acceso di default** e disattivabile dalle impostazioni (ADR 0025): una volta al giorno legge un file pubblico di Coste360 con l'ultima versione; la richiesta porta solo versione, edizione e sistema operativo nell'User-Agent (nessun identificativo, nessun dato del lido) e non è telemetria (`ARENILE_TELEMETRY` resta `false`). Il pannello mostra un avviso chiudibile con il link per scaricare la nuova versione; un controllo fallito non è mai un errore.
 
 **Limiti voluti**
 - **Niente prenotazione online:** senza un server raggiungibile da internet la pagina pubblica e il widget non hanno senso. In modalità desktop la sezione "Pagina pubblica" del pannello spiega come passare a un'istanza online.

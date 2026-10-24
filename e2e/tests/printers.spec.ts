@@ -85,6 +85,7 @@ test.beforeAll(async () => {
     ARENILE_ADMIN_PASSWORD: DEMO_OWNER_PASSWORD,
     ARENILE_LOG_LEVEL: "warn",
     ARENILE_TELEMETRY: "false",
+    ARENILE_UPDATE_CHECK: "false",
   };
   for (const args of [
     ["migrate", "up"],

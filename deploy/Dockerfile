@@ -77,8 +77,11 @@ LABEL org.opencontainers.image.title="Arenile" \
 COPY --from=build /out/arenile /arenile
 COPY --from=build --chown=65532:65532 /out/data /data
 VOLUME ["/data"]
+# ARENILE_INSTALL=docker: the update notice of the panel (ADR 0025) suggests
+# `docker compose pull` instead of downloading a binary.
 ENV ARENILE_DATA_DIR=/data \
-    ARENILE_ADDR=:8080
+    ARENILE_ADDR=:8080 \
+    ARENILE_INSTALL=docker
 EXPOSE 8080
 # Health is checked by the orchestrator via GET /healthz: the distroless image
 # has no curl/wget.

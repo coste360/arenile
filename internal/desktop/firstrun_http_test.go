@@ -21,7 +21,7 @@ import (
 // handler, so the one-time token is never consumed by them.
 func TestFirstRun_LoopbackEnforcement(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "data")
-	cfg, err := DesktopConfig(dir, 18190, bytes.Repeat([]byte{1}, 32))
+	cfg, err := DesktopConfig(dir, 18190, bytes.Repeat([]byte{1}, 32), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +107,7 @@ func TestFirstRun_LoopbackEnforcement(t *testing.T) {
 // TestFirstRun_ServerEditionHidden: without the desktop runtime the
 // desktop API does not exist (404), loopback or not.
 func TestFirstRun_ServerEditionHidden(t *testing.T) {
-	cfg, err := DesktopConfig(filepath.Join(t.TempDir(), "data"), 18191, bytes.Repeat([]byte{1}, 32))
+	cfg, err := DesktopConfig(filepath.Join(t.TempDir(), "data"), 18191, bytes.Repeat([]byte{1}, 32), "")
 	if err != nil {
 		t.Fatal(err)
 	}

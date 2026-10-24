@@ -3124,6 +3124,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/system/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Avviso di nuova versione di Arenile
+         * @description ADR 0025. Restituisce la versione in esecuzione e, se il controllo degli aggiornamenti è attivo (`ARENILE_UPDATE_CHECK`, default vero; nell'edizione desktop l'impostazione `update_check`), l'ultima versione pubblicata letta dal processo in background una volta al giorno. Non fa chiamate di rete durante la richiesta: risponde dalla copia in memoria. Leggibile dai titolari e dai gestori (permesso `establishment.configure` su almeno uno stabilimento); le chiavi API non hanno accesso. Le versioni di sviluppo (`dev`, `-dev.`) non controllano mai.
+         */
+        get: operations["getSystemUpdate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/v1/establishments/{establishmentId}/devices/pairing-codes": {
         parameters: {
             query?: never;
@@ -8874,6 +8894,44 @@ export interface components {
             password: string;
             organization_name: string;
         };
+        /** @description Stato dell'avviso di nuova versione (ADR 0025). `latest`, `published_at`, `release_notes_url` e `download_url` sono presenti solo dopo un controllo riuscito negli ultimi 7 giorni. */
+        SystemUpdate: {
+            /** @description Versione in esecuzione (tag di release, `dev` in sviluppo). */
+            current: string;
+            /**
+             * @description `ok`: l'ultimo controllo è riuscito (o il primo non è ancora avvenuto); `unavailable`: l'ultimo controllo non è riuscito (rete, risposta non valida, server non raggiungibile), mai un errore per l'utente: il pannello mostra solo una riga neutra e conserva l'ultimo risultato riuscito degli ultimi 7 giorni; `disabled`: controllo spento o versione di sviluppo (nessuna chiamata di rete).
+             * @enum {string}
+             */
+            status: "ok" | "unavailable" | "disabled";
+            /** @description Ultima versione pubblicata. */
+            latest?: string;
+            /** @description Vero se `latest` è più recente di `current` e il controllo è attivo. */
+            update_available: boolean;
+            /** Format: date-time */
+            published_at?: string;
+            /**
+             * Format: uri
+             * @description Pagina con le novità della versione.
+             */
+            release_notes_url?: string;
+            /**
+             * Format: uri
+             * @description Edizione desktop: il pacchetto per il sistema operativo e l'architettura in uso, oppure la pagina dei download. Installazione con il binario: l'archivio per il sistema in uso. Assente con Docker.
+             */
+            download_url?: string;
+            /**
+             * @description Come si aggiorna questa installazione (sceglie l'azione proposta dal pannello).
+             * @enum {string}
+             */
+            how_to_update: "desktop" | "docker" | "binary";
+            /** @description Vero se il controllo degli aggiornamenti è attivo. */
+            check_enabled: boolean;
+            /**
+             * Format: date-time
+             * @description Ultimo controllo riuscito (UTC).
+             */
+            checked_at?: string;
+        };
         DesktopSettings: {
             /** @description Cartella dei backup (default `<cartella dati>/backups`). */
             backup_dir: string;
@@ -8881,7 +8939,7 @@ export interface components {
             backup_retention: number;
             backup_daily: boolean;
             backup_on_exit: boolean;
-            /** @description Controllo della nuova versione (falso di default: nessuna chiamata di rete). */
+            /** @description Controllo della nuova versione (vero di default, ADR 0025): una richiesta al giorno al file pubblico della versione più recente, senza dati dello stabilimento né identificativi. Falso = nessuna chiamata di rete. */
             update_check: boolean;
             /** @description Avvio automatico all'accensione del PC. */
             autostart: boolean;
@@ -18548,6 +18606,28 @@ export interface operations {
                     "application/json": components["schemas"]["Meta"];
                 };
             };
+        };
+    };
+    getSystemUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stato degli aggiornamenti */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemUpdate"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
     createDevicePairingCode: {

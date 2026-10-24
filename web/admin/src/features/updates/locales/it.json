@@ -1,0 +1,18 @@
+{
+  "banner": {
+    "title": "È disponibile Arenile {{latest}}",
+    "current": "Stai usando la versione {{current}}. Prima di aggiornare fai un backup.",
+    "notes": "Novità",
+    "download": "Scarica",
+    "howTo": "Come aggiornare",
+    "dismiss": "Nascondi l'avviso per questa versione"
+  },
+  "status": {
+    "version": "Versione {{current}}",
+    "enabled": "Controllo aggiornamenti: attivo",
+    "disabled": "Controllo aggiornamenti: disattivato",
+    "unavailable": "Impossibile cercare automaticamente gli aggiornamenti.",
+    "upToDate": "Arenile è aggiornato.",
+    "devBuild": "Versione di sviluppo: nessun controllo degli aggiornamenti."
+  }
+}

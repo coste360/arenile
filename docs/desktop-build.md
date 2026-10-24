@@ -301,7 +301,8 @@ Repeatable part of the spec 28 acceptance, without Windows:
 ```sh
 make desktop-package-macos
 D="$(mktemp -d)/arenile"
-dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop -data-dir "$D" -no-browser &
+# ARENILE_UPDATE_CHECK=false: nessuna chiamata a updates.coste360.it né avviso durante il collaudo (ADR 0025).
+ARENILE_UPDATE_CHECK=false dist/desktop/macos/Arenile.app/Contents/MacOS/arenile-desktop -data-dir "$D" -no-browser &
 # instance.json (0600) holds the one-time first-run URL while no owner exists
 cd e2e && DESKTOP_OPEN_URL="$(jq -r .open_url "$D/instance.json")" \
   npx playwright test -c playwright.desktop.config.ts

@@ -29,6 +29,8 @@ import notificationsIt from '../features/notifications/locales/it.json';
 import dailySaleIt from '../features/daily-sale/locales/it.json';
 import entryTicketsIt from '../features/entry-tickets/locales/it.json';
 import printersIt from '../features/printers/locales/it.json';
+// Update notice (ADR 0025).
+import updatesIt from '../features/updates/locales/it.json';
 
 type Messages = Record<string, unknown>;
 type Loader = () => Promise<{ default: Messages }>;
@@ -275,6 +277,15 @@ export const FEATURE_NAMESPACES: readonly FeatureNamespace[] = [
       en: () => import('../features/test-mode/locales/en.json'),
       de: () => import('../features/test-mode/locales/de.json'),
       fr: () => import('../features/test-mode/locales/fr.json'),
+    },
+  },
+  {
+    ns: 'updates',
+    it: updatesIt,
+    load: {
+      en: () => import('../features/updates/locales/en.json'),
+      de: () => import('../features/updates/locales/de.json'),
+      fr: () => import('../features/updates/locales/fr.json'),
     },
   },
   {

@@ -126,7 +126,7 @@ func TestRuntime_UpdateSettings_SideEffects(t *testing.T) {
 		d.OnSettingsChanged = func(s control.Settings) { notified = append(notified, s) }
 	})
 	s, err := rt.Settings(ctx)
-	if err != nil || s.Autostart || s.LANEnabled || s.UpdateCheck || !s.BackupDaily {
+	if err != nil || s.Autostart || s.LANEnabled || !s.UpdateCheck || !s.BackupDaily {
 		t.Fatalf("defaults %+v %v", s, err)
 	}
 	s.Autostart, s.LANEnabled, s.BackupRetention = true, true, 7

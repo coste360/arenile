@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/coste360/arenile/internal/crypto"
+	"github.com/coste360/arenile/internal/updates"
 )
 
 // Environment variable names (spec 24.4). ARENILE_DEV is an Arenile
@@ -58,7 +59,15 @@ const (
 	EnvTrustedProxies              = "ARENILE_TRUSTED_PROXIES"
 	EnvRequireTOTPForOwners        = "ARENILE_REQUIRE_TOTP_FOR_OWNERS"
 	EnvTelemetry                   = "ARENILE_TELEMETRY"
-	EnvDev                         = "ARENILE_DEV"
+	// EnvUpdateCheck and EnvUpdateURL (ADR 0025): the daily check of the
+	// latest version for the update notice of the panel (default on) and
+	// the public file it reads (default updates.DefaultURL). Not telemetry.
+	EnvUpdateCheck = "ARENILE_UPDATE_CHECK"
+	EnvUpdateURL   = "ARENILE_UPDATE_URL"
+	// EnvInstall is set by the official Docker image ("docker"); unset
+	// means a binary installation. It only picks the update instructions.
+	EnvInstall = "ARENILE_INSTALL"
+	EnvDev     = "ARENILE_DEV"
 	// EnvEdition is set by the desktop launcher (never by an operator):
 	// "desktop" is the loopback profile of the core, see Config.Desktop.
 	EnvEdition = "ARENILE_EDITION"
@@ -78,6 +87,12 @@ const (
 	EnvBootstrapOwnerName  = "ARENILE_BOOTSTRAP_OWNER_NAME"
 	EnvBootstrapOwnerOrg   = "ARENILE_BOOTSTRAP_OWNER_ORG"
 	EnvAdminPassword       = "ARENILE_ADMIN_PASSWORD" //nolint:gosec // G101: environment variable name, not a credential
+)
+
+// Installation methods (EnvInstall).
+const (
+	InstallBinary = "binary"
+	InstallDocker = "docker"
 )
 
 // Editions (EnvEdition).
@@ -116,6 +131,11 @@ type Config struct {
 	RequireTOTPForOwners     bool
 	Telemetry                bool
 	Dev                      bool
+	// UpdateCheck and UpdateURL drive the update notice (ADR 0025).
+	UpdateCheck bool
+	UpdateURL   string
+	// Install is InstallDocker or InstallBinary (default).
+	Install string
 	// Edition is EditionServer (default) or EditionDesktop: the desktop
 	// launcher serves the panel on http://127.0.0.1 and needs no public
 	// base URL; cookies get Secure per request (TLS LAN listener). It is
@@ -202,6 +222,18 @@ func Parse(lookup Lookup) (Config, error) {
 	}
 	if cfg.Telemetry, err = parseBool(get(EnvTelemetry, "false")); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvTelemetry, err))
+	}
+	if cfg.UpdateCheck, err = parseBool(get(EnvUpdateCheck, "true")); err != nil {
+		errs = append(errs, fmt.Errorf("%s: %w", EnvUpdateCheck, err))
+	}
+	cfg.UpdateURL = get(EnvUpdateURL, updates.DefaultURL)
+	if u, uerr := url.Parse(cfg.UpdateURL); uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		errs = append(errs, fmt.Errorf("%s: must be an absolute http(s) URL", EnvUpdateURL))
+	}
+	switch cfg.Install = strings.ToLower(get(EnvInstall, InstallBinary)); cfg.Install {
+	case InstallBinary, InstallDocker:
+	default:
+		errs = append(errs, fmt.Errorf("%s: must be %q or %q", EnvInstall, InstallBinary, InstallDocker))
 	}
 	if cfg.WebhooksAllowPrivate, err = parseBool(get(EnvWebhooksAllowPrivate, strconv.FormatBool(cfg.Dev))); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", EnvWebhooksAllowPrivate, err))

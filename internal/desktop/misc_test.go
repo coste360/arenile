@@ -5,16 +5,11 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"image/png"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync/atomic"
 	"testing"
-	"time"
 
 	"github.com/coste360/arenile/internal/config"
 )
@@ -127,83 +122,8 @@ func TestNotifyCommand_Escaping(t *testing.T) {
 	}
 }
 
-func TestCompareVersions_Scenarios(t *testing.T) {
-	tests := []struct {
-		a, b string
-		want int
-	}{
-		{"1.4.0", "1.3.9", 1},
-		{"v1.10.0", "1.9.0", 1},
-		{"1.4", "1.4.0", 0},
-		{"1.4.0-rc.1", "1.4.0", -1},
-		{"v1.4.0", "1.4.0-rc.1", 1},
-		{"1.4.0-rc.1", "1.4.0-rc.2", 0},
-		{"0.6.0-dev.187+835d645", "v0.6.0", -1},
-		{"0.6.0-dev.187+835d645.dirty", "0.5.9", 1},
-		{"0.6.0+build.7", "0.6.0", 0},
-		{"1.3.0", "v1.4.0", -1},
-		{"1.0.0", "dev", 1},
-		{"dev", "dev", 0},
-		{"x.y", "1.0", -1},
-	}
-	for _, tt := range tests {
-		if got := CompareVersions(tt.a, tt.b); got != tt.want {
-			t.Errorf("CompareVersions(%q, %q) = %d, want %d", tt.a, tt.b, got, tt.want)
-		}
-	}
-}
-
-func TestRunUpdateChecks_NoNetworkWhenDisabled(t *testing.T) {
-	var hits atomic.Int32
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hits.Add(1)
-		if r.Header.Get("Cookie") != "" || !strings.HasPrefix(r.UserAgent(), "arenile-desktop/") {
-			t.Errorf("unexpected request headers %v", r.Header)
-		}
-		fmt.Fprint(w, `{"version":"1.5.0"}`)
-	}))
-	defer srv.Close()
-	u := UpdateChecker{URL: srv.URL, Current: "1.4.0", Client: srv.Client()}
-	var enabled atomic.Bool
-	// Every check reads enabled once: the test waits for that read after
-	// each tick, so flipping the switch never races with a check in flight.
-	reads := make(chan bool, 16)
-	isEnabled := func() bool {
-		v := enabled.Load()
-		reads <- v
-		return v
-	}
-	notified := make(chan string, 4)
-	tick := make(chan time.Time)
-	ctx, cancel := context.WithCancel(context.Background())
-	done := make(chan struct{})
-	go func() {
-		RunUpdateChecks(ctx, u, isEnabled, func(v string) { notified <- v }, tick)
-		close(done)
-	}()
-	<-reads // the initial check
-	for range 2 {
-		tick <- time.Now()
-		<-reads
-	}
-	if hits.Load() != 0 {
-		t.Fatalf("network call while disabled: %d", hits.Load())
-	}
-	enabled.Store(true)
-	for range 3 { // same version every time: notified once
-		tick <- time.Now()
-		<-reads
-	}
-	// One more tick is received only after the previous check finished.
-	enabled.Store(false)
-	tick <- time.Now()
-	<-reads
-	cancel()
-	<-done
-	if hits.Load() != 3 || len(notified) != 1 || <-notified != "1.5.0" {
-		t.Fatalf("hits=%d notified=%d", hits.Load(), len(notified))
-	}
-}
+// The version comparison and the update check moved to internal/updates
+// and internal/domain/update (ADR 0025), shared with the server.
 
 func TestTrayIcon_PNGAndICO(t *testing.T) {
 	for _, tc := range []struct {
@@ -250,7 +170,7 @@ func TestTrayIcon_PNGAndICO(t *testing.T) {
 
 func TestDesktopConfig_LoopbackProfile(t *testing.T) {
 	dir := t.TempDir()
-	cfg, err := DesktopConfig(dir, 51234, bytes.Repeat([]byte{7}, 32))
+	cfg, err := DesktopConfig(dir, 51234, bytes.Repeat([]byte{7}, 32), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -266,7 +186,7 @@ func TestDesktopConfig_LoopbackProfile(t *testing.T) {
 	}
 	t.Setenv("DATABASE_URL", "postgres://elsewhere")
 	t.Setenv("ARENILE_TELEMETRY", "true")
-	cfg2, _ := DesktopConfig(dir, 1, bytes.Repeat([]byte{7}, 32))
+	cfg2, _ := DesktopConfig(dir, 1, bytes.Repeat([]byte{7}, 32), "")
 	if cfg2.UsesPostgres() || cfg2.Telemetry {
 		t.Fatal("the process environment must not change the desktop configuration")
 	}

@@ -44,7 +44,7 @@ func TestT_Messages(t *testing.T) {
 		t.Fatal(T("menu.open"), T("notify.backup_ok", "x.db"))
 	}
 	SetLocale(LocaleEN)
-	if T("menu.open") != "Open panel" || T("notify.update", "1.2.0") != "Version 1.2.0 is available: download it from the Coste360 portal." {
+	if T("menu.open") != "Open panel" || T("notify.update", "1.2.0") != "Version 1.2.0 is available: open the panel to download it." {
 		t.Fatal(T("menu.open"))
 	}
 	SetLocale("de") // unsupported: Italian

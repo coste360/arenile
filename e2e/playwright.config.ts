@@ -93,6 +93,8 @@ export default defineConfig({
             ARENILE_SECRET_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
             ARENILE_LOG_LEVEL: 'warn',
             ARENILE_TELEMETRY: 'false',
+            // No update check (ADR 0025): no network in tests, no banner in the app shell.
+            ARENILE_UPDATE_CHECK: 'false',
             // Outgoing webhooks may reach the local test receiver (spec 22: off in production).
             ARENILE_WEBHOOKS_ALLOW_PRIVATE: 'true',
             // Password of the demo owner created by `seed demo` (test-only value).
