@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/configerr"
 	"github.com/coste360/arenile/internal/escpos"
 	"github.com/coste360/arenile/internal/money"
@@ -196,14 +197,25 @@ func (s *Service) zDoc(ctx context.Context, es store.EstablishmentScope, dc docC
 			doc.Operators = append(doc.Operators, u.Name)
 		}
 	}
-	doc.ByMethod = methodLines(lang, cs.ExpectedTotals)
-	doc.Counted = methodLines(lang, cs.CountedTotals)
-	if cs.Difference != nil {
-		doc.Difference = *cs.Difference
-	}
 	mvs, err := store.ListCashMovements(ctx, s.d.DB, es, cs.ID)
 	if err != nil {
 		return templates.ZSummaryDoc{}, err
+	}
+	expected := cs.ExpectedTotals
+	if cs.ClosedAt == nil {
+		// The stored totals of an open session are frozen at open time
+		// ({cash: opening float}): the draft prints the live ones, computed
+		// the way the cash desk does (cash.Service.detail).
+		pays, err := store.ListSessionPayments(ctx, s.d.DB, es, cs.ID)
+		if err != nil {
+			return templates.ZSummaryDoc{}, err
+		}
+		expected = cash.Summarize(cs.OpeningFloat, pays, mvs, nil).Expected
+	}
+	doc.ByMethod = methodLines(lang, expected)
+	doc.Counted = methodLines(lang, cs.CountedTotals)
+	if cs.Difference != nil {
+		doc.Difference = *cs.Difference
 	}
 	for _, m := range mvs {
 		amt := m.Amount

@@ -17,9 +17,12 @@ import (
 	"github.com/coste360/arenile/internal/clock"
 	"github.com/coste360/arenile/internal/domain/audit"
 	"github.com/coste360/arenile/internal/domain/auth"
+	"github.com/coste360/arenile/internal/domain/cash"
 	"github.com/coste360/arenile/internal/domain/configerr"
+	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/printing"
 	"github.com/coste360/arenile/internal/escpos"
+	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/printing/printertest"
 	"github.com/coste360/arenile/internal/printing/templates"
 	"github.com/coste360/arenile/internal/store"
@@ -632,3 +635,67 @@ func TestConcurrency_PrintJobOnce(t *testing.T) {
 }
 
 func ptr[T any](v T) *T { return &v }
+
+// TestService_DraftZLiveTotals opens a session through the cash service,
+// records a card and a cash payment and a cash movement, then prints the
+// draft Z: "Atteso per metodo" must carry the live totals, not the ones
+// frozen at open time (opening float only).
+func TestService_DraftZLiveTotals(t *testing.T) {
+	storetest.Each(t, func(t *testing.T, db *store.DB) {
+		f := newFixture(t, db, true)
+		fp := printertest.Start(t)
+		pr := f.printer(t, "Cassa", fp)
+		cashSvc := cash.NewService(cash.Deps{DB: db, Clock: f.clock, Audit: audit.NewWriter(f.clock), Outbox: event.NewOutbox(f.clock)})
+		cs, err := cashSvc.Open(f.ctx, f.cashier, "127.0.0.1", f.est.ID, cash.OpenInput{OpeningFloat: 10000})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := cashSvc.AddMovement(f.ctx, f.cashier, "127.0.0.1", f.est.ID, cs.ID, cash.MovementInput{Kind: store.CashMovementIn, Amount: 2000, Reason: "Resto dal bar"}); err != nil {
+			t.Fatal(err)
+		}
+		es := f.scope(t)
+		for _, p := range []struct {
+			method string
+			amount money.Cents
+		}{{store.PaymentMethodCard, 12000}, {store.PaymentMethodCash, 3500}} {
+			taxable, tax := money.VATSplit(p.amount, 2200)
+			pm := &store.Payment{
+				ID: store.NewID(), Provider: "manual", Method: p.method, Direction: store.PaymentDirectionIn, Amount: p.amount,
+				Status: store.PaymentSucceeded, CashSessionID: &cs.ID, BusinessDate: calendar.New(2027, 7, 1), Metadata: map[string]any{},
+				VATBreakdown: []store.VATShare{{RateBP: 2200, Gross: p.amount, Taxable: taxable, Tax: tax}},
+				CreatedAt: f.clock.Now(), UpdatedAt: f.clock.Now(),
+			}
+			if err := store.InsertPayment(f.ctx, db, es, pm); err != nil {
+				t.Fatal(err)
+			}
+		}
+		// The browser Z report and the slip must agree.
+		detail, err := cashSvc.Get(f.ctx, f.cashier, f.est.ID, cs.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if detail.Summary.Expected[store.PaymentMethodCash] != 15500 || detail.Summary.Expected[store.PaymentMethodCard] != 12000 {
+			t.Fatalf("cash detail: %+v", detail.Summary.Expected)
+		}
+		if _, _, err := f.svc.Enqueue(f.ctx, f.cashier, f.est.ID, printing.JobInput{DocumentKind: store.PrintDocCashZ, DocumentID: cs.ID, PrinterID: &pr.ID}, ""); err != nil {
+			t.Fatal(err)
+		}
+		if n := f.deliver(t); n != 1 {
+			t.Fatalf("delivered %d", n)
+		}
+		jobs := fp.WaitJobs(1, 5*time.Second)
+		if len(jobs) != 1 {
+			t.Fatalf("printer received %d jobs", len(jobs))
+		}
+		slip := jobs[0]
+		euro := func(s string) []byte { return append([]byte{0xd5, ' '}, []byte(s)...) }
+		for _, want := range [][]byte{[]byte("NON CHIUSA"), []byte("Contanti"), euro("155,00"), []byte("Carta"), euro("120,00"), []byte("Totale atteso"), euro("275,00"), []byte("Resto dal bar"), euro("20,00")} {
+			if !bytes.Contains(slip, want) {
+				t.Errorf("draft Z misses %q", want)
+			}
+		}
+		if bytes.Contains(slip, euro("100,00")) && !bytes.Contains(slip, []byte("Fondo cassa")) {
+			t.Error("opening float printed as the expected cash")
+		}
+	})
+}
