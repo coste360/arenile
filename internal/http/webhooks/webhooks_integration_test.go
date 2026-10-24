@@ -32,12 +32,12 @@ var t0 = time.Date(2027, 7, 15, 8, 0, 0, 0, time.UTC)
 
 type settings struct{}
 
-func (settings) ActiveProvider(context.Context, bun.IDB, store.EstablishmentScope) (*online.ProviderConfig, error) {
+func (settings) ActiveProvider(context.Context, bun.IDB, store.EstablishmentScope, bool) (*online.ProviderConfig, error) {
 	return nil, store.ErrNotFound
 }
 
-func (settings) ProviderConfig(_ context.Context, _ bun.IDB, es store.EstablishmentScope, provider string) (*online.ProviderConfig, error) {
-	if provider != stripe.Code {
+func (settings) ProviderConfig(_ context.Context, _ bun.IDB, es store.EstablishmentScope, provider, mode string) (*online.ProviderConfig, error) {
+	if provider != stripe.Code || mode == store.ProviderModeLive {
 		return nil, store.ErrNotFound
 	}
 	return &online.ProviderConfig{

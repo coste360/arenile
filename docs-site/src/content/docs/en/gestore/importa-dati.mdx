@@ -1,0 +1,73 @@
+---
+title: Import data
+description: Import customers and season passes from a CSV file of another program with a preview, a validation report by row, all-or-nothing apply and GDPR consents.
+sidebar:
+  order: 15.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Import data**. **Who:** owner and manager.
+
+If you come from another program you can bring your **customer registry** and **season passes** into Arenile with
+a CSV file. The file changes nothing until you apply it, and applying is **all or nothing**: at the first error no
+data changes.
+
+<Screenshot name="admin-imports" alt="Import data: preview of a customer file with one row to fix" />
+
+## Preparing the file
+
+- CSV, UTF-8 or Windows (Excel's), separator `;` or `,` (detected automatically), at most 5 MB and 20,000 rows.
+- **Download the CSV template** from the page: it contains only the expected headers, no sample row.
+- **Customers**: `cognome` (last name, required), `nome`, `email`, `telefono`, `lingua`, `note`, `etichette`,
+  `consenso_marketing`, `data_consenso`, `versione_informativa`. English names and those of the most common
+  programs are recognised too (for example `phone`, `newsletter`).
+- **Season passes**: the customer columns plus `posto` (required: the spot label, such as A12), `pacchetto`,
+  `dal`, `al`, `fascia`. Dates `DD/MM/YYYY` or `YYYY-MM-DD`.
+
+## Preview and report
+
+<Steps>
+
+1. Choose **Customers** or **Season passes**, pick the file and press **Upload and check**.
+2. Choose the options:
+   - **Recognise existing customers by** email or phone;
+   - **Update the customers found** (off: they stay as they are and the row is skipped);
+   - for season passes: **Season** (required), **Default pack** when the column is missing, **Create missing
+     customers**;
+   - for customers: **Marketing consent when the column is missing**.
+3. Press **Preview**: no data is changed. The report shows the rows, those **with errors**, how many would be
+   **created**, **updated** or **skipped**, and the **Errors** table with row, column and problem.
+4. Fix the file and upload it again, or change the options and **Preview again**.
+
+</Steps>
+
+## Applying
+
+**Apply** is enabled only when the preview has no errors. The confirmation sums up what will be created, updated
+and skipped. Applying happens in a single transaction: if a row fails (for example a spot taken meanwhile),
+**nothing changes** and the import becomes **Refused** with the updated report.
+
+Imported season passes follow the same rules as those created by hand: the spot is reserved for the whole season
+(never two passes on the same spot), the price comes from the price list (you can then set a
+[manual price](/en/gestore/abbonamenti/#manual-price)) and every creation goes to the activity log.
+
+## Repeating without duplicates
+
+- The **same file** applied a second time is refused (*This file has already been imported*).
+- A different file with the same customers recognises them by email or phone and updates or skips them: no
+  duplicates.
+- **Import history** lists every file with status and result; **Discard** deletes an uploaded file that was not
+  applied. The contents of a file (names, emails, phone numbers) are deleted as soon as the import is applied,
+  failed or discarded; a file uploaded and never applied is kept for at most 7 days.
+- Nothing is imported while [test mode](/en/gestore/modalita-prova/) is on: the rows would become test data and
+  disappear at the next purge. Switch it off first.
+- A pack that requires the manager's approval cannot be imported (row refused, *The pack requires approval*):
+  create those passes from the panel.
+
+<Aside type="caution" title="Marketing consent">
+Consent is never assumed: without the `consenso_marketing` column the preview option applies (off by default).
+Turn it on only if the consent is documented in the previous program; date and privacy notice version, when
+present, are kept.
+</Aside>

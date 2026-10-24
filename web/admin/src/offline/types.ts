@@ -27,9 +27,11 @@ import type { OperationQueue, QueuedOperationBase } from '@arenile/shared/offlin
  *   the Idempotency-Key generated at enqueue time (safe replays). Problem
  *   responses 409/412/422 mark the operation `conflict` and stop nothing
  *   else; they are shown to the user with the problem detail. 401 pauses the
- *   queue until the user logs in again. A check-in carries If-Match only
- *   when nothing else is queued on its booking (every queued operation
- *   raises the version on the server; the cached one follows, optimistic.ts).
+ *   queue until the user logs in again. A check-in carries its read version
+ *   as If-Match only when nothing else is queued on its booking (every queued
+ *   operation raises the version on the server; the cached one follows,
+ *   optimistic.ts); otherwise it sends If-Match "*" (the header is mandatory,
+ *   ADR 0019 C, and the state transition guards it).
  * - A connection indicator is always visible in the shell (online, offline,
  *   syncing with the count of pending operations, conflicts).
  */

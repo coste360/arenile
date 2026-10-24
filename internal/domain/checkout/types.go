@@ -357,6 +357,51 @@ type Managed struct {
 	Releases      []store.SeasonRelease
 	QRPayload     string
 	QRSVG         string
+	// Refund is the state of the guaranteed provider refund of a
+	// cancellation (nil when none): api.ManageRefundStatus.
+	Refund *ManageRefund
+}
+
+// ManageRefund is what the customer sees of the guaranteed refunds of the
+// booking: one aggregate (status, amount, dates), no provider detail.
+type ManageRefund struct {
+	Status      string
+	Amount      money.Cents
+	RequestedAt time.Time
+	CompletedAt *time.Time
+}
+
+// ManageRefundOf aggregates the live refund requests of a booking: failed
+// when one needs the manager, pending when one waits to be (re)sent,
+// processing when all were sent and one waits for the provider,
+// succeeded when the provider confirmed all of them.
+func ManageRefundOf(rs []store.RefundRequest) *ManageRefund {
+	var out *ManageRefund
+	rank := map[string]int{store.RefundRequestSucceeded: 0, store.RefundRequestProcessing: 1, store.RefundRequestPending: 2, store.RefundRequestFailed: 3}
+	for i := range rs {
+		r := &rs[i]
+		if r.Status == store.RefundRequestCancelled {
+			continue
+		}
+		if out == nil {
+			out = &ManageRefund{Status: r.Status, RequestedAt: r.CreatedAt.UTC()}
+		}
+		out.Amount += r.Amount
+		if r.CreatedAt.Before(out.RequestedAt) {
+			out.RequestedAt = r.CreatedAt.UTC()
+		}
+		if rank[r.Status] > rank[out.Status] {
+			out.Status = r.Status
+		}
+		if r.CompletedAt != nil && (out.CompletedAt == nil || r.CompletedAt.After(*out.CompletedAt)) {
+			at := r.CompletedAt.UTC()
+			out.CompletedAt = &at
+		}
+	}
+	if out != nil && out.Status != store.RefundRequestSucceeded {
+		out.CompletedAt = nil
+	}
+	return out
 }
 
 // ModifyInput is POST manage/{token}/modify.

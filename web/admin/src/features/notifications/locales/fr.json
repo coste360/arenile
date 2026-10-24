@@ -1,0 +1,33 @@
+{
+  "title": "Notifications",
+  "empty": "Aucune notification.",
+  "markAll": "Tout marquer comme lu",
+  "unreadMarker": "Non lue",
+  "bell": {
+    "label": "Notifications",
+    "unread_one": "Notifications : {{count}} non lue",
+    "unread_other": "Notifications : {{count}} non lues"
+  },
+  "kinds": {
+    "webhook_endpoint_disabled": {
+      "title": "Webhook désactivé",
+      "body": "Le point de terminaison {{host}} a été désactivé après {{failures}} livraisons échouées. Vérifiez-le et réactivez-le depuis Intégrations."
+    },
+    "refund_failed": {
+      "title": "Remboursement échoué",
+      "body": "Le remboursement de {{amount}} de la réservation {{booking_code}} a échoué après {{attempts}} tentatives. Réessayez depuis la réservation."
+    },
+    "import_completed": {
+      "title": "Importation terminée",
+      "body": "Le fichier a été importé."
+    },
+    "import_failed": {
+      "title": "Importation échouée",
+      "body": "Aucune donnée n'a été modifiée : consultez le rapport de validation."
+    },
+    "test_mode_enabled": {
+      "title": "Mode test actif",
+      "body": "Les réservations créées maintenant sont des réservations de test."
+    }
+  }
+}

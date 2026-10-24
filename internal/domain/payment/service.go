@@ -52,6 +52,10 @@ var (
 	ErrIdempotencyMismatch = fmt.Errorf("%w: chiave di idempotenza già usata per un altro pagamento", configerr.ErrConflict)
 	// ErrProviderMissing: the "manual" driver is not registered (wiring bug).
 	ErrProviderMissing = errors.New("payment: manual provider not registered")
+	// ErrRefundInProgress: a guaranteed refund of the booking (refund_requests,
+	// ADR 0019) is still open; a manual refund would race with it (409
+	// refund_in_progress).
+	ErrRefundInProgress = errors.New("payment: refund in progress")
 )
 
 // Booking statuses the payment service reads. They mirror
@@ -360,6 +364,19 @@ func (s *Service) record(ctx context.Context, tx bun.IDB, p *auth.Principal, ip 
 
 // insert writes pm and its fiscal document.
 func (s *Service) insert(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, pm *store.Payment) error {
+	// Test mode (spec 15.4, ADR 0019): a payment inherits the flag of its
+	// booking; a counter sale takes the switch read in this transaction.
+	if !pm.Test {
+		var err error
+		if pm.BookingID != nil {
+			pm.Test, err = store.BookingIsTest(ctx, tx, es, *pm.BookingID)
+		} else {
+			pm.Test, err = store.TestModeEnabled(ctx, tx, es)
+		}
+		if err != nil {
+			return fmt.Errorf("payment: %w", err)
+		}
+	}
 	if err := store.InsertPayment(ctx, tx, es, pm); err != nil {
 		return fmt.Errorf("payment: %w", err)
 	}
@@ -562,8 +579,27 @@ func (s *Service) RefundBooking(ctx context.Context, p *auth.Principal, ip, esta
 	}
 	want := samePayment(&req.BookingID, store.PaymentDirectionRefund, req.Method, req.Amount)
 	return s.runIdempotent(ctx, es, req.IdempotencyKey, want, func(ctx context.Context, tx bun.Tx) (*Result, error) {
+		if err := CheckNoOpenRefundRequest(ctx, tx, es, req.BookingID); err != nil {
+			return nil, err
+		}
 		return s.refund(ctx, tx, p, ip, es, req)
 	})
+}
+
+// CheckNoOpenRefundRequest is ErrRefundInProgress while a guaranteed
+// refund of the booking (refund_requests: pending, processing or failed,
+// ADR 0019) is open: a manual refund from the panel would race with it.
+// The cancellation itself (credit-paid part, M5B) and the refund job do
+// not go through this check.
+func CheckNoOpenRefundRequest(ctx context.Context, db bun.IDB, es store.EstablishmentScope, bookingID string) error {
+	open, err := store.HasOpenRefundRequest(ctx, db, es, bookingID)
+	if err != nil {
+		return fmt.Errorf("payment: %w", err)
+	}
+	if open {
+		return ErrRefundInProgress
+	}
+	return nil
 }
 
 // RecordRefund records a refund (or credit) of a booking in tx, applies it to

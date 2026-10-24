@@ -1,0 +1,58 @@
+{
+  "page": {
+    "title": "Modalità prova",
+    "description": "Prova la pagina pubblica e i pagamenti senza sporcare i dati: le prenotazioni di prova sono escluse da report e corrispettivi ed eliminabili in blocco."
+  },
+  "banner": {
+    "title": "Modalità prova attiva",
+    "description": "Le prenotazioni e gli incassi creati ora sono di prova: esclusi da report, KPI, corrispettivi ed esportazioni. La pagina pubblica accetta prenotazioni solo dal link di anteprima.",
+    "descriptionPublic": "Le prenotazioni e gli incassi creati ora sono di prova, anche quelli dei clienti dalla pagina pubblica: esclusi da report, KPI, corrispettivi ed esportazioni.",
+    "manage": "Gestisci la modalità prova"
+  },
+  "switch": {
+    "title": "Interruttore",
+    "description": "Con la modalità prova attiva tutto ciò che viene creato (pannello, pagina pubblica in anteprima, API) è marcato come prova.",
+    "on": "Attiva",
+    "off": "Spenta",
+    "enabled": "Modalità prova attiva",
+    "enabledHint": "Spegnila prima di iniziare a lavorare con i clienti reali.",
+    "enabledSince": "Attiva dal {{when}}.",
+    "public": "Prenotazioni di prova anche dai clienti",
+    "publicHint": "Senza questa opzione la pagina pubblica accetta prenotazioni solo dal link di anteprima; i clienti reali ricevono un avviso.",
+    "publicWarningTitle": "Sconsigliato con la pagina pubblica già in uso",
+    "publicWarning": "I clienti reali possono prenotare, ma le loro prenotazioni sono di prova: escluse dai numeri ed eliminabili in blocco.",
+    "enabledToast": "Modalità prova attivata",
+    "disabledToast": "Modalità prova disattivata",
+    "savedPublic": "Impostazione salvata"
+  },
+  "stripe": {
+    "configuredTitle": "Pagamenti online con le chiavi di test",
+    "configured": "Stripe usa automaticamente la configurazione di test finché la modalità prova è attiva: nessun addebito reale.",
+    "missingTitle": "Nessuna chiave di test Stripe",
+    "missing": "Mentre la modalità prova è attiva i pagamenti online sono disattivati (pagamento in struttura). Aggiungi le chiavi di test in Configurazione > Pagamenti per provarli."
+  },
+  "preview": {
+    "title": "Anteprima della pagina pubblica",
+    "description": "Un link firmato, valido 2 ore, per prenotare in prova dalla pagina pubblica.",
+    "create": "Crea link di anteprima",
+    "renew": "Nuovo link",
+    "needsEnabled": "Attiva la modalità prova per creare il link di anteprima.",
+    "hint": "Crea il link e aprilo su questo o su un altro dispositivo.",
+    "urlLabel": "Link di anteprima",
+    "copy": "Copia",
+    "copied": "Link copiato",
+    "copyFailed": "Impossibile copiare il link",
+    "open": "Apri",
+    "expires": "Scade il {{when}}."
+  },
+  "purge": {
+    "title": "Prenotazioni di prova",
+    "description": "Elimina definitivamente le prenotazioni di prova con allocazioni, pagamenti e messaggi collegati. Le prenotazioni reali non vengono mai toccate; il registro attività resta.",
+    "action": "Elimina prenotazioni di prova",
+    "count": "Prenotazioni di prova",
+    "confirmTitle": "Eliminare le prenotazioni di prova?",
+    "confirmDescription": "Verranno eliminate {{bookings}} prenotazioni e {{payments}} pagamenti di prova. L'operazione non si può annullare.",
+    "confirm": "Elimina",
+    "done": "Eliminate {{bookings}} prenotazioni e {{payments}} pagamenti di prova"
+  }
+}

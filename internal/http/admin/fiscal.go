@@ -1,9 +1,8 @@
 package admin
 
 import (
-	"bytes"
+	"io"
 	"net/http"
-	"strings"
 
 	"github.com/coste360/arenile/internal/domain/fiscal"
 	"github.com/coste360/arenile/internal/http/api"
@@ -16,9 +15,12 @@ import (
 // Permissions are checked by the service (reports.read).
 
 // GetCorrispettivi implements GET /api/admin/v1/establishments/{establishmentId}/fiscal/corrispettivi.
-// The format is ?format=csv|json; without it, Accept: text/csv selects CSV.
+// The format is ?format=csv|json|xlsx; without it, Accept selects CSV or XLSX.
 func (h *Handlers) GetCorrispettivi(w http.ResponseWriter, r *http.Request, establishmentID api.EstablishmentID, params api.GetCorrispettiviParams) {
 	q := fiscal.CorrispettiviQuery{From: params.From, To: params.To}
+	if params.RegisterId != nil {
+		q.RegisterID = *params.RegisterId
+	}
 	if params.GroupBy != nil {
 		q.GroupBy = fiscal.GroupBy(*params.GroupBy)
 	}
@@ -27,25 +29,22 @@ func (h *Handlers) GetCorrispettivi(w http.ResponseWriter, r *http.Request, esta
 		problem.Error(w, r, h.Log, err)
 		return
 	}
-	csv := strings.Contains(r.Header.Get("Accept"), "text/csv")
+	format := acceptedExport(r)
 	if params.Format != nil {
-		csv = *params.Format == api.Csv
+		switch *params.Format {
+		case api.Csv:
+			format = exportCSV
+		case api.Xlsx:
+			format = exportXLSX
+		default:
+			format = ""
+		}
 	}
-	if !csv {
+	if format == "" {
 		writeJSON(w, http.StatusOK, CorrispettiviToAPI(rep))
 		return
 	}
-	var buf bytes.Buffer
-	if err := fiscal.WriteCSV(&buf, rep); err != nil {
-		problem.Error(w, r, h.Log, err)
-		return
-	}
-	name := "corrispettivi_" + rep.From.String() + "_" + rep.To.String() + ".csv"
-	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
-	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(buf.Bytes())
+	h.writeExport(w, r, format, "corrispettivi_"+rep.From.String()+"_"+rep.To.String(), func(dst io.Writer) error { return fiscal.WriteCSV(dst, rep) })
 }
 
 // ListFiscalDocuments implements GET /api/admin/v1/establishments/{establishmentId}/fiscal/documents.

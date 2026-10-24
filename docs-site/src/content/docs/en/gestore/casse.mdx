@@ -1,0 +1,65 @@
+---
+title: Multiple registers and Z closing PDF
+description: Several cash registers per establishment (bar, entrance, beach), one open session per register, reports per register and a Z closing printable or saved as PDF with the establishment header.
+sidebar:
+  order: 26.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** Configuration → **Registers** (management), Operations → **Cash desk** (sessions). **Who:** owner and
+manager create and edit registers; whoever runs the cash desk chooses which one to open.
+
+Every establishment has the **Main register** (*Cassa principale*), created automatically. If you take payments in
+several places (entrance, bar, beach rentals) add a register for each: every register has **its own session**,
+float, Z closing and totals in the corrispettivi.
+
+<Screenshot name="admin-cash-registers" alt="List of registers with the default one and the session status" />
+
+## Managing registers
+
+<Steps>
+
+1. **New register**: enter the **Name** (for example *Bar*). The **Code** is optional: when empty it is derived
+   from the name and cannot be changed afterwards.
+2. **Order** sets the position in the list and in the selector of the Cash desk page.
+3. To stop using it turn **Active** off: close its open session first.
+
+</Steps>
+
+- The **default** register is always active and cannot be deleted.
+- A register with sessions in its history can only be **deactivated**; only a never-used register can be deleted.
+- Changes to registers go to the activity log.
+
+## Opening a register
+
+On the [Cash desk](/en/gestore/cassa/) page the **Register** selector shows every active register with its status
+(*open* or *closed*). Choose the register, enter the float and open the session. **There is at most one open
+session per register**, even if two people try to open it at the same instant; different registers can be open
+together.
+
+## Reports per register
+
+In [Corrispettivi](/en/gestore/corrispettivi/) the **Register** filter shows only the payments recorded in that
+register's sessions. Online payments, which do not go through a session, appear only in the **All registers**
+total. The session history shows the register of each session too.
+
+## Z closing as PDF
+
+After closing (or during the day, for a check) press **Z closing PDF**:
+
+- the panel prepares the Z summary of the session and opens the browser's print dialog: choose **Save as PDF** to
+  get the file, or print it;
+- from the menu next to it choose **A4 PDF** or **80 mm receipt** (thermal printers), or **Open in a new tab**.
+
+The document has the establishment header (legal name, address, VAT number when present), the monochrome Arenile
+logo, the register, who opened and closed it, float, takings by method, cash movements, expected and counted cash
+with the difference. Totals are computed by the server, the same as on the Cash desk page; payments made in
+[test mode](/en/gestore/modalita-prova/) are not included.
+
+<Aside type="note" title="Why the browser's print">
+Arenile renders the summary as a print-ready page instead of generating a PDF on the server: no extra dependency to
+maintain, selectable and accessible text, the same look as the receipts. The result is a PDF identical to one from
+a generator (ADR 0019).
+</Aside>

@@ -1,5 +1,5 @@
 import { Separator } from '@arenile/shared/ui/separator';
-import { DataTable, type ColumnDef } from '@arenile/shared/ui/patterns';
+import { BrandLogo, DataTable, type ColumnDef } from '@arenile/shared/ui/patterns';
 import { useTranslation } from 'react-i18next';
 import type { CashSessionDetail } from '../api';
 import {
@@ -12,19 +12,21 @@ import {
 } from '../lib/totals';
 import type { CashContext } from '../useCashContext';
 import { DifferenceAmount } from './Difference';
-import { registerLabel } from '../lib/register';
+import { sessionRegisterLabel } from '../lib/register';
 
 /**
  * Closing summary ("chiusura Z", spec 14.1): float, takings and movements,
  * expected vs counted per method and the difference. Plain table layout that
- * reads the same on screen and on paper (print: utilities only).
+ * reads the same on screen and on paper (print: utilities only). On paper a
+ * header with the establishment name and the mono Arenile logo (ADR 0018)
+ * comes first.
  */
 export function ZReport({
   detail,
   ctx,
 }: {
   detail: CashSessionDetail;
-  ctx: Pick<CashContext, 'money' | 'dateTime'>;
+  ctx: Pick<CashContext, 'money' | 'dateTime'> & { establishmentName?: string };
 }) {
   const { t } = useTranslation('cash');
   const { session } = detail;
@@ -90,11 +92,15 @@ export function ZReport({
 
   return (
     <article aria-label={t('z.title')} className="space-y-4 text-sm print:text-xs print:text-black">
+      <div className="hidden items-center justify-between gap-4 border-b pb-2 print:flex">
+        <span className="text-base font-semibold">{ctx.establishmentName}</span>
+        <BrandLogo variant="horizontal" tone="mono" className="h-8" />
+      </div>
       <header className="space-y-1">
         <h2 className="text-lg font-semibold">{t('z.title')}</h2>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4">
           <dt className="text-muted-foreground print:text-black">{t('z.register')}</dt>
-          <dd className="font-medium">{registerLabel(t, session.register)}</dd>
+          <dd className="font-medium">{sessionRegisterLabel(t, session)}</dd>
           <dt className="text-muted-foreground print:text-black">{t('z.status')}</dt>
           <dd className="font-medium">{t(`history.status.${session.status}`)}</dd>
           <dt className="text-muted-foreground print:text-black">{t('z.openedAt')}</dt>

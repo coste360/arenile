@@ -10,9 +10,16 @@ export interface CashPermissions {
   canRead: boolean;
   /** Corrispettivi and exports: reports.read (owner, manager, viewer). */
   canReport: boolean;
+  /** Manage the cash registers: establishment.configure (owner, manager). */
+  canConfigure: boolean;
 }
 
-const NONE: CashPermissions = { canOperate: false, canRead: false, canReport: false };
+const NONE: CashPermissions = {
+  canOperate: false,
+  canRead: false,
+  canReport: false,
+  canConfigure: false,
+};
 
 /**
  * Effective permissions on `establishment`: memberships naming the
@@ -38,5 +45,6 @@ export function cashPermissionsFor(
   }
   const canOperate = granted.has('cash.operate');
   const canReport = granted.has('reports.read');
-  return { canOperate, canRead: canOperate || canReport, canReport };
+  const canConfigure = granted.has('establishment.configure');
+  return { canOperate, canRead: canOperate || canReport, canReport, canConfigure };
 }

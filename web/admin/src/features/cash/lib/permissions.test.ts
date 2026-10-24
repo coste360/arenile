@@ -20,12 +20,25 @@ describe('cashPermissionsFor (spec 16.1)', () => {
       true,
       true,
       false,
+      false,
     ],
-    ['viewer', ['bookings.read', 'reports.read'], false, true, true],
-    ['beach_staff', ['operations.run', 'bookings.read'], false, false, false],
-    ['manager', ['cash.operate', 'reports.read', 'refunds.issue'], true, true, true],
-  ])('%s', (_role, perms, canOperate, canRead, canReport) => {
-    expect(cashPermissionsFor(me(perms), est)).toEqual({ canOperate, canRead, canReport });
+    ['viewer', ['bookings.read', 'reports.read'], false, true, true, false],
+    ['beach_staff', ['operations.run', 'bookings.read'], false, false, false, false],
+    [
+      'manager',
+      ['cash.operate', 'reports.read', 'refunds.issue', 'establishment.configure'],
+      true,
+      true,
+      true,
+      true,
+    ],
+  ])('%s', (_role, perms, canOperate, canRead, canReport, canConfigure) => {
+    expect(cashPermissionsFor(me(perms), est)).toEqual({
+      canOperate,
+      canRead,
+      canReport,
+      canConfigure,
+    });
   });
 
   it('ignores memberships of another establishment', () => {
@@ -39,6 +52,7 @@ describe('cashPermissionsFor (spec 16.1)', () => {
       canOperate: false,
       canRead: false,
       canReport: false,
+      canConfigure: false,
     });
   });
 });

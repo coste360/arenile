@@ -44,3 +44,19 @@ export const closeSessionSchema = z.object({
   notes: z.string().trim().max(500, 'validation.tooLong'),
 });
 export type CloseSessionValues = z.input<typeof closeSessionSchema>;
+
+/** Cash register form (Configurazione → Casse). Code only on creation, optional. */
+export const registerSchema = z.object({
+  name: z.string().trim().min(1, 'validation.nameRequired').max(60, 'validation.tooLong'),
+  code: z
+    .string()
+    .trim()
+    .regex(/^([a-z0-9][a-z0-9_-]{0,39})?$/, 'validation.codeFormat'),
+  sort_order: z
+    .number({ error: 'validation.sortOrder' })
+    .int('validation.sortOrder')
+    .min(0, 'validation.sortOrder')
+    .max(10000, 'validation.sortOrder'),
+  active: z.boolean(),
+});
+export type RegisterValues = z.infer<typeof registerSchema>;

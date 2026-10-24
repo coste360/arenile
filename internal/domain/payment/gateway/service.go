@@ -124,12 +124,15 @@ var (
 // ProviderSettings returns decrypted provider configurations. Implemented
 // by *online.Service.
 type ProviderSettings interface {
-	// ActiveProvider is the provider of the public page of es ("manual"
+	// ActiveProvider is the provider the payments of a booking of es go
+	// through, by the test flag of the booking (spec 15.4) ("manual"
 	// when nothing online is active).
-	ActiveProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (*online.ProviderConfig, error)
+	ActiveProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope, test bool) (*online.ProviderConfig, error)
 	// ProviderConfig is the configuration of provider for es, active or not;
 	// store.ErrNotFound when never configured.
-	ProviderConfig(ctx context.Context, db bun.IDB, es store.EstablishmentScope, provider string) (*online.ProviderConfig, error)
+	// mode is store.ProviderModeLive or store.ProviderModeTest (the mode of
+	// the intent), "" for the most recent configuration in any mode.
+	ProviderConfig(ctx context.Context, db bun.IDB, es store.EstablishmentScope, provider, mode string) (*online.ProviderConfig, error)
 }
 
 // Ledger writes the ledger rows of provider outcomes in the caller's tx.
@@ -334,9 +337,11 @@ func (s *Service) authorize(ctx context.Context, p *auth.Principal, establishmen
 	return es, err
 }
 
-// provider returns the configuration and the driver of provider for es.
-func (s *Service) provider(ctx context.Context, db bun.IDB, es store.EstablishmentScope, code string) (*online.ProviderConfig, ext.PaymentProvider, error) {
-	cfg, err := s.d.Settings.ProviderConfig(ctx, db, es, code)
+// provider returns the configuration (of mode: the one of the intent, so a
+// live intent is never checked or refunded with test keys and vice versa)
+// and the driver of provider for es.
+func (s *Service) provider(ctx context.Context, db bun.IDB, es store.EstablishmentScope, code, mode string) (*online.ProviderConfig, ext.PaymentProvider, error) {
+	cfg, err := s.d.Settings.ProviderConfig(ctx, db, es, code, mode)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, nil, ErrProviderNotConfigured

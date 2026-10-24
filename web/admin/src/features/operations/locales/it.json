@@ -115,6 +115,8 @@
     "collect": "Incassa",
     "openDetail": "Apri dettaglio",
     "cancel": "Annulla",
+    "block": "Blocca postazione",
+    "unblock": "Sblocca",
     "dailySale": "Vendi giornata"
   },
   "release": {
@@ -181,5 +183,44 @@
     "anonymous": "Cliente anonimo",
     "anonymousShort": "Anonimo",
     "aria": "occupato da {{name}}"
+  },
+  "block": {
+    "titleOne": "Blocca la postazione {{label}}",
+    "titleMany_one": "Blocca {{count}} postazione",
+    "titleMany_other": "Blocca {{count}} postazioni",
+    "description": "Le postazioni bloccate non sono prenotabili nel periodo e nella fascia scelti.",
+    "spots": "Postazioni",
+    "period": "Periodo",
+    "slots": "Fascia",
+    "reason": "Motivo",
+    "optional": "(facoltativo)",
+    "reasonPlaceholder": "Es. manutenzione ombrellone",
+    "confirm": "Blocca",
+    "doneOne": "Postazione {{label}} bloccata.",
+    "doneMany_one": "{{count}} postazione bloccata.",
+    "doneMany_other": "{{count}} postazioni bloccate.",
+    "removeTitle": "Sbloccare la postazione {{label}}?",
+    "removeDescription": "Il blocco viene rimosso per tutto il suo periodo: la postazione torna prenotabile.",
+    "removed": "Postazione {{label}} sbloccata.",
+    "errors": {
+      "period": "Scegli il periodo.",
+      "order": "La data di fine non può precedere quella di inizio.",
+      "reason": "Al massimo 200 caratteri."
+    }
+  },
+  "select": {
+    "toggle": "Seleziona",
+    "toggleAria": "Selezione multipla delle postazioni",
+    "none": "Nessuna postazione selezionata",
+    "count_one": "{{count}} postazione selezionata",
+    "count_other": "{{count}} postazioni selezionate",
+    "hint": "Tocca le postazioni libere o trascina un rettangolo sulla mappa.",
+    "hintKeys": "Per un intervallo tieni premuto",
+    "groupBooking": "Prenotazione di gruppo",
+    "block": "Blocca",
+    "clear": "Svuota",
+    "exit": "Esci dalla selezione",
+    "groupTitle_one": "Prenotazione di gruppo ({{count}} postazione)",
+    "groupTitle_other": "Prenotazione di gruppo ({{count}} postazioni)"
   }
 }

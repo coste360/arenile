@@ -1,10 +1,12 @@
 package public
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/coste360/arenile/internal/domain/checkout"
+	"github.com/coste360/arenile/internal/domain/testmode"
 	"github.com/coste360/arenile/internal/http/api"
 	"github.com/coste360/arenile/internal/http/problem"
 )
@@ -33,6 +35,20 @@ func (h *Handlers) CreatePublicBooking(w http.ResponseWriter, r *http.Request, s
 	var req api.PublicBookingCreate
 	if !decode(w, r, &req) {
 		return
+	}
+	if h.TestMode != nil {
+		token := ""
+		if params.XArenilePreview != nil {
+			token = *params.XArenilePreview
+		}
+		if err := h.TestMode.CheckPublicCreate(r.Context(), slug, token); err != nil {
+			if errors.Is(err, testmode.ErrPreviewRequired) {
+				problem.Write(w, r, problem.TestModePreviewRequired)
+				return
+			}
+			problem.Error(w, r, h.Log, err)
+			return
+		}
 	}
 	sel := selectionFromAPI(api.PublicSelection{
 		StartsOn: req.StartsOn, EndsOn: req.EndsOn, Slots: req.Slots, Formula: req.Formula, Lines: req.Lines, Extras: req.Extras, PromoCode: req.PromoCode,

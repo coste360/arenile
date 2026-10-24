@@ -141,6 +141,11 @@ export interface OperationalPermissions {
   canRefund: boolean;
   /** Check-in, no-show, spot moves (operations.run). */
   canOperate: boolean;
+  /**
+   * Approve a booking awaiting approval, or confirm one (approval rule R3,
+   * ADR 0019 E): establishment.configure (owner, manager), never the desk.
+   */
+  canApprove: boolean;
 }
 
 /**
@@ -168,6 +173,7 @@ export function operationalPermissions(
     canTakePayments: granted.has('cash.operate'),
     canRefund: granted.has('refunds.issue'),
     canOperate: granted.has('operations.run'),
+    canApprove: granted.has('establishment.configure'),
   };
 }
 

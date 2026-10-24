@@ -86,5 +86,33 @@
     "revokeTitle": "Freigabe vom {{date}} widerrufen?",
     "revokeText": "Der Platz geht an den Abonnenten zurück. Nicht möglich, wenn der Tag bereits weiterverkauft wurde.",
     "revokeAria": "Freigabe vom {{date}} ({{slot}}) widerrufen"
+  },
+  "override": {
+    "title": "Preis",
+    "descriptionEngine": "Gesamtbetrag laut Preisliste (Saisonformel).",
+    "descriptionManual": "Vom Betreiber anstelle der Preisliste festgelegter Preis.",
+    "manual": "Manueller Preis",
+    "current": "Gesamt",
+    "engine": "Preis laut Preisliste",
+    "reason": "Grund",
+    "reasonPlaceholder": "Z. B. Vereinbarung mit einem Stammkunden",
+    "setAt": "Geändert am",
+    "set": "Manuellen Preis festlegen",
+    "edit": "Preis ändern",
+    "clear": "Zurück zur Preisliste",
+    "clearTitle": "Zum Preis der Preisliste zurückkehren?",
+    "clearDescription": "Der Gesamtbetrag wird von der Preisberechnung neu ermittelt. Die Änderung bleibt im Aktivitätsprotokoll.",
+    "dialogTitle": "Manueller Preis",
+    "dialogDescription": "Ersetzt den aus der Preisliste berechneten Gesamtbetrag. Grund und vorheriger Preis bleiben im Aktivitätsprotokoll.",
+    "amount": "Neuer Gesamtbetrag",
+    "amountHint": "Gesamtbetrag des Abonnements inklusive Extras. Bereits erfasste Zahlungen bleiben bestehen.",
+    "submit": "Preis speichern",
+    "saved": "Preis aktualisiert.",
+    "cleared": "Preis der Preisliste wiederhergestellt.",
+    "onlyManagers": "Nur Inhaber und Betreiber können den Preis ändern.",
+    "validation": {
+      "amount": "Geben Sie einen Betrag zwischen 0 und 1.000.000 € ein.",
+      "reason": "Geben Sie den Grund an (3 bis 500 Zeichen)."
+    }
   }
 }

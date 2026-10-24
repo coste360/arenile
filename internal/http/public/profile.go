@@ -64,6 +64,18 @@ func (h *Handlers) GetPublicEstablishment(w http.ResponseWriter, r *http.Request
 			return
 		}
 	}
+	if h.TestMode != nil {
+		// Test mode banner (spec 15.4): only for the preview link (header
+		// forwarded by the booking page) or when public_enabled is on.
+		st, err := h.TestMode.Public(r.Context(), slug, previewToken(r))
+		if err != nil {
+			problem.Error(w, r, h.Log, err)
+			return
+		}
+		if st.Active {
+			out.TestMode = &st.Active
+		}
+	}
 
 	body, err := json.Marshal(out)
 	if err != nil {
@@ -74,7 +86,7 @@ func (h *Handlers) GetPublicEstablishment(w http.ResponseWriter, r *http.Request
 	tag := `"` + hex.EncodeToString(sum[:8]) + `"`
 	w.Header().Set("ETag", tag)
 	w.Header().Set("Cache-Control", "public, max-age=30")
-	w.Header().Set("Vary", "Accept-Encoding")
+	w.Header().Set("Vary", "Accept-Encoding, X-Arenile-Preview")
 	if params.IfNoneMatch != nil && etagMatches(*params.IfNoneMatch, tag) {
 		w.WriteHeader(http.StatusNotModified)
 		return
@@ -98,8 +110,10 @@ func (h *Handlers) onlineConfig(r *http.Request, slug string) (*api.PublicOnline
 	pe := p.Establishment
 	out := &api.PublicOnlineConfig{
 		Formulas: formulas(p.Formulas), HoldMinutes: p.HoldMinutes, MinDate: p.MinDate, MaxDate: p.MaxDate,
-		PromoCodesEnabled: pe.Flow.PromoCodesEnabled, RequirePhone: false, // deprecated (ADR 0020): phone optional ShowRatePeriods: pe.Flow.ShowRatePeriods,
-		ShowPricesOnMap: pe.Establishment.Theme.ShowPricesOnMap == nil || *pe.Establishment.Theme.ShowPricesOnMap,
+		PromoCodesEnabled: pe.Flow.PromoCodesEnabled,
+		ShowRatePeriods:   pe.Flow.ShowRatePeriods,
+		RequirePhone:      false, // deprecated (ADR 0020): phone optional
+		ShowPricesOnMap:   pe.Establishment.Theme.ShowPricesOnMap == nil || *pe.Establishment.Theme.ShowPricesOnMap,
 		Payment: api.PublicPaymentConfig{
 			Provider: pe.Provider, Online: pe.Online, Embedded: pe.Embedded, TestMode: pe.TestMode, PublishableKey: optStr(pe.PublishableKey),
 		},

@@ -19,7 +19,10 @@ export async function sendOfflineOperation(client: ApiClient, op: OfflineOperati
             path,
             header: {
               'Idempotency-Key': op.idempotencyKey,
-              ...(op.ifMatch ? { 'If-Match': op.ifMatch } : {}),
+              // If-Match is mandatory (ADR 0019 C). A check-in queued behind
+              // other operations on its booking (or queued before the rule)
+              // has no version: "*" lets the state transition guard it.
+              'If-Match': op.ifMatch ?? '*',
             },
           },
           body: {},

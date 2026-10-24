@@ -293,6 +293,37 @@ export function useWebhookDelivery(
   });
 }
 
+export type WebhookDeliveryAttempt = Schemas['WebhookDeliveryAttempt'];
+export type WebhookDeliveryAttemptList = Schemas['WebhookDeliveryAttemptList'];
+
+/** Full attempt history of one delivery, newest first (ADR 0019 F, kept for the retention period). */
+export function useWebhookDeliveryAttempts(
+  establishmentId: string,
+  endpointId: string,
+  deliveryId: string | undefined,
+) {
+  const client = useApiClient();
+  return useInfiniteQuery<WebhookDeliveryAttemptList, ApiProblem>({
+    queryKey: [
+      ...integrationKeys.delivery(establishmentId, endpointId, deliveryId ?? ''),
+      'attempts',
+    ],
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      call(() =>
+        client.GET(`${base}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/attempts`, {
+          params: {
+            path: { establishmentId, endpointId, deliveryId: deliveryId ?? '' },
+            query: { cursor: pageParam as string | undefined, limit: 50 },
+          },
+        }),
+      ),
+    getNextPageParam: (last) => last.next_cursor || undefined,
+    enabled: !!deliveryId,
+    retry: shouldRetry,
+  });
+}
+
 export function useRedeliverWebhook(establishmentId: string, endpointId: string) {
   const client = useApiClient();
   const invalidate = useInvalidateIntegrations(establishmentId);

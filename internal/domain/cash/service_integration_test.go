@@ -121,6 +121,9 @@ func TestCashSession_CloseComputesDifference(t *testing.T) {
 			t.Fatalf("second open: %v", err)
 		}
 		// Another register can be opened in parallel.
+		if _, err := e.svc.CreateRegister(e.ctx, e.owner, "", e.estA.ID, cash.RegisterInput{Name: "Bar", Code: ptr("bar")}); err != nil {
+			t.Fatal(err)
+		}
 		bar, err := e.svc.Open(e.ctx, e.cashier, "", e.estA.ID, cash.OpenInput{Register: "bar"})
 		if err != nil {
 			t.Fatal(err)

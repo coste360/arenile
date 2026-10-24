@@ -47,6 +47,8 @@ and the expected format: better not to start than to start misconfigured.
 | `ARENILE_HOLD_TTL` | `10m` | How long a spot is held while the customer completes an online booking (Go duration format: `10m`, `15m`, `1h`). During payment the hold is extended up to a maximum of 30 minutes. |
 | `ARENILE_PUBLIC_READS_PER_MINUTE` | `60` | Reads per minute per IP address on the public API (spec 17.2). Raise it when many customers book from the same network (hotel or beach Wi-Fi) and Arenile is not behind a proxy listed in `ARENILE_TRUSTED_PROXIES`. |
 | `ARENILE_PUBLIC_CREATIONS_PER_MINUTE` | `10` | Bookings started (and new-link requests) per minute per IP address. The later steps of the same booking count as reads. |
+| `ARENILE_REFUND_MAX_ATTEMPTS` | `10` | Attempts to send an automatic refund (cancellation from the customer's link or from the panel) to the payment provider, waiting from 1 minute up to 12 hours between them. When they run out the refund becomes “Failed”, the manager gets a notification and can retry it from the booking. 1 to 100. |
+| `ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS` | `30` | Days the full history of webhook delivery attempts is kept (every attempt, not only the last one). |
 
 ## Network and security
 

@@ -124,6 +124,10 @@ func parseSettings(e *store.Establishment) settingsDoc {
 // any other driver leaves the document pending and the job of Jobs issues
 // it after commit, so that device I/O never runs inside the transaction.
 func (s *Service) RecordPayment(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, pm *store.Payment) error {
+	if pm.Test {
+		// Test mode (spec 15.4, INV-74): no fiscal document, no sequence number.
+		return nil
+	}
 	est, err := store.GetEstablishment(ctx, tx, es)
 	if err != nil {
 		return fmt.Errorf("fiscal: load establishment: %w", err)
@@ -261,6 +265,9 @@ type CorrispettiviQuery struct {
 	From    calendar.Date
 	To      calendar.Date
 	GroupBy GroupBy // default GroupByDay
+	// RegisterID narrows to the payments recorded in the sessions of one
+	// cash register (ADR 0019); empty = every payment.
+	RegisterID string
 }
 
 // Corrispettivi returns the takings of [From, To] by period, VAT rate and
@@ -296,7 +303,38 @@ func (s *Service) Corrispettivi(ctx context.Context, p *auth.Principal, establis
 	if err != nil {
 		return nil, fmt.Errorf("fiscal: %w", err)
 	}
+	if q.RegisterID != "" {
+		if payments, err = s.onlyRegister(ctx, es, q.RegisterID, payments); err != nil {
+			return nil, err
+		}
+	}
 	return BuildReport(payments, q.From, q.To, q.GroupBy, est.Currency, parseSettings(est).Pricing.DefaultVATRateBP), nil
+}
+
+// onlyRegister keeps the payments recorded in a session of the register.
+// An unknown register is ErrNotFound-like (404).
+func (s *Service) onlyRegister(ctx context.Context, es store.EstablishmentScope, registerID string, payments []store.Payment) ([]store.Payment, error) {
+	if _, err := store.GetCashRegister(ctx, s.d.DB, es, registerID); err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return nil, fmt.Errorf("%w: cash register", configerr.ErrNotFound)
+		}
+		return nil, fmt.Errorf("fiscal: %w", err)
+	}
+	ids, err := store.CashSessionIDsOfRegister(ctx, s.d.DB, es, registerID)
+	if err != nil {
+		return nil, fmt.Errorf("fiscal: %w", err)
+	}
+	in := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		in[id] = true
+	}
+	out := payments[:0:0]
+	for _, pm := range payments {
+		if pm.CashSessionID != nil && in[*pm.CashSessionID] {
+			out = append(out, pm)
+		}
+	}
+	return out, nil
 }
 
 // ListDocuments lists the fiscal documents of the establishment, newest

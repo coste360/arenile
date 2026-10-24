@@ -77,6 +77,9 @@ type Deps struct {
 	Payments  Payments
 	Notifier  Notifier
 	Passes    SeasonPasses
+	// Refunds sends the guaranteed refunds of a customer cancellation at
+	// once (optional, see RefundSender; the job sends them anyway).
+	Refunds RefundSender
 	// HoldTTL is ARENILE_HOLD_TTL (countdown of the page).
 	HoldTTL time.Duration
 	// BaseURL is config.EffectiveBaseURL() (return URLs, manage links).
@@ -261,3 +264,7 @@ func (s *Service) today(est *store.Establishment) calendar.Date {
 
 // pageURL is the public page of slug.
 func (s *Service) pageURL(slug string) string { return s.d.BaseURL + "/b/" + slug }
+
+// SetRefunds installs the immediate sender of guaranteed refunds after
+// construction (the refund service is built after the checkout).
+func (s *Service) SetRefunds(r RefundSender) { s.d.Refunds = r }

@@ -393,3 +393,24 @@ export function useRecordRefund(establishmentId: string) {
     onSuccess: () => invalidate(),
   });
 }
+
+export type RefundRequest = Schemas['RefundRequest'];
+
+/**
+ * Sends a failed guaranteed refund again (refunds.issue, ADR 0019): the
+ * request goes back to pending with the same idempotency key and is sent
+ * at once; 409 invalid_transition when it is not failed.
+ */
+export function useRetryRefundRequest(establishmentId: string) {
+  const client = useApiClient();
+  const invalidate = useInvalidateOperational(establishmentId);
+  return useMutation<RefundRequest, ApiProblem, { refundRequestId: string }>({
+    mutationFn: ({ refundRequestId }) =>
+      callBooking(() =>
+        client.POST(`${BASE}/refund-requests/{refundRequestId}/retry`, {
+          params: { path: { establishmentId, refundRequestId } },
+        }),
+      ),
+    onSuccess: () => invalidate(),
+  });
+}

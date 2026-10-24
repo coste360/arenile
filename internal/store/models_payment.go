@@ -67,8 +67,11 @@ type Payment struct {
 	VATBreakdown      []VATShare     `bun:"vat_breakdown,type:json,notnull"`
 	BusinessDate      calendar.Date  `bun:"business_date,notnull"`
 	Metadata          map[string]any `bun:"metadata,type:json,notnull"`
-	CreatedAt         time.Time      `bun:"created_at,notnull"`
-	UpdatedAt         time.Time      `bun:"updated_at,notnull"`
+	// Test marks a payment taken in test mode (00009): excluded from
+	// corrispettivi, cash totals of reports and exports.
+	Test      bool      `bun:"test,notnull"`
+	CreatedAt time.Time `bun:"created_at,notnull"`
+	UpdatedAt time.Time `bun:"updated_at,notnull"`
 }
 
 // Signed is the payment amount with its sign in the ledger (refunds negative).

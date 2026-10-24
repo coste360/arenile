@@ -25,6 +25,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/fiscal"
+	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/domain/meta"
@@ -34,11 +35,13 @@ import (
 	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/pricingconfig"
+	"github.com/coste360/arenile/internal/domain/refund"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/domain/testmode"
 	"github.com/coste360/arenile/internal/domain/ticketassign"
 	"github.com/coste360/arenile/internal/domain/ticketing"
 	"github.com/coste360/arenile/internal/domain/waitlist"
@@ -110,6 +113,14 @@ type Handlers struct {
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
 
+	// Deferred features A: test mode (testmode.go); own block, nil = 501.
+	TestMode *testmode.Service
+
+	// Deferred features B: guaranteed refunds (refunds.go); own block, nil = 501.
+	Refunds *refund.Service
+
+	// Deferred features F: CSV imports (imports.go); own block, nil = 501.
+	Imports *importer.Service
 	// Daily sale: ticket assignment (tickets_assign.go); own block.
 	TicketAssign *ticketassign.Service
 

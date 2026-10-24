@@ -2934,6 +2934,8 @@ paths:
           $ref: "#/components/responses/Conflict"
         "412":
           $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
   /api/admin/v1/establishments/{establishmentId}/maps/{mapId}/generate-rows:
     post:
       operationId: generateMapRows
@@ -3499,6 +3501,12 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/EstablishmentID"
+        - name: test
+          in: query
+          required: false
+          description: "true = solo prenotazioni di prova, false = solo reali (default: tutte, con badge)."
+          schema:
+            type: boolean
         - name: from
           in: query
           required: false
@@ -3832,6 +3840,8 @@ paths:
           $ref: "#/components/responses/Conflict"
         "412":
           $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/no-show:
@@ -3875,6 +3885,8 @@ paths:
           $ref: "#/components/responses/Conflict"
         "412":
           $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/approve:
@@ -4004,6 +4016,8 @@ paths:
           $ref: "#/components/responses/Conflict"
         "412":
           $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/move:
@@ -4049,6 +4063,8 @@ paths:
           $ref: "#/components/responses/PreconditionFailed"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
         "501":
           $ref: "#/components/responses/NotImplemented"
   /api/admin/v1/establishments/{establishmentId}/bookings/{bookingId}/notes:
@@ -5830,6 +5846,14 @@ paths:
           description: "Aperte o chiuse."
           schema:
             $ref: "#/components/schemas/CashSessionStatus"
+        - name: register_id
+          in: query
+          required: false
+          description: "Solo la cassa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
         - name: register
           in: query
           required: false
@@ -5921,6 +5945,14 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: "#/components/parameters/EstablishmentID"
+        - name: register_id
+          in: query
+          required: false
+          description: "Solo la cassa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
         - name: register
           in: query
           required: false
@@ -6092,13 +6124,21 @@ paths:
           schema:
             type: string
             enum: [day, month]
+        - name: register_id
+          in: query
+          required: false
+          description: "Solo la cassa."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
         - name: format
           in: query
           required: false
           description: "Formato (default json; in alternativa Accept: text/csv)."
           schema:
             type: string
-            enum: [json, csv]
+            enum: [json, csv, xlsx]
       responses:
         "200":
           description: "Corrispettivi"
@@ -6109,6 +6149,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -6488,6 +6532,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/Slug"
         - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/PreviewToken"
       requestBody:
         required: true
         content:
@@ -7573,6 +7618,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7634,6 +7683,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7687,6 +7740,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7730,6 +7787,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7772,6 +7833,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7815,6 +7880,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7867,6 +7936,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7903,6 +7976,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -7966,6 +8043,10 @@ paths:
             text/csv:
               schema:
                 type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -10334,6 +10415,980 @@ paths:
         "501":
           $ref: "#/components/responses/NotImplemented"
 
+  /api/admin/v1/establishments/{establishmentId}/test-mode:
+    get:
+      operationId: getTestMode
+      tags: [establishments]
+      summary: "Stato della modalità prova"
+      description: >-
+        Spec 15.4. Permesso bookings.read (il banner è visibile a tutto lo staff).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestMode"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateTestMode
+      tags: [establishments]
+      summary: "Attiva o disattiva la modalità prova"
+      description: >-
+        Permesso establishment.configure. Con enabled=true le prenotazioni e le vendite create da quel momento
+        (pannello, pagina pubblica in anteprima, API) sono marcate test=true: escluse da report, KPI,
+        corrispettivi ed esportazioni; Stripe usa la configurazione mode=test se presente. public_enabled=true
+        permette anche ai clienti reali senza link di anteprima di prenotare in prova (sconsigliato, default
+        false). Scrive audit ed evento establishment.test_mode_changed.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestModeInput"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestMode"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/test-mode/preview-link:
+    post:
+      operationId: createTestModePreviewLink
+      tags: [establishments]
+      summary: "Link di anteprima della pagina pubblica in prova"
+      description: >-
+        Permesso establishment.configure. Restituisce l'URL della pagina pubblica con ?preview=<token>
+        (firmato, valido 2 ore). La pagina pubblica inoltra il token nell'header X-Arenile-Preview: solo
+        con un token valido (o public_enabled) si può prenotare mentre la modalità prova è attiva.
+        409 conflict se la modalità prova è spenta.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestModePreviewLink"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/test-bookings/purge:
+    post:
+      operationId: purgeTestBookings
+      tags: [bookings]
+      summary: "Eliminazione in blocco delle prenotazioni di prova"
+      description: >-
+        Permesso establishment.configure. Elimina definitivamente le prenotazioni test=true (e allocazioni,
+        pagamenti, intent, documenti fiscali e messaggi collegati, tutti test) in un'unica transazione; le
+        voci di audit restano. dry_run=true restituisce solo i conteggi. Mai una prenotazione test=false.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestBookingsPurgeRequest"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestBookingsPurgeResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/refund-requests:
+    get:
+      operationId: listRefundRequests
+      tags: [payments]
+      summary: "Rimborsi garantiti verso il gestore di pagamento"
+      description: >-
+        Richieste di rimborso riservate nella stessa transazione della cancellazione (dal link del cliente o
+        dal pannello) e inviate al provider da un job con ripetizioni e backoff finché il provider conferma.
+        Permesso bookings.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: status
+          in: query
+          required: false
+          description: "Filtra per stato."
+          schema:
+            $ref: "#/components/schemas/RefundRequestStatus"
+        - name: booking_id
+          in: query
+          required: false
+          description: "Solo la prenotazione."
+          schema:
+            type: string
+            format: uuid
+            x-go-type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefundRequestList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/refund-requests/{refundRequestId}/retry:
+    post:
+      operationId: retryRefundRequest
+      tags: [payments]
+      summary: "Riprova subito un rimborso fallito"
+      description: >-
+        Permesso refunds.issue. Solo per status failed (tentativi esauriti): torna pending con
+        next_attempt_at = adesso; la chiave di idempotenza verso il provider resta la stessa (mai un doppio
+        rimborso). 409 invalid_transition negli altri stati.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/RefundRequestID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefundRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-registers:
+    get:
+      operationId: listCashRegisters
+      tags: [cash]
+      summary: "Casse dello stabilimento"
+      description: >-
+        Permesso cash.operate. Ogni stabilimento ha almeno la cassa predefinita "Cassa principale"
+        (code main, creata dalla migrazione 00009 o alla prima richiesta).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: include_inactive
+          in: query
+          required: false
+          description: "Includi le casse disattivate."
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashRegisterList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createCashRegister
+      tags: [cash]
+      summary: "Crea una cassa"
+      description: >-
+        Permesso establishment.configure. 409 conflict se il codice esiste già.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashRegisterInput"
+      responses:
+        "201":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashRegister"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId}:
+    get:
+      operationId: getCashRegister
+      tags: [cash]
+      summary: "Dettaglio della cassa"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CashRegisterID"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashRegister"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    put:
+      operationId: updateCashRegister
+      tags: [cash]
+      summary: "Modifica nome, ordine o stato della cassa"
+      description: >-
+        Permesso establishment.configure. Il codice è immutabile. Disattivare una cassa con una sessione
+        aperta → 409 cash_session_already_open; la cassa predefinita non si disattiva (409 conflict).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CashRegisterID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashRegisterInput"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashRegister"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: deleteCashRegister
+      tags: [cash]
+      summary: "Elimina una cassa mai usata"
+      description: >-
+        Permesso establishment.configure. Con sessioni nello storico → 409 conflict (va disattivata).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CashRegisterID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Eliminata"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/z-report:
+    get:
+      operationId: getCashSessionZReport
+      tags: [cash]
+      summary: "Chiusura Z stampabile (HTML pronto per la stampa / PDF)"
+      description: >-
+        Documento HTML autonomo (stili di stampa inclusi, @page A4 e 80 mm) con intestazione dello
+        stabilimento, logo Arenile mono (ADR 0018), cassa, operatori, fondo, totali per metodo, movimenti,
+        contato e differenza. Il PDF si ottiene con la stampa del browser (ADR 0019: nessuna libreria PDF).
+        Sessione aperta → bozza con filigrana "Non chiusa". Permesso cash.operate.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CashSessionID"
+        - name: paper
+          in: query
+          required: false
+          description: "Formato carta (default a4)."
+          schema:
+            type: string
+            enum: [a4, receipt80]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/html:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override:
+    put:
+      operationId: setSeasonPassPriceOverride
+      tags: [passes]
+      summary: "Prezzo manuale dell'abbonamento"
+      description: >-
+        Sostituisce il totale calcolato dal motore con un importo deciso dal gestore (motivo obbligatorio).
+        Permesso establishment.configure (proprietario e gestore, mai la cassa). Scrive audit (prima/dopo,
+        motivo) ed evento booking.updated nella stessa transazione; price_snapshot resta immutabile (INV-21),
+        price_current riporta la riga di override. If-Match obbligatorio sulla versione dell'abbonamento.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonPassID"
+        - $ref: "#/components/parameters/IfMatchRequired"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeasonPassPriceOverrideInput"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonPassDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: clearSeasonPassPriceOverride
+      tags: [passes]
+      summary: "Torna al prezzo del listino"
+      description: >-
+        Ricalcola con il motore dei prezzi; stesso permesso, audit ed If-Match obbligatorio.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/SeasonPassID"
+        - $ref: "#/components/parameters/IfMatchRequired"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeasonPassDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "428":
+          $ref: "#/components/responses/PreconditionRequired"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/notifications:
+    get:
+      operationId: listNotifications
+      tags: [integrations]
+      summary: "Notifiche del pannello"
+      description: >-
+        Avvisi per il gestore (endpoint webhook disattivato, rimborso fallito, importazione completata...).
+        Lo stato letto è condiviso dallo staff dello stabilimento. Permesso bookings.read; le notifiche con
+        audience owner solo a chi ha users.manage, quelle con audience manager (rimborso garantito non riuscito)
+        solo a chi ha refunds.issue.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: unread
+          in: query
+          required: false
+          description: "Solo da leggere."
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/notifications/{notificationId}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [integrations]
+      summary: "Segna una notifica come letta"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/NotificationID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Letta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [integrations]
+      summary: "Segna tutte le notifiche come lette"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Lette"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/attempts:
+    get:
+      operationId: listWebhookDeliveryAttempts
+      tags: [integrations]
+      summary: "Storico completo dei tentativi di una consegna"
+      description: >-
+        Un elemento per tentativo (più recente prima), conservati ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS
+        giorni (default 30). Permesso users.manage.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/WebhookEndpointID"
+        - $ref: "#/components/parameters/WebhookDeliveryID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookDeliveryAttemptList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/exports/{list}:
+    get:
+      operationId: exportList
+      tags: [reports]
+      summary: "Esportazione di un elenco in CSV o XLSX"
+      description: >-
+        Elenchi customers, bookings, season-passes, payments con le stesse colonne del CSV dei report
+        (nessun dato personale in più). Streaming; le prenotazioni test=true sono sempre escluse.
+        Permesso reports.read.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: list
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ExportListKind"
+        - name: format
+          in: query
+          required: false
+          description: "Formato del file (default csv)."
+          schema:
+            $ref: "#/components/schemas/ExportFormat"
+        - name: from
+          in: query
+          required: false
+          description: "Primo giorno (bookings, payments)."
+          schema:
+            $ref: "#/components/schemas/Date"
+        - name: to
+          in: query
+          required: false
+          description: "Ultimo giorno incluso (bookings, payments)."
+          schema:
+            $ref: "#/components/schemas/Date"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/imports:
+    get:
+      operationId: listImportJobs
+      tags: [customers]
+      summary: "Importazioni CSV"
+      description: >-
+        Permesso establishment.configure.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportJobList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    post:
+      operationId: createImportJob
+      tags: [customers]
+      summary: "Carica un file CSV da importare"
+      description: >-
+        Corpo text/csv (UTF-8, con o senza BOM, separatore ; o , rilevato), massimo 5 MB e 20000 righe.
+        Crea un'importazione in stato uploaded senza toccare i dati. Permesso establishment.configure.
+        Il contenuto è conservato solo fino ad apply/discard (al massimo 7 giorni).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: kind
+          in: query
+          required: true
+          description: "Cosa contiene il file."
+          schema:
+            $ref: "#/components/schemas/ImportKind"
+        - name: filename
+          in: query
+          required: false
+          description: "Nome del file originale (solo etichetta)."
+          schema:
+            type: string
+            maxLength: 200
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              type: string
+      responses:
+        "201":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportJob"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/imports/templates/{kind}:
+    get:
+      operationId: getImportTemplate
+      tags: [customers]
+      summary: "Modello CSV con le intestazioni attese"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - name: kind
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ImportKind"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/csv:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/imports/{importId}:
+    get:
+      operationId: getImportJob
+      tags: [customers]
+      summary: "Stato e rapporto dell'importazione"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ImportJobID"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+    delete:
+      operationId: discardImportJob
+      tags: [customers]
+      summary: "Scarta l'importazione (cancella il file caricato)"
+      description: >-
+        Solo prima di apply. Le importazioni applicate restano nello storico (senza contenuto).
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ImportJobID"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "204":
+          description: "Scartata"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/imports/{importId}/preview:
+    post:
+      operationId: previewImportJob
+      tags: [customers]
+      summary: "Anteprima (dry run) con rapporto di validazione"
+      description: >-
+        Valida ogni riga con le opzioni date (stagione e pacchetto per gli abbonamenti, criterio di
+        corrispondenza, consensi GDPR) e calcola cosa verrebbe creato/aggiornato, senza scrivere. Ripetibile;
+        lo stato diventa validated. Il rapporto contiene solo numero di riga, colonna e codice d'errore.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ImportJobID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportOptions"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportJob"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+  /api/admin/v1/establishments/{establishmentId}/imports/{importId}/apply:
+    post:
+      operationId: applyImportJob
+      tags: [customers]
+      summary: "Applica l'importazione validata"
+      description: >-
+        Tutto o niente: un'unica transazione (rollback completo al primo errore, stato failed con il
+        rapporto). Idempotente: le righe già presenti (stesso criterio di corrispondenza) sono aggiornate o
+        saltate, ripetere apply su un'importazione applied restituisce il risultato registrato; lo stesso
+        file (SHA-256) già applicato → 409 import_already_applied. Gli abbonamenti passano dal servizio
+        prenotazioni (allocazioni, audit, outbox). If-Match sulla versione dell'anteprima.
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/EstablishmentID"
+        - $ref: "#/components/parameters/ImportJobID"
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/CSRFToken"
+      responses:
+        "200":
+          description: "OK"
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportJob"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+
 
 components:
   securitySchemes:
@@ -10359,6 +11414,50 @@ components:
         dispositivo. Revocabile dal pannello (spec 29.2).
 
   parameters:
+    # ---- deferred features (00009) ----
+    RefundRequestID:
+      name: refundRequestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    CashRegisterID:
+      name: registerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    NotificationID:
+      name: notificationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    ImportJobID:
+      name: importId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+    PreviewToken:
+      name: X-Arenile-Preview
+      in: header
+      required: false
+      description: >-
+        Token del link di anteprima (createTestModePreviewLink) inoltrato dalla pagina pubblica. Con la
+        modalità prova attiva e public_enabled=false, senza un token valido le creazioni rispondono 403
+        test_mode_preview_required. Letto da tutte le operazioni pubbliche (dichiarato dove decide).
+      schema:
+        type: string
+        maxLength: 512
     RenewalCampaignID:
       name: campaignId
       in: path
@@ -10754,7 +11853,7 @@ components:
       name: format
       in: query
       required: false
-      description: "Formato (default json; in alternativa Accept: text/csv)."
+      description: "Formato (default json; csv o xlsx, oppure Accept: text/csv)."
       schema:
         $ref: "#/components/schemas/ReportFormat"
     ApiKeyID:
@@ -10926,6 +12025,10 @@ components:
         - waitlist_disabled
         - credit_insufficient
         - season_rollover_conflict
+        - test_mode_preview_required
+        - import_invalid
+        - import_already_applied
+        - refund_in_progress
         - zone_full
         - assignment_conflict
         - ticket_number_conflict
@@ -11327,6 +12430,9 @@ components:
           $ref: "#/components/schemas/PublicSeason"
         online:
           $ref: "#/components/schemas/PublicOnlineConfig"
+        test_mode:
+          type: boolean
+          description: "Modalità prova attiva per questa richiesta (anteprima): la pagina mostra il banner."
     PublicSeason:
       type: object
       description: Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva.
@@ -14780,6 +15886,9 @@ components:
           $ref: "#/components/schemas/Formula"
         is_season_pass:
           type: boolean
+        test:
+          type: boolean
+          description: "Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni."
         total_amount:
           $ref: "#/components/schemas/Money"
         paid_amount:
@@ -14955,6 +16064,9 @@ components:
           $ref: "#/components/schemas/Formula"
         is_season_pass:
           type: boolean
+        test:
+          type: boolean
+          description: "Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni."
         season_id:
           type: string
           format: uuid
@@ -15021,6 +16133,11 @@ components:
           type: string
           format: uuid
           x-go-type: string
+        refunds:
+          type: array
+          description: "Rimborsi garantiti verso il provider (stato visibile, mai persi né doppi)."
+          items:
+            $ref: "#/components/schemas/RefundRequest"
         next_statuses:
           type: array
           description: Stati raggiungibili da quello corrente (macchina a stati, spec 10.2).
@@ -16237,6 +17354,9 @@ components:
           $ref: "#/components/schemas/Slots"
         is_season_pass:
           type: boolean
+        test:
+          type: boolean
+          description: "Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni."
         pack_codes:
           type: array
           items:
@@ -16566,6 +17686,11 @@ components:
           type: string
         status:
           $ref: "#/components/schemas/BookingStatus"
+        test:
+          type: boolean
+          description: "Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni."
+        price_override:
+          $ref: "#/components/schemas/SeasonPassPriceOverride"
         customer_id:
           type: string
           format: uuid
@@ -16787,6 +17912,9 @@ components:
         created_at:
           type: string
           format: date-time
+        test:
+          type: boolean
+          description: "Incassato in modalità prova (spec 15.4): escluso da report, KPI, corrispettivi ed esportazioni."
     PaymentList:
       type: object
       required: [items]
@@ -16896,6 +18024,13 @@ components:
           x-go-type: string
         register:
           type: string
+          description: "Codice della cassa (CashRegister.code)."
+        register_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        register_name:
+          type: string
         status:
           $ref: "#/components/schemas/CashSessionStatus"
         opened_at:
@@ -16942,7 +18077,12 @@ components:
           type: string
           minLength: 1
           maxLength: 40
-          description: Default main.
+          description: "Codice della cassa (deprecato: usare register_id). Default main."
+        register_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Cassa da aprire (default: la cassa predefinita). Una sola sessione aperta per cassa."
         opening_float:
           type: integer
           format: int64
@@ -17966,6 +19106,8 @@ components:
           $ref: "#/components/schemas/ManageCustomer"
         allowed:
           $ref: "#/components/schemas/ManageActions"
+        refund:
+          $ref: "#/components/schemas/ManageRefundStatus"
         cancellation_preview:
           $ref: "#/components/schemas/RefundPreview"
         releases:
@@ -18539,8 +19681,8 @@ components:
     # ---- M5A: reports (spec 15.3) ----------------------------------------------------
     ReportFormat:
       type: string
-      enum: [json, csv]
-      x-enum-varnames: [ReportFormatJSON, ReportFormatCSV]
+      enum: [json, csv, xlsx]
+      x-enum-varnames: [ReportFormatJSON, ReportFormatCSV, ReportFormatXLSX]
     RatioBP:
       type: integer
       format: int64
@@ -20931,3 +22073,477 @@ components:
       properties:
         amount:
           $ref: "#/components/schemas/Money"
+
+    # ---- deferred features (migration 00009, ADR 0019) ----
+    TestMode:
+      type: object
+      required: [enabled, public_enabled, test_bookings_count, stripe_test_configured, version]
+      properties:
+        enabled:
+          type: boolean
+        public_enabled:
+          type: boolean
+          description: "true = anche i clienti senza link di anteprima prenotano in prova."
+        enabled_at:
+          type: string
+          format: date-time
+        enabled_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        test_bookings_count:
+          type: integer
+          format: int64
+        stripe_test_configured:
+          type: boolean
+          description: "Esiste una configurazione Stripe mode=test (usata automaticamente in prova)."
+        version:
+          $ref: "#/components/schemas/Version"
+    TestModeInput:
+      type: object
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
+        public_enabled:
+          type: boolean
+          description: "Default false."
+    TestModePreviewLink:
+      type: object
+      required: [url, token, expires_at]
+      properties:
+        url:
+          type: string
+        token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    TestBookingsPurgeRequest:
+      type: object
+      properties:
+        dry_run:
+          type: boolean
+    TestBookingsPurgeResult:
+      type: object
+      required: [bookings, payments, deleted]
+      properties:
+        bookings:
+          type: integer
+          format: int64
+        payments:
+          type: integer
+          format: int64
+        deleted:
+          type: boolean
+          description: "false con dry_run."
+
+    RefundRequestStatus:
+      type: string
+      description: >-
+        pending: riservato, in attesa di invio (o di nuovo tentativo); processing: inviato al provider, in attesa
+        di conferma; succeeded: confermato dal provider (riga refund nel registro pagamenti); failed: tentativi
+        esauriti, serve un intervento (notifica al gestore); cancelled: annullato dal gestore (rimborso fatto
+        altrove).
+      enum: [pending, processing, succeeded, failed, cancelled]
+    RefundRequest:
+      type: object
+      required: [id, booking_id, amount, provider, status, attempts, reason, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        booking_code:
+          type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        provider:
+          type: string
+        payment_intent_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Intent di pagamento rimborsato."
+        refund_intent_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Intent di rimborso presso il provider (dopo il primo invio)."
+        payment_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Riga refund del registro pagamenti (dopo la conferma)."
+        status:
+          $ref: "#/components/schemas/RefundRequestStatus"
+        attempts:
+          type: integer
+        next_attempt_at:
+          type: string
+          format: date-time
+        last_error:
+          type: string
+        reason:
+          type: string
+          enum: [customer_cancellation, panel_cancellation, expired_hold]
+        test:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+    RefundRequestList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RefundRequest"
+        next_cursor:
+          type: string
+    ManageRefundStatus:
+      type: object
+      description: "Stato del rimborso visibile al cliente nell'area gestione (nessun dettaglio del provider)."
+      required: [status, amount, requested_at]
+      properties:
+        status:
+          $ref: "#/components/schemas/RefundRequestStatus"
+        amount:
+          $ref: "#/components/schemas/Money"
+        requested_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    CashRegister:
+      type: object
+      required: [id, code, name, active, is_default, sort_order, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        code:
+          type: string
+          description: "Codice stabile (main per la cassa predefinita), uguale a CashSession.register."
+        name:
+          type: string
+        active:
+          type: boolean
+        is_default:
+          type: boolean
+        sort_order:
+          type: integer
+        open_session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Sessione aperta della cassa, se c'è (al massimo una, vincolo del database)."
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CashRegisterInput:
+      type: object
+      required: [name]
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9-]{0,39}$"
+          description: "Solo in creazione (default: dal nome); ignorato in modifica."
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        active:
+          type: boolean
+        sort_order:
+          type: integer
+          minimum: 0
+          maximum: 1000
+    CashRegisterList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CashRegister"
+
+    SeasonPassPriceOverride:
+      type: object
+      required: [amount, engine_amount, reason, set_at]
+      properties:
+        amount:
+          $ref: "#/components/schemas/Money"
+        engine_amount:
+          $ref: "#/components/schemas/Money"
+          description: "Totale calcolato dal motore al momento dell'override."
+        reason:
+          type: string
+        set_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        set_at:
+          type: string
+          format: date-time
+    SeasonPassPriceOverrideInput:
+      type: object
+      required: [amount, reason]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          minimum: 0
+          description: "Nuovo totale in centesimi."
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+
+    NotificationKind:
+      type: string
+      enum: [webhook_endpoint_disabled, refund_failed, import_completed, import_failed, test_mode_enabled]
+    NotificationSeverity:
+      type: string
+      enum: [info, warning, error]
+    Notification:
+      type: object
+      description: >-
+        Il client compone titolo e testo dalle chiavi i18n del kind con params (solo identificativi ed etichette
+        non personali: nessuna email, telefono o token).
+      required: [id, kind, severity, params, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        kind:
+          $ref: "#/components/schemas/NotificationKind"
+        severity:
+          $ref: "#/components/schemas/NotificationSeverity"
+        params:
+          type: object
+          additionalProperties:
+            type: string
+        resource_type:
+          type: string
+          description: "Es. webhook_endpoint, booking, import_job."
+        resource_id:
+          type: string
+        read_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    NotificationList:
+      type: object
+      required: [items, unread_count]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        unread_count:
+          type: integer
+          format: int64
+        next_cursor:
+          type: string
+
+    WebhookDeliveryAttempt:
+      type: object
+      required: [id, delivery_id, attempt, attempted_at, duration_ms]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        delivery_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        attempt:
+          type: integer
+        status_code:
+          type: integer
+        error:
+          type: string
+        response_excerpt:
+          type: string
+          description: "Primi 1024 byte della risposta."
+        duration_ms:
+          type: integer
+          format: int64
+        attempted_at:
+          type: string
+          format: date-time
+    WebhookDeliveryAttemptList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookDeliveryAttempt"
+        next_cursor:
+          type: string
+
+    ExportListKind:
+      type: string
+      enum: [customers, bookings, season-passes, payments]
+      x-enum-varnames: [ExportListCustomers, ExportListBookings, ExportListSeasonPasses, ExportListPayments]
+    ExportFormat:
+      type: string
+      enum: [csv, xlsx]
+      x-enum-varnames: [ExportFormatCSV, ExportFormatXLSX]
+
+    ImportKind:
+      type: string
+      enum: [customers, season_passes]
+    ImportJobStatus:
+      type: string
+      enum: [uploaded, validated, applying, applied, failed, discarded]
+    ImportOptions:
+      type: object
+      properties:
+        match_by:
+          type: string
+          enum: [email, phone, external_ref]
+          description: "Criterio per riconoscere un cliente già presente (default email)."
+        update_existing:
+          type: boolean
+          description: "true = aggiorna i clienti trovati; false = li salta (default)."
+        marketing_consent_default:
+          type: boolean
+          description: "Consenso marketing quando la colonna manca (default false: mai presunto)."
+        season_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Obbligatoria per season_passes."
+        pack_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Pacchetto predefinito per season_passes quando la colonna manca."
+        create_missing_customers:
+          type: boolean
+          description: "season_passes: crea i clienti non trovati (default true)."
+    ImportIssue:
+      type: object
+      required: [row, code]
+      properties:
+        row:
+          type: integer
+          description: "Numero di riga del file (1 = intestazione)."
+        column:
+          type: string
+        code:
+          type: string
+          description: "Es. required, invalid_email, invalid_date, unknown_spot, spot_unavailable, duplicate_in_file."
+        message:
+          type: string
+    ImportReport:
+      type: object
+      required: [rows, valid, invalid, to_create, to_update, to_skip, errors, warnings]
+      properties:
+        rows:
+          type: integer
+        valid:
+          type: integer
+        invalid:
+          type: integer
+        to_create:
+          type: integer
+        to_update:
+          type: integer
+        to_skip:
+          type: integer
+        created:
+          type: integer
+        updated:
+          type: integer
+        skipped:
+          type: integer
+        errors:
+          type: array
+          maxItems: 500
+          items:
+            $ref: "#/components/schemas/ImportIssue"
+        warnings:
+          type: array
+          maxItems: 500
+          items:
+            $ref: "#/components/schemas/ImportIssue"
+        columns:
+          type: array
+          description: "Intestazioni riconosciute nel file."
+          items:
+            type: string
+    ImportJob:
+      type: object
+      required: [id, kind, status, filename, size_bytes, sha256, options, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+        kind:
+          $ref: "#/components/schemas/ImportKind"
+        status:
+          $ref: "#/components/schemas/ImportJobStatus"
+        filename:
+          type: string
+        size_bytes:
+          type: integer
+          format: int64
+        sha256:
+          type: string
+        options:
+          $ref: "#/components/schemas/ImportOptions"
+        report:
+          $ref: "#/components/schemas/ImportReport"
+        created_by_user_id:
+          type: string
+          format: uuid
+          x-go-type: string
+        applied_at:
+          type: string
+          format: date-time
+        version:
+          $ref: "#/components/schemas/Version"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ImportJobList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImportJob"
+        next_cursor:
+          type: string

@@ -379,4 +379,24 @@ func TestMapsHTTP_IfMatchWildcard(t *testing.T) {
 	if p := mapsDecode[api.Problem](t, body); status != 404 || p.Type != "not_found" {
 		t.Fatalf("wildcard on unknown map: %d %s", status, body)
 	}
+	// Deleting a map requires If-Match (ADR 0019 C): 428 without it, 412 when
+	// stale, 204 with the current version.
+	status, _, body = mapsCall(t, e.owner, http.MethodDelete, nil, func(w http.ResponseWriter, r *http.Request) {
+		e.h.DeleteMap(w, r, a, mapID, api.DeleteMapParams{})
+	})
+	if p := mapsDecode[api.Problem](t, body); status != 428 || p.Type != "precondition_required" {
+		t.Fatalf("delete without If-Match: %d %s", status, body)
+	}
+	status, _, body = mapsCall(t, e.owner, http.MethodDelete, nil, func(w http.ResponseWriter, r *http.Request) {
+		e.h.DeleteMap(w, r, a, mapID, api.DeleteMapParams{IfMatch: mapsPtr(`"1"`)})
+	})
+	if p := mapsDecode[api.Problem](t, body); status != 412 || p.Type != "version_conflict" {
+		t.Fatalf("delete with a stale If-Match: %d %s", status, body)
+	}
+	status, _, body = mapsCall(t, e.owner, http.MethodDelete, nil, func(w http.ResponseWriter, r *http.Request) {
+		e.h.DeleteMap(w, r, a, mapID, api.DeleteMapParams{IfMatch: mapsPtr(`"3"`)})
+	})
+	if status != 204 {
+		t.Fatalf("delete with the current version: %d %s", status, body)
+	}
 }

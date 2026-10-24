@@ -608,7 +608,7 @@ func (s *Service) TestPayments(ctx context.Context, p *auth.Principal, establish
 	if err != nil {
 		return nil, err
 	}
-	cfg, err := s.ActiveProvider(ctx, s.d.DB, es)
+	cfg, err := s.ActiveProvider(ctx, s.d.DB, es, false)
 	if err != nil {
 		return nil, err
 	}
@@ -726,7 +726,7 @@ func (s *Service) ResolvePublic(ctx context.Context, slug string) (*PublicEstabl
 	if out.Terms, err = s.CurrentTerms(ctx, s.d.DB, es); err != nil {
 		return nil, err
 	}
-	active, err := store.GetActivePaymentProvider(ctx, s.d.DB, es)
+	active, err := effectivePaymentProvider(ctx, s.d.DB, es)
 	switch {
 	case err == nil:
 		out.Provider = active.Provider
@@ -754,11 +754,17 @@ func (s *Service) providerOnline(code string) bool {
 	return ok && drv.Capabilities().Online
 }
 
-// ActiveProvider returns the decrypted configuration of the active payment
-// provider of es; the "manual" configuration when none is active.
-// Implements gateway.ProviderSettings.
-func (s *Service) ActiveProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (*ProviderConfig, error) {
-	row, err := store.GetActivePaymentProvider(ctx, db, es)
+// ActiveProvider returns the decrypted configuration the payments of a
+// booking of es go through; the "manual" configuration when none applies.
+// The mode follows the booking, not the test-mode switch (spec 15.4, ADR
+// 0019): a real booking (test = false) pays through the active provider
+// row whatever the switch says, a test booking through the mode = test row
+// of the active provider when that holds credentials, otherwise through the
+// manual driver, so that a test booking never charges a real card and a
+// real booking is never paid with test keys. Implements
+// gateway.ProviderSettings.
+func (s *Service) ActiveProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope, test bool) (*ProviderConfig, error) {
+	row, err := providerForBooking(ctx, db, es, test)
 	if errors.Is(err, store.ErrNotFound) {
 		return manualConfig(es), nil
 	}
@@ -768,19 +774,67 @@ func (s *Service) ActiveProvider(ctx context.Context, db bun.IDB, es store.Estab
 	return s.providerConfig(es, row)
 }
 
-// ProviderConfig returns the decrypted configuration of provider for es,
-// active or not (webhooks of a provider just switched off must still
-// verify). store.ErrNotFound when the provider was never configured.
+// ProviderConfig returns the decrypted configuration of provider and mode
+// for es, active or not (webhooks and refunds of a provider just switched
+// off must still use the credentials that created the payment). An empty
+// mode returns the most recent configuration of the provider in any mode.
+// store.ErrNotFound when the provider was never configured in that mode.
 // Implements gateway.ProviderSettings.
-func (s *Service) ProviderConfig(ctx context.Context, db bun.IDB, es store.EstablishmentScope, provider string) (*ProviderConfig, error) {
+func (s *Service) ProviderConfig(ctx context.Context, db bun.IDB, es store.EstablishmentScope, provider, mode string) (*ProviderConfig, error) {
 	if provider == ProviderManual {
 		return manualConfig(es), nil
 	}
-	row, err := store.LatestPaymentProviderSettings(ctx, db, es, provider)
+	var (
+		row *store.PaymentProviderSettings
+		err error
+	)
+	if mode == "" {
+		row, err = store.LatestPaymentProviderSettings(ctx, db, es, provider)
+	} else {
+		row, err = store.GetPaymentProviderSettings(ctx, db, es, provider, mode)
+	}
 	if err != nil {
 		return nil, err
 	}
+	if mode != "" && row.Credentials == "" {
+		return nil, store.ErrNotFound
+	}
 	return s.providerConfig(es, row)
+}
+
+// effectivePaymentProvider is the provider row the bookings created on the
+// public page of es use now: the row of a real booking outside test mode,
+// the row of a test booking while the switch is on (new bookings are
+// flagged test then).
+func effectivePaymentProvider(ctx context.Context, db bun.IDB, es store.EstablishmentScope) (*store.PaymentProviderSettings, error) {
+	on, err := store.TestModeEnabled(ctx, db, es)
+	if err != nil {
+		return nil, fmt.Errorf("online: %w", err)
+	}
+	return providerForBooking(ctx, db, es, on)
+}
+
+// providerForBooking is the provider row a booking with the given test flag
+// pays through: the active row for a real booking; for a test booking the
+// mode = test row of the active provider when that has credentials (the
+// active row itself when it is already in test mode), otherwise none
+// (ErrNotFound: the manual driver).
+func providerForBooking(ctx context.Context, db bun.IDB, es store.EstablishmentScope, test bool) (*store.PaymentProviderSettings, error) {
+	active, err := store.GetActivePaymentProvider(ctx, db, es)
+	if err != nil {
+		return nil, err
+	}
+	if !test || active.Mode == store.ProviderModeTest {
+		return active, nil
+	}
+	row, err := store.GetPaymentProviderSettings(ctx, db, es, active.Provider, store.ProviderModeTest)
+	if errors.Is(err, store.ErrNotFound) || (err == nil && row.Credentials == "") {
+		return nil, store.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("online: %w", err)
+	}
+	return row, nil
 }
 
 func manualConfig(es store.EstablishmentScope) *ProviderConfig {

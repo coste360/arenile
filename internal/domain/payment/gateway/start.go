@@ -50,7 +50,17 @@ func (s *Service) Start(ctx context.Context, tx bun.IDB, es store.EstablishmentS
 	default:
 		return nil, configerr.Invalid("purpose", "Valori ammessi: full, deposit, balance.")
 	}
-	cfg, err := s.d.Settings.ActiveProvider(ctx, tx, es)
+	b, err := store.GetBooking(ctx, tx, es, req.BookingID)
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return nil, payment.ErrBookingNotFound
+		}
+		return nil, fmt.Errorf("gateway: %w", err)
+	}
+	// The provider mode follows the booking (spec 15.4, INV-74): a test
+	// booking pays with test keys whatever the switch says now, a real one
+	// never with test keys because the switch is on.
+	cfg, err := s.d.Settings.ActiveProvider(ctx, tx, es, b.Test)
 	if err != nil {
 		return nil, fmt.Errorf("gateway: active provider: %w", err)
 	}
@@ -60,13 +70,6 @@ func (s *Service) Start(ctx context.Context, tx bun.IDB, es store.EstablishmentS
 	pp, ok := s.d.Providers.PaymentProvider(cfg.Code)
 	if !ok || !pp.Capabilities().Online {
 		return nil, ErrProviderNotConfigured
-	}
-	b, err := store.GetBooking(ctx, tx, es, req.BookingID)
-	if err != nil {
-		if errors.Is(err, store.ErrNotFound) {
-			return nil, payment.ErrBookingNotFound
-		}
-		return nil, fmt.Errorf("gateway: %w", err)
 	}
 	s.cancelOpen(ctx, tx, es, cfg.Credentials, pp, b.ID)
 

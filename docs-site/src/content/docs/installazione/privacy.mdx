@@ -58,6 +58,13 @@ servono per l'accessibilità, limita il dato al minimo (ad esempio "postazione a
   specifica ma non ancora disponibile: fino ad allora anonimizza a mano dalla scheda cliente.
 </Aside>
 
+### Importazioni di dati
+
+Il file CSV caricato in **Importa dati** (nomi, email, telefoni) resta nel database solo finché serve: viene
+cancellato appena l'importazione è applicata, fallita o scartata, e comunque dopo 7 giorni se non viene mai
+applicata. Fino ad allora il suo contenuto non è coperto dall'anonimizzazione di un singolo cliente né
+dall'esportazione dei suoi dati: scarta i file che non userai.
+
 ## Cosa devi fare tu
 
 <Steps>

@@ -86,5 +86,33 @@
     "revokeTitle": "Revocare il rilascio del {{date}}?",
     "revokeText": "La postazione torna riservata all'abbonato. Non è possibile se il giorno è già stato rivenduto.",
     "revokeAria": "Revoca il rilascio del {{date}} ({{slot}})"
+  },
+  "override": {
+    "title": "Prezzo",
+    "descriptionEngine": "Totale calcolato dal listino (formula stagione).",
+    "descriptionManual": "Prezzo deciso dal gestore al posto del listino.",
+    "manual": "Prezzo manuale",
+    "current": "Totale",
+    "engine": "Prezzo da listino",
+    "reason": "Motivo",
+    "reasonPlaceholder": "Es. accordo con il cliente storico",
+    "setAt": "Modificato il",
+    "set": "Imposta prezzo manuale",
+    "edit": "Modifica prezzo",
+    "clear": "Torna al listino",
+    "clearTitle": "Tornare al prezzo del listino?",
+    "clearDescription": "Il totale viene ricalcolato dal motore dei prezzi. La modifica resta nel registro attività.",
+    "dialogTitle": "Prezzo manuale",
+    "dialogDescription": "Sostituisce il totale calcolato dal listino. Il motivo e il prezzo precedente restano nel registro attività.",
+    "amount": "Nuovo totale",
+    "amountHint": "Totale dell'abbonamento, extra inclusi. I pagamenti già registrati restano.",
+    "submit": "Salva prezzo",
+    "saved": "Prezzo aggiornato.",
+    "cleared": "Prezzo del listino ripristinato.",
+    "onlyManagers": "Solo il titolare e il gestore possono cambiare il prezzo.",
+    "validation": {
+      "amount": "Indica un importo tra 0 e 1.000.000 €.",
+      "reason": "Scrivi il motivo (da 3 a 500 caratteri)."
+    }
   }
 }

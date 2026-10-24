@@ -67,11 +67,14 @@ export function computeDayKpis(day: OperationsDay, slot: SlotChoice = day.slot):
   };
 }
 
-/** Net takings in cents: succeeded incoming payments minus succeeded refunds. */
+/**
+ * Net takings in cents: succeeded incoming payments minus succeeded refunds.
+ * Payments taken in test mode are left out (spec 15.4, INV-74).
+ */
 export function netTakings(payments: readonly Payment[]): number {
   let total = 0;
   for (const p of payments) {
-    if (p.status !== 'succeeded') continue;
+    if (p.status !== 'succeeded' || p.test) continue;
     total += p.direction === 'refund' ? -Math.abs(p.amount) : p.amount;
   }
   return total;

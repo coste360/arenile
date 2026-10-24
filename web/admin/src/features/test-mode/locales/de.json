@@ -1,0 +1,58 @@
+{
+  "page": {
+    "title": "Testmodus",
+    "description": "Testen Sie die öffentliche Seite und die Zahlungen, ohne Ihre Daten zu verfälschen: Testbuchungen sind von Berichten und Corrispettivi ausgeschlossen und können gesammelt gelöscht werden."
+  },
+  "banner": {
+    "title": "Testmodus aktiv",
+    "description": "Jetzt erstellte Buchungen und Zahlungen sind Testdaten: ausgeschlossen von Berichten, Kennzahlen, Corrispettivi und Exporten. Die öffentliche Seite nimmt Buchungen nur über den Vorschaulink an.",
+    "descriptionPublic": "Jetzt erstellte Buchungen und Zahlungen sind Testdaten, auch die der Kunden auf der öffentlichen Seite: ausgeschlossen von Berichten, Kennzahlen, Corrispettivi und Exporten.",
+    "manage": "Testmodus verwalten"
+  },
+  "switch": {
+    "title": "Schalter",
+    "description": "Solange der Testmodus aktiv ist, wird alles Erstellte (Panel, Vorschau der öffentlichen Seite, API) als Test markiert.",
+    "on": "Aktiv",
+    "off": "Aus",
+    "enabled": "Testmodus aktiv",
+    "enabledHint": "Schalten Sie ihn aus, bevor Sie mit echten Kunden arbeiten.",
+    "enabledSince": "Aktiv seit {{when}}.",
+    "public": "Testbuchungen auch von Kunden",
+    "publicHint": "Ohne diese Option nimmt die öffentliche Seite Buchungen nur über den Vorschaulink an; echte Kunden sehen einen Hinweis.",
+    "publicWarningTitle": "Nicht empfohlen, wenn die öffentliche Seite bereits genutzt wird",
+    "publicWarning": "Echte Kunden können buchen, aber ihre Buchungen sind Testdaten: aus den Zahlen ausgeschlossen und gesammelt löschbar.",
+    "enabledToast": "Testmodus aktiviert",
+    "disabledToast": "Testmodus deaktiviert",
+    "savedPublic": "Einstellung gespeichert"
+  },
+  "stripe": {
+    "configuredTitle": "Onlinezahlungen mit den Testschlüsseln",
+    "configured": "Stripe verwendet automatisch die Testkonfiguration, solange der Testmodus aktiv ist: keine echten Belastungen.",
+    "missingTitle": "Keine Stripe-Testschlüssel",
+    "missing": "Solange der Testmodus aktiv ist, sind Onlinezahlungen deaktiviert (Zahlung vor Ort). Fügen Sie die Testschlüssel unter Einstellungen > Zahlungen hinzu, um sie zu testen."
+  },
+  "preview": {
+    "title": "Vorschau der öffentlichen Seite",
+    "description": "Ein signierter Link, 2 Stunden gültig, um auf der öffentlichen Seite zu Testzwecken zu buchen.",
+    "create": "Vorschaulink erstellen",
+    "renew": "Neuer Link",
+    "needsEnabled": "Aktivieren Sie den Testmodus, um den Vorschaulink zu erstellen.",
+    "hint": "Erstellen Sie den Link und öffnen Sie ihn auf diesem oder einem anderen Gerät.",
+    "urlLabel": "Vorschaulink",
+    "copy": "Kopieren",
+    "copied": "Link kopiert",
+    "copyFailed": "Link konnte nicht kopiert werden",
+    "open": "Öffnen",
+    "expires": "Läuft am {{when}} ab."
+  },
+  "purge": {
+    "title": "Testbuchungen",
+    "description": "Löscht die Testbuchungen mit Belegungen, Zahlungen und Nachrichten endgültig. Echte Buchungen werden nie berührt; das Aktivitätsprotokoll bleibt erhalten.",
+    "action": "Testbuchungen löschen",
+    "count": "Testbuchungen",
+    "confirmTitle": "Testbuchungen löschen?",
+    "confirmDescription": "{{bookings}} Testbuchungen und {{payments}} Testzahlungen werden gelöscht. Dies kann nicht rückgängig gemacht werden.",
+    "confirm": "Löschen",
+    "done": "{{bookings}} Testbuchungen und {{payments}} Testzahlungen gelöscht"
+  }
+}

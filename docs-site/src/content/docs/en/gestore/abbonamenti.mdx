@@ -64,6 +64,27 @@ With **Credit for released days** enabled in the policy, every released **and re
 equal to the chosen percentage: you see it in **Credit accrued** and on the customer record. The credit never goes
 below zero.
 
+## Manual price
+
+The price of a season pass comes from the price list. For a special agreement (long-standing customer, agreed
+package) the owner or the manager can replace it:
+
+<Screenshot name="admin-pass-price" alt="Season pass sheet with the Price section" />
+
+<Steps>
+
+1. Open the pass: the **Price** section shows the **Total**.
+2. **Set manual price**, enter the **New total** and the **Reason** (required).
+3. **Save price**.
+
+</Steps>
+
+The section then shows **Manual price**, the **Price list amount** computed by the engine, the reason and when it
+was changed. **Back to price list** restores the price list amount shown in the section (the one the engine
+computes for the current spot and period). Moving or editing the pass does not touch the manual price: only the
+price list amount shown beneath it changes. The new total cannot be lower than what was already paid. Every change goes to the activity log with previous price, new price and reason; the price
+breakdown accepted at creation stays unchanged. The cashier role sees the price but cannot change it.
+
 ## New season and renewals
 
 At the end of the season the [season rollover](/en/gestore/cambio-stagione/) prepares the next season and a

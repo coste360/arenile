@@ -174,6 +174,8 @@ type BookingSummary struct {
 	Tags          []string       `bun:"tags,type:json"`
 	HasExtras     bool           `bun:"has_extras"`
 	Version       int64          `bun:"version"`
+	// Test marks a booking created in test mode (spec 15.4).
+	Test bool `bun:"test"`
 }
 
 // BalanceDue is what remains to be collected (never negative).
@@ -183,7 +185,7 @@ func bookingSummarySelect(db bun.IDB, es EstablishmentScope) *bun.SelectQuery {
 	return db.NewSelect().TableExpr("bookings AS bk").
 		Join("JOIN customers AS c ON c.id = bk.customer_id").
 		ColumnExpr("bk.id, bk.code, bk.status, bk.channel, bk.customer_id, bk.starts_on, bk.ends_on, bk.slots").
-		ColumnExpr("bk.is_season_pass, bk.total_amount, bk.paid_amount, bk.notes_customer, bk.notes_internal, bk.version").
+		ColumnExpr("bk.is_season_pass, bk.total_amount, bk.paid_amount, bk.notes_customer, bk.notes_internal, bk.version, bk.test").
 		ColumnExpr("c.first_name, c.last_name, c.anonymized_at, c.tags").
 		ColumnExpr("EXISTS (SELECT 1 FROM booking_line_extras AS ble WHERE ble.booking_id = bk.id) AS has_extras").
 		Where("bk.establishment_id = ?", es.ID())

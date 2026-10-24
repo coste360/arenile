@@ -27,8 +27,10 @@ export type CashSessionClose = Schemas['CashSessionClose'];
 export type Payment = Schemas['Payment'];
 export type ManualPaymentInput = Schemas['ManualPaymentInput'];
 export type BookingSummary = Schemas['BookingSummary'];
+export type CashRegister = Schemas['CashRegister'];
+export type CashRegisterInput = Schemas['CashRegisterInput'];
 
-/** Default register (spec 14.1: one desk per establishment in the MVP). */
+/** Code of the default register ("Cassa principale", always present). */
 export const MAIN_REGISTER = 'main';
 
 const base = '/api/admin/v1/establishments/{establishmentId}' as const;
@@ -42,8 +44,10 @@ export function newIdempotencyKey(): string {
 
 export const cashKeys = {
   all: (est: string) => establishmentKeys.area(est, 'cash'),
-  current: (est: string, register: string) =>
-    [...establishmentKeys.area(est, 'cash'), 'current', register] as const,
+  current: (est: string, registerId: string) =>
+    [...establishmentKeys.area(est, 'cash'), 'current', registerId] as const,
+  registers: (est: string, includeInactive: boolean) =>
+    [...establishmentKeys.area(est, 'cash'), 'registers', includeInactive] as const,
   history: (est: string) => [...establishmentKeys.area(est, 'cash'), 'history'] as const,
   session: (est: string, id: string) =>
     [...establishmentKeys.area(est, 'cash'), 'session', id] as const,
@@ -53,20 +57,22 @@ export const cashKeys = {
     [...establishmentKeys.area(est, 'bookings'), 'cash-search', q] as const,
 };
 
-/** Open session of the register with movements and totals; null when none is open (404). */
-export function useCurrentSession(
-  establishmentId: string,
-  register = MAIN_REGISTER,
-  enabled = true,
-) {
+/**
+ * Open session of the register (by id; the default register when empty)
+ * with movements and totals; null when none is open (404).
+ */
+export function useCurrentSession(establishmentId: string, registerId = '', enabled = true) {
   const client = useApiClient();
   return useQuery<CashSessionDetail | null, ApiProblem>({
-    queryKey: cashKeys.current(establishmentId, register),
+    queryKey: cashKeys.current(establishmentId, registerId || MAIN_REGISTER),
     queryFn: async () => {
       try {
         return await call(() =>
           client.GET(`${base}/cash-sessions/current`, {
-            params: { path: { establishmentId }, query: { register } },
+            params: {
+              path: { establishmentId },
+              query: registerId ? { register_id: registerId } : { register: MAIN_REGISTER },
+            },
           }),
         );
       } catch (err) {
@@ -171,6 +177,86 @@ export function useCloseSession(
           body,
         }),
       ),
+    onSettled: invalidate,
+  });
+}
+
+/** Cash registers (default first, then by sort order and name), with their open session. */
+export function useRegisters(establishmentId: string, includeInactive = false, enabled = true) {
+  const client = useApiClient();
+  return useQuery<CashRegister[], ApiProblem>({
+    queryKey: cashKeys.registers(establishmentId, includeInactive),
+    queryFn: async () => {
+      const list = await call(() =>
+        client.GET(`${base}/cash-registers`, {
+          params: {
+            path: { establishmentId },
+            query: includeInactive ? { include_inactive: true } : {},
+          },
+        }),
+      );
+      return list.items;
+    },
+    enabled,
+    retry: shouldRetry,
+  });
+}
+
+export function useCreateRegister(establishmentId: string) {
+  const client = useApiClient();
+  const invalidate = useInvalidateCash(establishmentId);
+  return useMutation<CashRegister, ApiProblem, CashRegisterInput>({
+    mutationFn: (body) =>
+      call(() =>
+        client.POST(`${base}/cash-registers`, {
+          params: {
+            path: { establishmentId },
+            header: { 'Idempotency-Key': newIdempotencyKey() },
+          },
+          body,
+        }),
+      ),
+    onSettled: invalidate,
+  });
+}
+
+/** Update with If-Match on the version read (412 when someone else changed it). */
+export function useUpdateRegister(establishmentId: string) {
+  const client = useApiClient();
+  const invalidate = useInvalidateCash(establishmentId);
+  return useMutation<
+    CashRegister,
+    ApiProblem,
+    { register: Pick<CashRegister, 'id' | 'version'>; body: CashRegisterInput }
+  >({
+    mutationFn: ({ register, body }) =>
+      call(() =>
+        client.PUT(`${base}/cash-registers/{registerId}`, {
+          params: {
+            path: { establishmentId, registerId: register.id },
+            header: { 'If-Match': `"${register.version}"` },
+          },
+          body,
+        }),
+      ),
+    onSettled: invalidate,
+  });
+}
+
+export function useDeleteRegister(establishmentId: string) {
+  const client = useApiClient();
+  const invalidate = useInvalidateCash(establishmentId);
+  return useMutation<void, ApiProblem, Pick<CashRegister, 'id' | 'version'>>({
+    mutationFn: async (register) => {
+      await call(() =>
+        client.DELETE(`${base}/cash-registers/{registerId}`, {
+          params: {
+            path: { establishmentId, registerId: register.id },
+            header: { 'If-Match': `"${register.version}"` },
+          },
+        }),
+      );
+    },
     onSettled: invalidate,
   });
 }

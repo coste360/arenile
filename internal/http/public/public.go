@@ -26,6 +26,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/online"
 	"github.com/coste360/arenile/internal/domain/renewal"
+	"github.com/coste360/arenile/internal/domain/testmode"
 	"github.com/coste360/arenile/internal/domain/waitlist"
 	"github.com/coste360/arenile/internal/http/problem"
 	"github.com/coste360/arenile/pkg/ext"
@@ -48,6 +49,20 @@ type Handlers struct {
 	Renewals *renewal.Service
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
+
+	// Deferred features A: test mode gate of the public creations and the
+	// banner flag of the profile; nil = test mode never applies.
+	TestMode *testmode.Service
+}
+
+// previewToken is the test-mode preview token forwarded by the booking
+// page (X-Arenile-Preview, createTestModePreviewLink); empty when absent.
+func previewToken(r *http.Request) string {
+	t := r.Header.Get("X-Arenile-Preview")
+	if len(t) > 512 {
+		return ""
+	}
+	return t
 }
 
 // noStore marks responses that carry session or customer data.

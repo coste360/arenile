@@ -128,9 +128,27 @@ func TestBookingsHTTP_FlowAndErrors(t *testing.T) {
 		if body["current_status"] != "confirmed" {
 			t.Fatalf("current_status %v", body)
 		}
-		// Check-in before the stay: 422 booking_outside_period with the period.
+		// Map write actions require If-Match (ADR 0019 C): 428 without it.
+		anyVersion := "*"
 		status, _, body = bkCall(t, f.Staff, nil, "", func(w http.ResponseWriter, r *http.Request) {
 			h.CheckInBooking(w, r, est, id, api.CheckInBookingParams{})
+		})
+		bkExpect(t, "check-in without If-Match", status, body, 428, "precondition_required")
+		status, _, body = bkCall(t, f.Staff, nil, "", func(w http.ResponseWriter, r *http.Request) {
+			h.MarkBookingNoShow(w, r, est, id, api.MarkBookingNoShowParams{})
+		})
+		bkExpect(t, "no-show without If-Match", status, body, 428, "precondition_required")
+		status, _, body = bkCall(t, f.Cashier, map[string]any{"line_id": store.NewID(), "spot_id": f.Spots[3].ID}, "", func(w http.ResponseWriter, r *http.Request) {
+			h.MoveBooking(w, r, est, id, api.MoveBookingParams{})
+		})
+		bkExpect(t, "move without If-Match", status, body, 428, "precondition_required")
+		status, _, body = bkCall(t, f.Cashier, map[string]any{"reason": "x"}, "", func(w http.ResponseWriter, r *http.Request) {
+			h.CancelBooking(w, r, est, id, api.CancelBookingParams{})
+		})
+		bkExpect(t, "cancel without If-Match", status, body, 428, "precondition_required")
+		// Check-in before the stay: 422 booking_outside_period with the period.
+		status, _, body = bkCall(t, f.Staff, nil, "", func(w http.ResponseWriter, r *http.Request) {
+			h.CheckInBooking(w, r, est, id, api.CheckInBookingParams{IfMatch: &anyVersion})
 		})
 		bkExpect(t, "check-in early", status, body, 422, "booking_outside_period")
 		if p, _ := body["period"].(map[string]any); p["today"] != "2027-06-01" || p["starts_on"] != "2027-07-10" {
@@ -178,7 +196,7 @@ func TestBookingsHTTP_FlowAndErrors(t *testing.T) {
 			t.Fatalf("cancel preview %v", body)
 		}
 		status, _, body = bkCall(t, f.Cashier, map[string]any{"reason": "cliente"}, "", func(w http.ResponseWriter, r *http.Request) {
-			h.CancelBooking(w, r, est, id2, api.CancelBookingParams{})
+			h.CancelBooking(w, r, est, id2, api.CancelBookingParams{IfMatch: &anyVersion})
 		})
 		bkExpect(t, "cancel", status, body, 200, "")
 		if body["booking"].(map[string]any)["status"] != "cancelled" || len(body["booking"].(map[string]any)["allocations"].([]any)) != 0 {
@@ -186,7 +204,7 @@ func TestBookingsHTTP_FlowAndErrors(t *testing.T) {
 		}
 		// Move validation: unknown line is 404, missing spot is 400.
 		status, _, body = bkCall(t, f.Cashier, map[string]any{"line_id": store.NewID(), "spot_id": f.Spots[3].ID}, "", func(w http.ResponseWriter, r *http.Request) {
-			h.MoveBooking(w, r, est, id, api.MoveBookingParams{})
+			h.MoveBooking(w, r, est, id, api.MoveBookingParams{IfMatch: &anyVersion})
 		})
 		bkExpect(t, "move unknown line", status, body, 404, "not_found")
 		// Auto-assign with nothing pending.

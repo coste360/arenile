@@ -66,6 +66,9 @@ type OperationalBooking struct {
 	HasNotes           bool
 	// Version is the If-Match version for the actions offered on the map.
 	Version int64
+	// Test marks a booking created in test mode (spec 15.4): shown with a
+	// badge, left out of the money totals of the day (INV-74).
+	Test bool
 	// Ticket is the daily-sale ticket of the booking, nil when none
 	// (operations_tickets.go).
 	Ticket *OperationalTicket
@@ -348,6 +351,9 @@ func (s *Service) operationsDay(ctx context.Context, es store.EstablishmentScope
 	}
 	day.Totals.Arrivals, day.Totals.Departures, day.Totals.CheckedIn = mv.Arrivals, mv.Departures, mv.CheckedIn
 	for i := range present {
+		if present[i].Test {
+			continue // test mode bookings stay out of the KPIs (INV-74)
+		}
 		day.Totals.BalanceDue += present[i].BalanceDue()
 	}
 
@@ -447,6 +453,7 @@ func operationalBooking(b *store.BookingSummary, a *store.SpotAllocation, packs 
 		StartsOn:           b.StartsOn, EndsOn: b.EndsOn, Slots: b.Slots, IsSeasonPass: b.IsSeasonPass,
 		PackCodes: packs, TotalAmount: b.TotalAmount, PaidAmount: b.PaidAmount, BalanceDue: b.BalanceDue(),
 		HasExtras: b.HasExtras, HasNotes: b.NotesCustomer != "" || b.NotesInternal != "", Version: b.Version,
+		Test: b.Test,
 	}
 	if a.BookingLineID != nil {
 		ob.LineID = *a.BookingLineID

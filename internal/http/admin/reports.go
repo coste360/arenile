@@ -1,10 +1,8 @@
 package admin
 
 import (
-	"bytes"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/coste360/arenile/internal/calendar"
 	"github.com/coste360/arenile/internal/domain/report"
@@ -18,35 +16,36 @@ import (
 // format, the Accept header contains text/csv), the CSV export written by
 // report.Write<Name>CSV with Content-Type "text/csv; charset=utf-8",
 // Content-Disposition attachment "<report>_<from>_<to>.csv" and
-// Cache-Control no-store (as GetCorrispettivi in fiscal.go).
+// Cache-Control no-store (as GetCorrispettivi in fiscal.go); format xlsx
+// answers the same table as an .xlsx sheet (exports.go).
 
-// wantsCSV reports whether the client asked for the CSV export.
-func wantsCSV(r *http.Request, format *api.ReportFormat) bool {
+// reportFormat is the export the client asked for: "csv", "xlsx" or ""
+// (JSON). Without format, Accept: text/csv selects CSV and the xlsx media
+// type selects XLSX.
+func reportFormat(r *http.Request, format *api.ReportFormat) string {
 	if format != nil {
-		return *format == api.ReportFormatCSV
+		switch *format {
+		case api.ReportFormatCSV:
+			return exportCSV
+		case api.ReportFormatXLSX:
+			return exportXLSX
+		}
+		return ""
 	}
-	return strings.Contains(r.Header.Get("Accept"), "text/csv")
+	return acceptedExport(r)
 }
 
-// writeReport answers res as JSON (toAPI) or CSV (writeCSV).
+// writeReport answers res as JSON (toAPI), CSV (writeCSV) or XLSX (the
+// same CSV converted, see writeExport).
 func writeReport[R any](h *Handlers, w http.ResponseWriter, r *http.Request, format *api.ReportFormat, name string, p report.Period,
 	res *R, toAPI func(*R) any, writeCSV func(io.Writer, *R) error,
 ) {
-	if !wantsCSV(r, format) {
+	f := reportFormat(r, format)
+	if f == "" {
 		writeJSON(w, http.StatusOK, toAPI(res))
 		return
 	}
-	var buf bytes.Buffer
-	if err := writeCSV(&buf, res); err != nil {
-		problem.Error(w, r, h.Log, err)
-		return
-	}
-	file := name + "_" + p.From.String() + "_" + p.To.String() + ".csv"
-	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
-	w.Header().Set("Content-Disposition", `attachment; filename="`+file+`"`)
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(buf.Bytes())
+	h.writeExport(w, r, f, name+"_"+p.From.String()+"_"+p.To.String(), func(dst io.Writer) error { return writeCSV(dst, res) })
 }
 
 // reportPeriod validates from/to, answering 400 on failure.

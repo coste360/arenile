@@ -2,7 +2,7 @@ import { useMe } from '@arenile/shared/api';
 import { Alert, AlertDescription } from '@arenile/shared/ui/alert';
 import { Separator } from '@arenile/shared/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@arenile/shared/ui/sidebar';
-import { Outlet } from '@tanstack/react-router';
+import { Outlet, useRouterState } from '@tanstack/react-router';
 import { ShieldAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AppBreadcrumb } from './AppBreadcrumb';
@@ -10,6 +10,8 @@ import { AppSidebar } from './AppSidebar';
 import { CommandMenu } from './CommandMenu';
 import { OfflineIndicator } from './OfflineIndicator';
 import { OfflineShell } from '../offline/OfflineShell';
+import { TestModeBanner } from '../features/test-mode/TestModeBanner';
+import { NotificationsMenu } from '../features/notifications/NotificationsMenu';
 
 /** Sidebar state persisted by shadcn's SidebarProvider in the `sidebar_state` cookie. */
 function sidebarDefaultOpen(): boolean {
@@ -17,10 +19,20 @@ function sidebarDefaultOpen(): boolean {
   return !/(?:^|;\s*)sidebar_state=false/.test(document.cookie);
 }
 
+/**
+ * Routes whose content uses the whole width on wide screens (the
+ * operational map: more spots visible without zooming); every other page
+ * keeps the max-w-7xl reading width (UI standard).
+ */
+const FULL_WIDTH_ROUTES = /\/e\/[^/]+\/mappa\/?$/;
+
 /** Panel layout: shadcn Sidebar + top bar (breadcrumb, command palette, connection). */
 export function AppShell() {
   const { t } = useTranslation();
   const me = useMe();
+  const fullWidth = useRouterState({
+    select: (s) => FULL_WIDTH_ROUTES.test(s.location.pathname),
+  });
 
   return (
     <SidebarProvider defaultOpen={sidebarDefaultOpen()}>
@@ -38,10 +50,12 @@ export function AppShell() {
           <AppBreadcrumb />
           <div className="ml-auto flex items-center gap-2">
             <CommandMenu />
+            <NotificationsMenu />
             <OfflineIndicator />
           </div>
         </header>
         <OfflineShell />
+        <TestModeBanner />
         {me.data?.totp_enrolment_required && (
           <div className="px-4 pt-4 md:px-6">
             <Alert>
@@ -51,7 +65,7 @@ export function AppShell() {
           </div>
         )}
         <div id="main" tabIndex={-1} className="flex-1 p-4 outline-none md:p-6 lg:p-8">
-          <div className="mx-auto w-full max-w-7xl">
+          <div className={fullWidth ? 'w-full' : 'mx-auto w-full max-w-7xl'}>
             <Outlet />
           </div>
         </div>

@@ -31,7 +31,11 @@
       "invalidTransition": "Diese Aktion ist im aktuellen Buchungsstatus nicht erlaubt.",
       "cashSessionClosed": "Die Kassensitzung ist geschlossen: Öffnen Sie eine, um Barzahlungen zu erfassen.",
       "cashSessionAlreadyOpen": "Es ist bereits eine Kassensitzung geöffnet.",
-      "policyViolation": "Die Anfrage entspricht nicht den Buchungsregeln."
+      "policyViolation": "Die Anfrage entspricht nicht den Buchungsregeln.",
+      "testModePreviewRequired": "Online-Buchungen sind vorübergehend ausgesetzt, während der Betrieb das System testet. Bitte versuchen Sie es später erneut oder kontaktieren Sie den Betrieb.",
+      "importInvalid": "Die Datei ist ungültig: Prüfen Sie den Prüfbericht.",
+      "importAlreadyApplied": "Diese Datei wurde bereits importiert: Die Zeilen sind bereits vorhanden.",
+      "refundInProgress": "Für diese Buchung läuft eine automatische Rückerstattung: Bitte warten Sie, bis sie abgeschlossen ist."
     },
     "languages": {
       "it": "Italiano",
@@ -156,6 +160,9 @@
       "apiKeys": "API-Schlüssel",
       "webhooks": "Webhooks",
       "seasonRollover": "Neue Saison",
+      "cashRegisters": "Kassen",
+      "imports": "Daten importieren",
+      "testMode": "Testmodus",
       "entryTickets": "Eintrittskarten"
     },
     "operations": "Tagesgeschäft",
@@ -241,7 +248,8 @@
       "pickHint": "Wählen Sie den ersten und den letzten Tag: Für einen einzelnen Tag tippen Sie zweimal auf denselben Tag."
     },
     "season": "Saison {{year}}: vom {{from}} bis {{to}}",
-    "nextStepsSoon": "Platz, Paket und Online-Zahlung folgen in Kürze: Bis dahin wenden Sie sich bitte an das Strandbad."
+    "nextStepsSoon": "Platz, Paket und Online-Zahlung folgen in Kürze: Bis dahin wenden Sie sich bitte an das Strandbad.",
+    "testMode": "Testmodus: Diese Buchung ist ein Test, sie ist nicht gültig und es wird keine echte Zahlung belastet."
   },
   "ui": {
     "close": "Schließen",

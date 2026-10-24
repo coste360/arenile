@@ -138,3 +138,24 @@ export const booking = {
   version: 2,
   created_at: '2026-07-01T10:00:00Z',
 };
+
+export const mainRegister = {
+  id: 'r-main',
+  code: 'main',
+  name: 'Cassa principale',
+  active: true,
+  is_default: true,
+  sort_order: 0,
+  created_at: '2026-06-01T08:00:00Z',
+  updated_at: '2026-06-01T08:00:00Z',
+  version: 1,
+};
+
+export const barRegister = {
+  ...mainRegister,
+  id: 'r-bar',
+  code: 'bar',
+  name: 'Bar spiaggia',
+  is_default: false,
+  sort_order: 10,
+};

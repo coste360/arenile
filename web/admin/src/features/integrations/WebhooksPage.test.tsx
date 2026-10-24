@@ -206,6 +206,26 @@ describe('WebhooksPage', () => {
             request_body: { id: 'evt_d1', type: 'booking.confirmed', data: { code: 'AR-1' } },
             response_excerpt: 'Internal Server Error',
           }),
+        [`GET ${EPS}/w1/deliveries/d1/attempts`]: () =>
+          list([
+            {
+              id: 'a2',
+              delivery_id: 'd1',
+              attempt: 2,
+              status_code: 500,
+              error: 'risposta 500',
+              duration_ms: 87,
+              attempted_at: '2026-07-01T10:05:00Z',
+            },
+            {
+              id: 'a1',
+              delivery_id: 'd1',
+              attempt: 1,
+              error: 'timeout',
+              duration_ms: 10000,
+              attempted_at: '2026-07-01T10:00:00Z',
+            },
+          ]),
         [`POST ${EPS}/w1/deliveries/d1/redeliver`]: () =>
           json(202, delivery('d1', { status: 'pending' })),
       }),
@@ -242,6 +262,10 @@ describe('WebhooksPage', () => {
     const detail = await screen.findByRole('dialog', { name: 'Dettaglio consegna' });
     expect(await within(detail).findByText(/"code": "AR-1"/)).toBeInTheDocument();
     expect(within(detail).getByText('Internal Server Error')).toBeInTheDocument();
+    // Every attempt, not only the last one (ADR 0019 F).
+    const attempts = await within(detail).findByRole('table', { name: 'Storico dei tentativi' });
+    expect(within(attempts).getByText('timeout')).toBeInTheDocument();
+    expect(within(attempts).getByText('risposta 500')).toBeInTheDocument();
     await user.click(within(detail).getByRole('button', { name: 'Reinvia' }));
     await waitFor(() =>
       expect(callsTo(fetchMock, 'POST', `${EPS}/w1/deliveries/d1/redeliver`)).toHaveLength(1),

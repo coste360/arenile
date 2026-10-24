@@ -175,7 +175,7 @@ func TestOnlinePayments_EncryptedCredentials(t *testing.T) {
 		if err != nil || row.Credentials == "" || containsAny(row.Credentials, sk, wh) {
 			t.Fatalf("credentials stored in clear or missing: %v", err)
 		}
-		cfg, err := svc.ActiveProvider(ctx, db, mustScope(t, f))
+		cfg, err := svc.ActiveProvider(ctx, db, mustScope(t, f), false)
 		if err != nil || cfg.Credentials["secret_key"] != sk || cfg.Credentials["webhook_secret"] != wh || !cfg.Online {
 			t.Fatalf("decrypted %v %+v", err, cfg.Code)
 		}
@@ -184,7 +184,7 @@ func TestOnlinePayments_EncryptedCredentials(t *testing.T) {
 		if _, err := svc.UpdatePayments(ctx, f.Owner, est, nil, online.PaymentSettingsInput{Provider: "stripe", Mode: "test", Stripe: &online.StripeInput{EmbeddedMode: &emb}}); err != nil {
 			t.Fatal(err)
 		}
-		if cfg, _ = svc.ActiveProvider(ctx, db, mustScope(t, f)); cfg.Credentials["secret_key"] != sk || !cfg.Embedded {
+		if cfg, _ = svc.ActiveProvider(ctx, db, mustScope(t, f), false); cfg.Credentials["secret_key"] != sk || !cfg.Embedded {
 			t.Fatalf("secret lost on partial update %+v", cfg.Embedded)
 		}
 		res, err := svc.TestPayments(ctx, f.Owner, est)
@@ -199,10 +199,10 @@ func TestOnlinePayments_EncryptedCredentials(t *testing.T) {
 		if _, err := svc.UpdatePayments(ctx, f.Owner, est, nil, online.PaymentSettingsInput{Provider: "manual"}); err != nil {
 			t.Fatal(err)
 		}
-		if cfg, _ = svc.ActiveProvider(ctx, db, mustScope(t, f)); cfg.Code != "manual" {
+		if cfg, _ = svc.ActiveProvider(ctx, db, mustScope(t, f), false); cfg.Code != "manual" {
 			t.Fatalf("active %s", cfg.Code)
 		}
-		if cfg, err = svc.ProviderConfig(ctx, db, mustScope(t, f), "stripe"); err != nil || cfg.Credentials["webhook_secret"] != wh {
+		if cfg, err = svc.ProviderConfig(ctx, db, mustScope(t, f), "stripe", store.ProviderModeTest); err != nil || cfg.Credentials["webhook_secret"] != wh {
 			t.Fatalf("inactive provider config %v", err)
 		}
 		// Audit never carries the secrets.

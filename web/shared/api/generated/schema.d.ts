@@ -3811,6 +3811,399 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/v1/establishments/{establishmentId}/test-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stato della modalità prova
+         * @description Spec 15.4. Permesso bookings.read (il banner è visibile a tutto lo staff).
+         */
+        get: operations["getTestMode"];
+        /**
+         * Attiva o disattiva la modalità prova
+         * @description Permesso establishment.configure. Con enabled=true le prenotazioni e le vendite create da quel momento (pannello, pagina pubblica in anteprima, API) sono marcate test=true: escluse da report, KPI, corrispettivi ed esportazioni; Stripe usa la configurazione mode=test se presente. public_enabled=true permette anche ai clienti reali senza link di anteprima di prenotare in prova (sconsigliato, default false). Scrive audit ed evento establishment.test_mode_changed.
+         */
+        put: operations["updateTestMode"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/test-mode/preview-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Link di anteprima della pagina pubblica in prova
+         * @description Permesso establishment.configure. Restituisce l'URL della pagina pubblica con ?preview=<token> (firmato, valido 2 ore). La pagina pubblica inoltra il token nell'header X-Arenile-Preview: solo con un token valido (o public_enabled) si può prenotare mentre la modalità prova è attiva. 409 conflict se la modalità prova è spenta.
+         */
+        post: operations["createTestModePreviewLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/test-bookings/purge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Eliminazione in blocco delle prenotazioni di prova
+         * @description Permesso establishment.configure. Elimina definitivamente le prenotazioni test=true (e allocazioni, pagamenti, intent, documenti fiscali e messaggi collegati, tutti test) in un'unica transazione; le voci di audit restano. dry_run=true restituisce solo i conteggi. Mai una prenotazione test=false.
+         */
+        post: operations["purgeTestBookings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/refund-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rimborsi garantiti verso il gestore di pagamento
+         * @description Richieste di rimborso riservate nella stessa transazione della cancellazione (dal link del cliente o dal pannello) e inviate al provider da un job con ripetizioni e backoff finché il provider conferma. Permesso bookings.read.
+         */
+        get: operations["listRefundRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/refund-requests/{refundRequestId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Riprova subito un rimborso fallito
+         * @description Permesso refunds.issue. Solo per status failed (tentativi esauriti): torna pending con next_attempt_at = adesso; la chiave di idempotenza verso il provider resta la stessa (mai un doppio rimborso). 409 invalid_transition negli altri stati.
+         */
+        post: operations["retryRefundRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-registers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Casse dello stabilimento
+         * @description Permesso cash.operate. Ogni stabilimento ha almeno la cassa predefinita "Cassa principale" (code main, creata dalla migrazione 00009 o alla prima richiesta).
+         */
+        get: operations["listCashRegisters"];
+        put?: never;
+        /**
+         * Crea una cassa
+         * @description Permesso establishment.configure. 409 conflict se il codice esiste già.
+         */
+        post: operations["createCashRegister"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-registers/{registerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dettaglio della cassa */
+        get: operations["getCashRegister"];
+        /**
+         * Modifica nome, ordine o stato della cassa
+         * @description Permesso establishment.configure. Il codice è immutabile. Disattivare una cassa con una sessione aperta → 409 cash_session_already_open; la cassa predefinita non si disattiva (409 conflict).
+         */
+        put: operations["updateCashRegister"];
+        post?: never;
+        /**
+         * Elimina una cassa mai usata
+         * @description Permesso establishment.configure. Con sessioni nello storico → 409 conflict (va disattivata).
+         */
+        delete: operations["deleteCashRegister"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/cash-sessions/{cashSessionId}/z-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chiusura Z stampabile (HTML pronto per la stampa / PDF)
+         * @description Documento HTML autonomo (stili di stampa inclusi, @page A4 e 80 mm) con intestazione dello stabilimento, logo Arenile mono (ADR 0018), cassa, operatori, fondo, totali per metodo, movimenti, contato e differenza. Il PDF si ottiene con la stampa del browser (ADR 0019: nessuna libreria PDF). Sessione aperta → bozza con filigrana "Non chiusa". Permesso cash.operate.
+         */
+        get: operations["getCashSessionZReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/season-passes/{passId}/price-override": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Prezzo manuale dell'abbonamento
+         * @description Sostituisce il totale calcolato dal motore con un importo deciso dal gestore (motivo obbligatorio). Permesso establishment.configure (proprietario e gestore, mai la cassa). Scrive audit (prima/dopo, motivo) ed evento booking.updated nella stessa transazione; price_snapshot resta immutabile (INV-21), price_current riporta la riga di override. If-Match obbligatorio sulla versione dell'abbonamento.
+         */
+        put: operations["setSeasonPassPriceOverride"];
+        post?: never;
+        /**
+         * Torna al prezzo del listino
+         * @description Ricalcola con il motore dei prezzi; stesso permesso, audit ed If-Match obbligatorio.
+         */
+        delete: operations["clearSeasonPassPriceOverride"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Notifiche del pannello
+         * @description Avvisi per il gestore (endpoint webhook disattivato, rimborso fallito, importazione completata...). Lo stato letto è condiviso dallo staff dello stabilimento. Permesso bookings.read; le notifiche con audience owner solo a chi ha users.manage, quelle con audience manager (rimborso garantito non riuscito) solo a chi ha refunds.issue.
+         */
+        get: operations["listNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/notifications/{notificationId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Segna una notifica come letta */
+        post: operations["markNotificationRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Segna tutte le notifiche come lette */
+        post: operations["markAllNotificationsRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/webhook-endpoints/{endpointId}/deliveries/{deliveryId}/attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Storico completo dei tentativi di una consegna
+         * @description Un elemento per tentativo (più recente prima), conservati ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS giorni (default 30). Permesso users.manage.
+         */
+        get: operations["listWebhookDeliveryAttempts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/exports/{list}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Esportazione di un elenco in CSV o XLSX
+         * @description Elenchi customers, bookings, season-passes, payments con le stesse colonne del CSV dei report (nessun dato personale in più). Streaming; le prenotazioni test=true sono sempre escluse. Permesso reports.read.
+         */
+        get: operations["exportList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Importazioni CSV
+         * @description Permesso establishment.configure.
+         */
+        get: operations["listImportJobs"];
+        put?: never;
+        /**
+         * Carica un file CSV da importare
+         * @description Corpo text/csv (UTF-8, con o senza BOM, separatore ; o , rilevato), massimo 5 MB e 20000 righe. Crea un'importazione in stato uploaded senza toccare i dati. Permesso establishment.configure. Il contenuto è conservato solo fino ad apply/discard (al massimo 7 giorni).
+         */
+        post: operations["createImportJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/imports/templates/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Modello CSV con le intestazioni attese */
+        get: operations["getImportTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/imports/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stato e rapporto dell'importazione */
+        get: operations["getImportJob"];
+        put?: never;
+        post?: never;
+        /**
+         * Scarta l'importazione (cancella il file caricato)
+         * @description Solo prima di apply. Le importazioni applicate restano nello storico (senza contenuto).
+         */
+        delete: operations["discardImportJob"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/imports/{importId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Anteprima (dry run) con rapporto di validazione
+         * @description Valida ogni riga con le opzioni date (stagione e pacchetto per gli abbonamenti, criterio di corrispondenza, consensi GDPR) e calcola cosa verrebbe creato/aggiornato, senza scrivere. Ripetibile; lo stato diventa validated. Il rapporto contiene solo numero di riga, colonna e codice d'errore.
+         */
+        post: operations["previewImportJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/v1/establishments/{establishmentId}/imports/{importId}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Applica l'importazione validata
+         * @description Tutto o niente: un'unica transazione (rollback completo al primo errore, stato failed con il rapporto). Idempotente: le righe già presenti (stesso criterio di corrispondenza) sono aggiornate o saltate, ripetere apply su un'importazione applied restituisce il risultato registrato; lo stesso file (SHA-256) già applicato → 409 import_already_applied. Gli abbonamenti passano dal servizio prenotazioni (allocazioni, audit, outbox). If-Match sulla versione dell'anteprima.
+         */
+        post: operations["applyImportJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3820,7 +4213,7 @@ export interface components {
          *     valore, mai sul testo di `title` o `detail`.
          * @enum {string}
          */
-        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed";
+        ProblemType: "bad_request" | "validation_failed" | "unauthorized" | "invalid_credentials" | "totp_required" | "invalid_totp" | "totp_enrolment_required" | "totp_already_enabled" | "forbidden" | "csrf_failed" | "not_found" | "conflict" | "method_not_allowed" | "unsupported_media_type" | "rate_limited" | "idempotency_key_reused" | "idempotency_in_progress" | "internal_error" | "spot_unavailable" | "no_price" | "policy_violation" | "hold_expired" | "version_conflict" | "precondition_required" | "spot_has_future_allocations" | "not_implemented" | "pool_exhausted" | "quota_exceeded" | "invalid_transition" | "cash_session_closed" | "cash_session_already_open" | "booking_outside_period" | "checkout_not_found" | "payment_provider_unavailable" | "webhook_signature_invalid" | "pairing_code_invalid" | "lan_mode_required" | "loopback_required" | "setup_token_invalid" | "setup_completed" | "renewal_expired" | "waitlist_offer_expired" | "waitlist_disabled" | "credit_insufficient" | "season_rollover_conflict" | "test_mode_preview_required" | "import_invalid" | "import_already_applied" | "refund_in_progress" | "zone_full" | "assignment_conflict" | "ticket_number_conflict" | "ticket_voided" | "ticket_already_entered" | "price_changed";
         /** @description Errore RFC 9457 (`application/problem+json`). */
         Problem: {
             type: components["schemas"]["ProblemType"];
@@ -4013,6 +4406,8 @@ export interface components {
             theme: components["schemas"]["Theme"];
             season?: components["schemas"]["PublicSeason"];
             online?: components["schemas"]["PublicOnlineConfig"];
+            /** @description Modalità prova attiva per questa richiesta (anteprima): la pagina mostra il banner. */
+            test_mode?: boolean;
         };
         /** @description Stagione attiva dello stabilimento (date prenotabili dalla pagina pubblica); assente quando nessuna stagione è attiva. */
         PublicSeason: {
@@ -5465,6 +5860,8 @@ export interface components {
             slots: components["schemas"]["Slots"];
             formula: components["schemas"]["Formula"];
             is_season_pass: boolean;
+            /** @description Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni. */
+            test?: boolean;
             total_amount: components["schemas"]["Money"];
             paid_amount: components["schemas"]["Money"];
             balance_due: components["schemas"]["Money"];
@@ -5559,6 +5956,8 @@ export interface components {
             slots: components["schemas"]["Slots"];
             formula: components["schemas"]["Formula"];
             is_season_pass: boolean;
+            /** @description Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni. */
+            test?: boolean;
             /** Format: uuid */
             season_id?: string;
             total_amount: components["schemas"]["Money"];
@@ -5587,6 +5986,8 @@ export interface components {
             cancel_reason?: string;
             /** Format: uuid */
             created_by_user_id?: string;
+            /** @description Rimborsi garantiti verso il provider (stato visibile, mai persi né doppi). */
+            refunds?: components["schemas"]["RefundRequest"][];
             /** @description Stati raggiungibili da quello corrente (macchina a stati, spec 10.2). */
             next_statuses: components["schemas"]["BookingStatus"][];
             version: components["schemas"]["Version"];
@@ -6207,6 +6608,8 @@ export interface components {
             ends_on: components["schemas"]["Date"];
             slots: components["schemas"]["Slots"];
             is_season_pass: boolean;
+            /** @description Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni. */
+            test?: boolean;
             pack_codes: string[];
             total_amount: components["schemas"]["Money"];
             paid_amount: components["schemas"]["Money"];
@@ -6366,6 +6769,9 @@ export interface components {
             id: string;
             code: string;
             status: components["schemas"]["BookingStatus"];
+            /** @description Creata in modalità prova (spec 15.4): esclusa da report, KPI, corrispettivi ed esportazioni. */
+            test?: boolean;
+            price_override?: components["schemas"]["SeasonPassPriceOverride"];
             /** Format: uuid */
             customer_id: string;
             customer_display_name: string;
@@ -6476,6 +6882,8 @@ export interface components {
             note?: string;
             /** Format: date-time */
             created_at: string;
+            /** @description Incassato in modalità prova (spec 15.4): escluso da report, KPI, corrispettivi ed esportazioni. */
+            test?: boolean;
         };
         PaymentList: {
             items: components["schemas"]["Payment"][];
@@ -6537,7 +6945,11 @@ export interface components {
         CashSession: {
             /** Format: uuid */
             id: string;
+            /** @description Codice della cassa (CashRegister.code). */
             register: string;
+            /** Format: uuid */
+            register_id?: string;
+            register_name?: string;
             status: components["schemas"]["CashSessionStatus"];
             /** Format: date-time */
             opened_at: string;
@@ -6559,8 +6971,13 @@ export interface components {
             next_cursor?: string;
         };
         CashSessionOpen: {
-            /** @description Default main. */
+            /** @description Codice della cassa (deprecato: usare register_id). Default main. */
             register?: string;
+            /**
+             * Format: uuid
+             * @description Cassa da aprire (default: la cassa predefinita). Una sola sessione aperta per cassa.
+             */
+            register_id?: string;
             /** Format: int64 */
             opening_float: number;
             notes?: string;
@@ -7070,6 +7487,7 @@ export interface components {
             summary: components["schemas"]["PublicBookingSummary"];
             customer: components["schemas"]["ManageCustomer"];
             allowed: components["schemas"]["ManageActions"];
+            refund?: components["schemas"]["ManageRefundStatus"];
             cancellation_preview?: components["schemas"]["RefundPreview"];
             releases?: components["schemas"]["ManageRelease"][];
             qr_payload: string;
@@ -7361,7 +7779,7 @@ export interface components {
             finished_at: string;
         };
         /** @enum {string} */
-        ReportFormat: "json" | "csv";
+        ReportFormat: "json" | "csv" | "xlsx";
         /**
          * Format: int64
          * @description Rapporto in punti base (10000 = 100%). Intero, mai float.
@@ -8662,6 +9080,271 @@ export interface components {
         PublicApplyCreditRequest: {
             amount?: components["schemas"]["Money"];
         };
+        TestMode: {
+            enabled: boolean;
+            /** @description true = anche i clienti senza link di anteprima prenotano in prova. */
+            public_enabled: boolean;
+            /** Format: date-time */
+            enabled_at?: string;
+            /** Format: uuid */
+            enabled_by_user_id?: string;
+            /** Format: int64 */
+            test_bookings_count: number;
+            /** @description Esiste una configurazione Stripe mode=test (usata automaticamente in prova). */
+            stripe_test_configured: boolean;
+            version: components["schemas"]["Version"];
+        };
+        TestModeInput: {
+            enabled: boolean;
+            /** @description Default false. */
+            public_enabled?: boolean;
+        };
+        TestModePreviewLink: {
+            url: string;
+            token: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        TestBookingsPurgeRequest: {
+            dry_run?: boolean;
+        };
+        TestBookingsPurgeResult: {
+            /** Format: int64 */
+            bookings: number;
+            /** Format: int64 */
+            payments: number;
+            /** @description false con dry_run. */
+            deleted: boolean;
+        };
+        /**
+         * @description pending: riservato, in attesa di invio (o di nuovo tentativo); processing: inviato al provider, in attesa di conferma; succeeded: confermato dal provider (riga refund nel registro pagamenti); failed: tentativi esauriti, serve un intervento (notifica al gestore); cancelled: annullato dal gestore (rimborso fatto altrove).
+         * @enum {string}
+         */
+        RefundRequestStatus: "pending" | "processing" | "succeeded" | "failed" | "cancelled";
+        RefundRequest: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            booking_id: string;
+            booking_code?: string;
+            amount: components["schemas"]["Money"];
+            provider: string;
+            /**
+             * Format: uuid
+             * @description Intent di pagamento rimborsato.
+             */
+            payment_intent_id?: string;
+            /**
+             * Format: uuid
+             * @description Intent di rimborso presso il provider (dopo il primo invio).
+             */
+            refund_intent_id?: string;
+            /**
+             * Format: uuid
+             * @description Riga refund del registro pagamenti (dopo la conferma).
+             */
+            payment_id?: string;
+            status: components["schemas"]["RefundRequestStatus"];
+            attempts: number;
+            /** Format: date-time */
+            next_attempt_at?: string;
+            last_error?: string;
+            /** @enum {string} */
+            reason: "customer_cancellation" | "panel_cancellation" | "expired_hold";
+            test?: boolean;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: date-time */
+            completed_at?: string;
+        };
+        RefundRequestList: {
+            items: components["schemas"]["RefundRequest"][];
+            next_cursor?: string;
+        };
+        /** @description Stato del rimborso visibile al cliente nell'area gestione (nessun dettaglio del provider). */
+        ManageRefundStatus: {
+            status: components["schemas"]["RefundRequestStatus"];
+            amount: components["schemas"]["Money"];
+            /** Format: date-time */
+            requested_at: string;
+            /** Format: date-time */
+            completed_at?: string;
+        };
+        CashRegister: {
+            /** Format: uuid */
+            id: string;
+            /** @description Codice stabile (main per la cassa predefinita), uguale a CashSession.register. */
+            code: string;
+            name: string;
+            active: boolean;
+            is_default: boolean;
+            sort_order: number;
+            /**
+             * Format: uuid
+             * @description Sessione aperta della cassa, se c'è (al massimo una, vincolo del database).
+             */
+            open_session_id?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        CashRegisterInput: {
+            /** @description Solo in creazione (default: dal nome); ignorato in modifica. */
+            code?: string;
+            name: string;
+            active?: boolean;
+            sort_order?: number;
+        };
+        CashRegisterList: {
+            items: components["schemas"]["CashRegister"][];
+        };
+        SeasonPassPriceOverride: {
+            amount: components["schemas"]["Money"];
+            /** @description Totale calcolato dal motore al momento dell'override. */
+            engine_amount: components["schemas"]["Money"];
+            reason: string;
+            /** Format: uuid */
+            set_by_user_id?: string;
+            /** Format: date-time */
+            set_at: string;
+        };
+        SeasonPassPriceOverrideInput: {
+            /**
+             * Format: int64
+             * @description Nuovo totale in centesimi.
+             */
+            amount: number;
+            reason: string;
+        };
+        /** @enum {string} */
+        NotificationKind: "webhook_endpoint_disabled" | "refund_failed" | "import_completed" | "import_failed" | "test_mode_enabled";
+        /** @enum {string} */
+        NotificationSeverity: "info" | "warning" | "error";
+        /** @description Il client compone titolo e testo dalle chiavi i18n del kind con params (solo identificativi ed etichette non personali: nessuna email, telefono o token). */
+        Notification: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["NotificationKind"];
+            severity: components["schemas"]["NotificationSeverity"];
+            params: {
+                [key: string]: string;
+            };
+            /** @description Es. webhook_endpoint, booking, import_job. */
+            resource_type?: string;
+            resource_id?: string;
+            /** Format: date-time */
+            read_at?: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        NotificationList: {
+            items: components["schemas"]["Notification"][];
+            /** Format: int64 */
+            unread_count: number;
+            next_cursor?: string;
+        };
+        WebhookDeliveryAttempt: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            delivery_id: string;
+            attempt: number;
+            status_code?: number;
+            error?: string;
+            /** @description Primi 1024 byte della risposta. */
+            response_excerpt?: string;
+            /** Format: int64 */
+            duration_ms: number;
+            /** Format: date-time */
+            attempted_at: string;
+        };
+        WebhookDeliveryAttemptList: {
+            items: components["schemas"]["WebhookDeliveryAttempt"][];
+            next_cursor?: string;
+        };
+        /** @enum {string} */
+        ExportListKind: "customers" | "bookings" | "season-passes" | "payments";
+        /** @enum {string} */
+        ExportFormat: "csv" | "xlsx";
+        /** @enum {string} */
+        ImportKind: "customers" | "season_passes";
+        /** @enum {string} */
+        ImportJobStatus: "uploaded" | "validated" | "applying" | "applied" | "failed" | "discarded";
+        ImportOptions: {
+            /**
+             * @description Criterio per riconoscere un cliente già presente (default email).
+             * @enum {string}
+             */
+            match_by?: "email" | "phone" | "external_ref";
+            /** @description true = aggiorna i clienti trovati; false = li salta (default). */
+            update_existing?: boolean;
+            /** @description Consenso marketing quando la colonna manca (default false: mai presunto). */
+            marketing_consent_default?: boolean;
+            /**
+             * Format: uuid
+             * @description Obbligatoria per season_passes.
+             */
+            season_id?: string;
+            /**
+             * Format: uuid
+             * @description Pacchetto predefinito per season_passes quando la colonna manca.
+             */
+            pack_id?: string;
+            /** @description season_passes: crea i clienti non trovati (default true). */
+            create_missing_customers?: boolean;
+        };
+        ImportIssue: {
+            /** @description Numero di riga del file (1 = intestazione). */
+            row: number;
+            column?: string;
+            /** @description Es. required, invalid_email, invalid_date, unknown_spot, spot_unavailable, duplicate_in_file. */
+            code: string;
+            message?: string;
+        };
+        ImportReport: {
+            rows: number;
+            valid: number;
+            invalid: number;
+            to_create: number;
+            to_update: number;
+            to_skip: number;
+            created?: number;
+            updated?: number;
+            skipped?: number;
+            errors: components["schemas"]["ImportIssue"][];
+            warnings: components["schemas"]["ImportIssue"][];
+            /** @description Intestazioni riconosciute nel file. */
+            columns?: string[];
+        };
+        ImportJob: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["ImportKind"];
+            status: components["schemas"]["ImportJobStatus"];
+            filename: string;
+            /** Format: int64 */
+            size_bytes: number;
+            sha256: string;
+            options: components["schemas"]["ImportOptions"];
+            report?: components["schemas"]["ImportReport"];
+            /** Format: uuid */
+            created_by_user_id?: string;
+            /** Format: date-time */
+            applied_at?: string;
+            version: components["schemas"]["Version"];
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ImportJobList: {
+            items: components["schemas"]["ImportJob"][];
+            next_cursor?: string;
+        };
     };
     responses: {
         /** @description Richiesta non valida */
@@ -8778,6 +9461,12 @@ export interface components {
         };
     };
     parameters: {
+        RefundRequestID: string;
+        CashRegisterID: string;
+        NotificationID: string;
+        ImportJobID: string;
+        /** @description Token del link di anteprima (createTestModePreviewLink) inoltrato dalla pagina pubblica. Con la modalità prova attiva e public_enabled=false, senza un token valido le creazioni rispondono 403 test_mode_preview_required. Letto da tutte le operazioni pubbliche (dichiarato dove decide). */
+        PreviewToken: string;
         RenewalCampaignID: string;
         RenewalProposalID: string;
         WaitlistEntryID: string;
@@ -8847,7 +9536,7 @@ export interface components {
         ReportFrom: components["schemas"]["Date"];
         /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
         ReportTo: components["schemas"]["Date"];
-        /** @description Formato (default json; in alternativa Accept: text/csv). */
+        /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
         ReportFormat: components["schemas"]["ReportFormat"];
         ApiKeyID: string;
         WebhookEndpointID: string;
@@ -11890,6 +12579,7 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
         };
     };
     generateMapRows: {
@@ -12400,6 +13090,8 @@ export interface operations {
     listBookings: {
         parameters: {
             query?: {
+                /** @description true = solo prenotazioni di prova, false = solo reali (default: tutte, con badge). */
+                test?: boolean;
                 /** @description Prenotazioni che terminano in questa data o dopo. */
                 from?: components["schemas"]["Date"];
                 /** @description Prenotazioni che iniziano in questa data o prima. */
@@ -12695,6 +13387,7 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
             501: components["responses"]["NotImplemented"];
         };
     };
@@ -12737,6 +13430,7 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
             501: components["responses"]["NotImplemented"];
         };
     };
@@ -12863,6 +13557,7 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
             501: components["responses"]["NotImplemented"];
         };
     };
@@ -12906,6 +13601,7 @@ export interface operations {
             409: components["responses"]["Conflict"];
             412: components["responses"]["PreconditionFailed"];
             422: components["responses"]["UnprocessableEntity"];
+            428: components["responses"]["PreconditionRequired"];
             501: components["responses"]["NotImplemented"];
         };
     };
@@ -13153,7 +13849,7 @@ export interface operations {
                 kind?: components["schemas"]["TicketKind"];
                 /** @description Filtro sulla zona. */
                 zone_id?: string;
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
                 /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
                 cursor?: components["parameters"]["Cursor"];
@@ -14587,6 +15283,8 @@ export interface operations {
             query?: {
                 /** @description Aperte o chiuse. */
                 status?: components["schemas"]["CashSessionStatus"];
+                /** @description Solo la cassa. */
+                register_id?: string;
                 /** @description Cassa (default tutte). */
                 register?: string;
                 /** @description Aperte da questa data. */
@@ -14670,6 +15368,8 @@ export interface operations {
     getCurrentCashSession: {
         parameters: {
             query?: {
+                /** @description Solo la cassa. */
+                register_id?: string;
                 /** @description Cassa (default main). */
                 register?: string;
             };
@@ -14822,8 +15522,10 @@ export interface operations {
                 to: components["schemas"]["Date"];
                 /** @description Raggruppamento (default day). */
                 group_by?: "day" | "month";
+                /** @description Solo la cassa. */
+                register_id?: string;
                 /** @description Formato (default json; in alternativa Accept: text/csv). */
-                format?: "json" | "csv";
+                format?: "json" | "csv" | "xlsx";
             };
             header?: never;
             path: {
@@ -14841,6 +15543,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CorrispettiviReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -15128,6 +15831,8 @@ export interface operations {
                  *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
                  */
                 "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /** @description Token del link di anteprima (createTestModePreviewLink) inoltrato dalla pagina pubblica. Con la modalità prova attiva e public_enabled=false, senza un token valido le creazioni rispondono 403 test_mode_preview_required. Letto da tutte le operazioni pubbliche (dichiarato dove decide). */
+                "X-Arenile-Preview"?: components["parameters"]["PreviewToken"];
             };
             path: {
                 slug: components["parameters"]["Slug"];
@@ -16172,7 +16877,7 @@ export interface operations {
                 from: components["parameters"]["ReportFrom"];
                 /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
                 to: components["parameters"]["ReportTo"];
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16191,6 +16896,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ReportSummary"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16213,7 +16919,7 @@ export interface operations {
                 zone_id?: string;
                 /** @description Limita a una mappa. */
                 map_id?: string;
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16232,6 +16938,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["OccupancyReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16252,7 +16959,7 @@ export interface operations {
                 group_by?: components["schemas"]["RevenueGroupBy"];
                 /** @description Base di calcolo (default collected). */
                 basis?: components["schemas"]["RevenueBasis"];
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16271,6 +16978,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["RevenueReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16289,7 +16997,7 @@ export interface operations {
                 to: components["parameters"]["ReportTo"];
                 /** @description Raggruppamento (default channel). */
                 group_by?: components["schemas"]["BookingsReportGroupBy"];
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16308,6 +17016,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["BookingsReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16326,7 +17035,7 @@ export interface operations {
                 to: components["parameters"]["ReportTo"];
                 /** @description Raggruppamento (default month). */
                 group_by?: components["schemas"]["CancellationsGroupBy"];
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16345,6 +17054,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CancellationsReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16363,7 +17073,7 @@ export interface operations {
                 to: components["parameters"]["ReportTo"];
                 /** @description Raggruppamento delle righe dei rilasci (default month). */
                 group_by?: components["schemas"]["SeasonPassesGroupBy"];
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16382,6 +17092,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SeasonPassesReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16402,7 +17113,7 @@ export interface operations {
                 sort?: components["schemas"]["TopCustomersSort"];
                 /** @description Numero di clienti (default 20). */
                 limit?: number;
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16421,6 +17132,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TopCustomersReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16437,7 +17149,7 @@ export interface operations {
                 from: components["parameters"]["ReportFrom"];
                 /** @description Ultimo giorno del periodo (incluso; al massimo 400 giorni dopo from). */
                 to: components["parameters"]["ReportTo"];
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16456,6 +17168,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["OpenBalancesReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -16478,7 +17191,7 @@ export interface operations {
                 granularity?: components["schemas"]["ComparisonGranularity"];
                 /** @description Allineamento del periodo di confronto (default calendar). */
                 align?: components["schemas"]["ComparisonAlign"];
-                /** @description Formato (default json; in alternativa Accept: text/csv). */
+                /** @description Formato (default json; csv o xlsx, oppure Accept: text/csv). */
                 format?: components["parameters"]["ReportFormat"];
             };
             header?: never;
@@ -16497,6 +17210,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["YearComparisonReport"];
                     "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -18850,6 +19564,925 @@ export interface operations {
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             429: components["responses"]["TooManyRequests"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getTestMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestMode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateTestMode: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestModeInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestMode"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createTestModePreviewLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestModePreviewLink"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    purgeTestBookings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestBookingsPurgeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestBookingsPurgeResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listRefundRequests: {
+        parameters: {
+            query?: {
+                /** @description Filtra per stato. */
+                status?: components["schemas"]["RefundRequestStatus"];
+                /** @description Solo la prenotazione. */
+                booking_id?: string;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundRequestList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    retryRefundRequest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                refundRequestId: components["parameters"]["RefundRequestID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundRequest"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listCashRegisters: {
+        parameters: {
+            query?: {
+                /** @description Includi le casse disattivate. */
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashRegisterList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createCashRegister: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashRegisterInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashRegister"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCashRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                registerId: components["parameters"]["CashRegisterID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashRegister"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    updateCashRegister: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                registerId: components["parameters"]["CashRegisterID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashRegisterInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashRegister"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    deleteCashRegister: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                registerId: components["parameters"]["CashRegisterID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eliminata */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getCashSessionZReport: {
+        parameters: {
+            query?: {
+                /** @description Formato carta (default a4). */
+                paper?: "a4" | "receipt80";
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                cashSessionId: components["parameters"]["CashSessionID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    setSeasonPassPriceOverride: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
+                "If-Match": components["parameters"]["IfMatchRequired"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                passId: components["parameters"]["SeasonPassID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeasonPassPriceOverrideInput"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonPassDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            428: components["responses"]["PreconditionRequired"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    clearSeasonPassPriceOverride: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description ETag (versione) della mappa letta in precedenza; obbligatorio (428 precondition_required se assente). `*` salva sulla versione corrente; la forma debole `W/"3"` è accettata (ADR 0008). */
+                "If-Match": components["parameters"]["IfMatchRequired"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                passId: components["parameters"]["SeasonPassID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeasonPassDetail"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
+            428: components["responses"]["PreconditionRequired"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listNotifications: {
+        parameters: {
+            query?: {
+                /** @description Solo da leggere. */
+                unread?: boolean;
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    markNotificationRead: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                notificationId: components["parameters"]["NotificationID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Letta */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    markAllNotificationsRead: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lette */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listWebhookDeliveryAttempts: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                endpointId: components["parameters"]["WebhookEndpointID"];
+                deliveryId: components["parameters"]["WebhookDeliveryID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDeliveryAttemptList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    exportList: {
+        parameters: {
+            query?: {
+                /** @description Formato del file (default csv). */
+                format?: components["schemas"]["ExportFormat"];
+                /** @description Primo giorno (bookings, payments). */
+                from?: components["schemas"]["Date"];
+                /** @description Ultimo giorno incluso (bookings, payments). */
+                to?: components["schemas"]["Date"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                list: components["schemas"]["ExportListKind"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    listImportJobs: {
+        parameters: {
+            query?: {
+                /** @description Cursore opaco restituito come `next_cursor` dalla pagina precedente. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Numero massimo di elementi (default 50). */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJobList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    createImportJob: {
+        parameters: {
+            query: {
+                /** @description Cosa contiene il file. */
+                kind: components["schemas"]["ImportKind"];
+                /** @description Nome del file originale (solo etichetta). */
+                filename?: string;
+            };
+            header?: {
+                /**
+                 * @description Chiave di idempotenza scelta dal client (consigliato un UUID). Una
+                 *     richiesta ripetuta con la stessa chiave restituisce la risposta
+                 *     originale; con un corpo diverso risponde `422 idempotency_key_reused`.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "text/csv": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJob"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["UnprocessableEntity"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getImportTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                kind: components["schemas"]["ImportKind"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    getImportJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                importId: components["parameters"]["ImportJobID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    discardImportJob: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                importId: components["parameters"]["ImportJobID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Scartata */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    previewImportJob: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                importId: components["parameters"]["ImportJobID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportOptions"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJob"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            501: components["responses"]["NotImplemented"];
+        };
+    };
+    applyImportJob: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description ETag (versione) letto in precedenza: se non coincide la richiesta fallisce con 412 version_conflict. `*` equivale a "qualsiasi versione". È accettata anche la forma debole `W/"3"` prodotta dai proxy che comprimono le risposte (ADR 0008). */
+                "If-Match"?: components["parameters"]["IfMatch"];
+                /**
+                 * @description Obbligatorio per le richieste autenticate via cookie che modificano
+                 *     dati: deve coincidere con il valore del cookie `arenile_csrf`.
+                 */
+                "X-CSRF-Token"?: components["parameters"]["CSRFToken"];
+            };
+            path: {
+                establishmentId: components["parameters"]["EstablishmentID"];
+                importId: components["parameters"]["ImportJobID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            412: components["responses"]["PreconditionFailed"];
+            422: components["responses"]["UnprocessableEntity"];
             501: components["responses"]["NotImplemented"];
         };
     };

@@ -1,0 +1,33 @@
+---
+title: Panel notifications
+description: The bell at the top with notices about disabled webhooks, failed refunds and imports, with an email to the owner for the important ones.
+sidebar:
+  order: 31.5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Where:** the **bell** at the top right of every establishment page. **Who:** all staff see the establishment's
+notifications; those for the owner (webhooks, refunds) only users who manage users.
+
+<Screenshot name="admin-notifications" alt="Notifications bell open" />
+
+The number on the bell counts the **unread** notifications. Open it to see the latest: clicking a notification marks
+it as read and takes you to the right page; **Mark all as read** clears the count. The read state is shared by the
+staff: if a colleague already saw the notice, it is read for you too.
+
+## What you receive
+
+| Notification | When | Where it takes you |
+| --- | --- | --- |
+| **Webhook disabled** | A webhook endpoint was disabled automatically after too many failed deliveries in a row. An **email to the owners** is sent too (if manager emails for webhook errors are on in [Email and notifications](/en/gestore/email/)). | [API keys and webhooks](/en/gestore/chiavi-api-e-webhook/) |
+| **Refund failed** | An [automatic refund](/en/gestore/prenotazioni/#automatic-refunds) ran out of attempts. | The booking, where you can retry |
+| **Import completed / failed** | The outcome of an [import](/en/gestore/importa-dati/). | Import data |
+
+Notifications contain only codes and labels (for example the endpoint host or the booking code), never emails,
+phone numbers or other personal data of customers.
+
+<Aside type="tip">
+The panel checks for new notifications every minute: no need to reload the page.
+</Aside>

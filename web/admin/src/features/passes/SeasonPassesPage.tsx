@@ -18,6 +18,7 @@ import { ExternalLinkIcon, PlusIcon, TicketIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRequiredEstablishmentId } from '../../establishment';
+import { PriceOverrideSection } from './PriceOverrideSection';
 import { STATUS_TONE, todayIso, useOperationalPermissions } from '../bookings/model';
 import { compareSpots, useEstablishmentSpots, type EstablishmentSpots } from '../bookings/spots';
 import { seasons as seasonsResource, type Season } from '../configuration/api/resources';
@@ -340,6 +341,7 @@ function PassSheet({
               </dd>
             </div>
           </dl>
+          <PriceOverrideSection establishmentId={establishmentId} pass={pass} />
           <Button variant="outline" size="sm" asChild>
             <Link
               to="/e/$establishmentId/prenotazioni/$bookingId"

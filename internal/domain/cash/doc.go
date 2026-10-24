@@ -35,7 +35,27 @@
 // (cash_session_id): cash does not depend on the payment package. It
 // implements payment.CashDesk (SessionForPayment).
 //
-// Permissions: auth.PermCashOperate for every write; reads (current
-// session, detail, history) accept auth.PermCashOperate or
-// auth.PermReportsRead.
+// Registers (registers.go, ADR 0019, INV-73): an establishment has one or
+// more tills (store.CashRegister). The default one (code main) is created
+// lazily by EnsureDefaultRegister when the migration did not; sessions are
+// opened on an active register (register_id, else the deprecated code,
+// else the default), holding the register row lock, and carry both
+// register_id and the code; at most one open session per register
+// (cash_sessions_register_open_uidx). The default register cannot be
+// deactivated or deleted; a register with history can only be deactivated;
+// deactivation is refused while a session is open. Register writes record
+// the audit log (cash_register.*), no outbox event.
+//
+// Test-mode payments (INV-74) are attached to sessions like any other but
+// never counted by Summarize.
+//
+// The printable Z closing (ZReport, zreport.go) gathers the session detail,
+// the establishment header and the operator names; internal/printout
+// renders it as print-ready HTML (the PDF is the browser's print).
+//
+// Permissions: auth.PermCashOperate for every session write and
+// auth.PermEstablishmentConfigure for register writes; reads (current
+// session, detail, history, registers, Z report) accept
+// auth.PermCashOperate or auth.PermReportsRead (registers also
+// auth.PermEstablishmentConfigure).
 package cash

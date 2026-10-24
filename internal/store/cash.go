@@ -15,6 +15,8 @@ type CashSessionFilter struct {
 	// Open: nil = all, true = open only, false = closed only.
 	Open     *bool
 	Register string
+	// RegisterID narrows to one cash register (00009).
+	RegisterID string
 	// OpenedFrom / OpenedBefore bound opened_at: [OpenedFrom, OpenedBefore).
 	OpenedFrom   *time.Time
 	OpenedBefore *time.Time
@@ -63,6 +65,24 @@ func GetOpenCashSession(ctx context.Context, db bun.IDB, es EstablishmentScope, 
 		Scan(ctx)
 	if err != nil {
 		return nil, wrapRead("get open cash session", err)
+	}
+	return s, nil
+}
+
+// GetOpenCashSessionOfRegister returns the open session of the register
+// with id registerID, or ErrNotFound.
+func GetOpenCashSessionOfRegister(ctx context.Context, db bun.IDB, es EstablishmentScope, registerID string) (*CashSession, error) {
+	if err := es.mustBeValid(); err != nil {
+		return nil, err
+	}
+	s := new(CashSession)
+	err := db.NewSelect().Model(s).
+		Where("cs.establishment_id = ?", es.ID()).
+		Where("cs.register_id = ?", registerID).
+		Where("cs.closed_at IS NULL").
+		Scan(ctx)
+	if err != nil {
+		return nil, wrapRead("get open cash session of register", err)
 	}
 	return s, nil
 }
@@ -143,6 +163,9 @@ func ListCashSessions(ctx context.Context, db bun.IDB, es EstablishmentScope, f 
 	}
 	if f.Register != "" {
 		q = q.Where("cs.register = ?", f.Register)
+	}
+	if f.RegisterID != "" {
+		q = q.Where("cs.register_id = ?", f.RegisterID)
 	}
 	if f.OpenedFrom != nil {
 		q = q.Where("cs.opened_at >= ?", f.OpenedFrom.UTC())

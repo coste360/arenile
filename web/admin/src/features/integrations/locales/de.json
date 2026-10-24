@@ -265,6 +265,14 @@
     "lastError": "Letzter Fehler",
     "body": "Gesendeter Inhalt",
     "response": "Antwort (Auszug)",
-    "noResponse": "Keine Antwort"
+    "noResponse": "Keine Antwort",
+    "attemptsTitle": "Verlauf der Versuche",
+    "attempt": "Nr.",
+    "attemptAt": "Wann",
+    "duration": "Dauer",
+    "durationValue": "{{ms}} ms",
+    "error": "Fehler",
+    "noAttempts": "Noch keine Versuche.",
+    "moreAttempts": "Weitere Versuche laden"
   }
 }

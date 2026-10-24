@@ -108,9 +108,9 @@
 //     folds into 28 February, a current 29 February faces nothing) or, with
 //     "weekday", by index, so the series always sums to the metrics.
 //     delta_bp is absent when the previous value is 0.
-//   - Test bookings (spec 15.4) do not exist yet; once they do, every
-//     query here must exclude them (guard:
-//     TestReportQueries_TestBookingsFlagNotYetFiltered in internal/store).
+//   - Test bookings and payments (spec 15.4, migration 00009) are excluded
+//     by every query of internal/store/report.go (test:
+//     TestReportQueries_TestBookingsExcluded in internal/store).
 //
 // # Periods
 //

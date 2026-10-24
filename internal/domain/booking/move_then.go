@@ -29,7 +29,7 @@ func (s *Service) MoveThen(ctx context.Context, p *auth.Principal, establishment
 		return nil, configerr.Invalid("spot_id", "Campo obbligatorio.")
 	}
 	return s.changeInTx(ctx, p, establishmentID, id, in.ExpectedVersion, in.DryRun, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, res *ChangeResult) (*outcome, error) {
-		o, err := s.moveLocked(ctx, tx, es, b, in, res)
+		o, err := s.moveLocked(ctx, tx, p, es, b, in, res)
 		if err != nil || then == nil {
 			return o, err
 		}

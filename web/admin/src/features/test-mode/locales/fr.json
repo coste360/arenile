@@ -1,0 +1,58 @@
+{
+  "page": {
+    "title": "Mode test",
+    "description": "Essayez la page publique et les paiements sans fausser vos données : les réservations de test sont exclues des rapports et des corrispettivi et peuvent être supprimées en bloc."
+  },
+  "banner": {
+    "title": "Mode test activé",
+    "description": "Les réservations et paiements créés maintenant sont des données de test : exclus des rapports, des indicateurs, des corrispettivi et des exports. La page publique n'accepte des réservations que depuis le lien d'aperçu.",
+    "descriptionPublic": "Les réservations et paiements créés maintenant sont des données de test, y compris ceux des clients sur la page publique : exclus des rapports, des indicateurs, des corrispettivi et des exports.",
+    "manage": "Gérer le mode test"
+  },
+  "switch": {
+    "title": "Interrupteur",
+    "description": "Tant que le mode test est activé, tout ce qui est créé (panneau, aperçu de la page publique, API) est marqué comme test.",
+    "on": "Activé",
+    "off": "Désactivé",
+    "enabled": "Mode test activé",
+    "enabledHint": "Désactivez-le avant de travailler avec de vrais clients.",
+    "enabledSince": "Activé depuis le {{when}}.",
+    "public": "Réservations de test aussi pour les clients",
+    "publicHint": "Sans cette option, la page publique n'accepte des réservations que depuis le lien d'aperçu ; les vrais clients voient un avertissement.",
+    "publicWarningTitle": "Déconseillé si la page publique est déjà utilisée",
+    "publicWarning": "Les vrais clients peuvent réserver, mais leurs réservations sont des données de test : exclues des chiffres et supprimables en bloc.",
+    "enabledToast": "Mode test activé",
+    "disabledToast": "Mode test désactivé",
+    "savedPublic": "Paramètre enregistré"
+  },
+  "stripe": {
+    "configuredTitle": "Paiements en ligne avec les clés de test",
+    "configured": "Stripe utilise automatiquement la configuration de test tant que le mode test est activé : aucun débit réel.",
+    "missingTitle": "Aucune clé de test Stripe",
+    "missing": "Tant que le mode test est activé, les paiements en ligne sont désactivés (paiement sur place). Ajoutez les clés de test dans Paramètres > Paiements pour les essayer."
+  },
+  "preview": {
+    "title": "Aperçu de la page publique",
+    "description": "Un lien signé, valable 2 heures, pour réserver en test depuis la page publique.",
+    "create": "Créer un lien d'aperçu",
+    "renew": "Nouveau lien",
+    "needsEnabled": "Activez le mode test pour créer le lien d'aperçu.",
+    "hint": "Créez le lien et ouvrez-le sur cet appareil ou un autre.",
+    "urlLabel": "Lien d'aperçu",
+    "copy": "Copier",
+    "copied": "Lien copié",
+    "copyFailed": "Impossible de copier le lien",
+    "open": "Ouvrir",
+    "expires": "Expire le {{when}}."
+  },
+  "purge": {
+    "title": "Réservations de test",
+    "description": "Supprime définitivement les réservations de test avec leurs allocations, paiements et messages. Les vraies réservations ne sont jamais touchées ; le journal d'activité est conservé.",
+    "action": "Supprimer les réservations de test",
+    "count": "Réservations de test",
+    "confirmTitle": "Supprimer les réservations de test ?",
+    "confirmDescription": "{{bookings}} réservations de test et {{payments}} paiements de test seront supprimés. Cette action est irréversible.",
+    "confirm": "Supprimer",
+    "done": "{{bookings}} réservations de test et {{payments}} paiements de test supprimés"
+  }
+}

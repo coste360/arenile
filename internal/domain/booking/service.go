@@ -19,6 +19,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/policy"
+	"github.com/coste360/arenile/internal/money"
 	"github.com/coste360/arenile/internal/reqctx"
 	"github.com/coste360/arenile/internal/store"
 )
@@ -56,6 +57,9 @@ type Deps struct {
 	// ExpiredRefunds refunds the online money left on a booking whose hold
 	// expired (optional, see ExpiredRefunder).
 	ExpiredRefunds ExpiredRefunder
+	// CancelRefunds reserves the guaranteed provider refund of a
+	// cancellation (optional, see CancelRefunds).
+	CancelRefunds CancelRefunds
 	// HoldTTL is ARENILE_HOLD_TTL (default DefaultHoldTTL).
 	HoldTTL time.Duration
 	// ApprovalTTL is the hold of bookings awaiting approval (default DefaultApprovalTTL).
@@ -96,6 +100,20 @@ type ExpiredRefunder interface {
 // SetExpiredRefunder installs the refund path of expired holds after
 // construction (the gateway is built after the booking service).
 func (s *Service) SetExpiredRefunder(r ExpiredRefunder) { s.d.ExpiredRefunds = r }
+
+// CancelRefunds is the OPTIONAL refund-side port of a cancellation that
+// gives money back to an online payment (ADR 0019 feature B): it inserts
+// the refund requests in tx (the cancellation transaction, booking
+// locked) for up to amount on the provider payments of b and returns the
+// reserved amount and the request ids; a job sends them until the
+// provider confirms. Implemented by *refund.Service (internal/app wires
+// it); without it the money refund stays due (refund_due).
+type CancelRefunds interface {
+	ReserveCancellationRefund(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, amount money.Cents, reason string, createdBy *string) (money.Cents, []string, error)
+}
+
+// SetCancelRefunds installs the guaranteed refund path after construction.
+func (s *Service) SetCancelRefunds(r CancelRefunds) { s.d.CancelRefunds = r }
 
 // WithDB returns a copy of the service bound to db.
 func (s *Service) WithDB(db bun.IDB) *Service {
@@ -363,6 +381,15 @@ func validateStay(v *configerr.ValidationError, from, to calendar.Date, slots ca
 // a concurrent creation that took the same code makes the insert fail on the
 // unique index, the savepoint rolls back and the next code is tried.
 func (s *Service) insertWithCode(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking, series string) error {
+	// Test mode (spec 15.4, ADR 0019): the switch is read in the creating
+	// transaction and copied on the row.
+	if !b.Test {
+		on, err := store.TestModeEnabled(ctx, tx, es)
+		if err != nil {
+			return fmt.Errorf("booking: %w", err)
+		}
+		b.Test = on
+	}
 	for range maxCodeAttempts {
 		last, err := store.LastBookingCode(ctx, tx, es, series)
 		if err != nil {
@@ -633,6 +660,9 @@ func (s *Service) loadDetail(ctx context.Context, db bun.IDB, es store.Establish
 	if d.History, err = store.ListBookingHistory(ctx, db, es, b.ID, paymentIDs); err != nil {
 		return nil, err
 	}
+	if d.RefundRequests, err = store.ListBookingRefundRequests(ctx, db, es, b.ID); err != nil {
+		return nil, err
+	}
 	var spotIDs []string
 	for _, l := range d.Lines {
 		if l.SpotID != nil {
@@ -747,6 +777,29 @@ func (s *Service) mutateInTx(ctx context.Context, tx bun.IDB, actor audit.Actor,
 // browser return URL (INV-19). Requires auth.PermBookingsWrite.
 func (s *Service) Confirm(ctx context.Context, p *auth.Principal, establishmentID, id string, in ActionInput) (*Detail, error) {
 	return s.mutate(ctx, p, establishmentID, id, auth.PermBookingsWrite, in.ExpectedVersion, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
+		switch Status(b.Status) {
+		case StatusDraft, StatusHeld, StatusPendingPayment, StatusAwaitingApproval:
+		default:
+			return s.confirmLocked(ctx, tx, es, b, in.Note, false)
+		}
+		needed, err := s.needsApproval(ctx, tx, es, b)
+		if err != nil {
+			return nil, err
+		}
+		// Approval rule R2/R3 (approval.go): a booking that needs approval
+		// waits for the manager; confirming one awaiting approval is approving.
+		switch DecideApproval(ApprovalCase{Op: ApprovalOnConfirm, From: Status(b.Status), Needed: needed, Approver: canApprove(p, es)}) {
+		case ApprovalRefuse:
+			return nil, ErrApprovalRequired
+		case ApprovalAwait:
+			o, err := s.awaitApprovalLocked(ctx, tx, es, b, "confirm")
+			if err == nil {
+				noteDiff(o.diff, in.Note)
+			}
+			return o, err
+		case ApprovalProceedApproved:
+			return s.confirmLocked(ctx, tx, es, b, in.Note, true)
+		}
 		return s.confirmLocked(ctx, tx, es, b, in.Note, false)
 	})
 }
@@ -754,8 +807,9 @@ func (s *Service) Confirm(ctx context.Context, p *auth.Principal, establishmentI
 // ConfirmFromPayment implements payment.BookingConfirmer: inside the
 // payment transaction, a held or pending_payment booking whose payments
 // reached the threshold becomes confirmed (manual driver path, spec 13.2,
-// INV-19). Bookings in any other status are left alone (awaiting_approval
-// still needs the manager; confirmed ones need nothing).
+// INV-19), or awaiting_approval when it needs the manager's approval (rule
+// R2, approval.go). Bookings in any other status are left alone
+// (awaiting_approval still needs the manager; confirmed ones need nothing).
 func (s *Service) ConfirmFromPayment(ctx context.Context, tx bun.IDB, p *auth.Principal, es store.EstablishmentScope, bookingID string, pm *store.Payment) error {
 	b, err := store.LockBooking(ctx, tx, es, bookingID)
 	if err != nil {
@@ -765,7 +819,17 @@ func (s *Service) ConfirmFromPayment(ctx context.Context, tx bun.IDB, p *auth.Pr
 		return nil
 	}
 	_, err = s.mutateInTx(ctx, tx, p.Actor(reqctx.From(ctx).ClientIP), es, bookingID, nil, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
-		o, err := s.confirmLocked(ctx, tx, es, b, "", false)
+		needed, err := s.needsApproval(ctx, tx, es, b)
+		if err != nil {
+			return nil, err
+		}
+		var o *outcome
+		if DecideApproval(ApprovalCase{Op: ApprovalOnConfirm, From: Status(b.Status), Needed: needed}) == ApprovalAwait {
+			// Rule R2: the money stays recorded, the manager still decides.
+			o, err = s.awaitApprovalLocked(ctx, tx, es, b, "payment")
+		} else {
+			o, err = s.confirmLocked(ctx, tx, es, b, "", false)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -776,9 +840,10 @@ func (s *Service) ConfirmFromPayment(ctx context.Context, tx bun.IDB, p *auth.Pr
 	return err
 }
 
-// Approve confirms a booking awaiting approval (auth.PermBookingsWrite).
+// Approve confirms a booking awaiting approval: the manager's decision,
+// auth.PermEstablishmentConfigure (approval rule R3, approval.go).
 func (s *Service) Approve(ctx context.Context, p *auth.Principal, establishmentID, id string, in ActionInput) (*Detail, error) {
-	return s.mutate(ctx, p, establishmentID, id, auth.PermBookingsWrite, in.ExpectedVersion, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
+	return s.mutate(ctx, p, establishmentID, id, auth.PermEstablishmentConfigure, in.ExpectedVersion, func(ctx context.Context, tx bun.IDB, es store.EstablishmentScope, b *store.Booking) (*outcome, error) {
 		if Status(b.Status) != StatusAwaitingApproval {
 			return nil, &TransitionError{From: Status(b.Status), To: StatusConfirmed}
 		}
@@ -1104,7 +1169,15 @@ func (s *Service) Cancel(ctx context.Context, p *auth.Principal, establishmentID
 		}
 		record := rf.As == SettleCredit || in.RefundMethod != ""
 		if !record || !p.Can(es, auth.PermRefundsIssue) {
+			if rf.As == SettleRefund && p.Can(es, auth.PermRefundsIssue) {
+				// ADR 0019: a money refund without a desk method goes back to
+				// the online payments as guaranteed provider refunds; what no
+				// provider payment can take stays due.
+				by := p.UserID
+				return o, s.reserveRefund(ctx, tx, es, b, rf.Amount, store.RefundReasonPanelCancellation, &by, diff, res)
+			}
 			diff["refund_due"] = int64(rf.Amount)
+			res.RefundDue = rf.Amount
 			return o, nil
 		}
 		creditAfter := o.after

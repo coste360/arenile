@@ -12,6 +12,7 @@ import {
   SectionCard,
   StatCard,
   type ColumnDef,
+  OptionSelectMenu,
   SegmentedControl,
 } from '@arenile/shared/ui/patterns';
 import { dateToIso, formatIsoDate } from '@arenile/shared/lib/dates';
@@ -20,7 +21,7 @@ import { Link } from '@tanstack/react-router';
 import { ArrowLeftIcon, DownloadIcon, InfoIcon, LockIcon, ReceiptTextIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCorrispettivi } from './api';
+import { useCorrispettivi, useRegisters } from './api';
 import {
   exportFileName,
   exportUrl,
@@ -35,6 +36,9 @@ import {
 import { useCashContext, type CashContext } from './useCashContext';
 
 type VatRow = CorrispettiviReport['totals'][number];
+
+/** Select value for "every register" (Radix Select has no empty values). */
+const ALL_REGISTERS = 'all';
 
 function currentMonth(today: string): string {
   return today.slice(0, 7);
@@ -53,7 +57,12 @@ export function CorrispettiviPage() {
   const [date, setDate] = useState(today);
   const [month, setMonth] = useState(() => currentMonth(today));
   const period: Period = mode === 'day' ? { mode, date } : { mode, month };
-  const q = periodQuery(period);
+  const registers = useRegisters(ctx.establishmentId, true, !ctx.loading && ctx.canReport);
+  const [registerId, setRegisterId] = useState(ALL_REGISTERS);
+  const q = {
+    ...periodQuery(period),
+    ...(registerId !== ALL_REGISTERS ? { register_id: registerId } : {}),
+  };
   const report = useCorrispettivi(ctx.establishmentId, q, ctx.canReport);
 
   const back = (
@@ -82,12 +91,17 @@ export function CorrispettiviPage() {
     );
   }
 
-  // Secondary (JSON) first, primary (CSV) last.
-  const downloads = (['json', 'csv'] as const).map((format) => (
+  // Secondary (JSON, Excel) first, primary (CSV) last.
+  const DOWNLOAD_LABEL = {
+    json: 'corrispettivi.downloadJson',
+    xlsx: 'corrispettivi.downloadXlsx',
+    csv: 'corrispettivi.downloadCsv',
+  } as const;
+  const downloads = (['json', 'xlsx', 'csv'] as const).map((format) => (
     <Button key={format} variant={format === 'csv' ? 'default' : 'outline'} asChild>
       <a href={exportUrl(ctx.establishmentId, q, format)} download={exportFileName(q, format)}>
         <DownloadIcon aria-hidden="true" />
-        {t(format === 'csv' ? 'corrispettivi.downloadCsv' : 'corrispettivi.downloadJson')}
+        {t(DOWNLOAD_LABEL[format])}
       </a>
     </Button>
   ));
@@ -118,7 +132,25 @@ export function CorrispettiviPage() {
         ) : (
           <MonthPicker value={month} onChange={setMonth} today={today} />
         )}
+        {(registers.data?.length ?? 0) > 1 && (
+          <OptionSelectMenu
+            label={t('corrispettivi.register')}
+            value={registerId}
+            onValueChange={setRegisterId}
+            className="sm:w-60"
+            options={[
+              { value: ALL_REGISTERS, label: t('corrispettivi.allRegisters') },
+              ...(registers.data ?? []).map((r) => ({ value: r.id, label: r.name })),
+            ]}
+          />
+        )}
       </PageToolbar>
+      {registerId !== ALL_REGISTERS && (
+        <Alert role="status">
+          <InfoIcon aria-hidden="true" />
+          <AlertDescription>{t('corrispettivi.registerNote')}</AlertDescription>
+        </Alert>
+      )}
 
       {report.error ? (
         <QueryState isLoading={false} error={report.error} onRetry={() => void report.refetch()} />

@@ -42,8 +42,8 @@ checkout online senza vantaggi reali.
   duplicati su più casse; il banco non chiede dati personali.
 - Negative: nelle zone `seat` una vendita per zona mostra in mappa una postazione occupata in modo provvisorio fino
   all'assegnazione; la migrazione è la 00010 (la 00009 è riservata a un altro ramo).
-- Verifiche: invarianti INV-80 (numerazione), INV-81 (capacità della vendita per zona), INV-82 (assegnazione),
-  INV-83 (un solo ingresso per biglietto), INV-84 (telefono facoltativo); `TestConcurrency_TicketNumber`,
+- Verifiche: invarianti INV-81 (numerazione), INV-82 (capacità della vendita per zona), INV-83 (assegnazione),
+  INV-84 (un solo ingresso per biglietto), INV-85 (telefono facoltativo); `TestConcurrency_TicketNumber`,
   `TestConcurrency_DailyTicketNumbering`, `TestConcurrency_ZoneFirstCapacity`, `TestConcurrency_AssignSameSpot`,
   `TestConcurrency_EntryCheckInOnce` (SQLite e PostgreSQL) ed e2e `e2e/tests/daily-sale.spec.ts`.
 - Aperto: spostare un biglietto su una postazione di un'altra categoria di prezzo ricalcola il totale della

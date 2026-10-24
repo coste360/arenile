@@ -23,6 +23,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/customer"
 	"github.com/coste360/arenile/internal/domain/device"
 	"github.com/coste360/arenile/internal/domain/establishment"
+	"github.com/coste360/arenile/internal/domain/payment"
 	"github.com/coste360/arenile/internal/domain/payment/gateway"
 	"github.com/coste360/arenile/internal/domain/policy"
 	"github.com/coste360/arenile/internal/domain/pricing"
@@ -91,6 +92,14 @@ const (
 	SeasonRolloverConflict = api.ProblemType("season_rollover_conflict")
 )
 
+// Deferred-features type slugs (test mode, imports, guaranteed refunds; ADR 0019).
+const (
+	TestModePreviewRequired = api.ProblemType("test_mode_preview_required")
+	ImportInvalid           = api.ProblemType("import_invalid")
+	ImportAlreadyApplied    = api.ProblemType("import_already_applied")
+	RefundInProgress        = api.ProblemType("refund_in_progress")
+)
+
 type meta struct {
 	status int
 	title  string
@@ -140,11 +149,15 @@ var catalog = map[api.ProblemType]meta{
 	SetupTokenInvalid:     {http.StatusForbidden, "Collegamento di configurazione non valido: riapri Arenile dal menu"},
 	SetupCompleted:        {http.StatusConflict, "Configurazione iniziale già completata"},
 	// M5B.
-	RenewalExpired:         {http.StatusGone, "Il termine per rinnovare l'abbonamento è scaduto"},
-	WaitlistOfferExpired:   {http.StatusGone, "L'offerta dalla lista d'attesa è scaduta"},
-	WaitlistDisabled:       {http.StatusConflict, "La lista d'attesa non è attiva"},
-	CreditInsufficient:     {http.StatusUnprocessableEntity, "Credito del cliente insufficiente"},
-	SeasonRolloverConflict: {http.StatusConflict, "Esiste già una stagione per l'anno scelto"},
+	RenewalExpired:          {http.StatusGone, "Il termine per rinnovare l'abbonamento è scaduto"},
+	WaitlistOfferExpired:    {http.StatusGone, "L'offerta dalla lista d'attesa è scaduta"},
+	WaitlistDisabled:        {http.StatusConflict, "La lista d'attesa non è attiva"},
+	CreditInsufficient:      {http.StatusUnprocessableEntity, "Credito del cliente insufficiente"},
+	SeasonRolloverConflict:  {http.StatusConflict, "Esiste già una stagione per l'anno scelto"},
+	TestModePreviewRequired: {http.StatusForbidden, "Prenotazioni in prova solo dal link di anteprima"},
+	ImportInvalid:           {http.StatusUnprocessableEntity, "Il file da importare contiene errori"},
+	ImportAlreadyApplied:    {http.StatusConflict, "Questo file è già stato importato"},
+	RefundInProgress:        {http.StatusConflict, "C'è già un rimborso in corso per questa prenotazione"},
 }
 
 // Option customises a problem.
@@ -407,8 +420,18 @@ func Error(w http.ResponseWriter, r *http.Request, log *slog.Logger, err error) 
 		Write(w, r, CashSessionClosed)
 	case errors.Is(err, cash.ErrSessionAlreadyOpen):
 		Write(w, r, CashSessionOpen)
+	case errors.Is(err, payment.ErrRefundInProgress):
+		Write(w, r, RefundInProgress)
 	case errors.Is(err, store.ErrConflict):
 		Write(w, r, Conflict)
+	case ClientGone(r, err):
+		// The client went away: nobody reads the response, and it is not
+		// a server error (no error log, 499 in the access log).
+		if log != nil {
+			log.DebugContext(r.Context(), "request cancelled by the client",
+				slog.String("request_id", reqctx.From(r.Context()).RequestID))
+		}
+		w.WriteHeader(StatusClientClosedRequest)
 	default:
 		if log != nil {
 			log.ErrorContext(r.Context(), "request failed", slog.String("error", err.Error()),

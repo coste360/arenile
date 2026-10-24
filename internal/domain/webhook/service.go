@@ -47,6 +47,9 @@ const MaxGrace = 168 * time.Hour
 // DefaultRetention is how long finished deliveries stay in the delivery log.
 const DefaultRetention = 30 * 24 * time.Hour
 
+// DefaultAttemptRetention is how long the attempt history is kept.
+const DefaultAttemptRetention = 30 * 24 * time.Hour
+
 // Errors of the webhook package (mapped through the configerr kinds).
 var (
 	// ErrEndpointInactive: redelivery to a paused or disabled endpoint (409).
@@ -168,7 +171,10 @@ type Deps struct {
 	Egress event.EgressPolicy
 	// Retention of finished deliveries (default DefaultRetention).
 	Retention time.Duration
-	Log       *slog.Logger
+	// AttemptRetention of the attempt history (default
+	// DefaultAttemptRetention, ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS).
+	AttemptRetention time.Duration
+	Log              *slog.Logger
 }
 
 // Service implements the webhook endpoint management use cases.
@@ -196,6 +202,9 @@ func NewService(d Deps) *Service {
 	}
 	if d.Retention <= 0 {
 		d.Retention = DefaultRetention
+	}
+	if d.AttemptRetention <= 0 {
+		d.AttemptRetention = DefaultAttemptRetention
 	}
 	return &Service{d: d}
 }
@@ -576,8 +585,9 @@ func (s *Service) Redeliver(ctx context.Context, p *auth.Principal, establishmen
 
 // PurgeHistory applies the delivery log retention: finished deliveries
 // older than Deps.Retention are deleted, never-attempted test deliveries
-// older than an hour are failed, and unreferenced test events are dropped.
-// It returns the number of deleted deliveries.
+// older than an hour are failed, unreferenced test events are dropped and
+// attempts older than Deps.AttemptRetention are deleted. It returns the
+// number of deleted deliveries.
 func (s *Service) PurgeHistory(ctx context.Context) (int64, error) {
 	now := s.d.Clock.Now()
 	if _, err := store.FailAbandonedWebhookDeliveries(ctx, s.d.DB, now.Add(-time.Hour), now, "test interrupted"); err != nil {
@@ -590,7 +600,26 @@ func (s *Service) PurgeHistory(ctx context.Context) (int64, error) {
 	if _, err := store.DeleteDispatchedOutboxEventsOfType(ctx, s.d.DB, TestEventType, now.Add(-s.d.Retention)); err != nil {
 		return n, err
 	}
+	if _, err := store.PurgeWebhookDeliveryAttempts(ctx, s.d.DB, now.Add(-s.d.AttemptRetention)); err != nil {
+		return n, err
+	}
 	return n, nil
+}
+
+// ListAttempts returns the attempt history of a delivery, newest first
+// (ADR 0019 F; rows older than Deps.AttemptRetention are purged).
+func (s *Service) ListAttempts(ctx context.Context, p *auth.Principal, establishmentID, endpointID, deliveryID, cursor string, limit int) (store.Page[store.WebhookDeliveryAttempt], error) {
+	es, err := s.authorize(ctx, p, establishmentID)
+	if err != nil {
+		return store.Page[store.WebhookDeliveryAttempt]{}, err
+	}
+	if _, err := store.GetWebhookEndpoint(ctx, s.d.DB, es, endpointID); err != nil {
+		return store.Page[store.WebhookDeliveryAttempt]{}, err
+	}
+	if _, err := store.GetEndpointWebhookDelivery(ctx, s.d.DB, endpointID, deliveryID); err != nil {
+		return store.Page[store.WebhookDeliveryAttempt]{}, err
+	}
+	return store.ListWebhookDeliveryAttempts(ctx, s.d.DB, es, deliveryID, cursor, limit)
 }
 
 // ---- helpers --------------------------------------------------------------------

@@ -1,0 +1,33 @@
+{
+  "title": "Benachrichtigungen",
+  "empty": "Keine Benachrichtigungen.",
+  "markAll": "Alle als gelesen markieren",
+  "unreadMarker": "Ungelesen",
+  "bell": {
+    "label": "Benachrichtigungen",
+    "unread_one": "Benachrichtigungen: {{count}} ungelesen",
+    "unread_other": "Benachrichtigungen: {{count}} ungelesen"
+  },
+  "kinds": {
+    "webhook_endpoint_disabled": {
+      "title": "Webhook deaktiviert",
+      "body": "Der Endpunkt {{host}} wurde nach {{failures}} fehlgeschlagenen Zustellungen deaktiviert. Prüfen Sie ihn und aktivieren Sie ihn unter Integrationen wieder."
+    },
+    "refund_failed": {
+      "title": "Rückerstattung fehlgeschlagen",
+      "body": "Die Rückerstattung von {{amount}} für die Buchung {{booking_code}} ist nach {{attempts}} Versuchen fehlgeschlagen. Wiederholen Sie sie in der Buchung."
+    },
+    "import_completed": {
+      "title": "Import abgeschlossen",
+      "body": "Die Datei wurde importiert."
+    },
+    "import_failed": {
+      "title": "Import fehlgeschlagen",
+      "body": "Es wurden keine Daten geändert: Prüfen Sie den Validierungsbericht."
+    },
+    "test_mode_enabled": {
+      "title": "Testmodus aktiv",
+      "body": "Jetzt erstellte Buchungen sind Testbuchungen."
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Notifications",
+  "empty": "No notifications.",
+  "markAll": "Mark all as read",
+  "unreadMarker": "Unread",
+  "bell": {
+    "label": "Notifications",
+    "unread_one": "Notifications: {{count}} unread",
+    "unread_other": "Notifications: {{count}} unread"
+  },
+  "kinds": {
+    "webhook_endpoint_disabled": {
+      "title": "Webhook disabled",
+      "body": "The endpoint {{host}} was disabled after {{failures}} failed deliveries. Check it and enable it again from Integrations."
+    },
+    "refund_failed": {
+      "title": "Refund failed",
+      "body": "The refund of {{amount}} for booking {{booking_code}} failed after {{attempts}} attempts. Retry it from the booking."
+    },
+    "import_completed": {
+      "title": "Import completed",
+      "body": "The file was imported."
+    },
+    "import_failed": {
+      "title": "Import failed",
+      "body": "No data was changed: check the validation report."
+    },
+    "test_mode_enabled": {
+      "title": "Test mode on",
+      "body": "Bookings created now are test bookings."
+    }
+  }
+}

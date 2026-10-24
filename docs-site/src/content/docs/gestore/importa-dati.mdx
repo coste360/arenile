@@ -1,0 +1,75 @@
+---
+title: Importa dati
+description: Importare clienti e abbonamenti da un file CSV di un altro gestionale con anteprima, rapporto di validazione per riga, applicazione tutto o niente e consensi GDPR.
+sidebar:
+  order: 15.5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import { Screenshot } from '~/components';
+
+**Dove:** Configurazione → **Importa dati**. **Chi:** titolare e gestore.
+
+Se arrivi da un altro gestionale puoi portare in Arenile l'**anagrafica clienti** e gli **abbonamenti
+stagionali** con un file CSV. Il file non modifica nulla finché non lo applichi, e l'applicazione è **tutto o
+niente**: al primo errore non cambia nessun dato.
+
+<Screenshot name="admin-imports" alt="Importa dati: anteprima di un file di clienti con una riga da correggere" />
+
+## Preparare il file
+
+- Formato CSV, UTF-8 oppure Windows (quello di Excel), separatore `;` o `,` (riconosciuto da solo), al massimo
+  5 MB e 20.000 righe.
+- **Scarica il modello CSV** dalla pagina: contiene solo le intestazioni attese, nessuna riga d'esempio.
+- **Clienti**: `cognome` (obbligatoria), `nome`, `email`, `telefono`, `lingua`, `note`, `etichette`,
+  `consenso_marketing`, `data_consenso`, `versione_informativa`. Sono riconosciuti anche i nomi inglesi e quelli
+  dei gestionali più diffusi (ad esempio `cellulare`, `newsletter`).
+- **Abbonamenti**: le colonne dei clienti più `posto` (obbligatoria: l'etichetta della postazione, come A12),
+  `pacchetto`, `dal`, `al`, `fascia`. Date `GG/MM/AAAA` o `AAAA-MM-GG`.
+
+## Anteprima e rapporto
+
+<Steps>
+
+1. Scegli **Clienti** o **Abbonamenti stagionali**, seleziona il file e premi **Carica e verifica**.
+2. Scegli le opzioni:
+   - **Riconosci i clienti già presenti per** email o telefono;
+   - **Aggiorna i clienti trovati** (spento: restano come sono e la riga viene saltata);
+   - per gli abbonamenti: **Stagione** (obbligatoria), **Pacchetto predefinito** quando la colonna manca, **Crea i
+     clienti mancanti**;
+   - per i clienti: **Consenso marketing quando manca la colonna**.
+3. Premi **Anteprima**: nessun dato viene modificato. Il rapporto mostra le righe, quelle **con errori**, quante
+   verrebbero **create**, **aggiornate** o **saltate**, e la tabella **Errori** con riga, colonna e problema.
+4. Correggi il file e caricalo di nuovo, oppure cambia le opzioni e **Ripeti l'anteprima**.
+
+</Steps>
+
+## Applicare
+
+**Applica** è attivo solo quando l'anteprima non ha errori. La conferma riassume cosa verrà creato, aggiornato e
+saltato. L'applicazione avviene in un'unica transazione: se una riga non va (ad esempio una postazione occupata
+nel frattempo), **non cambia nulla** e l'importazione passa a **Rifiutato** con il rapporto aggiornato.
+
+Gli abbonamenti importati passano dalle stesse regole di quelli creati a mano: la postazione viene riservata per
+tutta la stagione (mai due abbonamenti sulla stessa postazione), il prezzo è quello del listino (puoi poi
+impostare un [prezzo manuale](/gestore/abbonamenti/#prezzo-manuale)) e ogni creazione finisce nel registro
+attività.
+
+## Ripetere senza duplicati
+
+- Lo **stesso file** applicato una seconda volta viene rifiutato (*Questo file è già stato importato*).
+- Un file diverso con gli stessi clienti li riconosce per email o telefono e li aggiorna o li salta: nessun
+  doppione.
+- **Storico importazioni** elenca ogni file con stato e risultato; **Scarta** cancella un file caricato e non
+  applicato. Il contenuto di un file (nomi, email, telefoni) viene cancellato appena l'importazione è applicata,
+  fallita o scartata; un file caricato e mai applicato è conservato al massimo 7 giorni.
+- Con la [modalità prova](/gestore/modalita-prova/) accesa non si importa: le righe diventerebbero dati di prova e
+  sparirebbero alla prossima eliminazione. Spegnila prima.
+- Un pacchetto che richiede l'approvazione del gestore non si importa (riga rifiutata, *Il pacchetto richiede
+  l'approvazione*): crea quegli abbonamenti dal pannello.
+
+<Aside type="caution" title="Consenso marketing">
+Il consenso non è mai presunto: senza la colonna `consenso_marketing` vale l'opzione dell'anteprima (spenta di
+default). Attivala solo se il consenso è documentato nel gestionale di provenienza; data e versione
+dell'informativa, se presenti, vengono conservate.
+</Aside>

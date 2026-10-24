@@ -93,6 +93,9 @@ type Detail struct {
 	SpotLabels map[string]string
 	PackCodes  map[string]string
 	ExtraCodes map[string]string
+	// RefundRequests are the guaranteed provider refunds of the booking
+	// (ADR 0019 feature B), oldest first.
+	RefundRequests []store.RefundRequest
 }
 
 // Quote is the preview of a creation (no writes): price, policy and the
@@ -134,8 +137,10 @@ type CancelInput struct {
 	// RefundAmount overrides the amount computed from the policy (capped at paid).
 	RefundAmount *money.Cents
 	// RefundMethod records the money refund now (payment method); without
-	// it a refund settlement is only recorded as due (the cashier records
-	// it later with the payments API). Credits are always recorded.
+	// it a refund settlement goes back to the online payments as guaranteed
+	// provider refunds (ADR 0019, with refunds.issue) and the rest is only
+	// recorded as due (the cashier records it later with the payments
+	// API). Credits are always recorded.
 	RefundMethod string
 	Weather      bool
 	DryRun       bool
@@ -148,6 +153,14 @@ type CancelResult struct {
 	Refund  RefundPreview
 	// Recorded is the refund or credit payment written (nil when none).
 	Recorded *store.Payment
+	// RefundReserved is the part of a money refund reserved as guaranteed
+	// provider refunds (refund_requests, ADR 0019) in the cancellation
+	// transaction; RefundRequestIDs are those requests (the caller may
+	// send them at once, the job retries them anyway). RefundDue is what
+	// is left for a manual refund (desk payments).
+	RefundReserved   money.Cents
+	RefundRequestIDs []string
+	RefundDue        money.Cents
 }
 
 // MoveInput moves one line to another spot from a date (spec 11.3).

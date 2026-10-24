@@ -13,6 +13,7 @@
     "monthLabel": "Monat",
     "year": "Jahr",
     "downloadCsv": "CSV herunterladen",
+    "downloadXlsx": "Excel herunterladen",
     "downloadJson": "JSON herunterladen",
     "disclaimer": "Beträge inklusive MwSt., nach Satz aus dem Preis-Snapshot herausgerechnet; Erstattungen sind negativ. Die steuerliche Konformität der Konfiguration liegt in der Verantwortung des Betreibers und seines Steuerberaters.",
     "empty": "Keine Einnahmen im gewählten Zeitraum.",
@@ -26,7 +27,10 @@
     "byMethod": "Nach Zahlungsart",
     "count": "Vorgänge",
     "detail": "Details",
-    "periodColumn": "Zeitraum"
+    "periodColumn": "Zeitraum",
+    "register": "Kasse",
+    "allRegisters": "Alle Kassen",
+    "registerNote": "Nur in den Sitzungen dieser Kasse erfasste Einnahmen: Onlinezahlungen ohne Sitzung sind in der Summe aller Kassen enthalten."
   },
   "method": {
     "cash": "Bar",
@@ -64,7 +68,8 @@
     "floatHint": "Bargeld in der Schublade bei Öffnung.",
     "submit": "Sitzung öffnen",
     "opened": "Kassensitzung geöffnet",
-    "noneReadOnly": "Keine offene Kassensitzung."
+    "noneReadOnly": "Keine offene Kassensitzung.",
+    "titleRegister": "{{name}} öffnen"
   },
   "current": {
     "badge": "{{register}} offen seit {{time}}",
@@ -176,9 +181,58 @@
     "amountPositive": "Der Betrag muss größer als null sein.",
     "reasonRequired": "Geben Sie eine Begründung an.",
     "countedRequired": "Geben Sie das gezählte Bargeld ein.",
-    "tooLong": "Text zu lang."
+    "tooLong": "Text zu lang.",
+    "nameRequired": "Gib den Namen der Kasse ein.",
+    "codeFormat": "Kleinbuchstaben, Ziffern, - und _ (höchstens 40).",
+    "sortOrder": "Eine ganze Zahl zwischen 0 und 10000."
   },
   "registers": {
     "main": "Hauptkasse"
+  },
+  "registersPage": {
+    "title": "Kassen",
+    "description": "Kassen des Betriebs: eine offene Sitzung pro Kasse, Z-Abschluss und Berichte pro Kasse.",
+    "fields": {
+      "name": "Name",
+      "code": "Code",
+      "status": "Status",
+      "sortOrder": "Reihenfolge",
+      "active": "Aktiv"
+    },
+    "default": "Standard",
+    "inactive": "Deaktiviert",
+    "sessionOpen": "Sitzung offen",
+    "sessionClosed": "Geschlossen",
+    "actions": "Aktionen",
+    "editAria": "{{name}} bearbeiten",
+    "deleteAria": "{{name}} löschen",
+    "deleteConfirm": "Kasse „{{name}}“ löschen? Nur nie benutzte Kassen können gelöscht werden.",
+    "deleted": "Kasse gelöscht",
+    "deleteInUse": "Die Kasse hat Sitzungen im Verlauf: Sie können sie nur deaktivieren.",
+    "add": "Neue Kasse",
+    "readOnly": "Nur lesen: Kassen verwalten nur Inhaber und Manager.",
+    "empty": "Keine Kassen.",
+    "editTitle": "Kasse bearbeiten",
+    "formDescription": "Jede Kasse hat ihre eigene Sitzung, ihr Wechselgeld und ihren Z-Abschluss.",
+    "saved": "Kasse gespeichert",
+    "deactivateOpen": "Schließe zuerst die offene Sitzung dieser Kasse.",
+    "codeFixed": "Der Code kann nicht geändert werden.",
+    "codeHint": "Optional: wird leer aus dem Namen abgeleitet.",
+    "defaultAlwaysActive": "Die Standardkasse bleibt immer aktiv."
+  },
+  "zpdf": {
+    "group": "Z-Abschluss als PDF",
+    "button": "Z-Abschluss PDF",
+    "more": "Weitere Formate des Z-Abschlusses",
+    "a4": "PDF A4",
+    "receipt": "Bon 80 mm",
+    "openTab": "In neuem Tab öffnen",
+    "failed": "Der Z-Abschluss konnte nicht zum Drucken vorbereitet werden."
+  },
+  "registerPicker": {
+    "label": "Kasse",
+    "open": "{{name}} · geöffnet",
+    "closed": "{{name}} · geschlossen",
+    "manage": "Kassen verwalten"
   }
 }

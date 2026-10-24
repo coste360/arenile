@@ -288,6 +288,12 @@ func managedToAPI(m *checkout.Managed) api.ManageBooking {
 		rp := refundToAPI(*m.CancelPreview)
 		out.CancellationPreview = &rp
 	}
+	if m.Refund != nil {
+		out.Refund = &api.ManageRefundStatus{
+			Status: api.RefundRequestStatus(m.Refund.Status), Amount: int64(m.Refund.Amount),
+			RequestedAt: m.Refund.RequestedAt, CompletedAt: m.Refund.CompletedAt,
+		}
+	}
 	if b.IsSeasonPass {
 		rels := make([]api.ManageRelease, len(m.Releases))
 		for i, r := range m.Releases {

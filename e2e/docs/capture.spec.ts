@@ -73,6 +73,43 @@ async function publicConfirmation(page: Page, _ctx: RunContext, _entry: ShotEntr
 }
 
 const PREPARE: Record<string, Prepare> = {
+  "admin-map-selection": async (page) => {
+    // Selection only (no booking is created): E3 to E5 with Shift.
+    await page.getByRole("button", { name: "Selezione multipla delle postazioni" }).click();
+    await page.getByRole("button", { name: /^Postazione E3:/ }).click();
+    await page.getByRole("button", { name: /^Postazione E5:/ }).click({ modifiers: ["Shift"] });
+    await expect(page.getByTestId("selection-bar")).toBeVisible();
+  },
+  "admin-map-block": async (page) => {
+    await page.getByRole("button", { name: "Selezione multipla delle postazioni" }).click();
+    await page.getByRole("button", { name: /^Postazione E3:/ }).click();
+    await page.getByRole("button", { name: /^Postazione E4:/ }).click({ modifiers: ["Shift"] });
+    await page.getByTestId("selection-bar").getByRole("button", { name: "Blocca", exact: true }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+  },
+  "admin-imports": async (page) => {
+    // Upload and preview only: nothing is applied.
+    await page.getByLabel("File CSV").setInputFiles({
+      name: "clienti.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("cognome;nome;email\r\nVerdi;Anna;anna.verdi@example.org\r\n;Luca;luca@example\r\nBruni;Marco;marco.bruni@example.org\r\n"),
+    });
+    await page.getByRole("button", { name: "Carica e verifica" }).click();
+    await page.getByRole("button", { name: "Anteprima" }).click();
+    await expect(page.getByRole("table", { name: "Errori" })).toBeVisible();
+  },
+  "admin-pass-price": async (page) => {
+    await page.getByRole("table", { name: "Abbonamenti" }).getByRole("row").nth(2).click();
+    await expect(page.getByRole("button", { name: "Imposta prezzo manuale" })).toBeVisible();
+  },
+  "admin-notifications": async (page) => {
+    await page.getByTestId("notifications-bell").click();
+    await expect(page.getByRole("dialog").or(page.locator("[data-radix-popper-content-wrapper]")).first()).toBeVisible();
+  },
+  "admin-report-exports": async (page) => {
+    await page.getByRole("button", { name: "Esporta elenchi" }).click();
+    await expect(page.getByRole("menu")).toBeVisible();
+  },
   "public-confirmation-mobile": publicConfirmation,
   "public-confirmation-desktop": publicConfirmation,
   "admin-map-spot": async (page) => {

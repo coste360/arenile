@@ -1,0 +1,33 @@
+{
+  "title": "Notifiche",
+  "empty": "Nessuna notifica.",
+  "markAll": "Segna tutte come lette",
+  "unreadMarker": "Da leggere",
+  "bell": {
+    "label": "Notifiche",
+    "unread_one": "Notifiche: {{count}} da leggere",
+    "unread_other": "Notifiche: {{count}} da leggere"
+  },
+  "kinds": {
+    "webhook_endpoint_disabled": {
+      "title": "Webhook disattivato",
+      "body": "L'endpoint {{host}} è stato disattivato dopo {{failures}} consegne fallite. Controllalo e riattivalo da Integrazioni."
+    },
+    "refund_failed": {
+      "title": "Rimborso non riuscito",
+      "body": "Il rimborso di {{amount}} della prenotazione {{booking_code}} non è riuscito dopo {{attempts}} tentativi. Riprova dalla prenotazione."
+    },
+    "import_completed": {
+      "title": "Importazione completata",
+      "body": "Il file è stato importato."
+    },
+    "import_failed": {
+      "title": "Importazione non riuscita",
+      "body": "Nessun dato è stato modificato: controlla il rapporto di validazione."
+    },
+    "test_mode_enabled": {
+      "title": "Modalità prova attiva",
+      "body": "Le prenotazioni create ora sono di prova."
+    }
+  }
+}

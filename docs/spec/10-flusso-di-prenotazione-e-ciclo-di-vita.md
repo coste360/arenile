@@ -63,6 +63,6 @@ Ogni transizione è un metodo del servizio `booking`, scrive l'audit log e pubbl
 - L'annullamento di un biglietto è la cancellazione della prenotazione (`cancelled`) con rimborso tramite i pagamenti
   o senza rimborso; il biglietto conserva il numero ed è segnato annullato.
 - L'assegnazione di un biglietto venduto per zona e ogni spostamento successivo sono una `Move` della prenotazione
-  (spec 7.5, INV-82).
+  (spec 7.5, INV-83).
 
 ---

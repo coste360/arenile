@@ -15,6 +15,8 @@ export interface CorrispettiviQuery {
   from: string;
   to: string;
   group_by: GroupBy;
+  /** Only the payments recorded in the sessions of this cash register (ADR 0019). */
+  register_id?: string;
 }
 
 /** Period picked on the page: one day (YYYY-MM-DD) or one month (YYYY-MM). */
@@ -46,14 +48,15 @@ export function periodQuery(p: Period): CorrispettiviQuery {
 export function exportUrl(
   establishmentId: string,
   q: CorrispettiviQuery,
-  format: 'csv' | 'json',
+  format: 'csv' | 'json' | 'xlsx',
 ): string {
   const params = new URLSearchParams({ from: q.from, to: q.to, group_by: q.group_by, format });
+  if (q.register_id) params.set('register_id', q.register_id);
   return `/api/admin/v1/establishments/${encodeURIComponent(establishmentId)}/fiscal/corrispettivi?${params.toString()}`;
 }
 
 /** Suggested file name of an export. */
-export function exportFileName(q: CorrispettiviQuery, format: 'csv' | 'json'): string {
+export function exportFileName(q: CorrispettiviQuery, format: 'csv' | 'json' | 'xlsx'): string {
   const span = q.from === q.to ? q.from : `${q.from}_${q.to}`;
   return `corrispettivi_${span}.${format}`;
 }

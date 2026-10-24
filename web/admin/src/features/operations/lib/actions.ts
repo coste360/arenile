@@ -12,6 +12,10 @@ export interface SpotActions {
   move: boolean;
   collect: boolean;
   openDetail: boolean;
+  /** Manual block of a free spot (operations.run; ADR 0019 C). */
+  block: boolean;
+  /** Removal of the manual block shown (operations.run). */
+  unblock: boolean;
 }
 
 /**
@@ -42,5 +46,7 @@ export function spotActions(
       (status === 'booked' || status === 'checked_in' || status === 'held'),
     collect: perms.canWriteBookings && !!b && b.balance_due > 0,
     openDetail: !!b,
+    block: perms.canRun && status === 'free',
+    unblock: perms.canRun && status === 'blocked' && !!spot.block_id,
   };
 }

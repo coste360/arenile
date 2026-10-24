@@ -208,7 +208,8 @@
       "spot": "Postazione",
       "pool": "Quantità",
       "zone": "Zona"
-    }
+    },
+    "refundInProgress": "C’è un rimborso automatico in corso per questa prenotazione: attendi che si concluda."
   },
   "actions": {
     "confirm": "Conferma",
@@ -380,13 +381,48 @@
         "modified": "Modificata",
         "moved": "Spostata",
         "note_added": "Nota aggiunta",
-        "completed": "Conclusa"
+        "completed": "Conclusa",
+        "refund_reserved": "Rimborso riservato",
+        "refund_succeeded": "Rimborso confermato dal provider",
+        "refund_failed": "Rimborso non riuscito",
+        "refund_retried": "Rimborso riprovato"
       },
       "payment": {
         "recorded": "Incasso registrato",
         "succeeded": "Incasso registrato",
         "refunded": "Rimborso registrato"
       }
+    }
+  },
+  "refunds": {
+    "title": "Rimborsi automatici",
+    "description": "Rimborsi sul pagamento online riservati con la cancellazione e inviati al gestore di pagamento finché non li conferma.",
+    "requested": "Richiesto",
+    "retry": "Riprova",
+    "retried": "Rimborso di {{amount}} inviato di nuovo.",
+    "retriedDone": "Rimborso di {{amount}} confermato.",
+    "completedAt": "Confermato il {{at}}",
+    "attempts_one": "{{count}} tentativo",
+    "attempts_other": "{{count}} tentativi",
+    "nextAttempt": "prossimo tentativo {{at}}",
+    "statuses": {
+      "pending": "In attesa di invio",
+      "processing": "In attesa di conferma",
+      "succeeded": "Rimborsato",
+      "failed": "Non riuscito",
+      "cancelled": "Annullato"
+    },
+    "errors": {
+      "provider_unavailable": "gestore di pagamento non raggiungibile",
+      "provider_refused": "rifiutato dal gestore di pagamento",
+      "provider_not_configured": "gestore di pagamento non configurato",
+      "refund_not_supported": "il gestore non consente rimborsi",
+      "not_online_payment": "pagamento non online",
+      "exceeds_refundable": "importo oltre il rimborsabile",
+      "idempotency_mismatch": "richiesta incoerente",
+      "payment_missing": "pagamento non trovato",
+      "interrupted": "invio interrotto",
+      "other": "errore imprevisto"
     }
   }
 }

@@ -3,7 +3,9 @@ import { Alert, AlertDescription, AlertTitle } from '@arenile/shared/ui/alert';
 import { Button } from '@arenile/shared/ui/button';
 import {
   EmptyState,
+  OptionSelectMenu,
   Page,
+  PageToolbar,
   QueryState,
   SectionCard,
   StatusBadge,
@@ -16,35 +18,59 @@ import {
   HandCoinsIcon,
   LockIcon,
   PrinterIcon,
+  SettingsIcon,
   WalletIcon,
   ZapIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useCurrentSession, useSession, type CashSessionDetail } from './api';
+import { useCurrentSession, useRegisters, useSession, type CashSessionDetail } from './api';
 import { CloseSessionDialog } from './components/CloseSessionDialog';
 import { MovementDialog } from './components/MovementDialog';
 import { OpenSessionCard } from './components/OpenSessionCard';
 import { QuickPaymentDialog } from './components/QuickPaymentDialog';
 import { SessionHistory } from './components/SessionHistory';
 import { SessionView } from './components/SessionView';
+import { ZPdfButton } from './components/ZPdfButton';
 import { ZReport } from './components/ZReport';
 import { useCashContext, type CashContext } from './useCashContext';
-import { registerLabel } from './lib/register';
+import {
+  pickRegister,
+  readPreferredRegister,
+  sessionRegisterLabel,
+  writePreferredRegister,
+} from './lib/register';
 
 type DialogName = 'movement' | 'pay' | 'close' | null;
 
 /**
  * Cassa (spec 14.1): open the session with a float, follow takings and
  * movements, take a payment for a booking, close with the count and print
- * the Z summary; history of the sessions below. Cashier: full access;
- * viewer: read-only (history); other roles: no access.
+ * the Z summary (quick print or the server PDF); history of the sessions
+ * below. With several registers (ADR 0019) a picker chooses the register of
+ * this device (remembered locally); each register has its own session.
+ * Cashier: full access; viewer: read-only (history); other roles: no access.
  */
 export function CashPage() {
   const { t } = useTranslation('cash');
   const ctx = useCashContext();
-  const current = useCurrentSession(ctx.establishmentId, undefined, !ctx.loading && ctx.canRead);
+  const registers = useRegisters(ctx.establishmentId, false, !ctx.loading && ctx.canRead);
+  const [preferred, setPreferred] = useState(() => readPreferredRegister(ctx.establishmentId));
+  const regs = registers.data ?? [];
+  const registerId = pickRegister(regs, preferred);
+  const register = regs.find((r) => r.id === registerId);
+  // Wait for the registers (or their failure: then the default register by code).
+  const registersSettled = !registers.isPending || !!registers.error;
+  const current = useCurrentSession(
+    ctx.establishmentId,
+    registerId,
+    !ctx.loading && ctx.canRead && registersSettled,
+  );
+  const chooseRegister = (id: string) => {
+    setPreferred(id);
+    writePreferredRegister(ctx.establishmentId, id);
+  };
   const [dialog, setDialog] = useState<DialogName>(null);
   const [historyId, setHistoryId] = useState<string | undefined>();
   const [closedId, setClosedId] = useState<string | undefined>();
@@ -106,6 +132,7 @@ export function CashPage() {
           {t('actions.print')}
         </Button>
       )}
+      {detail && <ZPdfButton establishmentId={ctx.establishmentId} sessionId={detail.session.id} />}
       {operate && (
         <>
           <Button variant="outline" onClick={() => setDialog('movement')}>
@@ -136,7 +163,7 @@ export function CashPage() {
           detail ? (
             <StatusBadge tone="success">
               {t('current.badge', {
-                register: registerLabel(t, detail.session.register),
+                register: sessionRegisterLabel(t, detail.session),
                 time: ctx.dateTime(detail.session.opened_at),
               })}
             </StatusBadge>
@@ -151,6 +178,33 @@ export function CashPage() {
           )
         }
       >
+        {regs.length > 1 && (
+          <PageToolbar>
+            <OptionSelectMenu
+              label={t('registerPicker.label')}
+              value={registerId}
+              onValueChange={chooseRegister}
+              className="sm:w-72"
+              options={regs.map((r) => ({
+                value: r.id,
+                label: r.open_session_id
+                  ? t('registerPicker.open', { name: r.name })
+                  : t('registerPicker.closed', { name: r.name }),
+              }))}
+            />
+            {ctx.canConfigure && (
+              <Button variant="ghost" asChild>
+                <Link
+                  to="/e/$establishmentId/config/cash-registers"
+                  params={{ establishmentId: ctx.establishmentId }}
+                >
+                  <SettingsIcon aria-hidden="true" />
+                  {t('registerPicker.manage')}
+                </Link>
+              </Button>
+            )}
+          </PageToolbar>
+        )}
         {forbidden ? null : current.isPending || current.error ? (
           <QueryState
             isLoading={current.isPending}
@@ -164,7 +218,11 @@ export function CashPage() {
           <div className="grid items-start gap-6 lg:grid-cols-2 *:min-w-0">
             {closedId && <ClosedSummary ctx={ctx} sessionId={closedId} onPrint={print} />}
             {ctx.canOperate ? (
-              <OpenSessionCard establishmentId={ctx.establishmentId} />
+              <OpenSessionCard
+                establishmentId={ctx.establishmentId}
+                registerId={register?.id}
+                registerName={register && regs.length > 1 ? register.name : undefined}
+              />
             ) : (
               <EmptyState icon={WalletIcon} title={t('open.noneReadOnly')} />
             )}
@@ -223,10 +281,13 @@ function ClosedSummary({
       titleId="closed-summary-title"
       actions={
         detail.data && (
-          <Button variant="outline" size="sm" onClick={() => onPrint(detail.data)}>
-            <PrinterIcon aria-hidden="true" />
-            {t('actions.printZ')}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => onPrint(detail.data)}>
+              <PrinterIcon aria-hidden="true" />
+              {t('actions.printZ')}
+            </Button>
+            <ZPdfButton establishmentId={ctx.establishmentId} sessionId={sessionId} />
+          </div>
         )
       }
     >

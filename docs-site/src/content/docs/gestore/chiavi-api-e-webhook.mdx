@@ -113,8 +113,10 @@ prova solo a quell'endpoint e ti dice se è stato consegnato e con quale rispost
 | **In pausa** | L'hai messo in pausa togliendo **Attivo** in **Modifica endpoint**: gli eventi non vengono inviati (l'evento di prova funziona comunque). |
 | **Disattivato per errori** | Arenile l'ha fermato da solo dopo molte consegne fallite di seguito. Quando il programma che riceve funziona di nuovo, riattivalo da **Modifica endpoint**. |
 
-Il numero di **Errori consecutivi** compare sotto lo stato. Dopo un'interruzione del programma che riceve, controlla
-questa pagina: Arenile non manda email per avvisarti della disattivazione.
+Il numero di **Errori consecutivi** compare sotto lo stato. Quando Arenile disattiva un endpoint, il titolare
+riceve una [notifica nel pannello](/gestore/notifiche/) (campanella) e, se le email al gestore per gli errori dei
+webhook sono attive in [Email e notifiche](/gestore/email/), un'email con l'host dell'endpoint e il numero di
+errori.
 
 ### Registro consegne
 
@@ -123,8 +125,13 @@ questa pagina: Arenile non manda email per avvisarti della disattivazione.
 **Risposta (estratto)**; **Reinvia** rimette in coda una consegna (ad esempio dopo aver corretto il programma che
 riceve).
 
+Nel dettaglio di una consegna lo **Storico dei tentativi** elenca **ogni** tentativo, non solo l'ultimo: numero,
+ora, codice HTTP, durata ed errore. Utile per capire se il programma che riceve era lento, irraggiungibile o
+rispondeva con un errore.
+
 Una consegna fallita viene ritentata in automatico con attese crescenti per 24 ore. Le consegne restano nel
-registro per 30 giorni.
+registro per 30 giorni; lo storico dei tentativi per i giorni di `ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS`
+(default 30, vedi [Configurazione](/installazione/configurazione/)).
 
 ### Cambiare il segreto di firma
 

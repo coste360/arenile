@@ -208,7 +208,8 @@
       "spot": "Spot",
       "pool": "Quantity",
       "zone": "Zone"
-    }
+    },
+    "refundInProgress": "An automatic refund is in progress for this booking: wait for it to finish."
   },
   "actions": {
     "confirm": "Confirm",
@@ -380,13 +381,48 @@
         "modified": "Changed",
         "moved": "Moved",
         "note_added": "Note added",
-        "completed": "Completed"
+        "completed": "Completed",
+        "refund_reserved": "Refund reserved",
+        "refund_succeeded": "Refund confirmed by the provider",
+        "refund_failed": "Refund failed",
+        "refund_retried": "Refund retried"
       },
       "payment": {
         "recorded": "Payment recorded",
         "succeeded": "Payment recorded",
         "refunded": "Refund recorded"
       }
+    }
+  },
+  "refunds": {
+    "title": "Automatic refunds",
+    "description": "Refunds to the online payment reserved with the cancellation and sent to the payment provider until it confirms them.",
+    "requested": "Requested",
+    "retry": "Retry",
+    "retried": "Refund of {{amount}} sent again.",
+    "retriedDone": "Refund of {{amount}} confirmed.",
+    "completedAt": "Confirmed on {{at}}",
+    "attempts_one": "{{count}} attempt",
+    "attempts_other": "{{count}} attempts",
+    "nextAttempt": "next attempt {{at}}",
+    "statuses": {
+      "pending": "Waiting to be sent",
+      "processing": "Waiting for confirmation",
+      "succeeded": "Refunded",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "errors": {
+      "provider_unavailable": "payment provider unreachable",
+      "provider_refused": "refused by the payment provider",
+      "provider_not_configured": "payment provider not configured",
+      "refund_not_supported": "the provider does not allow refunds",
+      "not_online_payment": "not an online payment",
+      "exceeds_refundable": "amount above what can be refunded",
+      "idempotency_mismatch": "inconsistent request",
+      "payment_missing": "payment not found",
+      "interrupted": "sending interrupted",
+      "other": "unexpected error"
     }
   }
 }

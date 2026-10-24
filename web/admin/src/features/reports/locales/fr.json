@@ -185,5 +185,19 @@
     "total": "Total",
     "paid": "Payé",
     "due": "Solde"
+  },
+  "xlsx": {
+    "label": "Exporter Excel",
+    "aria": "Exporter Excel : {{report}}"
+  },
+  "exports": {
+    "label": "Exporter les listes",
+    "customers": "Clients",
+    "bookings": "Réservations de la période",
+    "season-passes": "Abonnements",
+    "payments": "Encaissements de la période",
+    "csv": "CSV",
+    "xlsx": "Excel",
+    "hint": "Mêmes colonnes que le CSV, aucune donnée en plus. Les réservations de test sont exclues."
   }
 }

@@ -27,7 +27,7 @@ const on = (a: ReturnType<typeof spotActions>) =>
 
 describe('spotActions', () => {
   it.each([
-    ['free spot', opSpot('s', 'A1', 'free'), ['dailySale', 'newBooking']],
+    ['free spot', opSpot('s', 'A1', 'free'), ['block', 'dailySale', 'newBooking']],
     [
       'confirmed booking',
       opSpot('s', 'A1', 'booked', { booking: opBooking() }),
@@ -56,7 +56,8 @@ describe('spotActions', () => {
       }),
       ['dailySale', 'newBooking', 'openDetail', 'revokeRelease'],
     ],
-    ['blocked', opSpot('s', 'A1', 'blocked'), []],
+    ['blocked without block id', opSpot('s', 'A1', 'blocked'), []],
+    ['manual block', opSpot('s', 'A1', 'blocked', { block_id: 'b1' }), ['unblock']],
     [
       'booking without line id',
       opSpot('s', 'A1', 'booked', { booking: opBooking({ line_id: undefined }) }),

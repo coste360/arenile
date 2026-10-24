@@ -26,6 +26,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/webhook"
 
 	"github.com/coste360/arenile/internal/domain/credit"
+	"github.com/coste360/arenile/internal/domain/refund"
 	"github.com/coste360/arenile/internal/domain/renewal"
 	"github.com/coste360/arenile/internal/domain/rollover"
 	"github.com/coste360/arenile/internal/domain/waitlist"
@@ -47,6 +48,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/establishment"
 	"github.com/coste360/arenile/internal/domain/event"
 	"github.com/coste360/arenile/internal/domain/fiscal"
+	"github.com/coste360/arenile/internal/domain/importer"
 	"github.com/coste360/arenile/internal/domain/inventory"
 	"github.com/coste360/arenile/internal/domain/mapping"
 	"github.com/coste360/arenile/internal/domain/meta"
@@ -59,6 +61,7 @@ import (
 	"github.com/coste360/arenile/internal/domain/season"
 	"github.com/coste360/arenile/internal/domain/setup"
 	"github.com/coste360/arenile/internal/domain/team"
+	"github.com/coste360/arenile/internal/domain/testmode"
 	"github.com/coste360/arenile/internal/fiscalbridge"
 	httpserver "github.com/coste360/arenile/internal/http"
 	"github.com/coste360/arenile/internal/http/sse"
@@ -159,6 +162,15 @@ type App struct {
 	Renewals *renewal.Service
 	Waitlist *waitlist.Service
 	Credits  *credit.Service
+
+	// Deferred features A: test mode (wired by wireTestMode, see testmode.go).
+	TestMode *testmode.Service
+
+	// Deferred features B: guaranteed refunds (wired by wireRefunds, see refunds.go).
+	Refunds *refund.Service
+
+	// Deferred features F: CSV imports (wired by wireImports, see imports.go).
+	Imports *importer.Service
 
 	mu    sync.Mutex
 	addr  string
@@ -276,6 +288,9 @@ func (a *App) wire() error {
 	})
 	a.wireSeason(aw, deliverer)
 	a.wireRenewals(aw)
+	a.wireTestMode(aw)
+	a.wireRefunds(aw)
+	a.wireImports(aw)
 	// The bus is wrapped in a ReplayBus (decorator) so SSE clients resume
 	// with Last-Event-ID without losing or duplicating map updates.
 	var bus ext.EventBus = event.NewBroker(a.log, 64)
@@ -300,7 +315,7 @@ func (a *App) wire() error {
 			return err
 		}
 	}
-	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs()) {
+	for _, j := range slices.Concat(a.operationJobs(), a.onlineJobs(), a.deviceJobs(), a.seasonJobs(), a.renewalJobs(), a.refundJobs(), a.importJobs()) {
 		if err := a.runner.Register(j); err != nil {
 			return err
 		}
@@ -318,10 +333,14 @@ func (a *App) wire() error {
 		Desktop: a.opts.desktop, DesktopUsers: usersCounter{db: a.db},
 		Reports: a.Reports, APIKeys: a.APIKeys, Webhooks: a.Webhooks,
 		Rollover: a.Rollover, Renewals: a.Renewals, Waitlist: a.Waitlist, Credits: a.Credits,
+		TestMode:       a.TestMode,
+		Refunds:        a.Refunds,
+		Imports:        a.Imports,
 		Readiness:      readiness{db: a.db},
 		TrustedProxies: a.cfg.TrustedProxies,
 		SecureCookies:  a.cfg.SecureCookies(),
 		Extensions:     x,
+		PublicBaseURL:  a.cfg.BaseURL,
 
 		PublicReadsPerMinute:     cmp.Or(a.opts.publicReads, a.cfg.PublicReadsPerMinute),
 		PublicCreationsPerMinute: cmp.Or(a.opts.publicCreations, a.cfg.PublicCreationsPerMinute),

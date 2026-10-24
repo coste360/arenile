@@ -73,7 +73,7 @@ func (s *Service) Manage(ctx context.Context, slug, token string) (*Managed, err
 
 func (s *Service) managed(ctx context.Context, pe *online.PublicEstablishment, l *store.MagicLinkToken, d *booking.Detail) (*Managed, error) {
 	b := &d.Booking
-	out := &Managed{Booking: d, Link: *l, Allowed: manageActions(b, rulesOf(b), s.today(pe.Establishment), pe.Online)}
+	out := &Managed{Booking: d, Link: *l, Allowed: manageActions(b, rulesOf(b), s.today(pe.Establishment), pe.Online), Refund: ManageRefundOf(d.RefundRequests)}
 	var err error
 	if out.Quote, out.Labels, err = s.summarize(ctx, s.d.DB, pe, d); err != nil {
 		return nil, err
@@ -243,16 +243,22 @@ func (s *Service) ManageCancel(ctx context.Context, slug, token string, expected
 		}
 	default:
 		// M5B: the credit-paid part was already given back as credit
-		// (booking service, res.Recorded); only the rest goes to the provider.
+		// (booking service, res.Recorded). ADR 0019: the rest was reserved
+		// as guaranteed provider refunds in the cancellation transaction
+		// (res.RefundRequestIDs); what no provider payment can take stays
+		// a manual refund due.
 		due := rf.Amount
 		if res.Recorded != nil && res.Recorded.Method == store.PaymentMethodCredit {
 			due -= res.Recorded.Amount
 		}
-		if due <= 0 {
+		switch {
+		case due <= 0:
 			out.RefundStatus = RefundCredited
-			break
+		case res.RefundDue > 0 || len(res.RefundRequestIDs) == 0:
+			out.RefundStatus = RefundManualDue
+		default:
+			out.RefundStatus = s.sendRefunds(ctx, pe.Scope, res.RefundRequestIDs)
 		}
-		out.RefundStatus = s.refundOnline(ctx, pe.Scope, d, due)
 	}
 	if res.Applied {
 		fresh, err := s.d.Bookings.DetailIn(ctx, s.d.DB, pe.Scope, d.Booking.ID)
@@ -282,36 +288,22 @@ func providerPaid(ps []store.Payment) money.Cents {
 	return sum
 }
 
-// refundOnline refunds amount through the providers of the online
-// payments of the booking, newest first; what the providers cannot take
-// stays a manual refund due (visible in the cancellation audit).
-func (s *Service) refundOnline(ctx context.Context, es store.EstablishmentScope, d *booking.Detail, amount money.Cents) string {
-	left := amount
-	started := false
-	for i := len(d.Payments) - 1; i >= 0 && left > 0; i-- {
-		p := d.Payments[i]
-		if !isProviderPayment(p) {
-			continue
-		}
-		part := min(left, p.Amount)
-		_, err := s.d.Payments.RefundViaProvider(ctx, es, gateway.RefundRequest{
-			BookingID: d.Booking.ID, PaymentID: p.ID, Amount: part, Reason: "customer_cancellation",
-			IdempotencyKey: d.Booking.ID + ":cancel:" + p.ID,
-		})
-		if err != nil {
-			s.d.Log.WarnContext(ctx, "provider refund failed: manual refund due", slog.String("booking_id", d.Booking.ID),
-				slog.String("payment_id", p.ID), slog.String("error", err.Error()))
-			continue
-		}
-		started = true
-		left -= part
-	}
-	switch {
-	case left <= 0 && started:
+// sendRefunds sends the reserved refund requests at once (when the
+// sender is wired) and reports provider_succeeded when the provider
+// already confirmed all of them, provider_pending otherwise (the job
+// keeps sending until the provider confirms).
+func (s *Service) sendRefunds(ctx context.Context, es store.EstablishmentScope, ids []string) string {
+	if s.d.Refunds == nil {
 		return RefundProviderPending
-	default:
-		return RefundManualDue
 	}
+	s.d.Refunds.SendNow(context.WithoutCancel(ctx), es, ids)
+	for _, id := range ids {
+		rr, err := store.GetRefundRequest(ctx, s.d.DB, es, id)
+		if err != nil || rr.Status != store.RefundRequestSucceeded {
+			return RefundProviderPending
+		}
+	}
+	return RefundProviderSucceeded
 }
 
 // ManageRelease previews or applies the release of season pass days (one

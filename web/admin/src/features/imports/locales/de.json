@@ -1,0 +1,98 @@
+{
+  "page": {
+    "title": "Daten importieren",
+    "description": "Importieren Sie Kunden und Saisonabonnements aus einer CSV-Datei eines anderen Programms: Vorschau, Prüfbericht und Übernahme nach dem Alles-oder-nichts-Prinzip."
+  },
+  "kind": {
+    "customers": "Kunden",
+    "season_passes": "Saisonabonnements"
+  },
+  "status": {
+    "uploaded": "Hochgeladen",
+    "validated": "Geprüft",
+    "applying": "Wird übernommen",
+    "applied": "Übernommen",
+    "failed": "Abgelehnt",
+    "discarded": "Verworfen"
+  },
+  "upload": {
+    "title": "Neuer Import",
+    "description": "Laden Sie eine CSV-Datei hoch (UTF-8 oder Windows, Trennzeichen ; oder ,), höchstens 5 MB und 20.000 Zeilen. Die Datei ändert keine Daten, bevor Sie bestätigen.",
+    "kind": "Inhalt der Datei",
+    "columns": {
+      "customers": "Erkannte Spalten: cognome (Nachname, Pflicht), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. Englische Namen und die der gängigsten Programme werden ebenfalls akzeptiert.",
+      "season_passes": "Die Kundenspalten plus posto (Pflicht, die Bezeichnung des Platzes), pacchetto, dal, al, fascia. Jede Zeile erstellt ein Abonnement in der gewählten Saison zum Listenpreis."
+    },
+    "template": "CSV-Vorlage herunterladen",
+    "file": "CSV-Datei",
+    "fileHint": "Die Marketing-Einwilligung wird nie angenommen: Ohne die Spalte gilt die Einstellung der Vorschau.",
+    "submit": "Hochladen und prüfen"
+  },
+  "review": {
+    "title": "Datei „{{file}}“",
+    "noName": "ohne Namen",
+    "preview": "Vorschau",
+    "previewAgain": "Vorschau wiederholen",
+    "previewHint": "Wählen Sie die Optionen und klicken Sie auf „Vorschau“: Es werden keine Daten geändert.",
+    "apply": "Übernehmen",
+    "applyTitle": "Import übernehmen?",
+    "applyDescription": "{{create}} Einträge werden erstellt, {{update}} aktualisiert und {{skip}} übersprungen. Alles oder nichts: Beim ersten Fehler ändert sich nichts.",
+    "discard": "Verwerfen",
+    "discardTitle": "Import verwerfen?",
+    "discardDescription": "Die hochgeladene Datei wird gelöscht. Es wurden keine Daten geändert."
+  },
+  "options": {
+    "matchBy": "Vorhandene Kunden erkennen an",
+    "matchEmail": "E-Mail",
+    "matchPhone": "Telefon",
+    "season": "Saison",
+    "seasonPlaceholder": "Saison wählen",
+    "pack": "Standardpaket",
+    "packPlaceholder": "Aus der Datei (Spalte pacchetto)",
+    "updateExisting": "Gefundene Kunden aktualisieren",
+    "updateExistingHint": "Aus: Vorhandene Kunden bleiben unverändert und die Zeile wird übersprungen.",
+    "createCustomers": "Fehlende Kunden anlegen",
+    "createCustomersHint": "Aus: Zeilen mit nicht gefundenem Kunden sind Fehler.",
+    "consentDefault": "Marketing-Einwilligung, wenn die Spalte fehlt",
+    "consentDefaultHint": "Aktivieren Sie dies nur, wenn die Einwilligung im bisherigen Programm dokumentiert ist."
+  },
+  "report": {
+    "rows": "Zeilen",
+    "invalid": "Mit Fehlern",
+    "toCreate": "Zu erstellen",
+    "toUpdateSkip": "Zu aktualisieren / überspringen",
+    "fixAndRetry": "Korrigieren Sie die fehlerhaften Zeilen in der Datei und laden Sie sie erneut hoch: Der Import wird nur ohne Fehler übernommen.",
+    "errors": "Fehler",
+    "warnings": "Hinweise",
+    "row": "Zeile",
+    "column": "Spalte",
+    "problem": "Problem"
+  },
+  "codes": {
+    "required": "Pflichtangabe fehlt.",
+    "invalid_email": "Ungültige E-Mail.",
+    "invalid_date": "Ungültiges Datum.",
+    "unknown_spot": "Unbekannter Platz.",
+    "spot_unavailable": "Platz im Zeitraum bereits belegt.",
+    "duplicate_in_file": "Zeile in der Datei wiederholt."
+  },
+  "applied": {
+    "title": "Import übernommen",
+    "description": "{{created}} erstellt, {{updated}} aktualisiert, {{skipped}} übersprungen."
+  },
+  "failed": {
+    "title": "Import abgelehnt",
+    "description": "Es wurden keine Daten geändert. Prüfen Sie die Fehler, korrigieren Sie die Datei oder die Optionen und wiederholen Sie die Vorschau."
+  },
+  "history": {
+    "title": "Importverlauf",
+    "file": "Datei",
+    "status": "Status",
+    "result": "Ergebnis",
+    "when": "Wann",
+    "empty": "Keine Importe.",
+    "appliedResult": "{{created}} erstellt, {{updated}} aktualisiert, {{skipped}} übersprungen",
+    "previewResult": "{{rows}} Zeilen, {{invalid}} mit Fehlern",
+    "openAria": "Import {{file}} öffnen"
+  }
+}

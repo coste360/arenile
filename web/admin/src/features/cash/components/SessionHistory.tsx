@@ -22,8 +22,9 @@ import { normalizeTotals, sumTotals } from '../lib/totals';
 import type { CashContext } from '../useCashContext';
 import { DifferenceAmount } from './Difference';
 import { MovementsTable, PaymentsTable } from './SessionView';
+import { ZPdfButton } from './ZPdfButton';
 import { ZReport } from './ZReport';
-import { registerLabel } from '../lib/register';
+import { sessionRegisterLabel } from '../lib/register';
 
 /** Past and current sessions; a row opens the detail with its Z summary. */
 export function SessionHistory({
@@ -72,7 +73,7 @@ export function SessionHistory({
       accessorKey: 'register',
       meta: { label: t('history.register') },
       header: t('history.register'),
-      cell: ({ row }) => registerLabel(t, row.original.register),
+      cell: ({ row }) => sessionRegisterLabel(t, row.original),
     },
     {
       accessorKey: 'status',
@@ -178,11 +179,12 @@ function SessionDetailSheet({
           <QueryState isLoading={detail.isPending && !!sessionId} error={detail.error} />
           {d && (
             <>
-              <div className="flex justify-end">
+              <div className="flex flex-wrap justify-end gap-2">
                 <Button variant="outline" onClick={() => onPrint(d)}>
                   <PrinterIcon aria-hidden="true" />
                   {t('actions.printZ')}
                 </Button>
+                <ZPdfButton establishmentId={ctx.establishmentId} sessionId={d.session.id} />
               </div>
               <ZReport detail={d} ctx={ctx} />
               <div className="space-y-2">

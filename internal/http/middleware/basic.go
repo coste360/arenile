@@ -203,6 +203,9 @@ func AccessLog(log *slog.Logger) Middleware {
 			switch {
 			case route == "/healthz" || route == "/readyz":
 				level = slog.LevelDebug
+			case status == problem.StatusClientClosedRequest:
+				// Client went away (problem.Error): not a server error.
+				level = slog.LevelDebug
 			case status >= 500:
 				level = slog.LevelError
 			}

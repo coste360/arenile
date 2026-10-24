@@ -13,6 +13,7 @@
     "monthLabel": "Mois",
     "year": "Année",
     "downloadCsv": "Télécharger CSV",
+    "downloadXlsx": "Télécharger Excel",
     "downloadJson": "Télécharger JSON",
     "disclaimer": "Montants TTC, ventilés par taux à partir de l'instantané du prix ; les remboursements sont négatifs. La conformité fiscale de la configuration reste sous la responsabilité de l'exploitant et de son conseiller.",
     "empty": "Aucune recette sur la période sélectionnée.",
@@ -26,7 +27,10 @@
     "byMethod": "Par moyen de paiement",
     "count": "Opérations",
     "detail": "Détail",
-    "periodColumn": "Période"
+    "periodColumn": "Période",
+    "register": "Caisse",
+    "allRegisters": "Toutes les caisses",
+    "registerNote": "Seulement les encaissements enregistrés dans les sessions de cette caisse : les paiements en ligne sans session sont dans le total de toutes les caisses."
   },
   "method": {
     "cash": "Espèces",
@@ -64,7 +68,8 @@
     "floatHint": "Espèces dans le tiroir à l'ouverture.",
     "submit": "Ouvrir la session",
     "opened": "Session de caisse ouverte",
-    "noneReadOnly": "Aucune session de caisse ouverte."
+    "noneReadOnly": "Aucune session de caisse ouverte.",
+    "titleRegister": "Ouvrir {{name}}"
   },
   "current": {
     "badge": "{{register}} ouverte depuis le {{time}}",
@@ -176,9 +181,58 @@
     "amountPositive": "Le montant doit être supérieur à zéro.",
     "reasonRequired": "Indiquez un motif.",
     "countedRequired": "Saisissez les espèces comptées.",
-    "tooLong": "Texte trop long."
+    "tooLong": "Texte trop long.",
+    "nameRequired": "Indiquez le nom de la caisse.",
+    "codeFormat": "Minuscules, chiffres, - et _ (40 au maximum).",
+    "sortOrder": "Un nombre entier entre 0 et 10000."
   },
   "registers": {
     "main": "Caisse principale"
+  },
+  "registersPage": {
+    "title": "Caisses",
+    "description": "Caisses de l'établissement : une session ouverte par caisse, clôture Z et rapports par caisse.",
+    "fields": {
+      "name": "Nom",
+      "code": "Code",
+      "status": "État",
+      "sortOrder": "Ordre",
+      "active": "Active"
+    },
+    "default": "Par défaut",
+    "inactive": "Désactivée",
+    "sessionOpen": "Session ouverte",
+    "sessionClosed": "Fermée",
+    "actions": "Actions",
+    "editAria": "Modifier {{name}}",
+    "deleteAria": "Supprimer {{name}}",
+    "deleteConfirm": "Supprimer la caisse « {{name}} » ? Seule une caisse jamais utilisée peut être supprimée.",
+    "deleted": "Caisse supprimée",
+    "deleteInUse": "La caisse a des sessions dans l'historique : vous pouvez seulement la désactiver.",
+    "add": "Nouvelle caisse",
+    "readOnly": "Lecture seule : seuls le titulaire et le responsable gèrent les caisses.",
+    "empty": "Aucune caisse.",
+    "editTitle": "Modifier la caisse",
+    "formDescription": "Chaque caisse a sa session, son fond de caisse et sa clôture Z.",
+    "saved": "Caisse enregistrée",
+    "deactivateOpen": "Fermez d'abord la session ouverte de cette caisse.",
+    "codeFixed": "Le code ne peut pas être modifié.",
+    "codeHint": "Facultatif : déduit du nom si vide.",
+    "defaultAlwaysActive": "La caisse par défaut reste toujours active."
+  },
+  "zpdf": {
+    "group": "Clôture Z en PDF",
+    "button": "PDF clôture Z",
+    "more": "Autres formats de la clôture Z",
+    "a4": "PDF A4",
+    "receipt": "Ticket 80 mm",
+    "openTab": "Ouvrir dans un nouvel onglet",
+    "failed": "Impossible de préparer l'impression de la clôture Z."
+  },
+  "registerPicker": {
+    "label": "Caisse",
+    "open": "{{name}} · ouverte",
+    "closed": "{{name}} · fermée",
+    "manage": "Gérer les caisses"
   }
 }

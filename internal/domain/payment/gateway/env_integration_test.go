@@ -38,7 +38,14 @@ import (
 type settings struct {
 	manual   atomic.Bool
 	embedded bool
+	// twoModes adds a live configuration (liveWebhookSecret) next to the
+	// test one: real bookings pay through it, test bookings through the
+	// test row (spec 15.4).
+	twoModes bool
 }
+
+// liveWebhookSecret signs the deliveries of the live configuration.
+const liveWebhookSecret = "whsec_arenile_live_secret" //nolint:gosec // fake test credential
 
 func (s *settings) cfg(es store.EstablishmentScope) *online.ProviderConfig {
 	return &online.ProviderConfig{
@@ -48,16 +55,32 @@ func (s *settings) cfg(es store.EstablishmentScope) *online.ProviderConfig {
 	}
 }
 
-func (s *settings) ActiveProvider(_ context.Context, _ bun.IDB, es store.EstablishmentScope) (*online.ProviderConfig, error) {
+func (s *settings) live(es store.EstablishmentScope) *online.ProviderConfig {
+	c := s.cfg(es)
+	c.Mode = store.ProviderModeLive
+	c.Credentials = ext.Credentials{stripe.CredSecretKey: stripetest.SecretKey, stripe.CredWebhookSecret: liveWebhookSecret}
+	return c
+}
+
+func (s *settings) ActiveProvider(_ context.Context, _ bun.IDB, es store.EstablishmentScope, test bool) (*online.ProviderConfig, error) {
 	if s.manual.Load() {
 		return &online.ProviderConfig{EstablishmentID: es.ID(), Code: payment.ProviderManual, Mode: store.ProviderModeLive}, nil
+	}
+	if s.twoModes && !test {
+		return s.live(es), nil
 	}
 	return s.cfg(es), nil
 }
 
-func (s *settings) ProviderConfig(_ context.Context, _ bun.IDB, es store.EstablishmentScope, provider string) (*online.ProviderConfig, error) {
+func (s *settings) ProviderConfig(_ context.Context, _ bun.IDB, es store.EstablishmentScope, provider, mode string) (*online.ProviderConfig, error) {
 	if provider != stripe.Code {
 		return nil, store.ErrNotFound
+	}
+	if mode == store.ProviderModeLive {
+		if !s.twoModes {
+			return nil, store.ErrNotFound
+		}
+		return s.live(es), nil
 	}
 	return s.cfg(es), nil
 }
@@ -209,8 +232,27 @@ func (e *env) sessionOf(res *gateway.StartResult) string { return e.intent(res.I
 // deliver signs payload at the current clock and runs it through the
 // gateway for establishment estID.
 func (e *env) deliverTo(estID string, payload []byte) (*gateway.WebhookOutcome, error) {
-	r := stripetest.WebhookRequest("/webhooks/payments/stripe/"+estID, payload, e.f.Clock.Now(), stripetest.WebhookSecret)
+	return e.deliverSigned(estID, payload, stripetest.WebhookSecret)
+}
+
+// deliverSigned signs payload with secret (the live or the test webhook
+// secret) and runs it through the gateway for establishment estID.
+func (e *env) deliverSigned(estID string, payload []byte, secret string) (*gateway.WebhookOutcome, error) {
+	r := stripetest.WebhookRequest("/webhooks/payments/stripe/"+estID, payload, e.f.Clock.Now(), secret)
 	return e.gw.HandleWebhook(e.ctx, stripe.Code, estID, r)
+}
+
+// setTestMode switches the test mode of the lido (spec 15.4) through the store.
+func (e *env) setTestMode(on bool) {
+	e.t.Helper()
+	row, err := store.EnsureTestModeSettings(e.ctx, e.db, e.es, e.f.Clock.Now())
+	if err != nil {
+		e.t.Fatal(err)
+	}
+	row.Enabled, row.UpdatedAt = on, e.f.Clock.Now()
+	if ok, err := store.UpdateTestModeSettingsVersioned(e.ctx, e.db, e.es, row, row.Version); err != nil || !ok {
+		e.t.Fatalf("switch test mode: %v %v", ok, err)
+	}
 }
 
 func (e *env) deliver(payload []byte) (*gateway.WebhookOutcome, error) {

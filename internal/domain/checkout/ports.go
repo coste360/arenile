@@ -82,3 +82,10 @@ type SeasonPasses interface {
 	// PreviewReleaseAsCustomer runs the release and rolls it back.
 	PreviewReleaseAsCustomer(ctx context.Context, actor audit.Actor, es store.EstablishmentScope, passID string, in pass.ReleaseInput) ([]store.SeasonRelease, error)
 }
+
+// RefundSender sends guaranteed refund requests right after the
+// cancellation committed (best effort: the refund job retries them with
+// backoff until the provider confirms). Implemented by *refund.Service.
+type RefundSender interface {
+	SendNow(ctx context.Context, es store.EstablishmentScope, ids []string)
+}

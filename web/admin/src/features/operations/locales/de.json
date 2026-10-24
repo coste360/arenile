@@ -115,6 +115,8 @@
     "collect": "Kassieren",
     "openDetail": "Details öffnen",
     "cancel": "Abbrechen",
+    "block": "Platz sperren",
+    "unblock": "Entsperren",
     "dailySale": "Tagesticket verkaufen"
   },
   "release": {
@@ -181,5 +183,44 @@
     "anonymous": "Anonymer Gast",
     "anonymousShort": "Anonym",
     "aria": "belegt von {{name}}"
+  },
+  "block": {
+    "titleOne": "Platz {{label}} sperren",
+    "titleMany_one": "{{count}} Platz sperren",
+    "titleMany_other": "{{count}} Plätze sperren",
+    "description": "Gesperrte Plätze sind im gewählten Zeitraum und Zeitfenster nicht buchbar.",
+    "spots": "Plätze",
+    "period": "Zeitraum",
+    "slots": "Zeitfenster",
+    "reason": "Grund",
+    "optional": "(optional)",
+    "reasonPlaceholder": "Z. B. Wartung des Schirms",
+    "confirm": "Sperren",
+    "doneOne": "Platz {{label}} gesperrt.",
+    "doneMany_one": "{{count}} Platz gesperrt.",
+    "doneMany_other": "{{count}} Plätze gesperrt.",
+    "removeTitle": "Platz {{label}} entsperren?",
+    "removeDescription": "Die Sperre wird für den gesamten Zeitraum aufgehoben: Der Platz ist wieder buchbar.",
+    "removed": "Platz {{label}} entsperrt.",
+    "errors": {
+      "period": "Wählen Sie den Zeitraum.",
+      "order": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+      "reason": "Höchstens 200 Zeichen."
+    }
+  },
+  "select": {
+    "toggle": "Auswählen",
+    "toggleAria": "Mehrere Plätze auswählen",
+    "none": "Kein Platz ausgewählt",
+    "count_one": "{{count}} Platz ausgewählt",
+    "count_other": "{{count}} Plätze ausgewählt",
+    "hint": "Tippen Sie auf freie Plätze oder ziehen Sie ein Rechteck auf der Karte.",
+    "hintKeys": "Für einen Bereich halten Sie gedrückt:",
+    "groupBooking": "Gruppenbuchung",
+    "block": "Sperren",
+    "clear": "Leeren",
+    "exit": "Auswahl beenden",
+    "groupTitle_one": "Gruppenbuchung ({{count}} Platz)",
+    "groupTitle_other": "Gruppenbuchung ({{count}} Plätze)"
   }
 }

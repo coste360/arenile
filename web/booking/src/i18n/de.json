@@ -203,7 +203,6 @@
     },
     "customer": "Gebucht von",
     "linkExpires": "Link gültig bis {{date}}",
-
     "renewalBadge": "Verlängerungsangebot",
     "payBalance": "Restbetrag bezahlen",
     "payBalanceAmount": "Restbetrag von {{amount}} bezahlen",
@@ -254,7 +253,19 @@
     "requestLinkSent": "Wenn die Daten zu einer Buchung passen, erhalten Sie einen neuen Link per E-Mail.",
     "linkInvalid": "Der Link ist ungültig oder abgelaufen.",
     "noActions": "Für Änderungen wenden Sie sich bitte direkt an das Strandbad.",
-    "back": "Zurück zur Buchung"
+    "back": "Zurück zur Buchung",
+    "refund": {
+      "title": "Erstattung von {{amount}}",
+      "requestedAt": "Angefordert am {{date}}",
+      "completedAt": "Ausgeführt am {{date}}",
+      "status": {
+        "pending": "Erstattung läuft: Wir senden sie an Ihre Zahlungsmethode.",
+        "processing": "Erstattung gestartet: Sie erreicht Ihre Zahlungsmethode in wenigen Tagen.",
+        "succeeded": "Erstattung auf Ihre Zahlungsmethode ausgeführt.",
+        "failed": "Die Erstattung muss geprüft werden: Der Betrieb wurde benachrichtigt und meldet sich bei Bedarf bei Ihnen.",
+        "cancelled": "Die Erstattung wurde direkt vom Betrieb abgewickelt."
+      }
+    }
   },
   "errors": {
     "hold_expired": "Die Zeit zum Abschließen der Buchung ist abgelaufen: Bitte wählen Sie erneut.",

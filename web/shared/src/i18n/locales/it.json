@@ -31,7 +31,11 @@
       "invalidTransition": "Operazione non ammessa nello stato attuale della prenotazione.",
       "cashSessionClosed": "La sessione di cassa è chiusa: aprine una per registrare incassi in contanti.",
       "cashSessionAlreadyOpen": "C'è già una sessione di cassa aperta.",
-      "policyViolation": "La richiesta non rispetta le regole di prenotazione."
+      "policyViolation": "La richiesta non rispetta le regole di prenotazione.",
+      "testModePreviewRequired": "Le prenotazioni online sono momentaneamente sospese: lo stabilimento sta provando il sistema. Riprova più tardi o contatta lo stabilimento.",
+      "importInvalid": "Il file non è valido: controlla il rapporto di validazione.",
+      "importAlreadyApplied": "Questo file è già stato importato: le righe sono già presenti.",
+      "refundInProgress": "C'è un rimborso automatico in corso per questa prenotazione: attendi che si concluda."
     },
     "languages": {
       "it": "Italiano",
@@ -156,6 +160,9 @@
       "apiKeys": "Chiavi API",
       "webhooks": "Webhook",
       "seasonRollover": "Nuova stagione",
+      "cashRegisters": "Casse",
+      "imports": "Importa dati",
+      "testMode": "Modalità prova",
       "entryTickets": "Biglietti d'ingresso"
     },
     "operations": "Operatività",
@@ -241,7 +248,8 @@
       "pickHint": "Scegli il primo e l’ultimo giorno: per una sola giornata tocca due volte lo stesso giorno."
     },
     "season": "Stagione {{year}}: dal {{from}} al {{to}}",
-    "nextStepsSoon": "Postazione, pacchetto e pagamento online arrivano a breve: per ora contatta lo stabilimento."
+    "nextStepsSoon": "Postazione, pacchetto e pagamento online arrivano a breve: per ora contatta lo stabilimento.",
+    "testMode": "Modalità prova: questa prenotazione è di prova, non è valida e nessun pagamento reale viene addebitato."
   },
   "ui": {
     "close": "Chiudi",

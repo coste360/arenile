@@ -1,0 +1,98 @@
+{
+  "page": {
+    "title": "Importer des données",
+    "description": "Importez clients et abonnements depuis un fichier CSV exporté d'un autre logiciel : aperçu, rapport de validation et application tout ou rien."
+  },
+  "kind": {
+    "customers": "Clients",
+    "season_passes": "Abonnements saisonniers"
+  },
+  "status": {
+    "uploaded": "Chargé",
+    "validated": "Vérifié",
+    "applying": "En cours d'application",
+    "applied": "Appliqué",
+    "failed": "Refusé",
+    "discarded": "Abandonné"
+  },
+  "upload": {
+    "title": "Nouvelle importation",
+    "description": "Chargez un fichier CSV (UTF-8 ou Windows, séparateur ; ou ,), au maximum 5 Mo et 20 000 lignes. Le fichier ne modifie aucune donnée avant votre confirmation.",
+    "kind": "Contenu du fichier",
+    "columns": {
+      "customers": "Colonnes reconnues : cognome (nom, obligatoire), nome, email, telefono, lingua, note, etichette, consenso_marketing, data_consenso, versione_informativa. Les noms anglais et ceux des logiciels les plus courants sont aussi acceptés.",
+      "season_passes": "Les colonnes clients plus posto (obligatoire, le libellé de l'emplacement), pacchetto, dal, al, fascia. Chaque ligne crée un abonnement sur la saison choisie, au prix de la grille."
+    },
+    "template": "Télécharger le modèle CSV",
+    "file": "Fichier CSV",
+    "fileHint": "Le consentement marketing n'est jamais présumé : sans la colonne, le réglage de l'aperçu s'applique.",
+    "submit": "Charger et vérifier"
+  },
+  "review": {
+    "title": "Fichier « {{file}} »",
+    "noName": "sans nom",
+    "preview": "Aperçu",
+    "previewAgain": "Refaire l'aperçu",
+    "previewHint": "Choisissez les options et cliquez sur « Aperçu » : aucune donnée n'est modifiée.",
+    "apply": "Appliquer",
+    "applyTitle": "Appliquer l'importation ?",
+    "applyDescription": "{{create}} éléments seront créés, {{update}} mis à jour et {{skip}} ignorés. Tout ou rien : à la première erreur, rien ne change.",
+    "discard": "Abandonner",
+    "discardTitle": "Abandonner l'importation ?",
+    "discardDescription": "Le fichier chargé est supprimé. Aucune donnée n'a été modifiée."
+  },
+  "options": {
+    "matchBy": "Reconnaître les clients existants par",
+    "matchEmail": "E-mail",
+    "matchPhone": "Téléphone",
+    "season": "Saison",
+    "seasonPlaceholder": "Choisissez la saison",
+    "pack": "Forfait par défaut",
+    "packPlaceholder": "Depuis le fichier (colonne pacchetto)",
+    "updateExisting": "Mettre à jour les clients trouvés",
+    "updateExistingHint": "Désactivé : les clients existants restent inchangés et la ligne est ignorée.",
+    "createCustomers": "Créer les clients manquants",
+    "createCustomersHint": "Désactivé : les lignes dont le client est introuvable sont des erreurs.",
+    "consentDefault": "Consentement marketing si la colonne manque",
+    "consentDefaultHint": "Activez-le seulement si le consentement est documenté dans le logiciel d'origine."
+  },
+  "report": {
+    "rows": "Lignes",
+    "invalid": "Avec erreurs",
+    "toCreate": "À créer",
+    "toUpdateSkip": "À mettre à jour / ignorer",
+    "fixAndRetry": "Corrigez les lignes en erreur dans le fichier et chargez-le de nouveau : l'importation ne s'applique que sans erreur.",
+    "errors": "Erreurs",
+    "warnings": "Avertissements",
+    "row": "Ligne",
+    "column": "Colonne",
+    "problem": "Problème"
+  },
+  "codes": {
+    "required": "Donnée obligatoire manquante.",
+    "invalid_email": "E-mail non valide.",
+    "invalid_date": "Date non valide.",
+    "unknown_spot": "Emplacement inconnu.",
+    "spot_unavailable": "Emplacement déjà occupé sur la période.",
+    "duplicate_in_file": "Ligne répétée dans le fichier."
+  },
+  "applied": {
+    "title": "Importation appliquée",
+    "description": "{{created}} créés, {{updated}} mis à jour, {{skipped}} ignorés."
+  },
+  "failed": {
+    "title": "Importation refusée",
+    "description": "Aucune donnée n'a été modifiée. Vérifiez les erreurs, corrigez le fichier ou les options et refaites l'aperçu."
+  },
+  "history": {
+    "title": "Historique des importations",
+    "file": "Fichier",
+    "status": "État",
+    "result": "Résultat",
+    "when": "Quand",
+    "empty": "Aucune importation.",
+    "appliedResult": "{{created}} créés, {{updated}} mis à jour, {{skipped}} ignorés",
+    "previewResult": "{{rows}} lignes, {{invalid}} avec erreurs",
+    "openAria": "Ouvrir l'importation {{file}}"
+  }
+}

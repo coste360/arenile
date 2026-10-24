@@ -68,7 +68,9 @@ log** and the matching event: the booking's **History** is always complete.
 </Steps>
 
 If the request does not comply with the [policies](/en/gestore/policy/), the preview explains why. You can still go
-ahead with **Book anyway (overrides the booking rules, recorded in the activity log)**.
+ahead with **Book anyway (overrides the booking rules, recorded in the activity log)**. Forcing does not skip
+approval: when the policy or the pack requires it, the booking is created **Awaiting approval** (even when paid
+at the desk right away) and only the owner or the manager can approve it.
 
 <Aside type="tip">
   If taking the payment fails (for example the cash desk is closed and the method is cash), the booking is still
@@ -92,7 +94,7 @@ At the top: **Total**, **Paid**, **Balance due**, **Deposit due** and, if held, 
 | Action | When | Effect |
 |---|---|---|
 | **Confirm** | Held booking | Manual confirmation: the spots stay booked |
-| **Approve** / **Reject** | Awaiting approval | Confirmed, or spots released and customer notified |
+| **Approve** / **Reject** | Awaiting approval | Confirmed (owner and manager only), or spots released and customer notified |
 | **Check in** | Only on the days of the stay | The customer is marked as present |
 | **No-show** | From the first day of the stay | The spots of future days are released |
 | **Change dates** | Confirmed | New dates with a new price |
@@ -122,6 +124,18 @@ desk up to the required deposit is confirmed in the same operation.
 **Reason**. For a payment made online with Stripe you can refund **through Stripe**: the money goes back to the
 customer's card and the refund stays **Pending** until Stripe confirms it (see
 [Online payments](/en/gestore/pagamenti-online/#refunds)).
+
+### Automatic refunds
+
+When a booking paid online is cancelled (by the customer with the manage link or from the panel) and the terms
+grant a refund to the card, Arenile **reserves the refund in the same operation as the cancellation**: it cannot be
+lost, even if the payment provider does not answer at that moment, and it is never executed twice.
+
+The **Automatic refunds** section of the detail shows every refund with its status: **Waiting to be sent**,
+**Waiting for confirmation** (sent, waiting for the provider to confirm), **Refunded**, **Failed**. Arenile retries
+by itself with growing waits (from 1 minute to 12 hours, up to `ARENILE_REFUND_MAX_ATTEMPTS` attempts, default 10).
+When the attempts run out the refund becomes **Failed**, the owner gets a [notification](/en/gestore/notifiche/)
+and **Retry** queues it again. The customer sees the refund status in the manage link.
 
 ### Cancelling
 

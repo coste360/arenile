@@ -199,6 +199,8 @@ export function describeProblem(
       };
     case 'hold_expired':
       return { title: t('bookings:problem.holdExpired'), details: [], reload: false };
+    case 'refund_in_progress':
+      return { title: t('bookings:problem.refundInProgress'), details: [], reload: true };
     case 'invalid_transition': {
       const current = error instanceof BookingProblem ? error.currentStatus : undefined;
       return {

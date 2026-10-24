@@ -208,7 +208,8 @@
       "spot": "Emplacement",
       "pool": "Quantité",
       "zone": "Zone"
-    }
+    },
+    "refundInProgress": "Un remboursement automatique est en cours pour cette réservation : attendez qu’il se termine."
   },
   "actions": {
     "confirm": "Confirmer",
@@ -380,13 +381,48 @@
         "modified": "Modifiée",
         "moved": "Déplacée",
         "note_added": "Note ajoutée",
-        "completed": "Terminée"
+        "completed": "Terminée",
+        "refund_reserved": "Remboursement réservé",
+        "refund_succeeded": "Remboursement confirmé par le prestataire",
+        "refund_failed": "Remboursement échoué",
+        "refund_retried": "Remboursement relancé"
       },
       "payment": {
         "recorded": "Paiement enregistré",
         "succeeded": "Paiement enregistré",
         "refunded": "Remboursement enregistré"
       }
+    }
+  },
+  "refunds": {
+    "title": "Remboursements automatiques",
+    "description": "Remboursements sur le paiement en ligne réservés avec l’annulation et envoyés au prestataire de paiement jusqu’à sa confirmation.",
+    "requested": "Demandé",
+    "retry": "Réessayer",
+    "retried": "Remboursement de {{amount}} renvoyé.",
+    "retriedDone": "Remboursement de {{amount}} confirmé.",
+    "completedAt": "Confirmé le {{at}}",
+    "attempts_one": "{{count}} tentative",
+    "attempts_other": "{{count}} tentatives",
+    "nextAttempt": "prochaine tentative {{at}}",
+    "statuses": {
+      "pending": "En attente d’envoi",
+      "processing": "En attente de confirmation",
+      "succeeded": "Remboursé",
+      "failed": "Échoué",
+      "cancelled": "Annulé"
+    },
+    "errors": {
+      "provider_unavailable": "prestataire de paiement injoignable",
+      "provider_refused": "refusé par le prestataire de paiement",
+      "provider_not_configured": "prestataire de paiement non configuré",
+      "refund_not_supported": "le prestataire n’autorise pas les remboursements",
+      "not_online_payment": "paiement non en ligne",
+      "exceeds_refundable": "montant supérieur au remboursable",
+      "idempotency_mismatch": "demande incohérente",
+      "payment_missing": "paiement introuvable",
+      "interrupted": "envoi interrompu",
+      "other": "erreur inattendue"
     }
   }
 }

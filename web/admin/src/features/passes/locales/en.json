@@ -86,5 +86,33 @@
     "revokeTitle": "Revoke the release of {{date}}?",
     "revokeText": "The spot goes back to the pass holder. Not possible if the day has already been resold.",
     "revokeAria": "Revoke the release of {{date}} ({{slot}})"
+  },
+  "override": {
+    "title": "Price",
+    "descriptionEngine": "Total computed from the price list (season formula).",
+    "descriptionManual": "Price set by the manager instead of the price list.",
+    "manual": "Manual price",
+    "current": "Total",
+    "engine": "Price list amount",
+    "reason": "Reason",
+    "reasonPlaceholder": "E.g. agreement with a long-standing customer",
+    "setAt": "Changed on",
+    "set": "Set manual price",
+    "edit": "Change price",
+    "clear": "Back to price list",
+    "clearTitle": "Go back to the price list?",
+    "clearDescription": "The total is recomputed by the pricing engine. The change stays in the activity log.",
+    "dialogTitle": "Manual price",
+    "dialogDescription": "Replaces the total computed from the price list. The reason and the previous price stay in the activity log.",
+    "amount": "New total",
+    "amountHint": "Total of the pass, extras included. Payments already recorded stay.",
+    "submit": "Save price",
+    "saved": "Price updated.",
+    "cleared": "Price list amount restored.",
+    "onlyManagers": "Only the owner and the manager can change the price.",
+    "validation": {
+      "amount": "Enter an amount between €0 and €1,000,000.",
+      "reason": "Write the reason (3 to 500 characters)."
+    }
   }
 }

@@ -55,6 +55,10 @@ func fixtureContent(t *testing.T, tpl string, cat catalog) Content {
 	if tpl == TemplateTest {
 		return Content{Locale: cat.locale, Manager: true, Contacts: establishmentContacts(d.Est), Vars: map[string]string{"establishment.name": d.Est.Name}}
 	}
+	if panelTemplates[tpl] {
+		vars := map[string]string{"establishment.name": d.Est.Name, "webhook.host": "hooks.example.com", "webhook.failures": "20"}
+		return Content{Locale: cat.locale, Manager: true, Contacts: establishmentContacts(d.Est), Vars: vars}
+	}
 	expires := time.Date(2027, 8, 12, 22, 0, 0, 0, time.UTC)
 	o := contentOptions{Manager: managerTemplates[tpl], Vars: map[string]string{
 		"refund.amount": formatMoney(15000, "EUR", cat.locale), "payment.amount": formatMoney(37000, "EUR", cat.locale),
@@ -265,6 +269,9 @@ func TestTemplates_ParityAndVariables(t *testing.T) {
 		known[v] = true
 	}
 	for _, v := range RenewalVars {
+		known[v] = true
+	}
+	for _, v := range PanelVars {
 		known[v] = true
 	}
 	partials := map[string]bool{"summary": true, "qr": true, "manage_button": true, "policy": true, "ics_note": true}

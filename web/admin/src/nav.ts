@@ -1,5 +1,8 @@
 import {
   BanknoteIcon,
+  CalculatorIcon,
+  FlaskConicalIcon,
+  UploadIcon,
   BarChart3Icon,
   BuildingIcon,
   CalendarDaysIcon,
@@ -221,6 +224,22 @@ export const CONFIG_NAV_ITEMS = [
     icon: BanknoteIcon,
   },
   { to: '/e/$establishmentId/config/email', labelKey: 'nav.config.email', icon: MailIcon },
+  // Deferred features (ADR 0019): cash registers, test mode, CSV imports.
+  {
+    to: '/e/$establishmentId/config/cash-registers',
+    labelKey: 'nav.config.cashRegisters',
+    icon: CalculatorIcon,
+  },
+  {
+    to: '/e/$establishmentId/config/test-mode',
+    labelKey: 'nav.config.testMode',
+    icon: FlaskConicalIcon,
+  },
+  {
+    to: '/e/$establishmentId/config/import',
+    labelKey: 'nav.config.imports',
+    icon: UploadIcon,
+  },
   {
     to: '/e/$establishmentId/config/team',
     labelKey: 'nav.config.team',

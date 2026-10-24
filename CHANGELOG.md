@@ -22,12 +22,12 @@ offline).
   giorno con upsert atomico), `tickets` con `UNIQUE (establishment_id, ticket_date, ticket_number)`,
   `entry_ticket_types`, `daily_sale_settings`; voci di menu Vendita rapida, Ticket del giorno e Biglietti
   d'ingresso.
-- **Assegnazione dei biglietti da assegnare** (ADR 0020, INV-82): lista "Da assegnare" del giorno, assegnazione a
+- **Assegnazione dei biglietti da assegnare** (ADR 0020, INV-83): lista "Da assegnare" del giorno, assegnazione a
   una postazione libera della zona e spostamento tramite la `Move` della prenotazione (atomici, 409
   `assignment_conflict` se la postazione è stata presa), assegnazione automatica in ordine di numero con il motore di
   spec 7.5; la vista operativa del giorno espone il biglietto (`ticket`: numero, etichetta "#037", da assegnare) e
   l'etichetta dell'occupante diventa il nome facoltativo o il numero.
-- **Vendita giornaliera e biglietti** (ADR 0020, INV-80, INV-81, INV-83): vendita rapida su postazione o zona con
+- **Vendita giornaliera e biglietti** (ADR 0020, INV-81, INV-82, INV-84): vendita rapida su postazione o zona con
   prezzo dal motore, pagamento contanti/carta col driver manuale (contanti solo con cassa aperta, resto calcolato) e
   cliente "al banco" con nome facoltativo; numero progressivo del giorno unico su tutte le casse; vendita per zona che
   consuma subito la capacità; Ticket del giorno con riepilogo per metodo e aliquota ed esportazione CSV; dati di
@@ -46,6 +46,46 @@ offline).
   accessi" (it, en) con screenshot; cassa, clienti, prenotazioni e pagina pubblica aggiornate per il telefono
   facoltativo. Test end-to-end della vendita su postazione e per zona, assegnazione, annullamento, ingressi e varco,
   checkout pubblico e nuovo cliente senza telefono.
+- Contratto delle funzioni rinviate (ADR 0019): modalità prova (`/test-mode`, anteprima, eliminazione in blocco),
+  rimborsi garantiti (`/refund-requests`), casse multiple (`/cash-registers`, `register_id` sulle sessioni) e
+  chiusura Z stampabile (`/cash-sessions/{id}/z-report`), prezzo manuale degli abbonamenti
+  (`/season-passes/{id}/price-override`), notifiche del pannello (`/notifications`), storico dei tentativi webhook,
+  esportazione elenchi CSV/XLSX (`/exports/{list}`, `format=xlsx` su report e corrispettivi), importazione CSV di
+  clienti e abbonamenti (`/imports`). Migrazione 00009 (entrambi i dialetti): `bookings.test`, `payments.test`,
+  `outbox_events.test`, `test_mode_settings`, `refund_requests`, `cash_registers` con "Cassa principale" per ogni
+  stabilimento, `webhook_delivery_attempts`, `import_jobs`, `admin_notifications`. Le singole funzioni sono
+  descritte nelle voci che seguono.
+- Mappa operativa: selezione multipla delle postazioni (pulsante "Seleziona", Maiusc/Ctrl-clic, rettangolo
+  trascinato, anche al tocco) con conteggio e due azioni: **prenotazione di gruppo** (una prenotazione con una riga per
+  postazione, prezzo dal motore, atomica) e **blocco** con motivo, periodo e fascia; "Blocca postazione" e "Sblocca"
+  anche dalla scheda della postazione (ADR 0019 C).
+- **Modalità prova** (spec 15.4, ADR 0019 A): Configurazione → Modalità prova con interruttore, avviso fisso in
+  tutto il pannello, link di anteprima firmato (2 ore) per prenotare in prova dalla pagina pubblica (chiusa ai
+  clienti reali salvo opzione esplicita), Stripe con la configurazione di test quando presente ed eliminazione in
+  blocco delle prenotazioni di prova (un'unica transazione, audit conservato). Le righe di prova sono escluse da
+  report, KPI, corrispettivi, chiusura Z, esportazioni e webhook in uscita.
+- **Rimborso garantito** alla cancellazione (link di gestione del cliente o pannello, ADR 0019 B): il rimborso è
+  riservato nella stessa transazione della cancellazione e inviato da un job con chiave di idempotenza fissa e
+  attese crescenti (1 minuto → 12 ore, `ARENILE_REFUND_MAX_ATTEMPTS`, default 10) fino alla conferma del provider;
+  mai perso, mai doppio. Sezione "Rimborsi automatici" nel dettaglio della prenotazione con **Riprova**, stato del
+  rimborso nel link di gestione del cliente, notifica al titolare quando i tentativi finiscono.
+- **Casse multiple** (ADR 0019 D): Configurazione → Casse (crea, modifica, disattiva, elimina se mai usata), scelta
+  della cassa all'apertura, una sola sessione aperta per cassa, corrispettivi filtrabili per cassa. **Chiusura Z in
+  PDF**: documento HTML pronto per la stampa generato dal server (A4 o scontrino 80 mm) con intestazione dello
+  stabilimento e logo Arenile mono, salvabile come PDF dalla stampa del browser (nessuna libreria PDF).
+- **Prezzo manuale degli abbonamenti** (ADR 0019 E): sezione "Prezzo" nella scheda dell'abbonamento, solo titolare
+  e gestore, motivo obbligatorio, audit con prima/dopo, `price_snapshot` invariato; "Torna al listino".
+- **Notifiche del pannello** (ADR 0019 F): campanella nell'intestazione con conteggio da leggere; un endpoint
+  webhook disattivato in automatico avvisa il titolare nel pannello e via email.
+- **Storico completo dei tentativi webhook**: ogni tentativo (codice HTTP, durata, errore) nel dettaglio della
+  consegna, conservato `ARENILE_WEBHOOK_ATTEMPT_RETENTION_DAYS` giorni (default 30).
+- **Esportazioni Excel**: "Esporta Excel" su ogni report, "Scarica Excel" nei corrispettivi e "Esporta elenchi"
+  (clienti, prenotazioni, abbonamenti, incassi) in XLSX o CSV, scritti in streaming con le stesse colonne dei CSV.
+- **Importa dati**: importazione CSV di clienti e abbonamenti con anteprima, rapporto di validazione per riga e
+  colonna, applicazione tutto o niente, stesso file applicato una sola volta, consensi GDPR mai presunti.
+- Pagina pubblica: meta Open Graph per stabilimento generati dal server (titolo, descrizione, immagine = logo
+  dello stabilimento o immagine Arenile) per le anteprime di WhatsApp e social.
+- Mappa operativa a tutta larghezza (e più alta) sugli schermi larghi.
 
 - App desktop per macOS: oltre al `.dmg` universale, la CI produce i `.dmg` **solo Apple Silicon**
   (`_macos_arm64`) e **solo Intel** (`_macos_x86_64`), circa metà dimensione, ognuno firmato, notarizzato e
@@ -350,6 +390,26 @@ offline).
 
 ### Changed
 
+- **Approvazione delle prenotazioni** (regola R3, ADR 0019 E, INV-78): **Approva**, e **Conferma** su una
+  prenotazione *Da approvare*, richiedono ora `establishment.configure` (titolare e gestore); con il solo
+  `bookings.write` (cassa, chiavi API con quel permesso) la risposta è `403`. **Rifiuta** resta con
+  `bookings.write`. La forzatura (**Conferma comunque**) scavalca solo le violazioni di policy, mai l'approvazione:
+  una prenotazione che la richiede nasce *Da approvare* anche se forzata o pagata subito in cassa. Il pannello
+  nasconde Approva e Conferma a chi non può approvare.
+- **Pagamenti online e modalità prova**: la configurazione Stripe (live o test) usata per un pagamento segue la
+  prenotazione, non l'interruttore della modalità prova: una prenotazione reale paga sempre con le chiavi live,
+  anche mentre la modalità prova è accesa, e una di prova sempre con quelle di test, anche dopo averla spenta. I
+  webhook sono verificati con entrambe le configurazioni e un evento verificato con un segreto non tocca mai un
+  intento dell'altra modalità; riconciliazione e rimborsi usano la modalità dell'intento. Un pagamento preso con
+  le chiavi di test è una riga di prova (nessun documento fiscale, fuori dai corrispettivi) qualunque sia la
+  prenotazione.
+- **Prezzo manuale degli abbonamenti**: spostare o modificare un abbonamento con prezzo manuale (anche dalla
+  cassa) **conserva** il prezzo manuale e aggiorna il prezzo da listino mostrato sotto di esso; prima la modifica
+  lo cancellava senza traccia. Solo "Imposta prezzo manuale" e "Torna al listino" (titolare e gestore) lo cambiano.
+- `If-Match` è obbligatorio su check-in, no-show, annullamento e spostamento di una prenotazione e sull'eliminazione
+  di una mappa: senza l'header la risposta è `428 precondition_required` (le anteprime `dry_run` restano libere). Il
+  pannello e la coda offline inviano sempre la versione letta (`*` per un check-in accodato dietro altre operazioni).
+  Le integrazioni via API che chiamano queste operazioni devono inviare l'`ETag` letto o `*`.
 - Marchio: adottato il **brand kit Arenile v2.0** (decisione del titolare del 2026-10-23, ADR 0018) al posto
   del v1.0 ovunque: pannello, pagina pubblica, email, app desktop (icone `.icns`/`.ico`/Linux, tray e
   template della barra dei menu), sito della documentazione. "A" sabbia con traversa a onda azzurra su duna,
@@ -375,6 +435,8 @@ offline).
 
 ### Fixed
 
+- Le richieste annullate dal client (`context.Canceled`, ad esempio una pagina chiusa durante il caricamento) non
+  sono più registrate come errori 500 nei log.
 - Pannello, **Nuova prenotazione**: gli extra usano il nuovo controllo condiviso `QuantityStepper` (− valore +,
   sempre visibile e a larghezza fissa) dentro `ExtraList`/`ExtraRow` (nome su una riga, unità "per postazione /
   per prenotazione · al giorno" sotto, "max N" accanto al controllo). Prima il campo numerico veniva schiacciato

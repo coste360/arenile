@@ -14,6 +14,7 @@ import {
   type PeriodSelection,
   type ResolvedPeriod,
 } from './lib/period';
+import { ExportListsMenu } from './components/ExportListsMenu';
 import {
   BookingsSection,
   CancellationsSection,
@@ -106,9 +107,15 @@ function ReportsBody({ ctx }: { ctx: ReportsContext }) {
         compareYear={period ? compareYear(period) : undefined}
       />
       {period ? (
-        <p className="text-sm text-muted-foreground" aria-live="polite">
-          {t('period.showing', { from: formatIsoDate(period.from), to: formatIsoDate(period.to) })}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            {t('period.showing', {
+              from: formatIsoDate(period.from),
+              to: formatIsoDate(period.to),
+            })}
+          </p>
+          <ExportListsMenu establishmentId={ctx.establishmentId} period={period} />
+        </div>
       ) : (
         'error' in resolved && (
           <Alert variant="destructive">
