@@ -190,7 +190,7 @@ func TestSmoke_DesktopLauncherHeadless(t *testing.T) {
 	auto := &fakeAutostart{}
 	opts := Options{
 		Version: "1.0.0", DataDir: dataDir, Log: slog.New(slog.DiscardHandler),
-		Autostart: auto, ScheduleTick: never, 
+		Autostart: auto, ScheduleTick: never,
 	}
 	ui, si, errc := startLauncher(t, opts)
 

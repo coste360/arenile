@@ -229,7 +229,7 @@ func TestStatus_Permissions(t *testing.T) {
 	}
 	s := NewService(Deps{Current: "1.0.0"})
 	for _, tt := range tests {
-		if _, err := s.Status(context.Background(), tt.p); !errors.Is(err, tt.want) && !(err == nil && tt.want == nil) {
+		if _, err := s.Status(context.Background(), tt.p); !errors.Is(err, tt.want) {
 			t.Errorf("%s: err = %v, want %v", tt.name, err, tt.want)
 		}
 	}

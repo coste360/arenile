@@ -67,7 +67,7 @@ const (
 	// EnvInstall is set by the official Docker image ("docker"); unset
 	// means a binary installation. It only picks the update instructions.
 	EnvInstall = "ARENILE_INSTALL"
-	EnvDev                         = "ARENILE_DEV"
+	EnvDev     = "ARENILE_DEV"
 	// EnvEdition is set by the desktop launcher (never by an operator):
 	// "desktop" is the loopback profile of the core, see Config.Desktop.
 	EnvEdition = "ARENILE_EDITION"

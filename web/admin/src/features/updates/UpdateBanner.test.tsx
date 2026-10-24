@@ -1,7 +1,14 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { EST_ID, baseRoutes, callsTo, json, renderApp, type TestRole } from '../configuration/testing';
+import {
+  EST_ID,
+  baseRoutes,
+  callsTo,
+  json,
+  renderApp,
+  type TestRole,
+} from '../configuration/testing';
 import { DISMISSED_KEY, readDismissed, upgradeDocsUrl, writeDismissed } from './lib';
 
 const PATH = `/e/${EST_ID}/config/test-mode`;
@@ -54,9 +61,9 @@ describe('UpdateBanner', () => {
     render(status({ how_to_update: 'docker', download_url: undefined }));
     const banner = await screen.findByTestId('update-banner');
     expect(within(banner).queryByRole('link', { name: 'Scarica' })).toBeNull();
-    expect(
-      within(banner).getByRole('link', { name: 'Come aggiornare' }).getAttribute('href'),
-    ).toBe('https://docs.arenile.app/installazione/aggiornamenti/');
+    expect(within(banner).getByRole('link', { name: 'Come aggiornare' }).getAttribute('href')).toBe(
+      'https://docs.arenile.app/installazione/aggiornamenti/',
+    );
   });
 
   it('hides when dismissed and remembers the version', async () => {
@@ -101,7 +108,12 @@ describe('UpdateBanner', () => {
 describe('UpdateCheckStatus', () => {
   it('shows a neutral line in the user menu when the check failed', async () => {
     render(
-      status({ status: 'unavailable', how_to_update: 'docker', latest: undefined, update_available: false }),
+      status({
+        status: 'unavailable',
+        how_to_update: 'docker',
+        latest: undefined,
+        update_available: false,
+      }),
     );
     await screen.findByRole('switch', { name: 'Modalità prova attiva' });
     await userEvent.click(screen.getByRole('button', { name: /Mario Rossi/ }));
