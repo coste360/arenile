@@ -279,12 +279,14 @@ test.describe("daily sale", () => {
     await expect(
       todo.getByRole("link", { name: "Assegna il biglietto #003 sulla mappa" }),
     ).toBeVisible();
-    // Ticket del giorno shows them as "Da assegnare".
+    // Ticket del giorno shows them as "Da assegnare" (the state column on a
+    // wide screen; the badge under the number is the phone copy).
     await page.goto(`${lido.base}/ticket?date=${lido.today}`);
     await expect(
       page
         .getByRole("table", { name: "Ticket del giorno" })
         .getByText("Da assegnare")
+        .locator("visible=true")
         .first(),
     ).toBeVisible();
 
@@ -294,13 +296,14 @@ test.describe("daily sale", () => {
     await expect(panel).toBeVisible();
     await panel.getByRole("button", { name: /^Biglietto #001/ }).click();
     // The free spots of the row are offered as large buttons too (phones).
-    await expect(
-      panel
-        .getByTestId("assign-targets")
-        .getByRole("button", { name: "Assegna alla postazione A1" }),
-    ).toBeVisible();
+    const target = panel
+      .getByTestId("assign-targets")
+      .getByRole("button", { name: "Assegna alla postazione A1", exact: true });
+    await expect(target).toBeVisible();
     await expect(spot(page, "A1")).toHaveAccessibleName(/Libero/);
-    await spot(page, "A1").click();
+    // A tap on a spot smaller than a finger zooms the map in first: assign
+    // through the large target button.
+    await target.click();
     await expect(
       page.getByText("Biglietto #001 assegnato alla postazione A1"),
     ).toBeVisible();
@@ -346,14 +349,19 @@ test.describe("daily sale", () => {
     await dialog.getByRole("button", { name: "Annulla biglietto" }).click();
     await expect(dialog).toBeHidden();
     const row1 = table.getByRole("row").filter({ hasText: "#001" });
-    await expect(row1.getByText("Annullato")).toBeVisible();
+    // The state column (the badge under the number is the phone copy).
+    await expect(row1.getByText("Annullato").locator("visible=true")).toBeVisible();
 
     const next = await apiSale(page, lido, { spot: "C3" });
     expect(next.ticket.number_label).toBe("#003");
     await page.reload();
     await expect(table.getByText("#003")).toBeVisible();
     await expect(
-      table.getByRole("row").filter({ hasText: "#001" }).getByText("Annullato"),
+      table
+        .getByRole("row")
+        .filter({ hasText: "#001" })
+        .getByText("Annullato")
+        .locator("visible=true"),
     ).toBeVisible();
     // The spot of the voided ticket is free again.
     await page.goto(`${lido.base}/mappa?date=${lido.today}`);
