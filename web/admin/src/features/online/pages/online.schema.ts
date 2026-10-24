@@ -67,7 +67,7 @@ export function toOnlineValues(
     show_rate_periods: s.flow.show_rate_periods,
     max_days_ahead: s.flow.max_days_ahead ? String(s.flow.max_days_ahead) : '',
     promo_codes_enabled: s.flow.promo_codes_enabled,
-    require_phone: s.flow.require_phone,
+    require_phone: false,
     primary_color:
       th.primary_color && HEX_COLOR_RE.test(th.primary_color) ? th.primary_color : DEFAULT_PRIMARY,
     accent_color:
@@ -137,7 +137,8 @@ export function toOnlineInput(
       show_rate_periods: v.show_rate_periods,
       ...(v.max_days_ahead ? { max_days_ahead: Number(v.max_days_ahead) } : {}),
       promo_codes_enabled: v.promo_codes_enabled,
-      require_phone: v.require_phone,
+      // Deprecated (ADR 0020): the phone is always optional.
+      require_phone: false,
     },
   };
 }

@@ -27,7 +27,7 @@ const on = (a: ReturnType<typeof spotActions>) =>
 
 describe('spotActions', () => {
   it.each([
-    ['free spot', opSpot('s', 'A1', 'free'), ['newBooking']],
+    ['free spot', opSpot('s', 'A1', 'free'), ['dailySale', 'newBooking']],
     [
       'confirmed booking',
       opSpot('s', 'A1', 'booked', { booking: opBooking() }),
@@ -54,7 +54,7 @@ describe('spotActions', () => {
         release_id: 'r1',
         booking: opBooking({ is_season_pass: true }),
       }),
-      ['newBooking', 'openDetail', 'revokeRelease'],
+      ['dailySale', 'newBooking', 'openDetail', 'revokeRelease'],
     ],
     ['blocked', opSpot('s', 'A1', 'blocked'), []],
     [
@@ -64,6 +64,20 @@ describe('spotActions', () => {
     ],
   ])('%s', (_name, spot, expected) => {
     expect(on(spotActions(spot, 'FULL', all))).toEqual([...expected].sort());
+  });
+
+  it('offers the daily sale on a free spot today or later, never on a past day', () => {
+    const free = opSpot('s', 'A1', 'free');
+    expect(
+      spotActions(free, 'FULL', all, { date: '2026-07-14', today: '2026-07-14' }).dailySale,
+    ).toBe(true);
+    expect(
+      spotActions(free, 'FULL', all, { date: '2026-07-15', today: '2026-07-14' }).dailySale,
+    ).toBe(true);
+    expect(
+      spotActions(free, 'FULL', all, { date: '2026-07-13', today: '2026-07-14' }).dailySale,
+    ).toBe(false);
+    expect(spotActions(free, 'FULL', viewer).dailySale).toBe(false);
   });
 
   it('viewer only opens details', () => {

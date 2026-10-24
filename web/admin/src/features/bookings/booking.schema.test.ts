@@ -55,7 +55,7 @@ describe('newBookingSchema', () => {
     );
   });
 
-  it('requires an existing customer or a valid inline one with a contact', () => {
+  it('requires an existing customer or a valid inline one (surname only, phone optional)', () => {
     expect(issues(values({ customer_id: '' }))).toContain(
       'customer_id:bookings:validation.customer',
     );
@@ -64,7 +64,13 @@ describe('newBookingSchema', () => {
       customer_id: '',
       customer: { first_name: '', last_name: 'Bianchi', email: '', phone: '' },
     });
-    expect(issues(inline)).toContain('customer.phone:bookings:validation.contact');
+    expect(issues(inline)).toEqual([]);
+    expect(
+      issues({
+        ...inline,
+        customer: { first_name: '', last_name: 'Bianchi', email: '', phone: '12' },
+      }),
+    ).toContain('customer.phone:bookings:validation.phone');
     expect(
       issues({
         ...inline,

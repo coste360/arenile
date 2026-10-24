@@ -1,28 +1,205 @@
 {
-  "scaffold": "Fonction en préparation.",
   "sale": {
     "title": "Vente rapide",
-    "description": "Journée, matin ou après-midi sur un emplacement ou seulement une zone : prix, encaissement et ticket numéroté en une étape."
+    "description": "Journée, matin ou après-midi sur un emplacement ou seulement une zone : prix, encaissement et billet numéroté en une étape.",
+    "sheetTitle": "Vendre la journée",
+    "sheetDescription": "Billet numéroté du jour : choisissez la formule et les extras, puis encaissez en espèces ou par carte.",
+    "summary": "Total et paiement",
+    "total": "Total",
+    "vatIncluded": "dont TVA {{rate}} {{tax}}",
+    "zoneFree_one": "{{count}} place libre dans la zone",
+    "zoneFree_other": "{{count}} places libres dans la zone",
+    "zoneFull": "Aucune place libre dans la zone pour la tranche choisie.",
+    "spotTaken": "L'emplacement n'est pas libre pour la tranche choisie : choisissez-en un autre.",
+    "pickSpot": "Choisissez un emplacement libre.",
+    "pickZone": "Choisissez une zone.",
+    "noSessionTitle": "Caisse fermée",
+    "noSession": "Ouvrez d'abord la session de caisse pour encaisser en espèces ; par carte, vous pouvez vendre tout de suite.",
+    "openCash": "Ouvrir la caisse",
+    "tendered": "Espèces reçues",
+    "change": "Monnaie à rendre",
+    "shortcutsHint": "Raccourcis : 1, 2, 3 tranche · P emplacement · Z zone · C espèces · K carte.",
+    "where": "Où",
+    "date": "Jour de la vente",
+    "spot": "Emplacement",
+    "spotPlaceholder": "Choisir un emplacement libre",
+    "noFreeSpots": "Aucun emplacement libre",
+    "zone": "Zone",
+    "freeCount_one": "{{count}} libre",
+    "freeCount_other": "{{count}} libres",
+    "zoneHint": "L'emplacement s'attribue ensuite depuis le plan : la capacité de la zone est déjà occupée.",
+    "slots": "Formule",
+    "pack": "Pack",
+    "extras": "Extras",
+    "holder": "Nom sur le billet",
+    "optional": "(facultatif)",
+    "lastName": "Nom",
+    "firstName": "Prénom",
+    "holderHint": "Uniquement pour l'étiquette sur le plan : sans nom, l'emplacement affiche le numéro du billet.",
+    "offline": "Impossible de vendre hors ligne : seul le serveur garantit la disponibilité.",
+    "done": "Billet {{number}} émis",
+    "printFailed": "Billet {{number}} émis, mais l'impression n'a pas démarré : réimprimez-le depuis le récapitulatif.",
+    "gate": "Contrôle d’accès",
+    "tabs": {
+      "label": "Type de vente",
+      "spots": "Parasols",
+      "entries": "Entrées"
+    }
+  },
+  "where": {
+    "spot": "Emplacement",
+    "zone": "Zone seulement"
+  },
+  "slots": {
+    "FULL": "Journée entière",
+    "AM": "Matin",
+    "PM": "Après-midi"
+  },
+  "method": {
+    "cash": "Espèces",
+    "card": "Carte"
+  },
+  "done": {
+    "title": "Billet émis",
+    "spot": "Emplacement {{label}}",
+    "unassigned": "{{zone}} · à attribuer sur le plan",
+    "new": "Nouvelle vente"
+  },
+  "actions": {
+    "print": "Imprimer",
+    "reprint": "Réimprimer",
+    "assign": "Attribuer",
+    "move": "Déplacer",
+    "void": "Annuler le billet"
+  },
+  "printDialog": {
+    "title": "Impression du billet {{number}}",
+    "titleLoading": "Impression du billet",
+    "description": "Aperçu tel qu'il sortira de l'imprimante ; le format ne vaut que pour cette impression.",
+    "format": "Format"
+  },
+  "format": {
+    "thermal_80": "Ticket 80 mm",
+    "thermal_58": "Ticket 58 mm",
+    "a5": "A5",
+    "a4": "A4"
+  },
+  "print": {
+    "label": "Billet {{number}}",
+    "numberSection": "Numéro et date",
+    "title": "Billet journalier",
+    "entryTitle": "Billet d'entrée",
+    "reprint": "Réimpression",
+    "voided": "Annulé",
+    "spot": "Emplacement {{label}}",
+    "zoneUnassigned": "{{zone}} (à attribuer)",
+    "vatNumber": "N° TVA {{vat}}",
+    "where": "Où",
+    "slots": "Formule",
+    "pack": "Pack",
+    "holder": "Nom",
+    "total": "Total",
+    "vatLine": "TVA {{rate}}",
+    "vatAmounts": "HT {{taxable}} · taxe {{tax}}",
+    "payment": "Paiement",
+    "qr": "Code QR du billet {{code}}",
+    "validOn": "Valable le {{date}}",
+    "issuedAt": "Émis le {{time}}"
   },
   "tickets": {
-    "title": "Tickets du jour",
-    "description": "Tickets émis aujourd'hui avec numéro, heure, emplacement ou zone, statut, montant et moyen de paiement ; export CSV."
+    "title": "Billets du jour",
+    "description": "Billets émis dans la journée avec numéro, heure, emplacement ou zone, état, montant et moyen de paiement ; export CSV.",
+    "col": {
+      "number": "Numéro",
+      "time": "Heure",
+      "where": "Emplacement ou zone",
+      "slots": "Formule",
+      "holder": "Nom",
+      "state": "État",
+      "amount": "Montant",
+      "method": "Moyen",
+      "actions": "Actions"
+    },
+    "entry": "Entrée",
+    "printAria": "Imprimer le billet {{number}}",
+    "assignAria": "Attribuer le billet {{number}} à un emplacement",
+    "moveAria": "Déplacer le billet {{number}}",
+    "voidAria": "Annuler le billet {{number}}",
+    "csv": "Exporter en CSV",
+    "csvAria": "Exporter en CSV les billets du {{date}}",
+    "date": "Jour",
+    "filter": "État",
+    "all": "Tous",
+    "summary": "Récapitulatif du jour",
+    "issued": "Émis",
+    "takings": "Encaissement",
+    "byMethod": "Espèces {{cash}} · Carte {{card}}",
+    "voided": "Annulés",
+    "listTitle": "Billets",
+    "empty": "Aucun billet pour ce jour.",
+    "vatTitle": "Recettes par taux de TVA",
+    "vatDescription": "Les mêmes montants que la session de caisse et les recettes journalières ; les billets annulés sont exclus."
+  },
+  "state": {
+    "assigned": "Attribué",
+    "unassigned": "À attribuer",
+    "issued": "Émis",
+    "entered": "Entré",
+    "voided": "Annulé"
+  },
+  "move": {
+    "title": "Déplacer le billet {{number}}",
+    "assignTitle": "Attribuer le billet {{number}}",
+    "description": "Choisissez le nouvel emplacement libre : le déplacement est immédiat.",
+    "assignDescription": "Choisissez un emplacement libre dans la zone du billet.",
+    "spot": "Emplacement",
+    "done": "Billet {{number}} sur l'emplacement {{label}}"
+  },
+  "void": {
+    "title": "Annuler le billet {{number}} ?",
+    "description": "L'emplacement ou la place en zone redevient libre ; le billet garde son numéro et est marqué comme annulé.",
+    "reason": "Motif",
+    "reasonRequired": "Indiquez le motif de l'annulation.",
+    "refund": "Remboursement",
+    "refund_refund": "Rembourser avec le même moyen",
+    "refund_credit": "Créditer au client",
+    "refund_none": "Aucun remboursement",
+    "done": "Billet {{number}} annulé"
   },
   "assign": {
     "title": "À attribuer",
-    "description": "Tickets vendus pour une zone : choisissez-en un, puis touchez un emplacement libre de sa zone."
-  },
-  "print": {
-    "label": "Ticket {{number}}",
-    "reprint": "Réimpression",
-    "unassigned": "À attribuer"
+    "description": "Billets vendus par zone : choisissez-en un puis touchez un emplacement libre de sa zone.",
+    "auto": "Attribuer automatiquement",
+    "listLabel": "Billets à attribuer",
+    "ticketAria": "Billet {{number}}, {{zone}}, {{slots}}",
+    "pick": "Touchez un emplacement libre de {{zone}} pour le billet {{number}}.",
+    "notFree": "Cet emplacement n'est pas libre : choisissez-en un en surbrillance.",
+    "wrongZone": "Choisissez un emplacement de la zone {{zone}}.",
+    "done": "Billet {{number}} attribué à l'emplacement {{label}}",
+    "autoDone_one": "{{count}} billet attribué",
+    "autoDone_other": "{{count}} billets attribués",
+    "autoPartial_one": "{{count}} billet attribué, {{left}} sans emplacement libre",
+    "autoPartial_other": "{{count}} billets attribués, {{left}} sans emplacement libre"
   },
   "problems": {
-    "zone_full": "Plus aucune place libre dans la zone pour le créneau choisi.",
+    "zone_full": "Aucune place libre dans la zone pour la tranche choisie.",
     "assignment_conflict": "L'emplacement vient d'être occupé : choisissez-en un autre.",
-    "ticket_number_conflict": "Numéro de ticket déjà utilisé, réessayez.",
-    "ticket_voided": "Le ticket est annulé.",
-    "ticket_already_entered": "Le ticket a déjà été utilisé pour entrer.",
-    "price_changed": "Le prix a changé : vérifiez le nouveau total."
+    "ticket_number_conflict": "Numéro de billet déjà utilisé, réessayez.",
+    "ticket_voided": "Le billet est annulé.",
+    "ticket_already_entered": "Le billet a déjà été utilisé pour entrer.",
+    "price_changed": "Le prix a changé : vérifiez le nouveau total et encaissez à nouveau.",
+    "spot_unavailable": "L'emplacement n'est plus libre : choisissez-en un autre.",
+    "cash_session_closed": "La caisse est fermée : ouvrez-la pour encaisser en espèces."
+  },
+  "settings": {
+    "open": "Paramètres",
+    "title": "Paramètres des billets",
+    "description": "Ils s’appliquent à toutes les caisses de l’établissement.",
+    "format": "Format d’impression par défaut",
+    "autoPrint": "Imprimer juste après la vente",
+    "autoPrintHint": "Ouvre l’impression du billet dès qu’il est encaissé.",
+    "zoneFirst": "Vente par zone",
+    "zoneFirstHint": "Permet de vendre seulement la zone et d’attribuer la place plus tard depuis le plan.",
+    "saved": "Paramètres des billets enregistrés"
   }
 }

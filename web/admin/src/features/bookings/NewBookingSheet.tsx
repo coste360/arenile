@@ -486,7 +486,12 @@ function NewBookingForm({
                 >
                   {(field) => <Input autoComplete="off" {...field} value={field.value ?? ''} />}
                 </FieldRow>
-                <FieldRow control={form.control} name="customer.phone" label={t('fields.phone')}>
+                <FieldRow
+                  control={form.control}
+                  name="customer.phone"
+                  label={t('fields.phone')}
+                  optional
+                >
                   {(field) => (
                     <Input
                       type="tel"
@@ -497,7 +502,12 @@ function NewBookingForm({
                     />
                   )}
                 </FieldRow>
-                <FieldRow control={form.control} name="customer.email" label={t('fields.email')}>
+                <FieldRow
+                  control={form.control}
+                  name="customer.email"
+                  label={t('fields.email')}
+                  optional
+                >
                   {(field) => (
                     <Input type="email" autoComplete="off" {...field} value={field.value ?? ''} />
                   )}

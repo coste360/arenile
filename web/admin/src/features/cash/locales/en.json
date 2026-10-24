@@ -54,7 +54,8 @@
     "quickPay": "Take payment",
     "close": "Close cash desk",
     "print": "Print summary",
-    "printZ": "Print Z report"
+    "printZ": "Print Z report",
+    "dailySale": "Quick sale"
   },
   "open": {
     "title": "Open the cash desk",

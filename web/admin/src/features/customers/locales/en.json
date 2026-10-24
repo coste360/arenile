@@ -49,7 +49,7 @@
   "form": {
     "newTitle": "New customer",
     "editTitle": "Edit customer",
-    "description": "Minimal data: last name and a contact (phone or email).",
+    "description": "Minimal data: the last name. Phone and email are optional.",
     "created": "Customer {{name}} created.",
     "updated": "Customer updated."
   },

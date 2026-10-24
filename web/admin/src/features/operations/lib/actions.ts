@@ -5,6 +5,8 @@ import { isBookable, slotStatus, type OperationalSpot, type SlotChoice } from '.
 export interface SpotActions {
   checkIn: boolean;
   newBooking: boolean;
+  /** Quick walk-in sale (daily ticket): free spot, today or later, bookings.write. */
+  dailySale: boolean;
   releaseDay: boolean;
   revokeRelease: boolean;
   move: boolean;
@@ -30,6 +32,7 @@ export function spotActions(
   return {
     checkIn: perms.canRun && isToday && status === 'booked' && b?.status === 'confirmed',
     newBooking: perms.canWriteBookings && isBookable(status),
+    dailySale: perms.canWriteBookings && isBookable(status) && (!day || day.date >= day.today),
     releaseDay: perms.canWriteBookings && status === 'pass_holder' && !!b?.is_season_pass,
     revokeRelease: perms.canWriteBookings && status === 'released' && !!spot.release_id && !!b,
     move:

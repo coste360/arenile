@@ -36,8 +36,7 @@
       "maxDaysAheadHint": "Giorni di anticipo massimo, oltre ai limiti della policy online. Vuoto: nessun limite aggiuntivo.",
       "days": "giorni",
       "showRatePeriods": "Evidenzia i periodi tariffari nel calendario",
-      "promoCodes": "Campo codice promozionale",
-      "requirePhone": "Telefono obbligatorio"
+      "promoCodes": "Campo codice promozionale"
     },
     "offer": {
       "title": "Zone e pacchetti venduti online",

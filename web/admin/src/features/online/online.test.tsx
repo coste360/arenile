@@ -118,7 +118,9 @@ describe('OnlineSettingsPage', () => {
     );
     const booking = await screen.findByRole('region', { name: 'Prenotazioni online' });
     await user.click(within(booking).getByRole('switch', { name: /Accetta prenotazioni online/ }));
-    await user.click(screen.getByRole('switch', { name: 'Telefono obbligatorio' }));
+    await user.click(screen.getByRole('switch', { name: 'Campo codice promozionale' }));
+    // Phone optional everywhere (ADR 0020): no switch to require it.
+    expect(screen.queryByRole('switch', { name: 'Telefono obbligatorio' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Tema e anteprima' }));
     const primary = screen.getByLabelText('Colore principale', {
       selector: 'input:not([type=color])',
@@ -138,7 +140,7 @@ describe('OnlineSettingsPage', () => {
     expect(bodies[0]).toMatchObject({
       booking_enabled: false,
       allowed_embed_origins: ['https://www.lido.it'],
-      flow: { require_phone: true, formulas: ['day', 'multi_day'], slots: ['FULL', 'AM', 'PM'] },
+      flow: { require_phone: false, formulas: ['day', 'multi_day'], slots: ['FULL', 'AM', 'PM'] },
       theme: {
         primary_color: '#ffe600',
         custom_texts: { it: { intro: 'Benvenuti', terms: 'legacy' } },
@@ -162,7 +164,7 @@ describe('OnlineSettingsPage', () => {
       PATH,
       routes({ [`PUT ${API}/online-settings`]: () => problem(412, 'version_conflict') }),
     );
-    await user.click(await screen.findByRole('switch', { name: 'Telefono obbligatorio' }));
+    await user.click(await screen.findByRole('switch', { name: 'Campo codice promozionale' }));
     await user.click(screen.getByRole('button', { name: 'Salva' }));
     expect(await screen.findByText(/Un altro utente ha modificato/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ricarica/ })).toBeInTheDocument();

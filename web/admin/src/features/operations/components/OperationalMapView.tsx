@@ -37,12 +37,17 @@ import {
   type OperationsDay,
   type SlotChoice,
 } from '../lib/status';
+import { useTicketAssignment } from '../../daily-sale';
 import { MoveDialog } from './MoveDialog';
 import { SpotSheet } from './SpotSheet';
 
 // The booking sheet belongs to the bookings feature: load it on first use.
 const NewBookingSheet = lazy(() =>
   import('../../bookings').then((m) => ({ default: m.NewBookingSheet })),
+);
+// Quick walk-in sale ("Vendi giornata", daily-sale feature, ADR 0020).
+const VenditaGiornalieraSheet = lazy(() =>
+  import('../../daily-sale').then((m) => ({ default: m.VenditaGiornalieraSheet })),
 );
 
 export interface OperationalMapViewProps {
@@ -91,6 +96,7 @@ export function OperationalMapView({
   const [moveSource, setMoveSource] = useState<OperationalSpot | null>(null);
   const [moveTarget, setMoveTarget] = useState<{ spotId: string; label: string } | null>(null);
   const [newBooking, setNewBooking] = useState<NewBookingDefaults | null>(null);
+  const [dailySaleSpot, setDailySaleSpot] = useState<string | null>(null);
 
   const spots = useMemo(() => day?.spots ?? [], [day]);
   const byId = useMemo(() => new Map(spots.map((s) => [s.spot_id, s])), [spots]);
@@ -105,6 +111,14 @@ export function OperationalMapView({
   const me = useMe();
   const [labelMode, setLabelMode] = useLabelMode(me.data?.user?.id);
   const matches = useMemo(() => searchSpots(spots, deferredQuery), [spots, deferredQuery]);
+  // "Da assegnare": tap a zone-first ticket, then a free spot of its zone.
+  const assignment = useTicketAssignment({
+    establishmentId,
+    date,
+    slot,
+    spots,
+    canWrite: permissions.canWriteBookings,
+  });
   const selectedIds = useMemo(
     () => [selectedId, moveSource?.spot_id].filter((v): v is string => !!v),
     [selectedId, moveSource],
@@ -127,6 +141,7 @@ export function OperationalMapView({
   const activate = useCallback(
     (spot: MapSpot) => {
       const op = byId.get(spot.id);
+      if (!moveSource && assignment.handleSpot(spot.id)) return;
       if (moveSource) {
         if (spot.id === moveSource.spot_id) return;
         if (!op || !isBookable(slotStatus(op, slot))) return;
@@ -136,7 +151,7 @@ export function OperationalMapView({
       setSelectedId(spot.id);
       setSheetOpen(true);
     },
-    [byId, moveSource, slot],
+    [byId, moveSource, slot, assignment],
   );
 
   const startMove = (spot: OperationalSpot) => {
@@ -146,6 +161,10 @@ export function OperationalMapView({
   const endMove = () => {
     setMoveSource(null);
     setMoveTarget(null);
+  };
+  const openDailySale = (spot: OperationalSpot) => {
+    setSheetOpen(false);
+    setDailySaleSpot(spot.spot_id);
   };
   const openNewBooking = (spot: OperationalSpot) => {
     setSheetOpen(false);
@@ -205,6 +224,8 @@ export function OperationalMapView({
         </Alert>
       )}
 
+      {!moveSource && assignment.panel}
+
       {day?.closed && (
         <Alert>
           <AlertTitle>{t('map.closedTitle')}</AlertTitle>
@@ -245,7 +266,7 @@ export function OperationalMapView({
             geometry={geometry}
             statuses={statuses}
             selectedIds={selectedIds}
-            highlightedIds={matches}
+            highlightedIds={assignment.active ? assignment.highlightIds : matches}
             spotIndicators={indicators}
             onSpotActivate={activate}
             spotDescription={spotDescription}
@@ -296,6 +317,7 @@ export function OperationalMapView({
         onOpenChange={setSheetOpen}
         onNewBooking={openNewBooking}
         onStartMove={startMove}
+        onDailySale={openDailySale}
       />
       {moveSource && moveTarget && (
         <MoveDialog
@@ -307,6 +329,18 @@ export function OperationalMapView({
           onOpenChange={(v) => !v && setMoveTarget(null)}
           onDone={endMove}
         />
+      )}
+      {dailySaleSpot && (
+        <Suspense fallback={null}>
+          <VenditaGiornalieraSheet
+            establishmentId={establishmentId}
+            open
+            onOpenChange={(v) => !v && setDailySaleSpot(null)}
+            date={date}
+            spotId={dailySaleSpot}
+            slots={slot}
+          />
+        </Suspense>
       )}
       {newBooking && (
         <Suspense fallback={null}>

@@ -17,7 +17,6 @@ export const M = {
   extraMax: 'bookings:validation.extraMax',
   customer: 'bookings:validation.customer',
   lastName: 'bookings:validation.lastName',
-  contact: 'bookings:validation.contact',
   email: 'bookings:validation.email',
   phone: 'bookings:validation.phone',
   amount: 'bookings:validation.amount',
@@ -42,22 +41,23 @@ export function normalizePhone(input: string): string {
   return `+39${compact}`;
 }
 
-/** Inline customer of the sheet (spec 23: name, surname, email or phone). */
-export const newCustomerSchema = z
-  .object({
-    first_name: z.string().trim().max(100),
-    last_name: z.string().trim().min(1, M.lastName).max(100),
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .refine((v) => v === '' || z.email().safeParse(v).success, M.email),
-    phone: z
-      .string()
-      .trim()
-      .refine((v) => v === '' || PHONE_RE.test(normalizePhone(v)), M.phone),
-  })
-  .refine((c) => c.email !== '' || c.phone !== '', { message: M.contact, path: ['phone'] });
+/**
+ * Inline customer of the sheet: only the surname is required; email and phone
+ * are optional (ADR 0020, phone used for dedupe only when present).
+ */
+export const newCustomerSchema = z.object({
+  first_name: z.string().trim().max(100),
+  last_name: z.string().trim().min(1, M.lastName).max(100),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .refine((v) => v === '' || z.email().safeParse(v).success, M.email),
+  phone: z
+    .string()
+    .trim()
+    .refine((v) => v === '' || PHONE_RE.test(normalizePhone(v)), M.phone),
+});
 
 export type NewCustomerValues = z.infer<typeof newCustomerSchema>;
 

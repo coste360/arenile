@@ -30,7 +30,7 @@ export function PageHeader({
         className,
       )}
     >
-      <div className="min-w-0 space-y-1.5">
+      <div className="min-w-0 space-y-1.5 sm:min-w-64">
         {eyebrow}
         <h1 id={titleId} className="text-2xl font-semibold tracking-tight text-balance">
           {title}
@@ -39,7 +39,10 @@ export function PageHeader({
           <p className="max-w-2xl text-sm text-pretty text-muted-foreground">{description}</p>
         )}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+      {actions && (
+        // Many actions wrap on more lines instead of squeezing the title column.
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div>
+      )}
     </header>
   );
 }

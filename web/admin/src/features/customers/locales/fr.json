@@ -49,7 +49,7 @@
   "form": {
     "newTitle": "Nouveau client",
     "editTitle": "Modifier le client",
-    "description": "Données minimales : nom et un contact (téléphone ou e-mail).",
+    "description": "Données minimales : le nom. Téléphone et e-mail sont facultatifs.",
     "created": "Client {{name}} créé.",
     "updated": "Client mis à jour."
   },

@@ -49,7 +49,7 @@
   "form": {
     "newTitle": "Neuer Kunde",
     "editTitle": "Kunde bearbeiten",
-    "description": "Mindestangaben: Nachname und ein Kontakt (Telefon oder E-Mail).",
+    "description": "Mindestangaben: der Nachname. Telefon und E-Mail sind optional.",
     "created": "Kunde {{name}} angelegt.",
     "updated": "Kunde aktualisiert."
   },

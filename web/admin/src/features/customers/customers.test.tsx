@@ -36,6 +36,14 @@ describe('customer schema', () => {
     ).toBe(false);
   });
 
+  it('treats phone and email as optional (ADR 0020) and omits them from the body', () => {
+    const v = { ...customerValues(), last_name: 'Rossi', phone: '  ', email: '' };
+    expect(customerSchema.safeParse(v).success).toBe(true);
+    const input = toCustomerInput(customerSchema.parse(v));
+    expect(input).not.toHaveProperty('phone');
+    expect(input).not.toHaveProperty('email');
+  });
+
   it('keeps a recorded consent and stamps a new one with the desk source', () => {
     const now = new Date('2026-07-01T10:00:00Z');
     const given = { given_at: '2026-01-01T00:00:00Z', source: 'online', text_version: 'v3' };

@@ -16,7 +16,9 @@
     "noBalances": "Keine offenen Beträge.",
     "noAssignments": "Keine zuzuweisenden Positionen.",
     "checkInAria": "{{customer}} einchecken",
-    "mapTitle": "Tagesplan"
+    "mapTitle": "Tagesplan",
+    "assignOnMap": "Auf der Karte zuweisen",
+    "assignTicketAria": "Ticket {{number}} auf der Karte zuweisen"
   },
   "map": {
     "title": "Plan",
@@ -101,7 +103,8 @@
     "blockedReason": "Gesperrt: {{reason}}",
     "free": "Keine Belegung zu dieser Tageszeit.",
     "checkedIn": "{{code}} eingecheckt.",
-    "readOnly": "Nur Lesezugriff."
+    "readOnly": "Nur Lesezugriff.",
+    "ticket": "Ticket"
   },
   "actions": {
     "checkIn": "Einchecken",
@@ -111,7 +114,8 @@
     "move": "Verschieben",
     "collect": "Kassieren",
     "openDetail": "Details öffnen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "dailySale": "Tagesticket verkaufen"
   },
   "release": {
     "title": "Platz {{label}} freigeben?",

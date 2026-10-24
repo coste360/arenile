@@ -54,7 +54,8 @@
     "quickPay": "Kassieren",
     "close": "Kasse schließen",
     "print": "Übersicht drucken",
-    "printZ": "Z-Bericht drucken"
+    "printZ": "Z-Bericht drucken",
+    "dailySale": "Schnellverkauf"
   },
   "open": {
     "title": "Kasse öffnen",

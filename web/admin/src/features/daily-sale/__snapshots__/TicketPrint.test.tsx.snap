@@ -1,0 +1,429 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TicketPrint > lays out the 80 mm receipt (snapshot) 1`] = `
+<article
+  aria-label="Biglietto #037"
+  class="mx-auto bg-white text-black w-[72mm] max-w-full p-2 font-mono text-xs"
+  data-format="thermal_80"
+>
+  <header
+    class="flex flex-col items-center gap-1 text-center"
+  >
+    <p
+      class="font-bold"
+    >
+      Lido Demo
+    </p>
+    <p>
+      Lido Demo SRL · P. IVA IT01234567890
+    </p>
+    <p>
+      Lungomare 1, Gaeta
+    </p>
+  </header>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <section
+    aria-label="Numero e data"
+    class="text-center"
+  >
+    <p
+      class="uppercase"
+    >
+      Biglietto giornaliero
+    </p>
+    <p
+      class="font-bold tabular-nums text-3xl"
+    >
+      #037
+    </p>
+    <p
+      class="font-bold"
+    >
+      Valido il 14/07/2026
+    </p>
+    <p>
+      Emesso 14/07/2026, 10:05
+    </p>
+  </section>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <dl
+    class="space-y-0.5"
+  >
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Dove
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Postazione A1
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Formula
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Giornata intera
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Pack
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Ombrellone + 2 lettini
+      </dd>
+    </div>
+  </dl>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <dl
+    class="space-y-0.5"
+  >
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        1 × Lettino aggiuntivo
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        5,00 €
+      </dd>
+    </div>
+  </dl>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <dl
+    class="space-y-0.5"
+  >
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3 font-bold"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Totale
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        <span
+          class="text-base"
+        >
+          30,00 €
+        </span>
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        IVA 22%
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        imponibile 24,59 € · imposta 5,41 €
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Pagamento
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Contanti
+      </dd>
+    </div>
+  </dl>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <footer
+    class="flex flex-col items-center gap-1 text-center"
+  >
+    <svg
+      aria-label="Codice QR del biglietto AR-7K3Q9"
+      class="fill-current size-28"
+      data-qr="AR-7K3Q9"
+      role="img"
+      shape-rendering="crispEdges"
+      viewBox="0 0 29 29"
+    >
+      <path
+        d="M4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM13 4h1v1h-1zM14 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM19 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM4 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM16 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM14 6h1v1h-1zM15 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM15 7h1v1h-1zM16 7h1v1h-1zM18 7h1v1h-1zM20 7h1v1h-1zM21 7h1v1h-1zM22 7h1v1h-1zM24 7h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM18 9h1v1h-1zM24 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM19 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM13 12h1v1h-1zM16 12h1v1h-1zM20 12h1v1h-1zM23 12h1v1h-1zM4 13h1v1h-1zM7 13h1v1h-1zM12 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM17 13h1v1h-1zM18 13h1v1h-1zM20 13h1v1h-1zM21 13h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM12 14h1v1h-1zM15 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM4 15h1v1h-1zM6 15h1v1h-1zM9 15h1v1h-1zM13 15h1v1h-1zM15 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM21 15h1v1h-1zM4 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM9 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM12 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM15 16h1v1h-1zM18 16h1v1h-1zM20 16h1v1h-1zM24 16h1v1h-1zM12 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM18 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM7 18h1v1h-1zM8 18h1v1h-1zM9 18h1v1h-1zM10 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1zM19 18h1v1h-1zM20 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM24 18h1v1h-1zM4 19h1v1h-1zM10 19h1v1h-1zM14 19h1v1h-1zM18 19h1v1h-1zM20 19h1v1h-1zM21 19h1v1h-1zM23 19h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM16 20h1v1h-1zM18 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM7 21h1v1h-1zM8 21h1v1h-1zM10 21h1v1h-1zM13 21h1v1h-1zM15 21h1v1h-1zM17 21h1v1h-1zM20 21h1v1h-1zM23 21h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM7 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM12 22h1v1h-1zM13 22h1v1h-1zM15 22h1v1h-1zM17 22h1v1h-1zM18 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM24 22h1v1h-1zM4 23h1v1h-1zM10 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM17 23h1v1h-1zM20 23h1v1h-1zM23 23h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM7 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM12 24h1v1h-1zM15 24h1v1h-1zM17 24h1v1h-1zM18 24h1v1h-1zM22 24h1v1h-1zM23 24h1v1h-1zM24 24h1v1h-1z"
+      />
+    </svg>
+    <p
+      class="tabular-nums"
+    >
+      AR-7K3Q9
+    </p>
+    <p>
+      Grazie e buona giornata!
+    </p>
+    <p
+      class="mt-1 flex items-center gap-1 opacity-70"
+    >
+      <img
+        alt=""
+        class="shrink-0 size-3 grayscale"
+        src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201024%201024'%20width='1024'%20height='1024'%20role='img'%20aria-label='Arenile%20—%20app%20icon%20flat'%3e%3ctitle%3eArenile%20—%20app%20icon%20flat%3c/title%3e%3crect%20width='1024'%20height='1024'%20rx='218'%20fill='%230B2542'/%3e%3cpath%20d='M%20282.8%20528.6%20L%20460%20186%20L%20582%20186%20L%20784.9%20637%20C%20765.6%20644.2%20748.6%20641.7%20730.4%20632.6%20C%20683.4%20607.5%20645.4%20572.3%20603.5%20539.9%20L%20509%20349%20L%20451.2%20476.7%20C%20388.2%20473.4%20332%20494%20282.8%20528.6%20Z'%20fill='%23FFF0D1'/%3e%3cpath%20d='M%20694.5%20723.7%20C%20736.4%20726.6%20776.1%20715.3%20807%20686.1%20L%20870.4%20827%20L%20745.6%20827%20Z'%20fill='%23FFF0D1'/%3e%3cpath%20d='M%20151%20827%20C%20236%20717%20353%20677%20445%20680%20C%20555%20678%20635%20748%20700%20827%20Z'%20fill='%23F2C893'/%3e%3cpath%20d='M%20182%20701%20C%20211%20620%20277%20545%20345%20519%20C%20411%20488%20473%20495%20526%20518%20C%20598%20550%20648%20616%20711%20647%20C%20746%20668%20773%20669%20807%20651%20C%20772%20707%20697%20717%20632%20682%20C%20577%20651%20538%20613%20491%20601%20C%20418%20572%20360%20594%20306%20631%20C%20260%20659%20214%20692%20182%20701%20Z'%20fill='%2338BDF8'/%3e%3c/svg%3e"
+      />
+      <span
+        class="font-mono"
+      >
+        Arenile
+      </span>
+    </p>
+  </footer>
+</article>
+`;
+
+exports[`TicketPrint > lays out the A4 sheet (snapshot) 1`] = `
+<article
+  aria-label="Biglietto #037"
+  class="mx-auto bg-white text-black w-full max-w-[180mm] p-8 text-base"
+  data-format="a4"
+>
+  <header
+    class="flex flex-col items-center gap-1 text-center"
+  >
+    <p
+      class="font-bold text-lg"
+    >
+      Lido Demo
+    </p>
+    <p>
+      Lido Demo SRL · P. IVA IT01234567890
+    </p>
+    <p>
+      Lungomare 1, Gaeta
+    </p>
+  </header>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <section
+    aria-label="Numero e data"
+    class="text-center"
+  >
+    <p
+      class="uppercase"
+    >
+      Biglietto giornaliero
+    </p>
+    <p
+      class="font-bold tabular-nums text-4xl"
+    >
+      #037
+    </p>
+    <p
+      class="font-bold"
+    >
+      Valido il 14/07/2026
+    </p>
+    <p>
+      Emesso 14/07/2026, 10:05
+    </p>
+  </section>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <dl
+    class="space-y-0.5"
+  >
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Dove
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Postazione A1
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Formula
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Giornata intera
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Pack
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Ombrellone + 2 lettini
+      </dd>
+    </div>
+  </dl>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <dl
+    class="space-y-0.5"
+  >
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        1 × Lettino aggiuntivo
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        5,00 €
+      </dd>
+    </div>
+  </dl>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <dl
+    class="space-y-0.5"
+  >
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3 font-bold"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Totale
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        <span
+          class="text-xl"
+        >
+          30,00 €
+        </span>
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        IVA 22%
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        imponibile 24,59 € · imposta 5,41 €
+      </dd>
+    </div>
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3"
+    >
+      <dt
+        class="min-w-0"
+      >
+        Pagamento
+      </dt>
+      <dd
+        class="ml-auto text-right tabular-nums"
+      >
+        Contanti
+      </dd>
+    </div>
+  </dl>
+  <hr
+    class="my-2 border-dashed border-current"
+  />
+  <footer
+    class="flex flex-col items-center gap-1 text-center"
+  >
+    <svg
+      aria-label="Codice QR del biglietto AR-7K3Q9"
+      class="fill-current size-36"
+      data-qr="AR-7K3Q9"
+      role="img"
+      shape-rendering="crispEdges"
+      viewBox="0 0 29 29"
+    >
+      <path
+        d="M4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM13 4h1v1h-1zM14 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM19 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM4 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM16 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM14 6h1v1h-1zM15 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM15 7h1v1h-1zM16 7h1v1h-1zM18 7h1v1h-1zM20 7h1v1h-1zM21 7h1v1h-1zM22 7h1v1h-1zM24 7h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM18 9h1v1h-1zM24 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM19 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM13 12h1v1h-1zM16 12h1v1h-1zM20 12h1v1h-1zM23 12h1v1h-1zM4 13h1v1h-1zM7 13h1v1h-1zM12 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM17 13h1v1h-1zM18 13h1v1h-1zM20 13h1v1h-1zM21 13h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM12 14h1v1h-1zM15 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM23 14h1v1h-1zM24 14h1v1h-1zM4 15h1v1h-1zM6 15h1v1h-1zM9 15h1v1h-1zM13 15h1v1h-1zM15 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM21 15h1v1h-1zM4 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM9 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM12 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM15 16h1v1h-1zM18 16h1v1h-1zM20 16h1v1h-1zM24 16h1v1h-1zM12 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM18 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM7 18h1v1h-1zM8 18h1v1h-1zM9 18h1v1h-1zM10 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1zM19 18h1v1h-1zM20 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM24 18h1v1h-1zM4 19h1v1h-1zM10 19h1v1h-1zM14 19h1v1h-1zM18 19h1v1h-1zM20 19h1v1h-1zM21 19h1v1h-1zM23 19h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM16 20h1v1h-1zM18 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM7 21h1v1h-1zM8 21h1v1h-1zM10 21h1v1h-1zM13 21h1v1h-1zM15 21h1v1h-1zM17 21h1v1h-1zM20 21h1v1h-1zM23 21h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM7 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM12 22h1v1h-1zM13 22h1v1h-1zM15 22h1v1h-1zM17 22h1v1h-1zM18 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM24 22h1v1h-1zM4 23h1v1h-1zM10 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM17 23h1v1h-1zM20 23h1v1h-1zM23 23h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM7 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM12 24h1v1h-1zM15 24h1v1h-1zM17 24h1v1h-1zM18 24h1v1h-1zM22 24h1v1h-1zM23 24h1v1h-1zM24 24h1v1h-1z"
+      />
+    </svg>
+    <p
+      class="tabular-nums"
+    >
+      AR-7K3Q9
+    </p>
+    <p>
+      Grazie e buona giornata!
+    </p>
+    <p
+      class="mt-1 flex items-center gap-1 opacity-70"
+    >
+      <img
+        alt=""
+        class="shrink-0 size-3 grayscale"
+        src="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201024%201024'%20width='1024'%20height='1024'%20role='img'%20aria-label='Arenile%20—%20app%20icon%20flat'%3e%3ctitle%3eArenile%20—%20app%20icon%20flat%3c/title%3e%3crect%20width='1024'%20height='1024'%20rx='218'%20fill='%230B2542'/%3e%3cpath%20d='M%20282.8%20528.6%20L%20460%20186%20L%20582%20186%20L%20784.9%20637%20C%20765.6%20644.2%20748.6%20641.7%20730.4%20632.6%20C%20683.4%20607.5%20645.4%20572.3%20603.5%20539.9%20L%20509%20349%20L%20451.2%20476.7%20C%20388.2%20473.4%20332%20494%20282.8%20528.6%20Z'%20fill='%23FFF0D1'/%3e%3cpath%20d='M%20694.5%20723.7%20C%20736.4%20726.6%20776.1%20715.3%20807%20686.1%20L%20870.4%20827%20L%20745.6%20827%20Z'%20fill='%23FFF0D1'/%3e%3cpath%20d='M%20151%20827%20C%20236%20717%20353%20677%20445%20680%20C%20555%20678%20635%20748%20700%20827%20Z'%20fill='%23F2C893'/%3e%3cpath%20d='M%20182%20701%20C%20211%20620%20277%20545%20345%20519%20C%20411%20488%20473%20495%20526%20518%20C%20598%20550%20648%20616%20711%20647%20C%20746%20668%20773%20669%20807%20651%20C%20772%20707%20697%20717%20632%20682%20C%20577%20651%20538%20613%20491%20601%20C%20418%20572%20360%20594%20306%20631%20C%20260%20659%20214%20692%20182%20701%20Z'%20fill='%2338BDF8'/%3e%3c/svg%3e"
+      />
+      <span
+        class="font-mono"
+      >
+        Arenile
+      </span>
+    </p>
+  </footer>
+</article>
+`;

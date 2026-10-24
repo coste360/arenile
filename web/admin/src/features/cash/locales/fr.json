@@ -54,7 +54,8 @@
     "quickPay": "Encaisser",
     "close": "Clôturer la caisse",
     "print": "Imprimer le récapitulatif",
-    "printZ": "Imprimer le ticket Z"
+    "printZ": "Imprimer le ticket Z",
+    "dailySale": "Vente rapide"
   },
   "open": {
     "title": "Ouvrir la caisse",

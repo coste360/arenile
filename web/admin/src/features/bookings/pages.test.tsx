@@ -212,7 +212,7 @@ describe('BookingsPage', () => {
 
     await user.click(within(sheet).getByRole('radio', { name: 'Nuovo cliente' }));
     await user.type(within(sheet).getByLabelText('Cognome'), 'Verdi');
-    await user.type(within(sheet).getByLabelText('Telefono'), '333 000 1111');
+    await user.type(within(sheet).getByLabelText(/^Telefono/), '333 000 1111');
 
     expect(await within(sheet).findByTestId('quote-total')).toHaveTextContent('24,00 €');
     await user.click(within(sheet).getByRole('switch', { name: 'Incassa ora' }));

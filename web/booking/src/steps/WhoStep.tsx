@@ -85,9 +85,7 @@ export default function WhoStep({
 
   const customer = state?.customer;
   const form = useForm<CustomerValues>({
-    resolver: zodResolver(
-      customerSchema({ requirePhone: online.require_phone, hasTerms: !!terms }),
-    ),
+    resolver: zodResolver(customerSchema({ hasTerms: !!terms })),
     defaultValues: {
       first_name: customer?.first_name ?? '',
       last_name: customer?.last_name ?? '',
@@ -193,9 +191,7 @@ export default function WhoStep({
           <FieldError id={`${id}-email-error`}>{err(errors.email)}</FieldError>
         </Field>
         <Field data-invalid={!!errors.phone || undefined}>
-          <FieldLabel htmlFor={`${id}-phone`}>
-            {online.require_phone ? t('who.phone') : t('who.phoneOptional')}
-          </FieldLabel>
+          <FieldLabel htmlFor={`${id}-phone`}>{t('who.phoneOptional')}</FieldLabel>
           <Input
             id={`${id}-phone`}
             type="tel"

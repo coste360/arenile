@@ -36,8 +36,7 @@
       "maxDaysAheadHint": "Maximale Tage im Voraus, zusätzlich zu den Grenzen der Online-Richtlinie. Leer: keine zusätzliche Grenze.",
       "days": "Tage",
       "showRatePeriods": "Tarifzeiträume im Kalender hervorheben",
-      "promoCodes": "Feld für Aktionscodes",
-      "requirePhone": "Telefon erforderlich"
+      "promoCodes": "Feld für Aktionscodes"
     },
     "offer": {
       "title": "Online verkaufte Bereiche und Pakete",

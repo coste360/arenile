@@ -283,14 +283,6 @@ function OnlineSettingsForm({
                   disabled={readOnly}
                   label={t('settings.flow.promoCodes')}
                 />
-                <BooleanField
-                  control={control}
-                  name="require_phone"
-                  id="ol-require_phone"
-                  variant="switch"
-                  disabled={readOnly}
-                  label={t('settings.flow.requirePhone')}
-                />
               </div>
             </div>
           </SectionCard>

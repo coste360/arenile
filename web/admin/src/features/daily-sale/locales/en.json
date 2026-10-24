@@ -1,28 +1,205 @@
 {
-  "scaffold": "Feature in preparation.",
   "sale": {
     "title": "Quick sale",
-    "description": "Full day, morning or afternoon on a spot or just a zone: price, payment and numbered ticket in one step."
+    "description": "Full day, morning or afternoon on a spot or just a zone: price, payment and numbered ticket in one step.",
+    "sheetTitle": "Sell day ticket",
+    "sheetDescription": "Numbered ticket of the day: choose formula and extras, then take cash or card.",
+    "summary": "Total and payment",
+    "total": "Total",
+    "vatIncluded": "incl. VAT {{rate}} {{tax}}",
+    "zoneFree_one": "{{count}} free place in the zone",
+    "zoneFree_other": "{{count}} free places in the zone",
+    "zoneFull": "No free place in the zone for the chosen slot.",
+    "spotTaken": "The spot is not free for the chosen slot: choose another one.",
+    "pickSpot": "Choose a free spot.",
+    "pickZone": "Choose a zone.",
+    "noSessionTitle": "Cash register closed",
+    "noSession": "Open the cash session to take cash; card sales work right away.",
+    "openCash": "Open the cash register",
+    "tendered": "Cash received",
+    "change": "Change",
+    "shortcutsHint": "Shortcuts: 1, 2, 3 slot · P spot · Z zone · C cash · K card.",
+    "where": "Where",
+    "date": "Sale day",
+    "spot": "Spot",
+    "spotPlaceholder": "Choose a free spot",
+    "noFreeSpots": "No free spots",
+    "zone": "Zone",
+    "freeCount_one": "{{count}} free",
+    "freeCount_other": "{{count}} free",
+    "zoneHint": "The spot is assigned later from the map: the zone capacity is already taken.",
+    "slots": "Formula",
+    "pack": "Pack",
+    "extras": "Extras",
+    "holder": "Name on the ticket",
+    "optional": "(optional)",
+    "lastName": "Last name",
+    "firstName": "First name",
+    "holderHint": "Only for the map label: without a name the spot shows the ticket number.",
+    "offline": "You cannot sell offline: only the server guarantees availability.",
+    "done": "Ticket {{number}} issued",
+    "printFailed": "Ticket {{number}} issued, but printing did not start: reprint it from the summary.",
+    "gate": "Gate",
+    "tabs": {
+      "label": "Sale type",
+      "spots": "Umbrellas",
+      "entries": "Entries"
+    }
   },
-  "tickets": {
-    "title": "Today's tickets",
-    "description": "Tickets issued today with number, time, spot or zone, status, amount and method; CSV export."
+  "where": {
+    "spot": "Spot",
+    "zone": "Zone only"
   },
-  "assign": {
-    "title": "To assign",
-    "description": "Tickets sold for a zone: pick one, then tap a free spot in its zone."
+  "slots": {
+    "FULL": "Full day",
+    "AM": "Morning",
+    "PM": "Afternoon"
+  },
+  "method": {
+    "cash": "Cash",
+    "card": "Card"
+  },
+  "done": {
+    "title": "Ticket issued",
+    "spot": "Spot {{label}}",
+    "unassigned": "{{zone}} · to assign on the map",
+    "new": "New sale"
+  },
+  "actions": {
+    "print": "Print",
+    "reprint": "Reprint",
+    "assign": "Assign",
+    "move": "Move",
+    "void": "Void ticket"
+  },
+  "printDialog": {
+    "title": "Print ticket {{number}}",
+    "titleLoading": "Print ticket",
+    "description": "Preview as it will come out of the printer; the format applies to this print only.",
+    "format": "Format"
+  },
+  "format": {
+    "thermal_80": "Receipt 80 mm",
+    "thermal_58": "Receipt 58 mm",
+    "a5": "A5",
+    "a4": "A4"
   },
   "print": {
     "label": "Ticket {{number}}",
+    "numberSection": "Number and date",
+    "title": "Day ticket",
+    "entryTitle": "Entry ticket",
     "reprint": "Reprint",
-    "unassigned": "To assign"
+    "voided": "Voided",
+    "spot": "Spot {{label}}",
+    "zoneUnassigned": "{{zone}} (to assign)",
+    "vatNumber": "VAT no. {{vat}}",
+    "where": "Where",
+    "slots": "Formula",
+    "pack": "Pack",
+    "holder": "Name",
+    "total": "Total",
+    "vatLine": "VAT {{rate}}",
+    "vatAmounts": "net {{taxable}} · tax {{tax}}",
+    "payment": "Payment",
+    "qr": "QR code of ticket {{code}}",
+    "validOn": "Valid on {{date}}",
+    "issuedAt": "Issued {{time}}"
+  },
+  "tickets": {
+    "title": "Today's tickets",
+    "description": "Tickets issued on the day with number, time, spot or zone, state, amount and method; CSV export.",
+    "col": {
+      "number": "Number",
+      "time": "Time",
+      "where": "Spot or zone",
+      "slots": "Formula",
+      "holder": "Name",
+      "state": "State",
+      "amount": "Amount",
+      "method": "Method",
+      "actions": "Actions"
+    },
+    "entry": "Entry",
+    "printAria": "Print ticket {{number}}",
+    "assignAria": "Assign ticket {{number}} to a spot",
+    "moveAria": "Move ticket {{number}}",
+    "voidAria": "Void ticket {{number}}",
+    "csv": "Export CSV",
+    "csvAria": "Export CSV of the tickets of {{date}}",
+    "date": "Day",
+    "filter": "State",
+    "all": "All",
+    "summary": "Day summary",
+    "issued": "Issued",
+    "takings": "Takings",
+    "byMethod": "Cash {{cash}} · Card {{card}}",
+    "voided": "Voided",
+    "listTitle": "Tickets",
+    "empty": "No tickets for this day.",
+    "vatTitle": "Takings by VAT rate",
+    "vatDescription": "The same amounts as the cash session and the daily takings report; voided tickets are excluded."
+  },
+  "state": {
+    "assigned": "Assigned",
+    "unassigned": "To assign",
+    "issued": "Issued",
+    "entered": "Entered",
+    "voided": "Voided"
+  },
+  "move": {
+    "title": "Move ticket {{number}}",
+    "assignTitle": "Assign ticket {{number}}",
+    "description": "Choose the new free spot: the move is immediate.",
+    "assignDescription": "Choose a free spot in the ticket's zone.",
+    "spot": "Spot",
+    "done": "Ticket {{number}} on spot {{label}}"
+  },
+  "void": {
+    "title": "Void ticket {{number}}?",
+    "description": "The spot or zone place becomes free again; the ticket keeps its number and is marked as voided.",
+    "reason": "Reason",
+    "reasonRequired": "Enter the reason for voiding.",
+    "refund": "Refund",
+    "refund_refund": "Refund with the same method",
+    "refund_credit": "Credit to the customer",
+    "refund_none": "No refund",
+    "done": "Ticket {{number}} voided"
+  },
+  "assign": {
+    "title": "To assign",
+    "description": "Tickets sold by zone: pick one and tap a free spot in its zone.",
+    "auto": "Assign automatically",
+    "listLabel": "Tickets to assign",
+    "ticketAria": "Ticket {{number}}, {{zone}}, {{slots}}",
+    "pick": "Tap a free spot in {{zone}} for ticket {{number}}.",
+    "notFree": "This spot is not free: choose a highlighted one.",
+    "wrongZone": "Choose a spot in the {{zone}} zone.",
+    "done": "Ticket {{number}} assigned to spot {{label}}",
+    "autoDone_one": "{{count}} ticket assigned",
+    "autoDone_other": "{{count}} tickets assigned",
+    "autoPartial_one": "{{count}} ticket assigned, {{left}} without a free spot",
+    "autoPartial_other": "{{count}} tickets assigned, {{left}} without a free spot"
   },
   "problems": {
-    "zone_full": "No free spot left in the zone for the chosen slot.",
-    "assignment_conflict": "The spot was just taken: pick another one.",
-    "ticket_number_conflict": "Ticket number already used, please retry.",
+    "zone_full": "No free place in the zone for the chosen slot.",
+    "assignment_conflict": "The spot has just been taken: choose another one.",
+    "ticket_number_conflict": "Ticket number already used, try again.",
     "ticket_voided": "The ticket is voided.",
     "ticket_already_entered": "The ticket has already been used to enter.",
-    "price_changed": "The price has changed: check the new total."
+    "price_changed": "The price has changed: check the new total and take the payment again.",
+    "spot_unavailable": "The spot is no longer free: choose another one.",
+    "cash_session_closed": "The cash register is closed: open it to take cash."
+  },
+  "settings": {
+    "open": "Settings",
+    "title": "Ticket settings",
+    "description": "They apply to every register of the establishment.",
+    "format": "Default print format",
+    "autoPrint": "Print right after the sale",
+    "autoPrintHint": "Opens the print of the ticket as soon as it is paid.",
+    "zoneFirst": "Sale by zone",
+    "zoneFirstHint": "Lets you sell only the zone and assign the spot later from the map.",
+    "saved": "Ticket settings saved"
   }
 }

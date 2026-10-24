@@ -36,8 +36,7 @@
       "maxDaysAheadHint": "Nombre maximal de jours à l'avance, en plus des limites de la politique en ligne. Vide : aucune limite supplémentaire.",
       "days": "jours",
       "showRatePeriods": "Mettre en évidence les périodes tarifaires dans le calendrier",
-      "promoCodes": "Champ code promo",
-      "requirePhone": "Téléphone obligatoire"
+      "promoCodes": "Champ code promo"
     },
     "offer": {
       "title": "Zones et forfaits vendus en ligne",

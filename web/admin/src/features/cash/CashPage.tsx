@@ -17,6 +17,7 @@ import {
   LockIcon,
   PrinterIcon,
   WalletIcon,
+  ZapIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -85,6 +86,17 @@ export function CashPage() {
           >
             <FileSpreadsheetIcon aria-hidden="true" />
             {t('corrispettivi.title')}
+          </Link>
+        </Button>
+      )}
+      {ctx.canOperate && (
+        <Button variant="outline" asChild>
+          <Link
+            to="/e/$establishmentId/vendita-rapida"
+            params={{ establishmentId: ctx.establishmentId }}
+          >
+            <ZapIcon aria-hidden="true" />
+            {t('actions.dailySale')}
           </Link>
         </Button>
       )}

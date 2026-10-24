@@ -49,7 +49,7 @@
   "form": {
     "newTitle": "Nuovo cliente",
     "editTitle": "Modifica cliente",
-    "description": "Dati minimi: cognome e un recapito (telefono o email).",
+    "description": "Dati minimi: il cognome. Telefono ed email sono facoltativi.",
     "created": "Cliente {{name}} creato.",
     "updated": "Cliente aggiornato."
   },

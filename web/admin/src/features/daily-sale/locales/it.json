@@ -1,21 +1,185 @@
 {
-  "scaffold": "Funzione in preparazione.",
   "sale": {
     "title": "Vendita rapida",
-    "description": "Giornata, mattina o pomeriggio su una postazione o solo su una zona: prezzo, incasso e biglietto numerato in un passaggio."
+    "description": "Giornata, mattina o pomeriggio su una postazione o solo su una zona: prezzo, incasso e biglietto numerato in un passaggio.",
+    "sheetTitle": "Vendi giornata",
+    "sheetDescription": "Biglietto numerato del giorno: scegli formula ed extra, poi incassa in contanti o con carta.",
+    "summary": "Totale e pagamento",
+    "total": "Totale",
+    "vatIncluded": "di cui IVA {{rate}} {{tax}}",
+    "zoneFree_one": "{{count}} posto libero nella zona",
+    "zoneFree_other": "{{count}} posti liberi nella zona",
+    "zoneFull": "Nessun posto libero nella zona per la fascia scelta.",
+    "spotTaken": "La postazione non è libera per la fascia scelta: scegline un'altra.",
+    "pickSpot": "Scegli una postazione libera.",
+    "pickZone": "Scegli una zona.",
+    "noSessionTitle": "Cassa chiusa",
+    "noSession": "Per incassare in contanti apri prima la sessione di cassa; con carta puoi vendere subito.",
+    "openCash": "Apri la cassa",
+    "tendered": "Contanti ricevuti",
+    "change": "Resto",
+    "shortcutsHint": "Scorciatoie: 1, 2, 3 fascia · P postazione · Z zona · C contanti · K carta.",
+    "where": "Dove",
+    "date": "Giorno della vendita",
+    "spot": "Postazione",
+    "spotPlaceholder": "Scegli una postazione libera",
+    "noFreeSpots": "Nessuna postazione libera",
+    "zone": "Zona",
+    "freeCount_one": "{{count}} libero",
+    "freeCount_other": "{{count}} liberi",
+    "zoneHint": "Il posto si assegna dopo, dalla mappa: la capacità della zona è già occupata.",
+    "slots": "Formula",
+    "pack": "Pack",
+    "extras": "Extra",
+    "holder": "Nome sul biglietto",
+    "optional": "(facoltativo)",
+    "lastName": "Cognome",
+    "firstName": "Nome",
+    "holderHint": "Solo per l'etichetta in mappa: senza nome la postazione mostra il numero del biglietto.",
+    "offline": "Senza connessione non si può vendere: la disponibilità la garantisce solo il server.",
+    "done": "Biglietto {{number}} emesso",
+    "printFailed": "Biglietto {{number}} emesso, ma la stampa non è partita: ristampalo dal riepilogo.",
+    "gate": "Varco",
+    "tabs": {
+      "label": "Tipo di vendita",
+      "spots": "Ombrelloni",
+      "entries": "Ingressi"
+    }
   },
-  "tickets": {
-    "title": "Ticket del giorno",
-    "description": "Biglietti emessi oggi con numero, ora, postazione o zona, stato, importo e metodo; esportazione CSV."
+  "where": {
+    "spot": "Postazione",
+    "zone": "Solo zona"
   },
-  "assign": {
-    "title": "Da assegnare",
-    "description": "Biglietti venduti per zona: scegline uno e tocca una postazione libera della sua zona."
+  "slots": {
+    "FULL": "Giornata intera",
+    "AM": "Mattina",
+    "PM": "Pomeriggio"
+  },
+  "method": {
+    "cash": "Contanti",
+    "card": "Carta"
+  },
+  "done": {
+    "title": "Biglietto emesso",
+    "spot": "Postazione {{label}}",
+    "unassigned": "{{zone}} · da assegnare sulla mappa",
+    "new": "Nuova vendita"
+  },
+  "actions": {
+    "print": "Stampa",
+    "reprint": "Ristampa",
+    "assign": "Assegna",
+    "move": "Sposta",
+    "void": "Annulla biglietto"
+  },
+  "printDialog": {
+    "title": "Stampa del biglietto {{number}}",
+    "titleLoading": "Stampa del biglietto",
+    "description": "Anteprima come uscirà dalla stampante; il formato vale solo per questa stampa.",
+    "format": "Formato"
+  },
+  "format": {
+    "thermal_80": "Scontrino 80 mm",
+    "thermal_58": "Scontrino 58 mm",
+    "a5": "A5",
+    "a4": "A4"
   },
   "print": {
     "label": "Biglietto {{number}}",
+    "numberSection": "Numero e data",
+    "title": "Biglietto giornaliero",
+    "entryTitle": "Biglietto d'ingresso",
     "reprint": "Ristampa",
-    "unassigned": "Da assegnare"
+    "voided": "Annullato",
+    "spot": "Postazione {{label}}",
+    "zoneUnassigned": "{{zone}} (da assegnare)",
+    "vatNumber": "P. IVA {{vat}}",
+    "where": "Dove",
+    "slots": "Formula",
+    "pack": "Pack",
+    "holder": "Nome",
+    "total": "Totale",
+    "vatLine": "IVA {{rate}}",
+    "vatAmounts": "imponibile {{taxable}} · imposta {{tax}}",
+    "payment": "Pagamento",
+    "qr": "Codice QR del biglietto {{code}}",
+    "validOn": "Valido il {{date}}",
+    "issuedAt": "Emesso {{time}}"
+  },
+  "tickets": {
+    "title": "Ticket del giorno",
+    "description": "Biglietti emessi nel giorno con numero, ora, postazione o zona, stato, importo e metodo; esportazione CSV.",
+    "col": {
+      "number": "Numero",
+      "time": "Ora",
+      "where": "Postazione o zona",
+      "slots": "Formula",
+      "holder": "Nome",
+      "state": "Stato",
+      "amount": "Importo",
+      "method": "Metodo",
+      "actions": "Azioni"
+    },
+    "entry": "Ingresso",
+    "printAria": "Stampa il biglietto {{number}}",
+    "assignAria": "Assegna il biglietto {{number}} a una postazione",
+    "moveAria": "Sposta il biglietto {{number}}",
+    "voidAria": "Annulla il biglietto {{number}}",
+    "csv": "Esporta CSV",
+    "csvAria": "Esporta CSV dei biglietti del {{date}}",
+    "date": "Giorno",
+    "filter": "Stato",
+    "all": "Tutti",
+    "summary": "Riepilogo del giorno",
+    "issued": "Emessi",
+    "takings": "Incasso",
+    "byMethod": "Contanti {{cash}} · Carta {{card}}",
+    "voided": "Annullati",
+    "listTitle": "Biglietti",
+    "empty": "Nessun biglietto per questo giorno.",
+    "vatTitle": "Corrispettivi per aliquota",
+    "vatDescription": "Gli stessi importi della sessione di cassa e dei corrispettivi; gli annullati sono esclusi."
+  },
+  "state": {
+    "assigned": "Assegnato",
+    "unassigned": "Da assegnare",
+    "issued": "Emesso",
+    "entered": "Entrato",
+    "voided": "Annullato"
+  },
+  "move": {
+    "title": "Sposta il biglietto {{number}}",
+    "assignTitle": "Assegna il biglietto {{number}}",
+    "description": "Scegli la nuova postazione libera: lo spostamento è immediato.",
+    "assignDescription": "Scegli una postazione libera della zona del biglietto.",
+    "spot": "Postazione",
+    "done": "Biglietto {{number}} sulla postazione {{label}}"
+  },
+  "void": {
+    "title": "Annullare il biglietto {{number}}?",
+    "description": "La postazione o il posto in zona tornano liberi; il biglietto mantiene il suo numero ed è segnato come annullato.",
+    "reason": "Motivo",
+    "reasonRequired": "Indica il motivo dell'annullamento.",
+    "refund": "Rimborso",
+    "refund_refund": "Rimborsa con lo stesso metodo",
+    "refund_credit": "Accredita al cliente",
+    "refund_none": "Nessun rimborso",
+    "done": "Biglietto {{number}} annullato"
+  },
+  "assign": {
+    "title": "Da assegnare",
+    "description": "Biglietti venduti per zona: scegline uno e tocca una postazione libera della sua zona.",
+    "auto": "Assegna automaticamente",
+    "listLabel": "Biglietti da assegnare",
+    "ticketAria": "Biglietto {{number}}, {{zone}}, {{slots}}",
+    "pick": "Tocca una postazione libera di {{zone}} per il biglietto {{number}}.",
+    "notFree": "Questa postazione non è libera: scegline una evidenziata.",
+    "wrongZone": "Scegli una postazione della zona {{zone}}.",
+    "done": "Biglietto {{number}} assegnato alla postazione {{label}}",
+    "autoDone_one": "{{count}} biglietto assegnato",
+    "autoDone_other": "{{count}} biglietti assegnati",
+    "autoPartial_one": "{{count}} biglietto assegnato, {{left}} senza posto libero",
+    "autoPartial_other": "{{count}} biglietti assegnati, {{left}} senza posto libero"
   },
   "problems": {
     "zone_full": "Nessun posto libero nella zona per la fascia scelta.",
@@ -23,6 +187,19 @@
     "ticket_number_conflict": "Numero del biglietto già usato, riprova.",
     "ticket_voided": "Il biglietto è annullato.",
     "ticket_already_entered": "Il biglietto è già stato usato per entrare.",
-    "price_changed": "Il prezzo è cambiato: controlla il nuovo totale."
+    "price_changed": "Il prezzo è cambiato: controlla il nuovo totale e incassa di nuovo.",
+    "spot_unavailable": "La postazione non è più libera: scegline un'altra.",
+    "cash_session_closed": "La cassa è chiusa: aprila per incassare in contanti."
+  },
+  "settings": {
+    "open": "Impostazioni",
+    "title": "Impostazioni dei biglietti",
+    "description": "Valgono per tutte le casse dello stabilimento.",
+    "format": "Formato di stampa predefinito",
+    "autoPrint": "Stampa subito dopo la vendita",
+    "autoPrintHint": "Apre la stampa del biglietto appena incassato.",
+    "zoneFirst": "Vendita per zona",
+    "zoneFirstHint": "Consente di vendere solo la zona e assegnare il posto dopo dalla mappa.",
+    "saved": "Impostazioni dei biglietti salvate"
   }
 }

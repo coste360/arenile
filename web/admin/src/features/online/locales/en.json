@@ -36,8 +36,7 @@
       "maxDaysAheadHint": "Maximum days in advance, on top of the online policy limits. Empty: no extra limit.",
       "days": "days",
       "showRatePeriods": "Highlight rate periods in the calendar",
-      "promoCodes": "Promo code field",
-      "requirePhone": "Phone required"
+      "promoCodes": "Promo code field"
     },
     "offer": {
       "title": "Areas and packages sold online",

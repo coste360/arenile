@@ -16,7 +16,9 @@
     "noBalances": "Aucun solde à encaisser.",
     "noAssignments": "Aucune ligne à attribuer.",
     "checkInAria": "Enregistrer le check-in de {{customer}}",
-    "mapTitle": "Plan du jour"
+    "mapTitle": "Plan du jour",
+    "assignOnMap": "Attribuer sur le plan",
+    "assignTicketAria": "Attribuer le billet {{number}} sur le plan"
   },
   "map": {
     "title": "Plan",
@@ -101,7 +103,8 @@
     "blockedReason": "Bloqué : {{reason}}",
     "free": "Aucune allocation pour ce créneau.",
     "checkedIn": "Check-in enregistré pour {{code}}.",
-    "readOnly": "Accès en lecture seule."
+    "readOnly": "Accès en lecture seule.",
+    "ticket": "Billet"
   },
   "actions": {
     "checkIn": "Check-in",
@@ -111,7 +114,8 @@
     "move": "Déplacer",
     "collect": "Encaisser",
     "openDetail": "Ouvrir le détail",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "dailySale": "Vendre la journée"
   },
   "release": {
     "title": "Libérer l'emplacement {{label}} ?",

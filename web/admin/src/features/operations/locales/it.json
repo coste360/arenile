@@ -16,7 +16,9 @@
     "noBalances": "Nessun saldo da incassare.",
     "noAssignments": "Nessuna riga da assegnare.",
     "checkInAria": "Registra il check-in di {{customer}}",
-    "mapTitle": "Mappa del giorno"
+    "mapTitle": "Mappa del giorno",
+    "assignOnMap": "Assegna sulla mappa",
+    "assignTicketAria": "Assegna il biglietto {{number}} sulla mappa"
   },
   "map": {
     "title": "Mappa",
@@ -101,7 +103,8 @@
     "blockedReason": "Bloccata: {{reason}}",
     "free": "Nessuna allocazione per questa fascia.",
     "checkedIn": "Check-in registrato per {{code}}.",
-    "readOnly": "Accesso in sola lettura."
+    "readOnly": "Accesso in sola lettura.",
+    "ticket": "Biglietto"
   },
   "actions": {
     "checkIn": "Check-in",
@@ -111,7 +114,8 @@
     "move": "Sposta",
     "collect": "Incassa",
     "openDetail": "Apri dettaglio",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "dailySale": "Vendi giornata"
   },
   "release": {
     "title": "Rilasciare la postazione {{label}}?",

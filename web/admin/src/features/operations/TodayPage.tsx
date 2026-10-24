@@ -32,6 +32,8 @@ import { toast } from 'sonner';
 import { useRequiredEstablishmentId } from '../../establishment';
 import { useQueueableCheckIn } from '../../offline/useQueueableCheckIn';
 import { useOnlineStatus } from '../../lib/online';
+import { localize } from '../configuration/lib/i18nText';
+import { useUnassignedTickets } from '../daily-sale/api';
 import { useDayTakings, useOperationsDay } from './api/operations';
 import { DayToolbar } from './components/DayToolbar';
 import { OperationalMapView } from './components/OperationalMapView';
@@ -63,6 +65,52 @@ export function TodayPage() {
   const { options, mapId, setMapId, geometry, hasNoMaps } = useSelectedMap(establishmentId);
   // KPIs cover every map of the establishment; the map card shows the selected one.
   const day = useOperationsDay(establishmentId, date, slot);
+  // Daily tickets sold by zone (ADR 0020): zone-mode ones are pending lines of
+  // the day; seat-mode ones hold a provisional spot, so they come from the
+  // tickets "da assegnare" list.
+  const unassignedTickets = useUnassignedTickets(establishmentId, date);
+  const assignOnMap = (label: string) => (
+    <Button size="sm" variant="outline" asChild>
+      <Link
+        to="/e/$establishmentId/mappa"
+        params={{ establishmentId }}
+        search={{ date, slot }}
+        aria-label={t('today.assignTicketAria', { number: label })}
+      >
+        <MapIcon aria-hidden="true" />
+        {t('today.assignOnMap')}
+      </Link>
+    </Button>
+  );
+  const pending = day.data?.pending_assignments ?? [];
+  const pendingBookings = new Set(pending.map((p) => p.booking_id));
+  const assignRows = [
+    ...pending.map((p) => ({
+      id: p.booking_id,
+      key: p.line_id,
+      // Daily tickets show their number ("#037"), then the name if given.
+      title: p.ticket
+        ? [...new Set([p.ticket.label, p.customer_display_name].filter(Boolean))].join(' · ')
+        : p.customer_display_name,
+      meta: `${p.code} · ${t(`slot.${p.slots}`)}`,
+      action: p.ticket ? assignOnMap(p.ticket.label) : null,
+    })),
+    ...(unassignedTickets.data?.items ?? [])
+      .filter((tk) => !pendingBookings.has(tk.booking_id))
+      .map((tk) => ({
+        id: tk.booking_id,
+        key: tk.id,
+        title: [tk.number_label, tk.holder_name].filter(Boolean).join(' · '),
+        meta: [
+          tk.booking_code,
+          localize(tk.zone_name, i18n.language || 'it', 'it'),
+          tk.slots ? t(`slot.${tk.slots}`) : '',
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        action: assignOnMap(tk.number_label),
+      })),
+  ];
   // With a single map both queries share one cache entry (same key, one request).
   const mapDay = useOperationsDay(
     establishmentId,
@@ -269,8 +317,7 @@ export function TodayPage() {
                     value: 'assign',
                     label: (
                       <>
-                        {t('today.toAssign')}{' '}
-                        <Badge variant="secondary">{day.data.pending_assignments.length}</Badge>
+                        {t('today.toAssign')} <Badge variant="secondary">{assignRows.length}</Badge>
                       </>
                     ),
                   },
@@ -325,13 +372,7 @@ export function TodayPage() {
               <TabsContent value="assign">
                 <WorkList
                   empty={t('today.noAssignments')}
-                  rows={day.data.pending_assignments.map((p) => ({
-                    id: p.booking_id,
-                    key: p.line_id,
-                    title: p.customer_display_name,
-                    meta: `${p.code} · ${t(`slot.${p.slots}`)}`,
-                    action: null,
-                  }))}
+                  rows={assignRows}
                   establishmentId={establishmentId}
                 />
               </TabsContent>

@@ -26,6 +26,7 @@ import {
   PlusIcon,
   UndoIcon,
   WalletIcon,
+  ZapIcon,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +57,8 @@ export interface SpotSheetProps {
   onOpenChange: (open: boolean) => void;
   onNewBooking: (spot: OperationalSpot) => void;
   onStartMove: (spot: OperationalSpot) => void;
+  /** Quick walk-in sale on a free spot ("Vendi giornata", daily-sale feature). */
+  onDailySale?: (spot: OperationalSpot) => void;
 }
 
 function Row({ label, children }: { label: ReactNode; children: ReactNode }) {
@@ -82,6 +85,7 @@ export function SpotSheet({
   onOpenChange,
   onNewBooking,
   onStartMove,
+  onDailySale,
 }: SpotSheetProps) {
   const { t } = useTranslation('operations');
   const problemText = useProblemText();
@@ -155,6 +159,7 @@ export function SpotSheet({
                 {b.is_season_pass && <Badge variant="outline">{t('sheet.seasonPass')}</Badge>}
               </div>
               <dl className="space-y-1.5">
+                {b.ticket && <Row label={t('sheet.ticket')}>{b.ticket.label}</Row>}
                 <Row label={t('sheet.code')}>{b.code}</Row>
                 <Row label={t('sheet.period')}>
                   {b.starts_on === b.ends_on
@@ -218,8 +223,17 @@ export function SpotSheet({
               {t('actions.checkIn')}
             </Button>
           )}
+          {actions.dailySale && onDailySale && (
+            <Button onClick={() => onDailySale(spot)}>
+              <ZapIcon aria-hidden="true" />
+              {t('actions.dailySale')}
+            </Button>
+          )}
           {actions.newBooking && (
-            <Button onClick={() => onNewBooking(spot)}>
+            <Button
+              variant={actions.dailySale && onDailySale ? 'outline' : 'default'}
+              onClick={() => onNewBooking(spot)}
+            >
               <PlusIcon aria-hidden="true" />
               {t('actions.newBooking')}
             </Button>

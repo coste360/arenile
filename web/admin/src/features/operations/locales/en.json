@@ -16,7 +16,9 @@
     "noBalances": "No balances to collect.",
     "noAssignments": "No lines to assign.",
     "checkInAria": "Check in {{customer}}",
-    "mapTitle": "Map of the day"
+    "mapTitle": "Map of the day",
+    "assignOnMap": "Assign on the map",
+    "assignTicketAria": "Assign ticket {{number}} on the map"
   },
   "map": {
     "title": "Map",
@@ -101,7 +103,8 @@
     "blockedReason": "Blocked: {{reason}}",
     "free": "No allocation for this slot.",
     "checkedIn": "{{code}} checked in.",
-    "readOnly": "Read-only access."
+    "readOnly": "Read-only access.",
+    "ticket": "Ticket"
   },
   "actions": {
     "checkIn": "Check in",
@@ -111,7 +114,8 @@
     "move": "Move",
     "collect": "Collect",
     "openDetail": "Open details",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "dailySale": "Sell day ticket"
   },
   "release": {
     "title": "Release spot {{label}}?",

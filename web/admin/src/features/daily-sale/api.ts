@@ -2,7 +2,7 @@
  * Server state of the daily sale feature ("Vendita giornaliera", spec 14.3,
  * ADR 0020): types from the generated schema, query keys under the `tickets`
  * area (refreshed by the booking, allocation and cash SSE topics) and the
- * TanStack Query hooks. The endpoints answer 501 until the backend is built.
+ * TanStack Query hooks.
  */
 import {
   call,
@@ -12,7 +12,8 @@ import {
   type ApiProblem,
   type Schemas,
 } from '@arenile/shared/api';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ifMatch } from '../configuration/lib/validation';
 
 export type Ticket = Schemas['Ticket'];
 export type TicketState = Schemas['TicketState'];
@@ -27,6 +28,7 @@ export type DailySaleQuote = Schemas['DailySaleQuote'];
 export type DailySaleCreate = Schemas['DailySaleCreate'];
 export type DailySaleResult = Schemas['DailySaleResult'];
 export type DailySaleSettings = Schemas['DailySaleSettings'];
+export type DailySaleSettingsUpdate = Schemas['DailySaleSettingsUpdate'];
 export type TicketAutoAssignResult = Schemas['TicketAutoAssignResult'];
 export type TicketVoidRequest = Schemas['TicketVoidRequest'];
 
@@ -112,15 +114,64 @@ export function useDailySaleSettings(establishmentId: string) {
   });
 }
 
-/** Price and availability of a sale while the form changes (no write). */
-export function useQuoteDailySale(establishmentId: string) {
+/** Saves the ticket settings (establishment.configure) with If-Match on the version read. */
+export function useUpdateDailySaleSettings(establishmentId: string) {
   const client = useApiClient();
-  return useMutation<DailySaleQuote, ApiProblem, DailySaleQuoteRequest>({
-    mutationFn: (body) =>
+  const qc = useQueryClient();
+  return useMutation<
+    DailySaleSettings,
+    ApiProblem,
+    { version: number; body: DailySaleSettingsUpdate }
+  >({
+    mutationFn: ({ version, body }) =>
       call(() =>
-        client.POST(`${BASE}/daily-sales/quote`, { params: { path: { establishmentId } }, body }),
+        client.PUT(`${BASE}/daily-sale-settings`, {
+          params: { path: { establishmentId }, header: { 'If-Match': ifMatch(version) } },
+          body,
+        }),
       ),
+    onSuccess: (s) => qc.setQueryData(ticketKeys.settings(establishmentId), s),
   });
+}
+
+/**
+ * Price and availability of a sale while the form changes (no write). The
+ * body is the cache key: the same selection is quoted once; the previous
+ * figures stay on screen while the next selection loads.
+ */
+export function useDailySaleQuote(establishmentId: string, body: DailySaleQuoteRequest | null) {
+  const client = useApiClient();
+  return useQuery<DailySaleQuote, ApiProblem>({
+    queryKey: [...ticketKeys.all(establishmentId), 'quote', body] as const,
+    enabled: !!body,
+    queryFn: () =>
+      call(() =>
+        client.POST(`${BASE}/daily-sales/quote`, {
+          params: { path: { establishmentId } },
+          body: body as DailySaleQuoteRequest,
+        }),
+      ),
+    placeholderData: keepPreviousData,
+    retry: shouldRetry,
+    staleTime: 10_000,
+  });
+}
+
+/** Print data of a ticket for an immediate print (first print after the sale). */
+export function useFetchTicketPrint(establishmentId: string) {
+  const client = useApiClient();
+  const qc = useQueryClient();
+  return (ticketId: string, format?: TicketPrintFormat) =>
+    qc.fetchQuery<TicketPrintData, ApiProblem>({
+      queryKey: ticketKeys.print(establishmentId, ticketId, format),
+      queryFn: () =>
+        call(() =>
+          client.GET(`${BASE}/tickets/{ticketId}/print`, {
+            params: { path: { establishmentId, ticketId }, query: { format } },
+          }),
+        ),
+      staleTime: 0,
+    });
 }
 
 function useInvalidateTickets(establishmentId: string) {
@@ -194,6 +245,40 @@ export function useVoidTicket(establishmentId: string) {
             header: { 'Idempotency-Key': idempotencyKey },
           },
           body,
+        }),
+      ),
+    onSettled: invalidate,
+  });
+}
+
+/** Reprint: counts the print, writes the audit and returns the data marked "Ristampa". */
+export function useReprintTicket(establishmentId: string) {
+  const client = useApiClient();
+  const invalidate = useInvalidateTickets(establishmentId);
+  return useMutation<TicketPrintData, ApiProblem, { ticketId: string; format?: TicketPrintFormat }>(
+    {
+      mutationFn: ({ ticketId, format }) =>
+        call(() =>
+          client.POST(`${BASE}/tickets/{ticketId}/reprint`, {
+            params: { path: { establishmentId, ticketId } },
+            body: format ? { format } : {},
+          }),
+        ),
+      onSuccess: invalidate,
+    },
+  );
+}
+
+/** Moves an assigned ticket (or reassigns it) to another free spot: 409 when taken. */
+export function useMoveTicket(establishmentId: string) {
+  const client = useApiClient();
+  const invalidate = useInvalidateTickets(establishmentId);
+  return useMutation<Ticket, ApiProblem, { ticketId: string; spotId: string; version?: number }>({
+    mutationFn: ({ ticketId, spotId, version }) =>
+      call(() =>
+        client.POST(`${BASE}/tickets/{ticketId}/move`, {
+          params: { path: { establishmentId, ticketId } },
+          body: { spot_id: spotId, version },
         }),
       ),
     onSettled: invalidate,

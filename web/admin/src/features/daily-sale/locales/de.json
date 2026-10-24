@@ -1,28 +1,205 @@
 {
-  "scaffold": "Funktion in Vorbereitung.",
   "sale": {
     "title": "Schnellverkauf",
-    "description": "Ganzer Tag, Vormittag oder Nachmittag auf einem Platz oder nur in einer Zone: Preis, Zahlung und nummeriertes Ticket in einem Schritt."
+    "description": "Ganzer Tag, Vormittag oder Nachmittag auf einem Platz oder nur in einer Zone: Preis, Zahlung und nummeriertes Ticket in einem Schritt.",
+    "sheetTitle": "Tagesticket verkaufen",
+    "sheetDescription": "Nummeriertes Tagesticket: Formel und Extras wählen, dann bar oder mit Karte kassieren.",
+    "summary": "Summe und Zahlung",
+    "total": "Summe",
+    "vatIncluded": "inkl. MwSt. {{rate}} {{tax}}",
+    "zoneFree_one": "{{count}} freier Platz in der Zone",
+    "zoneFree_other": "{{count}} freie Plätze in der Zone",
+    "zoneFull": "Kein freier Platz in der Zone für den gewählten Zeitraum.",
+    "spotTaken": "Der Platz ist für den gewählten Zeitraum nicht frei: Bitte wählen Sie einen anderen.",
+    "pickSpot": "Wählen Sie einen freien Platz.",
+    "pickZone": "Wählen Sie eine Zone.",
+    "noSessionTitle": "Kasse geschlossen",
+    "noSession": "Öffnen Sie zuerst die Kassensitzung, um bar zu kassieren; mit Karte können Sie sofort verkaufen.",
+    "openCash": "Kasse öffnen",
+    "tendered": "Erhaltenes Bargeld",
+    "change": "Rückgeld",
+    "shortcutsHint": "Tastenkürzel: 1, 2, 3 Zeitraum · P Platz · Z Zone · C bar · K Karte.",
+    "where": "Wo",
+    "date": "Verkaufstag",
+    "spot": "Platz",
+    "spotPlaceholder": "Freien Platz wählen",
+    "noFreeSpots": "Keine freien Plätze",
+    "zone": "Zone",
+    "freeCount_one": "{{count}} frei",
+    "freeCount_other": "{{count}} frei",
+    "zoneHint": "Der Platz wird später auf der Karte zugewiesen: Die Kapazität der Zone ist bereits belegt.",
+    "slots": "Formel",
+    "pack": "Paket",
+    "extras": "Extras",
+    "holder": "Name auf dem Ticket",
+    "optional": "(optional)",
+    "lastName": "Nachname",
+    "firstName": "Vorname",
+    "holderHint": "Nur für die Beschriftung auf der Karte: Ohne Namen zeigt der Platz die Ticketnummer.",
+    "offline": "Ohne Verbindung kann nicht verkauft werden: Nur der Server garantiert die Verfügbarkeit.",
+    "done": "Ticket {{number}} ausgestellt",
+    "printFailed": "Ticket {{number}} ausgestellt, aber der Druck ist nicht gestartet: Drucken Sie es in der Übersicht erneut.",
+    "gate": "Einlass",
+    "tabs": {
+      "label": "Verkaufsart",
+      "spots": "Schirme",
+      "entries": "Eintritte"
+    }
   },
-  "tickets": {
-    "title": "Tickets des Tages",
-    "description": "Heute ausgestellte Tickets mit Nummer, Uhrzeit, Platz oder Zone, Status, Betrag und Zahlungsart; CSV-Export."
+  "where": {
+    "spot": "Platz",
+    "zone": "Nur Zone"
   },
-  "assign": {
-    "title": "Zuzuweisen",
-    "description": "Für eine Zone verkaufte Tickets: eines wählen und dann einen freien Platz der Zone antippen."
+  "slots": {
+    "FULL": "Ganzer Tag",
+    "AM": "Vormittag",
+    "PM": "Nachmittag"
+  },
+  "method": {
+    "cash": "Bar",
+    "card": "Karte"
+  },
+  "done": {
+    "title": "Ticket ausgestellt",
+    "spot": "Platz {{label}}",
+    "unassigned": "{{zone}} · auf der Karte zuzuweisen",
+    "new": "Neuer Verkauf"
+  },
+  "actions": {
+    "print": "Drucken",
+    "reprint": "Erneut drucken",
+    "assign": "Zuweisen",
+    "move": "Verschieben",
+    "void": "Ticket stornieren"
+  },
+  "printDialog": {
+    "title": "Ticket {{number}} drucken",
+    "titleLoading": "Ticket drucken",
+    "description": "Vorschau, wie es aus dem Drucker kommt; das Format gilt nur für diesen Druck.",
+    "format": "Format"
+  },
+  "format": {
+    "thermal_80": "Bon 80 mm",
+    "thermal_58": "Bon 58 mm",
+    "a5": "A5",
+    "a4": "A4"
   },
   "print": {
     "label": "Ticket {{number}}",
+    "numberSection": "Nummer und Datum",
+    "title": "Tagesticket",
+    "entryTitle": "Eintrittskarte",
     "reprint": "Nachdruck",
-    "unassigned": "Zuzuweisen"
+    "voided": "Storniert",
+    "spot": "Platz {{label}}",
+    "zoneUnassigned": "{{zone}} (zuzuweisen)",
+    "vatNumber": "USt-IdNr. {{vat}}",
+    "where": "Wo",
+    "slots": "Formel",
+    "pack": "Paket",
+    "holder": "Name",
+    "total": "Summe",
+    "vatLine": "MwSt. {{rate}}",
+    "vatAmounts": "netto {{taxable}} · Steuer {{tax}}",
+    "payment": "Zahlung",
+    "qr": "QR-Code des Tickets {{code}}",
+    "validOn": "Gültig am {{date}}",
+    "issuedAt": "Ausgestellt {{time}}"
+  },
+  "tickets": {
+    "title": "Tickets des Tages",
+    "description": "Am Tag ausgestellte Tickets mit Nummer, Uhrzeit, Platz oder Zone, Status, Betrag und Zahlungsart; CSV-Export.",
+    "col": {
+      "number": "Nummer",
+      "time": "Uhrzeit",
+      "where": "Platz oder Zone",
+      "slots": "Formel",
+      "holder": "Name",
+      "state": "Status",
+      "amount": "Betrag",
+      "method": "Zahlungsart",
+      "actions": "Aktionen"
+    },
+    "entry": "Eintritt",
+    "printAria": "Ticket {{number}} drucken",
+    "assignAria": "Ticket {{number}} einem Platz zuweisen",
+    "moveAria": "Ticket {{number}} verschieben",
+    "voidAria": "Ticket {{number}} stornieren",
+    "csv": "CSV exportieren",
+    "csvAria": "CSV der Tickets vom {{date}} exportieren",
+    "date": "Tag",
+    "filter": "Status",
+    "all": "Alle",
+    "summary": "Tagesübersicht",
+    "issued": "Ausgestellt",
+    "takings": "Einnahmen",
+    "byMethod": "Bar {{cash}} · Karte {{card}}",
+    "voided": "Storniert",
+    "listTitle": "Tickets",
+    "empty": "Keine Tickets für diesen Tag.",
+    "vatTitle": "Einnahmen nach Steuersatz",
+    "vatDescription": "Dieselben Beträge wie in der Kassensitzung und im Tagesabschluss; stornierte Tickets sind ausgeschlossen."
+  },
+  "state": {
+    "assigned": "Zugewiesen",
+    "unassigned": "Zuzuweisen",
+    "issued": "Ausgestellt",
+    "entered": "Eingetreten",
+    "voided": "Storniert"
+  },
+  "move": {
+    "title": "Ticket {{number}} verschieben",
+    "assignTitle": "Ticket {{number}} zuweisen",
+    "description": "Wählen Sie den neuen freien Platz: Die Verschiebung erfolgt sofort.",
+    "assignDescription": "Wählen Sie einen freien Platz in der Zone des Tickets.",
+    "spot": "Platz",
+    "done": "Ticket {{number}} auf Platz {{label}}"
+  },
+  "void": {
+    "title": "Ticket {{number}} stornieren?",
+    "description": "Der Platz oder der Zonenplatz wird wieder frei; das Ticket behält seine Nummer und wird als storniert markiert.",
+    "reason": "Grund",
+    "reasonRequired": "Geben Sie den Grund der Stornierung an.",
+    "refund": "Erstattung",
+    "refund_refund": "Mit derselben Zahlungsart erstatten",
+    "refund_credit": "Dem Kunden gutschreiben",
+    "refund_none": "Keine Erstattung",
+    "done": "Ticket {{number}} storniert"
+  },
+  "assign": {
+    "title": "Zuzuweisen",
+    "description": "Nach Zone verkaufte Tickets: Wählen Sie eines und tippen Sie auf einen freien Platz seiner Zone.",
+    "auto": "Automatisch zuweisen",
+    "listLabel": "Zuzuweisende Tickets",
+    "ticketAria": "Ticket {{number}}, {{zone}}, {{slots}}",
+    "pick": "Tippen Sie auf einen freien Platz in {{zone}} für Ticket {{number}}.",
+    "notFree": "Dieser Platz ist nicht frei: Wählen Sie einen hervorgehobenen.",
+    "wrongZone": "Wählen Sie einen Platz der Zone {{zone}}.",
+    "done": "Ticket {{number}} dem Platz {{label}} zugewiesen",
+    "autoDone_one": "{{count}} Ticket zugewiesen",
+    "autoDone_other": "{{count}} Tickets zugewiesen",
+    "autoPartial_one": "{{count}} Ticket zugewiesen, {{left}} ohne freien Platz",
+    "autoPartial_other": "{{count}} Tickets zugewiesen, {{left}} ohne freien Platz"
   },
   "problems": {
-    "zone_full": "In der Zone ist für die gewählte Zeit kein Platz mehr frei.",
-    "assignment_conflict": "Der Platz wurde gerade belegt: bitte einen anderen wählen.",
+    "zone_full": "Kein freier Platz in der Zone für den gewählten Zeitraum.",
+    "assignment_conflict": "Der Platz wurde gerade belegt: Bitte wählen Sie einen anderen.",
     "ticket_number_conflict": "Ticketnummer bereits vergeben, bitte erneut versuchen.",
     "ticket_voided": "Das Ticket ist storniert.",
     "ticket_already_entered": "Das Ticket wurde bereits für den Eintritt verwendet.",
-    "price_changed": "Der Preis hat sich geändert: bitte den neuen Betrag prüfen."
+    "price_changed": "Der Preis hat sich geändert: Prüfen Sie die neue Summe und kassieren Sie erneut.",
+    "spot_unavailable": "Der Platz ist nicht mehr frei: Bitte wählen Sie einen anderen.",
+    "cash_session_closed": "Die Kasse ist geschlossen: Öffnen Sie sie, um bar zu kassieren."
+  },
+  "settings": {
+    "open": "Einstellungen",
+    "title": "Ticket-Einstellungen",
+    "description": "Sie gelten für alle Kassen des Betriebs.",
+    "format": "Standard-Druckformat",
+    "autoPrint": "Direkt nach dem Verkauf drucken",
+    "autoPrintHint": "Öffnet den Druck des Tickets, sobald es bezahlt ist.",
+    "zoneFirst": "Verkauf nach Zone",
+    "zoneFirstHint": "Nur die Zone verkaufen und den Platz später auf der Karte zuweisen.",
+    "saved": "Ticket-Einstellungen gespeichert"
   }
 }
