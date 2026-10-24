@@ -6,10 +6,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/it-IT/1.1.0/) e i
 
 ## [Unreleased]
 
-Milestone **M0 — Fondamenta**, **M1 — Inventario e mappa**, **M2 — Prezzi e policy**, **M3 — Prenotazioni dal
-pannello e cassa**, **M4 — Pagina pubblica e pagamenti online** e **M6 — Edizione desktop** (completate, non
-rilasciate); **M5 — Completamento della stagione** in corso (parte A unita: report, chiavi API, webhook, pannello
-offline).
+Prima versione stabile in preparazione: **1.0.0**. Sono complete tutte le milestone della specifica: **M0 —
+Fondamenta**, **M1 — Inventario e mappa**, **M2 — Prezzi e policy**, **M3 — Prenotazioni dal pannello e cassa**,
+**M4 — Pagina pubblica e pagamenti online**, **M5 — Completamento della stagione** e **M6 — Edizione desktop**.
+Comprende anche le funzioni rinviate (ADR 0019), la vendita giornaliera con ticket numerati e i biglietti d'ingresso
+(ADR 0020) e la stampa ESC/POS su stampanti di rete dall'app desktop (ADR 0021). Le note di rilascio sono in
+[`docs/release-notes/1.0.md`](docs/release-notes/1.0.md).
 
 ### Added
 

@@ -13,7 +13,7 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-base="${ARENILE_DEV_BASE_VERSION:-0.6.0}"
+base="${ARENILE_DEV_BASE_VERSION:-1.0.0}"
 g() { git -C "$root" "$@" 2>/dev/null; }
 
 sha="$(g rev-parse --short HEAD)" || { echo dev; exit 0; }
