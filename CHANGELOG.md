@@ -376,6 +376,11 @@ offline).
   `refund_in_progress` di un rimborso manuale avviene sotto il lock della prenotazione.
 - **Prenotazioni da approvare**: la conferma al banco di un rinnovo segue la regola di approvazione; una prenotazione
   da approvare già pagata al banco non scade più da sola (il blocco viene rinnovato finché il gestore non decide).
+- **Modalità prova**: l'eliminazione delle prenotazioni di prova è rifiutata (409, anche in anteprima) se un
+  credito generato da una prenotazione di prova è già stato speso su una prenotazione reale; prima veniva
+  compensato in automatico lasciando valore di prova nell'incassato reale.
+- **Casse**: lo schema esige che ogni sessione di cassa appartenga a una cassa dello stesso stabilimento (`NOT NULL`
+  e chiave esterna composta su PostgreSQL, trigger su SQLite).
 - **Importa dati**: nessuna importazione con la modalità prova accesa (409); i pacchetti che richiedono approvazione
   sono rifiutati riga per riga; il contenuto del file è cancellato appena l'importazione è applicata, fallita o
   scartata. Le notifiche "Importazione completata / non riuscita" non esistono: l'esito è nello storico.

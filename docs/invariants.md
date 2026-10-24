@@ -635,10 +635,13 @@ solo hold), `TestWaitlist_CancellationOffersToFirstEntryAndAcceptGoesToCheckout`
 **INV-73 — Una sola sessione aperta per cassa.**
 Ogni stabilimento ha una cassa predefinita attiva (indice unico parziale su `cash_registers.is_default`) e al massimo
 una sessione aperta per cassa (`cash_sessions_register_open_uidx` su `register_id` con `closed_at IS NULL`, accanto
-all'indice di 00003 sul codice). La migrazione 00009 assegna `register_id` a ogni sessione esistente.
+all'indice di 00003 sul codice). La migrazione 00009 assegna `register_id` a ogni sessione esistente e da allora lo
+schema esige che ogni sessione abbia una cassa **dello stesso stabilimento**: `NOT NULL` e chiave esterna composta
+`(establishment_id, register_id)` su PostgreSQL, trigger equivalenti su SQLite.
 Il servizio cassa apre solo casse attive e tiene il lock della riga della cassa durante l'apertura, così disattivazione
 e apertura non si sovrappongono; la cassa predefinita creata in modo pigro è unica anche sotto concorrenza.
-Verificata da: `TestMigration00009_CashRegisterBackfill` (`internal/store`), `TestConcurrency_OpenSessionPerRegister`,
+Verificata da: `TestMigration00009_CashRegisterBackfill` (`internal/store`, anche sessione senza cassa o con cassa di
+un altro stabilimento rifiutata), `TestConcurrency_OpenSessionPerRegister`,
 `TestCashRegisters_TwoOpenSessionsReconcile`, `TestCashRegisters_CRUD` (`internal/domain/cash`), tutti con tag
 `integration`, SQLite e PostgreSQL. Stato: implemented.
 
@@ -683,9 +686,14 @@ Verificata da: `TestConcurrency_CancelRefundOnce` (100 tentativi paralleli tra c
 L'eliminazione in blocco delle prenotazioni di prova avviene in un'unica transazione, rilascia prima i contatori dei
 pool e cancella solo righe con `test = true` o appartenenti a una prenotazione di prova (pagamenti, intent, documenti,
 richieste di rimborso, messaggi, righe di credito); il saldo crediti dei clienti coinvolti è ricalcolato dal registro
-e non diventa mai negativo; il registro attività resta.
+e non diventa mai negativo; il registro attività resta. Se un credito generato da una prenotazione di prova è già
+stato speso su una prenotazione reale, la purga (anche in `dry_run`) è rifiutata con 409 finché i crediti di quei
+clienti non sono corretti: il valore di prova non entra mai nell'incassato reale.
 Verificata da: `TestAcceptance_TestMode` (`internal/acceptance`, tag `integration`, SQLite e PostgreSQL: la
-prenotazione reale e il suo pagamento restano, le postazioni di prova tornano libere). Stato: implemented.
+prenotazione reale e il suo pagamento restano, le postazioni di prova tornano libere),
+`TestPurge_RefusedWhenTestCreditSpentByRealBooking`, `TestConcurrency_PurgeVsCreate` (100 operazioni parallele tra
+creazioni di prova e purghe: la prenotazione reale intatta, nessuna prenotazione di prova lasciata a metà;
+`internal/domain/testmode`). Stato: implemented.
 
 **INV-77 — Prezzo manuale degli abbonamenti: solo il gestore, sempre tracciato, snapshot intatto.**
 Solo `establishment.configure` (titolare, gestore) imposta o toglie il prezzo manuale di un abbonamento, con motivo

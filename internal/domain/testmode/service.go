@@ -111,6 +111,19 @@ type PurgeResult struct {
 
 func (s *Service) now() time.Time { return s.d.Clock.Now().UTC() }
 
+// checkCredits is ErrTestCreditRedeemed when a test credit was spent by a
+// real booking (INV-76).
+func (s *Service) checkCredits(ctx context.Context, db bun.IDB, es store.EstablishmentScope) error {
+	n, err := store.TestCreditShortfall(ctx, db, es)
+	if err != nil {
+		return fmt.Errorf("testmode: %w", err)
+	}
+	if n > 0 {
+		return fmt.Errorf("%w (%d clienti)", ErrTestCreditRedeemed, n)
+	}
+	return nil
+}
+
 func (s *Service) authorize(ctx context.Context, p *auth.Principal, establishmentID string, perm auth.Permission) (store.EstablishmentScope, error) {
 	if p == nil {
 		return store.EstablishmentScope{}, auth.ErrUnauthenticated
@@ -372,6 +385,11 @@ func (s *Service) CheckPublicCreate(ctx context.Context, slug, previewToken stri
 // bookings and everything attached to them. audit_log rows stay; one audit
 // entry test_bookings.purged and one event record the counts. dryRun only
 // counts.
+// ErrTestCreditRedeemed: a credit granted by a test booking was spent on a
+// real booking; the purge would leave real money paid with credit that
+// never existed (INV-76). Fix the credits of those customers first.
+var ErrTestCreditRedeemed = fmt.Errorf("%w: un credito generato da una prenotazione di prova è stato usato su una prenotazione reale: correggi i crediti di quei clienti prima di eliminare le prove", configerr.ErrConflict)
+
 func (s *Service) Purge(ctx context.Context, p *auth.Principal, establishmentID string, dryRun bool) (*PurgeResult, error) {
 	es, err := s.authorize(ctx, p, establishmentID, auth.PermEstablishmentConfigure)
 	if err != nil {
@@ -381,6 +399,9 @@ func (s *Service) Purge(ctx context.Context, p *auth.Principal, establishmentID 
 		c, err := store.CountTestRows(ctx, s.d.DB, es)
 		if err != nil {
 			return nil, fmt.Errorf("testmode: %w", err)
+		}
+		if err := s.checkCredits(ctx, s.d.DB, es); err != nil {
+			return nil, err
 		}
 		return &PurgeResult{Bookings: c.Bookings, Payments: c.Payments}, nil
 	}
@@ -392,6 +413,9 @@ func (s *Service) Purge(ctx context.Context, p *auth.Principal, establishmentID 
 		}
 		if err := store.LockBookings(ctx, tx, es, ids); err != nil {
 			return fmt.Errorf("testmode: %w", err)
+		}
+		if err := s.checkCredits(ctx, tx, es); err != nil {
+			return err
 		}
 		for _, id := range ids {
 			if _, err := s.d.Inventory.Release(ctx, tx, es, inventory.ReleaseRequest{BookingID: id}); err != nil {

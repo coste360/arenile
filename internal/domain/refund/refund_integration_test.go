@@ -562,3 +562,48 @@ func TestRefund_IdempotencyWindowElapsed(t *testing.T) {
 		}
 	})
 }
+
+// TestConcurrency_RefundJobSendOnce (INV-75): 100 parallel runs of the
+// refund job on one pending request send it to the provider exactly once
+// (the conditional claim of the row serialises the workers) and the
+// provider moves the money once.
+func TestConcurrency_RefundJobSendOnce(t *testing.T) {
+	storetest.EachConcurrent(t, func(t *testing.T, db *store.DB) {
+		e := newEnv(t, db, 10)
+		id := e.confirmed(1, "2027-07-20")
+		e.paidOnline(id, 2000)
+		e.cancel(id)
+		var wg sync.WaitGroup
+		start := make(chan struct{})
+		errs := make(chan error, 100)
+		for range 100 {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				if _, err := e.rf.RunDue(e.Ctx); err != nil {
+					errs <- err
+				}
+			}()
+		}
+		close(start)
+		wg.Wait()
+		close(errs)
+		for err := range errs {
+			t.Fatalf("run: %v", err)
+		}
+		if calls := e.prov.calls.Load(); calls != 1 {
+			t.Fatalf("provider called %d times, want 1", calls)
+		}
+		if n, total := e.prov.refunds(); n != 1 || total != 2000 {
+			t.Fatalf("provider moved %d refunds for %d", n, total)
+		}
+		rr := e.only(id)
+		if rr.Status != store.RefundRequestSucceeded || rr.Attempts != 1 {
+			t.Fatalf("request %+v", rr)
+		}
+		if n, total := e.ledgerRefunds(id); n != 1 || total != 2000 {
+			t.Fatalf("ledger refunds %d for %d", n, total)
+		}
+	})
+}
